@@ -68,7 +68,7 @@ jobs:
               git commit -m "Add/Update badge" || true
           popd
       - name: Push badge commit
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: badges

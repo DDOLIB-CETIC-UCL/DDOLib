@@ -1,7 +1,7 @@
 
 
-![Doc](https://github.com/pschaus/maxicp/actions/workflows/publish.yml/badge.svg)
-![Coverage](https://github.com/pschaus/maxicp/actions/workflows/test.yml/badge.svg)
+![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/publish.yml/badge.svg)
+![Coverage](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
 <!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
 
 # DDOLib
