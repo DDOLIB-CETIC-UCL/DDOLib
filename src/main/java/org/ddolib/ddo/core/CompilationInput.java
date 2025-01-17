@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 
 /**
  * The set of parameters used to tweak the compilation of a MDD
+ * @param <T> The type used to model the state of your problem
  */
 public final class CompilationInput<T> {
     /** How is the mdd being compiled ? */
@@ -15,7 +16,7 @@ public final class CompilationInput<T> {
     final Relaxation<T> relaxation;
     /** The variable heuristic which is used to decide the variable to branch on next */
     final VariableHeuristic<T> var;
-    /** The state ranking heuristic to chose the nodes to keep and those to discard */
+    /** The state ranking heuristic to choose the nodes to keep and those to discard */
     final StateRanking<T> ranking;
     /** The subproblem whose state space must be explored */
     final SubProblem<T> residual;

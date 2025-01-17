@@ -9,8 +9,8 @@ import java.util.Set;
  * the given problem. In particular, the merge_states method from this trait 
  * defines how the nodes of a layer may be combined to provide an upper bound 
  * approximation standing for an arbitrarily selected set of nodes.
- * 
- * Again, the type parameter <T> denotes the type of the states.
+ *
+ * Again, the type parameter `T` denotes the type of the states.
  */
 public interface Relaxation<T> {
     /** 

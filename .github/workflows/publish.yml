@@ -1,9 +1,6 @@
 name: Javadoc
 
-on:
-  push:
-    branches:
-      - main
+on: push
 jobs:
   test-and-publish:
     runs-on: ubuntu-latest
