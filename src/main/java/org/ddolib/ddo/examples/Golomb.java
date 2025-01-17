@@ -1,8 +1,14 @@
 package org.ddolib.ddo.examples;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -131,7 +137,7 @@ public class Golomb {
 
         @Override
         public int transitionCost(GolombState state, Decision decision) {
-            return 0;
+            return -(decision.val() - state.lastMark); // put a minus to turn objective into maximization (ddo requirement
         }
 
         public boolean isValidMark(GolombState state, int mark) {
@@ -159,5 +165,72 @@ public class Golomb {
         public int transitionCost(GolombState state, int newMark) {
             return -(newMark - state.getLastMark()); // Negative for maximization
         }
+    }
+
+    public static class GolombRelax implements Relaxation<GolombState> {
+        @Override
+        public GolombState mergeStates(final Iterator<GolombState> states) {
+            // take the intersection of the marks and distances sets
+            GolombState curr = states.next();
+            BitSet intersectionMarks = (BitSet) curr.marks.clone();
+            BitSet intersectionDistances = (BitSet) curr.distances.clone();
+            int lastMark = curr.lastMark;
+            while (states.hasNext()) {
+                GolombState state = states.next();
+                intersectionMarks.and(state.marks);
+                intersectionDistances.and(state.distances);
+                lastMark = Math.min(lastMark, state.lastMark);
+            }
+            return new GolombState(intersectionMarks, intersectionDistances, lastMark);
+        }
+
+        @Override
+        public int relaxEdge(GolombState from, GolombState to, GolombState merged, Decision d, int cost) {
+            return cost;
+        }
+    }
+
+    static class GolombRanking implements StateRanking<GolombState> {
+        @Override
+        public int compare(GolombState s1, GolombState s2) {
+            return Integer.compare(s1.lastMark, s2.lastMark); // sort by last mark
+        }
+    }
+
+    public static void main(final String[] args) throws IOException {
+        GolombProblem problem = new GolombProblem(7);
+        final GolombRelax relax = new GolombRelax();
+        final GolombRanking ranking = new GolombRanking();
+        final FixedWidth<GolombState> width = new FixedWidth<>(250);
+        final VariableHeuristic<GolombState> varh = new DefaultVariableHeuristic();
+        final Frontier<GolombState> frontier = new SimpleFrontier<>(ranking);
+
+
+        final Solver solver = new ParallelSolver<GolombState>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        long start = System.currentTimeMillis();
+        solver.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+        int[] solution = solver.bestSolution()
+                .map(decisions -> {
+                    int[] values = new int[problem.nbVars()];
+                    for (Decision d : decisions) {
+                        values[d.var()] = d.val();
+                    }
+                    return values;
+                })
+                .get();
+
+        System.out.println(String.format("Duration : %.3f", duration));
+        System.out.println(String.format("Objective: %d", solver.bestValue().get()));
+        System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
     }
 }
