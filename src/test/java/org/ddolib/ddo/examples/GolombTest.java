@@ -56,7 +56,6 @@ class GolombTest {
         int[] solution = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
         for (int n = 3; n < 8; n++) {
             int[] result = solve(n);
-            System.out.println(Arrays.toString(result));
             assertEquals(solution[n], result[n-1]);
         }
     }
