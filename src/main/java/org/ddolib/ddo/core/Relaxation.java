@@ -41,7 +41,7 @@ public interface Relaxation<T> {
      *  reached if state were the initial state
      * 
      * @param state the state for which the estimate is to be computed
-     * @param variable the set of unassigned variables
+     * @param variables the set of unassigned variables
      */
     default int fastUpperBound(final T state, final Set<Integer> variables) { 
         return Integer.MAX_VALUE;

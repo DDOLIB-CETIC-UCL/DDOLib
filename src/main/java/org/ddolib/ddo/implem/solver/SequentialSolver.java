@@ -38,9 +38,9 @@ public final class SequentialSolver<T> implements Solver {
     private final Relaxation<T> relax;
     /** An heuristic to identify the most promising nodes */
     private final StateRanking<T> ranking;
-    /** An heuristic to chose the maximum width of the DD you compile */
+    /** A heuristic to choose the maximum width of the DD you compile */
     private final WidthHeuristic<T> width;
-    /** An heuristic to chose the next variable to branch on when developing a DD */
+    /** A heuristic to choose the next variable to branch on when developing a DD */
     private final VariableHeuristic<T> varh;
 
     /**
@@ -61,7 +61,7 @@ public final class SequentialSolver<T> implements Solver {
      * data structure to compile all mdds. 
      * 
      * # Note: 
-     * This approach is recommended but we do not force this design choice on you.
+     * This approach is recommended, however we do not force this design choice.
      * You might decide against reusing the same object over and over (even though
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
@@ -95,9 +95,6 @@ public final class SequentialSolver<T> implements Solver {
 
     @Override
     public void maximize() {
-        // TODO Now it is your turn to implement the (sequential) BaB-MDD algorithm.
-        // TODO Try to stick really close to the pseudo-code, this is going to help you !
-        // BEGIN STRIP
         frontier.push(root());
 
         while (!frontier.isEmpty()) {
@@ -147,7 +144,6 @@ public final class SequentialSolver<T> implements Solver {
                 enqueueCutset();
             }
         }
-        // END STRIP
     }
 
     @Override
@@ -164,8 +160,6 @@ public final class SequentialSolver<T> implements Solver {
         return bestSol;
     }
 
-    // TODO You might want to implement some additional utility methods for yourself
-    // BEGIN STRIP
     /** @return the root subproblem */
     private SubProblem<T> root() {
         return new SubProblem<>(
@@ -175,17 +169,16 @@ public final class SequentialSolver<T> implements Solver {
             Collections.emptySet());
     }
 
-     /**
+    /**
      * This private method updates the best known node and lower bound in
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
     private void maybeUpdateBest() {
         Optional<Integer> ddval = mdd.bestValue();
-
-        if( ddval.isPresent() && ddval.get() > bestLB) {
+        if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
-            bestSol= mdd.bestSolution();
+            bestSol = mdd.bestSolution();
         }
     }
     /**
@@ -201,5 +194,4 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
     }
-    // END STRIP
 }
