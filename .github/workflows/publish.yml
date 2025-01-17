@@ -3,7 +3,7 @@ name: Javadoc
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   test-and-publish:
     runs-on: ubuntu-latest
