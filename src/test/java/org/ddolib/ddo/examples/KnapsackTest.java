@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class KnapsackTest {
     static Stream<KnapsackProblem> dataProvider() {
-        Stream<Integer> testStream = IntStream.rangeClosed(0, 4).boxed();
+        Stream<Integer> testStream = IntStream.rangeClosed(0, 9).boxed();
         return testStream.flatMap(i -> {
             try {
                 return Stream.of(Knapsack.readInstance("src/test/resources/Knapsack/instance_test_" + i));
