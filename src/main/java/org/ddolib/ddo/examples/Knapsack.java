@@ -200,7 +200,7 @@ public final class Knapsack {
             return values;
         }).get();
 
-        System.out.printf("Duration : %.3f%n", duration);
+        System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
