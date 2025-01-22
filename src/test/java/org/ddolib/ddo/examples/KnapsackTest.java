@@ -31,15 +31,15 @@ class KnapsackTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testParameterized(KnapsackProblem problem){
-        final KnapsackRelax                    relax = new KnapsackRelax();
-        final KnapsackRanking                ranking = new KnapsackRanking();
+    public void testParameterized(KnapsackProblem problem) {
+        final KnapsackRelax relax = new KnapsackRelax(problem);
+        final KnapsackRanking ranking = new KnapsackRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic();
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<>(
+        final Solver solver = new ParallelSolver<Integer>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
