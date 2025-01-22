@@ -6,8 +6,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.maxicp</groupId>
-    <artifactId>maxicp</artifactId>
+    <groupId>org.ddolib</groupId>
+    <artifactId>ddolib</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
@@ -26,6 +26,36 @@
     </licenses>
 
     <developers>
+        <developer>
+            <name>Renaud De Landtsheer</name>
+            <email>renaud.delandtsheer@cetic.be</email>
+            <organization>CETIC / COAL</organization>
+            <organizationUrl>https://www.cetic.be</organizationUrl>
+        </developer>
+        <developer>
+            <name>Thomas Fayolle</name>
+            <email>thomas.fayolle@cetic.be</email>
+            <organization>CETIC / COAL</organization>
+            <organizationUrl>https://www.cetic.be</organizationUrl>
+        </developer>
+        <developer>
+            <name>Fabian Germeau</name>
+            <email>fabian.germeau@cetic.be</email>
+            <organization>CETIC / COAL</organization>
+            <organizationUrl>https://www.cetic.be</organizationUrl>
+        </developer>
+        <developer>
+            <name>Quentin Meurisse</name>
+            <email>quentin.meurisse@cetic.be</email>
+            <organization>CETIC / COAL</organization>
+            <organizationUrl>https://www.cetic.be</organizationUrl>
+        </developer>
+        <developer>
+            <name>Stefano Michelini</name>
+            <email>stefano.michelini@cetic.be</email>
+            <organization>CETIC / COAL</organization>
+            <organizationUrl>https://www.cetic.be</organizationUrl>
+        </developer>
         <developer>
             <name>Pierre Schaus</name>
             <email>pierre.schaus@uclouvain.be</email>

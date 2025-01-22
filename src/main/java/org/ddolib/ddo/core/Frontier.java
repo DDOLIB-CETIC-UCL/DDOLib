@@ -26,7 +26,7 @@ public interface Frontier<T> {
     void clear();
     /** @return Yields the length of the queue. */
     int size();
-    /** @returns true iff the fringe is empty (size == 0) */
+    /** @return true iff the fringe is empty (size == 0) */
     default boolean isEmpty() {
         return size() == 0;
     }
