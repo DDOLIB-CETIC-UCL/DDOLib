@@ -1,18 +1,14 @@
 package org.ddolib.ddo.examples;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public final class Misp {
 
@@ -36,6 +32,23 @@ public final class Misp {
         }
 
         @Override
+        public String toString() {
+            StringBuilder weighStr = new StringBuilder();
+            for (int i = 0; i < weight.length; i++) {
+                weighStr.append(String.format("\t%d : %d%n", i, weight[i]));
+            }
+
+            StringBuilder neighStr = new StringBuilder();
+            for (int i = 0; i < neighbors.length; i++) {
+                neighStr.append(String.format("\t%d : %s%n", i, neighbors[i]));
+            }
+            System.out.println(Arrays.toString(neighbors));
+
+            return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
+                    weighStr, neighStr);
+        }
+
+        @Override
         public int nbVars() {
             return weight.length;
         }
@@ -53,19 +66,16 @@ public final class Misp {
         @Override
         public Iterator<Integer> domain(BitSet state, int var) {
             if (state.get(var)) {
-                return List.of(0).iterator();
+                return List.of(0, 1).iterator();
             } else {
-                return List.of(1, 0).iterator();
+                return List.of(0).iterator();
             }
         }
 
         @Override
         public BitSet transition(BitSet state, Decision decision) {
             var res = (BitSet) state.clone();
-            if (decision.val() == 1) {
-                res.set(decision.var(), false);
-                res.andNot(neighbors[decision.var()]);
-            }
+            if (decision.val() == 1) res.andNot(neighbors[decision.var()]);
 
             return res;
         }
@@ -98,6 +108,7 @@ public final class Misp {
         public int relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, int cost) {
             return cost;
         }
+
     }
 
     public static class MispRanking implements StateRanking<BitSet> {
@@ -110,10 +121,13 @@ public final class Misp {
 
     public static MispProblem cycleGraph(int n) {
         BitSet state = new BitSet(n);
+        state.set(0, n, true);
         int[] weight = new int[n];
-        Arrays.fill(weight, 1);
         BitSet[] neighbor = new BitSet[n];
-        Arrays.fill(neighbor, new BitSet(n));
+        for (int i = 0; i < n; i++) {
+            weight[i] = 1;
+            neighbor[i] = new BitSet(n);
+        }
 
         for (int i = 0; i < n; i++) {
             if (i != 0) neighbor[i].set(i - 1);
@@ -126,13 +140,41 @@ public final class Misp {
     }
 
     public static void main(String[] args) {
-        final MispProblem problem = cycleGraph(5);
+        final MispProblem problem = cycleGraph(1000);
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final FixedWidth<BitSet> width = new FixedWidth<>(250);
+        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
+
+        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
+
+        final Solver solver = new ParallelSolver<BitSet>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        
+        long start = System.currentTimeMillis();
+        solver.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
+        int[] solution = solver.bestSolution()
+                .map(decisions -> {
+                    int[] values = new int[problem.nbVars()];
+                    for (Decision d : decisions) {
+                        values[d.var()] = d.val();
+                    }
+                    return values;
+                })
+                .get();
+
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
 }
