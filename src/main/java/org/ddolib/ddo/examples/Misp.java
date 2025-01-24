@@ -99,18 +99,7 @@ public final class Misp {
 
         @Override
         public int compare(BitSet o1, BitSet o2) {
-            int sizeComparator = Integer.compare(o1.length(), o2.length());
-            if (sizeComparator == 0) {
-                for (int i = 0; i < o1.length(); i++) {
-                    boolean bitO1 = o1.get(i);
-                    boolean bitO2 = o2.get(i);
-                    if (bitO1 != bitO2) return bitO1 ? 1 : -1;
-                }
-                return 0;
-            } else {
-                return sizeComparator;
-            }
-
+            return Integer.compare(o1.length(), o2.length());
         }
     }
 
