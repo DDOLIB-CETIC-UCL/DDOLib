@@ -7,7 +7,14 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.nio.dot.DOTImporter;
+import org.jgrapht.util.SupplierUtil;
 
+import javax.swing.*;
+import java.io.File;
 import java.util.*;
 
 public final class Misp {
@@ -42,7 +49,6 @@ public final class Misp {
             for (int i = 0; i < neighbors.length; i++) {
                 neighStr.append(String.format("\t%d : %s%n", i, neighbors[i]));
             }
-            System.out.println(Arrays.toString(neighbors));
 
             return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
                     weighStr, neighStr);
@@ -109,6 +115,10 @@ public final class Misp {
             return cost;
         }
 
+        @Override
+        public int fastUpperBound(BitSet state, Set<Integer> variables) {
+            return state.stream().map(i -> problem.weight[i]).sum();
+        }
     }
 
     public static class MispRanking implements StateRanking<BitSet> {
@@ -139,8 +149,39 @@ public final class Misp {
         return new MispProblem(state, neighbor, weight);
     }
 
+    public static MispProblem readGraph(String fileName) {
+        Graph<Integer, DefaultEdge> g = new SimpleGraph<>(
+                SupplierUtil.createIntegerSupplier(),
+                SupplierUtil.createDefaultEdgeSupplier(),
+                false
+        );
+        DOTImporter<Integer, DefaultEdge> importer = new DOTImporter<>();
+        File f = new File(fileName);
+        importer.importGraph(g, f);
+
+        int n = g.vertexSet().size();
+        int[] weight = new int[n];
+        BitSet[] neighbor = new BitSet[n];
+        for (int i = 0; i < n; i++) {
+            weight[i] = 1;
+            neighbor[i] = new BitSet(n);
+        }
+
+        for (DefaultEdge e : g.edgeSet()) {
+            int source = g.getEdgeSource(e);
+            int target = g.getEdgeTarget(e);
+            neighbor[source].set(target);
+            neighbor[target].set(source);
+        }
+
+        BitSet initialState = new BitSet(n);
+        initialState.set(0, n, true);
+
+        return new MispProblem(initialState, neighbor, weight);
+    }
+
     public static void main(String[] args) {
-        final MispProblem problem = cycleGraph(1000);
+        final MispProblem problem = readGraph("data/MISP/B_100_150_500.dot");
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(250);
@@ -156,7 +197,7 @@ public final class Misp {
                 ranking,
                 width,
                 frontier);
-        
+
         long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
