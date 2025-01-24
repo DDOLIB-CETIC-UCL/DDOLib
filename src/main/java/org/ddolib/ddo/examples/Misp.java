@@ -1,10 +1,15 @@
 package org.ddolib.ddo.examples;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Problem;
 import org.ddolib.ddo.core.Relaxation;
 import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
@@ -101,6 +106,33 @@ public final class Misp {
         public int compare(BitSet o1, BitSet o2) {
             return Integer.compare(o1.length(), o2.length());
         }
+    }
+
+    public static MispProblem cycleGraph(int n) {
+        BitSet state = new BitSet(n);
+        int[] weight = new int[n];
+        Arrays.fill(weight, 1);
+        BitSet[] neighbor = new BitSet[n];
+        Arrays.fill(neighbor, new BitSet(n));
+
+        for (int i = 0; i < n; i++) {
+            if (i != 0) neighbor[i].set(i - 1);
+            if (i != n - 1) neighbor[i].set(i + 1);
+        }
+        neighbor[0].set(n - 1);
+        neighbor[n - 1].set(0);
+
+        return new MispProblem(state, neighbor, weight);
+    }
+
+    public static void main(String[] args) {
+        final MispProblem problem = cycleGraph(5);
+        final MispRelax relax = new MispRelax(problem);
+        final MispRanking ranking = new MispRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(250);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+
+
     }
 
 }
