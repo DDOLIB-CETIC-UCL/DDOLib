@@ -13,8 +13,7 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.util.SupplierUtil;
 
-import javax.swing.*;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 public final class Misp {
@@ -24,6 +23,7 @@ public final class Misp {
         final BitSet remainingNodes;
         final BitSet[] neighbors;
         final int[] weight;
+        final Optional<Integer> optimal;
 
         /**
          * @param remainingNodes The remaining node that can be selected in the current independent set. Considered
@@ -32,10 +32,18 @@ public final class Misp {
          * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
          *                       in the problem instance.
          */
+        public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Integer> optimal) {
+            this.remainingNodes = remainingNodes;
+            this.neighbors = neighbors;
+            this.weight = weight;
+            this.optimal = optimal;
+        }
+
         public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight) {
             this.remainingNodes = remainingNodes;
             this.neighbors = neighbors;
             this.weight = weight;
+            this.optimal = Optional.empty();
         }
 
         @Override
@@ -146,10 +154,16 @@ public final class Misp {
         neighbor[0].set(n - 1);
         neighbor[n - 1].set(0);
 
-        return new MispProblem(state, neighbor, weight);
+        return new MispProblem(state, neighbor, weight, Optional.of(n / 2));
     }
 
-    public static MispProblem readGraph(String fileName) {
+    /**
+     * Creates an instance of Maximum Independent Set Problem from a .dot file.
+     *
+     * @param fileName A .dot file containing a graph.
+     * @return An instance of the Maximum Independent Set Problem.
+     */
+    public static MispProblem readGraph(String fileName) throws IOException {
         Graph<Integer, DefaultEdge> g = new SimpleGraph<>(
                 SupplierUtil.createIntegerSupplier(),
                 SupplierUtil.createDefaultEdgeSupplier(),
@@ -158,6 +172,7 @@ public final class Misp {
         DOTImporter<Integer, DefaultEdge> importer = new DOTImporter<>();
         File f = new File(fileName);
         importer.importGraph(g, f);
+
 
         int n = g.vertexSet().size();
         int[] weight = new int[n];
@@ -177,11 +192,36 @@ public final class Misp {
         BitSet initialState = new BitSet(n);
         initialState.set(0, n, true);
 
-        return new MispProblem(initialState, neighbor, weight);
+        return new MispProblem(initialState, neighbor, weight, findOptimum(fileName));
     }
 
-    public static void main(String[] args) {
-        final MispProblem problem = readGraph("data/MISP/B_100_150_500.dot");
+    private static Optional<String> findLine(String fileName) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.contains("optimal")) {
+                return Optional.of(line);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Integer> findOptimum(String fileName) throws IOException {
+        Optional<String> line = findLine(fileName);
+        if (line.isEmpty()) {
+            return Optional.empty();
+        } else {
+            String optiLine = line.get();
+            int optimalStrLength = "optimal=".length();
+            int opti = Integer.parseInt(optiLine.substring(optimalStrLength, optiLine.length() - 1));
+            return Optional.of(opti);
+        }
+
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        final MispProblem problem = readGraph("data/MISP/S_20.dot");
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(250);
