@@ -1,7 +1,8 @@
 package org.ddolib.ddo.examples.misp;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -13,8 +14,13 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.util.SupplierUtil;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Optional;
 
 public final class Misp {
 
@@ -40,6 +46,8 @@ public final class Misp {
 
     /**
      * Creates an instance of Maximum Independent Set Problem from a .dot file.
+     * If given, the expected optimal solution <code>x</code> of the problem must in the second line written as
+     * <code>optimal=x</code>
      *
      * @param fileName A .dot file containing a graph.
      * @return An instance of the Maximum Independent Set Problem.
@@ -76,17 +84,37 @@ public final class Misp {
         return new MispProblem(initialState, neighbor, weight, findOptimum(fileName));
     }
 
+    /**
+     * Helper function that read a .dot file and find the line containing the optimal solution
+     *
+     * @param fileName The .dot file containing a graph
+     * @return The line containing the optimal solution if it exists
+     * <code>Optional.empty</code> otherwise.
+     * @throws IOException If the input file does not exist.
+     */
     private static Optional<String> findLine(String fileName) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         String line;
-        while ((line = br.readLine()) != null) {
+        int lineCounter = 0;
+        while ((line = br.readLine()) != null || lineCounter < 2) {
             if (line.contains("optimal")) {
                 return Optional.of(line);
             }
+            lineCounter++;
         }
         return Optional.empty();
     }
 
+
+    /**
+     * Function that read a .dot file, find the line containing the optimal solution and returns the optimal
+     * solution as an Integer.
+     *
+     * @param fileName The .dot file containing a graph
+     * @return The expected optimal solution if present in the file.
+     * <code>Optional.empty</code> otherwise.
+     * @throws IOException If the input file does not exist.
+     */
     private static Optional<Integer> findOptimum(String fileName) throws IOException {
         Optional<String> line = findLine(fileName);
         if (line.isEmpty()) {
