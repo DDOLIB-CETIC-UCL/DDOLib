@@ -10,7 +10,10 @@ import java.util.stream.Stream;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.Misp.*;
+import org.ddolib.ddo.examples.misp.Misp;
+import org.ddolib.ddo.examples.misp.MispProblem;
+import org.ddolib.ddo.examples.misp.MispRanking;
+import org.ddolib.ddo.examples.misp.MispRelax;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
