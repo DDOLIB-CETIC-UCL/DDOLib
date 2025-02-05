@@ -1,8 +1,10 @@
 package org.ddolib.ddo.examples.max2sat;
 
 /**
- * Class to model a Binary clause of two literals: (x || y), ( !x || y), (x || !y), (!x || !y).
- * To model !x, the value x must < 0
+ * Class to model a Binary clause of two literals for CNF formula. <br>
+ * <p>
+ * To symbolize a literal <code>a_x</code>, for <code>x >0</code>, we give the value <code>x</code> as input. To
+ * symbolize <code> NOT a_x</code>, we give <code>-x</code>.
  */
 public class BinaryClause {
     private final int x;
