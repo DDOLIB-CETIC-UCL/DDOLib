@@ -1,11 +1,15 @@
 package org.ddolib.ddo.examples.max2sat;
 
-public class Max2SatState {
-    public final int[] marginalCosts;
-    public final int depth;
+import java.util.Arrays;
 
-    public Max2SatState(int[] marginalCosts, int depth) {
-        this.marginalCosts = marginalCosts;
-        this.depth = depth;
+public record Max2SatState(int[] marginalCosts, int depth) {
+
+    public int rank() {
+        return Arrays.stream(marginalCosts).map(Math::abs).sum();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s - depth: %d", Arrays.toString(marginalCosts), depth);
     }
 }

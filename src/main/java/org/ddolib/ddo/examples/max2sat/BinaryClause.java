@@ -21,4 +21,9 @@ public class BinaryClause {
         if (obj instanceof BinaryClause bc) return this.x == bc.x && this.y == bc.y;
         else return false;
     }
+
+    @Override
+    public int hashCode() {
+        return x + y;
+    }
 }

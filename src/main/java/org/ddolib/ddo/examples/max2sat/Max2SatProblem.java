@@ -33,7 +33,11 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     @Override
     public int initialValue() {
-        return 0;
+        int toReturn = 0;
+        for (int i = 0; i < nbVars(); i++) {
+            toReturn += weight(t(i), f(i));
+        }
+        return toReturn;
     }
 
     @Override
@@ -46,35 +50,36 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         int[] newCost = new int[nbVars()];
         int k = decision.var();
         if (decision.val() == T) {
-            for (int l = state.depth + 1; l < nbVars(); l++) {
-                newCost[l] = state.marginalCosts[l] + weight(f(k), t(l)) - weight(f(k), t(l));
+            for (int l = state.depth() + 1; l < nbVars(); l++) {
+                newCost[l] = state.marginalCosts()[l] + weight(f(k), t(l)) - weight(f(k), f(l));
             }
         } else {
-            for (int l = state.depth + 1; l < nbVars(); l++) {
-                newCost[l] = state.marginalCosts[l] + weight(f(k), t(l)) - weight(f(k), t(l));
+            for (int l = state.depth() + 1; l < nbVars(); l++) {
+                newCost[l] = state.marginalCosts()[l] + weight(t(k), t(l)) - weight(t(k), f(l));
             }
         }
 
-        return new Max2SatState(newCost, state.depth + 1);
+        return new Max2SatState(newCost, state.depth() + 1);
     }
 
     @Override
     public int transitionCost(Max2SatState state, Decision decision) {
+
         int k = decision.var();
         if (decision.val() == T) {
-            int toReturn = positiveOrNull(state.marginalCosts[k]) + weight(t(k), t(k));
+            int toReturn = positiveOrNull(state.marginalCosts()[k]) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
-                int s_k_l = state.marginalCosts[l];
+                int s_k_l = state.marginalCosts()[l];
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }
             return toReturn;
         } else {
-            int toReturn = -positiveOrNull(state.marginalCosts[k]) + weight(f(k), f(k));
+            int toReturn = positiveOrNull(-state.marginalCosts()[k]) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
-                int s_k_l = state.marginalCosts[l];
+                int s_k_l = state.marginalCosts()[l];
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }
@@ -133,7 +138,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      */
     private int weight(int x, int y) {
         BinaryClause bc = new BinaryClause(x, y);
-        return weights.get(bc);
+        return weights.getOrDefault(bc, 0);
     }
 
 }
