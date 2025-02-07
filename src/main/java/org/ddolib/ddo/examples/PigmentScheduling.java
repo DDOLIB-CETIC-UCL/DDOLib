@@ -9,6 +9,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.ddolib.ddo.io.InputReader;
 
 import java.io.IOException;
@@ -32,19 +33,20 @@ public class PigmentScheduling {
     public static final int IDLE = -1; // represent the idle state of the machine i.e. no production
 
     static class PSPState {
-        int time; // The current time slot
-        int next; //  The item that was produced at time t+1, -1 means that we don't know the item that is being produced next
-        int [] previousDemands; // The time at which the previous demand for each item had been filled
+        int t; // the current time slot
+        int next; // the item type produced at time t+1, -1 means we don't know yet
+        int [] previousDemands; // previousDemands[i] = largest time slot < t where a demand for item i occurs,
+                                //                      -1 if no more demands before
 
-        public PSPState(int time, int next, int[] previousDemands) {
-            this.time = time;
+        public PSPState(int t, int next, int[] previousDemands) {
+            this.t = t;
             this.next = next;
             this.previousDemands = previousDemands;
         }
 
         @Override
         protected PSPState clone() {
-            return new PSPState(time, next, Arrays.copyOf(previousDemands, previousDemands.length));
+            return new PSPState(t, next, Arrays.copyOf(previousDemands, previousDemands.length));
         }
     }
 
@@ -70,24 +72,51 @@ public class PigmentScheduling {
         public PSPState initialState() {
             int prevDemands[] = new int[instance.nItems];
             for (int i = 0; i < instance.nItems; i++) {
-                prevDemands[i] = instance.previousDemands[i][instance.horizon]; // h-1 ?
+                prevDemands[i] = instance.previousDemands[i][instance.horizon];
             }
-            return new PSPState(0, IDLE, prevDemands);
+            return new PSPState(instance.horizon, IDLE, prevDemands);
         }
 
+        /**
+         *
+         * @param state the state from which the transitions should be applicable
+         * @param depth the variable whose domain in being queried
+         * @return
+         */
         @Override
-        public Iterator<Integer> domain(PSPState state, int var) {
-            int t = var;
-            IntStream items = IntStream.range(0, instance.nItems);
-            IntStream dom = items.filter(i -> state.previousDemands[i] >= t);
-            int remDemands = items.filter(i -> state.previousDemands[i] >= 0).map(i -> instance.remainingDemands[i][state.previousDemands[i]]).sum();
+        public Iterator<Integer> domain(PSPState state, int depth) {
 
+            int t = instance.horizon - depth - 1;
+            if (t == 2) {
+                System.out.println("t = 2");
+            }
+            IntStream dom = IntStream.range(0, instance.nItems)
+                    .filter(i -> state.previousDemands[i] >= t);
+
+            int [] dom2 = IntStream.range(0, instance.nItems)
+                    .filter(i -> state.previousDemands[i] >= t).toArray();
+
+
+
+
+            // total number of remaining demands <= t
+            int remDemands = IntStream.range(0, instance.nItems)
+                    .filter(i -> state.previousDemands[i] >= 0)
+                    .map(i -> instance.remainingDemands[i][state.previousDemands[i]])
+                    .sum();
+
+            System.out.println("remDemands: " + remDemands);
             if (remDemands > t + 1) {
+                System.out.println("fail, no domain");
+                // fail to produce all the remaining demands
                 return Collections.emptyIterator();
             }
             if (remDemands < t + 1) {
+                // ok to add IDLE, we have enough time to produce all the remaining demands
                 return IntStream.concat(dom, IntStream.of(IDLE)).iterator();
             } else {
+                // just enough time to produce remaining demands, no IDLE possible
+                assert remDemands == t + 1;
                 return dom.iterator();
             }
         }
@@ -109,10 +138,10 @@ public class PigmentScheduling {
             if (item == IDLE) {
                 return 0;
             } else {
-                int t = decision.var();
+                int t = (instance.horizon - decision.var() -1);
                 int duration = state.previousDemands[item] - t;
                 int stocking = instance.stockingCost[item] * duration;
-                int changeover = state.next != -1 ? instance.changeoverCost[state.next][item] : 0;
+                int changeover = state.next != -1 ? instance.changeoverCost[item][state.next] : 0;
                 // stocking cost + changeover cost
                 return -(changeover + stocking);
             }
@@ -122,7 +151,18 @@ public class PigmentScheduling {
     public static class PSPRelax implements Relaxation<PSPState> {
         @Override
         public PSPState mergeStates(final Iterator<PSPState> states) {
-            return null;
+            System.out.printf("mergeStates\n");
+            PSPState currState = states.next();
+            int[] prevDemands = Arrays.copyOf(currState.previousDemands, currState.previousDemands.length);
+            int time = currState.t;
+            while (states.hasNext()) {
+                PSPState state = states.next();
+                time = Math.min(time, state.t);
+                for (int i = 0; i < prevDemands.length; i++) {
+                    prevDemands[i] = Math.min(prevDemands[i], state.previousDemands[i]);
+                }
+            }
+            return new PSPState(time, IDLE, prevDemands);
         }
 
         @Override
@@ -151,11 +191,11 @@ public class PigmentScheduling {
         // dim = nItems x nItems
         int[][] changeoverCost; // cost of changing from item i to item j
 
-        // dim = nItems x horizon
-        int[][] previousDemands; // previousDemands[i][t] = the time slot at which the previous demand for item i occurs
+        // dim = nItems x (horizon+1)
+        int[][] previousDemands; // previousDemands[i][t] = the largest time slot < t where a demand for item i occurs
 
         // dim = nItems x horizon
-        int[][] remainingDemands; // remainingDemands[i][t] = the total demand for item i from time 0 to t included
+        int[][] remainingDemands; // remainingDemands[i][t] = the total demand for item i on [0..t]
 
         PSPInstance(String path) {
 
@@ -206,22 +246,18 @@ public class PigmentScheduling {
                     }
                 }
             }
-
         }
-
     }
 
     public static void main(final String[] args) throws IOException {
-        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/1");;
+        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/2");;
         PSP problem = new PSP(instance);
         final PSPRelax relax = new PSPRelax();
         final PSPRanking ranking = new PSPRanking();
-        final FixedWidth<PSPState> width = new FixedWidth<>(250);
+        final FixedWidth<PSPState> width = new FixedWidth<>(10000000);
         final VariableHeuristic<PSPState> varh = new DefaultVariableHeuristic();
         final Frontier<PSPState> frontier = new SimpleFrontier<>(ranking);
-
-        final Solver solver = new ParallelSolver<PSPState>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
