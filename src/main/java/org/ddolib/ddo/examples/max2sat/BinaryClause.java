@@ -1,5 +1,7 @@
 package org.ddolib.ddo.examples.max2sat;
 
+import java.util.Objects;
+
 /**
  * Class to model a Binary clause of two literals for CNF formula. <br>
  * <p>
@@ -18,12 +20,12 @@ public class BinaryClause {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof BinaryClause bc) return this.x == bc.x && this.y == bc.y;
+        if (obj instanceof BinaryClause other) return this.x == other.x && this.y == other.y;
         else return false;
     }
 
     @Override
     public int hashCode() {
-        return x + y;
+        return Objects.hash(x, y);
     }
 }
