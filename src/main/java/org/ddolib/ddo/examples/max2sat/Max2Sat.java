@@ -8,6 +8,7 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -22,17 +23,16 @@ public final class Max2Sat {
         weights.put(new BinaryClause(-2, -3), 1);
         weights.put(new BinaryClause(2, 3), 5);
         // weights.put(new BinaryClause(1, -2), 3);
-
         Max2SatProblem problem = new Max2SatProblem(3, weights);
         Max2SatRelax relax = new Max2SatRelax();
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<Max2SatState> width = new FixedWidth<>(500);
-        final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<Max2SatState>();
+        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
+        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<ArrayList<Integer>>();
 
-        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
+        SequentialSolver<ArrayList<Integer>> solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

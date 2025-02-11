@@ -3,16 +3,17 @@ package org.ddolib.ddo.examples.max2sat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Max2SatRelax implements Relaxation<Max2SatState> {
+public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
     @Override
-    public Max2SatState mergeStates(Iterator<Max2SatState> states) {
+    public ArrayList<Integer> mergeStates(Iterator<ArrayList<Integer>> states) {
         return null;
     }
 
     @Override
-    public int relaxEdge(Max2SatState from, Max2SatState to, Max2SatState merged, Decision d, int cost) {
+    public int relaxEdge(ArrayList<Integer> from, ArrayList<Integer> to, ArrayList<Integer> merged, Decision d, int cost) {
         return 0;
     }
 }

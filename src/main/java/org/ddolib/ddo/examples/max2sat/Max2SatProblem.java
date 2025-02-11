@@ -5,19 +5,20 @@ import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
 
-public class Max2SatProblem implements Problem<Max2SatState> {
+public class Max2SatProblem implements Problem<ArrayList<Integer>> {
 
     final static int T = 1;
     final static int F = 0;
 
-    final Max2SatState state;
+    final ArrayList<Integer> netBenefit;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
 
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
         this.numVar = numVar;
         this.weights = weights;
-        this.state = new Max2SatState(new int[numVar]);
+        this.netBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
+        System.out.println(netBenefit);
 
     }
 
@@ -27,8 +28,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     @Override
-    public Max2SatState initialState() {
-        return state;
+    public ArrayList<Integer> initialState() {
+        return netBenefit;
     }
 
     @Override
@@ -41,45 +42,46 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     @Override
-    public Iterator<Integer> domain(Max2SatState state, int var) {
+    public Iterator<Integer> domain(ArrayList<Integer> state, int var) {
         return List.of(T, F).iterator();
     }
 
     @Override
-    public Max2SatState transition(Max2SatState state, Decision decision) {
-        int[] newBenefit = new int[nbVars()];
+    public ArrayList<Integer> transition(ArrayList<Integer> state, Decision decision) {
+        System.out.println(state);
+        ArrayList<Integer> newBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
         int k = decision.var();
         if (decision.val() == T) {
             for (int l = k + 1; l < nbVars(); l++) {
-                newBenefit[l] = state.netBenefit()[l] + weight(f(k), t(l)) - weight(f(k), f(l));
+                newBenefit.set(l, state.get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
-                newBenefit[l] = state.netBenefit()[l] + weight(t(k), t(l)) - weight(t(k), f(l));
+                newBenefit.set(l, state.get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
             }
         }
 
-        return new Max2SatState(newBenefit);
+        return newBenefit;
     }
 
     @Override
-    public int transitionCost(Max2SatState state, Decision decision) {
+    public int transitionCost(ArrayList<Integer> state, Decision decision) {
 
         int k = decision.var();
         int toReturn;
         if (decision.val() == T) {
-            toReturn = positiveOrNull(state.netBenefit()[k]) + weight(t(k), t(k));
+            toReturn = positiveOrNull(state.get(k)) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
-                int s_k_l = state.netBenefit()[l];
+                int s_k_l = state.get(l);
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }
         } else {
-            toReturn = positiveOrNull(-state.netBenefit()[k]) + weight(f(k), f(k));
+            toReturn = positiveOrNull(-state.get(k)) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
-                int s_k_l = state.netBenefit()[l];
+                int s_k_l = state.get(l);
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }

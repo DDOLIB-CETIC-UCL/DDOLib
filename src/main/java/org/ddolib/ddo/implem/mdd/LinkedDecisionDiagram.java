@@ -262,6 +262,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             depth += 1;
+            System.out.printf("Next layer: %s%n%n-----------------------------------%n%n", nextLayer.keySet());
         }
 
         // finalize: find best
@@ -437,6 +438,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         if (n == null) {
             n = new Node(value);
             nextLayer.put(state, n);
+            System.out.printf("%s added in next layer%n%n", state);
         }
 
         Edge edge = new Edge(node.node, decision, cost);
