@@ -43,7 +43,7 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
 
     @Override
     public Iterator<Integer> domain(ArrayList<Integer> state, int var) {
-        return List.of(T, F).iterator();
+        return List.of(F, T).iterator();
     }
 
     @Override

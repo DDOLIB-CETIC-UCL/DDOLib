@@ -22,8 +22,11 @@ public final class Max2Sat {
         weights.put(new BinaryClause(2, -3), 2);
         weights.put(new BinaryClause(-2, -3), 1);
         weights.put(new BinaryClause(2, 3), 5);
-        // weights.put(new BinaryClause(1, -2), 3);
+        weights.put(new BinaryClause(1, -2), 3);
+
+
         Max2SatProblem problem = new Max2SatProblem(3, weights);
+
         Max2SatRelax relax = new Max2SatRelax();
         Max2SatRanking ranking = new Max2SatRanking();
 
