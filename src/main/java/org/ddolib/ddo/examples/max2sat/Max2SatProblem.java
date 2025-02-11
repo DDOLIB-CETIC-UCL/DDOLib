@@ -17,7 +17,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
         this.numVar = numVar;
         this.weights = weights;
-        this.state = new Max2SatState(new int[numVar], 0);
+        this.state = new Max2SatState(new int[numVar]);
 
     }
 
@@ -47,44 +47,44 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     @Override
     public Max2SatState transition(Max2SatState state, Decision decision) {
-        int[] newCost = new int[nbVars()];
+        int[] newBenefit = new int[nbVars()];
         int k = decision.var();
         if (decision.val() == T) {
-            for (int l = state.depth() + 1; l < nbVars(); l++) {
-                newCost[l] = state.marginalCosts()[l] + weight(f(k), t(l)) - weight(f(k), f(l));
+            for (int l = k + 1; l < nbVars(); l++) {
+                newBenefit[l] = state.netBenefit()[l] + weight(f(k), t(l)) - weight(f(k), f(l));
             }
         } else {
-            for (int l = state.depth() + 1; l < nbVars(); l++) {
-                newCost[l] = state.marginalCosts()[l] + weight(t(k), t(l)) - weight(t(k), f(l));
+            for (int l = k + 1; l < nbVars(); l++) {
+                newBenefit[l] = state.netBenefit()[l] + weight(t(k), t(l)) - weight(t(k), f(l));
             }
         }
 
-        return new Max2SatState(newCost, state.depth() + 1);
+        return new Max2SatState(newBenefit);
     }
 
     @Override
     public int transitionCost(Max2SatState state, Decision decision) {
 
         int k = decision.var();
+        int toReturn;
         if (decision.val() == T) {
-            int toReturn = positiveOrNull(state.marginalCosts()[k]) + weight(t(k), t(k));
+            toReturn = positiveOrNull(state.netBenefit()[k]) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
-                int s_k_l = state.marginalCosts()[l];
+                int s_k_l = state.netBenefit()[l];
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }
-            return toReturn;
         } else {
-            int toReturn = positiveOrNull(-state.marginalCosts()[k]) + weight(f(k), f(k));
+            toReturn = positiveOrNull(-state.netBenefit()[k]) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
-                int s_k_l = state.marginalCosts()[l];
+                int s_k_l = state.netBenefit()[l];
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }
-            return toReturn;
         }
+        return toReturn;
     }
 
 
