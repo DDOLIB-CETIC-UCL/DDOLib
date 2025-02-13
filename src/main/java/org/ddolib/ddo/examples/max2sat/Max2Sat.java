@@ -23,15 +23,21 @@ public final class Max2Sat {
         weights.put(new BinaryClause(-2, -3), 1);
         weights.put(new BinaryClause(2, 3), 5);
         weights.put(new BinaryClause(1, -2), 3);
+        weights.put(new BinaryClause(1, 2), 1);
+        weights.put(new BinaryClause(2, 4), 6);
+        weights.put(new BinaryClause(2, -4), 4);
+        weights.put(new BinaryClause(-3, 4), 5);
+        weights.put(new BinaryClause(-3, -4), 3);
+        weights.put(new BinaryClause(-1, -4), 1);
 
 
-        Max2SatProblem problem = new Max2SatProblem(3, weights);
+        Max2SatProblem problem = new Max2SatProblem(4, weights);
 
         Max2SatRelax relax = new Max2SatRelax();
         Max2SatRanking ranking = new Max2SatRanking();
 
         final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
-        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<ArrayList<Integer>>();
+        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
 
