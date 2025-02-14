@@ -18,8 +18,6 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
         this.numVar = numVar;
         this.weights = weights;
         this.netBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
-        System.out.println(netBenefit);
-
     }
 
     @Override
@@ -48,7 +46,6 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
 
     @Override
     public ArrayList<Integer> transition(ArrayList<Integer> state, Decision decision) {
-        System.out.println(state);
         ArrayList<Integer> newBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
         int k = decision.var();
         if (decision.val() == T) {

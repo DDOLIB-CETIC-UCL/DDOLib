@@ -33,10 +33,10 @@ public final class Max2Sat {
 
         Max2SatProblem problem = new Max2SatProblem(4, weights);
 
-        Max2SatRelax relax = new Max2SatRelax();
+        Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
+        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(1);
         final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
@@ -62,6 +62,7 @@ public final class Max2Sat {
             }
             return values;
         }).get();
+
 
         // Expected: (F, T, T) cost : 19
         System.out.printf("Duration : %.3f seconds%n", duration);
