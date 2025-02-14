@@ -87,16 +87,11 @@ public class PigmentScheduling {
         public Iterator<Integer> domain(PSPState state, int depth) {
 
             int t = instance.horizon - depth - 1;
-            if (t == 2) {
-                System.out.println("t = 2");
-            }
             IntStream dom = IntStream.range(0, instance.nItems)
                     .filter(i -> state.previousDemands[i] >= t);
 
             int [] dom2 = IntStream.range(0, instance.nItems)
                     .filter(i -> state.previousDemands[i] >= t).toArray();
-
-
 
 
             // total number of remaining demands <= t
@@ -105,9 +100,8 @@ public class PigmentScheduling {
                     .map(i -> instance.remainingDemands[i][state.previousDemands[i]])
                     .sum();
 
-            System.out.println("remDemands: " + remDemands);
+            //System.out.println("remDemands: " + remDemands);
             if (remDemands > t + 1) {
-                System.out.println("fail, no domain");
                 // fail to produce all the remaining demands
                 return Collections.emptyIterator();
             }
@@ -151,7 +145,6 @@ public class PigmentScheduling {
     public static class PSPRelax implements Relaxation<PSPState> {
         @Override
         public PSPState mergeStates(final Iterator<PSPState> states) {
-            System.out.printf("mergeStates\n");
             PSPState currState = states.next();
             int[] prevDemands = Arrays.copyOf(currState.previousDemands, currState.previousDemands.length);
             int time = currState.t;
@@ -197,6 +190,8 @@ public class PigmentScheduling {
         // dim = nItems x horizon
         int[][] remainingDemands; // remainingDemands[i][t] = the total demand for item i on [0..t]
 
+        int optimal; // optimal objective value
+
         PSPInstance(String path) {
 
             InputReader reader = new InputReader(path);
@@ -222,6 +217,8 @@ public class PigmentScheduling {
                     demands[i][j] = reader.getInt();
                 }
             }
+
+            optimal = reader.getInt();
 
             previousDemands = new int[nItems][horizon + 1];
             for (int i = 0; i < nItems; i++) {
@@ -250,11 +247,11 @@ public class PigmentScheduling {
     }
 
     public static void main(final String[] args) throws IOException {
-        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/2");;
+        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/1");;
         PSP problem = new PSP(instance);
         final PSPRelax relax = new PSPRelax();
         final PSPRanking ranking = new PSPRanking();
-        final FixedWidth<PSPState> width = new FixedWidth<>(10000000);
+        final FixedWidth<PSPState> width = new FixedWidth<>(100);
         final VariableHeuristic<PSPState> varh = new DefaultVariableHeuristic();
         final Frontier<PSPState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
@@ -273,7 +270,8 @@ public class PigmentScheduling {
                 .map(decisions -> {
                     int[] values = new int[problem.nbVars()];
                     for (Decision d : decisions) {
-                        values[d.var()] = d.val();
+                        int t = (instance.horizon - d.var() -1);
+                        values[t] = d.val();
                     }
                     return values;
                 })
