@@ -1,6 +1,5 @@
 package org.ddolib.ddo.examples.max2sat;
 
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -8,11 +7,18 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 public final class Max2Sat {
+
+
+    public static Max2SatProblem readInstance(String fileName) {
+        File file = new File(fileName);
+
+    }
 
     public static void main(String[] args) {
         HashMap<BinaryClause, Integer> weights = new HashMap<>();
@@ -33,6 +39,13 @@ public final class Max2Sat {
 
         Max2SatProblem problem = new Max2SatProblem(4, weights);
 
+        NaiveMax2SatSolver s = new NaiveMax2SatSolver(problem);
+        s.maximize();
+
+        System.out.println(s.best());
+        System.out.println(Arrays.toString(s.bestSolution()));
+
+
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
@@ -50,7 +63,7 @@ public final class Max2Sat {
                 frontier
         );
 
-        long start = System.currentTimeMillis();
+       /* long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
@@ -67,7 +80,7 @@ public final class Max2Sat {
         // Expected: (F, T, T) cost : 19
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));*/
 
 
     }
