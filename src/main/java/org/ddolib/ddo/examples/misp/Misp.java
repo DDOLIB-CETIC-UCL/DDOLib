@@ -102,6 +102,7 @@ public final class Misp {
             }
             lineCounter++;
         }
+        br.close();
         return Optional.empty();
     }
 
