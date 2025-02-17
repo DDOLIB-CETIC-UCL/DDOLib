@@ -1,0 +1,68 @@
+package org.ddolib.ddo.examples;
+
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.examples.max2sat.Max2SatIO;
+import org.ddolib.ddo.examples.max2sat.Max2SatProblem;
+import org.ddolib.ddo.examples.max2sat.Max2SatRanking;
+import org.ddolib.ddo.examples.max2sat.Max2SatRelax;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class Max2SatTest {
+
+    static Stream<Max2SatProblem> dataProvider() throws IOException {
+        String dir = "src/test/resources/Max2Sat/";
+
+        Stream<Path> stream = Files.list(Paths.get(dir));
+        return stream.filter(file -> !Files.isDirectory(file))
+                .map(Path::getFileName)
+                .map(fileName -> dir + fileName.toString())
+                .map(fileName -> {
+                    try {
+                        return Max2SatIO.readInstance(fileName);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testMax2Sat(Max2SatProblem problem) {
+        Max2SatRelax relax = new Max2SatRelax(problem);
+        Max2SatRanking ranking = new Max2SatRanking();
+
+        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
+        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
+
+        final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
+
+        SequentialSolver<ArrayList<Integer>> solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier
+        );
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal.get());
+    }
+
+
+}

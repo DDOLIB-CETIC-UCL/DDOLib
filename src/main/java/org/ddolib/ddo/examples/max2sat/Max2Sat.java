@@ -17,12 +17,12 @@ import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
 public final class Max2Sat {
 
     public static void main(String[] args) throws IOException {
-        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_5_opti_53.txt");
+        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_10_opti_472.txt");
 
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(2000);
+        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
         final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);

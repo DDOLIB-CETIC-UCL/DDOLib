@@ -101,8 +101,8 @@ public class Max2SatIO {
     }
 
     public static void main(String[] args) throws IOException {
-        //generateInstance(5, "data/Max2Sat/wcnf_var_5_opti_53.txt", 42);
-        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_4_opti_39.txt");
+        //generateInstance(10, "data/Max2Sat/wcnf.txt");
+        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_10_opti_472.txt");
 
         NaiveMax2SatSolver s = new NaiveMax2SatSolver(problem);
         long start = System.currentTimeMillis();

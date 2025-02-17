@@ -13,7 +13,7 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
     final ArrayList<Integer> netBenefit;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
-    final Optional<Integer> optimal;
+    public final Optional<Integer> optimal;
 
 
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights, Optional<Integer> optimal) {
