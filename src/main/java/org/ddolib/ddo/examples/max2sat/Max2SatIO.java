@@ -2,9 +2,6 @@ package org.ddolib.ddo.examples.max2sat;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Max2SatIO {
 
@@ -39,10 +36,13 @@ public class Max2SatIO {
     }
 
     public static void generateInstance(int numVar, String fileName, long seed) throws IOException {
-        Stream<Integer> positive = IntStream.rangeClosed(1, numVar).boxed();
-        Stream<Integer> negative = IntStream.rangeClosed(-numVar - 1, -1).boxed();
 
-        List<Integer> literal = Stream.concat(positive, negative).toList();
+        ArrayList<Integer> literal = new ArrayList<>();
+        for (int i = 1; i <= numVar; i++) {
+            literal.add(i);
+            literal.add(-i);
+        }
+
         ArrayList<BinaryClause> pairs = new ArrayList<>();
         for (int i = 0; i < literal.size(); i++) {
             for (int j = i + 1; j < literal.size(); j++) {
@@ -56,9 +56,8 @@ public class Max2SatIO {
         Random rng = new Random(seed);
         Collections.shuffle(pairs, rng);
 
-        var selected = pairs.subList(0, rng.nextInt(pairs.size() + 1));
-        System.out.println(selected);
-
+        List<BinaryClause> selected = pairs.subList(0, rng.nextInt(0, pairs.size() + 1));
+        Collections.sort(selected);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write("" + numVar);
             for (BinaryClause bc : selected) {
@@ -68,12 +67,25 @@ public class Max2SatIO {
                 bw.write(line);
             }
         }
+    }
 
-
+    public static void generateInstance(int numVar, String fileName) throws IOException {
+        Random random = new Random();
+        generateInstance(numVar, fileName, random.nextLong());
     }
 
     public static void main(String[] args) throws IOException {
-        generateInstance(4, "data/Max2Sat/instance_2.txt", 42L);
+        generateInstance(5, "data/Max2Sat/instance_2.txt", 42);
+        Max2SatProblem problem = readInstance("data/Max2Sat/instance_3.txt");
+
+        NaiveMax2SatSolver s = new NaiveMax2SatSolver(problem);
+        long start = System.currentTimeMillis();
+        s.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Objective: %d%n", s.best());
+        System.out.printf("Solution : %s%n", Arrays.toString(s.bestSolution()));
     }
 
 }

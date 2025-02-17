@@ -413,8 +413,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 e.weight = rcost;
 
                 node.node.edges.add(e);
-                System.out.printf("Add edge from %s to %s with cost %d for %s%n", prevLayer.get(e.origin).state, merged,
-                        rcost, e.decision);
+               /* System.out.printf("Add edge from %s to %s with cost %d for %s%n", prevLayer.get(e.origin).state,
+                        merged,
+                        rcost, e.decision);*/
                 if (value > node.node.value) {
                     node.node.value = value;
                     node.node.best = e;
@@ -452,7 +453,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         if (n == null) {
             n = new Node(value);
             nextLayer.put(state, n);
-            System.out.printf("%s added in next layer%n%n", state);
+            //System.out.printf("%s added in next layer%n%n", state);
         }
 
         Edge edge = new Edge(node.node, decision, cost);

@@ -1,5 +1,8 @@
 package org.ddolib.ddo.examples.max2sat;
 
+/**
+ * A naive Max2Sat solver which enumerate all the solution tp find the best one.
+ */
 public class NaiveMax2SatSolver {
 
     private final Max2SatProblem problem;
@@ -34,7 +37,6 @@ public class NaiveMax2SatSolver {
     private int[][] generatesBinaryValues(int n) {
         int num = (int) Math.pow(2, n);
 
-        String[] binaryStr = new String[num];
         int[][] toReturn = new int[num][];
 
         for (int x = 0; x < num; x++) {

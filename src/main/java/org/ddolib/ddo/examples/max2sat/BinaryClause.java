@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.max2sat;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import static java.lang.Math.abs;
@@ -10,7 +11,7 @@ import static java.lang.Math.abs;
  * To symbolize a literal <code>x_i</code>, for <code>i >0</code>, we give the value <code>i</code> as input. To
  * symbolize <code> NOT x_i</code>, we give <code>-i</code>.
  */
-public class BinaryClause {
+public class BinaryClause implements Comparable<BinaryClause> {
     public final int i;
     public final int j;
 
@@ -33,6 +34,7 @@ public class BinaryClause {
         return literal1 | literal2;
     }
 
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof BinaryClause other) return this.i == other.i && this.j == other.j;
@@ -49,5 +51,40 @@ public class BinaryClause {
         String notX = i < 0 ? "!" : "";
         String notY = j < 0 ? "!" : "";
         return String.format("%sx_%d || %sx_%d", notX, abs(i), notY, abs(j));
+    }
+
+    private int internalCompare(int a, int b) {
+        int compared = Integer.compare(abs(a), abs(b));
+        if (compared == 0) {
+            return -Integer.compare(a, b);
+        } else {
+            return compared;
+        }
+    }
+
+    /**
+     * Used to compare binary clauses. It is used to sort them when generate Max2Sat instances.
+     * <br>
+     * The induced order is the following:
+     * <ol>
+     *     <li>The lexical order on the literals' indices. </li>
+     *     <li>The positive literal before the negative ones.</li>
+     * </ol>
+     *
+     * @param other The binary clause to be compared.
+     * @return <ul>
+     *     <li><code>0</code> if if <code>this == other</code></li>
+     *     <li><code>1</code> if <code>this > other</code></li>
+     *     <li><code>-1</code> if <code> this < that</code></li>
+     * </ul>
+     */
+    @Override
+    public int compareTo(BinaryClause other) {
+        int lit1Compare = internalCompare(this.i, other.i);
+        if (lit1Compare == 0) {
+            return internalCompare(this.j, other.j);
+        } else {
+            return lit1Compare;
+        }
     }
 }

@@ -17,13 +17,12 @@ import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
 public final class Max2Sat {
 
     public static void main(String[] args) throws IOException {
-        Max2SatProblem problem = readInstance("data/Max2Sat/instance_1.txt");
-
+        Max2SatProblem problem = readInstance("data/Max2Sat/instance_2.txt");
 
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(1);
+        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(2000);
         final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
@@ -51,11 +50,9 @@ public final class Max2Sat {
         }).get();
 
 
-        // Expected: (F, T, T) cost : 19
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
-
 
     }
 }
