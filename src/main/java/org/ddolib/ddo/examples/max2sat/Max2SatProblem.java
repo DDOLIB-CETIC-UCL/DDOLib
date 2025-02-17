@@ -137,7 +137,8 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
      */
     private int weight(int x, int y) {
         BinaryClause bc = new BinaryClause(x, y);
-        return weights.getOrDefault(bc, 0);
+        BinaryClause bcCommuted = new BinaryClause(y, x);
+        return weights.getOrDefault(bc, weights.getOrDefault(bcCommuted, 0));
     }
 
 }
