@@ -36,6 +36,9 @@ public class Max2SatIO {
                     context.firstLine = false;
                     String[] tokens = line.split("\\s");
                     context.n = Integer.parseInt(tokens[0]);
+                    if (tokens.length == 2) {
+                        context.opti = Optional.of(Integer.parseInt(tokens[1]));
+                    }
                 } else {
                     String[] tokens = line.split("\\s");
                     int i = Integer.parseInt(tokens[0]);
@@ -44,7 +47,7 @@ public class Max2SatIO {
                     context.weights.put(new BinaryClause(i, j), w);
                 }
             }
-            return new Max2SatProblem(context.n, context.weights);
+            return new Max2SatProblem(context.n, context.weights, context.opti);
         }
 
     }
@@ -54,6 +57,7 @@ public class Max2SatIO {
         boolean firstLine = true;
         int n = 0;
         HashMap<BinaryClause, Integer> weights = new HashMap<>();
+        Optional<Integer> opti = Optional.empty();
 
     }
 
@@ -97,8 +101,8 @@ public class Max2SatIO {
     }
 
     public static void main(String[] args) throws IOException {
-        generateInstance(5, "data/Max2Sat/instance_2.txt", 42);
-        Max2SatProblem problem = readInstance("data/Max2Sat/instance_3.txt");
+        //generateInstance(5, "data/Max2Sat/wcnf_var_5_opti_53.txt", 42);
+        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_4_opti_39.txt");
 
         NaiveMax2SatSolver s = new NaiveMax2SatSolver(problem);
         long start = System.currentTimeMillis();
