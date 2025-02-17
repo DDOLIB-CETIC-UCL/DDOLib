@@ -5,6 +5,28 @@ import java.util.*;
 
 public class Max2SatIO {
 
+    /**
+     * Returns a Max2SatProblem given an input file.
+     * <br>
+     * The expected format is the following:
+     * <ul>
+     *     <li>The first line must contain the number of variable. A second value can be
+     *     given: the expected objective value for an optimal solution.
+     *     </li>
+     *     <li>
+     *         The other lines must contain 3 values. The two first are non-null indices of variables. If one of
+     *         these value is positive, it models the literal <code>x<sub>i</sub></code>. If it is negative,
+     *         it models the literal <code>NOT x<sub>i</sub></code>.
+     *     </li>
+     *     <li>
+     *         The third value is the weight of the clause formed by the two literals.
+     *     </li>
+     * </ul>
+     *
+     * @param fileName The path to the input file.
+     * @return An instance of Max2SatProblem.
+     * @throws IOException If something goes wrong while reading input file.
+     */
     public static Max2SatProblem readInstance(String fileName) throws IOException {
         try (BufferedReader bf = new BufferedReader(new FileReader(fileName))) {
             final Context context = new Context();
