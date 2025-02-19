@@ -209,7 +209,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 Node node = e.getValue();
 
                 int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
-                System.out.printf("%s - rub: %d%n", state, rub);
                 this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
             }
             this.nextLayer.clear();
@@ -255,8 +254,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
 
+            System.out.printf("Depth: %d%n", depth);
             for (NodeSubProblem<T> n : currentLayer) {
+                int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
+                    System.out.printf("Prune %s - lb: %d - rub: % d%n", n.state, lb, n.ub);
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextvar);

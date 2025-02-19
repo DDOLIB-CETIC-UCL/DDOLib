@@ -14,7 +14,7 @@ import java.util.ArrayList;
  */
 public class Max2SatRanking implements StateRanking<ArrayList<Integer>> {
 
-    public int rank(ArrayList<Integer> state) {
+    public static int rank(ArrayList<Integer> state) {
         return state.stream().mapToInt(value -> value).map(Math::abs).sum();
     }
 

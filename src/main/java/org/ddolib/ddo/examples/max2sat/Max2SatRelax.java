@@ -56,7 +56,7 @@ public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
 
     @Override
     public int fastUpperBound(ArrayList<Integer> state, Set<Integer> variables) {
-        int rub = 0;
+        int rub = Max2SatRanking.rank(state);
         for (Integer i : variables) {
             for (Integer j : variables) {
                 if (j > i) {
