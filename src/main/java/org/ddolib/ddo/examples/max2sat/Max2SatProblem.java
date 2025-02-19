@@ -114,7 +114,7 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
      * @param x The index of a decision variable.
      * @return A value to model the literal <code>a_x</code> in a Binary clause.
      */
-    private int t(int x) {
+    public int t(int x) {
         return toBinaryClauseVariable(x);
     }
 
@@ -124,7 +124,7 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
      * @param x The index of a decision variable.
      * @return A value to model the literal <code>NOT a_x</code> in a Binary clause.
      */
-    private int f(int x) {
+    public int f(int x) {
         return -toBinaryClauseVariable(x);
     }
 
@@ -145,7 +145,7 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
      * @param y Another index of variable in BinaryClause.
      * @return The weigh of the BinaryClause.
      */
-    private int weight(int x, int y) {
+    public int weight(int x, int y) {
         BinaryClause bc = new BinaryClause(x, y);
         BinaryClause bcCommuted = new BinaryClause(y, x);
         return weights.getOrDefault(bc, weights.getOrDefault(bcCommuted, 0));

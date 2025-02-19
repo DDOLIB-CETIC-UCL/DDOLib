@@ -6,6 +6,9 @@ import org.ddolib.ddo.core.Relaxation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -49,5 +52,30 @@ public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
         }
 
         return toReturn;
+    }
+
+    @Override
+    public int fastUpperBound(ArrayList<Integer> state, Set<Integer> variables) {
+        int rub = 0;
+        for (Integer i : variables) {
+            for (Integer j : variables) {
+                if (j > i) {
+                    int gtt = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
+                            problem.weight(problem.f(i), problem.t(j));
+
+                    int gtf = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
+                            problem.weight(problem.f(i), problem.f(j));
+
+                    int gft = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.f(i), problem.t(j)) +
+                            problem.weight(problem.f(i), problem.f(j));
+
+                    int gff = problem.weight(problem.t(i), problem.f(j)) + problem.weight(problem.f(i), problem.t(j)) +
+                            problem.weight(problem.f(i), problem.f(j));
+                    rub += IntStream.of(gtt, gtf, gft, gff).max().getAsInt();
+                }
+            }
+        }
+
+        return rub;
     }
 }

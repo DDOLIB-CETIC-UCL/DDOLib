@@ -18,9 +18,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Max2SatTest {
 
@@ -38,6 +40,24 @@ public class Max2SatTest {
                         throw new RuntimeException(e);
                     }
                 });
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testFastUpperBound(Max2SatProblem problem) {
+        final Max2SatRelax relax = new Max2SatRelax(problem);
+
+        HashSet<Integer> vars = new HashSet<>();
+        for (int i = 0; i < problem.nbVars(); i++) {
+            vars.add(i);
+        }
+
+        int rub = relax.fastUpperBound(problem.initialState(), vars);
+
+        assertTrue(rub >= problem.optimal.get(),
+                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                        rub,
+                        problem.optimal.get()));
     }
 
     @ParameterizedTest
