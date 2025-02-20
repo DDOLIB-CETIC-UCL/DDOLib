@@ -200,7 +200,7 @@ public final class TSPKruskal {
 
         final TSPRelax                    relax = new TSPRelax(problem);
         final TSPRanking                ranking = new TSPRanking();
-        final FixedWidth<TSPState> width = new FixedWidth<>(200);
+        final FixedWidth<TSPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
