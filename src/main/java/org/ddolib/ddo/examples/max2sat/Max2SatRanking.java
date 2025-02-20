@@ -12,14 +12,14 @@ import java.util.ArrayList;
  * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
  * That's why we sum the absolute value of each benefit to compare the states.
  */
-public class Max2SatRanking implements StateRanking<ArrayList<Integer>> {
+public class Max2SatRanking implements StateRanking<Max2SatState> {
 
-    public static int rank(ArrayList<Integer> state) {
-        return state.stream().mapToInt(value -> value).map(Math::abs).sum();
+    public static int rank(Max2SatState state) {
+        return state.netBenefit().stream().mapToInt(value -> value).map(Math::abs).sum();
     }
 
     @Override
-    public int compare(ArrayList<Integer> o1, ArrayList<Integer> o2) {
+    public int compare(Max2SatState o1, Max2SatState o2) {
         return Integer.compare(rank(o1), rank(o2));
     }
 }

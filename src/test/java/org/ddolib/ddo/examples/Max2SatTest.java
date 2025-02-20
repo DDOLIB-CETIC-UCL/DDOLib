@@ -1,10 +1,7 @@
 package org.ddolib.ddo.examples;
 
 import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.examples.max2sat.Max2SatIO;
-import org.ddolib.ddo.examples.max2sat.Max2SatProblem;
-import org.ddolib.ddo.examples.max2sat.Max2SatRanking;
-import org.ddolib.ddo.examples.max2sat.Max2SatRelax;
+import org.ddolib.ddo.examples.max2sat.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -66,12 +63,12 @@ public class Max2SatTest {
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(500);
-        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
+        final FixedWidth<Max2SatState> width = new FixedWidth<>(500);
+        final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<ArrayList<Integer>> solver = new SequentialSolver<>(
+        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

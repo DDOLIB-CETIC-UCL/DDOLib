@@ -5,12 +5,12 @@ import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
 
-public class Max2SatProblem implements Problem<ArrayList<Integer>> {
+public class Max2SatProblem implements Problem<Max2SatState> {
 
     final static int T = 1;
     final static int F = 0;
 
-    final ArrayList<Integer> netBenefit;
+    final Max2SatState root;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
     public final Optional<Integer> optimal;
@@ -19,14 +19,14 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights, Optional<Integer> optimal) {
         this.numVar = numVar;
         this.weights = weights;
-        this.netBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
+        this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
         this.optimal = optimal;
     }
 
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
         this.numVar = numVar;
         this.weights = weights;
-        this.netBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
+        this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
         this.optimal = Optional.empty();
     }
 
@@ -36,8 +36,8 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
     }
 
     @Override
-    public ArrayList<Integer> initialState() {
-        return netBenefit;
+    public Max2SatState initialState() {
+        return root;
     }
 
     @Override
@@ -50,45 +50,45 @@ public class Max2SatProblem implements Problem<ArrayList<Integer>> {
     }
 
     @Override
-    public Iterator<Integer> domain(ArrayList<Integer> state, int var) {
+    public Iterator<Integer> domain(Max2SatState state, int var) {
         return List.of(F, T).iterator();
     }
 
     @Override
-    public ArrayList<Integer> transition(ArrayList<Integer> state, Decision decision) {
+    public Max2SatState transition(Max2SatState state, Decision decision) {
         ArrayList<Integer> newBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
         int k = decision.var();
         if (decision.val() == T) {
             for (int l = k + 1; l < nbVars(); l++) {
-                newBenefit.set(l, state.get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
+                newBenefit.set(l, state.netBenefit().get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
-                newBenefit.set(l, state.get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
+                newBenefit.set(l, state.netBenefit().get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
             }
         }
 
-        return newBenefit;
+        return new Max2SatState(newBenefit, state.depth() + 1);
     }
 
     @Override
-    public int transitionCost(ArrayList<Integer> state, Decision decision) {
+    public int transitionCost(Max2SatState state, Decision decision) {
 
         int k = decision.var();
         int toReturn;
         if (decision.val() == T) {
-            toReturn = positiveOrNull(state.get(k)) + weight(t(k), t(k));
+            toReturn = positiveOrNull(state.netBenefit().get(k)) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
-                int s_k_l = state.get(l);
+                int s_k_l = state.netBenefit().get(l);
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }
         } else {
-            toReturn = positiveOrNull(-state.get(k)) + weight(f(k), f(k));
+            toReturn = positiveOrNull(-state.netBenefit().get(k)) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
-                int s_k_l = state.get(l);
+                int s_k_l = state.netBenefit().get(l);
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }

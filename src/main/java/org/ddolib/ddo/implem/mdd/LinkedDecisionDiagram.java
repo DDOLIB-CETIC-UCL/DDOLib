@@ -172,8 +172,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
     @Override
     public void compile(CompilationInput<T> input) {
-        /*System.out.printf("############################## %s ##############################%n%n",
-                input.getCompilationType().toString().toUpperCase());*/
+        System.out.printf("############################## %s ##############################%n%n",
+                input.getCompilationType().toString().toUpperCase());
         // make sure we don't have any stale data left
         this.clear();
 
@@ -254,7 +254,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
 
-            System.out.printf("Depth: %d%n", depth);
+
             for (NodeSubProblem<T> n : currentLayer) {
                 int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
@@ -272,8 +272,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             depth += 1;
-            /*System.out.printf("Next layer : %s - depth %d%n%n-----------------------------------%n%n%n",
-                    nextLayer.keySet(), depth);*/
+            System.out.printf("Next layer : %s - lb: %d - depth %d%n%n-----------------------------------%n%n%n",
+                    nextLayer.keySet(), input.getBestLB(), depth);
         }
 
         // finalize: find best
@@ -370,9 +370,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
-        //System.out.printf("Sorted: %s%n", currentLayer);
+        System.out.printf("Sorted: %s%n", currentLayer);
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
-        //System.out.printf("Restricted: %s%n%n", currentLayer);
+        System.out.printf("Restricted: %s%n%n", currentLayer);
     }
 
     /**
@@ -385,7 +385,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
-        //System.out.printf("Sorted %s%n", currentLayer);
+        System.out.printf("Sorted %s%n", currentLayer);
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
@@ -416,7 +416,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 e.weight = rcost;
 
                 node.node.edges.add(e);
-               /* System.out.printf("Add edge from %s to %s with cost %d for %s%n", prevLayer.get(e.origin).state,
+                /*System.out.printf("Add edge from %s to %s with cost %d for %s%n", prevLayer.get(e.origin).state,
                         merged,
                         rcost, e.decision);*/
                 if (value > node.node.value) {
@@ -432,7 +432,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         if (fresh) {
             currentLayer.add(node);
         }
-        //System.out.printf("Relaxed: %s%n%n", currentLayer);
+        System.out.printf("Relaxed: %s%n%n", currentLayer);
     }
 
     /**
@@ -448,9 +448,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int cost = problem.transitionCost(node.state, decision);
         int value = saturatedAdd(node.node.value, cost);
 
-       /* System.out.printf("From state: %s%n", node.state);
+        System.out.printf("From state: %s - rub: %d%n", node.state, node.ub);
         System.out.println(decision);
-        System.out.printf("Get state: %s with cost %d%n%n", state, cost);*/
+        System.out.printf("Get state: %s with cost %d%n%n", state, cost);
 
         Node n = nextLayer.get(state);
         if (n == null) {

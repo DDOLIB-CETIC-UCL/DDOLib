@@ -22,12 +22,12 @@ public final class Max2Sat {
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<ArrayList<Integer>> width = new FixedWidth<>(2);
-        final VariableHeuristic<ArrayList<Integer>> varh = new DefaultVariableHeuristic<>();
+        final FixedWidth<Max2SatState> width = new FixedWidth<>(2000);
+        final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<ArrayList<Integer>> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<ArrayList<Integer>> solver = new SequentialSolver<>(
+        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

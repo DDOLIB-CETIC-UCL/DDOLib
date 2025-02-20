@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -16,7 +15,7 @@ import static java.lang.Integer.signum;
 import static java.lang.Math.abs;
 
 
-public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
+public class Max2SatRelax implements Relaxation<Max2SatState> {
 
     private final Max2SatProblem problem;
 
@@ -25,13 +24,15 @@ public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
     }
 
     @Override
-    public ArrayList<Integer> mergeStates(Iterator<ArrayList<Integer>> states) {
+    public Max2SatState mergeStates(Iterator<Max2SatState> states) {
         ArrayList<Integer> merged = new ArrayList<>(Collections.nCopies(problem.nbVars(), 0));
+        int depth = problem.nbVars();
         while (states.hasNext()) {
-            ArrayList<Integer> current = states.next();
-            for (int i = 0; i < current.size(); i++) {
+            Max2SatState current = states.next();
+            depth = current.depth();
+            for (int i = 0; i < current.netBenefit().size(); i++) {
                 Integer mergedI = merged.get(i);
-                Integer currentI = current.get(i);
+                Integer currentI = current.netBenefit().get(i);
                 if (signum(mergedI) == 1 && signum(currentI) == 1) {
                     merged.set(i, min(mergedI, currentI));
                 } else if (signum(mergedI) == -1 && signum(currentI) == 1) {
@@ -41,21 +42,21 @@ public class Max2SatRelax implements Relaxation<ArrayList<Integer>> {
                 }
             }
         }
-        return merged;
+        return new Max2SatState(merged, depth);
     }
 
     @Override
-    public int relaxEdge(ArrayList<Integer> from, ArrayList<Integer> to, ArrayList<Integer> merged, Decision d, int cost) {
+    public int relaxEdge(Max2SatState from, Max2SatState to, Max2SatState merged, Decision d, int cost) {
         int toReturn = cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
-            toReturn += abs(to.get(i)) - abs(merged.get(i));
+            toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
 
         return toReturn;
     }
 
     @Override
-    public int fastUpperBound(ArrayList<Integer> state, Set<Integer> variables) {
+    public int fastUpperBound(Max2SatState state, Set<Integer> variables) {
         int rub = Max2SatRanking.rank(state);
         for (Integer i : variables) {
             for (Integer j : variables) {
