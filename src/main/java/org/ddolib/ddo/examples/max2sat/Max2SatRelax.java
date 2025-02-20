@@ -18,9 +18,11 @@ import static java.lang.Math.abs;
 public class Max2SatRelax implements Relaxation<Max2SatState> {
 
     private final Max2SatProblem problem;
+    private final int[] overApprox;
 
     public Max2SatRelax(Max2SatProblem problem) {
         this.problem = problem;
+        overApprox = precomputeOverApproximation();
     }
 
     @Override
@@ -55,28 +57,59 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         return toReturn;
     }
 
+    /**
+     * Some part of the upper bound depend only on the remaining variable, not the state. This part can be precomputed.
+     * <br>
+     * <p>
+     * We compute here an over approximation of the optimal solution of the sub-problem composed of the remaining
+     * variables. If the depth of the state is <code>k</code>, for each pairs of <code>k <= i < j < n</code> we compute:
+     * <ul>
+     *     <li><code>gtt(i, j)</code>, the sum of the weights of the clauses <code>(x<sub>i</sub> ||
+     *     x<sub>j</sub>)</code>, <br> <code>(x<sub>i</sub> || !x<sub>j</sub>)</code> and <code>(!x<sub>i</sub> ||
+     *     x<sub>j</sub>)</code></li>
+     *
+     *     <li><code>gtf(i, j)</code>, the sum of the weights of the clauses <code>(x<sub>i</sub> ||
+     *       x<sub>j</sub>)</code>, <br> <code>(x<sub>i</sub> || !x<sub>j</sub>)</code> and <code>(!x<sub>i</sub> ||
+     *     !x<sub>j</sub>)</code></li>
+     *
+     *     <li><code>gft(i, j)</code>, the sum of the weights of the clauses <code>(x<sub>i</sub> ||
+     *     x<sub>j</sub>)</code>, <br> <code>(!x<sub>i</sub> || x<sub>j</sub>)</code> and <code>(!x<sub>i</sub> ||
+     *     !x<sub>j</sub>)</code></li>
+     *
+     *     <li><code>gff(i, j)</code>, the sum of the weights of the clauses <code>(x<sub>i</sub> ||
+     *      !x<sub>j</sub>)</code>, <br> <code>(!x<sub>i</sub> || x<sub>j</sub>)</code> and <code>(!x<sub>i</sub> ||
+     *      !x<sub>j</sub>)</code></li>
+     * </ul>
+     * <p>
+     * Finally, we sum <code>max{gtt(i, j), gtf(i, j), gft(i, j), gff(i,j)}</code>.
+     */
+    private int[] precomputeOverApproximation() {
+        int[] toReturn = new int[problem.nbVars()];
+
+        toReturn[problem.nbVars() - 1] = 0;
+        for (int i = problem.nbVars() - 2; i >= 0; i--) {
+            int approx = 0;
+            for (int j = i + 1; j < problem.nbVars(); j++) {
+                int gtt = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
+                        problem.weight(problem.f(i), problem.t(j));
+
+                int gtf = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
+                        problem.weight(problem.f(i), problem.f(j));
+
+                int gft = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.f(i), problem.t(j)) +
+                        problem.weight(problem.f(i), problem.f(j));
+
+                int gff = problem.weight(problem.t(i), problem.f(j)) + problem.weight(problem.f(i), problem.t(j)) +
+                        problem.weight(problem.f(i), problem.f(j));
+                approx += IntStream.of(gtt, gtf, gft, gff).max().getAsInt();
+            }
+            toReturn[i] = approx + toReturn[i + 1];
+        }
+        return toReturn;
+    }
+
     @Override
     public int fastUpperBound(Max2SatState state, Set<Integer> variables) {
-        int rub = Max2SatRanking.rank(state);
-        for (Integer i : variables) {
-            for (Integer j : variables) {
-                if (j > i) {
-                    int gtt = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
-                            problem.weight(problem.f(i), problem.t(j));
-
-                    int gtf = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.t(i), problem.f(j)) +
-                            problem.weight(problem.f(i), problem.f(j));
-
-                    int gft = problem.weight(problem.t(i), problem.t(j)) + problem.weight(problem.f(i), problem.t(j)) +
-                            problem.weight(problem.f(i), problem.f(j));
-
-                    int gff = problem.weight(problem.t(i), problem.f(j)) + problem.weight(problem.f(i), problem.t(j)) +
-                            problem.weight(problem.f(i), problem.f(j));
-                    rub += IntStream.of(gtt, gtf, gft, gff).max().getAsInt();
-                }
-            }
-        }
-
-        return rub;
+        return Max2SatRanking.rank(state) + overApprox[state.depth()];
     }
 }

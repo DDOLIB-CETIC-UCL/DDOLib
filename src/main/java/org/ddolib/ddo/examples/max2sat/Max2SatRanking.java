@@ -15,7 +15,12 @@ import java.util.ArrayList;
 public class Max2SatRanking implements StateRanking<Max2SatState> {
 
     public static int rank(Max2SatState state) {
-        return state.netBenefit().stream().mapToInt(value -> value).map(Math::abs).sum();
+        int toReturn = 0;
+        for (int i = state.depth(); i < state.netBenefit().size(); i++) {
+            toReturn += Math.abs(state.netBenefit().get(i));
+        }
+
+        return toReturn;
     }
 
     @Override
