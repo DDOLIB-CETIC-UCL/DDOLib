@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -101,7 +100,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
 
                 int gff = problem.weight(problem.t(i), problem.f(j)) + problem.weight(problem.f(i), problem.t(j)) +
                         problem.weight(problem.f(i), problem.f(j));
-                approx += IntStream.of(gtt, gtf, gft, gff).max().getAsInt();
+                approx += max(max(gtt, gtf), max(gft, gff));
             }
             toReturn[i] = approx + toReturn[i + 1];
         }

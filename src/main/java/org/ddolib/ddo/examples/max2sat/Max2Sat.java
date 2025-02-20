@@ -16,7 +16,7 @@ import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
 public final class Max2Sat {
 
     public static void main(String[] args) throws IOException {
-        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_25.txt");
+        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_50_clause_357.txt");
 
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
