@@ -43,7 +43,6 @@ public final class TSPIncrementalSmallestEdge {
 
         public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance){
             if(prunedLength < nbHops){
-                //il faut tenir compte du Current
                 if(current == -1) throw new Error("no bound for merged");
                 toVisit.set(current);
                 sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
@@ -58,7 +57,6 @@ public final class TSPIncrementalSmallestEdge {
                 hopsToDo --;
                 current = current.next;
             }
-            //System.out.println(sortedEdgeListIncidentToToVisitNodesAndCurrentNode.string(nbHops,distance));
             return total;
         }
 

@@ -15,8 +15,8 @@ public final class TSPKruskal {
     static class TSPState{
 
         BitSet toVisit;
-        int current = -1; //We might not know where we are in case of merge
-        BitSet currentSet;
+        int current = -1;
+        BitSet currentSet; //in case of a merged state, current is -1 and we use currentSet
 
         public TSPState(int current, BitSet toVisit){
             this.toVisit = toVisit;
@@ -29,15 +29,13 @@ public final class TSPKruskal {
         public TSPState goTo(int node){
             BitSet newToVisit = (BitSet) toVisit.clone();
             newToVisit.clear(node);
-            TSPState newState = new TSPState(node, newToVisit);
-            //if(current == -1) System.out.println("goto on merged " + this + " new:" +newState);
-            return newState;
+            return new TSPState(node, newToVisit);
         }
 
         @Override
         public String toString() {
             if(current == -1){
-                return "TSPState(currentSet:" + currentSet + " toVisit:" + toVisit + ")";
+                return "TSPState(merged currentSet:" + currentSet + " toVisit:" + toVisit + ")";
             }else {
                 return "TSPState(current:" + current + " toVisit:" + toVisit + ")";
             }
@@ -122,21 +120,17 @@ public final class TSPKruskal {
 
         @Override
         public TSPState mergeStates(final Iterator<TSPState> states) {
-            //take the union
-            //the current node is normally the same in all states
+            //take the union of everything
             BitSet toVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
-            //System.out.println("merging");
             while (states.hasNext()) {
                 TSPState state = states.next();
-                //System.out.println("merging" +state);
                 toVisit.or(state.toVisit);
                 if(state.current != -1) current.set(state.current);
                 else current.or(state.currentSet);
             }
-            TSPState newState = new TSPState(current,toVisit);
-            //System.out.println("merged:" +newState);
-            return newState;
+
+            return new TSPState(current,toVisit);
         }
 
         @Override
@@ -146,8 +140,8 @@ public final class TSPKruskal {
 
         @Override
         public int fastUpperBound(TSPState state, Set<Integer> variables) {
-            //il faut prendre que les steps qui restent à faire car il y a plus de noeuds que prévu si le state est issu de merges
-            //System.out.println("ub for " + state + " nbSteps: " + variables.size());
+            //min spanning tree on current U toVisit
+            //we can only take the variables.size() first edges, so Kruskal might not run until it ends
             if (state.current == -1) {
                 return Integer.MAX_VALUE;
             } else {

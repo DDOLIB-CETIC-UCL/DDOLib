@@ -31,15 +31,6 @@ public class EdgeList {
             return next.filterUpToLength(length-1, nodes);
         }
     }
-
-    String string(int nbHops, int[][] matrix){
-        if(nbHops <=0) return "";
-        String me = "edge(nodeA:" + nodeA + " nodeB:" + nodeB + "dist:" + matrix[nodeA][nodeB] + ")";
-        if(next == null && nbHops > 1) return me + "\n tooShortTail";
-        if(next != null && nbHops == 1) return me + "\n more, not shown ";
-        if(next == null && nbHops == 1) return me + "\n listIsJustCorrectLength";
-        else return me + "\n" + next.string(nbHops-1,matrix);
-    }
 }
 
 

@@ -10,34 +10,26 @@ public class Kruskal {
 
     private final int[] nodeToComponentHead;
 
-    private final int n;
-
     final int maxMerges;
     public final int minimalSpanningTreeWeight;
     final BitSet setsOfNodesToConsider;
 
     public Kruskal(int[][] distance, BitSet setsOfNodesToConsider, int maxMerges) {
         this.distance = distance;
-        this.n = distance.length;
+        int n = distance.length;
         this.maxMerges = maxMerges;
 
         this.nodeToComponentHead = new int[n];
         Arrays.setAll(this.nodeToComponentHead, i -> setsOfNodesToConsider.get(i) ? i : -1);
 
-        //System.out.println("kruskal: " + setsOfNodesToConsider + " maxMerges:" + maxMerges);
-
         this.setsOfNodesToConsider = setsOfNodesToConsider;
         this.minimalSpanningTreeWeight = run();
     }
 
-    private int merge(int nodeA, int nodeB) {
-        require(nodeToComponentHead[nodeA] != -1, "err" + nodeA);
-        require(nodeToComponentHead[nodeB] != -1, "err" + nodeB);
-
+    private void merge(int nodeA, int nodeB) {
         int masterA = master(nodeA);
         int masterB = master(nodeB);
-        require(nodeToComponentHead[masterA] != -1, "err" + masterA);
-        require(nodeToComponentHead[masterB] != -1, "err" + masterB);
+
         int above;
         int below;
         if (masterA > masterB) {
@@ -48,11 +40,6 @@ public class Kruskal {
             below = masterA;
         }
         nodeToComponentHead[below] = above;
-        return above;
-    }
-
-    private static void require(Boolean a, String str) {
-        if (!a) throw new Error(str);
     }
 
     static class Edge {
@@ -71,7 +58,6 @@ public class Kruskal {
         } else {
             int toReturn = master(nodeToComponentHead[node]);
             nodeToComponentHead[node] = toReturn;
-            require(toReturn != -1, "");
             return toReturn;
         }
     }
@@ -94,16 +80,11 @@ public class Kruskal {
                 totalWeight += distance[edge.nodeA][edge.nodeB];
                 merge(edge.nodeA, edge.nodeB);
                 mergesToDo = mergesToDo - 1;
-                //System.out.println("merged " + edge.nodeA + " " + edge.nodeB + " dist:" + distance[edge.nodeA][edge.nodeB] + "   mergesToDo:" + mergesToDo);
                 if (mergesToDo == 0) {
-                    //System.out.println("EarlyStop(" + totalWeight +") ; nodeToComponentHead:" + Arrays.toString(nodeToComponentHead));
                     return totalWeight;
                 }
-            } else {
-                //System.out.println("skipped " + edge.nodeA + " " + edge.nodeB + " dist:" + distance[edge.nodeA][edge.nodeB]);
             }
         }
-        //System.out.println("nodeToComponentHead(" + totalWeight +"):" + Arrays.toString(nodeToComponentHead));
         return totalWeight;
     }
 }
