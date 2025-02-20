@@ -188,7 +188,6 @@ public final class TSPIncrementalSmallestEdge {
         public int fastUpperBound(TSPStateIncrementalBound state, Set<Integer> variables) {
             int nbHopsToDo = variables.size();
             int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo,problem.distanceMatrix);
-            //System.out.println("lowerBound(" + state + " nbHopsToDo:" + nbHopsToDo +")=" + lb);
             return -lb;
         }
     }
@@ -200,9 +199,6 @@ public final class TSPIncrementalSmallestEdge {
     public static class TSPRanking implements StateRanking<TSPStateIncrementalBound> {
         @Override
         public int compare(final TSPStateIncrementalBound o1, final TSPStateIncrementalBound o2) {
-            //compare(a, b) > 0 as a should have a higher chance of being kept
-            // intact while b should have a higher chance of being merged.
-            //this is applied when two nodes have the same value, considereing costSoFar+estimetedUpperBound
             return 0;
         }
     }

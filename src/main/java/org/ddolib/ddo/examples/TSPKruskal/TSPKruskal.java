@@ -85,7 +85,6 @@ public final class TSPKruskal {
 
         @Override
         public Iterator<Integer> domain(TSPState state, int var) {
-            //.filter(i -> i!= state.current) not necessary
             ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
             return domain.iterator();
         }
@@ -186,7 +185,7 @@ public final class TSPKruskal {
         return (int)Math.sqrt(dx*dx+dy*dy);
     }
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) {
 
         final TSP problem = genInstance(20);
 
