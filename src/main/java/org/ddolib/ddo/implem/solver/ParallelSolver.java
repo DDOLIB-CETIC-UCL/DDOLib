@@ -44,9 +44,10 @@ public final class ParallelSolver<T> implements Solver {
         this.shared   = new Shared<>(nbThreads, problem, relax, varh, ranking, width);
         this.critical = new Critical<>(nbThreads, frontier);
     }
-
     @Override
-    public void maximize() {
+    public void maximize(){ maximize(0);}
+    @Override
+    public void maximize(int verbose) {
         initialize();
 
         Thread[] workers = new Thread[shared.nbThreads];

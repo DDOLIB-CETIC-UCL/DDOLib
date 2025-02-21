@@ -6,6 +6,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,7 +38,18 @@ public final class DPD {
                 newToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
-            return new PDState(node, newToVisit);
+            /*good idea, but wrong idea
+            if(problem.deliveryToAssociatedPickup.containsKey(node) ){
+                int p = problem.deliveryToAssociatedPickup.get(node);
+                if(newToVisit.get(p)){
+                    System.out.println("Pruning toVisitPickups " + p);
+                    newToVisit.clear(p);
+                }
+            }*/
+
+            PDState next = new PDState(node, newToVisit);
+            //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
+            return next;
         }
 
         @Override
@@ -55,6 +67,7 @@ public final class DPD {
         final int[][] distanceMatrix;
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery;
+        HashMap<Integer,Integer> deliveryToAssociatedPickup;
 
         Set<Integer> unrelatedNodes;
 
@@ -80,9 +93,12 @@ public final class DPD {
             this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
             this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0,n).boxed().toList());
 
+            deliveryToAssociatedPickup = new HashMap<>();
             for(int p : pickupToAssociatedDelivery.keySet()) {
+                int d = pickupToAssociatedDelivery.get(p);
                 unrelatedNodes.remove(p);
-                unrelatedNodes.remove(pickupToAssociatedDelivery.get(p));
+                unrelatedNodes.remove(d);
+                deliveryToAssociatedPickup.put(d,p);
             }
         }
 
@@ -146,6 +162,9 @@ public final class DPD {
         public PDState mergeStates(final Iterator<PDState> states) {
             //take the union
             //the current node is normally the same in all states
+
+            //TODO problème en prenant l'union, on va ajouter des noeuds qui sont peut-être unreachable dans certains cas.
+
             BitSet toVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
             while (states.hasNext()) {
@@ -155,8 +174,9 @@ public final class DPD {
                 if(state.current != -1) current.set(state.current);
                 else current.or(state.currentSet);
             }
-
-            return new PDState(current,toVisit);
+            PDState merged = new PDState(current,toVisit);
+            //System.out.println("merged:" + merged);
+            return merged;
         }
 
         @Override
@@ -201,7 +221,8 @@ public final class DPD {
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
 
-        int firstDelivery = (n-unrelated)/2+1; //for fun, some are not pdp nodes
+        int firstDelivery = (n-unrelated-1)/2+1; //for fun, some are not pdp nodes
+        //    /2 rounds to lower
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);
@@ -216,10 +237,11 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(5,0);
+        final PDProblem problem = genInstance(15,0);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
+
         solveDPD(problem);
         System.out.println("end");
     }
@@ -228,12 +250,11 @@ public final class DPD {
 
         final TSPRelax                    relax = new TSPRelax(problem);
         final TSPRanking                ranking = new TSPRanking();
-        final FixedWidth<PDState> width = new FixedWidth<>(500);
+        final FixedWidth<PDState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>( //ParallelSolver<>(Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
                 varh,
@@ -242,7 +263,7 @@ public final class DPD {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.maximize(1);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
@@ -261,6 +282,7 @@ public final class DPD {
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.println("problem:" + problem);
     }
 }
 

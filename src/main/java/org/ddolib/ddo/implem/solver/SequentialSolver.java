@@ -94,13 +94,21 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public void maximize() {
+    public void maximize(){ maximize(0);}
+    @Override
+    public void maximize(int verbose) {
         frontier.push(root());
 
+        int it = 0;
         while (!frontier.isEmpty()) {
+            if(verbose >=1) System.out.println("it " + it + "\t frontier:" + frontier.size() + "\t bestObj:" + bestLB);
+            it += 1;
+
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
+
+            if(verbose >=2) System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return;
