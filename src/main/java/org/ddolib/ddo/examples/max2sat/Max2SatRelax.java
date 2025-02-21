@@ -19,9 +19,12 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
     private final Max2SatProblem problem;
     private final int[] overApprox;
 
+    private final int[] precomputationForUnary;
+
     public Max2SatRelax(Max2SatProblem problem) {
         this.problem = problem;
         overApprox = precomputeOverApproximation();
+        precomputationForUnary = precomputeUnary();
     }
 
     @Override
@@ -55,6 +58,19 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
 
+        return toReturn;
+    }
+
+    private int[] precomputeUnary() {
+        int[] toReturn = new int[problem.nbVars()];
+        for (int i = problem.nbVars() - 1; i >= 0; i--) {
+            int approx = max(problem.weight(problem.t(i), problem.t(i)), problem.weight(problem.f(i), problem.f(i)));
+            if (i != problem.nbVars() - 1) {
+                approx += toReturn[i + 1];
+            }
+            toReturn[i] = approx;
+
+        }
         return toReturn;
     }
 
@@ -111,6 +127,6 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
 
     @Override
     public int fastUpperBound(Max2SatState state, Set<Integer> variables) {
-        return Max2SatRanking.rank(state) + overApprox[state.depth()];
+        return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
     }
 }

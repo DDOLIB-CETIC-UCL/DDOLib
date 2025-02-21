@@ -44,10 +44,16 @@ public class Max2SatIO {
                     }
                 } else {
                     String[] tokens = line.split("\\s");
-                    int i = Integer.parseInt(tokens[0]);
-                    int j = Integer.parseInt(tokens[1]);
-                    int w = Integer.parseInt(tokens[2]);
-                    context.weights.put(new BinaryClause(i, j), w);
+                    if (tokens.length == 2) { // Unary clause
+                        int i = Integer.parseInt(tokens[0]);
+                        int w = Integer.parseInt(tokens[1]);
+                        context.weights.put(new BinaryClause(i, i), w);
+                    } else {
+                        int i = Integer.parseInt(tokens[0]);
+                        int j = Integer.parseInt(tokens[1]);
+                        int w = Integer.parseInt(tokens[2]);
+                        context.weights.put(new BinaryClause(i, j), w);
+                    }
                 }
             }
             return new Max2SatProblem(context.n, context.weights, context.opti);
