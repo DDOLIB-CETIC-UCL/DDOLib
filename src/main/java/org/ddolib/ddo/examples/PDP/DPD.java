@@ -264,7 +264,7 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(20,0);
+        final PDProblem problem = genInstance(20,1);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -281,7 +281,7 @@ public final class DPD {
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>( //new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
+        final Solver solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
                 problem,
                 relax,
                 varh,
