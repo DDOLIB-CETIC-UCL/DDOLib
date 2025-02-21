@@ -65,6 +65,7 @@ public final class ParallelSolver<T> implements Solver {
                             case Starvation:
                                 continue;
                             case WorkItem:
+                                if(verbose >=2) System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
                                 processOneNode(wl.subProblem, mdd);
                                 notifyNodeFinished(threadId);
                                 break;

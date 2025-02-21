@@ -7,6 +7,7 @@ import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
@@ -45,14 +46,14 @@ public final class DPD {
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
-            /*good idea, but wrong idea
+            //good idea, but wrong idea
             if(problem.deliveryToAssociatedPickup.containsKey(node) ){
                 int p = problem.deliveryToAssociatedPickup.get(node);
-                if(newToVisit.get(p)){
-                    System.out.println("Pruning toVisitPickups " + p);
-                    newToVisit.clear(p);
+                if(newOpenToVisit.get(p)){
+                    //System.out.println("Pruning toVisitPickups " + p);
+                    newOpenToVisit.clear(p);
                 }
-            }*/
+            }
 
             PDState next = new PDState(node, newOpenToVisit,newAllToVisit);
             //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
@@ -61,10 +62,12 @@ public final class DPD {
 
         @Override
         public String toString() {
+            BitSet closedToVisit = (BitSet) allToVisit.clone();
+            closedToVisit.xor(openToVisit);
             if(current == -1){
-                return "PDState(possibleCurrent:" + currentSet + " openToVisit:" + openToVisit + ")";
+                return "PDState(possibleCurrent:" + currentSet + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }else{
-                return "PDState(current:" + current + " openToVisit:" + openToVisit + ")";
+                return "PDState(current:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }
         }
     }
@@ -138,7 +141,7 @@ public final class DPD {
         @Override
         public Iterator<Integer> domain(PDState state, int var) {
             ArrayList<Integer> domain = new ArrayList<>(state.openToVisit.stream().boxed().toList());
-            return  domain.iterator();
+            return domain.iterator();
         }
 
         @Override
@@ -278,7 +281,7 @@ public final class DPD {
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>( //ParallelSolver<>(Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>( //new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
                 problem,
                 relax,
                 varh,
@@ -287,7 +290,7 @@ public final class DPD {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1);
+        solver.maximize(2);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
