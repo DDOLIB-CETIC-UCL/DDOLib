@@ -163,17 +163,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             return new SubProblem<>(state, node.value, ub, path);
         }
-
-        @Override
-        public String toString() {
-            return state.toString();
-        }
     }
 
     @Override
     public void compile(CompilationInput<T> input) {
-        /*System.out.printf("############################## %s ##############################%n%n",
-                input.getCompilationType().toString().toUpperCase());*/
         // make sure we don't have any stale data left
         this.clear();
 
@@ -256,9 +249,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
 
             for (NodeSubProblem<T> n : currentLayer) {
-                int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
-                    //System.out.printf("Prune %s - lb: %d - rub: % d%n", n.state, lb, n.ub);
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextvar);
