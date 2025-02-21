@@ -1,11 +1,12 @@
 package org.ddolib.ddo.examples.PDP;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
+import org.ddolib.ddo.examples.TSPKruskal.TSPKruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
@@ -16,26 +17,32 @@ public final class DPD {
 
     static class PDState{
 
-        BitSet toVisit; //principe: toVisit contient tout ce qu'on doit encore visiter
+        BitSet openToVisit; //principe: toVisit contient tout ce qu'on doit encore visiter
+        BitSet allToVisit;
         int current = -1; //We might not know where we are in case of merge
         BitSet currentSet;
 
-        public PDState(int current, BitSet toVisit){
-            this.toVisit = toVisit;
+        public PDState(int current, BitSet openToVisit, BitSet allToVisit){
+            this.openToVisit = openToVisit;
+            this.allToVisit = allToVisit;
             this.current = current;
         }
 
-        public PDState(BitSet currentSet, BitSet toVisit){
-            this.toVisit = toVisit;
+        public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit){
+            this.openToVisit = openToVisit;
+            this.allToVisit = allToVisit;
             this.currentSet = currentSet;
         }
 
         public PDState goTo(int node, PDProblem problem){
-            BitSet newToVisit = (BitSet) toVisit.clone();
-            newToVisit.clear(node);
+            BitSet newOpenToVisit = (BitSet) openToVisit.clone();
+            newOpenToVisit.clear(node);
+
+            BitSet newAllToVisit = (BitSet) allToVisit.clone();
+            newAllToVisit.clear(node);
 
             if(problem.pickupToAssociatedDelivery.containsKey(node)){
-                newToVisit.set(problem.pickupToAssociatedDelivery.get(node));
+                newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
             /*good idea, but wrong idea
@@ -47,7 +54,7 @@ public final class DPD {
                 }
             }*/
 
-            PDState next = new PDState(node, newToVisit);
+            PDState next = new PDState(node, newOpenToVisit,newAllToVisit);
             //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
             return next;
         }
@@ -55,9 +62,9 @@ public final class DPD {
         @Override
         public String toString() {
             if(current == -1){
-                return "PDState(possibleCurrent:" + currentSet + " toVisit:" + toVisit + ")";
+                return "PDState(possibleCurrent:" + currentSet + " openToVisit:" + openToVisit + ")";
             }else{
-                return "PDState(current:" + current + " toVisit:" + toVisit + ")";
+                return "PDState(current:" + current + " openToVisit:" + openToVisit + ")";
             }
         }
     }
@@ -110,14 +117,17 @@ public final class DPD {
         @Override
         public PDState initialState() {
             System.out.println("init");
-            BitSet toVisit = new BitSet(n);
-            toVisit.set(1,n);
+            BitSet openToVisit = new BitSet(n);
+            openToVisit.set(1,n);
 
             for(int p : pickupToAssociatedDelivery.keySet()) {
-                toVisit.clear(pickupToAssociatedDelivery.get(p));
+                openToVisit.clear(pickupToAssociatedDelivery.get(p));
             }
 
-            return new PDState(0, toVisit);
+            BitSet allToVisit = new BitSet(n);
+            allToVisit.set(1,n);
+
+            return new PDState(0, openToVisit ,allToVisit);
         }
 
         @Override
@@ -127,7 +137,7 @@ public final class DPD {
 
         @Override
         public Iterator<Integer> domain(PDState state, int var) {
-            ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
+            ArrayList<Integer> domain = new ArrayList<>(state.openToVisit.stream().boxed().toList());
             return  domain.iterator();
         }
 
@@ -165,16 +175,19 @@ public final class DPD {
 
             //TODO problème en prenant l'union, on va ajouter des noeuds qui sont peut-être unreachable dans certains cas.
 
-            BitSet toVisit = new BitSet(problem.n);
+            BitSet openToVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
+            BitSet allToVisit = new BitSet(problem.n);
+
             while (states.hasNext()) {
                 PDState state = states.next();
-                toVisit.or(state.toVisit);
+                openToVisit.or(state.openToVisit);
+                allToVisit.or(state.allToVisit);
 
                 if(state.current != -1) current.set(state.current);
                 else current.or(state.currentSet);
             }
-            PDState merged = new PDState(current,toVisit);
+            PDState merged = new PDState(current,openToVisit,allToVisit);
             //System.out.println("merged:" + merged);
             return merged;
         }
@@ -186,7 +199,18 @@ public final class DPD {
 
         @Override
         public int fastUpperBound(PDState state, Set<Integer> variables) {
-            return Integer.MAX_VALUE;
+            //min spanning tree on current U toVisit
+            //we can only take the variables.size() first edges, so Kruskal might not run until it ends
+            if (state.current == -1) {
+                return Integer.MAX_VALUE;
+            } else {
+                state.allToVisit.set(state.current);
+                int nbStepsToRemain = variables.size();
+                Kruskal a = new Kruskal(problem.distanceMatrix, state.allToVisit, nbStepsToRemain);
+                state.allToVisit.clear(state.current);
+                int ub = a.minimalSpanningTreeWeight;
+                return -ub;
+            }
         }
     }
 
@@ -237,7 +261,7 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(15,0);
+        final PDProblem problem = genInstance(20,0);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
