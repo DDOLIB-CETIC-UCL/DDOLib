@@ -7,7 +7,13 @@ import java.util.*;
 
 public class Max2SatProblem implements Problem<Max2SatState> {
 
+    /**
+     * Value for decision <code>true</code>.
+     */
     final static int T = 1;
+    /**
+     * Value for decision <code>false</code>.
+     */
     final static int F = 0;
 
     final Max2SatState root;
@@ -15,7 +21,13 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     final HashMap<BinaryClause, Integer> weights;
     public final Optional<Integer> optimal;
 
-
+    /**
+     * Instantiates a Max2Sat problem.
+     *
+     * @param numVar  The number of variable in the problem.
+     * @param weights A map from each binary clause of the problem to their weight.
+     * @param optimal If known, the objective value of the optimal solution.
+     */
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights, Optional<Integer> optimal) {
         this.numVar = numVar;
         this.weights = weights;
@@ -23,6 +35,12 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         this.optimal = optimal;
     }
 
+    /**
+     * Instantiates a Max2Sat problem.
+     *
+     * @param numVar  The number of variable in the problem.
+     * @param weights A map from each binary clause of the problem to their weight.
+     */
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
         this.numVar = numVar;
         this.weights = weights;
@@ -60,10 +78,14 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         int k = decision.var();
         if (decision.val() == T) {
             for (int l = k + 1; l < nbVars(); l++) {
+                // If the variable k has been set to T, and then we set the variable l to T, we gain the weight of the
+                // clause (!xk || xl). But we lose the weight of the clause (!xk || !xl).
                 newBenefit.set(l, state.netBenefit().get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
+                // If the variable k has been set to F, and then we set the variable l to T, we gain the weight of the
+                // clause (xk || xl). But we lose the weight of the clause (xk || !xl).
                 newBenefit.set(l, state.netBenefit().get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
             }
         }
@@ -77,18 +99,24 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         int k = decision.var();
         int toReturn;
         if (decision.val() == T) {
+            // If k has been set to T, we gain the net benefit if it is > 0 and the weight of the unary clause xk.
             toReturn = positiveOrNull(state.netBenefit().get(k)) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
+                // We gain the weight of the clauses (xk || xl) and (xk || !xl)
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
                 int s_k_l = state.netBenefit().get(l);
+                // According to the decision on l, we can gain (!xk || xl) or (!xk || xl)
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }
         } else {
+            // If k has been set to F, we gain the net benefit if it is < 0 and the weight of the unary clause /xk.
             toReturn = positiveOrNull(-state.netBenefit().get(k)) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
+                // We gain the weight of the clauses (!xk || !xl) and (!xk || xl)
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
                 int s_k_l = state.netBenefit().get(l);
+                // According to the decision on l, we can gain (xk || xl) or (xk || !xl)
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }

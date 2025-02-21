@@ -34,11 +34,13 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
             for (int i = 0; i < current.netBenefit().size(); i++) {
                 Integer mergedI = merged.get(i);
                 Integer currentI = current.netBenefit().get(i);
+                // If all the net benefits have the same sign, we keep the smallest one in absolute value.
                 if (signum(mergedI) == 1 && signum(currentI) == 1) {
                     merged.set(i, min(mergedI, currentI));
                 } else if (signum(mergedI) == -1 && signum(currentI) == 1) {
                     merged.set(i, max(mergedI, currentI));
                 } else {
+                    // Otherwise, we set the benefit to 0
                     merged.set(i, 0);
                 }
             }

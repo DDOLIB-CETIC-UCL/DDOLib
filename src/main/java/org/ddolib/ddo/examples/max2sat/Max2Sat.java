@@ -6,6 +6,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
 public final class Max2Sat {
 
     public static void main(String[] args) throws IOException {
-        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_50_clause_357.txt");
+        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_50_clauses_2308.txt");
 
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
@@ -26,7 +27,8 @@ public final class Max2Sat {
 
         final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
+        ParallelSolver<Max2SatState> solver = new ParallelSolver<>(
+                Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
                 varh,

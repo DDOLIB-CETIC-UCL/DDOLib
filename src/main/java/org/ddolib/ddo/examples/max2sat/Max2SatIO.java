@@ -3,6 +3,9 @@ package org.ddolib.ddo.examples.max2sat;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Methods to generate random instance of the Max2Sat problem and read instance from files.
+ */
 public class Max2SatIO {
 
     /**
@@ -21,7 +24,7 @@ public class Max2SatIO {
      *     <li>
      *         The third value is the weight of the clause formed by the two literals.
      *     </li>
-     * </ul>
+     * </ul>// According to the decision on l, we can gain (!xk || xl) or (!xk || xl)
      *
      * @param fileName The path to the input file.
      * @return An instance of Max2SatProblem.
