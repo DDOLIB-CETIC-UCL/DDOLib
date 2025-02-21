@@ -70,8 +70,10 @@ public class MispProblem implements Problem<BitSet> {
     @Override
     public Iterator<Integer> domain(BitSet state, int var) {
         if (state.get(var)) {
+            // The node can be selected or not
             return List.of(0, 1).iterator();
         } else {
+            // The node cannot be selected
             return List.of(0).iterator();
         }
     }
@@ -79,7 +81,11 @@ public class MispProblem implements Problem<BitSet> {
     @Override
     public BitSet transition(BitSet state, Decision decision) {
         var res = (BitSet) state.clone();
-        if (decision.val() == 1) res.andNot(neighbors[decision.var()]);
+        // When we are selecting a node, we cannot select this node and its neighbors
+        if (decision.val() == 1) {
+            res.andNot(neighbors[decision.var()]);
+            res.set(decision.var(), false);
+        }
 
         return res;
     }

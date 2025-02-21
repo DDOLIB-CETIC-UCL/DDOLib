@@ -20,6 +20,7 @@ public class MispRelax implements Relaxation<BitSet> {
         var merged = new BitSet(problem.nbVars());
         while (states.hasNext()) {
             final BitSet state = states.next();
+            // the merged state is the union of all the state
             merged.or(state);
         }
         return merged;
@@ -32,6 +33,7 @@ public class MispRelax implements Relaxation<BitSet> {
 
     @Override
     public int fastUpperBound(BitSet state, Set<Integer> variables) {
+        // We select all the remaining nodes
         return state.stream().map(i -> problem.weight[i]).sum();
     }
 }

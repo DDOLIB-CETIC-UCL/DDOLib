@@ -131,7 +131,7 @@ public final class Misp {
 
 
     public static void main(String[] args) throws IOException {
-        final MispProblem problem = readGraph("data/MISP/S_20.dot");
+        final MispProblem problem = readGraph("data/MISP/C6.dot");
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(250);
