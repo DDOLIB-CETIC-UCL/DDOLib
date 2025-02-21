@@ -1,7 +1,6 @@
 package org.ddolib.ddo.examples;
 
 
-
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -26,7 +25,7 @@ import java.util.stream.IntStream;
  * whenever the machine switches the production from item type i to j.
  * Finally, the demand matrix Q contains all the orders: Q_i^p in {0,1}
  * indicates whether there is an order for item type i in I at time period p.
- * 0 ≤ p < H where H is the time horizon.
+ * 0 ≤ p &lt; H where H is the time horizon.
  */
 public class PigmentScheduling {
 
@@ -35,8 +34,8 @@ public class PigmentScheduling {
     static class PSPState {
         int t; // the current time slot
         int next; // the item type produced at time t+1, -1 means we don't know yet
-        int [] previousDemands; // previousDemands[i] = largest time slot < t where a demand for item i occurs,
-                                //                      -1 if no more demands before
+        int[] previousDemands; // previousDemands[i] = largest time slot < t where a demand for item i occurs,
+        //                      -1 if no more demands before
 
         public PSPState(int t, int next, int[] previousDemands) {
             this.t = t;
@@ -78,7 +77,6 @@ public class PigmentScheduling {
         }
 
         /**
-         *
          * @param state the state from which the transitions should be applicable
          * @param depth the variable whose domain in being queried
          * @return
@@ -90,7 +88,7 @@ public class PigmentScheduling {
             IntStream dom = IntStream.range(0, instance.nItems)
                     .filter(i -> state.previousDemands[i] >= t);
 
-            int [] dom2 = IntStream.range(0, instance.nItems)
+            int[] dom2 = IntStream.range(0, instance.nItems)
                     .filter(i -> state.previousDemands[i] >= t).toArray();
 
 
@@ -132,7 +130,7 @@ public class PigmentScheduling {
             if (item == IDLE) {
                 return 0;
             } else {
-                int t = (instance.horizon - decision.var() -1);
+                int t = (instance.horizon - decision.var() - 1);
                 int duration = state.previousDemands[item] - t;
                 int stocking = instance.stockingCost[item] * duration;
                 int changeover = state.next != -1 ? instance.changeoverCost[item][state.next] : 0;
@@ -170,7 +168,7 @@ public class PigmentScheduling {
             // the state with the smallest total demand is the best (not sure about this)
             int totS1 = Arrays.stream(s1.previousDemands).sum();
             int totS2 = Arrays.stream(s2.previousDemands).sum();
-            return Integer.compare(totS1,totS2);
+            return Integer.compare(totS1, totS2);
         }
     }
 
@@ -211,7 +209,7 @@ public class PigmentScheduling {
                 stockingCost[i] = reader.getInt();
             }
 
-            int [][] demands = new int[nItems][horizon];
+            int[][] demands = new int[nItems][horizon];
             for (int i = 0; i < nItems; i++) {
                 for (int j = 0; j < horizon; j++) {
                     demands[i][j] = reader.getInt();
@@ -226,10 +224,10 @@ public class PigmentScheduling {
             }
             for (int t = 1; t <= horizon; t++) {
                 for (int i = 0; i < nItems; i++) {
-                    if (demands[i][t-1] > 0) {
+                    if (demands[i][t - 1] > 0) {
                         previousDemands[i][t] = t - 1;
                     } else {
-                        previousDemands[i][t] = previousDemands[i][t-1];
+                        previousDemands[i][t] = previousDemands[i][t - 1];
                     }
                 }
             }
@@ -239,7 +237,7 @@ public class PigmentScheduling {
                     if (t == 0) {
                         remainingDemands[i][t] = demands[i][t];
                     } else {
-                        remainingDemands[i][t] = remainingDemands[i][t-1] + demands[i][t];
+                        remainingDemands[i][t] = remainingDemands[i][t - 1] + demands[i][t];
                     }
                 }
             }
@@ -247,7 +245,8 @@ public class PigmentScheduling {
     }
 
     public static void main(final String[] args) throws IOException {
-        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/1");;
+        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/1");
+        ;
         PSP problem = new PSP(instance);
         final PSPRelax relax = new PSPRelax();
         final PSPRanking ranking = new PSPRanking();
@@ -270,7 +269,7 @@ public class PigmentScheduling {
                 .map(decisions -> {
                     int[] values = new int[problem.nbVars()];
                     for (Decision d : decisions) {
-                        int t = (instance.horizon - d.var() -1);
+                        int t = (instance.horizon - d.var() - 1);
                         values[t] = d.val();
                     }
                     return values;
