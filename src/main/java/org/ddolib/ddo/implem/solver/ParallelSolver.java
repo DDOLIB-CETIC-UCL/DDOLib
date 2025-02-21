@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The branch and bound with mdd paradigm parallelizes *VERY* well. This is why
@@ -46,7 +47,11 @@ public final class ParallelSolver<T> implements Solver {
     }
 
     @Override
-    public void maximize() {
+    public SearchStatistics maximize() {
+
+        final AtomicInteger nbIter = new AtomicInteger(0);
+        final AtomicInteger queueMaxSize = new AtomicInteger(0);
+
         initialize();
 
         Thread[] workers = new Thread[shared.nbThreads];
@@ -64,6 +69,8 @@ public final class ParallelSolver<T> implements Solver {
                             case Starvation:
                                 continue;
                             case WorkItem:
+                                nbIter.incrementAndGet();
+                                queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 processOneNode(wl.subProblem, mdd);
                                 notifyNodeFinished(threadId);
                                 break;
@@ -77,6 +84,8 @@ public final class ParallelSolver<T> implements Solver {
         for (int i = 0; i < shared.nbThreads; i++) {
             try { workers[i].join(); } catch (InterruptedException e) {}
         }
+
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get());
     }
     @Override
     public Optional<Integer> bestValue() {
