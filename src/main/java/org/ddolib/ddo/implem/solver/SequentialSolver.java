@@ -128,7 +128,7 @@ public final class SequentialSolver<T> implements Solver {
             );
 
             mdd.compile(compilation);
-            maybeUpdateBest();
+            maybeUpdateBest(verbose);
             if (mdd.isExact()) {
                 continue;
             }
@@ -147,7 +147,7 @@ public final class SequentialSolver<T> implements Solver {
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {
-                maybeUpdateBest();
+                maybeUpdateBest(verbose);
             } else {
                 enqueueCutset();
             }
@@ -182,11 +182,12 @@ public final class SequentialSolver<T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest() {
+    private void maybeUpdateBest(int verbosity) {
         Optional<Integer> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
+            if(verbosity > 2) System.out.println("new best " + bestLB);
         }
     }
     /**

@@ -264,7 +264,7 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(20,1);
+        final PDProblem problem = genInstance(25,1);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -277,11 +277,11 @@ public final class DPD {
 
         final TSPRelax                    relax = new TSPRelax(problem);
         final TSPRanking                ranking = new TSPRanking();
-        final FixedWidth<PDState> width = new FixedWidth<>(2000);
+        final FixedWidth<PDState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
+        final Solver solver = new SequentialSolver<>(//new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
                 problem,
                 relax,
                 varh,
