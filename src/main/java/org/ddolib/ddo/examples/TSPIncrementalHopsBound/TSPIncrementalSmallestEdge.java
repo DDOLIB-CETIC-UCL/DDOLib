@@ -1,6 +1,7 @@
 package org.ddolib.ddo.examples.TSPIncrementalHopsBound;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.examples.TSPKruskal.TSPKruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -20,6 +21,21 @@ public final class TSPIncrementalSmallestEdge {
         BitSet currentSet;
         EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         int prunedLength = 0;
+
+        public int hashCode() {
+            if(current == -1) return Objects.hash(toVisit, currentSet);
+            else return Objects.hash(toVisit, currentSet);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            TSPStateIncrementalBound that = (TSPStateIncrementalBound) obj;
+            if(that.current != this.current) return false;
+            if(current == -1){
+                if(!that.currentSet.equals(this.currentSet)) return false;
+            }
+            return that.toVisit.equals(this.toVisit);
+        }
 
         public TSPStateIncrementalBound(int current, BitSet toVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode){
             this.toVisit = toVisit;
@@ -229,7 +245,7 @@ public final class TSPIncrementalSmallestEdge {
 
     public static void main(final String[] args) throws IOException {
 
-        final TSPIncrementalBound problem = genInstance(20);
+        final TSPIncrementalBound problem = genInstance(30);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
