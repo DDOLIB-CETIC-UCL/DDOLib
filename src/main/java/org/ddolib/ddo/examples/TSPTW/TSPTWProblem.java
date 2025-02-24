@@ -36,11 +36,19 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     @Override
     public Iterator<Integer> domain(TSPTWState state, int var) {
 
-        if (state.timeElapsed()) return Collections.emptyIterator();
-        else if (state.depth() == nbVars() - 1) return List.of(0).iterator();
-        else {
-            BitSet toReturn = (BitSet) state.mustVisit().clone();
+        if (state.depth() == nbVars() - 1) {
+            return List.of(0).iterator();
+        } else {
+            BitSet toReturn = new BitSet(state.mustVisit().length());
+
+            var mustIt = state.mustVisit().stream().iterator();
+            while (mustIt.hasNext()) {
+                int i = mustIt.nextInt();
+                toReturn.set(i, reachable(state, i));
+            }
+
             if (state.mustVisit().length() < nbVars() - state.depth()) toReturn.or(state.mightVisit());
+
             return toReturn.stream().iterator();
         }
     }
@@ -54,21 +62,18 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         newMust.set(target, false);
         BitSet newMight = (BitSet) state.mightVisit().clone();
         newMight.set(target, false);
-        boolean elapsed = !reachable(state, target);
-        return new TSPTWState(newPos, newTime, newMust, newMight, state.depth() + 1, elapsed);
+        return new TSPTWState(newPos, newTime, newMust, newMight, state.depth() + 1);
     }
 
     @Override
     public int transitionCost(TSPTWState state, Decision decision) {
         int to = decision.val();
-        if (reachable(state, to)) {
-            int travel = minDistance(state, to);
-            int arrival = state.time() + travel;
-            int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
-            return -(travel + waiting);
-        } else {
-            return -Integer.MAX_VALUE;
-        }
+
+        int travel = minDistance(state, to);
+        int arrival = state.time() + travel;
+        int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
+        return -(travel + waiting);
+
     }
 
     private boolean reachable(TSPTWState state, Integer target) {

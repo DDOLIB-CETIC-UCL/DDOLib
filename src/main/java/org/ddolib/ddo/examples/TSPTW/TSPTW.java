@@ -48,7 +48,7 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_2.txt");
+        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_1.txt");
 
         TSPTWRelax relax = new TSPTWRelax();
         TSPTWRanking ranking = new TSPTWRanking();
@@ -64,20 +64,27 @@ public class TSPTW {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        String solutionStr;
+        if (solver.bestSolution().isPresent()) {
+            int[] solution = solver.bestSolution().map(decisions -> {
+                int[] values = new int[problem.nbVars()];
+                for (Decision d : decisions) {
+                    values[d.var()] = d.val();
+                }
+                return values;
+            }).get();
+            solutionStr = "0 -> " + Arrays.stream(solution)
+                    .mapToObj(String::valueOf)
+                    .collect(Collectors.joining(" -> "));
+        } else {
+            solutionStr = "No feasible solution";
+        }
 
-        String solutionStr = "0 -> " + Arrays.stream(solution)
-                .mapToObj(String::valueOf)
-                .collect(Collectors.joining(" -> "));
+        String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
+
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);
 
 
