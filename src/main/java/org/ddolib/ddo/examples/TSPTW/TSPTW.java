@@ -48,7 +48,7 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4.txt");
+        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_2.txt");
 
         TSPTWRelax relax = new TSPTWRelax();
         TSPTWRanking ranking = new TSPTWRanking();

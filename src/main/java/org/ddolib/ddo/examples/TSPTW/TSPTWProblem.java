@@ -35,7 +35,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public Iterator<Integer> domain(TSPTWState state, int var) {
-        
+
         if (state.timeElapsed()) return Collections.emptyIterator();
         else if (state.depth() == nbVars() - 1) return List.of(0).iterator();
         else {
@@ -60,7 +60,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public int transitionCost(TSPTWState state, Decision decision) {
-        int to = decision.var();
+        int to = decision.val();
         if (reachable(state, to)) {
             int travel = minDistance(state, to);
             int arrival = state.time() + travel;
@@ -73,7 +73,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     private boolean reachable(TSPTWState state, Integer target) {
         int duration = minDistance(state, target);
-        return state.time() + duration < timeWindows[target].end();
+        return state.time() + duration <= timeWindows[target].end();
     }
 
     private int minDistance(TSPTWState from, Integer to) {

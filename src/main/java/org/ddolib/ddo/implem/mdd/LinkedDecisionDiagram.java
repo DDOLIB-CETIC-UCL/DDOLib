@@ -4,68 +4,101 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
+import javax.sound.midi.Soundbank;
 import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * This class implements the decision diagram as a linked structure. 
+ * This class implements the decision diagram as a linked structure.
  */
 public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
-    /** The list of decisions that have led to the root of this DD */
+    /**
+     * The list of decisions that have led to the root of this DD
+     */
     private Set<Decision> pathToRoot = Collections.emptySet();
-    /** All the nodes from the previous layer */
+    /**
+     * All the nodes from the previous layer
+     */
     private HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
-    /** All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded */
+    /**
+     * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
+     */
     private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
-    /** All the nodes from the next layer */
+    /**
+     * All the nodes from the next layer
+     */
     private HashMap<T, Node> nextLayer = new HashMap<T, Node>();
-    /** All the nodes from the last exact layer cutset */
+    /**
+     * All the nodes from the last exact layer cutset
+     */
     private List<NodeSubProblem<T>> lel = new ArrayList<>();
-    /** A flag to keep track of the fact that LEL might be empty albeit not set */
+    /**
+     * A flag to keep track of the fact that LEL might be empty albeit not set
+     */
     private boolean lelWasSet = false;
-    /** The best node in the terminal layer (if it exists at all) */
+    /**
+     * The best node in the terminal layer (if it exists at all)
+     */
     private Node best = null;
 
     // --- UTILITY CLASSES -----------------------------------------------
+
     /**
-     * This is an atomic node from the decision diagram. Per-se, it does not 
+     * This is an atomic node from the decision diagram. Per-se, it does not
      * hold much interpretable information.
      */
     private static final class Node {
-        /** The length of the longest path to this node */
+        /**
+         * The length of the longest path to this node
+         */
         private int value;
-        /** The length of the longest suffix of this node (bottom part of a local bound) */
+        /**
+         * The length of the longest suffix of this node (bottom part of a local bound)
+         */
         private Integer suffix;
-        /** The edge terminating the longest path to this node */
+        /**
+         * The edge terminating the longest path to this node
+         */
         private Edge best;
-        /** The list of edges leading to this node */
+        /**
+         * The list of edges leading to this node
+         */
         private List<Edge> edges;
 
-        /** Creates a new node */
+        /**
+         * Creates a new node
+         */
         public Node(final int value) {
-            this.value  = value;
+            this.value = value;
             this.suffix = null;
-            this.best   = null;
-            this.edges  = new ArrayList<>();
+            this.best = null;
+            this.edges = new ArrayList<>();
         }
     }
+
     /**
      * This is an edge that connects two nodes from the decision diagram
      */
     private static final class Edge {
-        /** The source node of this arc */
+        /**
+         * The source node of this arc
+         */
         private Node origin;
-        /** The decision that was made when traversing this arc */
+        /**
+         * The decision that was made when traversing this arc
+         */
         private Decision decision;
-        /** The weight of the arc */
+        /**
+         * The weight of the arc
+         */
         private int weight;
 
         /**
          * Creates a new edge between pairs of nodes
-         * 
+         *
          * @param src the source node
-         * @param d the decision that was made when traversing this edge
-         * @param w the weight of the edge
+         * @param d   the decision that was made when traversing this edge
+         * @param w   the weight of the edge
          */
         public Edge(final Node src, final Decision d, final int w) {
             this.origin = src;
@@ -73,35 +106,46 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.weight = w;
         }
     }
+
     /**
-     * This class encapsulates the association of a node with its state and 
+     * This class encapsulates the association of a node with its state and
      * associated rough upper bound.
-     * 
-     * This class essentially serves two purposes: 
-     * 
-     * - associate a node with a state during the compilation (and allow to 
-     *   eagerly forget about the given state, which allows to save substantial
-     *   amounts of RAM while compiling the DD).
-     * 
+     * <p>
+     * This class essentially serves two purposes:
+     * <p>
+     * - associate a node with a state during the compilation (and allow to
+     * eagerly forget about the given state, which allows to save substantial
+     * amounts of RAM while compiling the DD).
+     * <p>
      * - turn an MDD node from the exact cutset into a subproblem which is used
-     *   by the API.
+     * by the API.
      */
     private static final class NodeSubProblem<T> {
-        /** The state associated to this node */
+        /**
+         * The state associated to this node
+         */
         private final T state;
-        /** The actual node from the graph of decision diagrams */
+        /**
+         * The actual node from the graph of decision diagrams
+         */
         private final Node node;
-        /** The upper bound associated with this node (if state were the root) */
+        /**
+         * The upper bound associated with this node (if state were the root)
+         */
         private int ub;
 
-        /** Creates a new instance */
-        public NodeSubProblem(final T state, final int ub, final Node node){
+        /**
+         * Creates a new instance
+         */
+        public NodeSubProblem(final T state, final int ub, final Node node) {
             this.state = state;
-            this.ub    = ub;
-            this.node  = node;
+            this.ub = ub;
+            this.node = node;
         }
 
-        /** @return Turns this association into an actual subproblem */
+        /**
+         * @return Turns this association into an actual subproblem
+         */
         public SubProblem<T> toSubProblem(final Set<Decision> pathToRoot) {
             HashSet<Decision> path = new HashSet<>();
             path.addAll(pathToRoot);
@@ -128,15 +172,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.clear();
 
         // initialize the compilation
-        final int maxWidth           = input.getMaxWidth();
+        final int maxWidth = input.getMaxWidth();
         final SubProblem<T> residual = input.getResidual();
-        final Node root              = new Node(residual.getValue());
-        this.pathToRoot              = residual.getPath();
+        final Node root = new Node(residual.getValue());
+        this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
         // proceed to compilation
-        final Problem<T> problem       = input.getProblem();
-        final Relaxation<T> relax      = input.getRelaxation();
+        final Problem<T> problem = input.getProblem();
+        final Relaxation<T> relax = input.getRelaxation();
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
 
@@ -155,10 +199,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.currentLayer.clear();
 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
-                T state   = e.getKey();
+                T state = e.getKey();
                 Node node = e.getValue();
 
-                int rub  = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                 this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
             }
             this.nextLayer.clear();
@@ -198,7 +242,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                         maybeSaveLel();
                         relax(maxWidth, ranking, relax);
                         break;
-                    case Exact: 
+                    case Exact:
                         /* nothing to do */
                         break;
                 }
@@ -210,7 +254,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextvar);
                     while (domain.hasNext()) {
-                        final int val           = domain.next();
+                        final int val = domain.next();
                         final Decision decision = new Decision(nextvar, val);
 
                         branchOn(n, decision, problem);
@@ -219,7 +263,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             depth += 1;
+            System.out.printf("Next layer: %d nodes %s - depth: %d%n", nextLayer.size(), nextLayer.keySet(), depth);
+            System.out.println("\n-----------------------------------------------------------\n");
         }
+
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -255,7 +302,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         } else {
             Set<Decision> sol = new HashSet<>();
             sol.addAll(pathToRoot);
-            
+
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
@@ -269,7 +316,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     public Iterator<SubProblem<T>> exactCutset() {
         return new NodeSubProblemsAsSubProblemsIterator<>(lel.iterator(), pathToRoot);
     }
-    
+
     // --- UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T> input) {
         final HashSet<Integer> set = new HashSet<>();
@@ -282,7 +329,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
         return set;
     }
-    /** Reset the state of this MDD. This way it can easily be reused */
+
+    /**
+     * Reset the state of this MDD. This way it can easily be reused
+     */
     private void clear() {
         pathToRoot = Collections.emptySet();
         prevLayer.clear();
@@ -292,37 +342,42 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         lelWasSet = false;
         best = null;
     }
-    /** Saves the last exact layer cutset if needed */
+
+    /**
+     * Saves the last exact layer cutset if needed
+     */
     private void maybeSaveLel() {
         if (!lelWasSet) {
             lel.addAll(prevLayer.values());
         }
         lelWasSet = true;
     }
+
     /**
-     * Performs a restriction of the current layer. 
-     * 
+     * Performs a restriction of the current layer.
+     *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking a ranking that orders the nodes from the most promising (greatest)
-     *  to the least promising (lowest) 
+     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
+     *                 to the least promising (lowest)
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
+
     /**
-     * Performs a restriction of the current layer. 
-     * 
+     * Performs a restriction of the current layer.
+     *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking a ranking that orders the nodes from the most promising (greatest)
-     *  to the least promising (lowest) 
-     * @param relax the relaxation operators which we will use to merge nodes
+     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
+     *                 to the least promising (lowest)
+     * @param relax    the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
 
-        final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
+        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?
@@ -342,21 +397,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         // redirect and relax all arcs entering the merged node
         for (NodeSubProblem<T> drop : merge) {
             node.ub = Math.max(node.ub, drop.ub);
-            
+
             for (Edge e : drop.node.edges) {
                 int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
                 int value = saturatedAdd(e.origin.value, rcost);
-                e.weight  = rcost;
+                e.weight = rcost;
 
                 node.node.edges.add(e);
                 if (value > node.node.value) {
                     node.node.value = value;
-                    node.node.best  = e;
+                    node.node.best = e;
                 }
             }
         }
-        
+
         // delete the nodes that have been merged
         merge.clear();
         // append the newly merged node if needed
@@ -368,35 +423,44 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * This method performs the branching from the subproblem rooted in "node", making the given decision
      * and behaving as per the problem definition.
-     * 
-     * @param node the origin of the transition
+     *
+     * @param node     the origin of the transition
      * @param decision the decision being made
-     * @param problem the problem that defines the transition and transition cost functions
+     * @param problem  the problem that defines the transition and transition cost functions
      */
     private void branchOn(final NodeSubProblem<T> node, final Decision decision, final Problem<T> problem) {
-        T state  = problem.transition(node.state, decision);
+        T state = problem.transition(node.state, decision);
         int cost = problem.transitionCost(node.state, decision);
-        int value= saturatedAdd(node.node.value, cost);
+        int value = saturatedAdd(node.node.value, cost);
 
-        Node n   = nextLayer.get(state);
+        System.out.printf("From: %s%n", node.state);
+        System.out.printf("Takes %s with cost %d%n", decision, cost);
+        System.out.printf("Get: %s", state);
+
+
+        Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
             nextLayer.put(state, n);
+            System.out.println(" - new node in next layer");
         }
+        System.out.println("\n");
 
         Edge edge = new Edge(node.node, decision, cost);
         n.edges.add(edge);
 
         if (value >= n.value) {
             n.best = edge;
-            n.value= value;
+            n.value = value;
         }
     }
-    
-    /** Performs a bottom up traversal of the mdd to compute the local bounds */
+
+    /**
+     * Performs a bottom up traversal of the mdd to compute the local bounds
+     */
     private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent  = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>();
         parent.addAll(nextLayer.values());
 
         for (Node n : parent) {
@@ -406,7 +470,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         while (!parent.isEmpty()) {
             HashSet<Node> tmp = current;
             current = parent;
-            parent  = tmp;
+            parent = tmp;
             parent.clear();
 
             for (Node n : current) {
@@ -425,7 +489,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
-    /** Performs a saturated addition (no overflow) */
+    /**
+     * Performs a saturated addition (no overflow)
+     */
     private static final int saturatedAdd(int a, int b) {
         long sum = (long) a + (long) b;
         sum = sum >= Integer.MAX_VALUE ? Integer.MAX_VALUE : sum;
@@ -433,57 +499,82 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return (int) sum;
     }
 
-    /** An iterator that transforms the inner subroblems into actual subroblems */
+    /**
+     * An iterator that transforms the inner subroblems into actual subroblems
+     */
     private static final class NodeSubProblemsAsSubProblemsIterator<T> implements Iterator<SubProblem<T>> {
-        /** The collection being iterated upon */
+        /**
+         * The collection being iterated upon
+         */
         private final Iterator<NodeSubProblem<T>> it;
-        /** The list of decisions constitutive of the path to root */
+        /**
+         * The list of decisions constitutive of the path to root
+         */
         private final Set<Decision> ptr;
+
         /**
          * Creates a new instance
-         * @param it the decorated iterator
+         *
+         * @param it  the decorated iterator
          * @param ptr the path to root
          */
         public NodeSubProblemsAsSubProblemsIterator(final Iterator<NodeSubProblem<T>> it, final Set<Decision> ptr) {
             this.it = it;
-            this.ptr= ptr;
+            this.ptr = ptr;
         }
+
         @Override
         public boolean hasNext() {
             return it.hasNext();
         }
+
         @Override
         public SubProblem<T> next() {
             return it.next().toSubProblem(ptr);
         }
     }
-    /** An iterator that transforms the inner subroblems into their representing states */
+
+    /**
+     * An iterator that transforms the inner subroblems into their representing states
+     */
     private static final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
-        /** The collection being iterated upon */
+        /**
+         * The collection being iterated upon
+         */
         private final Iterator<NodeSubProblem<T>> it;
+
         /**
          * Creates a new instance
+         *
          * @param it the decorated iterator
          */
         public NodeSubProblemsAsStateIterator(final Iterator<NodeSubProblem<T>> it) {
             this.it = it;
         }
+
         @Override
         public boolean hasNext() {
             return it.hasNext();
         }
+
         @Override
         public T next() {
             return it.next().state;
         }
     }
-    /** This utility class implements a decorator pattern to sort NodeSubProblems by their value then state */
-    private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>>{
-        /** This is the decorated ranking */
+
+    /**
+     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
+     */
+    private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>> {
+        /**
+         * This is the decorated ranking
+         */
         private final StateRanking<T> delegate;
-        
-        /** 
+
+        /**
          * Creates a new instance
+         *
          * @param delegate the decorated ranking
          */
         public NodeSubroblemComparator(final StateRanking<T> delegate) {
@@ -498,6 +589,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             } else {
                 return cmp;
             }
-        }        
+        }
     }
 }
