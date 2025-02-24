@@ -5,6 +5,8 @@ import org.ddolib.ddo.heuristics.StateRanking;
 public class TSPTWRanking implements StateRanking<TSPTWState> {
     @Override
     public int compare(TSPTWState o1, TSPTWState o2) {
-        return 0;
+        // In a layer,nodes with a non-empty mightVisit are children of a merged node.
+        // There are good candidates to be merged.
+        return -Integer.compare(o1.mightVisit().cardinality(), o2.mightVisit().cardinality());
     }
 }
