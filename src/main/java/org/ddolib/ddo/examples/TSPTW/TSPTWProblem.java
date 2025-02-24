@@ -23,7 +23,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     @Override
     public TSPTWState initialState() {
         BitSet must = new BitSet(nbVars());
-        must.set(0, nbVars(), true);
+        must.set(1, nbVars(), true);
         BitSet might = new BitSet(nbVars());
         return new TSPTWState(new TSPNode(0), 0, must, might, 0);
     }
@@ -35,9 +35,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public Iterator<Integer> domain(TSPTWState state, int var) {
-
-        //TODO: si on peut pas atteindre le noeud, on le prends pas. Si pas de décision possible, on s'arrête et si
-        // on trouve pas de solution, le problème n'est pas faisable.
+        
         if (state.timeElapsed()) return Collections.emptyIterator();
         else if (state.depth() == nbVars() - 1) return List.of(0).iterator();
         else {
@@ -49,14 +47,28 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public TSPTWState transition(TSPTWState state, Decision decision) {
-        return null;
+        int target = decision.val();
+        TSPNode newPos = new TSPNode(target);
+        int newTime = arrivalTime(state, target);
+        BitSet newMust = (BitSet) state.mustVisit().clone();
+        newMust.set(target, false);
+        BitSet newMight = (BitSet) state.mightVisit().clone();
+        newMight.set(target, false);
+        boolean elapsed = !reachable(state, target);
+        return new TSPTWState(newPos, newTime, newMust, newMight, state.depth() + 1, elapsed);
     }
 
     @Override
     public int transitionCost(TSPTWState state, Decision decision) {
         int to = decision.var();
-        if (reachable(state, to)) return -minDistance(state, to);
-        else return -Integer.MAX_VALUE;
+        if (reachable(state, to)) {
+            int travel = minDistance(state, to);
+            int arrival = state.time() + travel;
+            int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
+            return -(travel + waiting);
+        } else {
+            return -Integer.MAX_VALUE;
+        }
     }
 
     private boolean reachable(TSPTWState state, Integer target) {
@@ -70,6 +82,12 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             case Virtual(Set<Integer> nodes) ->
                     nodes.stream().mapToInt(x -> x).map(x -> timeMatrix[x][to]).max().getAsInt();
         };
+    }
+
+    private int arrivalTime(TSPTWState from, Integer to) {
+        int time = from.time() + minDistance(from, to);
+        return Math.max(time, timeWindows[to].start());
+
     }
 
 }
