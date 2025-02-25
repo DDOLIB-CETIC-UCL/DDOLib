@@ -47,7 +47,13 @@ public class TSPTWProblem implements Problem<TSPTWState> {
                 toReturn.set(i, reachable(state, i));
             }
 
-            if (state.mustVisit().length() < nbVars() - state.depth()) toReturn.or(state.mightVisit());
+            if (state.mustVisit().length() < nbVars() - state.depth()) {
+                var possiblyIt = state.possiblyVisit().stream().iterator();
+                while (possiblyIt.hasNext()) {
+                    int i = possiblyIt.nextInt();
+                    toReturn.set(i, reachable(state, i));
+                }
+            }
 
             return toReturn.stream().iterator();
         }
@@ -60,7 +66,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         int newTime = arrivalTime(state, target);
         BitSet newMust = (BitSet) state.mustVisit().clone();
         newMust.set(target, false);
-        BitSet newMight = (BitSet) state.mightVisit().clone();
+        BitSet newMight = (BitSet) state.possiblyVisit().clone();
         newMight.set(target, false);
         return new TSPTWState(newPos, newTime, newMust, newMight, state.depth() + 1);
     }
@@ -85,7 +91,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         return switch (from.position()) {
             case TSPNode(int value) -> timeMatrix[value][to];
             case Virtual(Set<Integer> nodes) ->
-                    nodes.stream().mapToInt(x -> x).map(x -> timeMatrix[x][to]).max().getAsInt();
+                    nodes.stream().mapToInt(x -> x).map(x -> timeMatrix[x][to]).min().getAsInt();
         };
     }
 

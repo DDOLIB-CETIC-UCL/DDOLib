@@ -50,10 +50,10 @@ public class TSPTW {
     public static void main(String[] args) throws IOException {
         TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_1.txt");
 
-        TSPTWRelax relax = new TSPTWRelax();
+        TSPTWRelax relax = new TSPTWRelax(problem.nbVars());
         TSPTWRanking ranking = new TSPTWRanking();
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(1000);
+        final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
