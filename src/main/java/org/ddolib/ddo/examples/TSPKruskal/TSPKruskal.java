@@ -20,7 +20,7 @@ public final class TSPKruskal {
 
         public int hashCode() {
             if(current == -1) return Objects.hash(toVisit, currentSet);
-            else return Objects.hash(toVisit, currentSet);
+            else return Objects.hash(toVisit, current);
         }
 
         @Override
@@ -202,7 +202,7 @@ public final class TSPKruskal {
 
     public static void main(final String[] args) {
 
-        final TSP problem = genInstance(30);
+        final TSP problem = genInstance(20);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
