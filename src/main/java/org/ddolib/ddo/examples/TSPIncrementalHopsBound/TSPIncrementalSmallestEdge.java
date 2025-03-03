@@ -245,7 +245,7 @@ public final class TSPIncrementalSmallestEdge {
 
     public static void main(final String[] args) throws IOException {
 
-        final TSPIncrementalBound problem = genInstance(30);
+        final TSPIncrementalBound problem = genInstance(20);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
