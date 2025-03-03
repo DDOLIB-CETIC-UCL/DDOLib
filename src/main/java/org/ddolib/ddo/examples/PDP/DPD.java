@@ -29,12 +29,28 @@ public final class DPD {
             this.current = current;
         }
 
+
         public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit){
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.currentSet = currentSet;
         }
 
+        public int hashCode() {
+            if(current == -1) return Objects.hash(openToVisit, allToVisit, currentSet);
+            else return Objects.hash(openToVisit, allToVisit, current);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            PDState that = (PDState) obj;
+            if(that.current != this.current) return false;
+            if(current == -1){
+                if(!that.currentSet.equals(this.currentSet)) return false;
+            }
+            if(!that.openToVisit.equals(this.openToVisit)) return false;
+            return (that.allToVisit.equals(this.allToVisit));
+        }
         public PDState goTo(int node, PDProblem problem){
             BitSet newOpenToVisit = (BitSet) openToVisit.clone();
             newOpenToVisit.clear(node);
@@ -281,7 +297,7 @@ public final class DPD {
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(//new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//
+        final Solver solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//new SequentialSolver<>(//
                 problem,
                 relax,
                 varh,
