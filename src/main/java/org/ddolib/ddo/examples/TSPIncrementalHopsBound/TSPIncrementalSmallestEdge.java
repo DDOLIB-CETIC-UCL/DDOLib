@@ -24,7 +24,7 @@ public final class TSPIncrementalSmallestEdge {
 
         public int hashCode() {
             if(current == -1) return Objects.hash(toVisit, currentSet);
-            else return Objects.hash(toVisit, currentSet);
+            else return Objects.hash(toVisit, current);
         }
 
         @Override
