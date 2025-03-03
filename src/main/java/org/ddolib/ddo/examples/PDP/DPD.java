@@ -2,13 +2,11 @@ package org.ddolib.ddo.examples.PDP;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
-import org.ddolib.ddo.examples.TSPKruskal.TSPKruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.util.*;
@@ -180,10 +178,10 @@ public final class DPD {
         }
     }
 
-    private static class TSPRelax implements Relaxation<PDState> {
+    private static class PDPRelax implements Relaxation<PDState> {
         private final PDProblem problem;
 
-        public TSPRelax(PDProblem problem) {
+        public PDPRelax(PDProblem problem) {
             this.problem = problem;
         }
 
@@ -237,7 +235,7 @@ public final class DPD {
         if(!a) throw new Error(str);
     }
 
-    public static class TSPRanking implements StateRanking<PDState> {
+    public static class PDPRanking implements StateRanking<PDState> {
         @Override
         public int compare(final PDState o1, final PDState o2) {
             return 0;
@@ -291,8 +289,8 @@ public final class DPD {
 
     public static void solveDPD(PDProblem problem){
 
-        final TSPRelax                    relax = new TSPRelax(problem);
-        final TSPRanking                ranking = new TSPRanking();
+        final PDPRelax relax = new PDPRelax(problem);
+        final PDPRanking ranking = new PDPRanking();
         final FixedWidth<PDState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
