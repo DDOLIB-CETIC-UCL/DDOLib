@@ -18,6 +18,21 @@ public final class TSPKruskal {
         int current = -1;
         BitSet currentSet; //in case of a merged state, current is -1 and we use currentSet
 
+        public int hashCode() {
+            if(current == -1) return Objects.hash(toVisit, currentSet);
+            else return Objects.hash(toVisit, current);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            TSPState that = (TSPState) obj;
+            if(that.current != this.current) return false;
+            if(current == -1){
+                if(!that.currentSet.equals(this.currentSet)) return false;
+            }
+            return that.toVisit.equals(this.toVisit);
+        }
+
         public TSPState(int current, BitSet toVisit){
             this.toVisit = toVisit;
             this.current = current;
