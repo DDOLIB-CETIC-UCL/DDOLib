@@ -35,11 +35,11 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public Iterator<Integer> domain(TSPTWState state, int var) {
-
+        BitSet toReturn = new BitSet(state.mustVisit().length());
         if (state.depth() == nbVars() - 1) {
-            return List.of(0).iterator();
+            //The only decision for the last variable is to go back to the depot
+            toReturn.set(0, reachable(state, 0));
         } else {
-            BitSet toReturn = new BitSet(state.mustVisit().length());
 
             var mustIt = state.mustVisit().stream().iterator();
             while (mustIt.hasNext()) {
@@ -54,9 +54,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
                     toReturn.set(i, reachable(state, i));
                 }
             }
-
-            return toReturn.stream().iterator();
         }
+        return toReturn.stream().iterator();
+
     }
 
     @Override

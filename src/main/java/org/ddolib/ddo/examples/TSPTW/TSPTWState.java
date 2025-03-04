@@ -6,7 +6,7 @@ public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet p
 
     @Override
     public String toString() {
-        return String.format("position: %s - time: %d - must visit: %s - might visit: %s - depth: %d",
+        return String.format("position: %s - time: %d - must visit: %s - possibly visit: %s - depth: %d",
                 position,
                 time,
                 mustVisit,
