@@ -48,12 +48,12 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/impossible_to_finish.txt");
+        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_1.txt");
 
         TSPTWRelax relax = new TSPTWRelax(problem);
         TSPTWRanking ranking = new TSPTWRanking();
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(200);
+        final FixedWidth<TSPTWState> width = new FixedWidth<>(2000);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 

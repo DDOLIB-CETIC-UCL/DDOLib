@@ -56,7 +56,6 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             }
         }
         return toReturn.stream().iterator();
-
     }
 
     @Override
@@ -82,22 +81,21 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     }
 
-    private boolean reachable(TSPTWState state, Integer target) {
+    boolean reachable(TSPTWState state, Integer target) {
         int duration = minDistance(state, target);
         return state.time() + duration <= timeWindows[target].end();
     }
 
-    private int minDistance(TSPTWState from, Integer to) {
+    int minDistance(TSPTWState from, Integer to) {
         return switch (from.position()) {
             case TSPNode(int value) -> timeMatrix[value][to];
-            case Virtual(Set<Integer> nodes) ->
-                    nodes.stream().mapToInt(x -> x).map(x -> timeMatrix[x][to]).min().getAsInt();
+            case Virtual(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> timeMatrix[x][to]).min().getAsInt();
         };
     }
 
-    private int arrivalTime(TSPTWState from, Integer to) {
+    int arrivalTime(TSPTWState from, Integer to) {
         int time = from.time() + minDistance(from, to);
-        return Math.max(time, timeWindows[to].start());
+        return Integer.max(time, timeWindows[to].start());
 
     }
 
