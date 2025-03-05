@@ -205,13 +205,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
             this.currentLayer.clear();
 
+            System.out.println("------------- RUB -------------");
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
 
-                int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                int fub = input.getRelaxation().fastUpperBound(state, variables);
+                int rub = saturatedAdd(node.value, fub);
+                System.out.printf("%s - path: %d - fub: %d - rub: %d%n", state, node.value, fub, rub);
                 this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
             }
+            System.out.println("-------------------------------\n");
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {

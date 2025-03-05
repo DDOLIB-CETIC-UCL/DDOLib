@@ -9,7 +9,7 @@ import static java.lang.Integer.min;
 
 public class TSPTWRelax implements Relaxation<TSPTWState> {
 
-    private final int INF = Integer.MAX_VALUE;
+    private static final int INFINITY = Integer.MAX_VALUE;
 
     private final int numVar;
     private final TSPTWProblem problem;
@@ -24,7 +24,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
     @Override
     public TSPTWState mergeStates(Iterator<TSPTWState> states) {
         Set<Integer> mergedPos = new HashSet<>();
-        int mergedTime = INF;
+        int mergedTime = INFINITY;
         BitSet mergedMust = new BitSet(numVar);
         mergedMust.set(0, numVar, true);
         BitSet mergedPossibly = new BitSet(numVar);
@@ -57,11 +57,13 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
     }
 
     private int fastLowerBound(TSPTWState state, Set<Integer> variables) {
-        int completeTour = numVar - state.depth();
+        int completeTour = numVar - state.depth() - 1;
+        //From the current we go to the closest node
         int start = switch (state.position()) {
             case TSPNode(int value) -> cheapestEdges[value];
             case Virtual(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
+        // The sum of shortest edges
         int mandatory = 0;
         int backToDepot = 0;
 
@@ -69,7 +71,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         var mustIt = state.mustVisit().stream().iterator();
         while (mustIt.hasNext()) {
             int i = mustIt.nextInt();
-            if (!problem.reachable(state, i)) return INF;
+            if (!problem.reachable(state, i)) return INFINITY;
             completeTour--;
             mandatory += cheapestEdges[i];
             backToDepot = min(backToDepot, problem.timeMatrix[i][0]);
@@ -84,23 +86,28 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             backToDepot = min(backToDepot, problem.timeMatrix[i][0]);
             if (!problem.reachable(state, i)) violation++;
         }
-        if (tmp.size() - violation < completeTour) return INF;
+        if (tmp.size() - violation < completeTour) return INFINITY;
 
         Collections.sort(tmp);
         mandatory += tmp.subList(0, completeTour).stream().mapToInt(x -> x).sum();
 
         // No node can be visited. We just need to go back to the depot
-        if (mandatory == 0) backToDepot = problem.minDistance(state, 0);
+        if (mandatory == 0) {
+            backToDepot = problem.minDistance(state, 0);
+            start = 0;
+        }
 
+        System.out.printf("start: %d - mandatory: %d - backToDepot: %d%n", start, mandatory, backToDepot);
         int total = start + mandatory + backToDepot;
-        if (state.time() + total > problem.timeWindows[0].end()) return INF;
+        System.out.println();
+        if (state.time() + total > problem.timeWindows[0].end()) return INFINITY;
         else return total;
     }
 
     private int[] precomputeCheapestEdges() {
         int[] toReturn = new int[numVar];
         for (int i = 0; i < numVar; i++) {
-            int cheapest = INF;
+            int cheapest = INFINITY;
             for (int j = 0; j < numVar; j++) {
                 if (j != i) {
                     cheapest = Integer.min(cheapest, problem.timeMatrix[i][j]);
