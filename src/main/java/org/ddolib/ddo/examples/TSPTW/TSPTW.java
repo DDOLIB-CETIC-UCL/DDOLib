@@ -7,6 +7,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
@@ -54,7 +55,7 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg020a.tw");
+        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg031a.tw");
 
         TSPTWRelax relax = new TSPTWRelax(problem);
         TSPTWRanking ranking = new TSPTWRanking();
@@ -64,7 +65,8 @@ public class TSPTW {
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        SequentialSolver<TSPTWState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
+        ParallelSolver<TSPTWState> solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(), problem, relax, varh, ranking, width,
+                frontier);
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
