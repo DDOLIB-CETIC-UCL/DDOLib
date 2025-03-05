@@ -1,6 +1,7 @@
-package org.ddolib.ddo.examples.PDP;
+package org.ddolib.ddo.examples.PDPIncrementalHop;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.examples.TSPIncrementalHopsBound.EdgeList;
 import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public final class DPD {
+public final class DPDIncrementalHop {
 
     static class PDState{
 
@@ -21,17 +22,20 @@ public final class DPD {
         int current = -1; //We might not know where we are in case of merge
         BitSet currentSet;
 
-        public PDState(int current, BitSet openToVisit, BitSet allToVisit){
+        EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+
+        public PDState(int current, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode){
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.current = current;
+            this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         }
 
-
-        public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit){
+        public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.currentSet = currentSet;
+            this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         }
 
         public int hashCode() {
@@ -69,9 +73,27 @@ public final class DPD {
                 }
             }
 
-            PDState next = new PDState(node, newOpenToVisit,newAllToVisit);
-            //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
+            PDState next = new PDState(node, newOpenToVisit,newAllToVisit,sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
             return next;
+        }
+
+        public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance){
+
+            if(current == -1) throw new Error("no bound for merged");
+            allToVisit.set(current);
+            sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
+                    sortedEdgeListIncidentToToVisitNodesAndCurrentNode.filterUpToLength(nbHops, allToVisit);
+            allToVisit.clear(current);
+
+            int total = 0;
+            int hopsToDo = nbHops;
+            EdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+            while(hopsToDo > 0 && current != null){
+                total += distance[current.nodeA][current.nodeB];
+                hopsToDo --;
+                current = current.next;
+            }
+            return total;
         }
 
         @Override
@@ -94,6 +116,7 @@ public final class DPD {
         HashMap<Integer,Integer> deliveryToAssociatedPickup;
 
         Set<Integer> unrelatedNodes;
+        EdgeList initSortedEdges;
 
         @Override
         public String toString() {
@@ -124,6 +147,24 @@ public final class DPD {
                 unrelatedNodes.remove(d);
                 deliveryToAssociatedPickup.put(d,p);
             }
+
+            //TODO: remove all edges that go from delivery to related pickup?
+            Iterator<EdgeList> sortedEdges = IntStream.range(1,n).boxed().flatMap(
+                    node1 ->
+                            IntStream.range(1,n)
+                                    .filter(node2 -> node1 > node2)
+                                    .boxed()
+                                    .map(node2 -> new EdgeList(node1, node2, null))
+            ).sorted(Comparator.comparing(e -> distanceMatrix[e.nodeA][e.nodeB])).iterator();
+
+            sortedEdges.hasNext();
+            EdgeList current = sortedEdges.next();
+            this.initSortedEdges = current;
+            while(sortedEdges.hasNext()){
+                EdgeList newCurrent = sortedEdges.next();
+                current.next = newCurrent;
+                current = newCurrent;
+            }
         }
 
         @Override
@@ -144,7 +185,7 @@ public final class DPD {
             BitSet allToVisit = new BitSet(n);
             allToVisit.set(1,n);
 
-            return new PDState(0, openToVisit ,allToVisit);
+            return new PDState(0, openToVisit, allToVisit, initSortedEdges);
         }
 
         @Override
@@ -204,7 +245,7 @@ public final class DPD {
                 if(state.current != -1) current.set(state.current);
                 else current.or(state.currentSet);
             }
-            PDState merged = new PDState(current,openToVisit,allToVisit);
+            PDState merged = new PDState(current,openToVisit,allToVisit, problem.initSortedEdges);
             //System.out.println("merged:" + merged);
             return merged;
         }
@@ -221,12 +262,9 @@ public final class DPD {
             if (state.current == -1) {
                 return Integer.MAX_VALUE;
             } else {
-                state.allToVisit.set(state.current);
-                int nbStepsToRemain = variables.size();
-                Kruskal a = new Kruskal(problem.distanceMatrix, state.allToVisit, nbStepsToRemain);
-                state.allToVisit.clear(state.current);
-                int ub = a.minimalSpanningTreeWeight;
-                return -ub;
+                int nbHopsToDo = variables.size();
+                int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo,problem.distanceMatrix);
+                return -lb;
             }
         }
     }
@@ -278,7 +316,7 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(25,1);
+        final PDProblem problem = genInstance(30,1);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -291,7 +329,7 @@ public final class DPD {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDState> width = new FixedWidth<>(1000);
+        final FixedWidth<PDState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
@@ -317,7 +355,6 @@ public final class DPD {
                     return route;
                 })
                 .get();
-
 
         System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
