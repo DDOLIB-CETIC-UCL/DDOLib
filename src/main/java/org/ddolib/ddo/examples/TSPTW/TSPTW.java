@@ -54,12 +54,12 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg016b.tw");
+        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg020a.tw");
 
         TSPTWRelax relax = new TSPTWRelax(problem);
         TSPTWRanking ranking = new TSPTWRanking();
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(2000);
+        final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), 20);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
