@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.TSPTW;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -27,17 +28,22 @@ public class TSPTW {
             String line;
 
             while ((line = br.readLine()) != null) {
+                //Skip comment
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue;
+                }
+
                 if (lineCount == 0) {
                     numVar = Integer.parseInt(line);
                     distance = new int[numVar][numVar];
                     timeWindows = new TimeWindow[numVar];
                 } else if (1 <= lineCount && lineCount <= numVar) {
                     int i = lineCount - 1;
-                    String[] distanceFromI = line.split("\\s");
+                    String[] distanceFromI = line.split("\\s+");
                     distance[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
                 } else {
                     int i = lineCount - 1 - numVar;
-                    String[] tw = line.split("\\s");
+                    String[] tw = line.split("\\s+");
                     timeWindows[i] = new TimeWindow(Integer.parseInt(tw[0]), Integer.parseInt(tw[1]));
                 }
                 lineCount++;
@@ -48,7 +54,7 @@ public class TSPTW {
 
 
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/nbNodes_4_1.txt");
+        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg016b.tw");
 
         TSPTWRelax relax = new TSPTWRelax(problem);
         TSPTWRanking ranking = new TSPTWRanking();
@@ -60,7 +66,7 @@ public class TSPTW {
 
         SequentialSolver<TSPTWState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
         long start = System.currentTimeMillis();
-        solver.maximize();
+        SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
@@ -86,6 +92,7 @@ public class TSPTW {
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);
+        System.out.println(stat);
 
 
     }

@@ -97,9 +97,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             start = 0;
         }
 
-        System.out.printf("start: %d - mandatory: %d - backToDepot: %d%n", start, mandatory, backToDepot);
         int total = start + mandatory + backToDepot;
-        System.out.println();
         if (state.time() + total > problem.timeWindows[0].end()) return INFINITY;
         else return total;
     }
