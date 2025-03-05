@@ -23,7 +23,8 @@ public class SetCoverTest {
     static Stream<SetCover.SetCoverProblem> dataProvider() {
         try {
             return Stream.of(
-                    SetCover.readInstance("data/SetCover/tripode")
+                    SetCover.readInstance("data/SetCover/tripode"),
+                    SetCover.readInstance("data/SetCover/abilene")
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -35,7 +36,7 @@ public class SetCoverTest {
     public void testParameterized(SetCoverProblem problem) {
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000000);
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(5);
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
@@ -52,10 +53,12 @@ public class SetCoverTest {
 
 
         int[] solution = solver.bestSolution().map(decisions -> {
+            System.out.println("Solution Found");
             int[] values = new int[problem.nbVars()];
             for (Decision d : decisions) {
                 values[d.var()] = d.val();
             }
+            System.out.println("Cost: "+ Arrays.stream(values).sum());
             return values;
         }).get();
 

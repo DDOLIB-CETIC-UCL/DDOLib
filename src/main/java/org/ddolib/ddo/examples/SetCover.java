@@ -68,9 +68,12 @@ public class SetCover {
 
         @Override
         public Iterator<Integer> domain(SetCoverState state, int var) {
+            // If the considered set is useless, it cannot be taken
             if (Collections.disjoint(state.uncoveredElements.keySet(), sets[var])) {
                 return List.of(0).iterator();
             } else {
+                // If the considered set is the last one that can cover a particular element,
+                // it is forced to be selected
                 for (Integer elem: state.uncoveredElements.keySet()) {
                     if (state.uncoveredElements.get(elem) == 1 && sets[var].contains(elem)) {
                         return List.of(1).iterator();
@@ -138,7 +141,7 @@ public class SetCover {
     public static class SetCoverRanking implements StateRanking<SetCoverState> {
         @Override
         public int compare(final SetCoverState o1, final SetCoverState o2) {
-            return o2.uncoveredElements.size() - o1.uncoveredElements.size();
+            return o1.uncoveredElements.size() - o2.uncoveredElements.size();
         }
     }
 
@@ -150,11 +153,8 @@ public class SetCover {
             SetCoverState newState = currState.clone();
             while (states.hasNext()) {
                 currState = states.next();
-                for (Integer element : newState.uncoveredElements.keySet()) {
-                    if (!currState.uncoveredElements.containsKey(element))
-                        newState.uncoveredElements.remove(element);
-                }
-                //newState.uncoveredElements.retainAll(currState.uncoveredElements);
+                newState.uncoveredElements.keySet().retainAll(currState.uncoveredElements.keySet());
+                if (newState.uncoveredElements.isEmpty()) break;
             }
             return newState;
         }
