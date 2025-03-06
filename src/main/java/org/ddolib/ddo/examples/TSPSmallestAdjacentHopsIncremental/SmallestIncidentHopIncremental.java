@@ -1,49 +1,49 @@
 package org.ddolib.ddo.examples.TSPSmallestAdjacentHopsIncremental;
 
+import java.util.AbstractCollection;
 import java.util.BitSet;
+
 
 public class SmallestIncidentHopIncremental {
     int baseNode;
-    int closestNeighbour;
+    MList sortedPartiallyFilteredAdjacent;
 
     SmallestIncidentHopIncremental next;
 
-    public SmallestIncidentHopIncremental(int baseNode, int closestNeighbour, SmallestIncidentHopIncremental next){
+    public SmallestIncidentHopIncremental(int baseNode, MList sortedPartiallyFilteredAdjacent, SmallestIncidentHopIncremental next){
         this.baseNode = baseNode;
-        this.closestNeighbour = closestNeighbour;
+        this.sortedPartiallyFilteredAdjacent = sortedPartiallyFilteredAdjacent;
         this.next = next;
     }
 
-    SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet nodes, int [][] distance){
+    SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes){
 
-        if(!nodes.get(baseNode)) {
+        if(!allowedNodes.get(baseNode)) {
             //drop me
-            return next.updateToRestrictedNodeSet(nodes, distance);
-        }else if(nodes.get(closestNeighbour)){
+            return next.updateToRestrictedNodeSet(allowedNodes);
+        }else if(allowedNodes.get(sortedPartiallyFilteredAdjacent.head)){
             //keep me as is
-            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(nodes,distance);
+            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes);
             if(next == newNext) return this;
-            else return new SmallestIncidentHopIncremental(baseNode, closestNeighbour, newNext);
+            else return new SmallestIncidentHopIncremental(baseNode, sortedPartiallyFilteredAdjacent, newNext);
         }else{
             //update me
-            int newClosestNeighbour = nodes
-                    .stream()
-                    .filter(i -> i != baseNode)
-                    .boxed()
-                    .min((a, b) -> (distance[baseNode][a] - distance[baseNode][b]))
-                    .get();
 
-            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(nodes,distance);
-            return new SmallestIncidentHopIncremental(baseNode, newClosestNeighbour, newNext);
+            MList newList = sortedPartiallyFilteredAdjacent.tail;
+            while(!allowedNodes.get(newList.head)){
+                newList = newList.tail;
+            }
+
+            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes);
+            return new SmallestIncidentHopIncremental(baseNode, newList, newNext);
         }
     }
 
-
     int sumOfAllHops(int [][] distance){
         if(next == null){
-            return distance[baseNode][closestNeighbour];
+            return distance[baseNode][sortedPartiallyFilteredAdjacent.head];
         }else{
-            return distance[baseNode][closestNeighbour] + next.sumOfAllHops(distance);
+            return distance[baseNode][sortedPartiallyFilteredAdjacent.head] + next.sumOfAllHops(distance);
         }
     }
 
