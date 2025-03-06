@@ -11,7 +11,7 @@ public interface Solver {
     /** Tries to maximize the objective value of the problem which is being solved */
     SearchStatistics maximize(int verbosityLevel);
     /** Tries to maximize the objective value of the problem which is being solved */
-    SearchStatistics void maximize();
+    SearchStatistics maximize();
     /** @return the value of the best solution in this decision diagram if there is one */
     Optional<Integer> bestValue();
     /** @return the solution leading to the best solution in this decision diagram (if it exists) */
