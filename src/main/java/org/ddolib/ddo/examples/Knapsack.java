@@ -12,10 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public final class Knapsack {
 
@@ -94,20 +91,34 @@ public final class Knapsack {
             return cost;
         }
 
+
         @Override
         public int fastUpperBound(Integer state, Set<Integer> variables) {
-            // Use linear reduction to compute an upper bound
-            int maxProfit = 0;
+            double[] ratio = new double[problem.nbVars()];
             int capacity = state;
-            Iterator<Integer> itemIterator = variables.iterator();
+            for (int v : variables) {
+                ratio[v] = ((double) capacity / problem.weight[v]);
+            }
+
+            class RatioComparator implements Comparator<Integer> {
+                @Override
+                public int compare(Integer o1, Integer o2) {
+                    return Double.compare(ratio[o1], ratio[o2]);
+                }
+            }
+
+            Integer[] sorted = variables.toArray(new Integer[0]);
+            Arrays.sort(sorted, new RatioComparator().reversed());
+
+            int maxProfit = 0;
+            Iterator<Integer> itemIterator = Arrays.stream(sorted).iterator();
             while (capacity > 0 && itemIterator.hasNext()) {
                 int item = itemIterator.next();
                 if (capacity >= problem.weight[item]) {
                     maxProfit += problem.profit[item];
                     capacity -= problem.weight[item];
                 } else {
-                    double itemRatio = ((double) capacity) / problem.weight[item];
-                    double itemProfit = itemRatio * problem.profit[item];
+                    double itemProfit = ratio[item] * problem.profit[item];
                     maxProfit += (int) Math.floor(itemProfit);
                     capacity = 0;
                 }

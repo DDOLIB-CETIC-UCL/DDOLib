@@ -42,7 +42,7 @@ class PigmentSchedulingTest {
     @MethodSource({"instance2items"/*,"instance5items"*/})
     public void testParameterized(PigmentScheduling.PSPInstance instance) {
         PigmentScheduling.PSP problem = new PigmentScheduling.PSP(instance);
-        final PigmentScheduling.PSPRelax relax = new PigmentScheduling.PSPRelax();
+        final PigmentScheduling.PSPRelax relax = new PigmentScheduling.PSPRelax(instance);
         final PigmentScheduling.PSPRanking ranking = new PigmentScheduling.PSPRanking();
         final FixedWidth<PigmentScheduling.PSPState> width = new FixedWidth<>(10);
         final VariableHeuristic<PigmentScheduling.PSPState> varh = new DefaultVariableHeuristic();

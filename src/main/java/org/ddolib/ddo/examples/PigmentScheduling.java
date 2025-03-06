@@ -1,16 +1,16 @@
 package org.ddolib.ddo.examples;
 
 
-
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.ddolib.ddo.io.InputReader;
+import org.ddolib.ddo.util.TSPLowerBound;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
  * whenever the machine switches the production from item type i to j.
  * Finally, the demand matrix Q contains all the orders: Q_i^p in {0,1}
  * indicates whether there is an order for item type i in I at time period p.
- * 0 ≤ p < H where H is the time horizon.
+ * 0 ≤ p &lt; H where H is the time horizon.
  */
 public class PigmentScheduling {
 
@@ -132,7 +132,7 @@ public class PigmentScheduling {
             if (item == IDLE) {
                 return 0;
             } else {
-                int t = (instance.horizon - decision.var() -1);
+                int t = (instance.horizon - decision.var() - 1);
                 int duration = state.previousDemands[item] - t;
                 int stocking = instance.stockingCost[item] * duration;
                 int changeover = state.next != -1 ? instance.changeoverCost[item][state.next] : 0;
@@ -143,6 +143,30 @@ public class PigmentScheduling {
     }
 
     public static class PSPRelax implements Relaxation<PSPState> {
+
+        // lower bound of the TSP for all subsets of items types
+        // indices are the binary representation of the subsets
+        public int [] tspLb;
+
+        public PSPRelax(PSPInstance instance) {
+            tspLb = TSPLowerBound.lowerBoundForAllSubsets(instance.changeoverCost);
+        }
+
+        // Set of item types that have an unsatisfied demand,
+        // plus the next item type produced if any
+        private static Set<Integer> members(PSPState state) {
+            Set<Integer> mem = new HashSet<>();
+            for (int i = 0; i < state.previousDemands.length; i++) {
+                if (state.previousDemands[i] >= 0) {
+                    mem.add(i);
+                }
+            }
+            if (state.next != -1) {
+                mem.add(state.next);
+            }
+            return mem;
+        }
+
         @Override
         public PSPState mergeStates(final Iterator<PSPState> states) {
             PSPState currState = states.next();
@@ -158,10 +182,74 @@ public class PigmentScheduling {
             return new PSPState(time, IDLE, prevDemands);
         }
 
+        /**
+         * From the PhD Thesis of Vianney Coppe:
+         * https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf
+         * "When the changeover costs are ignored, the PSP falls under the Wagner-
+         * Whitin conditions that allow to compute the optimal stocking cost
+         * for a given set of remaining items to produce. Conversely, if the stocking
+         * costs and the delivery constraints are omitted, the PSP can be reduced to the
+         * TSP. Therefore, a valid lower bound on the total changeover cost to produce
+         * a remaining set of items is to take the total weight of a Minimum Spanning
+         * Tree computed on the graph of changeover costs limited to item types that
+         * still need to be produced. The optimal weight for all these spanning trees can
+         * be precomputed because the number of items is usually small. As there is no
+         * overlap between the two lower bounds described, the RLB for the PSP can
+         * sum their individual contributions to obtain a stronger lower bound."
+         *
+         * @param state the state for which the estimate is to be computed
+         * @param variables the set of unassigned variables
+         * @return
+         */
+        @Override
+        public int fastUpperBound(PSPState state, final Set<Integer> variables) {
+            // Convert to bitset-like index
+            int idx = members(state).stream().
+                    mapToInt(Integer::intValue).
+                    reduce(0, (a, b) -> a | (1 << b));
+
+            int coLb = tspLb[idx]; // lower-bound on the changeOverCost
+            int ub = -coLb;
+            return ub;
+            //return Integer.MAX_VALUE;
+        }
+
+
         @Override
         public int relaxEdge(PSPState from, PSPState to, PSPState merged, Decision d, int cost) {
             return cost;
         }
+
+        private long[] computeMST(int[][] changeover) {
+            int n = changeover.length;
+            long[] minEdge = new long[n];
+            boolean[] inMST = new boolean[n];
+            Arrays.fill(minEdge, Long.MAX_VALUE);
+            minEdge[0] = 0; // Start from the first item
+            long[] mstCost = new long[1 << n]; // To store the MST cost for each subset of nodes
+            for (int i = 0; i < n; i++) {
+                int u = -1;
+                for (int j = 0; j < n; j++) {
+                    if (!inMST[j] && (u == -1 || minEdge[j] < minEdge[u])) {
+                        u = j;
+                    }
+                }
+                inMST[u] = true;
+                for (int v = 0; v < n; v++) {
+                    if (changeover[u][v] < minEdge[v]) {
+                        minEdge[v] = changeover[u][v];
+                    }
+                }
+                // Update the MST cost for the current subset
+                for (int mask = 0; mask < (1 << n); mask++) {
+                    if ((mask & (1 << u)) == 0) {
+                        mstCost[mask | (1 << u)] = Math.min(mstCost[mask | (1 << u)], mstCost[mask] + minEdge[u]);
+                    }
+                }
+            }
+            return mstCost;
+        }
+
     }
 
     static class PSPRanking implements StateRanking<PSPState> {
@@ -170,7 +258,7 @@ public class PigmentScheduling {
             // the state with the smallest total demand is the best (not sure about this)
             int totS1 = Arrays.stream(s1.previousDemands).sum();
             int totS2 = Arrays.stream(s2.previousDemands).sum();
-            return Integer.compare(totS1,totS2);
+            return Integer.compare(totS1, totS2);
         }
     }
 
@@ -226,10 +314,10 @@ public class PigmentScheduling {
             }
             for (int t = 1; t <= horizon; t++) {
                 for (int i = 0; i < nItems; i++) {
-                    if (demands[i][t-1] > 0) {
+                    if (demands[i][t - 1] > 0) {
                         previousDemands[i][t] = t - 1;
                     } else {
-                        previousDemands[i][t] = previousDemands[i][t-1];
+                        previousDemands[i][t] = previousDemands[i][t - 1];
                     }
                 }
             }
@@ -239,7 +327,7 @@ public class PigmentScheduling {
                     if (t == 0) {
                         remainingDemands[i][t] = demands[i][t];
                     } else {
-                        remainingDemands[i][t] = remainingDemands[i][t-1] + demands[i][t];
+                        remainingDemands[i][t] = remainingDemands[i][t - 1] + demands[i][t];
                     }
                 }
             }
@@ -247,9 +335,9 @@ public class PigmentScheduling {
     }
 
     public static void main(final String[] args) throws IOException {
-        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/1");;
+        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/10");;
         PSP problem = new PSP(instance);
-        final PSPRelax relax = new PSPRelax();
+        final PSPRelax relax = new PSPRelax(instance);
         final PSPRanking ranking = new PSPRanking();
         final FixedWidth<PSPState> width = new FixedWidth<>(100);
         final VariableHeuristic<PSPState> varh = new DefaultVariableHeuristic();
@@ -263,14 +351,14 @@ public class PigmentScheduling {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
                     int[] values = new int[problem.nbVars()];
                     for (Decision d : decisions) {
-                        int t = (instance.horizon - d.var() -1);
+                        int t = (instance.horizon - d.var() - 1);
                         values[t] = d.val();
                     }
                     return values;
@@ -280,6 +368,8 @@ public class PigmentScheduling {
         System.out.println(String.format("Duration : %.3f", duration));
         System.out.println(String.format("Objective: %d", solver.bestValue().get()));
         System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
+        System.out.println(stats);
+
     }
 }
 

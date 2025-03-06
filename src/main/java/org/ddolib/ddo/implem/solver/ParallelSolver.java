@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The branch and bound with mdd paradigm parallelizes *VERY* well. This is why
@@ -44,10 +45,16 @@ public final class ParallelSolver<T> implements Solver {
         this.shared   = new Shared<>(nbThreads, problem, relax, varh, ranking, width);
         this.critical = new Critical<>(nbThreads, frontier);
     }
+
     @Override
-    public void maximize(){ maximize(0);}
+    public SearchStatistics maximize(){ return maximize(0);}
+
     @Override
-    public void maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel) {
+
+        final AtomicInteger nbIter = new AtomicInteger(0);
+        final AtomicInteger queueMaxSize = new AtomicInteger(0);
+
         initialize();
 
         Thread[] workers = new Thread[shared.nbThreads];
@@ -65,6 +72,8 @@ public final class ParallelSolver<T> implements Solver {
                             case Starvation:
                                 continue;
                             case WorkItem:
+                                nbIter.incrementAndGet();
+                                queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 if(verbosityLevel >=2) System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
                                 processOneNode(wl.subProblem, mdd,verbosityLevel);
                                 notifyNodeFinished(threadId);
@@ -79,6 +88,8 @@ public final class ParallelSolver<T> implements Solver {
         for (int i = 0; i < shared.nbThreads; i++) {
             try { workers[i].join(); } catch (InterruptedException e) {}
         }
+
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get());
     }
     @Override
     public Optional<Integer> bestValue() {
