@@ -304,7 +304,7 @@ public final class DPD {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(2);
+        solver.maximize(1);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

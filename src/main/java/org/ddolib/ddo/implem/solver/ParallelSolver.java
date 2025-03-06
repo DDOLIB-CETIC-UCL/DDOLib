@@ -47,7 +47,7 @@ public final class ParallelSolver<T> implements Solver {
     @Override
     public void maximize(){ maximize(0);}
     @Override
-    public void maximize(int verbose) {
+    public void maximize(int verbosityLevel) {
         initialize();
 
         Thread[] workers = new Thread[shared.nbThreads];
@@ -65,8 +65,8 @@ public final class ParallelSolver<T> implements Solver {
                             case Starvation:
                                 continue;
                             case WorkItem:
-                                if(verbose >=2) System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
-                                processOneNode(wl.subProblem, mdd);
+                                if(verbosityLevel >=2) System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
+                                processOneNode(wl.subProblem, mdd,verbosityLevel);
                                 notifyNodeFinished(threadId);
                                 break;
                         }
@@ -135,7 +135,7 @@ public final class ParallelSolver<T> implements Solver {
      * This is typically the method you are searching for if you are searching after an implementation
      * of the branch and bound with mdd algo.
      */
-    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T> mdd) {
+    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T> mdd, int verbosityLevel) {
         // 1. RESTRICTION
         int nodeUB = sub.getUpperBound();
         int bestLB = bestLB();
@@ -158,7 +158,7 @@ public final class ParallelSolver<T> implements Solver {
         );
 
         mdd.compile(compilation);
-        maybeUpdateBest(mdd);
+        maybeUpdateBest(mdd, verbosityLevel);
         if (mdd.isExact()) {
             return;
         }
@@ -178,7 +178,7 @@ public final class ParallelSolver<T> implements Solver {
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {
-            maybeUpdateBest(mdd);
+            maybeUpdateBest(mdd,verbosityLevel);
         } else {
             enqueueCutset(mdd);
         }
@@ -195,13 +195,14 @@ public final class ParallelSolver<T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(final DecisionDiagram<T> mdd) {
+    private void maybeUpdateBest(final DecisionDiagram<T> mdd, int verbosityLevel) {
         synchronized (critical) {
             Optional<Integer> ddval = mdd.bestValue();
 
             if( ddval.isPresent() && ddval.get() > critical.bestLB) {
                 critical.bestLB = ddval.get();
                 critical.bestSol= mdd.bestSolution();
+                if(verbosityLevel >= 1) System.out.println("new best: " + ddval.get());
             }
         }
     }
