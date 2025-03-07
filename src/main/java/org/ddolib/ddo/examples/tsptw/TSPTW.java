@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPTW;
+package org.ddolib.ddo.examples.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
@@ -6,9 +6,7 @@ import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -53,20 +51,29 @@ public class TSPTW {
         }
     }
 
-
     public static void main(String[] args) throws IOException {
-        TSPTWProblem problem = readInstance("data/TSPTW/AFG/rbg031a.tw");
+        String file = args.length == 0 ? "data/TSPTW/AFG/rbg010a.tw" : args[0];
+        int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+        TSPTWProblem problem = readInstance(file);
 
         TSPTWRelax relax = new TSPTWRelax(problem);
         TSPTWRanking ranking = new TSPTWRanking();
 
-        final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), 20);
+        final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), widthFactor);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        ParallelSolver<TSPTWState> solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(), problem, relax, varh, ranking, width,
-                frontier);
+        ParallelSolver<TSPTWState> solver = new ParallelSolver<>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier
+        );
+
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
@@ -91,11 +98,10 @@ public class TSPTW {
         String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
 
 
+        System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);
         System.out.println(stat);
-
-
     }
 }

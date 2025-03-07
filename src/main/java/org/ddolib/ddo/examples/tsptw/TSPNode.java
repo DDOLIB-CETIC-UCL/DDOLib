@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPTW;
+package org.ddolib.ddo.examples.tsptw;
 
 public record TSPNode(int value) implements Position {
     @Override

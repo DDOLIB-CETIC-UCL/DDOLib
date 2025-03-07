@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPTW;
+package org.ddolib.ddo.examples.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;

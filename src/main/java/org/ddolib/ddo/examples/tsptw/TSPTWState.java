@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPTW;
+package org.ddolib.ddo.examples.tsptw;
 
 import java.util.BitSet;
 
