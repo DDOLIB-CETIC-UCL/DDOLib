@@ -9,11 +9,20 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     final int[][] timeMatrix;
     final TimeWindow[] timeWindows;
+    public final Optional<Integer> optimal;
+
+    public TSPTWProblem(int[][] timeMatrix, TimeWindow[] timeWindows, Optional<Integer> optimal) {
+        this.timeMatrix = timeMatrix;
+        this.timeWindows = timeWindows;
+        this.optimal = optimal;
+    }
 
     public TSPTWProblem(int[][] timeMatrix, TimeWindow[] timeWindows) {
         this.timeMatrix = timeMatrix;
         this.timeWindows = timeWindows;
+        this.optimal = Optional.empty();
     }
+
 
     @Override
     public int nbVars() {

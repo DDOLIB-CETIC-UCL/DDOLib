@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TSPTW {
@@ -21,6 +22,8 @@ public class TSPTW {
         int numVar = 0;
         int[][] distance = new int[0][0];
         TimeWindow[] timeWindows = new TimeWindow[0];
+        Optional<Integer> optimal = Optional.empty();
+
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             int lineCount = 0;
 
@@ -33,9 +36,11 @@ public class TSPTW {
                 }
 
                 if (lineCount == 0) {
-                    numVar = Integer.parseInt(line);
+                    String[] tokens = line.split("\\s+");
+                    numVar = Integer.parseInt(tokens[0]);
                     distance = new int[numVar][numVar];
                     timeWindows = new TimeWindow[numVar];
+                    if (tokens.length == 2) optimal = Optional.of(Integer.parseInt(tokens[1]));
                 } else if (1 <= lineCount && lineCount <= numVar) {
                     int i = lineCount - 1;
                     String[] distanceFromI = line.split("\\s+");
@@ -47,17 +52,17 @@ public class TSPTW {
                 }
                 lineCount++;
             }
-            return new TSPTWProblem(distance, timeWindows);
+            return new TSPTWProblem(distance, timeWindows, optimal);
         }
     }
 
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? "data/TSPTW/AFG/rbg010a.tw" : args[0];
-        int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
-        TSPTWProblem problem = readInstance(file);
+        final String file = args.length == 0 ? "data/TSPTW/Dumas/n20w20.002.txt" : args[0];
+        final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+        final TSPTWProblem problem = readInstance(file);
 
-        TSPTWRelax relax = new TSPTWRelax(problem);
-        TSPTWRanking ranking = new TSPTWRanking();
+        final TSPTWRelax relax = new TSPTWRelax(problem);
+        final TSPTWRanking ranking = new TSPTWRanking();
 
         final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), widthFactor);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
@@ -99,6 +104,7 @@ public class TSPTW {
 
 
         System.out.printf("Instance : %s%n", file);
+        System.out.printf("Width factor : %d%n", widthFactor);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);
