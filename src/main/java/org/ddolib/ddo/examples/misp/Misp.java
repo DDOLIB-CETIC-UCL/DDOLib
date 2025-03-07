@@ -130,11 +130,21 @@ public final class Misp {
     }
 
 
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp -Dexec.args="<your file> <maximum
+     * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
+     */
     public static void main(String[] args) throws IOException {
-        final MispProblem problem = readGraph("data/MISP/C6.dot");
+        final String file = args.length == 0 ? "data/MISP/C6.dot" : args[0];
+        final int w = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
+
+        final MispProblem problem = readGraph(file);
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
-        final FixedWidth<BitSet> width = new FixedWidth<>(250);
+        final FixedWidth<BitSet> width = new FixedWidth<>(w);
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
@@ -163,6 +173,7 @@ public final class Misp {
                 })
                 .get();
 
+        System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
