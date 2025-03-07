@@ -10,6 +10,7 @@ import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,10 +27,12 @@ public class Max2SatTest {
     static Stream<Max2SatProblem> dataProvider() throws IOException {
         String dir = "src/test/resources/Max2Sat/";
 
-        Stream<Path> stream = Files.list(Paths.get(dir));
-        return stream.filter(file -> !Files.isDirectory(file))
-                .map(Path::getFileName)
-                .map(fileName -> dir + fileName.toString())
+        File[] files = new File(dir).listFiles();
+        assert files != null;
+        Stream<File> stream = Stream.of(files);
+        return stream.filter(file -> !file.isDirectory())
+                .map(File::getName)
+                .map(fileName -> dir + fileName)
                 .map(fileName -> {
                     try {
                         return Max2SatIO.readInstance(fileName);
