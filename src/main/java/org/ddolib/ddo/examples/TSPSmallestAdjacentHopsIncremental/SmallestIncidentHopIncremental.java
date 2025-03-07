@@ -41,23 +41,6 @@ public class SmallestIncidentHopIncremental {
         }
     }
 
-    int sumOfAllHops(SortedAdjacents sortedAdjacents){
-        int toReturn = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
-        if(next != null){
-            toReturn += next.sumOfAllHops(sortedAdjacents);
-        }
-        return toReturn;
-    }
-
-    int biggestHop(SortedAdjacents sortedAdjacents){
-        int thisHop = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
-        if(next == null){
-            return thisHop;
-        }
-        int otherHop = next.biggestHop(sortedAdjacents);
-        return Math.max(otherHop, thisHop);
-    }
-
     void accumulateHops(IntStream.Builder b, SortedAdjacents sortedAdjacents){
         int thisHop = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
         b.add(thisHop);
