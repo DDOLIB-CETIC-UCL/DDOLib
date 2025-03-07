@@ -94,16 +94,19 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public void maximize() {
+    public SearchStatistics maximize() {
+        int nbIter = 0;
+        int queueMaxSize = 0;
         frontier.push(root());
-
         while (!frontier.isEmpty()) {
+            nbIter++;
+            queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return;
+                return new SearchStatistics(nbIter, queueMaxSize);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -144,6 +147,7 @@ public final class SequentialSolver<T> implements Solver {
                 enqueueCutset();
             }
         }
+        return new SearchStatistics(nbIter, queueMaxSize);
     }
 
     @Override
