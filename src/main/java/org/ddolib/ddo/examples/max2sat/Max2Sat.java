@@ -15,13 +15,23 @@ import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
 
 public final class Max2Sat {
 
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.max2sat.Max2Sat"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="oorg.ddolib.ddo.examples.max2sat.Max2Sat -Dexec.args="<your file>
+     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
+     */
     public static void main(String[] args) throws IOException {
-        Max2SatProblem problem = readInstance("data/Max2Sat/wcnf_var_4_unary.txt");
+        String file = args.length == 0 ? "data/Max2Sat/wcnf_var_4_opti_39.txt" : args[0];
+        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+
+        Max2SatProblem problem = readInstance(file);
 
         Max2SatRelax relax = new Max2SatRelax(problem);
         Max2SatRanking ranking = new Max2SatRanking();
 
-        final FixedWidth<Max2SatState> width = new FixedWidth<>(2);
+        final FixedWidth<Max2SatState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
@@ -50,6 +60,8 @@ public final class Max2Sat {
         }).get();
 
 
+        System.out.printf("Instance : %s%n", file);
+        System.out.printf("Max width: %d%n", maxWidth);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
