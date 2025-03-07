@@ -1,68 +1,62 @@
 package org.ddolib.ddo.examples.TSPSmallestAdjacentHopsIncremental;
 
-import java.util.AbstractCollection;
 import java.util.BitSet;
-
 
 public class SmallestIncidentHopIncremental {
     int baseNode;
-    MList sortedPartiallyFilteredAdjacent;
+    int positionInSortedAdjacents;
 
     SmallestIncidentHopIncremental next;
 
-    public SmallestIncidentHopIncremental(int baseNode, MList sortedPartiallyFilteredAdjacent, SmallestIncidentHopIncremental next){
+    public SmallestIncidentHopIncremental(int baseNode, int positionInSortedAdjacents, SmallestIncidentHopIncremental next){
         this.baseNode = baseNode;
-        this.sortedPartiallyFilteredAdjacent = sortedPartiallyFilteredAdjacent;
+        this.positionInSortedAdjacents = positionInSortedAdjacents;
         this.next = next;
     }
 
-    SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes){
+    SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes, SortedAdjacents sortedAdjacents){
 
         if(!allowedNodes.get(baseNode)) {
             //drop me
-            return next.updateToRestrictedNodeSet(allowedNodes);
-        }else if(allowedNodes.get(sortedPartiallyFilteredAdjacent.head)){
+            return next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
+        }else if(allowedNodes.get(sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents])){
             //keep me as is
-            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes);
+            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
             if(next == newNext) return this;
-            else return new SmallestIncidentHopIncremental(baseNode, sortedPartiallyFilteredAdjacent, newNext);
+            else return new SmallestIncidentHopIncremental(baseNode, positionInSortedAdjacents, newNext);
         }else{
             //update me
 
-            MList newList = sortedPartiallyFilteredAdjacent.tail;
-            while(!allowedNodes.get(newList.head)){
-                newList = newList.tail;
+            int newCurrent = positionInSortedAdjacents+1;
+            while(!allowedNodes.get(sortedAdjacents.sortedAdjacents[baseNode][newCurrent])){
+                newCurrent++;
             }
 
-            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes);
-            return new SmallestIncidentHopIncremental(baseNode, newList, newNext);
+            SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
+            return new SmallestIncidentHopIncremental(baseNode, newCurrent, newNext);
         }
     }
 
-    int sumOfAllHops(int [][] distance){
+    int sumOfAllHops(SortedAdjacents sortedAdjacents){
+        int toReturn = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
+        if(next != null){
+            toReturn += next.sumOfAllHops(sortedAdjacents);
+        }
+        return toReturn;
+    }
+
+    int biggestHop(SortedAdjacents sortedAdjacents){
+        int thisHop = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
         if(next == null){
-            return distance[baseNode][sortedPartiallyFilteredAdjacent.head];
-        }else{
-            return distance[baseNode][sortedPartiallyFilteredAdjacent.head] + next.sumOfAllHops(distance);
+            return thisHop;
         }
+        int otherHop = next.biggestHop(sortedAdjacents);
+        return Math.max(otherHop, thisHop);
     }
 
-    int biggestHop(int [][] distance){
-        if(next == null){
-            return distance[baseNode][closestNeighbour];
-        }else{
-            return Math.max(distance[baseNode][closestNeighbour],next.sumOfAllHops(distance));
-        }
+    int computeHeuristics(SortedAdjacents sortedAdjacents){
+        return sumOfAllHops(sortedAdjacents) - biggestHop(sortedAdjacents);
     }
-
-    int computeHeuristics(int [][] distance){
-        return sumOfAllHops(distance) - biggestHop(distance);
-    }
-
-    String myString(int[][] matrix){
-        return "SmallestIncidentHopIncremental(base:" + baseNode + " nearestNeighbour:" + closestNeighbour + " dist:" + matrix[baseNode][closestNeighbour] + ")";
-    }
-
 }
 
 
