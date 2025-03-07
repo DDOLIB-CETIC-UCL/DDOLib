@@ -18,6 +18,27 @@ import java.util.stream.Collectors;
 public class TSPTW {
 
 
+    /**
+     * Creates instance from data files.<br>
+     * <p>
+     * The expected format is the following:
+     * <ul>
+     *     <li>
+     *         The first line must contain the number of variable. A second  optional value can be
+     *         given: the expected objective value for an optimal solution.
+     *     </li>
+     *     <li>
+     *         The time matrix.
+     *     </li>
+     *     <li>
+     *         A time window for each node.
+     *     </li>
+     * </ul>
+     *
+     * @param fileName The path to the input file.
+     * @return An instance of TSPTWProblem
+     * @throws IOException If something goes wrong while reading input file.
+     */
     public static TSPTWProblem readInstance(String fileName) throws IOException {
         int numVar = 0;
         int[][] distance = new int[0][0];
@@ -56,6 +77,16 @@ public class TSPTW {
         }
     }
 
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp -Dexec.args="<your file> <maximum
+     * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
+     * <p>
+     * Given Data files comes from
+     * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
+     */
     public static void main(String[] args) throws IOException {
         final String file = args.length == 0 ? "data/TSPTW/Dumas/n20w20.002.txt" : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;

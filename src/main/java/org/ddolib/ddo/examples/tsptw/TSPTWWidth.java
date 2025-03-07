@@ -2,6 +2,9 @@ package org.ddolib.ddo.examples.tsptw;
 
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 
+/**
+ * Compute the width of a layer based on the number of variables, the depth and a given factor.
+ */
 public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
     private final int nbVars;
     private final int factor;

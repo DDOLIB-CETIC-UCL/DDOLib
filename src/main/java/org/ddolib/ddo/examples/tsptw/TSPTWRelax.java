@@ -33,7 +33,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             TSPTWState current = states.next();
             switch (current.position()) {
                 case TSPNode(int value) -> mergedPos.add(value);
-                case Virtual(Set<Integer> nodes) -> mergedPos.addAll(nodes);
+                case VirtualNodes(Set<Integer> nodes) -> mergedPos.addAll(nodes);
             }
             mergedMust.and(current.mustVisit());
             mergedPossibly.or(current.mustVisit());
@@ -43,7 +43,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         }
         mergedPossibly.andNot(mergedMust);
 
-        return new TSPTWState(new Virtual(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
+        return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
     }
 
     @Override
@@ -58,10 +58,10 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
     private int fastLowerBound(TSPTWState state, Set<Integer> variables) {
         int completeTour = numVar - state.depth() - 1;
-        //From the current we go to the closest node
+        //From the current state we go to the closest node
         int start = switch (state.position()) {
             case TSPNode(int value) -> cheapestEdges[value];
-            case Virtual(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
+            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
         // The sum of shortest edges
         int mandatory = 0;
@@ -74,7 +74,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             if (!problem.reachable(state, i)) return INFINITY;
             completeTour--;
             mandatory += cheapestEdges[i];
-            backToDepot = min(backToDepot, problem.timeMatrix[i][0]);
+            backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
         }
 
         ArrayList<Integer> tmp = new ArrayList<>();
@@ -83,7 +83,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         while (possiblyIt.hasNext()) {
             int i = possiblyIt.nextInt();
             tmp.add(i);
-            backToDepot = min(backToDepot, problem.timeMatrix[i][0]);
+            backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
             if (!problem.reachable(state, i)) violation++;
         }
         if (tmp.size() - violation < completeTour) return INFINITY;
@@ -93,7 +93,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
         // No node can be visited. We just need to go back to the depot
         if (mandatory == 0) {
-            backToDepot = problem.minDistance(state, 0);
+            backToDepot = problem.minDuration(state, 0);
             start = 0;
         }
 
@@ -108,7 +108,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             int cheapest = INFINITY;
             for (int j = 0; j < numVar; j++) {
                 if (j != i) {
-                    cheapest = Integer.min(cheapest, problem.timeMatrix[i][j]);
+                    cheapest = Integer.min(cheapest, problem.durationMatrix[i][j]);
                 }
             }
             toReturn[i] = cheapest;

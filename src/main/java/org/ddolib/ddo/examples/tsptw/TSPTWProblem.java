@@ -7,18 +7,18 @@ import java.util.*;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 
-    final int[][] timeMatrix;
+    final int[][] durationMatrix;
     final TimeWindow[] timeWindows;
     public final Optional<Integer> optimal;
 
-    public TSPTWProblem(int[][] timeMatrix, TimeWindow[] timeWindows, Optional<Integer> optimal) {
-        this.timeMatrix = timeMatrix;
+    public TSPTWProblem(int[][] durationMatrix, TimeWindow[] timeWindows, Optional<Integer> optimal) {
+        this.durationMatrix = durationMatrix;
         this.timeWindows = timeWindows;
         this.optimal = optimal;
     }
 
-    public TSPTWProblem(int[][] timeMatrix, TimeWindow[] timeWindows) {
-        this.timeMatrix = timeMatrix;
+    public TSPTWProblem(int[][] durationMatrix, TimeWindow[] timeWindows) {
+        this.durationMatrix = durationMatrix;
         this.timeWindows = timeWindows;
         this.optimal = Optional.empty();
     }
@@ -26,7 +26,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public int nbVars() {
-        return timeMatrix.length;
+        return durationMatrix.length;
     }
 
     @Override
@@ -57,6 +57,8 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             }
 
             if (state.mustVisit().length() < nbVars() - state.depth()) {
+                // The state is a merged state. Its mustVisit set can be too small. In that case, we can take decision
+                // from the possiblyVisit state.
                 var possiblyIt = state.possiblyVisit().stream().iterator();
                 while (possiblyIt.hasNext()) {
                     int i = possiblyIt.nextInt();
@@ -83,27 +85,47 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     public int transitionCost(TSPTWState state, Decision decision) {
         int to = decision.val();
 
-        int travel = minDistance(state, to);
+        int travel = minDuration(state, to);
         int arrival = state.time() + travel;
         int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
         return -(travel + waiting);
 
     }
 
-    boolean reachable(TSPTWState state, Integer target) {
-        int duration = minDistance(state, target);
-        return state.time() + duration <= timeWindows[target].end();
+    /**
+     * @param from The current state of the mdd.
+     * @param to   The target node.
+     * @return Whether we can reach the node {@code to} before the end of its time window starting from state {@code
+     * from}.
+     */
+    boolean reachable(TSPTWState from, Integer to) {
+        int duration = minDuration(from, to);
+        return from.time() + duration <= timeWindows[to].end();
     }
 
-    int minDistance(TSPTWState from, Integer to) {
+    /**
+     * @param from The current state of the mdd.
+     * @param to   The target node.
+     * @return The minimal duration to reach the node {@code to} starting from state {@code from}.
+     */
+    int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
-            case TSPNode(int value) -> timeMatrix[value][to];
-            case Virtual(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> timeMatrix[x][to]).min().getAsInt();
+            case TSPNode(int value) -> durationMatrix[value][to];
+            case VirtualNodes(Set<Integer> nodes) ->
+                    nodes.stream().mapToInt(x -> durationMatrix[x][to]).min().getAsInt();
         };
     }
 
+    /**
+     * Computes the arrival time starting at {@code from.time()} given the travel time and the start of the time
+     * window of
+     *
+     * @param from The current state of the mdd.
+     * @param to   The target node.
+     * @return The arrival time at {@code to} starting at {@code from.time()}.
+     */
     int arrivalTime(TSPTWState from, Integer to) {
-        int time = from.time() + minDistance(from, to);
+        int time = from.time() + minDuration(from, to);
         return Integer.max(time, timeWindows[to].start());
 
     }
