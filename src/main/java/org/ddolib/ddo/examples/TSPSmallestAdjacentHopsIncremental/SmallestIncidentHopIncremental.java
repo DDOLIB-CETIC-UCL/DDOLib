@@ -3,7 +3,6 @@ package org.ddolib.ddo.examples.TSPSmallestAdjacentHopsIncremental;
 import java.util.BitSet;
 import java.util.IntSummaryStatistics;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class SmallestIncidentHopIncremental {
     int baseNode;
