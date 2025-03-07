@@ -1,6 +1,9 @@
 package org.ddolib.ddo.examples.TSPSmallestAdjacentHopsIncremental;
 
 import java.util.BitSet;
+import java.util.IntSummaryStatistics;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class SmallestIncidentHopIncremental {
     int baseNode;
@@ -18,9 +21,11 @@ public class SmallestIncidentHopIncremental {
 
         if(!allowedNodes.get(baseNode)) {
             //drop me
+            if(next == null) return null;
             return next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
         }else if(allowedNodes.get(sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents])){
             //keep me as is
+            if(next == null) return this;
             SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
             if(next == newNext) return this;
             else return new SmallestIncidentHopIncremental(baseNode, positionInSortedAdjacents, newNext);
@@ -31,7 +36,7 @@ public class SmallestIncidentHopIncremental {
             while(!allowedNodes.get(sortedAdjacents.sortedAdjacents[baseNode][newCurrent])){
                 newCurrent++;
             }
-
+            if(next == null) return new SmallestIncidentHopIncremental(baseNode, newCurrent, null);;
             SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
             return new SmallestIncidentHopIncremental(baseNode, newCurrent, newNext);
         }
@@ -54,8 +59,23 @@ public class SmallestIncidentHopIncremental {
         return Math.max(otherHop, thisHop);
     }
 
-    int computeHeuristics(SortedAdjacents sortedAdjacents){
-        return sumOfAllHops(sortedAdjacents) - biggestHop(sortedAdjacents);
+    void accumulateHops(IntStream.Builder b, SortedAdjacents sortedAdjacents){
+        int thisHop = sortedAdjacents.distanceMatrix[baseNode][sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents]];
+        b.add(thisHop);
+        if(next == null){return;}
+        next.accumulateHops(b,sortedAdjacents);
+    }
+
+    int computeHeuristics(SortedAdjacents sortedAdjacents,int nbHops){
+        //les nbHops plus petits hops moins le plus grand de ceux là
+
+        //build the stream of all hops
+        IntStream.Builder b = IntStream.builder();
+        accumulateHops(b,sortedAdjacents);
+
+        IntSummaryStatistics stats = b.build().sorted().limit(nbHops).summaryStatistics();
+
+        return (int)(stats.getSum() - stats.getMax());
     }
 }
 
