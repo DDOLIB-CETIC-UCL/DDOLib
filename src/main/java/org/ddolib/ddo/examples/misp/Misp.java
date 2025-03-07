@@ -139,12 +139,12 @@ public final class Misp {
      */
     public static void main(String[] args) throws IOException {
         final String file = args.length == 0 ? "data/MISP/C6.dot" : args[0];
-        final int w = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
+        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         final MispProblem problem = readGraph(file);
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
-        final FixedWidth<BitSet> width = new FixedWidth<>(w);
+        final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
@@ -174,6 +174,7 @@ public final class Misp {
                 .get();
 
         System.out.printf("Instance : %s%n", file);
+        System.out.printf("Max width : %d%n", maxWidth);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
