@@ -31,16 +31,21 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         int mergedDepth = 0;
         while (states.hasNext()) {
             TSPTWState current = states.next();
+            //The merged position is the union of all the position
             switch (current.position()) {
                 case TSPNode(int value) -> mergedPos.add(value);
                 case VirtualNodes(Set<Integer> nodes) -> mergedPos.addAll(nodes);
             }
+            // The merged must is the intersection of all must set
             mergedMust.and(current.mustVisit());
+            // The merged possibly is the union of the all the must sets and all the possibly sets
             mergedPossibly.or(current.mustVisit());
             mergedPossibly.or(current.possiblyVisit());
+            // The arrival time of the merged node is the min of all the arrival times
             mergedTime = Integer.min(mergedTime, current.time());
             mergedDepth = current.depth();
         }
+        // We exclude the intersection of the must from the merged possibly
         mergedPossibly.andNot(mergedMust);
 
         return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
@@ -53,19 +58,20 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
     @Override
     public int fastUpperBound(TSPTWState state, Set<Integer> variables) {
-        return -fastLowerBound(state, variables);
+        return -fastLowerBound(state);
     }
 
-    private int fastLowerBound(TSPTWState state, Set<Integer> variables) {
+    private int fastLowerBound(TSPTWState state) {
+        // This lower bound assumes that we will always select the cheapest edges from each node
+
         int completeTour = numVar - state.depth() - 1;
         //From the current state we go to the closest node
         int start = switch (state.position()) {
             case TSPNode(int value) -> cheapestEdges[value];
             case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
-        // The sum of shortest edges
-        int mandatory = 0;
-        int backToDepot = 0;
+        int mandatory = 0; // The sum of shortest edges
+        int backToDepot = 0; // The shortest edges to the depot
 
 
         var mustIt = state.mustVisit().stream().iterator();
@@ -77,19 +83,28 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
         }
 
-        ArrayList<Integer> tmp = new ArrayList<>();
-        int violation = 0;
-        var possiblyIt = state.possiblyVisit().stream().iterator();
-        while (possiblyIt.hasNext()) {
-            int i = possiblyIt.nextInt();
-            tmp.add(i);
-            backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
-            if (!problem.reachable(state, i)) violation++;
-        }
-        if (tmp.size() - violation < completeTour) return INFINITY;
 
-        Collections.sort(tmp);
-        mandatory += tmp.subList(0, completeTour).stream().mapToInt(x -> x).sum();
+        if (completeTour > 0) { // There are not enough mustVisit nodes. We complete the tour with the
+            // possiblyVisit nodes
+            ArrayList<Integer> candidatesToCompleteTour = new ArrayList<>();
+            int violation = 0;
+            var possiblyIt = state.possiblyVisit().stream().iterator();
+
+            while (possiblyIt.hasNext()) {
+                int i = possiblyIt.nextInt();
+                candidatesToCompleteTour.add(i);
+                backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
+                if (!problem.reachable(state, i)) violation++;
+            }
+            if (candidatesToCompleteTour.size() - violation < completeTour) return INFINITY;
+
+            Collections.sort(candidatesToCompleteTour);
+            mandatory += candidatesToCompleteTour
+                    .subList(0, completeTour)
+                    .stream()
+                    .mapToInt(x -> x)
+                    .sum();
+        }
 
         // No node can be visited. We just need to go back to the depot
         if (mandatory == 0) {
