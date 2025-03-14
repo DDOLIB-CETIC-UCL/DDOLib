@@ -53,7 +53,14 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             var mustIt = state.mustVisit().stream().iterator();
             while (mustIt.hasNext()) {
                 int i = mustIt.nextInt();
-                toReturn.set(i, reachable(state, i));
+                if (!reachable(state, i)) {
+                    // We found a node that is no more reachable at the current time.
+                    // Eventually, this state will lead to unfeasible solution.
+                    // So we return now an empty set of decision to cut the sub diagram.
+                    return Collections.emptyIterator();
+                } else {
+                    toReturn.set(i, true);
+                }
             }
 
             if (state.mustVisit().length() < nbVars() - state.depth()) {

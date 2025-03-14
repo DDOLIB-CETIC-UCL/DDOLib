@@ -88,7 +88,7 @@ public class TSPTW {
      * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/TSPTW/Dumas/n20w20.002.txt" : args[0];
+        final String file = args.length == 0 ? "data/TSPTW/AFG/rbg020a.tw" : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
         final TSPTWProblem problem = readInstance(file);
 
