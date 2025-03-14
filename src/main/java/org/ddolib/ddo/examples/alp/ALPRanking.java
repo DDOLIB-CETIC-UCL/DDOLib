@@ -1,0 +1,20 @@
+package org.ddolib.ddo.examples.alp;
+
+import org.ddolib.ddo.heuristics.StateRanking;
+
+import java.util.Arrays;
+
+public class ALPRanking implements StateRanking<ALPState> {
+
+    @Override
+    public int compare(ALPState a, ALPState b) {
+        int remAircraftA = Arrays.stream(a.remainingAircraftOfClass).sum();
+        int remAircraftB = Arrays.stream(b.remainingAircraftOfClass).sum();
+        int totA = Arrays.stream(a.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
+        int totB = Arrays.stream(b.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
+
+        int remCompare = -Integer.compare(remAircraftA,remAircraftB);
+        if(remCompare == 0) return -Integer.compare(totA,totB);
+        else return remCompare;
+    }
+}
