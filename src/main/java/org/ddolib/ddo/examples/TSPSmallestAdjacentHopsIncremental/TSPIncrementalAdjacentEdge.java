@@ -42,7 +42,7 @@ public final class TSPIncrementalAdjacentEdge {
 
         public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents){
             toVisit.set(current);
-            heuristics.updateToRestrictedNodeSet(toVisit,sortedAdjacents);
+            heuristics = heuristics.updateToRestrictedNodeSet(toVisit,sortedAdjacents);
             toVisit.clear(current);
 
             return heuristics.computeHeuristics(sortedAdjacents,nbHops);
@@ -218,7 +218,7 @@ public final class TSPIncrementalAdjacentEdge {
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
+                Runtime.getRuntime().availableProcessors()/2,
                 problem,
                 relax,
                 varh,

@@ -7,8 +7,20 @@ import java.util.stream.IntStream;
 public class SmallestIncidentHopIncremental {
     int baseNode;
     int positionInSortedAdjacents;
-
     SmallestIncidentHopIncremental next;
+
+    public String thisString(SortedAdjacents sortedAdjacents){
+        int adj = sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents];
+        int hop = sortedAdjacents.distanceMatrix[baseNode][adj];
+        return "SmallestIncidentHopIncremental(base:" + baseNode + " pos:" + positionInSortedAdjacents + " adj:" +  adj + " hop:" + hop + ")";
+    }
+    public String allString(SortedAdjacents sortedAdjacents) {
+        if (next == null) {
+            return thisString(sortedAdjacents);
+        } else {
+            return thisString(sortedAdjacents) + "\n\t" + next.allString(sortedAdjacents);
+        }
+    }
 
     public SmallestIncidentHopIncremental(int baseNode, int positionInSortedAdjacents, SmallestIncidentHopIncremental next){
         this.baseNode = baseNode;
