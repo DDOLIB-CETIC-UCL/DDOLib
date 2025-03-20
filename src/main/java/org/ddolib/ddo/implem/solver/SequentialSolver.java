@@ -6,10 +6,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -36,7 +33,7 @@ public final class SequentialSolver<T> implements Solver {
     private final Problem<T> problem;
     /** A suitable relaxation for the problem we want to maximize */
     private final Relaxation<T> relax;
-    /** An heuristic to identify the most promising nodes */
+    /** A heuristic to identify the most promising nodes */
     private final StateRanking<T> ranking;
     /** A heuristic to choose the maximum width of the DD you compile */
     private final WidthHeuristic<T> width;
@@ -70,6 +67,9 @@ public final class SequentialSolver<T> implements Solver {
 
     /** This is the value of the best known lower bound. */
     private int bestLB;
+
+    private int bestUB;
+
     /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
 
@@ -90,6 +90,7 @@ public final class SequentialSolver<T> implements Solver {
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
+        this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -99,15 +100,20 @@ public final class SequentialSolver<T> implements Solver {
         int queueMaxSize = 0;
         frontier.push(root());
         while (!frontier.isEmpty()) {
+            // System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            // System.out.println("Frontier: " + frontier.size());
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
+            // this.bestUB = Math.min(bestUB, nodeUB);
+            System.out.println("Restriction");
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);
             }
+
 
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInput<T> compilation = new CompilationInput<>(
@@ -127,6 +133,7 @@ public final class SequentialSolver<T> implements Solver {
             if (mdd.isExact()) {
                 continue;
             }
+            System.out.println("Relaxation");
 
             // 2. RELAXATION
             compilation = new CompilationInput<>(
@@ -146,6 +153,7 @@ public final class SequentialSolver<T> implements Solver {
             } else {
                 enqueueCutset();
             }
+            // return new SearchStatistics(nbIter, queueMaxSize);
         }
         return new SearchStatistics(nbIter, queueMaxSize);
     }
@@ -181,6 +189,7 @@ public final class SequentialSolver<T> implements Solver {
     private void maybeUpdateBest() {
         Optional<Integer> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
+            System.out.println("New Best Value: " + ddval.get());
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
         }

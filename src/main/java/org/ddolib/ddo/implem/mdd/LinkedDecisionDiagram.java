@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.mdd;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.examples.SetCover;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
@@ -145,6 +146,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int depth = 0;
 
         while (!variables.isEmpty()) {
+            System.out.println("****************");
+            System.out.println("depth: " + depth);
             Integer nextvar = var.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
             // becoming the current layer
@@ -164,17 +167,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {
+                System.out.println("Empty");
                 // there is no feasible solution to this subproblem, we can stop the compilation here
                 return;
             }
 
             if (nextvar == null) {
+                System.out.println("Null");
                 // Some variables simply can't be assigned
                 clear();
                 return;
             } else {
                 variables.remove(nextvar);
             }
+
+            System.out.println("Width: " + currentLayer.size());
 
 
             // If the current layer is too large, we need to shrink it down. 
@@ -188,6 +195,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
+            //System.out.println("Depth:" + depth);
+            // System.out.println("Width: " + currentLayer.size());
             if (depth >= 2 && currentLayer.size() > maxWidth) {
                 switch (input.getCompilationType()) {
                     case Restricted:
@@ -205,19 +214,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
+                // System.out.println("State: " + n.state);
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextvar);
+                    // System.out.print("domain: ");
                     while (domain.hasNext()) {
                         final int val           = domain.next();
                         final Decision decision = new Decision(nextvar, val);
-
+                        // System.out.print(decision.val() + ", ");
                         branchOn(n, decision, problem);
                     }
+                    // System.out.println();
                 }
             }
-
             depth += 1;
         }
 
@@ -227,6 +238,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 best = n;
             }
         }
+
+        System.out.println("Best: " + best.value);
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
@@ -319,10 +332,36 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param relax the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+        /*System.out.println("Relaxing !!!!!!!!!!");
+        System.out.print("[");
+        for (NodeSubProblem<T> sub: currentLayer) {
+            System.out.print(sub.state + "; ");
+        }
+        System.out.println("]");*/
         this.currentLayer.sort(ranking.reversed());
-
+        /*System.out.print("[");
+        for (NodeSubProblem<T> sub: currentLayer) {
+            System.out.print(sub.state + ": " + sub.node.value + "; ");
+        }
+        System.out.println("]");
+        System.out.println(currentLayer.size());
+        System.out.print("[");
+        for (NodeSubProblem<T> sub: currentLayer.subList(0, maxWidth-1)) {
+            System.out.print(sub.state + ": " + sub.node.value + "; ");
+        }
+        System.out.println("]");
+        System.out.print("[");
+        for (NodeSubProblem<T> sub: currentLayer.subList(maxWidth-1, currentLayer.size())) {
+            System.out.print(sub.state + ": " + sub.node.value + "; ");
+        }
+        System.out.println("]");*/
         final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
+        /*System.out.print("[");
+        for (NodeSubProblem<T> sub: merge) {
+            System.out.print(sub.state + ": " + sub.node.value + "; ");
+        }
+        System.out.println("]");*/
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?

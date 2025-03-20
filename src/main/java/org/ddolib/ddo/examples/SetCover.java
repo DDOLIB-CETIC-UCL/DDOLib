@@ -13,9 +13,177 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.Collections.*;
 
 public class SetCover {
+
+    public static final class MostCovered implements VariableHeuristic<SetCoverState> {
+        private final SetCoverProblem problem;
+        private final int[] covered;
+
+        public MostCovered(SetCoverProblem problem) {
+            this.problem = problem;
+            covered = new int[problem.nElem];
+        }
+
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
+            // int depth = problem.nSet - variables.size();
+            int selected = -1;
+            int maxSuperposition = -1;
+            for (int set: variables) {
+                int superposition = 0;
+                for (int elem: problem.sets[set]) {
+                    superposition += covered[elem];
+                    if (superposition > maxSuperposition) {
+                        maxSuperposition = superposition;
+                        selected = set;
+                    }
+                }
+            }
+
+            for (int set: problem.sets[selected]) {
+                covered[set]++;
+            }
+
+            return selected;
+        }
+    }
+
+    public static final class MaxCentralityHeuristic implements VariableHeuristic<SetCover.SetCoverState> {
+        private final SetCoverProblem problem;
+        private final int[] centralitiesSum; // contains, for each set, the sum of the centrality of each covered elem
+
+        public MaxCentralityHeuristic(SetCoverProblem problem) {
+            this.problem = problem;
+            centralitiesSum = new int[problem.nSet];
+
+            // Compute the centrality of each element
+            int[] centrality = new int[problem.nElem];
+            for (int set = 0; set < problem.nSet; set++) {
+                for (int elem: problem.sets[set]) {
+                    centrality[elem]++;
+                }
+            }
+
+            // Compute the sums of the centralities
+            for (int set = 0; set < problem.nSet; set++) {
+                for (int elem: problem.sets[set]) {
+                    centralitiesSum[set] += centrality[elem];
+                }
+            }
+        }
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCover.SetCoverState> states) {
+            int maxCentrality = -1;
+            int selection = -1;
+            for (int set:variables) {
+                if (centralitiesSum[set] > maxCentrality) {
+                    maxCentrality = centralitiesSum[set];
+                    selection = set;
+                }
+            }
+            return selection;
+        }
+    }
+
+    public static final class MinBandwithHeuristic implements VariableHeuristic<SetCover.SetCoverState> {
+
+        private final SetCoverProblem problem;
+        private final int[] firstTimeEncountered;
+        private final int[] lastTimeEncountered;
+        private int nbCall;
+
+        public MinBandwithHeuristic(SetCoverProblem problem) {
+            this.problem = problem;
+            this.firstTimeEncountered = new int[problem.nElem];
+            this.lastTimeEncountered = new int[problem.nElem];
+            for (int i = 0; i < problem.nElem; i++) {
+                firstTimeEncountered[i] = -1;
+                lastTimeEncountered[i] = -1;
+            }
+            nbCall = 0;
+        }
+
+        int lastSelected = -1;
+
+        private int intersectionSize(Set<Integer> a, Set<Integer> b) {
+            Set<Integer> smaller;
+            Set<Integer> larger;
+            if (a.size() < b.size()) {
+                smaller = a;
+                larger = b;
+            } else {
+                smaller = b;
+                larger = a;
+            }
+
+            int intersectionSize = 0;
+            for (Integer elem: smaller) {
+                if (larger.contains(elem)) intersectionSize++;
+            }
+
+            return intersectionSize;
+        }
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCover.SetCoverState> states) {
+            nbCall++;
+            if (lastSelected == -1) {
+                int maxSize = -1;
+                for (Integer var: variables) {
+                    if (problem.sets[var].size() > maxSize) {
+                        maxSize = problem.sets[var].size();
+                        lastSelected = var;
+                    }
+                }
+                // lastSelected = variables.iterator().next();
+                for (int elem: problem.sets[lastSelected]) {
+                    firstTimeEncountered[elem] = nbCall;
+                    lastTimeEncountered[elem] = nbCall;
+                }
+                return lastSelected;
+            }
+            int maxSimilarity = -1;
+            int selected = -1;
+            // selected = variables.iterator().next();
+            for (Integer set: variables) {
+                int similarity = intersectionSize(problem.sets[lastSelected], problem.sets[set]);
+                if (similarity > maxSimilarity) {
+                    maxSimilarity = similarity;
+                    selected = set;
+                }
+            }
+            lastSelected = selected;
+            System.out.println("Selected set: " + selected);
+            System.out.println(problem.sets[selected]);
+            System.out.println("Similarity: " + maxSimilarity);
+
+            for (int elem: problem.sets[selected]) {
+                if (firstTimeEncountered[elem] == -1) firstTimeEncountered[elem] = nbCall;
+                lastTimeEncountered[elem] = nbCall;
+            }
+
+            System.out.print("Bandwith: ");
+            for (int i = 0; i < problem.nElem; i++) {
+                System.out.printf("%d:%d, ", i, lastTimeEncountered[i] - firstTimeEncountered[i]);
+            }
+
+            int[] bandwiths = new int[problem.nElem];
+            for (int i = 0; i < problem.nElem; i++) {
+                bandwiths[i] = lastTimeEncountered[i] - firstTimeEncountered[i];
+            }
+            Arrays.sort(bandwiths);
+            System.out.println();
+            System.out.println("Avg: " + Arrays.stream(bandwiths).average().getAsDouble());
+            System.out.println("Min: " + bandwiths[0]);
+            System.out.println("Max: " + bandwiths[bandwiths.length - 1]);
+            System.out.println("Median: " + bandwiths[bandwiths.length / 2]);
+
+            return selected;
+        }
+    }
 
     public static class SetCoverState {
         // Set<Integer> uncoveredElements;
@@ -29,6 +197,21 @@ public class SetCover {
         protected SetCoverState clone() {
             return new SetCoverState(new HashMap<>(uncoveredElements));
         }
+
+        @Override
+        public String toString() {
+            return uncoveredElements.keySet().toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            assert o instanceof SetCoverState;
+            return uncoveredElements.keySet().equals(((SetCoverState) o).uncoveredElements.keySet());
+        }
+
+        public int size() {
+            return uncoveredElements.size();
+        }
     }
 
     public static class SetCoverProblem implements Problem<SetCoverState> {
@@ -40,6 +223,9 @@ public class SetCover {
             this.nElem = nElem;
             this.nSet = nSet;
             this.sets = sets;
+            /*List<Set<Integer>> tmp = Arrays.asList(sets);
+            Collections.shuffle(tmp);
+            tmp.toArray(this.sets);*/
         }
 
         @Override
@@ -54,6 +240,7 @@ public class SetCover {
                 uncoveredElements.put(i, 0);
             }
             for (Set<Integer> set : sets) {
+                // System.out.println(set);
                 for (Integer element : set) {
                     uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
                 }
@@ -68,6 +255,7 @@ public class SetCover {
 
         @Override
         public Iterator<Integer> domain(SetCoverState state, int var) {
+            // System.out.println("var: " + sets[var]);
             // If the considered set is useless, it cannot be taken
             if (Collections.disjoint(state.uncoveredElements.keySet(), sets[var])) {
                 return List.of(0).iterator();
@@ -86,10 +274,14 @@ public class SetCover {
         @Override
         public SetCoverState transition(SetCoverState state, Decision decision) {
             if (decision.val() == 1) {
+                /*System.out.println("Computing transition");
+                System.out.println("Initial State: " + state);
+                System.out.println("Set: " + sets[decision.var()]);*/
                 SetCoverState newState = state.clone();
                 for (Integer element: sets[decision.var()]) {
                     newState.uncoveredElements.remove(element);
                 }
+                // System.out.println("New State: " + newState);
                 return newState;
             } else {
                 SetCoverState newState = state.clone();
@@ -106,6 +298,48 @@ public class SetCover {
         public int transitionCost(SetCoverState state, Decision decision) {
             return -decision.val();
         }
+    }
+
+    public static class SetCoverRanking implements StateRanking<SetCoverState> {
+
+        @Override
+        public int compare(final SetCoverState o1, final SetCoverState o2) {
+            return Integer.compare(o1.size(), o2.size());
+        }
+    }
+
+    public static class SetCoverRelax implements Relaxation<SetCoverState> {
+
+        @Override
+        public SetCoverState mergeStates(Iterator<SetCoverState> states) {
+            // System.out.println("**************Merging**************");
+            SetCoverState currState = states.next();
+            // System.out.println(currState);
+            SetCoverState newState = currState.clone();
+            int nbrMerged = 1;
+            List<Integer> statesSizes = new ArrayList<>();
+            statesSizes.add(currState.uncoveredElements.size());
+            while (states.hasNext()) {
+                currState = states.next();
+                // System.out.println(currState);
+                newState.uncoveredElements.keySet().retainAll(currState.uncoveredElements.keySet());
+                // statesSizes.add(currState.uncoveredElements.size());
+                nbrMerged++;
+                // if (newState.uncoveredElements.isEmpty()) break;
+            }
+            /*System.out.println("New state: " + newState.uncoveredElements.size());
+            System.out.printf("Merged %d states%n", nbrMerged);
+            statesSizes.sort(Integer::compareTo);
+            System.out.println("Min size: "+ statesSizes.getFirst());
+            System.out.println("Median size: " + statesSizes.get(statesSizes.size()/2));*/
+            return newState;
+        }
+
+        @Override
+        public int relaxEdge(SetCoverState from, SetCoverState to, SetCoverState merged, Decision d, int cost) {
+            return cost;
+        }
+
     }
 
     public static SetCoverProblem readInstance(final String fname) throws IOException {
@@ -135,33 +369,6 @@ public class SetCover {
             });
 
             return new SetCoverProblem(context.nElem, context.nSet, context.sets);
-        }
-    }
-
-    public static class SetCoverRanking implements StateRanking<SetCoverState> {
-        @Override
-        public int compare(final SetCoverState o1, final SetCoverState o2) {
-            return o1.uncoveredElements.size() - o2.uncoveredElements.size();
-        }
-    }
-
-    public static class SetCoverRelax implements Relaxation<SetCoverState> {
-
-        @Override
-        public SetCoverState mergeStates(Iterator<SetCoverState> states) {
-            SetCoverState currState = states.next();
-            SetCoverState newState = currState.clone();
-            while (states.hasNext()) {
-                currState = states.next();
-                newState.uncoveredElements.keySet().retainAll(currState.uncoveredElements.keySet());
-                if (newState.uncoveredElements.isEmpty()) break;
-            }
-            return newState;
-        }
-
-        @Override
-        public int relaxEdge(SetCoverState from, SetCoverState to, SetCoverState merged, Decision d, int cost) {
-            return cost;
         }
     }
 
