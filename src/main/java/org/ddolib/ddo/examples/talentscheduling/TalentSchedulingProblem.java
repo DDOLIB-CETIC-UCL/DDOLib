@@ -71,18 +71,14 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     @Override
     public int transitionCost(TalentSchedState state, Decision decision) {
         int scene = decision.val();
-        BitSet playing = actors[scene]; // The actors playing during this scene
 
-        BitSet waiting = presentActors(state);
-        waiting.andNot(playing); // Present actors waiting for their future scene
+        BitSet toPay = presentActors(state); // All the already present actors (playing for this scene or waiting)
+        toPay.or(actors[scene]); // Add new actors
 
-        int cost = playing.stream()
+        int cost = toPay.stream()
                 .map(actor -> instance.costs()[actor] * instance.duration()[scene])
                 .sum(); // Costs of the playing actors
 
-        cost += waiting.stream()
-                .map(actor -> instance.costs()[actor] * instance.duration()[scene])
-                .sum(); // Costs of the waiting actors
 
         return -cost; // Talent scheduling is a minimization problem. To get a maximization
     }

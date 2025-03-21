@@ -77,7 +77,7 @@ public class TalentScheduling {
         final TalentSchedRelax relax = new TalentSchedRelax(problem.nbVars());
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(2);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(500);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
