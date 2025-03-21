@@ -61,8 +61,6 @@ public class SmallestIncidentHopIncremental {
     }
 
     int computeHeuristics(SortedAdjacents sortedAdjacents,int nbHops){
-        //les nbHops plus petits hops moins le plus grand de ceux là
-
         //build the stream of all hops
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);
@@ -72,5 +70,3 @@ public class SmallestIncidentHopIncremental {
         return (int)(stats.getSum() - stats.getMax());
     }
 }
-
-
