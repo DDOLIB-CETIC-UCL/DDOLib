@@ -3,12 +3,14 @@ package org.ddolib.ddo.examples.talentscheduling;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import javax.sound.midi.Soundbank;
 import java.util.BitSet;
 import java.util.Iterator;
 
 public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
+    /**
+     * For each scene, returns the needed actors
+     */
     final BitSet[] actors;
     final TalentSchedInstance instance;
 
@@ -34,8 +36,8 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     @Override
     public TalentSchedState initialState() {
         BitSet scenes = new BitSet(instance.nbScene());
-        scenes.set(0, instance.nbScene());
-        return new TalentSchedState(scenes);
+        scenes.set(0, instance.nbScene()); // All scenes must be performed
+        return new TalentSchedState(scenes, new BitSet(instance.nbScene()));
     }
 
     @Override
@@ -45,15 +47,25 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
     @Override
     public Iterator<Integer> domain(TalentSchedState state, int var) {
-        return state.remainingScenes().stream().iterator();
+        BitSet toReturn = new BitSet(nbVars());
+        toReturn.or(state.remainingScenes());
+
+        // state inherit from a merged state. There is not enough remaining scenes to assign each variable.
+        // So, we select scene form maybeScenes
+        if (toReturn.cardinality() < nbVars())
+            toReturn.or(state.maybeScenes());
+
+        return toReturn.stream().iterator();
     }
 
     @Override
     public TalentSchedState transition(TalentSchedState state, Decision decision) {
-        BitSet toReturn = (BitSet) state.remainingScenes().clone();
-        toReturn.set(decision.val(), false);
+        BitSet newRemaining = (BitSet) state.remainingScenes().clone();
+        BitSet newMaybe = (BitSet) state.maybeScenes().clone();
+        newRemaining.set(decision.val(), false);
+        newMaybe.set(decision.val(), false);
 
-        return new TalentSchedState(toReturn);
+        return new TalentSchedState(newRemaining, newMaybe);
     }
 
     @Override
@@ -72,7 +84,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
                 .map(actor -> instance.costs()[actor] * instance.duration()[scene])
                 .sum(); // Costs of the waiting actors
 
-        return -cost;
+        return -cost; // Talent scheduling is a minimization problem. To get a maximization
     }
 
 
@@ -81,8 +93,10 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         BitSet after = new BitSet(); // Actors for future scenes
 
         for (int i = 0; i < instance.nbScene(); i++) {
-            if (state.remainingScenes().get(i)) after.or(actors[i]);
-            else before.or(actors[i]);
+            if (!state.maybeScenes().get(i)) {
+                if (state.remainingScenes().get(i)) after.or(actors[i]);
+                else before.or(actors[i]);
+            }
         }
         after.and(before); // Already present actors
         return after;

@@ -18,6 +18,14 @@ import java.util.Arrays;
 public class TalentScheduling {
 
 
+    /**
+     * Read data file following the format of
+     * <a href="https://people.eng.unimelb.edu.au/pstuckey/talent/">https://people.eng.unimelb.edu.au/pstuckey/talent/</a>
+     *
+     * @param fileName The name of the file.
+     * @return An instance the talent scheduling problem.
+     * @throws IOException If something goes wrong while reading input file.
+     */
     private static TalentSchedInstance readFile(String fileName) throws IOException {
         int nbScenes = 0;
         int nbActors = 0;
@@ -26,7 +34,7 @@ public class TalentScheduling {
         int[][] actors = new int[0][0];
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line = br.readLine();
+            String line = br.readLine(); // Skip first line
 
             int lineCount = 0;
             int skip = 0;
@@ -57,22 +65,19 @@ public class TalentScheduling {
             }
 
             return new TalentSchedInstance(nbScenes, nbActors, cost, duration, actors);
-
         }
-
-
     }
 
     public static void main(String[] args) throws IOException {
-        String file = "data/TalentScheduling/tiny2";
+        String file = "data/TalentScheduling/tiny";
 
         final TalentSchedInstance instance = readFile(file);
         final TalentSchedulingProblem problem = new TalentSchedulingProblem(instance);
 
-        final TalentSchedRelax relax = new TalentSchedRelax();
+        final TalentSchedRelax relax = new TalentSchedRelax(problem.nbVars());
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(500);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(2);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
