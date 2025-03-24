@@ -63,7 +63,7 @@ public class MispTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testParameterized(MispProblem problem) {
+    public void testMISP(MispProblem problem) {
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(250);

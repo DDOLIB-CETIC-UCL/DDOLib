@@ -84,8 +84,8 @@ public class MispProblem implements Problem<BitSet> {
         // When we are selecting a node, we cannot select this node and its neighbors
         if (decision.val() == 1) {
             res.andNot(neighbors[decision.var()]);
-            res.set(decision.var(), false);
         }
+        res.set(decision.var(), false);
 
         return res;
     }

@@ -9,6 +9,6 @@ public class MispRanking implements StateRanking<BitSet> {
     @Override
     public int compare(BitSet o1, BitSet o2) {
         // The state with the most remaining nodes is most interesting
-        return Integer.compare(o1.length(), o2.length());
+        return Integer.compare(o1.cardinality(), o2.cardinality());
     }
 }
