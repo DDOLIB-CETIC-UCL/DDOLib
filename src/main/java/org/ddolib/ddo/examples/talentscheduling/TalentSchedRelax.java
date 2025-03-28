@@ -62,11 +62,15 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
                 double totalCost = 0.0;
                 double squaredCost = 0.0;
 
-                totalCost += Arrays.stream(problem.instance.costs()).sum();
-                squaredCost += Arrays.stream(problem.instance.costs()).map(x -> x * x).sum();
 
                 for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
-                    ratios[actor].ratio += problem.instance.duration()[scene];
+                    int cost = problem.instance.costs()[actor];
+                    totalCost += cost;
+                    squaredCost += cost * cost;
+                }
+
+                for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
+                    ratios[actor].ratio += problem.instance.duration()[scene] / totalCost;
                 }
 
                 lb -= problem.instance.duration()[scene] * (totalCost + squaredCost / totalCost) / 2.0;
