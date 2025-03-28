@@ -94,16 +94,22 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics maximize() { return maximize(0);}
+    @Override
+    public SearchStatistics maximize(int verbosityLevel) {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
         while (!frontier.isEmpty()) {
+            if(verbosityLevel >=1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t bestObj:" + bestLB);
+
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
+
+            if(verbosityLevel >=2) System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);
@@ -123,7 +129,7 @@ public final class SequentialSolver<T> implements Solver {
             );
 
             mdd.compile(compilation);
-            maybeUpdateBest();
+            maybeUpdateBest(verbosityLevel);
             if (mdd.isExact()) {
                 continue;
             }
@@ -142,7 +148,7 @@ public final class SequentialSolver<T> implements Solver {
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {
-                maybeUpdateBest();
+                maybeUpdateBest(verbosityLevel);
             } else {
                 enqueueCutset();
             }
@@ -178,11 +184,12 @@ public final class SequentialSolver<T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest() {
+    private void maybeUpdateBest(int verbosityLevel) {
         Optional<Integer> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
+            if(verbosityLevel > 2) System.out.println("new best " + bestLB);
         }
     }
     /**

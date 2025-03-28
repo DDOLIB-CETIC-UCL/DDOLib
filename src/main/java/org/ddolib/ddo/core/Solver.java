@@ -9,6 +9,8 @@ import java.util.Set;
  */
 public interface Solver {
     /** Tries to maximize the objective value of the problem which is being solved */
+    SearchStatistics maximize(int verbosityLevel);
+    /** Tries to maximize the objective value of the problem which is being solved */
     SearchStatistics maximize();
     /** @return the value of the best solution in this decision diagram if there is one */
     Optional<Integer> bestValue();
