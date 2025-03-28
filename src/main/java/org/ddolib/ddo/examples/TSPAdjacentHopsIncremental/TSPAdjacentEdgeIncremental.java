@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPSmallestAdjacentHopsIncremental;
+package org.ddolib.ddo.examples.TSPAdjacentHopsIncremental;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
@@ -10,50 +10,56 @@ import org.ddolib.ddo.implem.solver.ParallelSolver;
 import java.io.IOException;
 import java.util.*;
 
-public final class TSPIncrementalAdjacentEdge {
+public final class TSPAdjacentEdgeIncremental {
 
     static class TSPState{
 
+        //every node that has not been visited yet
         BitSet toVisit;
-        int current = -1; //We might not know where we are in case of merge
-        BitSet currentSet;
+
+        //the current node. It is a set because in case of a fusion, we must take the union.
+        // However, most of the time, it is a singleton
+        BitSet current;
+
         SmallestIncidentHopIncremental heuristics;
 
-        public TSPState(int current, BitSet toVisit, SmallestIncidentHopIncremental heuristics){
+        public TSPState(BitSet current, BitSet toVisit, SmallestIncidentHopIncremental heuristics){
             this.toVisit = toVisit;
             this.current = current;
             this.heuristics = heuristics;
         }
 
-        public TSPState(BitSet currentSet, BitSet toVisit, SmallestIncidentHopIncremental heuristics){
-            this.toVisit = toVisit;
-            this.currentSet = currentSet;
-            this.heuristics = heuristics;
-
-            //System.out.println(this);
-        }
         public TSPState goTo(int node){
             BitSet newToVisit = (BitSet) toVisit.clone();
             newToVisit.clear(node);
 
-            return new TSPState(node, newToVisit,
+            return new TSPState(singleton(node), newToVisit,
                     heuristics);
         }
 
+        public BitSet singleton(int singletonValue){
+            BitSet toReturn = new BitSet(singletonValue+1);
+            toReturn.set(singletonValue);
+            return toReturn;
+        }
+
         public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents){
-            toVisit.set(current);
-            heuristics = heuristics.updateToRestrictedNodeSet(toVisit,sortedAdjacents);
-            toVisit.clear(current);
+
+            BitSet toConsider = (BitSet) toVisit.clone();
+            toConsider.or(current);
+
+            //update the heuristics
+            heuristics = heuristics.updateToRestrictedNodeSet(toConsider,sortedAdjacents);
 
             return heuristics.computeHeuristics(sortedAdjacents,nbHops);
         }
 
         @Override
         public String toString() {
-            if(current == -1){
-                return "TSPState(possibleCurrent:" + currentSet + " toVisit:" + toVisit + ")";
+            if(current.cardinality() != 1){
+                return "TSPState(possibleCurrent:" + current + " toVisit:" + toVisit + ")";
             }else{
-                return "TSPState(current:" + current + " toVisit:" + toVisit + ")";
+                return "TSPState(current:" + current.nextSetBit(0) + " toVisit:" + toVisit + ")";
             }
         }
     }
@@ -62,10 +68,11 @@ public final class TSPIncrementalAdjacentEdge {
         final int   n;
         final int[][] distanceMatrix;
         SortedAdjacents sortedAdjacents;
+
         @Override
         public String toString() {
             return "TSP(n:" + n + "\n" +
-                    Arrays.stream(distanceMatrix).map(l -> Arrays.toString(l)+"\n").toList();
+                    "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
         }
 
         public int eval(int[] solution){
@@ -93,7 +100,13 @@ public final class TSPIncrementalAdjacentEdge {
             BitSet toVisit = new BitSet(n);
             toVisit.set(1,n);
 
-            return new TSPState(0, toVisit, sortedAdjacents.initialHeuristics());
+            return new TSPState(singleton(0), toVisit, sortedAdjacents.initialHeuristics());
+        }
+
+        public BitSet singleton(int singletonValue){
+            BitSet toReturn = new BitSet(n);
+            toReturn.set(singletonValue);
+            return toReturn;
         }
 
         @Override
@@ -114,16 +127,11 @@ public final class TSPIncrementalAdjacentEdge {
 
         @Override
         public int transitionCost(TSPState state, Decision decision) {
-            if(state.current == -1) {
-                //we can be anywhere in the currentStates, so we take the max
-                return - state.currentSet.stream()
-                        .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                        .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
-                        .min()
-                        .getAsInt();
-            }else{
-                return -distanceMatrix[state.current][decision.val()];
-            }
+            return - state.current.stream()
+                    .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
+                    .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                    .min()
+                    .getAsInt();
         }
     }
 
@@ -140,12 +148,11 @@ public final class TSPIncrementalAdjacentEdge {
             //the current node is normally the same in all states
             BitSet toVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
+
             while (states.hasNext()) {
                 TSPState state = states.next();
                 toVisit.or(state.toVisit);
-
-                if(state.current != -1) current.set(state.current);
-                else current.or(state.currentSet);
+                current.or(state.current);
             }
 
             return new TSPState(current,toVisit,problem.sortedAdjacents.initialHeuristics());
@@ -227,7 +234,7 @@ public final class TSPIncrementalAdjacentEdge {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.maximize(2);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
