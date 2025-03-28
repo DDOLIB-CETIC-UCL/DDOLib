@@ -65,7 +65,9 @@ public final class DPDCapacityKruskal {
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
                 newContent = new BitSet();
                 for(int possibleContent: currentContent.stream().boxed().toList()){
-                    newContent.set(possibleContent+1);
+                    if(possibleContent < problem.maxCapacity) {
+                        newContent.set(possibleContent + 1);
+                    }
                 }
             }else if(problem.deliveryToAssociatedPickup.containsKey(node)){
                 //it is a delivery node
@@ -242,6 +244,7 @@ public final class DPDCapacityKruskal {
                 current.or(state.current);
                 content.or(state.currentContent);
             }
+
             return new PDState(current,openToVisit,allToVisit,content);
         }
 
@@ -321,7 +324,7 @@ public final class DPDCapacityKruskal {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(24,1, 3);
+        final PDProblem problem = genInstance(24,5, 3);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
