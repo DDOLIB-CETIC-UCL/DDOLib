@@ -144,11 +144,15 @@ public class PigmentScheduling {
 
     public static class PSPRelax implements Relaxation<PSPState> {
 
+        record ItemDemand(int cost, int deadLline) { }
+
         // lower bound of the TSP for all subsets of items types
         // indices are the binary representation of the subsets
         public int [] tspLb;
+        PSPInstance instance;
 
         public PSPRelax(PSPInstance instance) {
+            this.instance = instance;
             tspLb = TSPLowerBound.lowerBoundForAllSubsets(instance.changeoverCost);
         }
 
@@ -182,6 +186,7 @@ public class PigmentScheduling {
             return new PSPState(time, IDLE, prevDemands);
         }
 
+
         /**
          * From the PhD Thesis of Vianney Coppe:
          * https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf
@@ -208,8 +213,45 @@ public class PigmentScheduling {
                     mapToInt(Integer::intValue).
                     reduce(0, (a, b) -> a | (1 << b));
 
-            int coLb = tspLb[idx]; // lower-bound on the changeOverCost
-            int ub = -coLb;
+            int changeOverLb = tspLb[idx]; // lower-bound on the changeOverCost
+
+            int stockingCostLb = 0; // lower-bound on the stocking cost
+            PriorityQueue<ItemDemand> itemDemands = new PriorityQueue<>(Comparator.comparingInt(ItemDemand::cost));
+
+
+            for (int time = state.t - 1; time >= 0; time--) {
+                for (int i = 0; i < state.previousDemands.length; i++) {
+                    int demand = state.previousDemands[i]; // previous demand of item i
+                    while (demand >= time) {
+                        itemDemands.offer(new ItemDemand(instance.stockingCost[i], demand)); // Assuming pb.stocking is defined
+                        demand = instance.previousDemands[i][demand];
+                    }
+                }
+
+                if (!itemDemands.isEmpty()) {
+                    ItemDemand item = itemDemands.poll();
+                    stockingCostLb += item.cost * (time - item.deadLline);
+                }
+            }
+            /*
+        let mut prev_demands = state.prev_demands.clone();
+        let mut ww = 0;
+        let mut items = BinaryHeap::new();
+        for time in (0..state.time).rev() {
+            for (i, demand) in prev_demands.iter_mut().enumerate() {
+                while *demand >= time as isize {
+                    items.push((self.pb.stocking[i], *demand));
+                    *demand = self.pb.prev_demands[i][*demand as usize];
+                }
+            }
+
+            if let Some((cost, deadline)) = items.pop() {
+                ww += cost as isize * (time as isize - deadline);
+            }
+        }
+             */
+
+            int ub = -changeOverLb - stockingCostLb;
             return ub;
             //return Integer.MAX_VALUE;
         }
@@ -335,7 +377,7 @@ public class PigmentScheduling {
     }
 
     public static void main(final String[] args) throws IOException {
-        PSPInstance instance = new PSPInstance("data/PSP/instancesWith2items/10");;
+        PSPInstance instance = new PSPInstance("data/PSP/various/pigment15b.txt");;
         PSP problem = new PSP(instance);
         final PSPRelax relax = new PSPRelax(instance);
         final PSPRanking ranking = new PSPRanking();
