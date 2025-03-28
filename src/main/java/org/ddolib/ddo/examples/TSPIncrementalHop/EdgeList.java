@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPIncrementalHopsBound;
+package org.ddolib.ddo.examples.TSPIncrementalHop;
 
 import java.util.BitSet;
 

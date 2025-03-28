@@ -1,8 +1,7 @@
 package org.ddolib.ddo.examples.PDPIncrementalHop;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.TSPIncrementalHopsBound.EdgeList;
-import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
+import org.ddolib.ddo.examples.TSPIncrementalHop.EdgeList;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public final class DPD {
+public final class DPDKruskal {
 
     static class PDState{
 
@@ -49,6 +49,7 @@ public final class DPD {
             if(!that.openToVisit.equals(this.openToVisit)) return false;
             return (that.allToVisit.equals(this.allToVisit));
         }
+
         public PDState goTo(int node, PDProblem problem){
             BitSet newOpenToVisit = (BitSet) openToVisit.clone();
             newOpenToVisit.clear(node);
@@ -278,7 +279,7 @@ public final class DPD {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(30,1);
+        final PDProblem problem = genInstance(24,1);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
