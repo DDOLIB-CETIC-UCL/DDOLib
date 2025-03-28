@@ -58,19 +58,23 @@ public final class DPDCapacityKruskal {
             BitSet newAllToVisit = (BitSet) allToVisit.clone();
             newAllToVisit.clear(node);
 
-            BitSet newContent = new BitSet();
+            BitSet newContent;
 
             if(problem.pickupToAssociatedDelivery.containsKey(node)){
                 //it is a pick-up node
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
+                newContent = new BitSet();
                 for(int possibleContent: currentContent.stream().boxed().toList()){
                     newContent.set(possibleContent+1);
                 }
             }else if(problem.deliveryToAssociatedPickup.containsKey(node)){
                 //it is a delivery node
+                newContent = new BitSet();
                 for(int possibleContent: currentContent.stream().boxed().toList()){
                     if(possibleContent > 0) newContent.set(possibleContent-1);
                 }
+            }else{
+                newContent = (BitSet) currentContent.clone();
             }
 
             //good idea, but wrong idea
@@ -185,10 +189,14 @@ public final class DPDCapacityKruskal {
         @Override
         public Iterator<Integer> domain(PDState state, int var) {
             //remaining capacity
-            int minCapacity = state.currentContent.nextSetBit(0);
-            if(minCapacity >= maxCapacity){
+            int minContent = state.currentContent.nextSetBit(0);
+            int maxContent = state.currentContent.previousSetBit(n);
+            if(minContent >= maxCapacity) {
                 //only the open nodes that are not pick-ups nodes, so deliveries or unrelated
                 return new ArrayList<>(state.openToVisit.stream().boxed().filter(node -> !pickupToAssociatedDelivery.containsKey(node)).toList()).iterator();
+            }else if (maxContent == 0){
+                //only the open nodes that are not delivery nodes, so deliveries or unrelated
+                return new ArrayList<>(state.openToVisit.stream().boxed().filter(node -> !deliveryToAssociatedPickup.containsKey(node)).toList()).iterator();
             }else{
                 //any that is open to visit
                 return new ArrayList<>(state.openToVisit.stream().boxed().toList()).iterator();
@@ -313,7 +321,7 @@ public final class DPDCapacityKruskal {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(24,1, 4);
+        final PDProblem problem = genInstance(24,1, 3);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
