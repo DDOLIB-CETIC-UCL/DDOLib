@@ -17,42 +17,41 @@ public final class DPDIncrementalHop {
 
     static class PDState{
 
-        BitSet openToVisit; //principe: toVisit contient tout ce qu'on doit encore visiter
-        BitSet allToVisit;
-        int current = -1; //We might not know where we are in case of merge
-        BitSet currentSet;
+        //the nodes that we can visit, including
+        // all non-visited pick-up nodes
+        // all non-visited  delivery nodes such that the related pick-up has been reached
+        BitSet openToVisit;
 
+        //every node that has not been visited yet
+        BitSet allToVisit;
+
+        //the current node. It is a set because in case of a fusion, we must take the union.
+        // However, most of the time, it is a singleton
+        BitSet current;
+
+        //the sorted list of all edges that are incident to the current node and to the allToVisitNodes
+        //this list might include more edges
         EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
 
-        public PDState(int current, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode){
+        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.current = current;
             this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         }
 
-        public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
-            this.openToVisit = openToVisit;
-            this.allToVisit = allToVisit;
-            this.currentSet = currentSet;
-            this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
-        }
-
         public int hashCode() {
-            if(current == -1) return Objects.hash(openToVisit, allToVisit, currentSet);
-            else return Objects.hash(openToVisit, allToVisit, current);
+            return Objects.hash(openToVisit, allToVisit, current);
         }
 
         @Override
         public boolean equals(Object obj) {
             PDState that = (PDState) obj;
-            if(that.current != this.current) return false;
-            if(current == -1){
-                if(!that.currentSet.equals(this.currentSet)) return false;
-            }
+            if(!that.current.equals(this.current)) return false;
             if(!that.openToVisit.equals(this.openToVisit)) return false;
             return (that.allToVisit.equals(this.allToVisit));
         }
+
         public PDState goTo(int node, PDProblem problem){
             BitSet newOpenToVisit = (BitSet) openToVisit.clone();
             newOpenToVisit.clear(node);
@@ -64,26 +63,35 @@ public final class DPDIncrementalHop {
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
-            //good idea, but wrong idea
             if(problem.deliveryToAssociatedPickup.containsKey(node) ){
                 int p = problem.deliveryToAssociatedPickup.get(node);
                 if(newOpenToVisit.get(p)){
-                    //System.out.println("Pruning toVisitPickups " + p);
                     newOpenToVisit.clear(p);
                 }
             }
 
-            PDState next = new PDState(node, newOpenToVisit,newAllToVisit,sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
-            return next;
+            return new PDState(
+                    singleton(node),
+                    newOpenToVisit,
+                    newAllToVisit,
+                    sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
+        }
+
+        public BitSet singleton(int singletonValue){
+
+            BitSet toReturn = new BitSet(singletonValue+1);
+            toReturn.set(singletonValue);
+            return toReturn;
         }
 
         public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance){
 
-            if(current == -1) throw new Error("no bound for merged");
-            allToVisit.set(current);
+            if(current.cardinality() != 1) throw new Error("no bound for merged");
+            int currentNode = current.nextSetBit(0);
+            allToVisit.set(currentNode);
             sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
                     sortedEdgeListIncidentToToVisitNodesAndCurrentNode.filterUpToLength(nbHops, allToVisit);
-            allToVisit.clear(current);
+            allToVisit.clear(currentNode);
 
             int total = 0;
             int hopsToDo = nbHops;
@@ -100,10 +108,10 @@ public final class DPDIncrementalHop {
         public String toString() {
             BitSet closedToVisit = (BitSet) allToVisit.clone();
             closedToVisit.xor(openToVisit);
-            if(current == -1){
-                return "PDState(possibleCurrent:" + currentSet + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
+            if(current.cardinality() != 1){
+                return "PDState(possibleCurrent:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }else{
-                return "PDState(current:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
+                return "PDState(current:" + current.nextSetBit(0) + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }
         }
     }
@@ -120,10 +128,10 @@ public final class DPDIncrementalHop {
 
         @Override
         public String toString() {
-            return "PDProblem(n:" + n + "\n" +
-                    "pdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> "(" + p + "->" + pickupToAssociatedDelivery.get(p) + ")").toList() + ")\n" +
-                    "unrelated:" + unrelatedNodes.stream().toList() + "\n" +
-                    Arrays.stream(distanceMatrix).map(l -> Arrays.toString(l)+"\n").toList();
+            return "PDProblem(\n\tn:" + n + "\n" +
+                    "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
+                    "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
+                    "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
         }
 
         public int eval(int[] solution){
@@ -185,7 +193,13 @@ public final class DPDIncrementalHop {
             BitSet allToVisit = new BitSet(n);
             allToVisit.set(1,n);
 
-            return new PDState(0, openToVisit, allToVisit, initSortedEdges);
+            return new PDState(singleton(0), openToVisit, allToVisit, initSortedEdges);
+        }
+
+        public BitSet singleton(int singletonValue){
+            BitSet toReturn = new BitSet(n);
+            toReturn.set(singletonValue);
+            return toReturn;
         }
 
         @Override
@@ -206,16 +220,11 @@ public final class DPDIncrementalHop {
 
         @Override
         public int transitionCost(PDState state, Decision decision) {
-            if(state.current == -1) {
-                //we can be anywhere in the currentStates, so we take the max
-                return - state.currentSet.stream()
-                        .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                        .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
-                        .min()
-                        .getAsInt();
-            }else{
-                return -distanceMatrix[state.current][decision.val()];
-            }
+            return - state.current.stream()
+                    .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
+                    .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                    .min()
+                    .getAsInt();
         }
     }
 
@@ -228,26 +237,20 @@ public final class DPDIncrementalHop {
 
         @Override
         public PDState mergeStates(final Iterator<PDState> states) {
-            //take the union
-            //the current node is normally the same in all states
-
-            //TODO problème en prenant l'union, on va ajouter des noeuds qui sont peut-être unreachable dans certains cas.
-
+            //NB: the current node is normally the same in all states
             BitSet openToVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
             BitSet allToVisit = new BitSet(problem.n);
 
             while (states.hasNext()) {
                 PDState state = states.next();
+                //take the union; loose precision here
                 openToVisit.or(state.openToVisit);
                 allToVisit.or(state.allToVisit);
-
-                if(state.current != -1) current.set(state.current);
-                else current.or(state.currentSet);
+                current.or(state.current);
             }
-            PDState merged = new PDState(current,openToVisit,allToVisit, problem.initSortedEdges);
-            //System.out.println("merged:" + merged);
-            return merged;
+            //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
+            return new PDState(current,openToVisit,allToVisit, problem.initSortedEdges);
         }
 
         @Override
@@ -257,10 +260,8 @@ public final class DPDIncrementalHop {
 
         @Override
         public int fastUpperBound(PDState state, Set<Integer> variables) {
-            //min spanning tree on current U toVisit
-            //we can only take the variables.size() first edges, so Kruskal might not run until it ends
-            if (state.current == -1) {
-                return Integer.MAX_VALUE;
+            if (state.current.cardinality() != 1) {
+                throw new Error("no fast upper bound when no current");
             } else {
                 int nbHopsToDo = variables.size();
                 int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo,problem.distanceMatrix);
@@ -280,8 +281,21 @@ public final class DPDIncrementalHop {
         }
     }
 
+    /**
+     * Generates a PDP problem
+     * a TSP problem such that
+     * nodes are grouped by pair: (pickup node; delivery node)
+     * in a pair, the pickup node must be reached before the delivery node
+     * the problem can also have "unrelated nodes" that are not involved in such a pair
+     *
+     * @param n the number of nodes of the PDP problem
+     * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
+     *                  there might be one more unrelated node than specified here
+     * @return a PDP problem
+     */
     public static PDProblem genInstance(int n,int unrelated) {
 
+        //a simple instance generator
         int[] x = new int[n];
         int[] y = new int[n];
         Random r = new Random(1);
@@ -300,8 +314,7 @@ public final class DPDIncrementalHop {
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
 
-        int firstDelivery = (n-unrelated-1)/2+1; //for fun, some are not pdp nodes
-        //    /2 rounds to lower
+        int firstDelivery = (n-unrelated-1)/2+1; //some  nodes are not pdp nodes
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);
@@ -316,7 +329,7 @@ public final class DPDIncrementalHop {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(30,1);
+        final PDProblem problem = genInstance(24,0);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -342,7 +355,7 @@ public final class DPDIncrementalHop {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(2);
+        solver.maximize(1);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
@@ -358,9 +371,9 @@ public final class DPDIncrementalHop {
 
         System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.println("eval from scratch: " + problem.eval(solution));
+        System.out.println("Eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println("problem:" + problem);
+        System.out.println("Problem:" + problem);
     }
 }
 
