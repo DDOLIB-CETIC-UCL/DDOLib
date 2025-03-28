@@ -69,15 +69,15 @@ public class TalentScheduling {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = "data/TalentScheduling/tiny";
+        String file = "data/TalentScheduling/film-12";
 
         final TalentSchedInstance instance = readFile(file);
         final TalentSchedulingProblem problem = new TalentSchedulingProblem(instance);
 
-        final TalentSchedRelax relax = new TalentSchedRelax(problem.nbVars());
+        final TalentSchedRelax relax = new TalentSchedRelax(problem);
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(500);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(30);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
@@ -119,7 +119,5 @@ public class TalentScheduling {
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);
         System.out.println(stat);
-
-
     }
 }

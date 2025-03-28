@@ -172,8 +172,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
     @Override
     public void compile(CompilationInput<T> input) {
-        System.out.printf("################################# %s #################################%n%n",
-                input.getCompilationType().toString().toUpperCase());
         // make sure we don't have any stale data left
         this.clear();
 
@@ -255,6 +253,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
+                int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -269,9 +268,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             depth += 1;
-            System.out.printf("Next layer: %d nodes %s - depth: %d - lb: %d%n", nextLayer.size(), nextLayer.keySet(),
-                    depth, input.getBestLB());
-            System.out.println("\n-----------------------------------------------------------\n");
         }
 
         // finalize: find best
@@ -368,9 +364,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
-        System.out.printf("Sorted: %s%n", currentLayer);
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
-        System.out.printf("Restricted: %s%n%n", currentLayer);
     }
 
     /**
@@ -383,7 +377,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
-        System.out.printf("Sorted %s%n", currentLayer);
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
@@ -414,9 +407,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 e.weight = rcost;
 
                 node.node.edges.add(e);
-                System.out.printf("Add edge from %s to %s with cost %d for %s%n", prevLayer.get(e.origin).state,
-                        merged,
-                        rcost, e.decision);
                 if (value > node.node.value) {
                     node.node.value = value;
                     node.node.best = e;
@@ -431,8 +421,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         if (fresh) {
             currentLayer.add(node);
         }
-        System.out.printf("Relaxed: %s%n%n", currentLayer);
-
     }
 
     /**
@@ -448,17 +436,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int cost = problem.transitionCost(node.state, decision);
         int value = saturatedAdd(node.node.value, cost);
 
-        System.out.printf("From: %s%n", node.state);
-        System.out.printf("Takes %s with cost %d%n", decision, cost);
-        System.out.printf("Get: %s", state);
-
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
             nextLayer.put(state, n);
-            System.out.println(" - new node in next layer");
         }
-        System.out.println("\n");
 
         Edge edge = new Edge(node.node, decision, cost);
         n.edges.add(edge);
