@@ -1,6 +1,7 @@
 package org.ddolib.ddo.examples.PDPKruskal;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.examples.PDPIncrementalHop.DPDIncrementalHop;
 import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -16,36 +17,32 @@ public final class DPDKruskal {
 
     static class PDState{
 
-        BitSet openToVisit; //principe: toVisit contient tout ce qu'on doit encore visiter
+        //the nodes that we can visit, including
+        // all non-visited pick-up nodes
+        // all non-visited  delivery nodes such that the related pick-up has been reached
+        BitSet openToVisit;
+
+        //every node that has not been visited yet
         BitSet allToVisit;
-        int current = -1; //We might not know where we are in case of merge
-        BitSet currentSet;
 
+        //the current node. It is a set because in case of a fusion, we must take the union.
+        // However, most of the time, it is a singleton
+        BitSet current;
 
-        public PDState(int current, BitSet openToVisit, BitSet allToVisit){
+        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit) {
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.current = current;
         }
 
-        public PDState(BitSet currentSet, BitSet openToVisit, BitSet allToVisit) {
-            this.openToVisit = openToVisit;
-            this.allToVisit = allToVisit;
-            this.currentSet = currentSet;
-        }
-
         public int hashCode() {
-            if(current == -1) return Objects.hash(openToVisit, allToVisit, currentSet);
-            else return Objects.hash(openToVisit, allToVisit, current);
+            return Objects.hash(openToVisit, allToVisit, current);
         }
 
         @Override
         public boolean equals(Object obj) {
             PDState that = (PDState) obj;
-            if(that.current != this.current) return false;
-            if(current == -1){
-                if(!that.currentSet.equals(this.currentSet)) return false;
-            }
+            if(!that.current.equals(this.current)) return false;
             if(!that.openToVisit.equals(this.openToVisit)) return false;
             return (that.allToVisit.equals(this.allToVisit));
         }
@@ -70,19 +67,27 @@ public final class DPDKruskal {
                 }
             }
 
-            PDState next = new PDState(node, newOpenToVisit,newAllToVisit);
             //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
-            return next;
+            return new PDState(
+                    singleton(node),
+                    newOpenToVisit,
+                    newAllToVisit);
+        }
+
+        public BitSet singleton(int singletonValue){
+            BitSet toReturn = new BitSet(singletonValue+1);
+            toReturn.set(singletonValue);
+            return toReturn;
         }
 
         @Override
         public String toString() {
             BitSet closedToVisit = (BitSet) allToVisit.clone();
             closedToVisit.xor(openToVisit);
-            if(current == -1){
-                return "PDState(possibleCurrent:" + currentSet + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
+            if(current.cardinality() != 1){
+                return "PDState(possibleCurrent:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }else{
-                return "PDState(current:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
+                return "PDState(current:" + current.nextSetBit(0) + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }
         }
     }
@@ -145,7 +150,13 @@ public final class DPDKruskal {
             BitSet allToVisit = new BitSet(n);
             allToVisit.set(1,n);
 
-            return new PDState(0, openToVisit ,allToVisit);
+            return new PDState(singleton(0), openToVisit ,allToVisit);
+        }
+
+        public BitSet singleton(int singletonValue){
+            BitSet toReturn = new BitSet(n);
+            toReturn.set(singletonValue);
+            return toReturn;
         }
 
         @Override
@@ -166,16 +177,11 @@ public final class DPDKruskal {
 
         @Override
         public int transitionCost(PDState state, Decision decision) {
-            if(state.current == -1) {
-                //we can be anywhere in the currentStates, so we take the max
-                return - state.currentSet.stream()
-                        .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                        .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
-                        .min()
-                        .getAsInt();
-            }else{
-                return -distanceMatrix[state.current][decision.val()];
-            }
+            return - state.current.stream()
+                    .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
+                    .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                    .min()
+                    .getAsInt();
         }
     }
 
@@ -188,10 +194,7 @@ public final class DPDKruskal {
 
         @Override
         public PDState mergeStates(final Iterator<PDState> states) {
-            //take the union
-            //the current node is normally the same in all states
-
-            //TODO problème en prenant l'union, on va ajouter des noeuds qui sont peut-être unreachable dans certains cas.
+            //NB: the current node is normally the same in all states
 
             BitSet openToVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
@@ -199,15 +202,12 @@ public final class DPDKruskal {
 
             while (states.hasNext()) {
                 PDState state = states.next();
+                //take the union; loose precision here
                 openToVisit.or(state.openToVisit);
                 allToVisit.or(state.allToVisit);
-
-                if(state.current != -1) current.set(state.current);
-                else current.or(state.currentSet);
+                current.or(state.current);
             }
-            PDState merged = new PDState(current,openToVisit,allToVisit);
-            //System.out.println("merged:" + merged);
-            return merged;
+            return new PDState(current,openToVisit,allToVisit);
         }
 
         @Override
@@ -219,21 +219,17 @@ public final class DPDKruskal {
         public int fastUpperBound(PDState state, Set<Integer> variables) {
             //min spanning tree on current U toVisit
             //we can only take the variables.size() first edges, so Kruskal might not run until it ends
-            if (state.current == -1) {
-                return Integer.MAX_VALUE;
+            if (state.current.cardinality() != 1) {
+                throw new Error("no fast upper bound when no current");
             } else {
-                state.allToVisit.set(state.current);
+                BitSet toConsider = (BitSet) state.allToVisit.clone();
+                toConsider.or(state.current);
                 int nbStepsToRemain = variables.size();
-                Kruskal a = new Kruskal(problem.distanceMatrix, state.allToVisit, nbStepsToRemain);
-                state.allToVisit.clear(state.current);
+                Kruskal a = new Kruskal(problem.distanceMatrix, toConsider, nbStepsToRemain);
                 int ub = a.minimalSpanningTreeWeight;
                 return -ub;
             }
         }
-    }
-
-    private static void require(Boolean a, String str){
-        if(!a) throw new Error(str);
     }
 
     public static class PDPRanking implements StateRanking<PDState> {
@@ -243,7 +239,19 @@ public final class DPDKruskal {
         }
     }
 
-    public static PDProblem genInstance(int n,int unrelated) {
+    /**
+     * Generates a PDP problem
+     * a TSP problem such that
+     * nodes are grouped by pair: (pickup node; delivery node)
+     * in a pair, the pickup node must be reached before the delivery node
+     * the problem can also have "unrelated nodes" that are not involved in such a pair
+     *
+     * @param n the number of nodes of the PDP problem
+     * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
+     *                  there might be one more unrelated node than specified here
+     * @return a PDP problem
+     */
+    public static PDProblem genInstance(int n, int unrelated) {
 
         int[] x = new int[n];
         int[] y = new int[n];
@@ -263,8 +271,7 @@ public final class DPDKruskal {
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
 
-        int firstDelivery = (n-unrelated-1)/2+1; //for fun, some are not pdp nodes
-        //    /2 rounds to lower
+        int firstDelivery = (n-unrelated-1)/2+1;
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);

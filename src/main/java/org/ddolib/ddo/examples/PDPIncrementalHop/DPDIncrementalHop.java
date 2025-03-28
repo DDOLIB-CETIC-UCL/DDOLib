@@ -77,7 +77,6 @@ public final class DPDIncrementalHop {
         }
 
         public BitSet singleton(int singletonValue){
-
             BitSet toReturn = new BitSet(singletonValue+1);
             toReturn.set(singletonValue);
             return toReturn;
@@ -269,10 +268,6 @@ public final class DPDIncrementalHop {
         }
     }
 
-    private static void require(Boolean a, String str){
-        if(!a) throw new Error(str);
-    }
-
     public static class PDPRanking implements StateRanking<PDState> {
         @Override
         public int compare(final PDState o1, final PDState o2) {
@@ -294,7 +289,6 @@ public final class DPDIncrementalHop {
      */
     public static PDProblem genInstance(int n,int unrelated) {
 
-        //a simple instance generator
         int[] x = new int[n];
         int[] y = new int[n];
         Random r = new Random(1);
