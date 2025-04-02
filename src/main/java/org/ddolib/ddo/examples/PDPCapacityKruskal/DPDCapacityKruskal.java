@@ -365,11 +365,46 @@ public final class DPDCapacityKruskal {
                 })
                 .get();
 
+        PDPSolution s = new PDPSolution(problem,solution);
         System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.println(s);
         System.out.println("problem:" + problem);
+    }
+
+    static class PDPSolution{
+        PDProblem problem;
+        int[] solution;
+
+        public PDPSolution(PDProblem problem, int[] solution){
+            this.problem = problem;
+            this.solution = solution;
+        }
+
+        @Override
+        public String toString() {
+            String toReturn = "";
+            int currentNode = 0;
+            int currentContent = 0;
+            for(int i = 1 ; i < solution.length ; i++){
+                currentNode = solution[i];
+                if(problem.deliveryToAssociatedPickup.containsKey(currentNode)){
+                    //it is a delivery
+                    currentContent = currentContent-1;
+                    toReturn = toReturn + "\n" + currentNode + " \tcontent:" + currentContent + "\t(delivery from " + problem.deliveryToAssociatedPickup.get(currentNode) +")";
+                }else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)){
+                    // it is a pickup
+                    currentContent = currentContent+1;
+                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent + "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + ")";
+                }else{
+                    //an unrelated node
+                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent;
+                }
+            }
+            return toReturn;
+        }
     }
 }
 
