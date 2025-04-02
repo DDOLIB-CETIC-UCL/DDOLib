@@ -129,6 +129,7 @@ public final class DPDCapacityKruskal {
             return "PDProblem(n:" + n + "\n" +
                     "pdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> "(" + p + "->" + pickupToAssociatedDelivery.get(p) + ")").toList() + ")\n" +
                     "unrelated:" + unrelatedNodes.stream().toList() + "\n" +
+                    "maxCapacity:" + maxCapacity + "\n" +
                     Arrays.stream(distanceMatrix).map(l -> Arrays.toString(l)+"\n").toList();
         }
 
