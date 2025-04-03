@@ -192,6 +192,7 @@ public final class DPDCapacityKruskal {
         @Override
         public Iterator<Integer> domain(PDState state, int var) {
             //remaining capacity
+            //obviously these should be equal except if a fusion occurred
             int minContent = state.currentContent.nextSetBit(0);
             int maxContent = state.currentContent.previousSetBit(n);
             if(minContent >= maxCapacity) {
@@ -385,7 +386,8 @@ public final class DPDCapacityKruskal {
 
         @Override
         public String toString() {
-            String toReturn = "";
+            String toReturn = "0\tcontent:" + 0;
+
             int currentNode = 0;
             int currentContent = 0;
             for(int i = 1 ; i < solution.length ; i++){
