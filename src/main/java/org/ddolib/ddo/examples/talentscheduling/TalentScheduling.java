@@ -29,7 +29,7 @@ public class TalentScheduling {
      * @return An instance the talent scheduling problem.
      * @throws IOException If something goes wrong while reading input file.
      */
-    private static TalentSchedulingProblem readFile(String fileName) throws IOException {
+    public static TalentSchedulingProblem readFile(String fileName) throws IOException {
         int nbScenes = 0;
         int nbActors = 0;
         int[] cost = new int[0];
@@ -79,18 +79,18 @@ public class TalentScheduling {
                 lineCount++;
             }
 
-            return new TalentSchedulingProblem(nbScenes, nbActors, cost, duration, actors);
+            return new TalentSchedulingProblem(nbScenes, nbActors, cost, duration, actors, opti);
         }
     }
 
     public static void main(String[] args) throws IOException {
-        String file = "data/TalentScheduling/film-12";
+        String file = "data/TalentScheduling/concert";
 
         final TalentSchedulingProblem problem = readFile(file);
         final TalentSchedRelax relax = new TalentSchedRelax(problem);
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(500);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(2);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 

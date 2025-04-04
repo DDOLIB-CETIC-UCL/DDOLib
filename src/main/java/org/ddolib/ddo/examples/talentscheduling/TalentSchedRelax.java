@@ -41,7 +41,7 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
 
     @Override
     public int fastUpperBound(TalentSchedState state, Set<Integer> variables) {
-        return -fastLowerBound(state);
+        return Integer.MAX_VALUE;
     }
 
     /**

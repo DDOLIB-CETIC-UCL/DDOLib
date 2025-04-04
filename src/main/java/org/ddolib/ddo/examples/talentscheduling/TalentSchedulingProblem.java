@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.Problem;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Class to model the Talent scheduling problem.
@@ -18,6 +19,8 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     final int[] duration;
     final BitSet[] actors;
 
+    public final Optional<Integer> optimal;
+
     /**
      * @param nbScene  The number of scenes in the instance.
      * @param nbActors The number of actors in the problem.
@@ -25,12 +28,17 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
      * @param duration For each scene {@code}, gives its duration.
      * @param actors   For each scene, returns the set of actors needed
      */
-    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
+    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Integer> optimal) {
         this.nbScene = nbScene;
         this.nbActors = nbActors;
         this.costs = costs;
         this.duration = duration;
         this.actors = actors;
+        this.optimal = optimal;
+    }
+
+    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
+        this(nbScene, nbActors, costs, duration, actors, Optional.empty());
     }
 
 
