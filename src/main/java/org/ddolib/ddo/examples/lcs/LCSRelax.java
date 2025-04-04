@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.LCS;
+package org.ddolib.ddo.examples.lcs;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.LCS;
+package org.ddolib.ddo.examples.lcs;
 
 import java.util.Arrays;
 
