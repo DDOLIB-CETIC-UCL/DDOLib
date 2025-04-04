@@ -44,10 +44,14 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
         return -fastLowerBound(state);
     }
 
+    /**
+     * Based on the lower bound of
+     * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>
+     */
     private int fastLowerBound(TalentSchedState state) {
         double lb = 0.0;
 
-        BitSet presentActors = problem.presentActors(state);
+        BitSet presentActors = problem.onLocationActors(state);
         RatioAndActor[] ratios = new RatioAndActor[problem.instance.nbActors()];
         for (int i = 0; i < ratios.length; i++) {
             ratios[i] = new RatioAndActor(0.0, i);

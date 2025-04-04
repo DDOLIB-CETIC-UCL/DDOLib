@@ -77,7 +77,7 @@ public class TalentScheduling {
         final TalentSchedRelax relax = new TalentSchedRelax(problem);
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(30);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(500);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
@@ -91,7 +91,7 @@ public class TalentScheduling {
         );
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize();
+        SearchStatistics stat = solver.maximize(1);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         String solutionStr;

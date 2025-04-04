@@ -6,6 +6,9 @@ import org.ddolib.ddo.core.Problem;
 import java.util.BitSet;
 import java.util.Iterator;
 
+/**
+ * Class to model the Talent scheduling problem.
+ */
 public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
     /**
@@ -50,7 +53,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         BitSet toReturn = new BitSet(nbVars());
         toReturn.or(state.remainingScenes());
 
-        // state inherit from a merged state. There is not enough remaining scenes to assign each variable.
+        // state inherits from a merged state. There is not enough remaining scenes to assign each variable.
         // So, we select scene form maybeScenes
         if (toReturn.cardinality() < nbVars())
             toReturn.or(state.maybeScenes());
@@ -72,7 +75,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     public int transitionCost(TalentSchedState state, Decision decision) {
         int scene = decision.val();
 
-        BitSet toPay = presentActors(state); // All the already present actors (playing for this scene or waiting)
+        BitSet toPay = onLocationActors(state); // All the already present actors (playing for this scene or waiting)
         toPay.or(actors[scene]); // Add new actors
 
         int cost = toPay.stream()
@@ -84,7 +87,14 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     }
 
 
-    public BitSet presentActors(TalentSchedState state) {
+    /**
+     * Given a state, returns which actors are already in location, i.e. actors needed for past scenes
+     * and needed for future scenes.
+     *
+     * @param state A state of the mdd
+     * @return Which actors are currently on location.
+     */
+    public BitSet onLocationActors(TalentSchedState state) {
         BitSet before = new BitSet(); //Actors for past scenes
         BitSet after = new BitSet(); // Actors for future scenes
 

@@ -2,6 +2,13 @@ package org.ddolib.ddo.examples.talentscheduling;
 
 import java.util.BitSet;
 
+/**
+ * Represent a state for a talent scheduling instance
+ *
+ * @param remainingScenes Set containing all the remaining scenes that must planned.
+ * @param maybeScenes     Used by merged states. Contains scenes that must be planned for some of
+ *                        the merged states by has already been planned for other ones.
+ */
 public record TalentSchedState(BitSet remainingScenes, BitSet maybeScenes) {
 
     @Override
