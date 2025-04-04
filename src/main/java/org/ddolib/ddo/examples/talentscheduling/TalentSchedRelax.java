@@ -52,7 +52,7 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
         double lb = 0.0;
 
         BitSet presentActors = problem.onLocationActors(state);
-        RatioAndActor[] ratios = new RatioAndActor[problem.instance.nbActors()];
+        RatioAndActor[] ratios = new RatioAndActor[problem.nbActors];
         for (int i = 0; i < ratios.length; i++) {
             ratios[i] = new RatioAndActor(0.0, i);
         }
@@ -68,16 +68,16 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
 
 
                 for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
-                    int cost = problem.instance.costs()[actor];
+                    int cost = problem.costs[actor];
                     totalCost += cost;
                     squaredCost += cost * cost;
                 }
 
                 for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
-                    ratios[actor].ratio += problem.instance.duration()[scene] / totalCost;
+                    ratios[actor].ratio += problem.duration[scene] / totalCost;
                 }
 
-                lb -= problem.instance.duration()[scene] * (totalCost + squaredCost / totalCost) / 2.0;
+                lb -= problem.duration[scene] * (totalCost + squaredCost / totalCost) / 2.0;
             }
         }
 
@@ -87,8 +87,8 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
         for (RatioAndActor ra : ratios) {
             if (presentActors.get(ra.actor)) {
                 int a = ra.actor;
-                sumE += ratios[a].ratio * problem.instance.costs()[a];
-                lb += problem.instance.costs()[a] * sumE;
+                sumE += ratios[a].ratio * problem.costs[a];
+                lb += problem.costs[a] * sumE;
             }
         }
 

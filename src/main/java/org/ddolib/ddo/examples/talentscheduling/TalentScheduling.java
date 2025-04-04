@@ -10,10 +10,13 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Optional;
 
 public class TalentScheduling {
 
@@ -26,15 +29,16 @@ public class TalentScheduling {
      * @return An instance the talent scheduling problem.
      * @throws IOException If something goes wrong while reading input file.
      */
-    private static TalentSchedInstance readFile(String fileName) throws IOException {
+    private static TalentSchedulingProblem readFile(String fileName) throws IOException {
         int nbScenes = 0;
         int nbActors = 0;
         int[] cost = new int[0];
         int[] duration = new int[0];
-        int[][] actors = new int[0][0];
+        BitSet[] actors = new BitSet[0];
+        Optional<Integer> opti = Optional.empty();
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line = br.readLine(); // Skip first line
+            String line;
 
             int lineCount = 0;
             int skip = 0;
@@ -42,18 +46,29 @@ public class TalentScheduling {
                 if (line.isEmpty()) {
                     skip++;
                 } else if (lineCount == 0) {
+                    String[] tokens = line.split("\\s+");
+                    if (tokens.length == 3) {
+                        opti = Optional.of(Integer.parseInt(tokens[2]));
+                    }
+                } else if (lineCount == 1) {
                     nbScenes = Integer.parseInt(line);
                     duration = new int[nbScenes];
-                } else if (lineCount == 1) {
+                } else if (lineCount == 2) {
                     nbActors = Integer.parseInt(line);
                     cost = new int[nbActors];
-                    actors = new int[nbActors][nbScenes];
-                } else if (lineCount - skip - 2 < nbActors) {
-                    int actor = lineCount - skip - 2;
+                    actors = new BitSet[nbScenes];
+                    for (int i = 0; i < nbScenes; i++) {
+                        actors[i] = new BitSet(nbActors);
+                    }
+                } else if (lineCount - skip - 3 < nbActors) {
+                    int actor = lineCount - skip - 3;
                     String[] tokens = line.split("\\s+");
                     cost[actor] = Integer.parseInt(tokens[nbScenes]);
                     for (int i = 0; i < nbScenes; i++) {
-                        actors[actor][i] = Integer.parseInt(tokens[i]);
+                        int x = Integer.parseInt(tokens[i]);
+                        if (Integer.parseInt(tokens[i]) == 1) {
+                            actors[i].set(actor);
+                        }
                     }
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -64,16 +79,14 @@ public class TalentScheduling {
                 lineCount++;
             }
 
-            return new TalentSchedInstance(nbScenes, nbActors, cost, duration, actors);
+            return new TalentSchedulingProblem(nbScenes, nbActors, cost, duration, actors);
         }
     }
 
     public static void main(String[] args) throws IOException {
         String file = "data/TalentScheduling/film-12";
 
-        final TalentSchedInstance instance = readFile(file);
-        final TalentSchedulingProblem problem = new TalentSchedulingProblem(instance);
-
+        final TalentSchedulingProblem problem = readFile(file);
         final TalentSchedRelax relax = new TalentSchedRelax(problem);
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
@@ -91,7 +104,7 @@ public class TalentScheduling {
         );
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize(1);
+        SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         String solutionStr;

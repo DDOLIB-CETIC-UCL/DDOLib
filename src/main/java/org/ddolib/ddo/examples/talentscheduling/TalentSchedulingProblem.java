@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.talentscheduling;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 
@@ -11,36 +12,38 @@ import java.util.Iterator;
  */
 public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
-    /**
-     * For each scene, returns the needed actors
-     */
+    final int nbScene;
+    final int nbActors;
+    final int[] costs;
+    final int[] duration;
     final BitSet[] actors;
-    final TalentSchedInstance instance;
 
-    public TalentSchedulingProblem(TalentSchedInstance instance) {
-        this.instance = instance;
-
-        actors = new BitSet[instance.nbScene()];
-        for (int i = 0; i < instance.nbScene(); i++) {
-            actors[i] = new BitSet(instance.nbActors());
-            for (int j = 0; j < instance.nbActors(); j++) {
-                if (instance.actors()[j][i] == 1) {
-                    actors[i].set(j);
-                }
-            }
-        }
+    /**
+     * @param nbScene  The number of scenes in the instance.
+     * @param nbActors The number of actors in the problem.
+     * @param costs    For each actor {@code i}, gives its cost.
+     * @param duration For each scene {@code}, gives its duration.
+     * @param actors   For each scene, returns the set of actors needed
+     */
+    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
+        this.nbScene = nbScene;
+        this.nbActors = nbActors;
+        this.costs = costs;
+        this.duration = duration;
+        this.actors = actors;
     }
+
 
     @Override
     public int nbVars() {
-        return instance.nbScene();
+        return nbScene;
     }
 
     @Override
     public TalentSchedState initialState() {
-        BitSet scenes = new BitSet(instance.nbScene());
-        scenes.set(0, instance.nbScene()); // All scenes must be performed
-        return new TalentSchedState(scenes, new BitSet(instance.nbScene()));
+        BitSet scenes = new BitSet(nbScene);
+        scenes.set(0, nbScene); // All scenes must be performed
+        return new TalentSchedState(scenes, new BitSet(nbScene));
     }
 
     @Override
@@ -79,7 +82,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         toPay.or(actors[scene]); // Add new actors
 
         int cost = toPay.stream()
-                .map(actor -> instance.costs()[actor] * instance.duration()[scene])
+                .map(actor -> costs[actor] * duration[scene])
                 .sum(); // Costs of the playing actors
 
 
@@ -98,7 +101,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         BitSet before = new BitSet(); //Actors for past scenes
         BitSet after = new BitSet(); // Actors for future scenes
 
-        for (int i = 0; i < instance.nbScene(); i++) {
+        for (int i = 0; i < nbScene; i++) {
             if (!state.maybeScenes().get(i)) {
                 if (state.remainingScenes().get(i)) after.or(actors[i]);
                 else before.or(actors[i]);
@@ -106,5 +109,19 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         }
         after.and(before); // Already present actors
         return after;
+    }
+
+    @Override
+    public String toString() {
+        String nbSceneStr = String.format("Nb Scene: %d%n", nbScene);
+        String nbActorsStr = String.format("Nb Actors: %d%n", nbActors);
+        String costStr = String.format("Costs: %s%n", Arrays.toString(costs));
+        String durationStr = String.format("Duration: %s%n", Arrays.toString(duration));
+        StringBuilder actorsStr = new StringBuilder();
+        for (int i = 0; i < actors.length; i++) {
+            actorsStr.append(String.format("Scene %d needs actors: %s%n", i, actors[i]));
+        }
+
+        return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
     }
 }
