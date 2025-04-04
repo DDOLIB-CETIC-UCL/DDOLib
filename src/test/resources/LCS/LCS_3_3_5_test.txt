@@ -1,0 +1,4 @@
+3 3 2
+5 AAABC
+5 BBACA
+5 AACAB
