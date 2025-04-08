@@ -7,27 +7,39 @@ package org.ddolib.ddo.core;
 public interface Frontier<T> {
     /**
      * This is how you push a node onto the frontier.
-     * 
+     *
      * @param sub the subproblem you want to push onto the frontier
      */
     void push(final SubProblem<T> sub);
+
     /**
      * This method yields the most promising node from the frontier.
-     * 
+     * <p>
      * # Note:
      * The solvers rely on the assumption that a frontier will pop nodes in
      * descending upper bound order. Hence, it is a requirement for any fringe
      * implementation to enforce that requirement.
-     * 
+     *
      * @return the most promising sub problem from the frontier (or null if the frontier is empty)
      */
     SubProblem<T> pop();
-    /** This method clears the frontier: it removes all nodes from the queue. */
+
+    /**
+     * This method clears the frontier: it removes all nodes from the queue.
+     */
     void clear();
-    /** @return Yields the length of the queue. */
+
+    /**
+     * @return Yields the length of the queue.
+     */
     int size();
-    /** @return true iff the fringe is empty (size == 0) */
+
+    /**
+     * @return true iff the fringe is empty (size == 0)
+     */
     default boolean isEmpty() {
         return size() == 0;
     }
+
+    long numDuplicates();
 }
