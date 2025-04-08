@@ -57,11 +57,36 @@ public class TSPTWTests {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testOptimumReached(TSPTWProblem problem) {
+    public void testTSPTW(TSPTWProblem problem) {
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(500);
+        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
+
+
+        final ParallelSolver<TSPTWState> solver = new ParallelSolver<>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier
+        );
+        solver.maximize();
+
+        assertEquals(solver.bestValue().get(), problem.optimal.get());
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testTSPTWWithRelax(TSPTWProblem problem) {
+        final TSPTWRelax relax = new TSPTWRelax(problem);
+        final TSPTWRanking ranking = new TSPTWRanking();
+
+        final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
