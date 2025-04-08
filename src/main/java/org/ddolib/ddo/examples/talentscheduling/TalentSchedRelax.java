@@ -19,7 +19,7 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
     @Override
     public TalentSchedState mergeStates(Iterator<TalentSchedState> states) {
         BitSet mergedRemaining = new BitSet(problem.nbVars());
-        mergedRemaining.set(0, problem.nbVars());
+        mergedRemaining.set(0, problem.nbVars(), true);
         BitSet mergedMaybe = new BitSet(problem.nbVars());
 
         while (states.hasNext()) {
@@ -37,13 +37,7 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
     public int relaxEdge(TalentSchedState from, TalentSchedState to, TalentSchedState merged, Decision d, int cost) {
         return cost;
     }
-
-
-    @Override
-    public int fastUpperBound(TalentSchedState state, Set<Integer> variables) {
-        return Integer.MAX_VALUE;
-    }
-
+    
     /**
      * Based on the lower bound of
      * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>

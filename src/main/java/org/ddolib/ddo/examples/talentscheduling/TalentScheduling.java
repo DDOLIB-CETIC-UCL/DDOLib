@@ -84,7 +84,7 @@ public class TalentScheduling {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = "data/TalentScheduling/concert";
+        String file = "data/TalentScheduling/film-12";
 
         final TalentSchedulingProblem problem = readFile(file);
         final TalentSchedRelax relax = new TalentSchedRelax(problem);

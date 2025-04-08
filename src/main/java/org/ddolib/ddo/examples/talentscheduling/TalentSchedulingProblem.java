@@ -50,13 +50,21 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     @Override
     public TalentSchedState initialState() {
         BitSet scenes = new BitSet(nbScene);
-        scenes.set(0, nbScene); // All scenes must be performed
+        scenes.set(0, nbScene, true); // All scenes must be performed
         return new TalentSchedState(scenes, new BitSet(nbScene));
     }
 
     @Override
     public int initialValue() {
-        return 0;
+        int cost = 0;
+        for (int scene = 0; scene < nbScene; scene++) {
+            for (int actor = actors[scene].nextSetBit(0);
+                 actor >= 0;
+                 actor = actors[scene].nextSetBit(actor + 1)) {
+                cost += costs[actor] * duration[scene];
+            }
+        }
+        return -cost;
     }
 
     @Override
@@ -66,8 +74,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
         // state inherits from a merged state. There is not enough remaining scenes to assign each variable.
         // So, we select scene form maybeScenes
-        if (toReturn.cardinality() < nbVars())
-            toReturn.or(state.maybeScenes());
+        if (var + toReturn.cardinality() < nbVars()) toReturn.or(state.maybeScenes());
 
         return toReturn.stream().iterator();
     }
@@ -87,11 +94,12 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         int scene = decision.val();
 
         BitSet toPay = onLocationActors(state); // All the already present actors (playing for this scene or waiting)
-        toPay.or(actors[scene]); // Add new actors
+        toPay.andNot(actors[scene]); // Add new actors
 
-        int cost = toPay.stream()
-                .map(actor -> costs[actor] * duration[scene])
-                .sum(); // Costs of the playing actors
+        int cost = 0;
+        for (int actor = toPay.nextSetBit(0); actor >= 0; actor = toPay.nextSetBit(actor + 1)) {
+            cost += costs[actor] * duration[scene];
+        }
 
 
         return -cost; // Talent scheduling is a minimization problem. To get a maximization
