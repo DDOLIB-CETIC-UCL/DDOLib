@@ -84,5 +84,28 @@ public class Max2SatTest {
         assertEquals(solver.bestValue().get(), problem.optimal.get());
     }
 
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testMax2SatWithRelax(Max2SatProblem problem) {
+        Max2SatRelax relax = new Max2SatRelax(problem);
+        Max2SatRanking ranking = new Max2SatRanking();
+
+        final FixedWidth<Max2SatState> width = new FixedWidth<>(2);
+        final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
+
+        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
+
+        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier
+        );
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal.get());
+    }
 
 }
