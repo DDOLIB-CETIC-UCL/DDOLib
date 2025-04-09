@@ -55,4 +55,25 @@ public class LCSRelax implements Relaxation<LCSState> {
 
         return Math.min(total,minPairwiseLCS);
     }
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testLCSWithRelax(LCSProblem problem) {
+        final LCSRelax relax = new LCSRelax(problem);
+        final LCSRanking ranking = new LCSRanking();
+        final FixedWidth<LCSState> width = new FixedWidth<>(2);
+        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
+
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+
+        final Solver solver = new ParallelSolver<LCSState>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.getOptimal().get());
+    }
 }
