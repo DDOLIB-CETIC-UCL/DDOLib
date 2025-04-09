@@ -16,6 +16,7 @@ public final class DPDCapacityKruskal {
 
     static class PDState{
 
+        public int random = new Random().nextInt(10);
         //the nodes that we can visit, including
         // all non-visited pick-up nodes
         // all non-visited  delivery nodes such that the related pick-up has been reached
@@ -275,7 +276,7 @@ public final class DPDCapacityKruskal {
     public static class PDPRanking implements StateRanking<PDState> {
         @Override
         public int compare(final PDState o1, final PDState o2) {
-            return 0;
+            return (o1.random - o2.random);
         }
     }
 
@@ -399,7 +400,7 @@ public final class DPDCapacityKruskal {
                 }else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)){
                     // it is a pickup
                     currentContent = currentContent+1;
-                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent + "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + ")";
+                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent +   "\t(pickup to    " + problem.pickupToAssociatedDelivery.get(currentNode) + ")";
                 }else{
                     //an unrelated node
                     toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent;
