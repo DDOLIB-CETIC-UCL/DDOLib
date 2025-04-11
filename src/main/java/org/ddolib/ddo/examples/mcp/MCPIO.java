@@ -11,19 +11,12 @@ public class MCPIO {
         int[][] matrix = new int[numNodes][numNodes];
         Random rng = new Random(seed);
         for (int i = 0; i < numNodes - 1; i++) {
-            // Each node must have at least one neighbor
-            int mandatoryNeighbor = rng.ints(i + 1, numNodes).findFirst().getAsInt();
-            int weight = rng.nextInt(10) + 1;
-            matrix[i][mandatoryNeighbor] = weight;
-            matrix[mandatoryNeighbor][i] = weight;
             for (int j = i + 1; j < numNodes; j++) {
-                if (j != mandatoryNeighbor) {
-                    int adjacent = rng.nextInt(2);
-                    int w = adjacent == 0 ? 0 : 1 + rng.ints(-10, 10)
-                            .filter(x -> x != 0).findFirst().getAsInt();
-                    matrix[i][j] = w;
-                    matrix[j][i] = w;
-                }
+                int adjacent = rng.nextInt(2);
+                int w = adjacent == 0 ? 0 : 1 + rng.ints(-10, 10)
+                        .filter(x -> x != 0).findFirst().getAsInt();
+                matrix[i][j] = w;
+                matrix[j][i] = w;
             }
         }
         return matrix;
@@ -76,7 +69,7 @@ public class MCPIO {
     }
 
     public static void main(String[] args) throws IOException {
-        //writeInstance("data/MCP/nodes_10.txt", 10);
+        writeInstance("data/MCP/nodes_10.txt", 10);
         MCPProblem problem = readInstance("data/MCP/nodes_10.txt");
         System.out.println(problem.graph);
         NaiveMCPSolver solver = new NaiveMCPSolver(problem);
