@@ -20,6 +20,7 @@ public class ALPInstance{
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             int lineCounter = 0;
             List<String> linesList = bf.lines().toList();
+            linesList = linesList.stream().filter(line -> !line.isBlank()).toList();
             for(String line: linesList){
                 String[] splitLine = line.split(" ");
                 if(lineCounter == 0){
