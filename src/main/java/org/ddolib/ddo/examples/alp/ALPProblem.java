@@ -43,11 +43,12 @@ public class ALPProblem implements Problem<ALPState> {
      * @return The arrival (landing) time.
      */
     public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway){
-        if(runwayStates[runway].prevTime == 0 & runwayStates[runway].prevClass == DUMMY){
-            return instance.target[aircraft];
-        } else if(runwayStates[runway].prevClass == DUMMY){
-            return Math.max(instance.target[aircraft],
-                    runwayStates[runway].prevTime + minSeparationTo[instance.classes[aircraft]]);
+        if(runwayStates[runway].prevClass == DUMMY){
+            if(runwayStates[runway].prevTime == 0)
+                return instance.target[aircraft];
+            else
+                return Math.max(instance.target[aircraft],
+                        runwayStates[runway].prevTime + minSeparationTo[instance.classes[aircraft]]);
         } else {
             return Math.max(instance.target[aircraft],
                     runwayStates[runway].prevTime +
@@ -110,7 +111,7 @@ public class ALPProblem implements Problem<ALPState> {
                 int aircraft = next.get(c).get(state.remainingAircraftOfClass[c]);
 
                 used.clear();
-                for(int runway: IntStream.range(0,instance.nbRunways).toArray()){ // For each runway, try to find at least one suitable runway.
+                for(int runway = 0; runway < instance.nbRunways; runway++){ // For each runway, try to find at least one suitable runway.
                     int arrival = getArrivalTime(state.runwayStates, aircraft, runway);
                     if(arrival <= instance.latest[aircraft]) {
                         decisions.add(toDecision(new ALPDecision(c,runway)));

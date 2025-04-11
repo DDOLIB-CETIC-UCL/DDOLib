@@ -23,7 +23,7 @@ public final class ALP {
         ALPRelax relax = new ALPRelax(problem);
         ALPRanking ranking = new ALPRanking();
 
-        WidthHeuristic<ALPState> width = new FixedWidth<>(250);
+        WidthHeuristic<ALPState> width = new FixedWidth<>(100);
         VariableHeuristic<ALPState> variableHeuristic = new DefaultVariableHeuristic<>();
         Frontier<ALPState> frontier = new SimpleFrontier<>(ranking);
 
