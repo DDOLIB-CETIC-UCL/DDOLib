@@ -84,13 +84,14 @@ public class TalentScheduling {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = "data/TalentScheduling/film-12";
+        String file = args.length == 0 ? "data/TalentScheduling/film-12" : args[0];
+        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         final TalentSchedulingProblem problem = readFile(file);
         final TalentSchedRelax relax = new TalentSchedRelax(problem);
         final TalentSchedRanking ranking = new TalentSchedRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(2);
+        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
