@@ -21,17 +21,17 @@ public final class MCP {
         g.addEdge(2, 3, -1);
 
         final MCPProblem problem = new MCPProblem(g);
-        final MCPRelax relax = new MCPRelax();
+        final MCPRelax relax = new MCPRelax(problem);
         final MCPRanking ranking = new MCPRanking();
 
-        final FixedWidth<MCPState> width = new FixedWidth<>(500);
+        final FixedWidth<MCPState> width = new FixedWidth<>(2);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
         SequentialSolver<MCPState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.maximize(2);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
