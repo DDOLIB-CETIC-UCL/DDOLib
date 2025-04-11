@@ -17,13 +17,13 @@ import java.util.Arrays;
 public final class ALP {
 
     public static void main(final String[] args) throws IOException {
-        final String fileStr = "data/alp/debugging";
+        final String fileStr = "data/alp/alp_n50_r1_c2_std10_s0";
         ALPInstance instance = new ALPInstance(fileStr);
         ALPProblem problem = new ALPProblem(instance);
         ALPRelax relax = new ALPRelax(problem);
         ALPRanking ranking = new ALPRanking();
 
-        WidthHeuristic<ALPState> width = new FixedWidth<>(100);
+        WidthHeuristic<ALPState> width = new FixedWidth<>(250);
         VariableHeuristic<ALPState> variableHeuristic = new DefaultVariableHeuristic<>();
         Frontier<ALPState> frontier = new SimpleFrontier<>(ranking);
 
