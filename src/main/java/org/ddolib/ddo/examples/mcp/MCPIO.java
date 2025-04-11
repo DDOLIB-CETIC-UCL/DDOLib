@@ -12,7 +12,7 @@ public class MCPIO {
         Random rng = new Random(seed);
         for (int i = 0; i < numNodes - 1; i++) {
             for (int j = i + 1; j < numNodes; j++) {
-                int adjacent = rng.nextInt(2);
+                int adjacent = rng.nextInt(4);
                 int w = adjacent == 0 ? 0 : 1 + rng.ints(-10, 10)
                         .filter(x -> x != 0).findFirst().getAsInt();
                 matrix[i][j] = w;
@@ -69,8 +69,8 @@ public class MCPIO {
     }
 
     public static void main(String[] args) throws IOException {
-        writeInstance("data/MCP/nodes_10.txt", 10);
-        MCPProblem problem = readInstance("data/MCP/nodes_10.txt");
+        writeInstance("data/MCP/nodes_20.txt", 20);
+        MCPProblem problem = readInstance("data/MCP/nodes_20.txt");
         System.out.println(problem.graph);
         NaiveMCPSolver solver = new NaiveMCPSolver(problem);
         solver.maximize();
