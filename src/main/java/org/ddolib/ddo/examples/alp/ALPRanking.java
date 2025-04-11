@@ -4,6 +4,10 @@ import org.ddolib.ddo.heuristics.StateRanking;
 
 import java.util.Arrays;
 
+/** Ranking for {@link org.ddolib.ddo.examples.alp.ALPState}.
+ * <P>
+ *     First compares remaining aircraft to land, then the sum of previous time of the runways.
+ * </P>*/
 public class ALPRanking implements StateRanking<ALPState> {
 
     @Override
