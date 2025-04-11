@@ -104,16 +104,16 @@ public class ALPProblem implements Problem<ALPState> {
         ArrayList<Integer> decisions = new ArrayList<>();
         int[] remainingAircraftOfClass = state.remainingAircraftOfClass;
 
-        for (int i = 0; i < remainingAircraftOfClass.length; i++){       // For each class
-            if(remainingAircraftOfClass[i] > 0){                         // If there still are aircraft to land.
+        for (int c = 0; c < remainingAircraftOfClass.length; c++){       // For each class
+            if(remainingAircraftOfClass[c] > 0){                         // If there still are aircraft to land.
                 // Get the earliest aircraft in the queue. (sorted backwardly)
-                int aircraft = next.get(i).get(state.remainingAircraftOfClass[i]);
+                int aircraft = next.get(c).get(state.remainingAircraftOfClass[c]);
 
                 used.clear();
                 for(int runway: IntStream.range(0,instance.nbRunways).toArray()){ // For each runway, try to find at least one suitable runway.
                     int arrival = getArrivalTime(state.runwayStates, aircraft, runway);
                     if(arrival <= instance.latest[aircraft]) {
-                        decisions.add(toDecision(new ALPDecision(i,runway)));
+                        decisions.add(toDecision(new ALPDecision(c,runway)));
                         used.add(state.runwayStates[runway]);
                     }
                 }
@@ -124,7 +124,7 @@ public class ALPProblem implements Problem<ALPState> {
                 }
 
             }
-            totRemaining += remainingAircraftOfClass[i];
+            totRemaining += remainingAircraftOfClass[c];
         }
 
         if(totRemaining == 0){

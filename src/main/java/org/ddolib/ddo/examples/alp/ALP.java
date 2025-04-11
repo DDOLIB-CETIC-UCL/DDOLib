@@ -48,11 +48,11 @@ public final class ALP {
 
         String[] solution = solver.bestSolution().map(decisions -> {
             ALPState curState = problem.initialState();
-            RunwayState[] runwayStates = curState.runwayStates;
             String[] values = new String[problem.nbVars()];
 
             for (int i = 0; i < decisions.size(); i++) {
                 final int index = i;
+                RunwayState[] runwayStates = curState.runwayStates;
                 Decision d = decisions.stream().filter(x -> x.var() == index).findFirst().get();
                 ALPDecision alpD = problem.fromDecision(d.val());
                 int aircraft = problem.next.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
