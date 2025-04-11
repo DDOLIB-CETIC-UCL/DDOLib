@@ -1,0 +1,73 @@
+package org.ddolib.ddo.examples.fixed;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.util.FixedDD;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Set;
+
+public final class FixedDDMain {
+
+
+
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp -Dexec.args="<your file> <maximum
+     * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
+     */
+    public static void main(String[] args) throws IOException {
+
+        int[] layerSizes = {4, 7, 4, 30, 20, 50, 8}; // Example layer sizes
+        FixedDD dd = FixedDD.random(layerSizes, 0.6, 1, 10, 42);
+        int maxWidth = 10;
+        FixedDDProblem problem = new FixedDDProblem(dd);
+        final FixedDDRelax relax = new FixedDDRelax(problem);
+        final FixedDDRanking ranking = new FixedDDRanking();
+        final FixedWidth<Set<Integer>> width = new FixedWidth<>(maxWidth);
+        final VariableHeuristic<Set<Integer>> varh = new DefaultVariableHeuristic();
+        final Frontier<Set<Integer>> frontier = new SimpleFrontier<>(ranking);
+
+        final Solver solver = new ParallelSolver<Set<Integer>>(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        long start = System.currentTimeMillis();
+        solver.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+
+        int[] solution = solver.bestSolution()
+                .map(decisions -> {
+                    int[] values = new int[problem.nbVars()];
+                    for (Decision d : decisions) {
+                        values[d.var()] = d.val();
+                    }
+                    return values;
+                })
+                .get();
+
+
+        System.out.printf("Longest path from source to sink: %d%n", dd.longestPathFromSourceToSink());
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Max width : %d%n", maxWidth);
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+    }
+
+}
