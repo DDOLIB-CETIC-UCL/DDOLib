@@ -55,7 +55,7 @@ public final class ALP {
                 RunwayState[] runwayStates = curState.runwayStates;
                 Decision d = decisions.stream().filter(x -> x.var() == index).findFirst().get();
                 ALPDecision alpD = problem.fromDecision(d.val());
-                int aircraft = problem.next.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
+                int aircraft = problem.latestToEarliestAircraftByClass.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
                 int arrivalTime = problem.getArrivalTime(runwayStates,aircraft,alpD.runway);
                 int cost = problem.transitionCost(curState,d);
                 curState = problem.transition(curState,d);

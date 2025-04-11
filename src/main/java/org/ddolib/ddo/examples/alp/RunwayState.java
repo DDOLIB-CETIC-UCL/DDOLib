@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.alp;
 
 import java.util.Objects;
 
+/** State of a runway : last landing time and last aircraft's class */
 public class RunwayState implements Comparable<RunwayState>{
     // Previous landing time
     public int prevTime;
