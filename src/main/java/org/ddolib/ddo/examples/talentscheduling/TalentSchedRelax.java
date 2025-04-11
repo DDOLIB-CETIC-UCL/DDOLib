@@ -37,7 +37,12 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
     public int relaxEdge(TalentSchedState from, TalentSchedState to, TalentSchedState merged, Decision d, int cost) {
         return cost;
     }
-    
+
+    @Override
+    public int fastUpperBound(TalentSchedState state, Set<Integer> variables) {
+        return -fastLowerBound(state);
+    }
+
     /**
      * Based on the lower bound of
      * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>
