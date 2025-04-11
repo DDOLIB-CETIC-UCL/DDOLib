@@ -7,31 +7,29 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public final class MCP {
 
-    public static void main(String[] args) {
-        Graph g = new Graph(4);
-        g.addEdge(0, 1, 1);
-        g.addEdge(0, 2, 2);
-        g.addEdge(0, 3, -2);
-        g.addEdge(1, 2, 3);
-        g.addEdge(1, 3, -1);
-        g.addEdge(2, 3, -1);
+    public static void main(String[] args) throws IOException {
 
-        final MCPProblem problem = new MCPProblem(g);
+        String filename = "data/MCP/nodes_10.txt";
+        final MCPProblem problem = MCPIO.readInstance(filename);
+        System.out.println(problem.graph);
+
+
         final MCPRelax relax = new MCPRelax(problem);
         final MCPRanking ranking = new MCPRanking();
 
-        final FixedWidth<MCPState> width = new FixedWidth<>(2);
+        final FixedWidth<MCPState> width = new FixedWidth<>(500);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
         SequentialSolver<MCPState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(2);
+        solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
