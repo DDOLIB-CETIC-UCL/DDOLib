@@ -12,11 +12,17 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public final class DPDCapacityKruskal {
 
     static class PDState{
 
-        public int random = new Random().nextInt(10);
+        //we use a random tiebreak when selecting nodes that will be merged.
+        //the random tiebreak is based on this random value to ensure transitivity, antisymmetry, reflexivity
+        public int random = new Random().nextInt(100);
+
         //the nodes that we can visit, including
         // all non-visited pick-up nodes
         // all non-visited  delivery nodes such that the related pick-up has been reached
@@ -30,13 +36,15 @@ public final class DPDCapacityKruskal {
         BitSet current;
 
         //the current content; ie the number of passed pickups such that we did not yet reach the associated delivery
-        BitSet currentContent;
+        int minContent;
+        int maxContent;
 
-        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit, BitSet currentContent) {
+        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent) {
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.current = current;
-            this.currentContent = currentContent;
+            this.minContent = minContent;
+            this.maxContent = maxContent;
         }
 
         public int hashCode() {
@@ -46,55 +54,11 @@ public final class DPDCapacityKruskal {
         @Override
         public boolean equals(Object obj) {
             PDState that = (PDState) obj;
-            if(!that.current.equals(this.current)) return false;
-            if(!that.openToVisit.equals(this.openToVisit)) return false;
-            if(!that.currentContent.equals(this.currentContent)) return false;
-            return (that.allToVisit.equals(this.allToVisit));
-        }
-
-        public PDState goTo(int node, PDProblem problem){
-            BitSet newOpenToVisit = (BitSet) openToVisit.clone();
-            newOpenToVisit.clear(node);
-
-            BitSet newAllToVisit = (BitSet) allToVisit.clone();
-            newAllToVisit.clear(node);
-
-            BitSet newContent;
-
-            if(problem.pickupToAssociatedDelivery.containsKey(node)){
-                //it is a pick-up node
-                newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
-                newContent = new BitSet();
-                for(int possibleContent: currentContent.stream().boxed().toList()){
-                    if(possibleContent < problem.maxCapacity) {
-                        newContent.set(possibleContent + 1);
-                    }
-                }
-            }else if(problem.deliveryToAssociatedPickup.containsKey(node)){
-                //it is a delivery node
-                newContent = new BitSet();
-                for(int possibleContent: currentContent.stream().boxed().toList()){
-                    if(possibleContent > 0) newContent.set(possibleContent-1);
-                }
-            }else{
-                newContent = (BitSet) currentContent.clone();
-            }
-
-            //good idea, but wrong idea
-            if(problem.deliveryToAssociatedPickup.containsKey(node) ){
-                int p = problem.deliveryToAssociatedPickup.get(node);
-                if(newOpenToVisit.get(p)){
-                    //System.out.println("Pruning toVisitPickups " + p);
-                    newOpenToVisit.clear(p);
-                }
-            }
-
-            //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
-            return new PDState(
-                    singleton(node),
-                    newOpenToVisit,
-                    newAllToVisit,
-                    newContent);
+            if(this.minContent != that.minContent) return false;
+            if(this.maxContent != that.maxContent) return false;
+            if(!this.current.equals(that.current)) return false;
+            if(!this.openToVisit.equals(that.openToVisit)) return false;
+            return (this.allToVisit.equals(that.allToVisit));
         }
 
         public BitSet singleton(int singletonValue){
@@ -107,11 +71,7 @@ public final class DPDCapacityKruskal {
         public String toString() {
             BitSet closedToVisit = (BitSet) allToVisit.clone();
             closedToVisit.xor(openToVisit);
-            if(current.cardinality() != 1){
-                return "PDState(possibleCurrent:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + " content:" + currentContent + ")";
-            }else{
-                return "PDState(current:" + current.nextSetBit(0) + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit  + " content:" + currentContent + ")";
-            }
+            return "PDState(current:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + " content:[" + minContent + ";" + maxContent + "])";
         }
     }
 
@@ -122,13 +82,15 @@ public final class DPDCapacityKruskal {
         final int maxCapacity;
         HashMap<Integer,Integer> pickupToAssociatedDelivery;
         HashMap<Integer,Integer> deliveryToAssociatedPickup;
+        HashMap<Integer,Integer> pickupToSize;
+        HashMap<Integer,Integer> deliveryToSize;
 
         Set<Integer> unrelatedNodes;
 
         @Override
         public String toString() {
             return "PDProblem(n:" + n + "\n" +
-                    "pdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> "(" + p + "->" + pickupToAssociatedDelivery.get(p) + ")").toList() + ")\n" +
+                    "pdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> "(" + p + "->" + pickupToAssociatedDelivery.get(p) + ":" + pickupToSize.get(p) + ")").toList() + ")\n" +
                     "unrelated:" + unrelatedNodes.stream().toList() + "\n" +
                     "maxCapacity:" + maxCapacity + "\n" +
                     Arrays.stream(distanceMatrix).map(l -> Arrays.toString(l)+"\n").toList();
@@ -142,19 +104,22 @@ public final class DPDCapacityKruskal {
             return toReturn;
         }
 
-        public PDProblem(final int[][] distanceMatrix, HashMap<Integer,Integer> pickupToAssociatedDelivery, int maxCapacity) {
+        public PDProblem(final int[][] distanceMatrix, HashMap<Integer,Integer> pickupToAssociatedDelivery, HashMap<Integer,Integer> pickupToSize, int maxCapacity) {
             this.distanceMatrix = distanceMatrix;
             this.n = distanceMatrix.length;
             this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
             this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0,n).boxed().toList());
             this.maxCapacity = maxCapacity;
+            this.pickupToSize = pickupToSize;
 
             deliveryToAssociatedPickup = new HashMap<>();
+            deliveryToSize = new HashMap<>();
             for(int p : pickupToAssociatedDelivery.keySet()) {
                 int d = pickupToAssociatedDelivery.get(p);
                 unrelatedNodes.remove(p);
                 unrelatedNodes.remove(d);
                 deliveryToAssociatedPickup.put(d,p);
+                deliveryToSize.put(d,pickupToSize.get(p));
             }
         }
 
@@ -176,7 +141,7 @@ public final class DPDCapacityKruskal {
             BitSet allToVisit = new BitSet(n);
             allToVisit.set(1,n);
 
-            return new PDState(singleton(0), openToVisit ,allToVisit, singleton(0));
+            return new PDState(singleton(0), openToVisit ,allToVisit, 0,0);
         }
 
         public BitSet singleton(int singletonValue){
@@ -194,23 +159,84 @@ public final class DPDCapacityKruskal {
         public Iterator<Integer> domain(PDState state, int var) {
             //remaining capacity
             //obviously these should be equal except if a fusion occurred
-            int minContent = state.currentContent.nextSetBit(0);
-            int maxContent = state.currentContent.previousSetBit(n);
-            if(minContent >= maxCapacity) {
-                //only the open nodes that are not pick-ups nodes, so deliveries or unrelated
-                return new ArrayList<>(state.openToVisit.stream().boxed().filter(node -> !pickupToAssociatedDelivery.containsKey(node)).toList()).iterator();
-            }else if (maxContent == 0){
-                //only the open nodes that are not delivery nodes, so deliveries or unrelated
-                return new ArrayList<>(state.openToVisit.stream().boxed().filter(node -> !deliveryToAssociatedPickup.containsKey(node)).toList()).iterator();
-            }else{
-                //any that is open to visit
-                return new ArrayList<>(state.openToVisit.stream().boxed().toList()).iterator();
-            }
+
+            return new ArrayList<Integer>(state.openToVisit.stream().boxed().filter(node -> {
+                if (pickupToAssociatedDelivery.containsKey(node)) {
+                    //it is a pickup node, only admissible if capacity might allow for it
+                    int size = pickupToSize.get(node);
+                    return state.minContent + size <= maxCapacity;
+                }else if(deliveryToAssociatedPickup.containsKey(node)) {
+                    //it is a delivery, and there might be imprecision about it
+                    //so we only consider this node if it is coherent with the capacity
+                    int size = deliveryToSize.get(node);
+                    return state.maxContent - size >= 0;
+                }else{
+                    //it is a regular node, so always allowed
+                    return true;
+                }
+            }).toList()).iterator();
         }
 
         @Override
         public PDState transition(PDState state, Decision decision) {
-            return state.goTo(decision.val(),this);
+            int node = decision.val();
+            BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();
+            newOpenToVisit.clear(node);
+
+            BitSet newAllToVisit = (BitSet) state.allToVisit.clone();
+            newAllToVisit.clear(node);
+
+            if(pickupToAssociatedDelivery.containsKey(node)){
+                //go to a pick-up node
+                //the associated delivery is not open to visit
+                newOpenToVisit.set(pickupToAssociatedDelivery.get(node));
+
+                int size = pickupToSize.get(node);
+                //the content is increased by 1; since there is an uncertainty, overflowing values are dropped
+                int newMinContent = state.minContent + size;
+                int newMaxContent = Math.min(maxCapacity, state.maxContent + size);
+
+                assert(newMinContent <= maxCapacity);
+
+                return new PDState(
+                        state.singleton(node),
+                        newOpenToVisit,
+                        newAllToVisit,
+                        newMinContent,
+                        newMaxContent);
+            }else if(deliveryToAssociatedPickup.containsKey(node)){
+                //go to a delivery node
+                int size = deliveryToSize.get(node);
+
+                //the content is decreased by 1; since there is an uncertainty, underflowing values are dropped
+                int newMinContent = Math.max(0, state.minContent - size);
+                int newMaxContent = state.maxContent - size;
+                assert(newMaxContent >= 0);
+
+                //since there is uncertainty on openToVisit,
+                // the associated pickup might be in openToVisit
+                // we use the opportunity here to prune openToVisit
+                int p = deliveryToAssociatedPickup.get(node);
+                if(newOpenToVisit.get(p)){
+                    newOpenToVisit.clear(p);
+                }
+
+                return new PDState(
+                        state.singleton(node),
+                        newOpenToVisit,
+                        newAllToVisit,
+                        newMinContent,
+                        newMaxContent);
+            }else{
+                //it is another node, neither pickup nor delivery
+
+                return new PDState(
+                        state.singleton(node),
+                        newOpenToVisit,
+                        newAllToVisit,
+                        state.minContent,
+                        state.maxContent);
+            }
         }
 
         @Override
@@ -237,7 +263,8 @@ public final class DPDCapacityKruskal {
             BitSet openToVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
             BitSet allToVisit = new BitSet(problem.n);
-            BitSet content = new BitSet(problem.maxCapacity+1);
+            int newMinContent = Integer.MAX_VALUE;
+            int newMaxContent = Integer.MIN_VALUE;
 
             while (states.hasNext()) {
                 PDState state = states.next();
@@ -245,10 +272,11 @@ public final class DPDCapacityKruskal {
                 openToVisit.or(state.openToVisit);
                 allToVisit.or(state.allToVisit);
                 current.or(state.current);
-                content.or(state.currentContent);
+                newMaxContent = Math.max(newMaxContent, state.maxContent);
+                newMinContent = Math.min(newMinContent, state.minContent);
             }
 
-            return new PDState(current,openToVisit,allToVisit,content);
+            return new PDState(current,openToVisit,allToVisit,newMinContent,newMaxContent);
         }
 
         @Override
@@ -311,14 +339,16 @@ public final class DPDCapacityKruskal {
         }
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
+        HashMap<Integer,Integer> pickupToSize = new HashMap<Integer,Integer>();
 
         int firstDelivery = (n-unrelated-1)/2+1;
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);
+            pickupToSize.put(p, 1+r.nextInt(maxCapacity-1));
         }
 
-        return new PDProblem(distance,pickupToAssociatedDelivery,maxCapacity);
+        return new PDProblem(distance,pickupToAssociatedDelivery, pickupToSize, maxCapacity);
     }
 
     static int dist(int dx, int dy){
@@ -327,7 +357,7 @@ public final class DPDCapacityKruskal {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(24,5, 3);
+        final PDProblem problem = genInstance(20,5, 4);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -387,26 +417,26 @@ public final class DPDCapacityKruskal {
 
         @Override
         public String toString() {
-            String toReturn = "0\tcontent:" + 0;
 
+            StringBuilder toReturn = new StringBuilder("0\tcontent:" + 0);
             int currentNode = 0;
             int currentContent = 0;
             for(int i = 1 ; i < solution.length ; i++){
                 currentNode = solution[i];
                 if(problem.deliveryToAssociatedPickup.containsKey(currentNode)){
                     //it is a delivery
-                    currentContent = currentContent-1;
-                    toReturn = toReturn + "\n" + currentNode + " \tcontent:" + currentContent + "\t(delivery from " + problem.deliveryToAssociatedPickup.get(currentNode) +")";
+                    currentContent = currentContent-problem.deliveryToSize.get(currentNode);
+                    toReturn.append("\n" + currentNode + " \tcontent:" + currentContent + "\t(delivery from " + problem.deliveryToAssociatedPickup.get(currentNode) + " -" + problem.deliveryToSize.get(currentNode) +")");
                 }else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)){
                     // it is a pickup
-                    currentContent = currentContent+1;
-                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent +   "\t(pickup to    " + problem.pickupToAssociatedDelivery.get(currentNode) + ")";
+                    currentContent = currentContent+problem.pickupToSize.get(currentNode);
+                    toReturn.append("\n" + currentNode + "\tcontent:" + currentContent +   "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + " +" + problem.pickupToSize.get(currentNode) + ")");
                 }else{
                     //an unrelated node
-                    toReturn = toReturn + "\n" + currentNode + "\tcontent:" + currentContent;
+                    toReturn.append("\n" + currentNode + "\tcontent:" + currentContent);
                 }
             }
-            return toReturn;
+            return toReturn.toString();
         }
     }
 }
