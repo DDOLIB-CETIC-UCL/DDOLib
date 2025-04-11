@@ -41,5 +41,4 @@ public interface Frontier<T> {
         return size() == 0;
     }
 
-    long numDuplicates();
 }

@@ -120,7 +120,6 @@ public final class SequentialSolver<T> implements Solver {
         frontier.push(root());
         while (!frontier.isEmpty()) {
             if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
-                    "frontier duplicates: " + frontier.numDuplicates() + "\t " +
                     "bestObj:" + bestLB);
 
             nbIter++;
@@ -131,6 +130,7 @@ public final class SequentialSolver<T> implements Solver {
 
             if (verbosityLevel >= 2)
                 System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+            if (verbosityLevel >= 1) System.out.println("\n");
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);

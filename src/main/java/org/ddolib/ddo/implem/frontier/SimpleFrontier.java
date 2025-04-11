@@ -31,7 +31,7 @@ public final class SimpleFrontier<T> implements Frontier<T> {
 
     @Override
     public void push(final SubProblem<T> sub) {
-        if (!heap.contains(sub)) heap.add(sub);
+        heap.add(sub);
     }
 
     @Override
@@ -76,17 +76,6 @@ public final class SimpleFrontier<T> implements Frontier<T> {
                 return cmp;
             }
         }
-    }
-
-    @Override
-    public long numDuplicates() {
-        HashMap<SubProblem<T>, Integer> duplicates = new HashMap<>();
-
-        for (SubProblem<T> sub : heap) {
-            if (duplicates.containsKey(sub)) duplicates.put(sub, duplicates.get(sub) + 1);
-            else duplicates.put(sub, 1);
-        }
-        return duplicates.entrySet().stream().filter(d -> d.getValue() > 1).count();
     }
 
     @Override
