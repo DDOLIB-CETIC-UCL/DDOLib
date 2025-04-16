@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 
 public class MCPIO {
 
-    private static int[][] generateAdjacencyMatrix(int numNodes, long seed) {
+    private static int[][] generateAdjacencyMatrix(int numNodes, int adjacentProba, long seed) {
         int[][] matrix = new int[numNodes][numNodes];
         Random rng = new Random(seed);
         for (int i = 0; i < numNodes - 1; i++) {
             for (int j = i + 1; j < numNodes; j++) {
-                int adjacent = rng.nextInt(4);
+                int adjacent = rng.nextInt(adjacentProba);
                 int w = adjacent == 0 ? 0 : 1 + rng.ints(-10, 10)
                         .filter(x -> x != 0).findFirst().getAsInt();
                 matrix[i][j] = w;
@@ -22,8 +22,8 @@ public class MCPIO {
         return matrix;
     }
 
-    public static void writeInstance(String fileName, int numNodes, long seed) throws IOException {
-        int[][] matrix = generateAdjacencyMatrix(numNodes, seed);
+    public static void writeInstance(String fileName, int numNodes, int adjacentProba, long seed) throws IOException {
+        int[][] matrix = generateAdjacencyMatrix(numNodes, adjacentProba, seed);
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(String.format("Nodes: %d%n%n", numNodes));
@@ -35,9 +35,9 @@ public class MCPIO {
         }
     }
 
-    public static void writeInstance(String fileName, int numNodes) throws IOException {
+    public static void writeInstance(String fileName, int numNodes, int adjacentProba) throws IOException {
         Random rng = new Random();
-        writeInstance(fileName, numNodes, rng.nextLong());
+        writeInstance(fileName, numNodes, adjacentProba, rng.nextLong());
     }
 
     public static MCPProblem readInstance(String fileName) throws IOException {
@@ -69,9 +69,10 @@ public class MCPIO {
     }
 
     public static void main(String[] args) throws IOException {
-        writeInstance("data/MCP/nodes_20.txt", 20);
-        MCPProblem problem = readInstance("data/MCP/nodes_20.txt");
-        System.out.println(problem.graph);
+        int n = 20;
+        String filename = String.format("data/MCP/nodes_%d.txt", n);
+        writeInstance(filename, n, 5);
+        MCPProblem problem = readInstance(filename);
         NaiveMCPSolver solver = new NaiveMCPSolver(problem);
         solver.maximize();
         System.out.println(solver.best());

@@ -14,7 +14,9 @@ public final class MCP {
 
     public static void main(String[] args) throws IOException {
 
-        String filename = "data/MCP/nodes_20.txt";
+        int n = 35;
+        String filename = String.format("data/MCP/nodes_%d.txt", n);
+        MCPIO.writeInstance(filename, n, 5);
         final MCPProblem problem = MCPIO.readInstance(filename);
         //System.out.println(problem.graph);
 
@@ -22,7 +24,7 @@ public final class MCP {
         final MCPRelax relax = new MCPRelax(problem);
         final MCPRanking ranking = new MCPRanking();
 
-        final FixedWidth<MCPState> width = new FixedWidth<>(2);
+        final FixedWidth<MCPState> width = new FixedWidth<>(1000);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
@@ -43,7 +45,8 @@ public final class MCP {
                 .get();
 
         String[] solutionStr = Arrays.stream(solution).mapToObj(x -> x == 0 ? "S" : "T").toArray(String[]::new);
-
+        System.out.printf("Instance: %s%n", filename);
+        System.out.printf("Nodes: %d - Edges: %d%n", problem.graph.numNodes, problem.graph.numEdges);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solutionStr));

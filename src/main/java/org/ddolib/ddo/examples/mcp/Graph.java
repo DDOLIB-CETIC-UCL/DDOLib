@@ -7,15 +7,28 @@ public class Graph {
 
     private final int[][] adjacencyMatrix;
     public final int numNodes;
+    public final int numEdges;
 
     public Graph(int numNodes) {
         this.numNodes = numNodes;
         adjacencyMatrix = new int[numNodes][numNodes];
+        numEdges = Arrays.stream(adjacencyMatrix)
+                .map(row -> (int) Arrays.stream(row)
+                        .filter(x -> x != 0)
+                        .count()
+                )
+                .reduce(0, Integer::sum);
     }
 
     public Graph(int[][] adjacencyMatrix) {
         this.adjacencyMatrix = adjacencyMatrix;
         this.numNodes = adjacencyMatrix.length;
+        numEdges = Arrays.stream(adjacencyMatrix)
+                .map(row -> (int) Arrays.stream(row)
+                        .filter(x -> x != 0)
+                        .count()
+                )
+                .reduce(0, Integer::sum) / 2;
     }
 
     public void addEdge(int from, int to, int weight) {
