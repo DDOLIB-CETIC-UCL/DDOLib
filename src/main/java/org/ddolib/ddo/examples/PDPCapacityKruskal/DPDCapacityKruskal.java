@@ -370,7 +370,7 @@ public final class DPDCapacityKruskal {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDState> width = new FixedWidth<>(3000);
+        final FixedWidth<PDState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
