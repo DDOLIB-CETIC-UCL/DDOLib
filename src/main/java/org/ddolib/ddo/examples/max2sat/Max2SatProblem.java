@@ -20,6 +20,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
     public final Optional<Integer> optimal;
+    private Optional<String> name = Optional.empty();
 
     /**
      * Instantiates a Max2Sat problem.
@@ -46,6 +47,19 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         this.weights = weights;
         this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
         this.optimal = Optional.empty();
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public String toString() {
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            return weights.toString();
+        }
     }
 
     @Override

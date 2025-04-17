@@ -35,7 +35,9 @@ public class Max2SatTest {
                 .map(fileName -> dir + fileName)
                 .map(fileName -> {
                     try {
-                        return Max2SatIO.readInstance(fileName);
+                        Max2SatProblem problem = Max2SatIO.readInstance(fileName);
+                        problem.setName(fileName.replace(dir, ""));
+                        return problem;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
