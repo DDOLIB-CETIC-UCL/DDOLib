@@ -11,6 +11,7 @@ import org.ddolib.ddo.implem.solver.ParallelSolver;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -88,7 +89,7 @@ public class TSPTW {
      * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/TSPTW/AFG/rbg020a.tw" : args[0];
+        final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
         final TSPTWProblem problem = readInstance(file);
 
