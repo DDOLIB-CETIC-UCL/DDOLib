@@ -35,4 +35,6 @@ public class FixedDDRelax implements Relaxation<Set<Integer>> {
     public int fastUpperBound(Set<Integer> state, Set<Integer> variables) {
         return Integer.MAX_VALUE;
     }
+
+
 }
