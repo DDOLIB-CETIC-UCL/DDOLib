@@ -8,13 +8,14 @@ import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 
 public final class MCP {
 
     public static void main(String[] args) throws IOException {
 
-        String filename = "data/MCP/mcp_20.txt";
+        String filename = Paths.get("data", "MCP", "mcp_4.txt").toString();
         final MCPProblem problem = MCPIO.readInstance(filename);
 
         final MCPRelax relax = new MCPRelax(problem);
