@@ -4,12 +4,14 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 
     final int[][] durationMatrix;
     final TimeWindow[] timeWindows;
     public final Optional<Integer> optimal;
+    private Optional<String> name = Optional.empty();
 
     public TSPTWProblem(int[][] durationMatrix, TimeWindow[] timeWindows, Optional<Integer> optimal) {
         this.durationMatrix = durationMatrix;
@@ -23,6 +25,25 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         this.optimal = Optional.empty();
     }
 
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public String toString() {
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            String twStr = Arrays.toString(timeWindows);
+            String timeStr = Arrays.stream(durationMatrix)
+                    .map(row -> Arrays.stream(row)
+                            .mapToObj(x -> String.format("%4s", x))
+                            .collect(Collectors.joining(" ")))
+                    .collect(Collectors.joining("\n"));
+            return twStr + "\n" + timeStr;
+        }
+    }
 
     @Override
     public int nbVars() {
