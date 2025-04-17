@@ -50,6 +50,7 @@ public class MCPIO {
 
     public static MCPProblem readInstance(String fileName) throws IOException {
         int[][] matrix = new int[0][0];
+        int optimal = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             int linesCount = 0;
@@ -63,6 +64,9 @@ public class MCPIO {
                     String[] tokens = line.split("\\s+");
                     int n = Integer.parseInt(tokens[1]);
                     matrix = new int[n][n];
+                    if (tokens.length >= 4) {
+                        optimal = Integer.parseInt(tokens[3]);
+                    }
                 } else {
                     int node = linesCount - skip - 1;
                     String[] tokens = line.split("\\s+");
@@ -73,6 +77,6 @@ public class MCPIO {
             }
         }
         Graph g = new Graph(matrix);
-        return new MCPProblem(g);
+        return new MCPProblem(g, optimal);
     }
 }

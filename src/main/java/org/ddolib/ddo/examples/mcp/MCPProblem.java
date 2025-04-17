@@ -3,10 +3,7 @@ package org.ddolib.ddo.examples.mcp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import java.lang.Integer;
 
@@ -21,11 +18,28 @@ public class MCPProblem implements Problem<MCPState> {
     public final int T = 1;
 
     final Graph graph;
+    private Optional<String> name = Optional.empty();
+    public Optional<Integer> optimal = Optional.empty();
+
 
     public MCPProblem(Graph graph) {
         this.graph = graph;
     }
 
+    public MCPProblem(Graph graph, Integer optimal) {
+        this.graph = graph;
+        this.optimal = Optional.of(optimal);
+    }
+
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public String toString() {
+        return name.orElseGet(graph::toString);
+    }
 
     @Override
     public int nbVars() {
