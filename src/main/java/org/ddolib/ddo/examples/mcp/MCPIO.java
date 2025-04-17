@@ -24,9 +24,17 @@ public class MCPIO {
 
     public static void writeInstance(String fileName, int numNodes, int adjacentProba, long seed) throws IOException {
         int[][] matrix = generateAdjacencyMatrix(numNodes, adjacentProba, seed);
+        Graph graph = new Graph(matrix);
+        MCPProblem problem = new MCPProblem(graph);
+        System.out.println("Solver problem");
+        NaiveMCPSolver solver = new NaiveMCPSolver(problem);
+        solver.maximize();
+        int opti = solver.best();
+        System.out.printf("Solution found: %d\n", opti);
+        System.out.println("Writing output file");
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
-            bw.write(String.format("Nodes: %d%n%n", numNodes));
+            bw.write(String.format("Nodes: %d Opti: %d%n%n", numNodes, opti));
             String matrixStr = Arrays.stream(matrix).map(row -> Arrays.stream(row)
                             .mapToObj(x -> String.format("%3s", x))
                             .collect(Collectors.joining(" ")))
@@ -66,16 +74,5 @@ public class MCPIO {
         }
         Graph g = new Graph(matrix);
         return new MCPProblem(g);
-    }
-
-    public static void main(String[] args) throws IOException {
-        int n = 20;
-        String filename = String.format("data/MCP/nodes_%d.txt", n);
-        writeInstance(filename, n, 5);
-        MCPProblem problem = readInstance(filename);
-        NaiveMCPSolver solver = new NaiveMCPSolver(problem);
-        solver.maximize();
-        System.out.println(solver.best());
-        System.out.println(Arrays.toString(solver.bestSolution()));
     }
 }
