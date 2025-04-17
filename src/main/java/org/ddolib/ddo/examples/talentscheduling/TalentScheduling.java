@@ -14,6 +14,7 @@ import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
@@ -84,7 +85,7 @@ public class TalentScheduling {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? "data/TalentScheduling/film-12" : args[0];
+        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         final TalentSchedulingProblem problem = readFile(file);
