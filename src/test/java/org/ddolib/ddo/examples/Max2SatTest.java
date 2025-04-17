@@ -25,18 +25,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class Max2SatTest {
 
     static Stream<Max2SatProblem> dataProvider() throws IOException {
-        String dir = "src/test/resources/Max2Sat/";
+        String dir = Paths.get("src", "test", "resources", "Max2Sat").toString();
 
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
-                .map(fileName -> dir + fileName)
-                .map(fileName -> {
+                .map(fileName -> Paths.get(dir, fileName))
+                .map(filePath -> {
                     try {
-                        Max2SatProblem problem = Max2SatIO.readInstance(fileName);
-                        problem.setName(fileName.replace(dir, ""));
+                        Max2SatProblem problem = Max2SatIO.readInstance(filePath.toString());
+                        problem.setName(filePath.getFileName().toString());
                         return problem;
                     } catch (IOException e) {
                         throw new RuntimeException(e);

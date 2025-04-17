@@ -9,9 +9,10 @@ import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static org.ddolib.ddo.examples.max2sat.Max2SatIO.*;
+import static org.ddolib.ddo.examples.max2sat.Max2SatIO.readInstance;
 
 public final class Max2Sat {
 
@@ -23,7 +24,7 @@ public final class Max2Sat {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? "data/Max2Sat/wcnf_var_4_opti_39.txt" : args[0];
+        String file = args.length == 0 ? Paths.get("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString() : args[0];
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         Max2SatProblem problem = readInstance(file);
