@@ -20,6 +20,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     final BitSet[] actors;
 
     public final Optional<Integer> optimal;
+    private Optional<String> name = Optional.empty();
 
     /**
      * @param nbScene  The number of scenes in the instance.
@@ -41,6 +42,10 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         this(nbScene, nbActors, costs, duration, actors, Optional.empty());
     }
 
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
 
     @Override
     public int nbVars() {
@@ -129,15 +134,19 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
 
     @Override
     public String toString() {
-        String nbSceneStr = String.format("Nb Scene: %d%n", nbScene);
-        String nbActorsStr = String.format("Nb Actors: %d%n", nbActors);
-        String costStr = String.format("Costs: %s%n", Arrays.toString(costs));
-        String durationStr = String.format("Duration: %s%n", Arrays.toString(duration));
-        StringBuilder actorsStr = new StringBuilder();
-        for (int i = 0; i < actors.length; i++) {
-            actorsStr.append(String.format("Scene %d needs actors: %s%n", i, actors[i]));
-        }
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            String nbSceneStr = String.format("Nb Scene: %d%n", nbScene);
+            String nbActorsStr = String.format("Nb Actors: %d%n", nbActors);
+            String costStr = String.format("Costs: %s%n", Arrays.toString(costs));
+            String durationStr = String.format("Duration: %s%n", Arrays.toString(duration));
+            StringBuilder actorsStr = new StringBuilder();
+            for (int i = 0; i < actors.length; i++) {
+                actorsStr.append(String.format("Scene %d needs actors: %s%n", i, actors[i]));
+            }
 
-        return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
+            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
+        }
     }
 }

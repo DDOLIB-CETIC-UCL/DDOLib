@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TalenSchedTest {
 
-    static Stream<TalentSchedulingProblem> dataProvider() throws IOException {
+    static Stream<TalentSchedulingProblem> dataProvider() {
         String dir = "src/test/resources/TalentScheduling/";
 
         File[] files = new File(dir).listFiles();
@@ -32,7 +32,9 @@ public class TalenSchedTest {
                 .map(fileName -> dir + fileName)
                 .map(fileName -> {
                     try {
-                        return TalentScheduling.readFile(fileName);
+                        TalentSchedulingProblem problem = TalentScheduling.readFile(fileName);
+                        problem.setName(fileName.replace(dir, ""));
+                        return problem;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
