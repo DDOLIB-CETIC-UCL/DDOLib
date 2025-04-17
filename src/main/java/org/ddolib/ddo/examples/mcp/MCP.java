@@ -15,7 +15,7 @@ public final class MCP {
 
     public static void main(String[] args) throws IOException {
 
-        String filename = Paths.get("data", "MCP", "mcp_4.txt").toString();
+        String filename = args.length == 0 ? Paths.get("data", "MCP", "mcp_4.txt").toString() : args[0];
         final MCPProblem problem = MCPIO.readInstance(filename);
 
         final MCPRelax relax = new MCPRelax(problem);
