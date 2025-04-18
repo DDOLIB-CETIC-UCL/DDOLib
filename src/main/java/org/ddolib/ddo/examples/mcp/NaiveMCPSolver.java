@@ -1,5 +1,8 @@
 package org.ddolib.ddo.examples.mcp;
 
+/**
+ * Naive MCP solver which enumerates all the solution to find the best one. Used for tests.
+ */
 public class NaiveMCPSolver {
 
     private final MCPProblem problem;
@@ -57,5 +60,19 @@ public class NaiveMCPSolver {
             }
         }
         return toReturn;
+    }
+
+    /**
+     * Given an adjacency matrix, solves naively the instance of MCP.
+     *
+     * @param matrix The adjacency matrix defining the MCP
+     * @return The optimal solution of the MCP
+     */
+    public static int getOptimalSolution(int[][] matrix) {
+        Graph graph = new Graph(matrix);
+        MCPProblem problem = new MCPProblem(graph);
+        NaiveMCPSolver solver = new NaiveMCPSolver(problem);
+        solver.maximize();
+        return solver.best();
     }
 }

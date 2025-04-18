@@ -15,13 +15,15 @@ public final class MCP {
 
     public static void main(String[] args) throws IOException {
 
-        String filename = args.length == 0 ? Paths.get("data", "MCP", "mcp_4.txt").toString() : args[0];
+        final String filename = args.length == 0 ? Paths.get("data", "MCP", "mcp_4.txt").toString() : args[0];
+        final int w = args.length == 2 ? Integer.parseInt(args[1]) : 500;
+
         final MCPProblem problem = MCPIO.readInstance(filename);
 
         final MCPRelax relax = new MCPRelax(problem);
         final MCPRanking ranking = new MCPRanking();
 
-        final FixedWidth<MCPState> width = new FixedWidth<>(1000);
+        final FixedWidth<MCPState> width = new FixedWidth<>(w);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 

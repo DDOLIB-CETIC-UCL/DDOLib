@@ -5,14 +5,25 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+/**
+ * Contains methods to generates and write instances.
+ */
 public class MCPIO {
 
-    private static int[][] generateAdjacencyMatrix(int numNodes, int adjacentProba, long seed) {
+    /**
+     * Generates a random adjacency matrix.
+     *
+     * @param numNodes       The number of nodes expected in the graph.
+     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
+     * @param seed           The seed by the random number generator.
+     * @return A random matrix generator.
+     */
+    private static int[][] generateAdjacencyMatrix(int numNodes, int connectedProba, long seed) {
         int[][] matrix = new int[numNodes][numNodes];
         Random rng = new Random(seed);
         for (int i = 0; i < numNodes - 1; i++) {
             for (int j = i + 1; j < numNodes; j++) {
-                int adjacent = rng.nextInt(adjacentProba);
+                int adjacent = rng.nextInt(connectedProba);
                 int w = adjacent == 0 ? 0 : 1 + rng.ints(-10, 10)
                         .filter(x -> x != 0).findFirst().getAsInt();
                 matrix[i][j] = w;
@@ -22,19 +33,30 @@ public class MCPIO {
         return matrix;
     }
 
-    public static void writeInstance(String fileName, int numNodes, int adjacentProba, long seed) throws IOException {
-        int[][] matrix = generateAdjacencyMatrix(numNodes, adjacentProba, seed);
-        Graph graph = new Graph(matrix);
-        MCPProblem problem = new MCPProblem(graph);
-        System.out.println("Solver problem");
-        NaiveMCPSolver solver = new NaiveMCPSolver(problem);
-        solver.maximize();
-        int opti = solver.best();
-        System.out.printf("Solution found: %d\n", opti);
-        System.out.println("Writing output file");
+
+    /**
+     * Randomly generates and save instance of MCP into the given file.
+     *
+     * @param fileName       The file where saving the instance.
+     * @param numNodes       The number of nodes of the associated graph.
+     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
+     * @param solve          Whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
+     *                       set to {@code true} only on small instances.
+     * @param seed           The seed used by the random number generator.
+     * @throws IOException If something goes wrong while writing files.
+     */
+    public static void writeInstance(String fileName, int numNodes, int connectedProba, boolean solve, long seed) throws IOException {
+        int[][] matrix = generateAdjacencyMatrix(numNodes, connectedProba, seed);
+
+        int opti = solve ? NaiveMCPSolver.getOptimalSolution(matrix) : 0;
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
-            bw.write(String.format("Nodes: %d Opti: %d%n%n", numNodes, opti));
+            if (solve) {
+                bw.write(String.format("Nodes: %d Opti: %d%n%n", numNodes, opti));
+            } else {
+                bw.write(String.format("Nodes: %d%n%n", numNodes));
+            }
+
             String matrixStr = Arrays.stream(matrix).map(row -> Arrays.stream(row)
                             .mapToObj(x -> String.format("%3s", x))
                             .collect(Collectors.joining(" ")))
@@ -43,11 +65,28 @@ public class MCPIO {
         }
     }
 
-    public static void writeInstance(String fileName, int numNodes, int adjacentProba) throws IOException {
+    /**
+     * Randomly generates and save instance of MCP into the given file.
+     *
+     * @param fileName       The file where saving the instance.
+     * @param numNodes       The number of nodes of the associated graph.
+     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
+     * @param solve          Whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
+     *                       set to {@code true} only on small instances.
+     * @throws IOException If something goes wrong while writing files.
+     */
+    public static void writeInstance(String fileName, int numNodes, int connectedProba, boolean solve) throws IOException {
         Random rng = new Random();
-        writeInstance(fileName, numNodes, adjacentProba, rng.nextLong());
+        writeInstance(fileName, numNodes, connectedProba, solve, rng.nextLong());
     }
 
+    /**
+     * Read a file containing an instance of MCP.
+     *
+     * @param fileName The path to the file containing the instance
+     * @return A {@link MCPProblem}
+     * @throws IOException If something goes wring while reading file.
+     */
     public static MCPProblem readInstance(String fileName) throws IOException {
         int[][] matrix = new int[0][0];
         int optimal = 0;

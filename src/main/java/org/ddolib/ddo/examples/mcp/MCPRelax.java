@@ -15,8 +15,8 @@ public class MCPRelax implements Relaxation<MCPState> {
 
     final MCPProblem problem;
     private final int initVal;
-    private int[] estimation;
-    private int[] partialSum;
+    private final int[] estimation;
+    private final int[] partialSum;
 
     public MCPRelax(MCPProblem problem) {
         this.problem = problem;
@@ -37,11 +37,15 @@ public class MCPRelax implements Relaxation<MCPState> {
                 Integer mergedI = merged.get(i);
                 Integer currentI = current.netBenefit().get(i);
 
+
                 if (signum(mergedI) == 1 && signum(currentI) == 1) {
+                    //If all the net benefits are positive, we keep the smallest one
                     merged.set(i, min(mergedI, currentI));
                 } else if (signum(mergedI) == -1 && signum(currentI) == -1) {
+                    // If all the net benefits are negative, we keep the biggest one
                     merged.set(i, max(mergedI, currentI));
                 } else {
+                    // Otherwise, we set at 0
                     merged.set(i, 0);
                 }
             }
@@ -65,6 +69,15 @@ public class MCPRelax implements Relaxation<MCPState> {
         return MCPRanking.rank(state) + estimation[k] + partialSum[k] - initVal;
     }
 
+
+    /* Some part of the upper bound can be precomputed (some partial sum).
+    These methods are called at initialization.
+    */
+
+    /**
+     * Returns the sum of positive weight from edges starting at node bigger than the given depth.
+     * It approximates the solution of the given state.
+     */
     private int precomputeEstimate(int depth) {
         int toReturn = 0;
         for (int from = depth; from < problem.nbVars(); from++) {
@@ -76,6 +89,9 @@ public class MCPRelax implements Relaxation<MCPState> {
         return toReturn;
     }
 
+    /**
+     * Returns the sum of positive weight for all the depth
+     */
     private int[] precomputeAllEstimate() {
         int[] toReturn = new int[problem.nbVars()];
         for (int node = 0; node < problem.nbVars(); node++) {
@@ -84,6 +100,9 @@ public class MCPRelax implements Relaxation<MCPState> {
         return toReturn;
     }
 
+    /**
+     * Returns the partial sum of negative weight of edges ending at nodes smaller than the given edges.
+     */
     private int precomputePartialSum(int depth) {
         int toReturn = 0;
         for (int j = 0; j < depth; j++) {
@@ -95,6 +114,9 @@ public class MCPRelax implements Relaxation<MCPState> {
         return toReturn;
     }
 
+    /**
+     * Returns the partial sum for all depths
+     */
     private int[] precomputeAllPartialSum() {
         int[] toReturn = new int[problem.nbVars()];
         for (int node = 0; node < problem.nbVars(); node++) {

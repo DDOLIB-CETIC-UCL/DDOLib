@@ -14,13 +14,22 @@ import static java.lang.Math.abs;
 
 public class MCPProblem implements Problem<MCPState> {
 
+    /**
+     * Constant to model decision "put in partition {@code S}"
+     */
     public final int S = 0;
+    /**
+     * Constant to model decision "put in partition {@code T}"
+     */
     public final int T = 1;
 
     final Graph graph;
-    private Optional<String> name = Optional.empty();
     public Optional<Integer> optimal = Optional.empty();
 
+    /**
+     * A name to ease the readability of the tests.
+     */
+    private Optional<String> name = Optional.empty();
 
     public MCPProblem(Graph graph) {
         this.graph = graph;
@@ -64,6 +73,7 @@ public class MCPProblem implements Problem<MCPState> {
 
     @Override
     public Iterator<Integer> domain(MCPState state, int var) {
+        // The first node can be arbitrary put in S
         if (state.depth() == 0) return List.of(S).iterator();
         else return List.of(S, T).iterator();
     }
@@ -74,11 +84,13 @@ public class MCPProblem implements Problem<MCPState> {
         int k = decision.var();
         if (decision.val() == S) {
             for (int l = k + 1; l < nbVars(); l++) {
+                // If k is put in S, and then l is put in T, we gain the weight of the edge k -- l
                 int benef = state.netBenefit().get(l) + graph.weightOf(k, l);
                 newBenefits.set(l, benef);
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
+                // If k is put in T, and then l is also put in T, we lose the weight of the edge k -- l
                 int benef = state.netBenefit().get(l) - graph.weightOf(k, l);
                 newBenefits.set(l, benef);
             }
@@ -94,6 +106,7 @@ public class MCPProblem implements Problem<MCPState> {
     }
 
     private int branchOnS(MCPState state, int k) {
+        // If k is set to S, we gain the net benefit if it is < 0
         int cost = positiveOrNull(-state.netBenefit().get(k));
 
         for (int l = k + 1; l < nbVars(); l++) {
@@ -107,6 +120,7 @@ public class MCPProblem implements Problem<MCPState> {
     }
 
     private int branchOnT(MCPState state, int k) {
+        // If k is set to T, we gain the net benefit if it is > 0
         int cost = positiveOrNull(state.netBenefit().get(k));
 
         for (int l = k + 1; l < nbVars(); l++) {

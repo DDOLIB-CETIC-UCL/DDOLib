@@ -3,23 +3,21 @@ package org.ddolib.ddo.examples.mcp;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a Graph with adjacency matrix. Used for MCP problem
+ */
 public class Graph {
 
     private final int[][] adjacencyMatrix;
     public final int numNodes;
     public final int numEdges;
 
-    public Graph(int numNodes) {
-        this.numNodes = numNodes;
-        adjacencyMatrix = new int[numNodes][numNodes];
-        numEdges = Arrays.stream(adjacencyMatrix)
-                .map(row -> (int) Arrays.stream(row)
-                        .filter(x -> x != 0)
-                        .count()
-                )
-                .reduce(0, Integer::sum);
-    }
-
+    /**
+     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we suppose that 2 nodes
+     * are not connected if the edge has weight {@code 0}
+     *
+     * @param adjacencyMatrix The adjacency matrix to initialize the graph.
+     */
     public Graph(int[][] adjacencyMatrix) {
         this.adjacencyMatrix = adjacencyMatrix;
         this.numNodes = adjacencyMatrix.length;
@@ -31,18 +29,18 @@ public class Graph {
                 .reduce(0, Integer::sum) / 2;
     }
 
-    public void addEdge(int from, int to, int weight) {
-        adjacencyMatrix[from][to] = weight;
-        adjacencyMatrix[to][from] = weight;
-    }
 
+    /**
+     * Given two nodes, returns the weight of their edges.
+     *
+     * @param from The start node of the edge.
+     * @param to   The end node of the edges.
+     * @return The weight of the edge.
+     */
     public int weightOf(int from, int to) {
         return adjacencyMatrix[from][to];
     }
 
-    public int degree(int node) {
-        return (int) Arrays.stream(adjacencyMatrix[node]).filter(value -> value != 0).count();
-    }
 
     @Override
     public String toString() {
