@@ -50,7 +50,7 @@ public class MSCT {
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
             for (Decision d : decisions) {
-                values[d.var()] = d.var();
+                values[d.var()] = d.val();
             }
             return values;
         }).get();
