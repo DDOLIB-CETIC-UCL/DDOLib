@@ -39,9 +39,9 @@ public class SetCoverTest {
                 "data/SetCover/1id_problem/double_flower",
                 "data/SetCover/1id_problem/tripode",
                 "data/SetCover/1id_problem/ai3",
-                // "data/SetCover/1id_problem/garr199904",
+                "data/SetCover/1id_problem/garr199904",
                 "data/SetCover/1id_problem/abilene",
-                // "data/SetCover/1id_problem/aarnet",
+                "data/SetCover/1id_problem/aarnet",
                 "data/SetCover/generated/n_190_b_121_d_3"
             );
     }
@@ -173,49 +173,53 @@ public class SetCoverTest {
         SetCoverProblem problem = readInstance(file);
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(10);
+        FixedWidth<SetCoverState> width;
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
 
         StringBuilder csvString = new StringBuilder();
 
         for (int proportionKept = 10; proportionKept <= 100; proportionKept+=10) {
-            System.out.println("@@@@@@@@@@");
-            System.out.println("ProportionKept = " + proportionKept);
-            int nbrElemRemoved = (int) Math.ceil((100.0 - proportionKept)/100.0 * problem.nElem);
-            System.out.println("nbrElemRemoved = " + nbrElemRemoved);
-            problem.setNbrElemRemoved(nbrElemRemoved);
+            for (int maxWidth = 1; maxWidth <= 10000; maxWidth = maxWidth*10) {
+                width = new FixedWidth<>(maxWidth);
+                System.out.println("@@@@@@@@@@");
+                System.out.println("ProportionKept = " + proportionKept);
+                int nbrElemRemoved = (int) Math.ceil((100.0 - proportionKept) / 100.0 * problem.nElem);
+                System.out.println("nbrElemRemoved = " + nbrElemRemoved);
+                problem.setNbrElemRemoved(nbrElemRemoved);
 
-            SequentialSolver<SetCoverState> solver = new SequentialSolver<>(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier);
+                RelaxationSolver<SetCoverState> solver = new RelaxationSolver<>(
+                        problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
 
-            long start = System.currentTimeMillis();
-            SearchStatistics stats = solver.maximize();
-            double duration = (System.currentTimeMillis() - start) / 1000.0;
+                long start = System.currentTimeMillis();
+                SearchStatistics stats = solver.maximize();
+                double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-            System.out.printf("Duration : %.3f seconds%n", duration);
-            System.out.printf("Objective: %d%n", solver.bestValue().get());
-            System.out.println(stats);
-            System.out.printf("Number of zero only branching: %d%n", problem.countZeroOnly);
-            System.out.printf("Number of one only branching: %d%n", problem.countOneOnly);
-            System.out.printf("Number of zero-one branching: %d%n", problem.countZeroOne);
+                System.out.printf("Duration : %.3f seconds%n", duration);
+                System.out.printf("Objective: %d%n", solver.bestValue().get());
+                System.out.println(stats);
+                System.out.printf("Number of zero only branching: %d%n", problem.countZeroOnly);
+                System.out.printf("Number of one only branching: %d%n", problem.countOneOnly);
+                System.out.printf("Number of zero-one branching: %d%n", problem.countZeroOne);
 
-            csvString.append(file).append(";");
-            csvString.append(proportionKept).append(";");
-            csvString.append(nbrElemRemoved).append(";");
-            csvString.append(duration).append(";");
-            csvString.append(solver.bestValue().get()).append(";");
-            csvString.append(stats.nbIterations()).append(";");
-            csvString.append(stats.queueMaxSize()).append(";");
-            csvString.append(problem.countZeroOnly).append(";");
-            csvString.append(problem.countOneOnly).append(";");
-            csvString.append(problem.countZeroOne).append(";");
-            csvString.append(solver.timeForBest).append("\n");
+                csvString.append(file).append(";");
+                csvString.append(proportionKept).append(";");
+                csvString.append(maxWidth).append(";");
+                csvString.append(nbrElemRemoved).append(";");
+                csvString.append(duration).append(";");
+                csvString.append(solver.bestValue().get()).append(";");
+                csvString.append(stats.nbIterations()).append(";");
+                csvString.append(stats.queueMaxSize()).append(";");
+                csvString.append(problem.countZeroOnly).append(";");
+                csvString.append(problem.countOneOnly).append(";");
+                csvString.append(problem.countZeroOne).append("\n");
+                // csvString.append(solver.timeForBest).append("\n");
+            }
         }
 
         FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
