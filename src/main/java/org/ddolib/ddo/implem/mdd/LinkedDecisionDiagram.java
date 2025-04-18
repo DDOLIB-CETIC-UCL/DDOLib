@@ -1,7 +1,6 @@
 package org.ddolib.ddo.implem.mdd;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.SetCover;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 

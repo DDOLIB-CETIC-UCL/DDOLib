@@ -4,7 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
-import static org.ddolib.ddo.examples.SetCover.*;
+import static org.ddolib.ddo.examples.setcover.SetCover.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.api.Assertions.*;
+
+import org.ddolib.ddo.examples.setcover.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
