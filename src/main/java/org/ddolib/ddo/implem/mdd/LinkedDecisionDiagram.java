@@ -254,7 +254,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -335,7 +334,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Reset the state of this MDD. This way it can easily be reused
+     * Resets the state of this MDD. This way it can easily be reused
      */
     private void clear() {
         pathToRoot = Collections.emptySet();

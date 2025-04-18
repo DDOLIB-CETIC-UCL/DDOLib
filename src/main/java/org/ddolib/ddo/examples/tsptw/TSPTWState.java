@@ -5,7 +5,7 @@ import java.util.BitSet;
 /**
  * State of ta DP-model for the TSPTW
  *
- * @param position      The current last position of the vehicle. The most of the time this position is unique and
+ * @param position      The current last position of the vehicle. Most of the time this position is unique and
  *                      modeled by {@link TSPNode}. Therefore, in the merged states, vehicle can be "at any position
  *                      at the same time", modeled by {@link VirtualNodes}.
  * @param time          The time at which the vehicle reached its position.
