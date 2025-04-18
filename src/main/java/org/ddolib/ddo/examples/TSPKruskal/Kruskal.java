@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.TSPKruskal;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class Kruskal {
@@ -73,18 +74,16 @@ public class Kruskal {
                 )
                 .sorted(Comparator.comparing(e -> distance[e.nodeA][e.nodeB]));
 
-        int totalWeight = 0;
-        int mergesToDo = Math.min(this.setsOfNodesToConsider.cardinality() - 1, maxMerges);
-        for (Edge edge : sortedEdges.toList()) {
+        AtomicInteger totalWeight = new AtomicInteger();
+        AtomicInteger mergesToDo = new AtomicInteger(Math.min(this.setsOfNodesToConsider.cardinality() - 1, maxMerges));
+        sortedEdges.anyMatch(edge -> {
             if (master(edge.nodeA) != master(edge.nodeB)) {
-                totalWeight += distance[edge.nodeA][edge.nodeB];
+                totalWeight.addAndGet(distance[edge.nodeA][edge.nodeB]);
                 merge(edge.nodeA, edge.nodeB);
-                mergesToDo = mergesToDo - 1;
-                if (mergesToDo == 0) {
-                    return totalWeight;
-                }
+                mergesToDo.set(mergesToDo.get() - 1);
             }
-        }
-        return totalWeight;
+            return mergesToDo.get() == 0;
+        });
+        return totalWeight.get();
     }
 }
