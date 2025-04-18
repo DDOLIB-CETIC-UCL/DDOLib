@@ -19,10 +19,18 @@ public class SetCover {
     public static final class MostCovered implements VariableHeuristic<SetCoverState> {
         private final SetCoverProblem problem;
         private final int[] covered;
+        private final int[] firstTimeEncountered;
+        private final int[] lastTimeEncountered;
 
         public MostCovered(SetCoverProblem problem) {
             this.problem = problem;
             covered = new int[problem.nElem];
+            this.firstTimeEncountered = new int[problem.nElem];
+            this.lastTimeEncountered = new int[problem.nElem];
+            for (int i = 0; i < problem.nElem; i++) {
+                firstTimeEncountered[i] = -1;
+                lastTimeEncountered[i] = -1;
+            }
         }
 
 
@@ -45,6 +53,7 @@ public class SetCover {
             for (int set: problem.sets[selected]) {
                 covered[set]++;
             }
+            System.out.println("Selected set: " + problem.sets[selected]);
 
             return selected;
         }
@@ -217,15 +226,26 @@ public class SetCover {
     public static class SetCoverProblem implements Problem<SetCoverState> {
         final int nElem;
         final int nSet;
-        Set<Integer>[] sets;
+        final Set<Integer>[] sets;
+        int nbrElemRemoved;
+        public int countZeroOnly;
+        public int countOneOnly;
+        public int countZeroOne;
 
         public SetCoverProblem(int nElem, int nSet, Set<Integer>[] sets) {
+            this(nElem, nSet, sets, 0);
+        }
+
+        public SetCoverProblem(int nElem, int nSet, Set<Integer>[] sets, int nbrElemRemoved) {
             this.nElem = nElem;
             this.nSet = nSet;
             this.sets = sets;
-            /*List<Set<Integer>> tmp = Arrays.asList(sets);
-            Collections.shuffle(tmp);
-            tmp.toArray(this.sets);*/
+            this.nbrElemRemoved = nbrElemRemoved;
+
+        }
+
+        public void setNbrElemRemoved(int nbrElemRemoved) {
+            this.nbrElemRemoved = nbrElemRemoved;
         }
 
         @Override
@@ -233,16 +253,43 @@ public class SetCover {
             return sets.length;
         }
 
+        private Set<Integer> getMostCoveredElements(int nbrElemToQuery) {
+            int[] coverage = new int[nElem];
+            for (Set<Integer> set: sets) {
+                for (Integer elem: set) {
+                    coverage[elem]++;
+                }
+            }
+
+            PriorityQueue<Integer> pq = new PriorityQueue<>((o1, o2) -> Integer.compare(coverage[o2], coverage[o1]));
+            for (int elem = 0; elem < nElem; elem++) {
+                pq.add(elem);
+            }
+            Set<Integer> mostCoveredElements = new HashSet<>();
+            for (int i = 0; i < nbrElemRemoved; i++) {
+                mostCoveredElements.add(pq.poll());
+            }
+            return mostCoveredElements;
+        }
+
         @Override
         public SetCoverState initialState() {
+            Set<Integer> unkeptElements = getMostCoveredElements(this.nbrElemRemoved);
             Map<Integer, Integer> uncoveredElements = new HashMap<>();
+            countZeroOnly = 0;
+            countOneOnly = 0;
+            countZeroOne = 0;
             for(int i = 0; i < nElem; i++) {
-                uncoveredElements.put(i, 0);
+                if (!unkeptElements.contains(i)) {
+                    uncoveredElements.put(i, 0);
+                }
             }
             for (Set<Integer> set : sets) {
                 // System.out.println(set);
                 for (Integer element : set) {
-                    uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
+                    if (!unkeptElements.contains(element)) {
+                        uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
+                    }
                 }
             }
             return new SetCoverState(uncoveredElements);
@@ -258,15 +305,18 @@ public class SetCover {
             // System.out.println("var: " + sets[var]);
             // If the considered set is useless, it cannot be taken
             if (Collections.disjoint(state.uncoveredElements.keySet(), sets[var])) {
+                countZeroOnly++;
                 return List.of(0).iterator();
             } else {
                 // If the considered set is the last one that can cover a particular element,
                 // it is forced to be selected
                 for (Integer elem: state.uncoveredElements.keySet()) {
                     if (state.uncoveredElements.get(elem) == 1 && sets[var].contains(elem)) {
+                        countOneOnly++;
                         return List.of(1).iterator();
                     }
                 }
+                countZeroOne++;
                 return Arrays.asList(1, 0).iterator();
             }
         }
@@ -343,6 +393,10 @@ public class SetCover {
     }
 
     public static SetCoverProblem readInstance(final String fname) throws IOException {
+        return readInstance(fname, 0);
+    }
+
+    public static SetCoverProblem readInstance(final String fname, int nbrElemRemoved) throws IOException {
         final File f = new File(fname);
         try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
             final PinReadContext context = new PinReadContext();
@@ -368,7 +422,9 @@ public class SetCover {
                 }
             });
 
-            return new SetCoverProblem(context.nElem, context.nSet, context.sets);
+            nbrElemRemoved = Math.min(context.nElem,  nbrElemRemoved);
+
+            return new SetCoverProblem(context.nElem, context.nSet, context.sets, nbrElemRemoved);
         }
     }
 
@@ -381,7 +437,7 @@ public class SetCover {
     }
 
     public static void main(String[] args) throws IOException {
-        final String instance = "data/SetCover/tripode";
+        final String instance = "data/SetCover/1id_problem/tripode";
         final SetCoverProblem problem = readInstance(instance);
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();

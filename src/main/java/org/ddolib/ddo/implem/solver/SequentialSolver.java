@@ -69,6 +69,8 @@ public final class SequentialSolver<T> implements Solver {
     private int bestLB;
 
     private int bestUB;
+    private long startTime;
+    public double timeForBest;
 
     /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
@@ -96,6 +98,7 @@ public final class SequentialSolver<T> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
+        startTime = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -108,7 +111,7 @@ public final class SequentialSolver<T> implements Solver {
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
             // this.bestUB = Math.min(bestUB, nodeUB);
-            System.out.println("Restriction");
+            // System.out.println("Restriction");
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);
@@ -133,7 +136,7 @@ public final class SequentialSolver<T> implements Solver {
             if (mdd.isExact()) {
                 continue;
             }
-            System.out.println("Relaxation");
+            // System.out.println("Relaxation");
 
             // 2. RELAXATION
             compilation = new CompilationInput<>(
@@ -190,6 +193,8 @@ public final class SequentialSolver<T> implements Solver {
         Optional<Integer> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             System.out.println("New Best Value: " + ddval.get());
+            timeForBest = (System.currentTimeMillis() - startTime) / 1000.0;
+            System.out.println("Time: " + timeForBest);
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
         }

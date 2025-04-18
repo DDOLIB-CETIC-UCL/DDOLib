@@ -146,8 +146,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int depth = 0;
 
         while (!variables.isEmpty()) {
-            System.out.println("****************");
-            System.out.println("depth: " + depth);
+            // System.out.println("****************");
+            // System.out.println("depth: " + depth);
             Integer nextvar = var.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
             // becoming the current layer
@@ -167,13 +167,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {
-                System.out.println("Empty");
                 // there is no feasible solution to this subproblem, we can stop the compilation here
                 return;
             }
 
             if (nextvar == null) {
-                System.out.println("Null");
                 // Some variables simply can't be assigned
                 clear();
                 return;
@@ -181,7 +179,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 variables.remove(nextvar);
             }
 
-            System.out.println("Width: " + currentLayer.size());
+            // System.out.println("Width: " + currentLayer.size());
 
 
             // If the current layer is too large, we need to shrink it down. 
@@ -239,7 +237,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
 
-        System.out.println("Best: " + best.value);
+        //System.out.println("Best: " + best.value);
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
@@ -323,6 +321,56 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
+
+    private void relaxClosest(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+
+        this.currentLayer.sort(ranking.reversed());
+
+        final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
+
+        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
+
+        // is there another state in the kept partition having the same state as the merged state ?
+        NodeSubProblem<T> node = null;
+        boolean fresh = true;
+        for (NodeSubProblem<T> n : keep) {
+            if (n.state.equals(merged)) {
+                node = n;
+                fresh = false;
+                break;
+            }
+        }
+        if (node == null) {
+            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+        }
+
+        // redirect and relax all arcs entering the merged node
+        for (NodeSubProblem<T> drop : merge) {
+            node.ub = Math.max(node.ub, drop.ub);
+
+            for (Edge e : drop.node.edges) {
+                int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+
+                int value = saturatedAdd(e.origin.value, rcost);
+                e.weight  = rcost;
+
+                node.node.edges.add(e);
+                if (value > node.node.value) {
+                    node.node.value = value;
+                    node.node.best  = e;
+                }
+            }
+        }
+
+        // delete the nodes that have been merged
+        merge.clear();
+        // append the newly merged node if needed
+        if (fresh) {
+            currentLayer.add(node);
+        }
+    }
+
     /**
      * Performs a restriction of the current layer. 
      * 
