@@ -7,7 +7,7 @@ import java.util.BitSet;
  *
  * @param remainingScenes Set containing all the remaining scenes that must planned.
  * @param maybeScenes     Used by merged states. Contains scenes that must be planned for some of
- *                        the merged states by has already been planned for other ones.
+ *                        the merged states but has already been planned for other ones.
  */
 public record TalentSchedState(BitSet remainingScenes, BitSet maybeScenes) {
 

@@ -26,7 +26,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
      * @param nbScene  The number of scenes in the instance.
      * @param nbActors The number of actors in the problem.
      * @param costs    For each actor {@code i}, gives its cost.
-     * @param duration For each scene {@code}, gives its duration.
+     * @param duration For each scene {@code i}, gives its duration.
      * @param actors   For each scene, returns the set of actors needed
      */
     public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Integer> optimal) {
@@ -98,7 +98,9 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     public int transitionCost(TalentSchedState state, Decision decision) {
         int scene = decision.val();
 
-        BitSet toPay = onLocationActors(state); // All the already present actors (playing for this scene or waiting)
+        // All the already present actors (playing for this scene or waiting)
+        // Actors not longer needed are discarded from this BitSet.
+        BitSet toPay = onLocationActors(state); 
         toPay.andNot(actors[scene]); // Add new actors
 
         int cost = 0;
@@ -115,7 +117,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
      * Given a state, returns which actors are already in location, i.e. actors needed for past scenes
      * and needed for future scenes.
      *
-     * @param state A state of the mdd
+     * @param state A state of the mdd.
      * @return Which actors are currently on location.
      */
     public BitSet onLocationActors(TalentSchedState state) {
