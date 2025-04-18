@@ -79,10 +79,10 @@ public class TSPTW {
     }
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp"} in your terminal to execute
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW"} in your terminal to execute
      * default instance. <br>
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.Misp -Dexec.args="<your file> <maximum
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW -Dexec.args="<your file> <maximum
      * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
      * <p>
      * Given Data files comes from

@@ -92,7 +92,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
             while (possiblyIt.hasNext()) {
                 int i = possiblyIt.nextInt();
-                candidatesToCompleteTour.add(i);
+                candidatesToCompleteTour.add(cheapestEdges[i]);
                 backToDepot = min(backToDepot, problem.durationMatrix[i][0]);
                 if (!problem.reachable(state, i)) violation++;
             }
