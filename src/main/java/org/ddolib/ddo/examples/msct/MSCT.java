@@ -22,7 +22,7 @@ import java.util.*;
 public class MSCT {
 
     public static void main(final String[] args) throws Exception {
-        final String instance = "data/MSCT/msct1.txt";
+        final String instance = "data/MSCT/msct2.txt";
         final MSCTProblem problem = readInstance(instance);
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
