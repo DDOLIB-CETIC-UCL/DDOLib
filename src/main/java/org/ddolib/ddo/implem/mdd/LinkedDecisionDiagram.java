@@ -206,8 +206,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 T state = e.getKey();
                 Node node = e.getValue();
 
-                int fub = input.getRelaxation().fastUpperBound(state, variables);
-                int rub = saturatedAdd(node.value, fub);
+                int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                 this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
             }
             this.nextLayer.clear();
@@ -254,6 +253,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
+                int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -269,7 +269,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             depth += 1;
         }
-
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -334,7 +333,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Resets the state of this MDD. This way it can easily be reused
+     * Reset the state of this MDD. This way it can easily be reused
      */
     private void clear() {
         pathToRoot = Collections.emptySet();
@@ -414,6 +413,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
         }
+
 
         // delete the nodes that have been merged
         merge.clear();

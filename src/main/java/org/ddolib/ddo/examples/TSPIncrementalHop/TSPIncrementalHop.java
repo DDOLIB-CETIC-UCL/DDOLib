@@ -1,7 +1,6 @@
-package org.ddolib.ddo.examples.TSPIncrementalHopsBound;
+package org.ddolib.ddo.examples.TSPIncrementalHop;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.TSPKruskal.TSPKruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -12,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public final class TSPIncrementalSmallestEdge {
+public final class TSPIncrementalHop {
 
     static class TSPStateIncrementalBound{
 
@@ -245,7 +244,7 @@ public final class TSPIncrementalSmallestEdge {
 
     public static void main(final String[] args) throws IOException {
 
-        final TSPIncrementalBound problem = genInstance(20);
+        final TSPIncrementalBound problem = genInstance(15);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
