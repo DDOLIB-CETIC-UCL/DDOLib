@@ -3,8 +3,6 @@ package org.ddolib.ddo.examples.msct;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
-
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
