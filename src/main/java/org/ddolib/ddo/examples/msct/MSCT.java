@@ -6,6 +6,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.File;
 import java.util.*;
@@ -22,18 +23,17 @@ import java.util.*;
 public class MSCT {
 
     public static void main(final String[] args) throws Exception {
-        final String instance = "data/MSCT/msct2.txt";
+        final String instance = "data/MSCT/msct1.txt";
         final MSCTProblem problem = readInstance(instance);
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
         final MSCTRelax relax = new MSCTRelax(problem);
         final SequencingRanking ranking = new SequencingRanking();
-        final FixedWidth<MSCTState> width = new FixedWidth<>(1);
+        final FixedWidth<MSCTState> width = new FixedWidth<>(10);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
 
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<MSCTState>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

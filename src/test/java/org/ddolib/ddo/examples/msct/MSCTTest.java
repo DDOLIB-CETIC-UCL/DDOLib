@@ -11,8 +11,7 @@ import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -99,12 +98,64 @@ class MSCTTest {
             int n = 7;
             int releaseTime = 15;
             MSCTData data = randomMSCTDataFixedRelease(n, releaseTime);
-            int bestSolDDO = solve(data, 10);
+            int bestSolDDO = solve(data, w);
             int bestSolRef = bestSol(releaseTime, data.processing);
             assertEquals(bestSolRef, bestSolDDO);
         }
+    }
 
+    private int bestBruteForceSolution(int[] release, int[] processing) {
+        int n = release.length;
+        List<List<Integer>> permutations = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            list.add(i);
+        }
+        generatePermutations(list, 0, permutations);
+        int bestSolutionValue = Integer.MAX_VALUE;
+        List<Integer> bestSolution = new ArrayList<>();
+        for (List<Integer> permutation : permutations) {
+            int t = 0; int objective = 0;
+            int[] ends = new int[n]; int k = 0;
+            for (Integer i : permutation) {
+                t = Math.max(t, release[i]) + processing[i];
+                objective +=  t;
+            }
+            if (objective < bestSolutionValue) {
+                bestSolutionValue = objective;
+                bestSolution = permutation;
+            }
+        }
+        return bestSolutionValue;
+    }
 
+    private void generatePermutations(List<Integer> list, int start, List<List<Integer>> permutations) {
+        if (start == list.size() - 1) {
+            permutations.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = start; i < list.size(); i++) {
+            Collections.swap(list, start, i);
+            generatePermutations(list, start + 1, permutations);
+            Collections.swap(list, start, i);
+        }
+    }
+
+    @Test
+    public void testAnySolutionBruteForce() {
+        int n = 8;
+        MSCTData data = randomMSCTData(n);
+        List<List<Integer>> permutations = new ArrayList<>();
+        List<Integer> list = new ArrayList();
+        for (int i = 0; i < n; i++) {
+            list.add(i);
+        }
+        generatePermutations(list, 0, permutations);
+        int bestBruteForceSol = bestBruteForceSolution(data.release, data.processing);
+        for (int w = 10; w < 100; w += 10) {
+            int bestSolDDO = solve(data, w);
+            assertEquals(bestBruteForceSol, bestSolDDO);
+        }
     }
 
 
