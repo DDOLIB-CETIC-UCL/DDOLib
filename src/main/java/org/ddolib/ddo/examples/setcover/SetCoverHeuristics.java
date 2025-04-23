@@ -21,7 +21,7 @@ public class SetCoverHeuristics {
             int selected = -1;
             if (lastSelected == -1) {
                 for (int i: variables) {
-                    if (selected == -1 || problem.sets[i].size() > problem.sets[selected].size())
+                    if (selected == -1 || problem.sets.get(i).size() > problem.sets.get(selected).size())
                         selected = i;
                 }
             } else {
@@ -58,7 +58,7 @@ public class SetCoverHeuristics {
             int maxSuperposition = -1;
             for (int set: variables) {
                 int superposition = 0;
-                for (int elem: problem.sets[set]) {
+                for (int elem: problem.sets.get(set)) {
                     superposition += covered[elem];
                     if (superposition > maxSuperposition) {
                         maxSuperposition = superposition;
@@ -67,10 +67,10 @@ public class SetCoverHeuristics {
                 }
             }
 
-            for (int set: problem.sets[selected]) {
+            for (int set: problem.sets.get(selected)) {
                 covered[set]++;
             }
-            System.out.println("Selected set: " + problem.sets[selected]);
+            System.out.println("Selected set: " + problem.sets.get(selected));
 
             return selected;
         }
@@ -87,14 +87,14 @@ public class SetCoverHeuristics {
             // Compute the centrality of each element
             int[] centrality = new int[problem.nElem];
             for (int set = 0; set < problem.nSet; set++) {
-                for (int elem: problem.sets[set]) {
+                for (int elem: problem.sets.get(set)) {
                     centrality[elem]++;
                 }
             }
 
             // Compute the sums of the centralities
             for (int set = 0; set < problem.nSet; set++) {
-                for (int elem: problem.sets[set]) {
+                for (int elem: problem.sets.get(set)) {
                     centralitiesSum[set] += centrality[elem];
                 }
             }
@@ -159,13 +159,13 @@ public class SetCoverHeuristics {
             if (lastSelected == -1) {
                 int maxSize = -1;
                 for (Integer var: variables) {
-                    if (problem.sets[var].size() > maxSize) {
-                        maxSize = problem.sets[var].size();
+                    if (problem.sets.get(var).size() > maxSize) {
+                        maxSize = problem.sets.get(var).size();
                         lastSelected = var;
                     }
                 }
                 // lastSelected = variables.iterator().next();
-                for (int elem: problem.sets[lastSelected]) {
+                for (int elem: problem.sets.get(lastSelected)) {
                     firstTimeEncountered[elem] = nbCall;
                     lastTimeEncountered[elem] = nbCall;
                 }
@@ -175,7 +175,7 @@ public class SetCoverHeuristics {
             int selected = -1;
             // selected = variables.iterator().next();
             for (Integer set: variables) {
-                int similarity = intersectionSize(problem.sets[lastSelected], problem.sets[set]);
+                int similarity = intersectionSize(problem.sets.get(lastSelected), problem.sets.get(set));
                 if (similarity > maxSimilarity) {
                     maxSimilarity = similarity;
                     selected = set;
@@ -183,10 +183,10 @@ public class SetCoverHeuristics {
             }
             lastSelected = selected;
             System.out.println("Selected set: " + selected);
-            System.out.println(problem.sets[selected]);
+            System.out.println(problem.sets.get(selected));
             System.out.println("Similarity: " + maxSimilarity);
 
-            for (int elem: problem.sets[selected]) {
+            for (int elem: problem.sets.get(selected)) {
                 if (firstTimeEncountered[elem] == -1) firstTimeEncountered[elem] = nbCall;
                 lastTimeEncountered[elem] = nbCall;
             }

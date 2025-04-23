@@ -68,13 +68,13 @@ public class SetCover {
                     context.nElem = Integer.parseInt(tokens[0]);
                     context.nSet = Integer.parseInt(tokens[1]);
 
-                    context.sets = new Set[context.nSet];
+                    context.sets = new ArrayList<>(context.nSet);
                 } else {
                     if (context.count< context.nSet) {
                         String[] tokens = s.split("\\s");
-                        context.sets[context.count] = new HashSet<>(tokens.length);
+                        context.sets.add(new HashSet<>(tokens.length));
                         for (String token : tokens) {
-                            context.sets[context.count].add(Integer.parseInt(token));
+                            context.sets.get(context.count).add(Integer.parseInt(token));
                         }
                         context.count++;
                     }
@@ -91,7 +91,7 @@ public class SetCover {
         boolean isFirst = true;
         int nElem = 0;
         int nSet = 0;
-        Set<Integer>[] sets = new Set[0];
+        List<Set<Integer>> sets;
         int count = 0;
     }
 

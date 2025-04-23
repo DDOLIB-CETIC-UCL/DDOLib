@@ -21,11 +21,11 @@ import org.ddolib.ddo.examples.setcover.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class SetCoverTest {
+
     static Stream<String> dataProviderLight() {
         return Stream.of(
                 "data/SetCover/1id_problem/double_flower",
@@ -53,23 +53,168 @@ public class SetCoverTest {
         );
     }
 
+    /**
+     * Test the validity of a solution, i.e. if the collection of selected sets covers all elements in the universe
+     * @param problem the considered instance
+     * @param solution the tested solution, a set containing the indexes of the selected sets
+     * @return true iff the solution is valid
+     */
+    private boolean testValidity(SetCoverProblem problem, Set<Integer> solution) {
+        Set<Integer> uncoveredElements = problem.initialState().uncoveredElements.keySet();
+        for (int i: solution) {
+            uncoveredElements.removeAll(problem.sets.get(i));
+        }
+        return uncoveredElements.isEmpty();
+    }
+
+    /**
+     * Generate all non-ordered combination of k elements among n
+     * @param n the total number of element
+     * @param k the size of the combination
+     * @return a list containing the different combination, represented by sets
+     */
+    public static List<Set<Integer>> generateCombinations(int n, int k) {
+        List<Set<Integer>> result = new ArrayList<>();
+        backtrack(0, n, k, new ArrayList<>(), result);
+        return result;
+    }
+
+    /**
+     * Backtrack method to generation combination
+     * @param start
+     * @param n
+     * @param k
+     * @param tempList
+     * @param result
+     */
+    private static void backtrack(int start, int n, int k, List<Integer> tempList, List<Set<Integer>> result) {
+        if (tempList.size() == k) {
+            result.add(new HashSet<>(tempList));
+            return;
+        }
+
+        for (int i = start; i < n; i++) {
+            tempList.add(i);
+            backtrack(i + 1, n, k, tempList, result);
+            tempList.removeLast(); // backtrack
+        }
+    }
+
+    /**
+     * Solve to optimality a SetCoverProblem with brute-force
+     * @param problem the problem to solve
+     * @return the cost of the optimal solution
+     */
+    private int bruteForce(SetCoverProblem problem) {
+        for (int nSetsSelected = 1; nSetsSelected <= problem.nSet; nSetsSelected++) {
+            List<Set<Integer>> combinations = generateCombinations(problem.nSet, nSetsSelected);
+            for (Set<Integer> combination : combinations) {
+                if (testValidity(problem, combination)) {
+                    return nSetsSelected;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Generates small Set Cover problem instances
+     * @return a stream of SetCoverProblem
+     */
+    private static Stream<SetCoverProblem> smallGeneratedInstances() {
+        Random rnd = new Random(684654654);
+        int nInstances = 5; // number of instances to generate
+        int nElem = 10; // number of elements in the instances
+        int nSet = 20;
+        int constraintSize = 2; // the number of sets that must cover each element
+
+        List<SetCoverProblem> instances = new ArrayList<>();
+
+        for (int instance = 0; instance < nInstances; instance++) {
+            // First, generate for each element the sets that will contain it
+            // By doing so, we are sure that each element can be covered by at least one element
+            List<Set<Integer>> constraints = new ArrayList<>();
+            int maxSetIndex = -1;
+
+            List<Integer> range = new ArrayList<>();
+            for (int i = 0; i < nSet; i++) {
+                range.add(i);
+            }
+
+            for (int i = 0; i < nElem; i++) {
+                Set<Integer> constraint = new HashSet<>();
+                Collections.shuffle(range, rnd);
+                for (int j = 0; j < Math.min(constraintSize, range.size()); j++) {
+                    constraint.add(range.get(j));
+                }
+                constraints.add(constraint);
+            }
+
+            // We compute the sets and removes the empy ones
+            List<Set<Integer>> sets = new ArrayList<>();
+            for (int setIndex = 0; setIndex <= nSet; setIndex++) {
+                Set<Integer> currentSet = new HashSet<>();
+                for (int elem = 0; elem < nElem; elem++) {
+                    if (constraints.get(elem).contains(setIndex)) {
+                        currentSet.add(elem);
+                    }
+                }
+                if (!currentSet.isEmpty()) {
+                    sets.add(currentSet);
+                }
+            }
+            instances.add(new SetCoverProblem(nElem, sets.size(), sets));
+
+        }
+        return instances.stream();
+    }
+
+    /**
+     * Test on small random instances to verify that the solution returned by the sequential solver is really
+     * optimal.
+     * The returned solution is compared with the optimal cost computed by a brute-force approach
+     * @param problem
+     */
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
+    public void testCompleteness(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        solver.maximize();
+        Assertions.assertTrue(solver.bestValue().isPresent());
+        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+
+    }
+
+
     @Test
     public void testReducedProblem() {
-        Set<Integer>[] sets = new Set[] {
-                Set.of(0,1),
-                Set.of(0,2),
-                Set.of(0,3),
-                Set.of(0,1),
-        };
+        List<Set<Integer>> sets = new ArrayList<>();
+        sets.add(Set.of(0,1));
+        sets.add(Set.of(0,2));
+        sets.add(Set.of(0,3));
+        sets.add(Set.of(0,1));
 
         int nbrElemRemoved = 1;
-        SetCoverProblem problem = new SetCoverProblem(4, sets.length, sets, nbrElemRemoved);
+        SetCoverProblem problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
         SetCoverState initState = problem.initialState();
         Assertions.assertEquals(nbrElemRemoved, problem.nbrElemRemoved);
         Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
         Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
         nbrElemRemoved = 2;
-        problem = new SetCoverProblem(4, sets.length, sets, nbrElemRemoved);
+        problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
         initState = problem.initialState();
         Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
         Assertions.assertFalse(initState.uncoveredElements.containsKey(1));
@@ -99,7 +244,7 @@ public class SetCoverTest {
 
         for (int i = 0; i< solution.length; i++) {
             if (solution[i] == 1) {
-                uncoveredElements.removeAll(problem.sets[i]);
+                uncoveredElements.removeAll(problem.sets.get(i));
             }
         }
         Assertions.assertEquals(0, uncoveredElements.size());
