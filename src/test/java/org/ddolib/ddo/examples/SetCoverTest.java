@@ -193,9 +193,21 @@ public class SetCoverTest {
                 frontier);
 
         solver.maximize();
+
+        // Retrieve solution
+        Set<Integer> solution = solver.bestSolution().map(decisions -> {
+            Set<Integer> sol = new HashSet<>();
+            for (Decision d : decisions) {
+                if (d.val() == 1)
+                    sol.add(d.var());
+            }
+            // System.out.println("Cost: "+ Arrays.stream(values).sum());
+            return sol;
+        }).get();
+
         Assertions.assertTrue(solver.bestValue().isPresent());
         Assertions.assertEquals(optimalCost, -solver.bestValue().get());
-
+        Assertions.assertTrue(testValidity(problem, solution));
     }
 
 
