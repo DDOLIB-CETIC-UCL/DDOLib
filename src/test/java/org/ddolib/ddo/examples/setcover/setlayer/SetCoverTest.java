@@ -221,7 +221,6 @@ public class SetCoverTest {
                 csvString.append(maxWidth).append(";");
                 csvString.append(heuristic).append(";");
                 csvString.append(duration).append(";");
-                csvString.append(relax.nbrNodeMerged).append(";");
                 csvString.append(solver.bestValue().get()).append("\n");
             }
         }
