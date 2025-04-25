@@ -32,7 +32,16 @@ public class SimpleDominanceChecker<S,K> {
         }
     }
 
-    public boolean isDominated(S state, int depth, int val) {
+    /**
+     * Check if the state is dominated by any of the states in the front
+     * If it is, return true
+     * If it is not, add the state and remove the dominated states from the front
+     * @param state the state to check
+     * @param depth the depth of the state in the MDD
+     * @param val the objective value of the state
+     * @return true if the state is dominated, false otherwise
+     */
+    public boolean updateDominance(S state, int depth, int val) {
         Map<K, Set<ValueState>> front = fronts[depth];
         K key = dominance.getKey(state);
         boolean dominated = false;
