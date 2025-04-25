@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.setcover;
+package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
@@ -8,27 +8,40 @@ import java.util.Set;
 
 public class SetCoverHeuristics {
 
-    public static final class MostDifferent implements VariableHeuristic<SetCoverState> {
+    /**
+     * Heuristic where the next set is selected is the one that reducing the most the smallestState
+     */
+    public static final class FocusMostSmallState implements VariableHeuristic<SetCoverState> {
         private final SetCoverProblem problem;
-        private int lastSelected = -1;
 
-        public MostDifferent(SetCoverProblem problem) {
+        public FocusMostSmallState(SetCoverProblem problem) {
             this.problem = problem;
         }
 
         @Override
         public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
-            int selected = -1;
-            if (lastSelected == -1) {
-                for (int i: variables) {
-                    if (selected == -1 || problem.sets.get(i).size() > problem.sets.get(selected).size())
-                        selected = i;
-                }
-            } else {
 
+            // Select the smallest state
+            SetCoverState consideredState = states.next();
+            while (states.hasNext()) {
+                SetCoverState nextState = states.next();
+                if (nextState.uncoveredElements.size() < consideredState.uncoveredElements.size() && !nextState.uncoveredElements.isEmpty()) {
+                    consideredState = nextState;
+                }
             }
 
-            return selected;
+            // Select the
+            int maxIntersection = -1;
+            int selectedVar = -1;
+            for (Integer i : variables) {
+                int intersection = consideredState.intersectionSize(problem.sets.get(i));
+                if (intersection > maxIntersection) {
+                    maxIntersection = intersection;
+                    selectedVar = i;
+                }
+            }
+
+            return selectedVar;
         }
 
     }
@@ -73,6 +86,45 @@ public class SetCoverHeuristics {
             System.out.println("Selected set: " + problem.sets.get(selected));
 
             return selected;
+        }
+    }
+
+    // TODO : test MinCentralityHeuristic
+    public static final class MinCentralityHeuristic implements VariableHeuristic<SetCoverState> {
+        private final SetCoverProblem problem;
+        private final int[] centralitiesSum; // contains, for each set, the sum of the centrality of each covered elem
+
+        public MinCentralityHeuristic(SetCoverProblem problem) {
+            this.problem = problem;
+            centralitiesSum = new int[problem.nSet];
+
+            // Compute the centrality of each element
+            int[] centrality = new int[problem.nElem];
+            for (int set = 0; set < problem.nSet; set++) {
+                for (int elem: problem.sets.get(set)) {
+                    centrality[elem]++;
+                }
+            }
+
+            // Compute the sums of the centralities
+            for (int set = 0; set < problem.nSet; set++) {
+                for (int elem: problem.sets.get(set)) {
+                    centralitiesSum[set] += centrality[elem];
+                }
+            }
+        }
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
+            int minCentrality = Integer.MAX_VALUE;
+            int selection = -1;
+            for (int set:variables) {
+                if (centralitiesSum[set] < minCentrality) {
+                    minCentrality = centralitiesSum[set];
+                    selection = set;
+                }
+            }
+            return selection;
         }
     }
 

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.setcover;
+package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
@@ -71,17 +71,23 @@ public class SetCoverProblem implements Problem<SetCoverState> {
 
     @Override
     public SetCoverState initialState() {
+        Set<Integer> elementToRemove = getMostCoveredElements(this.nbrElemRemoved);
         Map<Integer, Integer> uncoveredElements = new HashMap<>();
         countZeroOnly = 0;
         countOneOnly = 0;
         countZeroOne = 0;
+
         for(int i = 0; i < nElem; i++) {
+            if (elementToRemove == null || !elementToRemove.contains(i)) {
                 uncoveredElements.put(i, 0);
+            }
         }
         for (Set<Integer> set : sets) {
             // System.out.println(set);
             for (Integer element : set) {
+                if (elementToRemove == null|| !elementToRemove.contains(element)) {
                     uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
+                }
             }
         }
         return new SetCoverState(uncoveredElements);
@@ -96,6 +102,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     public Iterator<Integer> domain(SetCoverState state, int var) {
         // System.out.println("var: " + sets[var]);
         // If the considered set is useless, it cannot be taken
+
         if (Collections.disjoint(state.uncoveredElements.keySet(), sets.get(var))) {
             countZeroOnly++;
             return List.of(0).iterator();

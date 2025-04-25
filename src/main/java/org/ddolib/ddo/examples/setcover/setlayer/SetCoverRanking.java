@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.setcover;
+package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.heuristics.StateRanking;
 

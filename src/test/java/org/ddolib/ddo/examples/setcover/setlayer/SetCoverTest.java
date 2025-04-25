@@ -1,10 +1,11 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
-import static org.ddolib.ddo.examples.setcover.SetCover.*;
+import static org.ddolib.ddo.examples.setcover.setlayer.SetCover.*;
+
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -17,7 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.ddolib.ddo.examples.setcover.*;
+import org.ddolib.ddo.examples.setcover.setlayer.SetCoverHeuristics.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,10 +27,277 @@ import java.util.stream.Stream;
 
 public class SetCoverTest {
 
+    /**
+     * Test on small random instances to verify that the solution returned by the sequential solver is really
+     * optimal.
+     * The returned solution is compared with the optimal cost computed by a brute-force approach
+     * @param problem
+     */
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
+    public void testCompleteness(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        solver.maximize();
+
+        // Retrieve solution
+        Set<Integer> solution = solver.bestSolution().map(decisions -> {
+            Set<Integer> sol = new HashSet<>();
+            for (Decision d : decisions) {
+                if (d.val() == 1)
+                    sol.add(d.var());
+            }
+            // System.out.println("Cost: "+ Arrays.stream(values).sum());
+            return sol;
+        }).get();
+
+        Assertions.assertTrue(solver.bestValue().isPresent());
+        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+        Assertions.assertTrue(testValidity(problem, solution));
+    }
+
+
+    @Test
+    public void testReducedProblem() {
+        List<Set<Integer>> sets = new ArrayList<>();
+        sets.add(Set.of(0,1));
+        sets.add(Set.of(0,2));
+        sets.add(Set.of(0,3));
+        sets.add(Set.of(0,1));
+
+        int nbrElemRemoved = 1;
+        SetCoverProblem problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
+        SetCoverState initState = problem.initialState();
+        Assertions.assertEquals(nbrElemRemoved, problem.nbrElemRemoved);
+        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
+        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
+        nbrElemRemoved = 2;
+        problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
+        initState = problem.initialState();
+        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
+        Assertions.assertFalse(initState.uncoveredElements.containsKey(1));
+        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
+    }
+
+    private void testTemplate(SetCoverProblem problem, Solver solver) {
+        long start = System.currentTimeMillis();
+        solver.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+        int[] solution = solver.bestSolution().map(decisions -> {
+            // System.out.println("Solution Found");
+            int[] values = new int[problem.nbVars()];
+            for (Decision d : decisions) {
+                values[d.var()] = d.val();
+            }
+            // System.out.println("Cost: "+ Arrays.stream(values).sum());
+            return values;
+        }).get();
+
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+
+        Set<Integer> uncoveredElements = problem.initialState().uncoveredElements.keySet();
+
+        for (int i = 0; i< solution.length; i++) {
+            if (solution[i] == 1) {
+                uncoveredElements.removeAll(problem.sets.get(i));
+            }
+        }
+        Assertions.assertEquals(0, uncoveredElements.size());
+    }
+
+    // The following tests are here for measurement and can be quite long to run
+    // they should not be used as unit test
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProviderLight")
+    public void testSmallInstances(String file) throws IOException {
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        testTemplate(problem, solver);
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProviderMedium")
+    public void testMediumInstances(String file) throws IOException {
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        testTemplate(problem, solver);
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProviderHeavy")
+    public void testLargeInstances(String file) throws IOException {
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        testTemplate(problem, solver);
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProviderLight")
+    public void testHeuristic(String file) throws IOException {
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        SetCoverRelax relax;
+        FixedWidth<SetCoverState> width;
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        VariableHeuristic<SetCoverState> varh;
+
+        StringBuilder csvString = new StringBuilder();
+
+        Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
+        heuristics.put("default", new DefaultVariableHeuristic<>());
+        heuristics.put("minCentrality", new MinCentralityHeuristic(problem));
+        heuristics.put("focusSmallState", new FocusMostSmallState(problem));
+
+        for (String heuristic : heuristics.keySet()) {
+            varh = heuristics.get(heuristic);
+            for (int maxWidth = 1; maxWidth <= 50; maxWidth = maxWidth +1 ) {
+                relax = new SetCoverRelax();
+                width = new FixedWidth<>(maxWidth);
+                Solver solver = new RelaxationSolver<>(problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
+
+                long start = System.currentTimeMillis();
+                SearchStatistics stats = solver.maximize();
+                double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+                csvString.append(file).append(";");
+                csvString.append(maxWidth).append(";");
+                csvString.append(heuristic).append(";");
+                csvString.append(duration).append(";");
+                csvString.append(relax.nbrNodeMerged).append(";");
+                csvString.append(solver.bestValue().get()).append("\n");
+            }
+        }
+
+        FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
+        writer.write(csvString.toString());
+        writer.close();
+
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProviderMedium")
+    public void testReducedProblemQuality(String file) throws IOException {
+        System.out.println("***************");
+        System.out.println(file);
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        FixedWidth<SetCoverState> width;
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+
+        StringBuilder csvString = new StringBuilder();
+
+        for (int proportionKept = 10; proportionKept <= 100; proportionKept+=10) {
+            for (int maxWidth = 1; maxWidth <= 10000; maxWidth = maxWidth*10) {
+                width = new FixedWidth<>(maxWidth);
+                System.out.println("@@@@@@@@@@");
+                System.out.println("ProportionKept = " + proportionKept);
+                int nbrElemRemoved = (int) Math.ceil((100.0 - proportionKept) / 100.0 * problem.nElem);
+                System.out.println("nbrElemRemoved = " + nbrElemRemoved);
+                problem.setNbrElemRemoved(nbrElemRemoved);
+
+                RelaxationSolver<SetCoverState> solver = new RelaxationSolver<>(
+                        problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
+
+                long start = System.currentTimeMillis();
+                SearchStatistics stats = solver.maximize();
+                double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+                System.out.printf("Duration : %.3f seconds%n", duration);
+                System.out.printf("Objective: %d%n", solver.bestValue().get());
+                System.out.println(stats);
+                System.out.printf("Number of zero only branching: %d%n", problem.countZeroOnly);
+                System.out.printf("Number of one only branching: %d%n", problem.countOneOnly);
+                System.out.printf("Number of zero-one branching: %d%n", problem.countZeroOne);
+
+                csvString.append(file).append(";");
+                csvString.append(proportionKept).append(";");
+                csvString.append(maxWidth).append(";");
+                csvString.append(nbrElemRemoved).append(";");
+                csvString.append(duration).append(";");
+                csvString.append(solver.bestValue().get()).append(";");
+                csvString.append(stats.nbIterations()).append(";");
+                csvString.append(stats.queueMaxSize()).append(";");
+                csvString.append(problem.countZeroOnly).append(";");
+                csvString.append(problem.countOneOnly).append(";");
+                csvString.append(problem.countZeroOne).append("\n");
+                // csvString.append(solver.timeForBest).append("\n");
+            }
+        }
+
+        FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
+        writer.write(csvString.toString());
+        writer.close();
+    }
+
     static Stream<String> dataProviderLight() {
         return Stream.of(
-                "data/SetCover/1id_problem/double_flower",
-                "data/SetCover/1id_problem/tripode"
+                "data/SetCover/generated/n_10_b_5_d_5"
         );
     }
 
@@ -39,17 +307,20 @@ public class SetCoverTest {
                 "data/SetCover/1id_problem/double_flower",
                 "data/SetCover/1id_problem/tripode",
                 "data/SetCover/1id_problem/ai3",
-                "data/SetCover/1id_problem/garr199904",
                 "data/SetCover/1id_problem/abilene",
+                "data/SetCover/1id_problem/garr199904",
                 "data/SetCover/1id_problem/aarnet",
                 "data/SetCover/generated/n_190_b_121_d_3"
-            );
+        );
     }
 
     static Stream<String> dataProviderHeavy() {
         return Stream.of(
                 "data/SetCover/1id_problem/syringa",
-                "data/SetCover/1id_problem/renater_2010"
+                "data/SetCover/1id_problem/renater_2010",
+                "data/SetCover/1id_problem/garr199904",
+                "data/SetCover/1id_problem/aarnet",
+                "data/SetCover/generated/n_190_b_121_d_3"
         );
     }
 
@@ -169,218 +440,5 @@ public class SetCoverTest {
         return instances.stream();
     }
 
-    /**
-     * Test on small random instances to verify that the solution returned by the sequential solver is really
-     * optimal.
-     * The returned solution is compared with the optimal cost computed by a brute-force approach
-     * @param problem
-     */
-    @ParameterizedTest
-    @MethodSource("smallGeneratedInstances")
-    public void testCompleteness(SetCoverProblem problem) {
-        int optimalCost = bruteForce(problem);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
 
-        solver.maximize();
-
-        // Retrieve solution
-        Set<Integer> solution = solver.bestSolution().map(decisions -> {
-            Set<Integer> sol = new HashSet<>();
-            for (Decision d : decisions) {
-                if (d.val() == 1)
-                    sol.add(d.var());
-            }
-            // System.out.println("Cost: "+ Arrays.stream(values).sum());
-            return sol;
-        }).get();
-
-        Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
-        Assertions.assertTrue(testValidity(problem, solution));
-    }
-
-
-    @Test
-    public void testReducedProblem() {
-        List<Set<Integer>> sets = new ArrayList<>();
-        sets.add(Set.of(0,1));
-        sets.add(Set.of(0,2));
-        sets.add(Set.of(0,3));
-        sets.add(Set.of(0,1));
-
-        int nbrElemRemoved = 1;
-        SetCoverProblem problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
-        SetCoverState initState = problem.initialState();
-        Assertions.assertEquals(nbrElemRemoved, problem.nbrElemRemoved);
-        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
-        nbrElemRemoved = 2;
-        problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
-        initState = problem.initialState();
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(1));
-        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
-    }
-
-    private void testTemplate(SetCoverProblem problem, Solver solver) {
-        long start = System.currentTimeMillis();
-        solver.maximize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.bestSolution().map(decisions -> {
-            // System.out.println("Solution Found");
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            // System.out.println("Cost: "+ Arrays.stream(values).sum());
-            return values;
-        }).get();
-
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-
-        Set<Integer> uncoveredElements = problem.initialState().uncoveredElements.keySet();
-
-        for (int i = 0; i< solution.length; i++) {
-            if (solution[i] == 1) {
-                uncoveredElements.removeAll(problem.sets.get(i));
-            }
-        }
-        Assertions.assertEquals(0, uncoveredElements.size());
-    }
-
-    @ParameterizedTest
-    @MethodSource("dataProviderLight")
-    public void testSmallInstances(String file) throws IOException {
-        SetCoverProblem problem = readInstance(file);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        testTemplate(problem, solver);
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("dataProviderMedium")
-    public void testMediumInstances(String file) throws IOException {
-        SetCoverProblem problem = readInstance(file);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        testTemplate(problem, solver);
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("dataProviderHeavy")
-    public void testLargeInstances(String file) throws IOException {
-        SetCoverProblem problem = readInstance(file);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        testTemplate(problem, solver);
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("dataProviderMedium")
-    public void testReducedProblemQuality(String file) throws IOException {
-        System.out.println("***************");
-        System.out.println(file);
-        SetCoverProblem problem = readInstance(file);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        FixedWidth<SetCoverState> width;
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-
-        StringBuilder csvString = new StringBuilder();
-
-        for (int proportionKept = 10; proportionKept <= 100; proportionKept+=10) {
-            for (int maxWidth = 1; maxWidth <= 10000; maxWidth = maxWidth*10) {
-                width = new FixedWidth<>(maxWidth);
-                System.out.println("@@@@@@@@@@");
-                System.out.println("ProportionKept = " + proportionKept);
-                int nbrElemRemoved = (int) Math.ceil((100.0 - proportionKept) / 100.0 * problem.nElem);
-                System.out.println("nbrElemRemoved = " + nbrElemRemoved);
-                problem.setNbrElemRemoved(nbrElemRemoved);
-
-                RelaxationSolver<SetCoverState> solver = new RelaxationSolver<>(
-                        problem,
-                        relax,
-                        varh,
-                        ranking,
-                        width,
-                        frontier);
-
-                long start = System.currentTimeMillis();
-                SearchStatistics stats = solver.maximize();
-                double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-                System.out.printf("Duration : %.3f seconds%n", duration);
-                System.out.printf("Objective: %d%n", solver.bestValue().get());
-                System.out.println(stats);
-                System.out.printf("Number of zero only branching: %d%n", problem.countZeroOnly);
-                System.out.printf("Number of one only branching: %d%n", problem.countOneOnly);
-                System.out.printf("Number of zero-one branching: %d%n", problem.countZeroOne);
-
-                csvString.append(file).append(";");
-                csvString.append(proportionKept).append(";");
-                csvString.append(maxWidth).append(";");
-                csvString.append(nbrElemRemoved).append(";");
-                csvString.append(duration).append(";");
-                csvString.append(solver.bestValue().get()).append(";");
-                csvString.append(stats.nbIterations()).append(";");
-                csvString.append(stats.queueMaxSize()).append(";");
-                csvString.append(problem.countZeroOnly).append(";");
-                csvString.append(problem.countOneOnly).append(";");
-                csvString.append(problem.countZeroOne).append("\n");
-                // csvString.append(solver.timeForBest).append("\n");
-            }
-        }
-
-        FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
-        writer.write(csvString.toString());
-        writer.close();
-    }
 }
