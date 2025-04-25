@@ -149,7 +149,7 @@ public final class Misp {
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
 
-        final Solver solver = new ParallelSolver<BitSet>(
+        final Solver solver = new ParallelSolver<BitSet,Integer>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,

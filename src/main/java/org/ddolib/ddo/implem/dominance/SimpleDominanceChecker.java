@@ -2,16 +2,16 @@ package org.ddolib.ddo.implem.dominance;
 
 import java.util.*;
 
-public class SimpleDominanceChecker<S,K> {
+public class SimpleDominanceChecker<T,K> {
 
-    private Dominance <S,K> dominance;
+    private Dominance <T,K> dominance;
     private int nVars;
-    private Comparator<S> cmp;
+    private Comparator<T> cmp;
 
     class ValueState {
         int value;
-        S state;
-        ValueState(int value, S state) {
+        T state;
+        ValueState(int value, T state) {
             this.value = value;
             this.state = state;
         }
@@ -23,7 +23,7 @@ public class SimpleDominanceChecker<S,K> {
 
     public Map<K, Set<ValueState>> [] fronts;
 
-    public SimpleDominanceChecker(Dominance<S,K> dominance, int nVars) {
+    public SimpleDominanceChecker(Dominance<T,K> dominance, int nVars) {
         this.dominance = dominance;
         this.nVars = nVars;
         this.fronts = new Map[nVars];
@@ -41,7 +41,7 @@ public class SimpleDominanceChecker<S,K> {
      * @param val the objective value of the state
      * @return true if the state is dominated, false otherwise
      */
-    public boolean updateDominance(S state, int depth, int val) {
+    public boolean updateDominance(T state, int depth, int val) {
         Map<K, Set<ValueState>> front = fronts[depth];
         K key = dominance.getKey(state);
         boolean dominated = false;

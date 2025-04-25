@@ -96,7 +96,7 @@ public class TalentScheduling {
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<TalentSchedState> solver = new SequentialSolver<>(
+        SequentialSolver<TalentSchedState,Integer> solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,

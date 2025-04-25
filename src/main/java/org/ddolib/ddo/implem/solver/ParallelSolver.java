@@ -4,6 +4,8 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -22,14 +24,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * WILL WANT TO TAKE A LOOK AT THE `processOneNode()`. THIS IS WHERE THE INFO
  * YOU ARE LOOKING FOR IS LOCATED.
  */
-public final class ParallelSolver<T> implements Solver {
+public final class ParallelSolver<T,K> implements Solver {
     /*
      * The various threads of the solver share a common zone of memory. That 
      * zone of shared memory is split in two: 
      */
 
     /** The portion of the shared state that can be accessed concurrently */
-    private final Shared<T> shared;
+    private final Shared<T,K> shared;
     /** The portion of the shared state that can only be accessed from the critical sections */
     private final Critical<T> critical;
 
@@ -40,9 +42,32 @@ public final class ParallelSolver<T> implements Solver {
         final VariableHeuristic<T> varh,
         final StateRanking<T> ranking,
         final WidthHeuristic<T> width,
+        final SimpleDominanceChecker<T,K> dominance,
         final Frontier<T> frontier)
     {
-        this.shared   = new Shared<>(nbThreads, problem, relax, varh, ranking, width);
+        this.shared   = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
+        this.critical = new Critical<>(nbThreads, frontier);
+    }
+
+    public ParallelSolver(
+            final int nbThreads,
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier)
+    {
+        this.shared = new Shared(nbThreads, problem, relax, varh, ranking, width, new SimpleDominanceChecker<T,Integer>(new Dominance<T, Integer>() {
+            @Override
+            public Integer getKey(T state) {
+                return 0;
+            }
+            @Override
+            public boolean isDominatedOrEqual(T state1, T state2) {
+                return false;
+            }
+        }, problem.nbVars()));
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -63,7 +88,7 @@ public final class ParallelSolver<T> implements Solver {
             workers[i] = new Thread() {
                 @Override
                 public void run() {
-                    DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>();
+                    DecisionDiagram<T,K> mdd = new LinkedDecisionDiagram<>();
                     while (true) {
                         Workload<T> wl = getWorkload(threadId);
                         switch (wl.status) {
@@ -146,7 +171,7 @@ public final class ParallelSolver<T> implements Solver {
      * This is typically the method you are searching for if you are searching after an implementation
      * of the branch and bound with mdd algo.
      */
-    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T> mdd, int verbosityLevel) {
+    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T,K> mdd, int verbosityLevel) {
         // 1. RESTRICTION
         int nodeUB = sub.getUpperBound();
         int bestLB = bestLB();
@@ -156,7 +181,7 @@ public final class ParallelSolver<T> implements Solver {
         }
 
         int width = shared.width.maximumWidth(sub.getState());
-        CompilationInput<T> compilation = new CompilationInput<>(
+        CompilationInput<T,K> compilation = new CompilationInput<>(
             CompilationType.Restricted,
             shared.problem,
             shared.relax,
@@ -164,7 +189,7 @@ public final class ParallelSolver<T> implements Solver {
             shared.ranking,
             sub,
             width,
-            //
+            shared.dominance,
             bestLB
         );
 
@@ -184,7 +209,7 @@ public final class ParallelSolver<T> implements Solver {
             shared.ranking,
             sub,
             width,
-            //
+            shared.dominance,
             bestLB
         );
         mdd.compile(compilation);
@@ -206,7 +231,7 @@ public final class ParallelSolver<T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(final DecisionDiagram<T> mdd, int verbosityLevel) {
+    private void maybeUpdateBest(final DecisionDiagram<T,K> mdd, int verbosityLevel) {
         synchronized (critical) {
             Optional<Integer> ddval = mdd.bestValue();
 
@@ -221,7 +246,7 @@ public final class ParallelSolver<T> implements Solver {
      * If necessary, tightens the bound of nodes in the cutset of `mdd` and
      * then add the relevant nodes to the shared fringe.
      */
-    private void enqueueCutset(final DecisionDiagram<T> mdd) {
+    private void enqueueCutset(final DecisionDiagram<T,K> mdd) {
         synchronized (critical) {
             int bestLB = critical.bestLB;
             Iterator<SubProblem<T>> cutset = mdd.exactCutset();
@@ -314,7 +339,7 @@ public final class ParallelSolver<T> implements Solver {
      * - what is publicly and concurrently accessible
      * - what is synchronized and can only be accessed within critical sections
      */
-    private static final class Shared<T> {
+    private static class Shared<T,K> {
         /** The number of threads that must be spawned to solve the problem */
         private final int nbThreads;
         /** The problem we want to maximize */
@@ -325,6 +350,8 @@ public final class ParallelSolver<T> implements Solver {
         private final StateRanking<T> ranking;
         /** A heuristic to choose the maximum width of the DD you compile */
         private final WidthHeuristic<T> width;
+
+        private final SimpleDominanceChecker<T,K> dominance;
         /** A heuristic to choose the next variable to branch on when developing a DD */
         private final VariableHeuristic<T> varh;
 
@@ -334,7 +361,8 @@ public final class ParallelSolver<T> implements Solver {
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
-            final WidthHeuristic<T> width) 
+            final WidthHeuristic<T> width,
+            final SimpleDominanceChecker<T,K> dominance)
         {
             this.nbThreads = nbThreads;
             this.problem   = problem;
@@ -342,6 +370,7 @@ public final class ParallelSolver<T> implements Solver {
             this.varh      = varh;
             this.ranking   = ranking;
             this.width     = width;
+            this.dominance = dominance;
         }
     }
     /** The shared data that may only be manipulated within critical sections */

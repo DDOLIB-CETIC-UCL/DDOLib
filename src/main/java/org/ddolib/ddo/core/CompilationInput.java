@@ -2,12 +2,13 @@ package org.ddolib.ddo.core;
 
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 /**
  * The set of parameters used to tweak the compilation of a MDD
  * @param <T> The type used to model the state of your problem
  */
-public final class CompilationInput<T> {
+public final class CompilationInput<T,K> {
     /** How is the mdd being compiled ? */
     final CompilationType compType;
     /** A reference to the original problem we try to maximize */
@@ -22,19 +23,22 @@ public final class CompilationInput<T> {
     final SubProblem<T> residual;
     /** What is the maximum width of the mdd ? */
     final int maxWidth;
+    /** The dominance checker used to prune the search space */
+    final SimpleDominanceChecker<T,K> dominance;
     /** The best known lower bound at the time when the dd is being compiled */
     final int bestLB;
 
     /** Creates the inputs to parameterize the compilation of an MDD */
     public CompilationInput(
-        final CompilationType compType,
-        final Problem<T> problem,
-        final Relaxation<T> relaxation,
-        final VariableHeuristic<T> var,
-        final StateRanking<T> ranking,
-        final SubProblem<T> residual,
-        final int maxWidth,
-        final int bestLB
+            final CompilationType compType,
+            final Problem<T> problem,
+            final Relaxation<T> relaxation,
+            final VariableHeuristic<T> var,
+            final StateRanking<T> ranking,
+            final SubProblem<T> residual,
+            final int maxWidth,
+            final SimpleDominanceChecker<T,K> dominance,
+            final int bestLB
     ) {
         this.compType = compType;
         this.problem  = problem;
@@ -43,6 +47,7 @@ public final class CompilationInput<T> {
         this.ranking = ranking;
         this.residual = residual;
         this.maxWidth = maxWidth;
+        this.dominance = dominance;
         this.bestLB = bestLB;
     }
     /** @return how is the dd being compiled ? */

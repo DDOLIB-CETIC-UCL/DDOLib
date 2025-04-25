@@ -206,7 +206,7 @@ public class Golomb {
         final Frontier<GolombState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final Solver solver = new ParallelSolver<GolombState>(
+        final Solver solver = new ParallelSolver<GolombState,Integer>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,

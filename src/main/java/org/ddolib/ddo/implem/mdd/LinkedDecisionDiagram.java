@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 /**
  * This class implements the decision diagram as a linked structure.
  */
-public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
+public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -171,7 +171,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     @Override
-    public void compile(CompilationInput<T> input) {
+    public void compile(CompilationInput<T,K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
@@ -320,7 +320,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T> input) {
+    private Set<Integer> varSet(final CompilationInput<T,K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.getProblem().nbVars(); i++) {
             set.add(i);

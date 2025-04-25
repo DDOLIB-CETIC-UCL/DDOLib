@@ -2,7 +2,11 @@ package org.ddolib.ddo.examples.lcs;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -112,7 +116,7 @@ public final class LCS {
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        ParallelSolver<LCSState> solver = new ParallelSolver<>(
+        ParallelSolver<LCSState,Integer> solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,

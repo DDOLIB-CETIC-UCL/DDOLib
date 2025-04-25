@@ -3,6 +3,8 @@ package org.ddolib.ddo.examples;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -184,11 +186,21 @@ public final class Knapsack {
         final KnapsackRelax relax = new KnapsackRelax(problem);
         final KnapsackRanking ranking = new KnapsackRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new Dominance<Integer, Integer>() {
+            @Override
+            public Integer getKey(Integer state) {
+                return 0;
+            }
+            @Override
+            public boolean isDominatedOrEqual(Integer state1, Integer state2) {
+                return false;
+            }
+        }, problem.nbVars());
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<Integer>(
+        final Solver solver = new ParallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
