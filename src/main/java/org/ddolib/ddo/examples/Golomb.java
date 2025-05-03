@@ -66,7 +66,7 @@ public class Golomb {
         }
 
         public void addMark(int mark) {
-            assert(mark > lastMark);
+            assert(mark >= lastMark);
             lastMark = mark;
             marks.set(mark);
         }

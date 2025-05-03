@@ -1,38 +1,35 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.examples.Golomb;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class GolombTest {
-
+public class GRTest {
     public int[] solve(int n) {
-        Golomb.GolombProblem problem = new Golomb.GolombProblem(n);
-        final Golomb.GolombRelax relax = new Golomb.GolombRelax();
-        final Golomb.GolombRanking ranking = new Golomb.GolombRanking();
-        final FixedWidth<Golomb.GolombState> width = new FixedWidth<>(32);
-        final VariableHeuristic<Golomb.GolombState> varh = new DefaultVariableHeuristic();
-        final Frontier<Golomb.GolombState> frontier = new SimpleFrontier<>(ranking);
-
-        final Solver solver = new SequentialSolver<Golomb.GolombState>(
+        GRProblem problem = new GRProblem(n);
+        final GRRelax relax = new GRRelax();
+        final GRRanking ranking = new GRRanking();
+        final FixedWidth<GRState> width = new FixedWidth<>(32);
+        final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<GRState>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier);
-
         long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
@@ -47,20 +44,16 @@ class GolombTest {
                 })
                 .get();
         return solution;
-
     }
 
     // unit test for Golomb sequence
     @org.junit.jupiter.api.Test
     void test() {
-       // known solutions
+        // known solutions
         int[] solution = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
         for (int n = 3; n < 8; n++) {
             int[] result = solve(n);
             assertEquals(solution[n-1], result[n-1]);
         }
     }
-
-
-
 }

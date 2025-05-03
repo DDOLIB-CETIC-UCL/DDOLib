@@ -31,7 +31,7 @@ import java.util.Arrays;
 public class GRULER {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(10);
+        GRProblem problem = new GRProblem(9);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
         final FixedWidth<GRState> width = new FixedWidth<>(32);
