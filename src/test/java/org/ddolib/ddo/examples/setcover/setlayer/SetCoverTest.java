@@ -27,6 +27,47 @@ import java.util.stream.Stream;
 
 public class SetCoverTest {
 
+    @Test
+    public void testSmallRelaxation() {
+        int nElem = 6;
+        int nSets = 6;
+        List<Set<Integer>> sets = new ArrayList<>();
+        sets.add(Set.of(0,1,2));
+        sets.add(Set.of(3,4,5));
+        sets.add(Set.of(0,1));
+        sets.add(Set.of(1,3));
+        sets.add(Set.of(0,1,3,4));
+        sets.add(Set.of(5));
+
+        /*sets.add(Set.of(5));
+        sets.add(Set.of(3,4,5));
+        sets.add(Set.of(1,3));
+        sets.add(Set.of(0,1,3,4));
+        sets.add(Set.of(0,1));
+        sets.add(Set.of(0,1,2));*/
+
+        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, sets);
+        final SetCoverRelax relax = new SetCoverRelax();
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(1);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new RelaxationSolver<>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        long start = System.currentTimeMillis();
+        solver.maximize();
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        Assertions.assertTrue(solver.bestValue().get() <= 1 );
+    }
+
     /**
      * Test on small random instances to verify that the solution returned by the sequential solver is really
      * optimal.
@@ -198,12 +239,15 @@ public class SetCoverTest {
 
         Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
         heuristics.put("default", new DefaultVariableHeuristic<>());
-        heuristics.put("minCentrality", new MinCentralityHeuristic(problem));
-        heuristics.put("focusSmallState", new FocusMostSmallState(problem));
+        // heuristics.put("minCentrality", new MinCentralityHeuristic(problem));
+        // heuristics.put("focusSmallState", new FocusMostSmallState(problem));
+        heuristics.put("focusClosingElement", new FocusClosingElements(problem));
 
         for (String heuristic : heuristics.keySet()) {
             varh = heuristics.get(heuristic);
-            for (int maxWidth = 1; maxWidth <= 50; maxWidth = maxWidth +1 ) {
+            System.out.println(heuristic);
+            for (int maxWidth = 1; maxWidth <= 10000; maxWidth = maxWidth * 10) {
+                System.out.print(maxWidth + ", ");
                 relax = new SetCoverRelax();
                 width = new FixedWidth<>(maxWidth);
                 Solver solver = new RelaxationSolver<>(problem,
@@ -292,11 +336,57 @@ public class SetCoverTest {
         FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
         writer.write(csvString.toString());
         writer.close();
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxation(String fname) throws IOException {
+        System.out.println("******************");
+        System.out.println(fname);
+        final SetCoverProblem problem = readInstance(fname);
+        final SetCoverRelax relax = new SetCoverRelax();
+        VariableHeuristic<SetCoverState> varh;
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        FixedWidth<SetCoverState> width;
+        for (int widthVal = 1; widthVal < 1000000; widthVal = widthVal * 10) {
+            System.out.println("@@@@@@@@@");
+            width = new FixedWidth<>(widthVal);
+            varh = new DefaultVariableHeuristic<>();
+
+            Solver solver = new RelaxationSolver<>(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier);
+
+            long start = System.currentTimeMillis();
+            solver.maximize();
+            double duration = (System.currentTimeMillis() - start) / 1000.0;
+            System.out.printf("Max width: %d%n", width.maximumWidth(null));
+            System.out.printf("Duration : %.3f seconds%n", duration);
+            System.out.printf("Objective: %d%n", solver.bestValue().get());
+        }
+    }
+
+    // *************************************************************************
+
+
+    static Stream<String> dataProvider() {
+        return Stream.of(
+                "data/SetCover/1id_problem/aarnet"
+        );
     }
 
     static Stream<String> dataProviderLight() {
         return Stream.of(
-                "data/SetCover/generated/n_10_b_5_d_5"
+                "data/SetCover/generated/n_6_b_5_d_5",
+                "data/SetCover/generated/n_10_b_8_d_3",
+                "data/SetCover/1id_problem/abilene",
+                "data/SetCover/1id_problem/ai3"
         );
     }
 
