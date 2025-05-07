@@ -13,13 +13,9 @@ public class SetCoverRelax implements Relaxation<SetCoverState> {
     public SetCoverState mergeStates(Iterator<SetCoverState> states) {
         SetCoverState currState = states.next();
         SetCoverState newState = currState.clone();
-        int nbrMerged = 1;
-        List<Integer> statesSizes = new ArrayList<>();
-        statesSizes.add(currState.uncoveredElements.size());
         while (states.hasNext()) {
             currState = states.next();
             newState.uncoveredElements.keySet().retainAll(currState.uncoveredElements.keySet());
-            nbrMerged++;
         }
         return newState;
     }

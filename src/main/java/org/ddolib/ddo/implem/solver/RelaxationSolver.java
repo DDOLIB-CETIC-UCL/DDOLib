@@ -51,8 +51,6 @@ public final class RelaxationSolver<T> implements Solver {
     /** This is the value of the best known lower bound. */
     private int bestLB;
 
-    private int bestUB;
-
     /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
 
@@ -73,7 +71,6 @@ public final class RelaxationSolver<T> implements Solver {
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
-        this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -82,9 +79,7 @@ public final class RelaxationSolver<T> implements Solver {
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
-        System.out.println("Relaxation");
 
-        // 2. RELAXATION
         CompilationInput<T> compilation = new CompilationInput<>(
                 CompilationType.Relaxed,
                 problem,
@@ -135,19 +130,6 @@ public final class RelaxationSolver<T> implements Solver {
             System.out.println("New Best Value: " + ddval.get());
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
-        }
-    }
-    /**
-     * If necessary, tightens the bound of nodes in the cutset of `mdd` and
-     * then add the relevant nodes to the shared fringe.
-     */
-    private void enqueueCutset() {
-        Iterator<SubProblem<T>> cutset = mdd.exactCutset();
-        while (cutset.hasNext()) {
-            SubProblem<T> cutsetNode = cutset.next();
-            if (cutsetNode.getUpperBound() > bestLB) {
-                frontier.push(cutsetNode);
-            }
         }
     }
 }

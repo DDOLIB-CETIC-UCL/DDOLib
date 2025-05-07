@@ -5,10 +5,12 @@ import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverProblem;
+import static org.ddolib.ddo.examples.setcover.elementlayer.SetCover.readInstance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -16,6 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 import static java.lang.Math.max;
@@ -89,9 +92,9 @@ public class SetCoverTest {
         final SetCoverRelax relax = new SetCoverRelax();
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
         final SetCoverRanking ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(Integer.MAX_VALUE);
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = new RelaxationSolver<>(
                 problem,
                 relax,
                 varh,
@@ -102,6 +105,9 @@ public class SetCoverTest {
         long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
+        System.out.printf("Duration : %.3f seconds%n", duration);
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        Assertions.assertTrue(solver.bestValue().get() <= 1 );
     }
 
     /**
@@ -146,6 +152,47 @@ public class SetCoverTest {
         Assertions.assertEquals(optimalCost, -solver.bestValue().get());
         Assertions.assertTrue(testValidity(problem, solution));
     }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxation(String fname) throws IOException {
+        System.out.println("******************");
+        System.out.println(fname);
+        final SetCoverProblem problem = readInstance(fname);
+        final SetCoverRelax relax = new SetCoverRelax();
+        VariableHeuristic<SetCoverState> varh;
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        FixedWidth<SetCoverState> width;
+        for (int widthVal = 1; widthVal < 1000000; widthVal = widthVal * 10) {
+            System.out.println("@@@@@@@@@");
+            width = new FixedWidth<>(widthVal);
+            varh = new MinCentrality(problem);
+
+            Solver solver = new RelaxationSolver<>(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier);
+
+            long start = System.currentTimeMillis();
+            solver.maximize();
+            double duration = (System.currentTimeMillis() - start) / 1000.0;
+            System.out.printf("Max width: %d%n", width.maximumWidth(null));
+            System.out.printf("Duration : %.3f seconds%n", duration);
+            System.out.printf("Objective: %d%n", solver.bestValue().get());
+        }
+    }
+
+    // *************************************************************************
+
+     static Stream<String> dataProvider() {
+        return Stream.of(
+                "data/SetCover/1id_problem/aarnet"
+        );
+     }
 
     /**
      * Test the validity of a solution, i.e. if the collection of selected sets covers all elements in the universe

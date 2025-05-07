@@ -2,14 +2,91 @@ package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class SetCoverHeuristics {
 
     /**
-     * Heuristic where the next set is selected is the one that reducing the most the smallestState
+     * In this heuristic, first element are sorted such as elements with small centrality
+     * have a stronger priority to be covered.
+     * Then the set are ordered such as the one covering element with small centralities are considered first,
+     * but also such as sets that covers elements that were in the previous sets are considered first.
+     * The idea is to quickly "close" elements, i.e. quickly reach sets that are the last one to cover an element
+     */
+    public static final class FocusClosingElements implements VariableHeuristic<SetCoverState> {
+        private final SetCoverProblem problem;
+        private List<Integer> ordering;
+        // private Iterator<Integer> orderingIterator;
+
+        private List<Set<Integer>> computeSymptoms() {
+            List<Set<Integer>> symptoms = new ArrayList<>(problem.nElem);
+            for (int i = 0; i < problem.nElem; i++) {
+                symptoms.add(new HashSet<>());
+            }
+
+            for (int set = 0; set < problem.nSet; set++) {
+                for (int elem: problem.sets.get(set)) {
+                    symptoms.get(elem).add(set);
+                }
+            }
+            return symptoms;
+        }
+
+        public FocusClosingElements(SetCoverProblem problem) {
+            this.problem = problem;
+
+            List<Set<Integer>> symptoms = computeSymptoms();
+
+            ordering = new ArrayList<>(problem.nSet);
+            int[] centralities = new int[problem.nElem];
+            boolean[] isSetAdded = new boolean[problem.nSet];
+            int priorityElement = 0;
+            centralities[0] = symptoms.get(0).size();
+            for (int elem = 1; elem < problem.nElem; elem++) {
+                centralities[elem] = symptoms.get(elem).size();
+                if (symptoms.get(elem).size() < symptoms.get(priorityElement).size()) {
+                    priorityElement = elem;
+                }
+            }
+
+            while (ordering.size() < problem.nSet && priorityElement != -1) {
+                for (int set: symptoms.get(priorityElement)) {
+                    if (isSetAdded[set]) {
+                        continue;
+                    }
+                    ordering.add(set);
+                    isSetAdded[set] = true;
+
+                    for (int elem: problem.sets.get(set)) {
+                        centralities[elem]--;
+                    }
+                }
+
+                priorityElement = -1;
+                int minCentrality = Integer.MAX_VALUE;
+                for (int elem = 0; elem < problem.nElem; elem++) {
+                    if (centralities[elem] < minCentrality && centralities[elem] > 0) {
+                        priorityElement = elem;
+                        minCentrality = centralities[elem];
+                    }
+                }
+            }
+            // orderingIterator = ordering.iterator();
+        }
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
+            for (int set: ordering) {
+                if (variables.contains(set)) {
+                    return set;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Heuristic where the next set is selected is the one that reduces the most the smallestState
      */
     public static final class FocusMostSmallState implements VariableHeuristic<SetCoverState> {
         private final SetCoverProblem problem;
@@ -40,6 +117,7 @@ public class SetCoverHeuristics {
                     selectedVar = i;
                 }
             }
+            // System.out.println(selectedVar);
 
             return selectedVar;
         }
@@ -83,7 +161,7 @@ public class SetCoverHeuristics {
             for (int set: problem.sets.get(selected)) {
                 covered[set]++;
             }
-            System.out.println("Selected set: " + problem.sets.get(selected));
+            // System.out.println("Selected set: " + problem.sets.get(selected));
 
             return selected;
         }
@@ -124,6 +202,7 @@ public class SetCoverHeuristics {
                     selection = set;
                 }
             }
+            // System.out.println(selection);
             return selection;
         }
     }
@@ -243,21 +322,21 @@ public class SetCoverHeuristics {
                 lastTimeEncountered[elem] = nbCall;
             }
 
-            System.out.print("Bandwith: ");
+            System.out.print("Bandwidth: ");
             for (int i = 0; i < problem.nElem; i++) {
                 System.out.printf("%d:%d, ", i, lastTimeEncountered[i] - firstTimeEncountered[i]);
             }
 
-            int[] bandwiths = new int[problem.nElem];
+            int[] bandwidths = new int[problem.nElem];
             for (int i = 0; i < problem.nElem; i++) {
-                bandwiths[i] = lastTimeEncountered[i] - firstTimeEncountered[i];
+                bandwidths[i] = lastTimeEncountered[i] - firstTimeEncountered[i];
             }
-            Arrays.sort(bandwiths);
+            Arrays.sort(bandwidths);
             System.out.println();
-            System.out.println("Avg: " + Arrays.stream(bandwiths).average().getAsDouble());
-            System.out.println("Min: " + bandwiths[0]);
-            System.out.println("Max: " + bandwiths[bandwiths.length - 1]);
-            System.out.println("Median: " + bandwiths[bandwiths.length / 2]);
+            System.out.println("Avg: " + Arrays.stream(bandwidths).average().getAsDouble());
+            System.out.println("Min: " + bandwidths[0]);
+            System.out.println("Max: " + bandwidths[bandwidths.length - 1]);
+            System.out.println("Median: " + bandwidths[bandwidths.length / 2]);
 
             return selected;
         }
