@@ -3,7 +3,7 @@ package org.ddolib.ddo.examples.mcp;
 import java.util.ArrayList;
 
 /**
- * Class to contain data for the Max2Sat sate. The state contain its depth in the associated MDD and a list of net
+ * Class to contain data for the MCP state. The state contains its depth in the associated MDD and a list of net
  * benefits.<br>
  * <p>
  * This list contains:

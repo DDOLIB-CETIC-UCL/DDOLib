@@ -58,7 +58,6 @@ public class MCPRelax implements Relaxation<MCPState> {
         int toReturn = cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
-
         }
         return toReturn;
     }
