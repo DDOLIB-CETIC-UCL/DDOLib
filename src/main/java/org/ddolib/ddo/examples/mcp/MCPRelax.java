@@ -33,7 +33,7 @@ public class MCPRelax implements Relaxation<MCPState> {
 
         while (states.hasNext()) {
             MCPState current = states.next();
-            for (int i = 0; i < problem.nbVars(); i++) {
+            for (int i = depth; i < problem.nbVars(); i++) {
                 Integer mergedI = merged.get(i);
                 Integer currentI = current.netBenefit().get(i);
 
