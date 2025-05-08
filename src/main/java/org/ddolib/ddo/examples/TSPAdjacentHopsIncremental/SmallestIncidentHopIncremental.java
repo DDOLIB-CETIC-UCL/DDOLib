@@ -65,6 +65,9 @@ public class SmallestIncidentHopIncremental {
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);
 
+        //TODO this is awfully too slow because of the sort.
+        // normally, we do not need a sort actually; only the nbHops smallers
+        // and this could be obtained faster than by sorting the whole thing
         IntSummaryStatistics stats = b.build().sorted().limit(nbHops).summaryStatistics();
 
         return (int)(stats.getSum() - stats.getMax());

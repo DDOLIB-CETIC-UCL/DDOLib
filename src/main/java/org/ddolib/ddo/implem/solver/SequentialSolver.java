@@ -13,40 +13,50 @@ import java.util.Set;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
- * with mdd solver does even though you haven't looked into concrete code 
+ * with mdd solver does even though you haven't looked into concrete code
  * yet.
- * 
+ * <p>
  * One of the tasks from this assignment is for you to implement the vanilla
- * algorithm (sequentially) as it has been explained during the lecture. 
- * 
+ * algorithm (sequentially) as it has been explained during the lecture.
+ * <p>
  * To help you, we provide you with a well documented framework that defines
- * and implements all the abstractions you will need in order to implement 
- * a generic solver. Additionally, and because the BaB-MDD framework parallelizes 
+ * and implements all the abstractions you will need in order to implement
+ * a generic solver. Additionally, and because the BaB-MDD framework parallelizes
  * *VERY* well, we provide you with a parallel implementation of the algorithm
  * (@see ParallelSolver). Digging into that code, understanding it, and stripping
  * away all the parallel-related concerns should finalize to give you a thorough
  * understanding of the sequential algo.
- * 
+ * <p>
  * # Note
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  */
 public final class SequentialSolver<T> implements Solver {
-    /** The problem we want to maximize */
+    /**
+     * The problem we want to maximize
+     */
     private final Problem<T> problem;
-    /** A suitable relaxation for the problem we want to maximize */
+    /**
+     * A suitable relaxation for the problem we want to maximize
+     */
     private final Relaxation<T> relax;
-    /** An heuristic to identify the most promising nodes */
+    /**
+     * An heuristic to identify the most promising nodes
+     */
     private final StateRanking<T> ranking;
-    /** A heuristic to choose the maximum width of the DD you compile */
+    /**
+     * A heuristic to choose the maximum width of the DD you compile
+     */
     private final WidthHeuristic<T> width;
-    /** A heuristic to choose the next variable to branch on when developing a DD */
+    /**
+     * A heuristic to choose the next variable to branch on when developing a DD
+     */
     private final VariableHeuristic<T> varh;
 
     /**
      * This is the fringe: the set of nodes that must still be explored before
      * the problem can be considered 'solved'.
-     *
+     * <p>
      * # Note:
      * This fringe orders the nodes by upper bound (so the highest ub is going
      * to pop first). So, it is guaranteed that the upper bound of the first
@@ -56,11 +66,11 @@ public final class SequentialSolver<T> implements Solver {
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
-    /** 
+    /**
      * Your implementation (just like the parallel version) will reuse the same
-     * data structure to compile all mdds. 
-     * 
-     * # Note: 
+     * data structure to compile all mdds.
+     * <p>
+     * # Note:
      * This approach is recommended, however we do not force this design choice.
      * You might decide against reusing the same object over and over (even though
      * it has been designed to be reused). Should you decide to not reuse this
@@ -68,40 +78,49 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final DecisionDiagram<T> mdd;
 
-    /** This is the value of the best known lower bound. */
+    /**
+     * This is the value of the best known lower bound.
+     */
     private int bestLB;
-    /** If set, this keeps the info about the best solution so far. */
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
     private Optional<Set<Decision>> bestSol;
 
-    /** Creates a fully qualified instance */
+    /**
+     * Creates a fully qualified instance
+     */
     public SequentialSolver(
-        final Problem<T> problem,
-        final Relaxation<T> relax,
-        final VariableHeuristic<T> varh,
-        final StateRanking<T> ranking,
-        final WidthHeuristic<T> width,
-        final Frontier<T> frontier)  
-    {
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier) {
         this.problem = problem;
-        this.relax   = relax;
-        this.varh    = varh;
+        this.relax = relax;
+        this.varh = varh;
         this.ranking = ranking;
-        this.width   = width;
-        this.frontier= frontier;
-        this.mdd     = new LinkedDecisionDiagram<>();
-        this.bestLB  = Integer.MIN_VALUE;
+        this.width = width;
+        this.frontier = frontier;
+        this.mdd = new LinkedDecisionDiagram<>();
+        this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
 
     @Override
-    public SearchStatistics maximize() { return maximize(0);}
+    public SearchStatistics maximize() {
+        return maximize(0);
+    }
+
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
         while (!frontier.isEmpty()) {
-            if(verbosityLevel >=1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t bestObj:" + bestLB);
+            if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
+                    "bestObj:" + bestLB);
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -109,7 +128,9 @@ public final class SequentialSolver<T> implements Solver {
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
 
-            if(verbosityLevel >=2) System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+            if (verbosityLevel >= 2)
+                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+            if (verbosityLevel >= 1) System.out.println("\n");
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);
@@ -117,15 +138,15 @@ public final class SequentialSolver<T> implements Solver {
 
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInput<T> compilation = new CompilationInput<>(
-                CompilationType.Restricted,
-                problem,
-                relax,
-                varh,
-                ranking,
-                sub,
-                maxWidth,
-                //
-                bestLB
+                    CompilationType.Restricted,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    sub,
+                    maxWidth,
+                    //
+                    bestLB
             );
 
             mdd.compile(compilation);
@@ -136,15 +157,15 @@ public final class SequentialSolver<T> implements Solver {
 
             // 2. RELAXATION
             compilation = new CompilationInput<>(
-                CompilationType.Relaxed,
-                problem,
-                relax,
-                varh,
-                ranking,
-                sub,
-                maxWidth,
-                //
-                bestLB
+                    CompilationType.Relaxed,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    sub,
+                    maxWidth,
+                    //
+                    bestLB
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {
@@ -170,13 +191,15 @@ public final class SequentialSolver<T> implements Solver {
         return bestSol;
     }
 
-    /** @return the root subproblem */
+    /**
+     * @return the root subproblem
+     */
     private SubProblem<T> root() {
         return new SubProblem<>(
-            problem.initialState(), 
-            problem.initialValue(), 
-            Integer.MAX_VALUE, 
-            Collections.emptySet());
+                problem.initialState(),
+                problem.initialValue(),
+                Integer.MAX_VALUE,
+                Collections.emptySet());
     }
 
     /**
@@ -189,9 +212,10 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
-            if(verbosityLevel > 2) System.out.println("new best " + bestLB);
+            if (verbosityLevel > 2) System.out.println("new best " + bestLB);
         }
     }
+
     /**
      * If necessary, tightens the bound of nodes in the cutset of `mdd` and
      * then add the relevant nodes to the shared fringe.

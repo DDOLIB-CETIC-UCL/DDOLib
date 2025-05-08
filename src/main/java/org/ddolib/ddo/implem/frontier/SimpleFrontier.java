@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.heuristics.StateRanking;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 /**
@@ -13,14 +14,16 @@ import java.util.PriorityQueue;
  * pushed and popped from by the solver.
  */
 public final class SimpleFrontier<T> implements Frontier<T> {
-    /** The underlying priority sub problem priority queue */
+    /**
+     * The underlying priority sub problem priority queue
+     */
     private final PriorityQueue<SubProblem<T>> heap;
 
-    /** 
+    /**
      * Creates a new instance
-     * 
-     * @param ranking an ordering to tell which of the subproblem is the most promising 
-     * and should be explored first.
+     *
+     * @param ranking an ordering to tell which of the subproblem is the most promising
+     *                and should be explored first.
      */
     public SimpleFrontier(final StateRanking<T> ranking) {
         heap = new PriorityQueue<>(new SubProblemComparator<>(ranking).reversed());
@@ -46,13 +49,18 @@ public final class SimpleFrontier<T> implements Frontier<T> {
         return heap.size();
     }
 
-    /** This utility class implements a decorator pattern to sort SubProblems by their ub then state */
-    private static final class SubProblemComparator<T> implements Comparator<SubProblem<T>>{
-        /** This is the decorated ranking */
+    /**
+     * This utility class implements a decorator pattern to sort SubProblems by their ub then state
+     */
+    private static final class SubProblemComparator<T> implements Comparator<SubProblem<T>> {
+        /**
+         * This is the decorated ranking
+         */
         private final StateRanking<T> delegate;
-        
-        /** 
+
+        /**
          * Creates a new instance
+         *
          * @param delegate the decorated ranking
          */
         public SubProblemComparator(final StateRanking<T> delegate) {
@@ -67,6 +75,11 @@ public final class SimpleFrontier<T> implements Frontier<T> {
             } else {
                 return cmp;
             }
-        }        
+        }
+    }
+
+    @Override
+    public String toString() {
+        return heap.toString();
     }
 }
