@@ -74,6 +74,12 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             this.best = null;
             this.edges = new ArrayList<>();
         }
+
+        @Override
+        public String toString() {
+            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+                    value, suffix, best, edges);
+        }
     }
 
     /**
@@ -104,6 +110,11 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             this.origin = src;
             this.decision = d;
             this.weight = w;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Origin:%s\n\t Decision:%s\n\t Weight:%s ", origin, decision, weight);
         }
     }
 
@@ -167,7 +178,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
         @Override
         public String toString() {
-            return state.toString();
+            return String.format("%s - ub: %d", state, ub);
         }
     }
 
@@ -207,10 +218,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (!dominance.updateDominance(state,depth,node.value)) {
+                //if (!dominance.updateDominance(state,depth,node.value)) {
                     int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
-                }
+                //}
             }
             this.nextLayer.clear();
 
