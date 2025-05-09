@@ -1,11 +1,7 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.lcs;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.misp.Misp;
-import org.ddolib.ddo.examples.misp.MispProblem;
-import org.ddolib.ddo.examples.misp.MispRanking;
-import org.ddolib.ddo.examples.misp.MispRelax;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -16,17 +12,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MispTest {
+public class LCSTest {
 
-    static Stream<MispProblem> dataProvider() throws IOException {
-        String dir = "src/test/resources/MISP/";
+    static Stream<LCSProblem> dataProvider() throws IOException {
+        String dir = "src/test/resources/LCS/";
 
         File[] files = new File(dir).listFiles();
         assert files != null;
@@ -36,7 +31,7 @@ public class MispTest {
                 .map(fileName -> dir + fileName)
                 .map(fileName -> {
                     try {
-                        return Misp.readGraph(fileName);
+                        return LCSMain.extractFile(fileName);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -45,33 +40,33 @@ public class MispTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testFastUpperBound(MispProblem problem) {
-        final MispRelax relax = new MispRelax(problem);
+    public void testFastUpperBound(LCSProblem problem) {
+        final LCSRelax relax = new LCSRelax(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.remainingNodes, vars);
+        int rub = relax.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
-        assertTrue(rub >= problem.optimal.get(),
+        assertTrue(rub >= problem.getOptimal().get(),
                 String.format("Upper bound %d is not bigger than the expected optimal solution %d",
                         rub,
-                        problem.optimal.get()));
+                        problem.getOptimal().get()));
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testMISP(MispProblem problem) {
-        final MispRelax relax = new MispRelax(problem);
-        final MispRanking ranking = new MispRanking();
-        final FixedWidth<BitSet> width = new FixedWidth<>(250);
-        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
+    public void testLCS(LCSProblem problem) {
+        final LCSRelax relax = new LCSRelax(problem);
+        final LCSRanking ranking = new LCSRanking();
+        final FixedWidth<LCSState> width = new FixedWidth<>(250);
+        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        final Solver solver = new ParallelSolver<BitSet>(
+        final Solver solver = new ParallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -80,8 +75,28 @@ public class MispTest {
                 width,
                 frontier);
         solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.optimal.get());
+        assertEquals(solver.bestValue().get(), problem.getOptimal().get());
     }
 
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testLCSWithRelax(LCSProblem problem) {
+        final LCSRelax relax = new LCSRelax(problem);
+        final LCSRanking ranking = new LCSRanking();
+        final FixedWidth<LCSState> width = new FixedWidth<>(2);
+        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+
+        final Solver solver = new ParallelSolver(
+                Runtime.getRuntime().availableProcessors(),
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.getOptimal().get());
+    }
 }

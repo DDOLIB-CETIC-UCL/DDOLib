@@ -1,13 +1,12 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.knapsack;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.Knapsack.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -16,14 +15,16 @@ import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class KnapsackTest {
-    static Stream<KnapsackProblem> dataProvider() {
+public class KSTest {
+    static Stream<KSProblem> dataProvider() {
         Stream<Integer> testStream = IntStream.rangeClosed(0, 10).boxed();
         return testStream.flatMap(i -> {
             try {
-                return Stream.of(Knapsack.readInstance("src/test/resources/Knapsack/instance_test_" + i));
+                return Stream.of(readInstance("src/test/resources/Knapsack/instance_test_" + i));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -32,8 +33,8 @@ class KnapsackTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void fastUpperBoundTest(KnapsackProblem problem) throws IOException {
-        final KnapsackRelax relax = new KnapsackRelax(problem);
+    public void fastUpperBoundTest(KSProblem problem) throws IOException {
+        final KSRelax relax = new KSRelax(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -50,16 +51,15 @@ class KnapsackTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testParameterized(KnapsackProblem problem) {
-        final KnapsackRelax relax = new KnapsackRelax(problem);
-        final KnapsackRanking ranking = new KnapsackRanking();
+    public void testParameterized(KSProblem problem) {
+        final KSRelax relax = new KSRelax(problem);
+        final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<Integer>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -70,5 +70,4 @@ class KnapsackTest {
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
     }
-
 }

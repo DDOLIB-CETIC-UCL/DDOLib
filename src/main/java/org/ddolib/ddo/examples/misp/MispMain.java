@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public final class Misp {
+public final class MispMain {
 
     public static MispProblem cycleGraph(int n) {
         BitSet state = new BitSet(n);

@@ -1,7 +1,6 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.talentscheduling;
 
 import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.examples.talentscheduling.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -52,7 +51,7 @@ public class TalenSchedTest {
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<TalentSchedState> solver = new SequentialSolver<>(
+        SequentialSolver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
@@ -94,7 +93,7 @@ public class TalenSchedTest {
         final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<TalentSchedState> solver = new SequentialSolver<>(
+        SequentialSolver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

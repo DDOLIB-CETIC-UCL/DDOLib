@@ -2,11 +2,7 @@ package org.ddolib.ddo.examples.lcs;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -20,7 +16,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /** The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.*/
-public final class LCS {
+public final class LCSMain {
 
     public static LCSProblem extractFile(String fileName) throws IOException {
         final File f = new File(fileName);
@@ -101,7 +97,7 @@ public final class LCS {
             }
         }
 
-        return new LCSProblem(stringNb, diffCharNb, stringsAsInt, stringsLength, nextCharPos, remChar, charToId, idToChar, optimal);
+        return new LCSProblem(fileName, stringNb, diffCharNb, stringsAsInt, stringsLength, nextCharPos, remChar, charToId, idToChar, optimal);
     }
 
     public static void main(String[] args) throws IOException {
