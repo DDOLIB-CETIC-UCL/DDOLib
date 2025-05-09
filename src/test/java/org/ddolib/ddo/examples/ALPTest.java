@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ALPTest {
 
-    static Stream<ALPProblem> dataProvider() throws IOException {
+    static Stream<ALPProblem> dataProvider() {
         String dir = "src/test/resources/ALP/";
 
         File[] files = new File(dir).listFiles();

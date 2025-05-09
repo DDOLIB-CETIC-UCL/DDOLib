@@ -30,14 +30,14 @@ public final class ALP {
         Solver parallelSolver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
-                relax,variableHeuristic,
-                ranking,width,frontier
+                relax, variableHeuristic,
+                ranking, width, frontier
         );
 
         Solver sequentialSolver = new SequentialSolver<>(
                 problem,
-                relax,variableHeuristic,
-                ranking,width,frontier
+                relax, variableHeuristic,
+                ranking, width, frontier
         );
 
         Solver solver = sequentialSolver;
@@ -56,9 +56,9 @@ public final class ALP {
                 Decision d = decisions.stream().filter(x -> x.var() == index).findFirst().get();
                 ALPDecision alpD = problem.fromDecision(d.val());
                 int aircraft = problem.latestToEarliestAircraftByClass.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
-                int arrivalTime = problem.getArrivalTime(runwayStates,aircraft,alpD.runway);
-                int cost = problem.transitionCost(curState,d);
-                curState = problem.transition(curState,d);
+                int arrivalTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
+                int cost = problem.transitionCost(curState, d);
+                curState = problem.transition(curState, d);
                 values[d.var()] = String.format("Aircraft :%d, landing :%d, cost :%d", aircraft, arrivalTime, cost);
             }
             return values;
