@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.knapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
+        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_1";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
@@ -39,8 +40,10 @@ public class KSMain {
 
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+        System.out.println("Search statistics:"+stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {

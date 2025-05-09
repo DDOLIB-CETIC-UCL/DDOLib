@@ -218,10 +218,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                //if (!dominance.updateDominance(state,depth,node.value)) {
+                if (!dominance.updateDominance(state, depth, node.value)) {
                     int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
-                //}
+                }
             }
             this.nextLayer.clear();
 
