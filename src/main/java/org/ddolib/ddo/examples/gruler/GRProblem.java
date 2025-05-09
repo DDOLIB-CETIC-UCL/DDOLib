@@ -39,6 +39,7 @@ public class GRProblem implements Problem<GRState> {
                         .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
                         .boxed()
                         .toList());
+//        System.out.println(Arrays.toString(domain.toArray()));
         return  domain.iterator();
     }
 

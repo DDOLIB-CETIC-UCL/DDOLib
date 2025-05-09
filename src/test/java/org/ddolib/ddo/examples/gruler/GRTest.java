@@ -51,7 +51,7 @@ public class GRTest {
     void test() {
         // known solutions
         int[] solution = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
-        for (int n = 3; n < 8; n++) {
+        for (int n = 3; n < 9; n++) {
             int[] result = solve(n);
             assertEquals(solution[n-1], result[n-1]);
         }
