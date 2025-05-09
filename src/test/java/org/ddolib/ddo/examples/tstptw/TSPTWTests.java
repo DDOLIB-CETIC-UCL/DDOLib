@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.tstptw;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.examples.tsptw.*;
