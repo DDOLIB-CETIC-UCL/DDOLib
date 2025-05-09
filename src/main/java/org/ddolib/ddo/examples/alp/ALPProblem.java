@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class ALPProblem implements Problem<ALPState> {
     public ALPInstance instance;
-    // Used to know which aircraft will be next to land based on its class.
+    // Used to know which aircraft of each class will be next to land.
     public ArrayList<ArrayList<Integer>> latestToEarliestAircraftByClass;
     // Minimal time between a "no_class" aircraft and "class" aircraft.
     int[] minSeparationTo;
@@ -130,7 +130,8 @@ public class ALPProblem implements Problem<ALPState> {
                 int aircraft = latestToEarliestAircraftByClass.get(c).get(state.remainingAircraftOfClass[c]);
 
                 used.clear();
-                for(int runway = 0; runway < instance.nbRunways; runway++){ // For each runway, try to find at least one suitable runway.
+                // For each runway, try to find at least one suitable runway.
+                for(int runway = 0; runway < instance.nbRunways; runway++){
                     int arrival = getArrivalTime(state.runwayStates, aircraft, runway);
                     if(arrival <= instance.aircraftDeadline[aircraft]) {
                         decisions.add(toDecision(new ALPDecision(c,runway)));
@@ -159,6 +160,7 @@ public class ALPProblem implements Problem<ALPState> {
             // Latest decision says that there are no plane to land left.
             return new ALPState(state);
         } else {
+            // Generating the new state.
             ALPDecision alpDecision = fromDecision(decision.val());
             int aircraftClass = alpDecision.aircraftClass;
             int runway = alpDecision.runway;
@@ -175,6 +177,7 @@ public class ALPProblem implements Problem<ALPState> {
 
     @Override
     public int transitionCost(ALPState state, Decision decision) {
+        // The delta between the arrival time and the earliest arrival time.
         if(decision.val() == DUMMY) {
             return 0;
         } else {

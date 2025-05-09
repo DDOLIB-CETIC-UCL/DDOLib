@@ -45,6 +45,8 @@ public class ALPRelax implements Relaxation<ALPState> {
         int sum = 0;
         ALPInstance inst = problem.instance;
 
+        // Basically sum of the current best landing delta of each aircraft.
+        // ==> For each aircraft, find the current best runway to land and computes its delta.
         Set<Integer> remainingAircraft = new HashSet<>();
         for(int c = 0; c < problem.instance.nbClasses; c++){
             for(int r = 0; r < state.remainingAircraftOfClass[c]; r++){
@@ -53,7 +55,8 @@ public class ALPRelax implements Relaxation<ALPState> {
                 int bestRunwayTardiness = Integer.MAX_VALUE;
                 for(int runway = 0; runway < state.runwayStates.length; runway++) {
                     int arrivalTime = problem.getArrivalTime(state.runwayStates, aircraft, runway);
-                    if(arrivalTime - inst.aircraftDeadline[aircraft] <= 0) {  // If one aircraft can not land, the fub is maxValue
+                    if(arrivalTime - inst.aircraftDeadline[aircraft] <= 0) {
+                        // If one aircraft can not land, the fub is maxValue
                         int estimatedTardiness = Math.max(0, arrivalTime - inst.aircraftTarget[aircraft]);
                         bestRunwayTardiness = Math.min(bestRunwayTardiness,estimatedTardiness);
                     }
