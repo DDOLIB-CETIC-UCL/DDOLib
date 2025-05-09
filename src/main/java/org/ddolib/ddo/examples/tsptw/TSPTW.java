@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TSPTW {
@@ -101,7 +102,7 @@ public class TSPTW {
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        ParallelSolver<TSPTWState> solver = new ParallelSolver<>(
+        ParallelSolver solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -116,9 +117,11 @@ public class TSPTW {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
+        Optional<Set<Decision>> bestSol = solver.bestSolution();
+
         String solutionStr;
-        if (solver.bestSolution().isPresent()) {
-            int[] solution = solver.bestSolution().map(decisions -> {
+        if (bestSol.isPresent()) {
+            int[] solution = bestSol.map(decisions -> {
                 int[] values = new int[problem.nbVars()];
                 for (Decision d : decisions) {
                     values[d.var()] = d.val();

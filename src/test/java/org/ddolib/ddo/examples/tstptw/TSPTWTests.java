@@ -69,7 +69,7 @@ public class TSPTWTests {
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final ParallelSolver<TSPTWState> solver = new ParallelSolver<>(
+        final ParallelSolver solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -94,7 +94,7 @@ public class TSPTWTests {
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final ParallelSolver<TSPTWState> solver = new ParallelSolver<>(
+        final ParallelSolver solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
