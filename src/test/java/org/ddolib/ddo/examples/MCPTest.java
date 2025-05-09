@@ -51,7 +51,7 @@ public class MCPTest {
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<MCPState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
+        SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
         solver.maximize();
         assertEquals(problem.optimal.get(), solver.bestValue().get());
@@ -86,7 +86,7 @@ public class MCPTest {
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<MCPState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
+        SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
         solver.maximize();
         assertEquals(problem.optimal.get(), solver.bestValue().get());

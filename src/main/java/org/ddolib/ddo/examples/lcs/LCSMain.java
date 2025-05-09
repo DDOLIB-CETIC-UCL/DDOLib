@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /** The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.*/
-public final class LCS {
+public final class LCSMain {
 
     public static LCSProblem extractFile(String fileName) throws IOException {
         final File f = new File(fileName);
@@ -112,7 +112,7 @@ public final class LCS {
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        ParallelSolver<LCSState> solver = new ParallelSolver<>(
+        ParallelSolver<LCSState,Integer> solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,

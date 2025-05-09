@@ -10,6 +10,8 @@ import org.ddolib.ddo.implem.solver.SequentialSolver;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 public final class MCP {
 
@@ -27,21 +29,21 @@ public final class MCP {
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<MCPState> solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
+        SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
         long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        int[] solution = solver.bestSolution()
-                .map(decisions -> {
+        Optional<Set<Decision>> bestSol =  solver.bestSolution();
+
+        int[] solution = bestSol.map(decisions -> {
                     int[] values = new int[problem.nbVars()];
                     for (Decision d : decisions) {
                         values[d.var()] = d.val();
                     }
                     return values;
-                })
-                .get();
+                }).get();
 
         HashSet<Integer> s = new HashSet<>();
         HashSet<Integer> t = new HashSet<>();
@@ -56,5 +58,7 @@ public final class MCP {
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : S = %s T = %s%n", s, t);
+
+
     }
 }

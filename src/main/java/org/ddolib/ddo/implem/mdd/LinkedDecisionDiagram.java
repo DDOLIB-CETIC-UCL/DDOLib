@@ -3,6 +3,7 @@ package org.ddolib.ddo.implem.mdd;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -10,7 +11,7 @@ import java.util.Map.Entry;
 /**
  * This class implements the decision diagram as a linked structure.
  */
-public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
+public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -182,7 +183,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     @Override
-    public void compile(CompilationInput<T> input) {
+    public void compile(CompilationInput<T,K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
@@ -198,6 +199,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         final Relaxation<T> relax = input.getRelaxation();
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
+        final SimpleDominanceChecker<T, K> dominance = input.getDominance();
 
         final Set<Integer> variables = varSet(input);
         //
@@ -216,9 +218,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-
-                int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
-                this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
+                //if (!dominance.updateDominance(state,depth,node.value)) {
+                    int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                    this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
+                //}
             }
             this.nextLayer.clear();
 
@@ -331,7 +334,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T> input) {
+    private Set<Integer> varSet(final CompilationInput<T,K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.getProblem().nbVars(); i++) {
             set.add(i);

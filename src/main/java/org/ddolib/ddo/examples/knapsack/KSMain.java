@@ -4,6 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -15,23 +16,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class KnapSack {
+public class KSMain {
     public static void main(final String[] args) throws IOException {
+
         final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-
-
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<Integer>(
+
+        final Solver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier);
 
 

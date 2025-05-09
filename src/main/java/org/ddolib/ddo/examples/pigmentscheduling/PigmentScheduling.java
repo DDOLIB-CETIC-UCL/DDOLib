@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.ddo.examples.pigmentscheduling;
 
 
 import org.ddolib.ddo.core.*;

@@ -15,11 +15,11 @@ import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.ddo.examples.knapsack.KnapSack.readInstance;
+import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class KnapSackTest {
+public class KSTest {
     static Stream<KSProblem> dataProvider() {
         Stream<Integer> testStream = IntStream.rangeClosed(0, 10).boxed();
         return testStream.flatMap(i -> {
@@ -59,7 +59,7 @@ public class KnapSackTest {
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<Integer>(
+        final Solver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,

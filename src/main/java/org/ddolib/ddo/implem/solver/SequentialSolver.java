@@ -4,6 +4,8 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -31,7 +33,7 @@ import java.util.Set;
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  */
-public final class SequentialSolver<T> implements Solver {
+public final class SequentialSolver<K,T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -76,7 +78,7 @@ public final class SequentialSolver<T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagram<T> mdd;
+    private final DecisionDiagram<T,K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -88,6 +90,11 @@ public final class SequentialSolver<T> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * This is the dominance object that will be used to prune the search space.
+     */
+    private SimpleDominanceChecker<T,K> dominance;
+
+    /**
      * Creates a fully qualified instance
      */
     public SequentialSolver(
@@ -96,17 +103,46 @@ public final class SequentialSolver<T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
+            final SimpleDominanceChecker<T,K> dominance,
             final Frontier<T> frontier) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
         this.ranking = ranking;
         this.width = width;
+        this.dominance = dominance;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
+
+    public SequentialSolver(
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier) {
+
+        this(problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                new SimpleDominanceChecker(new Dominance<T, Integer>() {
+                    @Override
+                    public Integer getKey(T t) {
+                        return 0;
+                    }
+                    @Override
+                    public boolean isDominatedOrEqual(T state1, T state2) {
+                        return false;
+                    }
+                }, problem.nbVars()),
+                frontier);
+    }
+
 
     @Override
     public SearchStatistics maximize() {
@@ -137,7 +173,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInput<T> compilation = new CompilationInput<>(
+            CompilationInput<T,K> compilation = new CompilationInput<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -145,7 +181,7 @@ public final class SequentialSolver<T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
-                    //
+                    dominance,
                     bestLB
             );
 
@@ -156,7 +192,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<>(
+            compilation = new CompilationInput<T,K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -164,7 +200,7 @@ public final class SequentialSolver<T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
-                    //
+                    dominance,
                     bestLB
             );
             mdd.compile(compilation);

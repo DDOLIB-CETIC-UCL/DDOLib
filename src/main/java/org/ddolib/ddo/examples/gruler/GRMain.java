@@ -3,7 +3,6 @@ package org.ddolib.ddo.examples.gruler;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.Golomb;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -28,7 +27,7 @@ import java.util.Arrays;
  * The cost of a transition is defined as the distance between the new mark and the
  * previous last mark. Consequently, the cost of a solution is the position of the last mark.
  */
-public class GRULER {
+public class GRMain {
 
     public static void main(final String[] args) throws IOException {
         GRProblem problem = new GRProblem(5);
@@ -39,7 +38,7 @@ public class GRULER {
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final Solver solver = new SequentialSolver<GRState>(
+        final Solver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,

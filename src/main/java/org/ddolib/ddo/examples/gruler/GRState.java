@@ -1,11 +1,10 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.examples.Golomb;
-
 import java.util.BitSet;
 import java.util.Objects;
 
 public class GRState {
+
     private BitSet marks;         // Set of marks already placed
     private BitSet distances;     // Set of pairwise distances already present
     private int lastMark;         // Location of last mark

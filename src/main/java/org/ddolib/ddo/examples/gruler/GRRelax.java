@@ -2,7 +2,6 @@ package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.examples.Golomb;
 
 import java.util.BitSet;
 import java.util.Iterator;
