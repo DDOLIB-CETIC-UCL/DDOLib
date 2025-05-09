@@ -4,25 +4,36 @@ package org.ddolib.ddo.core;
  * This class describes a "decision" in terms of the problem optimization
  */
 public final class Decision {
-    /** The identifier of the variables */
+    /**
+     * The identifier of the variables
+     */
     private final int var;
-    /** The value affected to that variable */
+    /**
+     * The value affected to that variable
+     */
     private final int value;
 
-    /** 
+    /**
      * Instanciates a decision
+     *
      * @param var the variable identifier
      * @param val the value being affected to var
      */
     public Decision(final int var, final int val) {
-        this.var   = var;
+        this.var = var;
         this.value = val;
     }
-    /** @return the identifier of the affected variable */
+
+    /**
+     * @return the identifier of the affected variable
+     */
     public int var() {
         return var;
     }
-    /** @return the value affected to the given variable */
+
+    /**
+     * @return the value affected to the given variable
+     */
     public int val() {
         return value;
     }
@@ -31,6 +42,7 @@ public final class Decision {
     public int hashCode() {
         return var * 31 + value;
     }
+
     @Override
     public boolean equals(Object that) {
         if (!(that instanceof Decision)) {
@@ -39,5 +51,10 @@ public final class Decision {
             Decision other = (Decision) that;
             return var == other.var && value == other.value;
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Decision: assign %d to var %d", value, var);
     }
 }
