@@ -6,7 +6,8 @@ import org.ddolib.ddo.core.Problem;
 import java.util.*;
 
 public class LCSProblem implements Problem<LCSState> {
-
+    // Name of the instance
+    String instance;
     // Number of string to compare.
     int stringNb;
     // Number of different chars encountered in the problem.
@@ -35,8 +36,9 @@ public class LCSProblem implements Problem<LCSState> {
     final int GO_TO_END_OF_STRINGS = -1;
 
 
-    LCSProblem(int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
+    LCSProblem(String instance, int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
                int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Integer> optimal) {
+        this.instance = instance;
         this.stringNb = stringNb;
         this.diffCharNb = diffCharNb;
         this.stringsAsInt = stringsAsInt;
@@ -50,9 +52,9 @@ public class LCSProblem implements Problem<LCSState> {
 
         int maxStringLength = Collections.max(Arrays.stream(stringsAsInt).map(x -> x.length).toList());
 
-        this.tables = new int[stringNb-1][maxStringLength][maxStringLength];
-        for(int s = 0; s < stringNb-1; s++){
-            LCSDp dp = new LCSDp(diffCharNb, stringsAsInt[s],stringsAsInt[s+1]);
+        this.tables = new int[stringNb - 1][maxStringLength][maxStringLength];
+        for (int s = 0; s < stringNb - 1; s++) {
+            LCSDp dp = new LCSDp(diffCharNb, stringsAsInt[s], stringsAsInt[s + 1]);
             tables[s] = dp.solve();
         }
     }
@@ -85,22 +87,22 @@ public class LCSProblem implements Problem<LCSState> {
 
         // Keeps character that still exists in all the strings.
         // (based on current position in strings)
-        for(int c = 0; c < diffCharNb; c++) {
+        for (int c = 0; c < diffCharNb; c++) {
             boolean valid = true;
-            for(int s = 0; s < stringNb; s++) {
+            for (int s = 0; s < stringNb; s++) {
                 if (remChar[s][c][state.position[s]] == 0) {
                     valid = false;
                     break;
                 }
             }
 
-            if(valid){
+            if (valid) {
                 domain.add(c);
                 foundChar = true;
             }
         }
 
-        if(foundChar) return domain.iterator();
+        if (foundChar) return domain.iterator();
         else return List.of(GO_TO_END_OF_STRINGS).iterator();
     }
 
@@ -108,10 +110,10 @@ public class LCSProblem implements Problem<LCSState> {
     public LCSState transition(LCSState state, Decision decision) {
         int[] position = Arrays.copyOf(stringsLength, stringsLength.length);
 
-        if(decision.val() != GO_TO_END_OF_STRINGS){
+        if (decision.val() != GO_TO_END_OF_STRINGS) {
             int c = decision.val();
             // Move current position of each string based on selected character.
-            for(int s = 0; s < stringNb; s++){
+            for (int s = 0; s < stringNb; s++) {
                 position[s] = nextCharPos[s][c][state.position[s]] + 1;
             }
         }

@@ -97,7 +97,7 @@ public final class LCS {
             }
         }
 
-        return new LCSProblem(stringNb, diffCharNb, stringsAsInt, stringsLength, nextCharPos, remChar, charToId, idToChar, optimal);
+        return new LCSProblem(fileName, stringNb, diffCharNb, stringsAsInt, stringsLength, nextCharPos, remChar, charToId, idToChar, optimal);
     }
 
     public static void main(String[] args) throws IOException {
