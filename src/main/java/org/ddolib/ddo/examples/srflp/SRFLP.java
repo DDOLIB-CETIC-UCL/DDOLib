@@ -25,7 +25,7 @@ public final class SRFLP {
         };
 
         final SRFLPProblem problem = new SRFLPProblem(lengths, flows);
-        final SRFLPRelax relax = new SRFLPRelax();
+        final SRFLPRelax relax = new SRFLPRelax(problem);
         final SRFLPRanking ranking = new SRFLPRanking();
 
         final WidthHeuristic<SRFLPState> width = new FixedWidth<>(500);

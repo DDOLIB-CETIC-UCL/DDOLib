@@ -35,29 +35,44 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     @Override
     public Iterator<Integer> domain(SRFLPState state, int var) {
-        return state.remaining().stream().iterator();
+        BitSet toReturn = new BitSet(nbVars());
+        toReturn.or(state.must());
+        if (state.depth() + toReturn.cardinality() < nbVars()) {
+            toReturn.or(state.maybe());
+        }
+
+        return state.must().stream().iterator();
     }
 
     @Override
     public SRFLPState transition(SRFLPState state, Decision decision) {
-        BitSet newRemaining = new BitSet(nbVars());
-        newRemaining.or(state.remaining());
-        newRemaining.clear(decision.val());
-
+        BitSet remaining = new BitSet(nbVars());
+        BitSet newMaybe = new BitSet(nbVars());
         int[] newCut = new int[nbVars()];
-        for (int i = newRemaining.nextSetBit(0); i >= 0; i = newRemaining.nextSetBit(i + 1)) {
-            newCut[i] = state.cut()[i] + flows[decision.val()][i];
+
+        for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
+            if (i != decision.val()) {
+                remaining.set(i);
+                newCut[i] = state.cut()[i] + flows[decision.val()][i];
+            }
+        }
+
+        for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
+            if (i != decision.val()) {
+                newMaybe.set(i);
+                newCut[i] = state.cut()[i] + flows[decision.val()][i];
+            }
         }
 
 
-        return new SRFLPState(newRemaining, state.maybe(), newCut, state.depth() + 1);
+        return new SRFLPState(remaining, newMaybe, newCut, state.depth() + 1);
     }
 
     @Override
     public int transitionCost(SRFLPState state, Decision decision) {
         int cut = 0;
 
-        for (int i = state.remaining().nextSetBit(0); i >= 0; i = state.remaining().nextSetBit(i + 1)) {
+        for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
             if (i != decision.val()) cut += state.cut()[i];
         }
 
