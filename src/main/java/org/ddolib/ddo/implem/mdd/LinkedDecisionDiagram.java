@@ -3,6 +3,7 @@ package org.ddolib.ddo.implem.mdd;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -187,6 +188,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final Relaxation<T> relax = input.getRelaxation();
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
+        final SimpleDominanceChecker<T, K> dominance = input.getDominance();
 
         final Set<Integer> variables = varSet(input);
         //
@@ -205,9 +207,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-
-                int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
-                this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
+                if (!dominance.updateDominance(state,depth,node.value)) {
+                    int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                    this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
+                }
             }
             this.nextLayer.clear();
 

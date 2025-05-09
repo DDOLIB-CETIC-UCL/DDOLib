@@ -82,4 +82,8 @@ public final class CompilationInput<T,K> {
     public int getBestLB() {
         return bestLB;
     }
+    /** @return the dominance rule of the problem */
+    public SimpleDominanceChecker<T, K> getDominance() {
+        return dominance;
+    }
 }

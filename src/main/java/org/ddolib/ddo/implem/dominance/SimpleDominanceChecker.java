@@ -1,6 +1,8 @@
 package org.ddolib.ddo.implem.dominance;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class SimpleDominanceChecker<T,K> {
 
@@ -21,14 +23,14 @@ public class SimpleDominanceChecker<T,K> {
         }
     }
 
-    public Map<K, Set<ValueState>> [] fronts;
+    public ConcurrentHashMap<K, Set<ValueState>>[] fronts;
 
     public SimpleDominanceChecker(Dominance<T,K> dominance, int nVars) {
         this.dominance = dominance;
         this.nVars = nVars;
-        this.fronts = new Map[nVars];
+        this.fronts = new ConcurrentHashMap[nVars];
         for (int i = 0; i < nVars; i++) {
-            fronts[i] = new HashMap<>();
+            fronts[i] = new ConcurrentHashMap<>();
         }
     }
 
@@ -42,7 +44,7 @@ public class SimpleDominanceChecker<T,K> {
      * @return true if the state is dominated, false otherwise
      */
     public boolean updateDominance(T state, int depth, int val) {
-        Map<K, Set<ValueState>> front = fronts[depth];
+        ConcurrentHashMap<K, Set<ValueState>> front = fronts[depth];
         K key = dominance.getKey(state);
         boolean dominated = false;
         if (front.containsKey(key)) {
@@ -58,7 +60,7 @@ public class SimpleDominanceChecker<T,K> {
         if (!dominated) {
             Set<ValueState> set = front.get(key);
             if (set == null) {
-                set = new HashSet<>();
+                set = ConcurrentHashMap.newKeySet();
                 front.put(key, set);
             }
             set.add(new ValueState(val, state));

@@ -18,7 +18,31 @@ import java.util.*;
 
 public final class Knapsack {
 
-    public static class KnapsackProblem implements Problem<Integer> {
+    static class KnapsackState{
+        private int capacity;
+        private int depth;
+
+        public KnapsackState(int capacity, int depth){
+            this.capacity = capacity;
+            this.depth = depth;
+        }
+        public int getCapacity(){
+            return capacity;
+        }
+        public int getDepth(){
+            return depth;
+        }
+        @Override
+        public int hashCode() {
+            return Objects.hash(capacity, depth);
+        }
+        @Override
+        public String toString() {
+            return "KnapsackState [capacity=" + capacity + ", depth=" + depth + "]";
+        }
+    }
+
+    public static class KnapsackProblem implements Problem<KnapsackState> {
         final int capa;
         final int[] profit;
         final int[] weight;
@@ -37,8 +61,8 @@ public final class Knapsack {
         }
 
         @Override
-        public Integer initialState() {
-            return capa;
+        public KnapsackState initialState() {
+            return new KnapsackState(capa,0);
         }
 
         @Override
@@ -47,8 +71,8 @@ public final class Knapsack {
         }
 
         @Override
-        public Iterator<Integer> domain(Integer state, int var) {
-            if (state >= weight[var]) {
+        public Iterator<Integer> domain(KnapsackState state, int var) {
+            if (state.getCapacity() >= weight[var]) {
                 return Arrays.asList(1, 0).iterator();
             } else {
                 return List.of(0).iterator();
@@ -56,21 +80,21 @@ public final class Knapsack {
         }
 
         @Override
-        public Integer transition(Integer state, Decision decision) {
+        public KnapsackState transition(KnapsackState state, Decision decision) {
             if (decision.val() == 1) {
-                return state - weight[decision.var()];
+                return new KnapsackState(state.getCapacity() - weight[decision.var()], state.getDepth()+1);
             } else {
-                return state;
+                return new KnapsackState(state.getCapacity(), state.getDepth()+1);
             }
         }
 
         @Override
-        public int transitionCost(Integer state, Decision decision) {
+        public int transitionCost(KnapsackState state, Decision decision) {
             return profit[decision.var()] * decision.val();
         }
     }
 
-    public static class KnapsackRelax implements Relaxation<Integer> {
+    public static class KnapsackRelax implements Relaxation<KnapsackState> {
 
         private final KnapsackProblem problem;
 
@@ -79,25 +103,27 @@ public final class Knapsack {
         }
 
         @Override
-        public Integer mergeStates(final Iterator<Integer> states) {
+        public KnapsackState mergeStates(final Iterator<KnapsackState> states) {
             int capa = 0;
+            int depth = 0;
             while (states.hasNext()) {
-                final Integer state = states.next();
-                capa = Math.max(capa, state);
+                final KnapsackState state = states.next();
+                capa = Math.max(capa, state.getCapacity());
+                depth = Math.min(depth, state.getDepth());
             }
-            return capa;
+            return new KnapsackState(capa,depth);
         }
 
         @Override
-        public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+        public int relaxEdge(KnapsackState from, KnapsackState to, KnapsackState merged, Decision d, int cost) {
             return cost;
         }
 
 
         @Override
-        public int fastUpperBound(Integer state, Set<Integer> variables) {
+        public int fastUpperBound(KnapsackState state, Set<Integer> variables) {
             double[] ratio = new double[problem.nbVars()];
-            int capacity = state;
+            int capacity = state.getCapacity();
             for (int v : variables) {
                 ratio[v] = ((double) capacity / problem.weight[v]);
             }
@@ -130,10 +156,10 @@ public final class Knapsack {
         }
     }
 
-    public static class KnapsackRanking implements StateRanking<Integer> {
+    public static class KnapsackRanking implements StateRanking<KnapsackState> {
         @Override
-        public int compare(final Integer o1, final Integer o2) {
-            return o1 - o2;
+        public int compare(final KnapsackState o1, final KnapsackState o2) {
+            return o1.getCapacity() - o2.getCapacity();
         }
     }
 
@@ -181,25 +207,27 @@ public final class Knapsack {
     }
 
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
+        final String instance = "data/Knapsack/knapsackA";
         final KnapsackProblem problem = readInstance(instance);
         final KnapsackRelax relax = new KnapsackRelax(problem);
         final KnapsackRanking ranking = new KnapsackRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new Dominance<Integer, Integer>() {
+        final SimpleDominanceChecker<KnapsackState, Integer> dominance = new SimpleDominanceChecker<>(new Dominance<KnapsackState, Integer>() {
             @Override
-            public Integer getKey(Integer state) {
-                return 0;
+            public Integer getKey(KnapsackState state) {
+                return state.getDepth() ;
             }
             @Override
-            public boolean isDominatedOrEqual(Integer state1, Integer state2) {
-                return false;
+            public boolean isDominatedOrEqual(KnapsackState state1, KnapsackState state2) {
+                if (state1.getCapacity() < state2.getCapacity()){
+                    return true;
+                }return false;
             }
         }, problem.nbVars());
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
 
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<KnapsackState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new ParallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
@@ -207,11 +235,13 @@ public final class Knapsack {
                 varh,
                 ranking,
                 width,
-                frontier);
+                dominance,
+                frontier
+                );
 
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.maximize(3);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
