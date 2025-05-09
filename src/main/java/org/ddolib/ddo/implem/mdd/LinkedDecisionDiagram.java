@@ -73,6 +73,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.best = null;
             this.edges = new ArrayList<>();
         }
+
+        @Override
+        public String toString() {
+            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+                    value, suffix, best, edges);
+        }
     }
 
     /**
@@ -103,6 +109,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             this.origin = src;
             this.decision = d;
             this.weight = w;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Origin:%s\n\t Decision:%s\n\t Weight:%s ", origin, decision, weight);
         }
     }
 
@@ -166,7 +177,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         @Override
         public String toString() {
-            return state.toString();
+            return String.format("%s - ub: %d", state, ub);
         }
     }
 

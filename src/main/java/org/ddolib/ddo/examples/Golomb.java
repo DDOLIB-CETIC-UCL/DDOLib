@@ -7,6 +7,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,8 +38,9 @@ public class Golomb {
 
         public GolombState() {
             this.marks = new BitSet();
+            marks.set(0);
             this.distances = new BitSet();
-            this.lastMark = -1;
+            this.lastMark = 0;
         }
 
         public GolombState(BitSet marks, BitSet distances, int lastMark) {
@@ -64,7 +66,7 @@ public class Golomb {
         }
 
         public void addMark(int mark) {
-            assert(mark > lastMark);
+            assert(mark >= lastMark);
             lastMark = mark;
             marks.set(mark);
         }
@@ -93,7 +95,7 @@ public class Golomb {
 
         @Override
         public int nbVars() {
-            return n;
+            return n-1;
         }
 
         @Override
@@ -198,16 +200,15 @@ public class Golomb {
     }
 
     public static void main(final String[] args) throws IOException {
-        GolombProblem problem = new GolombProblem(7);
+        GolombProblem problem = new GolombProblem(9);
         final GolombRelax relax = new GolombRelax();
         final GolombRanking ranking = new GolombRanking();
-        final FixedWidth<GolombState> width = new FixedWidth<>(250);
+        final FixedWidth<GolombState> width = new FixedWidth<>(32);
         final VariableHeuristic<GolombState> varh = new DefaultVariableHeuristic();
         final Frontier<GolombState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final Solver solver = new ParallelSolver<GolombState>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<GolombState>(
                 problem,
                 relax,
                 varh,
@@ -221,9 +222,10 @@ public class Golomb {
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] values = new int[problem.nbVars()];
+                    int[] values = new int[problem.nbVars()+1];
+                    values[0] = 0;
                     for (Decision d : decisions) {
-                        values[d.var()] = d.val();
+                        values[d.var()+1] = d.val();
                     }
                     return values;
                 })

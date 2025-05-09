@@ -7,6 +7,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -188,8 +189,7 @@ public final class Knapsack {
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<Integer>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<Integer>(
                 problem,
                 relax,
                 varh,
