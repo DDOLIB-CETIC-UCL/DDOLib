@@ -4,10 +4,12 @@ import org.ddolib.ddo.heuristics.StateRanking;
 
 import java.util.Arrays;
 
-/** Ranking for {@link org.ddolib.ddo.examples.alp.ALPState}.
- * <P>
- *     First compares remaining aircraft to land, then the sum of previous time of the runways.
- * </P>*/
+/**
+ * Ranking for {@link org.ddolib.ddo.examples.alp.ALPState}.
+ * <p>
+ * First compares remaining aircraft to land, then the sum of previous time of the runways.
+ * </P>
+ */
 public class ALPRanking implements StateRanking<ALPState> {
 
     @Override
@@ -17,8 +19,8 @@ public class ALPRanking implements StateRanking<ALPState> {
         int totA = Arrays.stream(a.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
         int totB = Arrays.stream(b.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
 
-        int remCompare = -Integer.compare(remAircraftA,remAircraftB);
-        if(remCompare == 0) return -Integer.compare(totA,totB);
+        int remCompare = -Integer.compare(remAircraftA, remAircraftB);
+        if (remCompare == 0) return -Integer.compare(totA, totB);
         else return remCompare;
     }
 }

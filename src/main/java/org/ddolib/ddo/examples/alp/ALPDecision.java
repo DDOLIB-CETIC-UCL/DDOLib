@@ -2,8 +2,9 @@ package org.ddolib.ddo.examples.alp;
 
 import java.util.Objects;
 
-/** Decision of affecting an aircraft of a defined class to a defined runway.
- *<p>
+/**
+ * Decision of affecting an aircraft of a defined class to a defined runway.
+ * <p>
  * The specific chosen aircraft is defined by :
  * - The state ==> remaining aircraft of class.
  * - The problem ==> ordered list (by target arrival time) of aircraft per class.
@@ -17,7 +18,6 @@ public class ALPDecision {
         this.aircraftClass = aircraftClass;
         this.runway = runway;
     }
-
 
 
     @Override

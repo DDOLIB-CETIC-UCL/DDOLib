@@ -5,7 +5,8 @@ import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
 
-/** The definition of the ALP.
+/**
+ * The definition of the ALP.
  * <p>
  * The Aircraft Landing Problem consist in optimizing the landing plan of a fleet of aircraft.
  * Each aircraft must land before a defined time (deadline) and as close as possible to its target time.
@@ -26,44 +27,46 @@ public class ALPProblem implements Problem<ALPState> {
     // When no plane has yet landed the previous class is -1.
     public static final int DUMMY = -1;
 
-    /** Instantiates an ALPProblem and initiates some other values.
+    /**
+     * Instantiates an ALPProblem and initiates some other values.
      *
      * @param instance The ALP instance.
      */
-    public ALPProblem(ALPInstance instance){
+    public ALPProblem(ALPInstance instance) {
         this.instance = instance;
         latestToEarliestAircraftByClass = new ArrayList<>();
         minSeparationTo = new int[instance.nbClasses];
-        Arrays.fill(minSeparationTo,Integer.MAX_VALUE);
+        Arrays.fill(minSeparationTo, Integer.MAX_VALUE);
 
-        for(int i = 0; i < instance.nbClasses; i++)
+        for (int i = 0; i < instance.nbClasses; i++)
             latestToEarliestAircraftByClass.add(new ArrayList<>(List.of(0)));
 
-        for(int i = instance.nbAircraft-1; i >= 0; i--){
+        for (int i = instance.nbAircraft - 1; i >= 0; i--) {
             latestToEarliestAircraftByClass.get(instance.aircraftClass[i]).add(i);
         }
 
-        for(int i = 0; i < instance.nbClasses; i++){
-            for(int j = 0; j < instance.nbClasses; j++){
-                minSeparationTo[j] = Math.min(minSeparationTo[j],instance.classTransitionCost[i][j]);
+        for (int i = 0; i < instance.nbClasses; i++) {
+            for (int j = 0; j < instance.nbClasses; j++) {
+                minSeparationTo[j] = Math.min(minSeparationTo[j], instance.classTransitionCost[i][j]);
             }
         }
     }
 
-    public Optional<Integer> getOptimal(){
+    public Optional<Integer> getOptimal() {
         return instance.optimal;
     }
 
-    /** Returns the arrival time of an aircraft based on runway state.
+    /**
+     * Returns the arrival time of an aircraft based on runway state.
      *
      * @param runwayStates The array of runway states.
-     * @param aircraft The aircraft for which we want to know the arrival time.
-     * @param runway The runway on which the aircraft is supposed to land.
+     * @param aircraft     The aircraft for which we want to know the arrival time.
+     * @param runway       The runway on which the aircraft is supposed to land.
      * @return The arrival (landing) time.
      */
-    public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway){
-        if(runwayStates[runway].prevClass == DUMMY){
-            if(runwayStates[runway].prevTime == 0)
+    public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway) {
+        if (runwayStates[runway].prevClass == DUMMY) {
+            if (runwayStates[runway].prevTime == 0)
                 return instance.aircraftTarget[aircraft];
             else
                 return Math.max(instance.aircraftTarget[aircraft],
@@ -75,24 +78,26 @@ public class ALPProblem implements Problem<ALPState> {
         }
     }
 
-    /** Formats the ALPDecision as an Integer.
+    /**
+     * Formats the ALPDecision as an Integer.
      *
      * @param decision The decision.
      * @return The formated decision.
      */
-    public int toDecision(ALPDecision decision){
-        return decision.aircraftClass + instance.nbClasses*decision.runway;
+    public int toDecision(ALPDecision decision) {
+        return decision.aircraftClass + instance.nbClasses * decision.runway;
     }
 
-    /** Restores a decision object from its Integer form.
+    /**
+     * Restores a decision object from its Integer form.
      *
      * @param value THe formatted Integer form of the decision.
      * @return An ALPDecision object.
      */
-    public ALPDecision fromDecision(int value){
+    public ALPDecision fromDecision(int value) {
         return new ALPDecision(
                 value % instance.nbClasses,
-                value/instance.nbClasses
+                value / instance.nbClasses
         );
     }
 
@@ -104,11 +109,11 @@ public class ALPProblem implements Problem<ALPState> {
     @Override
     public ALPState initialState() {
         int[] remaining = new int[instance.nbClasses];
-        Arrays.fill(remaining,0);
-        for(int i = 0; i < instance.nbAircraft; i++)
+        Arrays.fill(remaining, 0);
+        for (int i = 0; i < instance.nbAircraft; i++)
             remaining[instance.aircraftClass[i]] += 1;
         RunwayState[] runwayStates = new RunwayState[instance.nbRunways];
-        Arrays.fill(runwayStates, new RunwayState(DUMMY,0));
+        Arrays.fill(runwayStates, new RunwayState(DUMMY, 0));
         return new ALPState(remaining, runwayStates);
     }
 
@@ -124,22 +129,22 @@ public class ALPProblem implements Problem<ALPState> {
         ArrayList<Integer> decisions = new ArrayList<>();
         int[] remainingAircraftOfClass = state.remainingAircraftOfClass;
 
-        for (int c = 0; c < remainingAircraftOfClass.length; c++){       // For each class
-            if(remainingAircraftOfClass[c] > 0){                         // If there still are aircraft to land.
+        for (int c = 0; c < remainingAircraftOfClass.length; c++) {       // For each class
+            if (remainingAircraftOfClass[c] > 0) {                         // If there still are aircraft to land.
                 // Get the earliest aircraft in the queue.
                 int aircraft = latestToEarliestAircraftByClass.get(c).get(state.remainingAircraftOfClass[c]);
 
                 used.clear();
                 // For each runway, try to find at least one suitable runway.
-                for(int runway = 0; runway < instance.nbRunways; runway++){
+                for (int runway = 0; runway < instance.nbRunways; runway++) {
                     int arrival = getArrivalTime(state.runwayStates, aircraft, runway);
-                    if(arrival <= instance.aircraftDeadline[aircraft]) {
-                        decisions.add(toDecision(new ALPDecision(c,runway)));
+                    if (arrival <= instance.aircraftDeadline[aircraft]) {
+                        decisions.add(toDecision(new ALPDecision(c, runway)));
                         used.add(state.runwayStates[runway]);
                     }
                 }
 
-                if(used.isEmpty()){
+                if (used.isEmpty()) {
                     // This aircraft will never be able to land.
                     return Collections.emptyIterator();
                 }
@@ -147,7 +152,7 @@ public class ALPProblem implements Problem<ALPState> {
             totRemaining += remainingAircraftOfClass[c];
         }
 
-        if(totRemaining == 0){
+        if (totRemaining == 0) {
             return Collections.singletonList(DUMMY).iterator();
         } else {
             return decisions.iterator();
@@ -156,7 +161,7 @@ public class ALPProblem implements Problem<ALPState> {
 
     @Override
     public ALPState transition(ALPState state, Decision decision) {
-        if(decision.val() == DUMMY){
+        if (decision.val() == DUMMY) {
             // Latest decision says that there are no plane to land left.
             return new ALPState(state);
         } else {
@@ -178,7 +183,7 @@ public class ALPProblem implements Problem<ALPState> {
     @Override
     public int transitionCost(ALPState state, Decision decision) {
         // The delta between the arrival time and the earliest arrival time.
-        if(decision.val() == DUMMY) {
+        if (decision.val() == DUMMY) {
             return 0;
         } else {
             ALPDecision alpDecision = fromDecision(decision.val());
