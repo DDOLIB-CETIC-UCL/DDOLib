@@ -11,9 +11,6 @@ class KSDominance implements Dominance<Integer,Integer> {
 
     @Override
     public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {
-        if (capa1 < capa2) {
-            return true;
-        }
-        return false;
+        return capa1 < capa2;
     }
 }

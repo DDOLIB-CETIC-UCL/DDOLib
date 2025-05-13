@@ -1,12 +1,15 @@
 package org.ddolib.ddo.examples.tstptw;
 
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.examples.tsptw.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,7 +35,7 @@ public class TSPTWTests {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        TSPTWProblem problem = TSPTW.readInstance(filePath.toString());
+                        TSPTWProblem problem = TSPTWProblem.readInstance(filePath.toString());
                         problem.setName(filePath.getFileName().toString());
                         return problem;
                     } catch (IOException e) {
@@ -64,18 +67,19 @@ public class TSPTWTests {
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(500);
+        final FixedWidth<TSPTWState> width = new FixedWidth<>(50);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new TSPTWDominance(), problem.nbVars());
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final ParallelSolver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier
         );
         solver.maximize();
@@ -91,16 +95,17 @@ public class TSPTWTests {
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new TSPTWDominance(), problem.nbVars());
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        final ParallelSolver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier
         );
         solver.maximize();

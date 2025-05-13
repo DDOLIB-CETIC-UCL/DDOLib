@@ -14,7 +14,6 @@ public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
         this.factor = factor;
     }
 
-
     @Override
     public int maximumWidth(TSPTWState state) {
         return (state.depth() + 1) * nbVars * factor;
