@@ -206,7 +206,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         int depth = 0;
 
         while (!variables.isEmpty()) {
-            Integer nextvar = var.nextVariable(variables, nextLayer.keySet().iterator());
+            Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
             // becoming the current layer
             this.prevLayer.clear();
@@ -230,12 +230,12 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 return;
             }
 
-            if (nextvar == null) {
+            if (nextVar == null) {
                 // Some variables simply can't be assigned
                 clear();
                 return;
             } else {
-                variables.remove(nextvar);
+                variables.remove(nextVar);
             }
 
 
@@ -271,10 +271,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
-                    final Iterator<Integer> domain = problem.domain(n.state, nextvar);
+                    final Iterator<Integer> domain = problem.domain(n.state, nextVar);
                     while (domain.hasNext()) {
                         final int val = domain.next();
-                        final Decision decision = new Decision(nextvar, val);
+                        final Decision decision = new Decision(nextVar, val);
 
                         branchOn(n, decision, problem);
                     }

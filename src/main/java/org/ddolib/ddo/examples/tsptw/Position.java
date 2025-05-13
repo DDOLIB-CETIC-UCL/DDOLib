@@ -28,5 +28,9 @@ record TSPNode(int value) implements Position {
  * @param nodes All the position of the merged states.
  */
 record VirtualNodes(Set<Integer> nodes) implements Position {
+    @Override
+    public String toString() {
+        return nodes.toString();
+    }
 }
 

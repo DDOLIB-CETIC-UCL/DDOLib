@@ -4,9 +4,12 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,67 +20,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * The TSPTW (TSP with Time Windows) is
+ * to find the shortest possible route for a salesman to visit
+ * a set of customers (or nodes) exactly once
+ * and return to the starting point, while respecting
+ * specified time windows for each customer.
+ */
 public class TSPTW {
-
-
-    /**
-     * Creates instance from data files.<br>
-     * <p>
-     * The expected format is the following:
-     * <ul>
-     *     <li>
-     *         The first line must contain the number of variable. A second  optional value can be
-     *         given: the expected objective value for an optimal solution.
-     *     </li>
-     *     <li>
-     *         The time matrix.
-     *     </li>
-     *     <li>
-     *         A time window for each node.
-     *     </li>
-     * </ul>
-     *
-     * @param fileName The path to the input file.
-     * @return An instance of TSPTWProblem
-     * @throws IOException If something goes wrong while reading input file.
-     */
-    public static TSPTWProblem readInstance(String fileName) throws IOException {
-        int numVar = 0;
-        int[][] distance = new int[0][0];
-        TimeWindow[] timeWindows = new TimeWindow[0];
-        Optional<Integer> optimal = Optional.empty();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            int lineCount = 0;
-
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                //Skip comment
-                if (line.startsWith("#") || line.isEmpty()) {
-                    continue;
-                }
-
-                if (lineCount == 0) {
-                    String[] tokens = line.split("\\s+");
-                    numVar = Integer.parseInt(tokens[0]);
-                    distance = new int[numVar][numVar];
-                    timeWindows = new TimeWindow[numVar];
-                    if (tokens.length == 2) optimal = Optional.of(Integer.parseInt(tokens[1]));
-                } else if (1 <= lineCount && lineCount <= numVar) {
-                    int i = lineCount - 1;
-                    String[] distanceFromI = line.split("\\s+");
-                    distance[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
-                } else {
-                    int i = lineCount - 1 - numVar;
-                    String[] tw = line.split("\\s+");
-                    timeWindows[i] = new TimeWindow(Integer.parseInt(tw[0]), Integer.parseInt(tw[1]));
-                }
-                lineCount++;
-            }
-            return new TSPTWProblem(distance, timeWindows, optimal);
-        }
-    }
 
     /**
      * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW"} in your terminal to execute
@@ -92,23 +42,25 @@ public class TSPTW {
     public static void main(String[] args) throws IOException {
         final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
-        final TSPTWProblem problem = readInstance(file);
+        final TSPTWProblem problem = TSPTWProblem.readInstance(file);
 
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
-        final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), widthFactor);
+        final FixedWidth<Integer> width = new FixedWidth<>(20);
+        //final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), widthFactor);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new TSPTWDominance(), problem.nbVars());
         final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
 
 
-        ParallelSolver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
+        SequentialSolver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier
         );
 

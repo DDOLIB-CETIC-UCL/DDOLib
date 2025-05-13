@@ -1,6 +1,7 @@
 package org.ddolib.ddo.examples.tsptw;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * State of ta DP-model for the TSPTW
@@ -24,4 +25,24 @@ public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet p
                 possiblyVisit,
                 depth);
     }
+
+    /*
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, mustVisit, possiblyVisit);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof TSPTWState other) {
+            return position.equals(other.position)
+                    && mustVisit.equals(other.mustVisit)
+                    && possiblyVisit.equals(other.possiblyVisit);
+        }
+        return false;
+    }*/
 }
