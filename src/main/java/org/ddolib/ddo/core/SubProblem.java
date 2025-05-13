@@ -78,7 +78,7 @@ public final class SubProblem<T> {
 
     @Override
     public String toString() {
-        return String.format("Subproblem {value = %d, ub = %d, state = %s}", value, ub, state);
+        return String.format("Subproblem: value: %d - ub: %d - state: %s", value, ub, state);
     }
 
     @Override

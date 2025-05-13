@@ -2,7 +2,6 @@ package org.ddolib.ddo.examples.knapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.examples.Knapsack;
 
 import java.util.Arrays;
 import java.util.Comparator;

@@ -8,7 +8,7 @@ import java.util.Set;
  * Obviously, this abstraction encapsulates the behavior of a reusable decision diagram.
  * The latter can be compiled either as a relaxed DD or as a restricted DD.
  */
-public interface DecisionDiagram<T> {
+public interface DecisionDiagram<T,K> {
     /** 
      * Triggers the compilation of the decision diagram according to the parameters given
      * in the input.
@@ -16,7 +16,7 @@ public interface DecisionDiagram<T> {
      * @param input this corresponds to the set of parameters in the input section of the
      *     algorithm pseudocode
      */
-    void compile(final CompilationInput<T> input);
+    void compile(final CompilationInput<T,K> input);
     /** @return true iff the diagram resulting from the compilation is an exact dd */
     boolean isExact();
     /** @return the value of the best solution in this decision diagram if there is one */
