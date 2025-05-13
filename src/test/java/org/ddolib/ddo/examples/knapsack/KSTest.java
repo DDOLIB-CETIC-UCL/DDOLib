@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.knapsack;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -56,6 +57,7 @@ public class KSTest {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
@@ -65,6 +67,7 @@ public class KSTest {
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier);
 
         solver.maximize();
