@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.examples.Golomb;
+//import org.ddolib.ddo.examples.Golomb;
 
 import java.util.Arrays;
 import java.util.BitSet;
