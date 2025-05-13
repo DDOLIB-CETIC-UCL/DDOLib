@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.examples.Golomb;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -10,12 +11,13 @@ public class GRState {
     private BitSet distances;     // Set of pairwise distances already present
     private int lastMark;         // Location of last mark
 
+    /*
     public GRState() {
         this.marks = new BitSet();
         marks.set(0);
         this.distances = new BitSet();
         this.lastMark = 0;
-    }
+    }*/
 
     public GRState(BitSet marks, BitSet distances, int lastMark) {
         this.marks = (BitSet) marks.clone();
@@ -38,7 +40,7 @@ public class GRState {
     public int getLastMark() {
         return lastMark;
     }
-
+    /*
     public void addMark(int mark) {
         assert(mark >= lastMark);
         lastMark = mark;
@@ -49,10 +51,11 @@ public class GRState {
         assert !distances.get(distance);
         distances.set(distance);
     }
-
+    */
+    /*
     public void setLastMark(int mark) {
         lastMark = mark;
-    }
+    }*/
 
     public GRState copy() {
         return new GRState(marks, distances, lastMark);
@@ -61,5 +64,9 @@ public class GRState {
     @Override
     public int hashCode() {
         return Objects.hash(marks, distances, lastMark);
+    }
+    @Override
+    public String toString() {
+        return "("+ Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
     }
 }

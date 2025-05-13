@@ -25,9 +25,10 @@ public class GRProblem implements Problem<GRState> {
 
     @Override
     public GRState initialState() {
-        GRState state = new GRState();
-        state.addMark(0); // Initialize with the first mark
-        return state;
+        //Initialize with the first mark
+        BitSet mark = new BitSet();
+        mark.set(0);
+        return new GRState(mark, new BitSet(), 0);
     }
     @Override
     public Iterator<Integer> domain(GRState state, int var) {
@@ -39,22 +40,26 @@ public class GRProblem implements Problem<GRState> {
                         .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
                         .boxed()
                         .toList());
-//        System.out.println(Arrays.toString(domain.toArray()));
+//        System.out.println(state + " --> " +  Arrays.toString(domain.toArray()));
         return  domain.iterator();
     }
 
     @Override
     public GRState transition(GRState state, Decision decision) {
-        GRState ret = state.copy();
+        GRState newState = state.copy();
         int newMark = decision.val();
-        ret.addMark(newMark);
         // add distances between new mark and previous marks
+        BitSet newDistances = new BitSet();
         for (int i = state.getMarks().nextSetBit(0);
              i >= 0;
              i = state.getMarks().nextSetBit(i + 1)) {
-            ret.addDistance(newMark - i);
+            assert !newDistances.get(newMark - i);
+            newDistances.set(newMark - i);
         }
-        return ret;
+        assert(newMark >= newState.getLastMark());
+        newState.getMarks().set(newMark);
+        newState.getDistances().or(newDistances);
+        return new GRState(newState.getMarks(), newState.getDistances(), newMark);
     }
 
     @Override
@@ -75,13 +80,16 @@ public class GRProblem implements Problem<GRState> {
 
     public GRState transition(GRState state, int newMark) {
         GRState newState = state.copy();
-        newState.addMark(newMark);
+        BitSet newDistances = new BitSet();
         for (int i = state.getMarks().nextSetBit(0); i >= 0; i = state.getMarks().nextSetBit(i + 1)) {
             int distance = Math.abs(newMark - i);
-            newState.addDistance(distance);
+            assert !newDistances.get(distance);
+            newDistances.set(distance);
         }
-        newState.setLastMark(newMark);
-        return newState;
+        assert newMark >= newState.getLastMark();
+        newState.getMarks().set(newMark);
+        newState.getDistances().or(newDistances);
+        return new GRState(newState.getMarks(), newState.getDistances(), newMark);
     }
 
     public int transitionCost(GRState state, int newMark) {

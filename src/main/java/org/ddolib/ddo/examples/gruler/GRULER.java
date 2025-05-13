@@ -31,10 +31,10 @@ import java.util.Arrays;
 public class GRULER {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(5);
+        GRProblem problem = new GRProblem(10);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(32);
+        final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking);
 
