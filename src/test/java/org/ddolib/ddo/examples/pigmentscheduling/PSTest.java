@@ -15,33 +15,33 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class PigmentSchedulingTest {
+class PSTest {
 
     // quite easy instances
-    static Stream<PigmentScheduling.PSPInstance> instance2items() {
+    static Stream<PSInstance> instance2items() {
         Stream<Integer> testStream = IntStream.rangeClosed(1, 10).boxed();
         return testStream.flatMap(i -> {
-            return Stream.of(new PigmentScheduling.PSPInstance("src/test/resources/PSP/2items/" + i));
+            return Stream.of(new PSInstance("src/test/resources/PSP/2items/" + i));
         });
     }
 
     // harder instances
-    static Stream<PigmentScheduling.PSPInstance> instance5items() {
+    static Stream<PSInstance> instance5items() {
         Stream<Integer> testStream = IntStream.rangeClosed(1, 10).boxed();
         return testStream.flatMap(i -> {
-            return Stream.of(new PigmentScheduling.PSPInstance("src/test/resources/PSP/5items/" + i));
+            return Stream.of(new PSInstance("src/test/resources/PSP/5items/" + i));
         });
     }
 
     @ParameterizedTest
     @MethodSource({"instance2items"/*,"instance5items"*/})
-    public void testParameterized(PigmentScheduling.PSPInstance instance) {
-        PigmentScheduling.PSP problem = new PigmentScheduling.PSP(instance);
-        final PigmentScheduling.PSPRelax relax = new PigmentScheduling.PSPRelax(instance);
-        final PigmentScheduling.PSPRanking ranking = new PigmentScheduling.PSPRanking();
-        final FixedWidth<PigmentScheduling.PSPState> width = new FixedWidth<>(10);
-        final VariableHeuristic<PigmentScheduling.PSPState> varh = new DefaultVariableHeuristic();
-        final Frontier<PigmentScheduling.PSPState> frontier = new SimpleFrontier<>(ranking);
+    public void testParameterized(PSInstance instance) {
+        PSProblem problem = new PSProblem(instance);
+        final PSRelax relax = new PSRelax(instance);
+        final PSRanking ranking = new PSRanking();
+        final FixedWidth<PSState> width = new FixedWidth<>(10);
+        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic();
+        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
