@@ -9,7 +9,7 @@ import java.util.BitSet;
  * @param maybeScenes     Used by merged states. Contains scenes that must be planned for some of
  *                        the merged states but has already been planned for other ones.
  */
-public record TalentSchedState(BitSet remainingScenes, BitSet maybeScenes) {
+public record TSState(BitSet remainingScenes, BitSet maybeScenes) {
 
     @Override
     public String toString() {

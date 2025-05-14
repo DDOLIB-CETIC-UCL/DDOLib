@@ -8,11 +8,8 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -27,7 +24,7 @@ import java.util.stream.Collectors;
  * and return to the starting point, while respecting
  * specified time windows for each customer.
  */
-public class TSPTW {
+public class TSPTWMain {
 
     /**
      * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW"} in your terminal to execute
@@ -40,9 +37,10 @@ public class TSPTW {
      * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
      */
     public static void main(String[] args) throws IOException {
+
         final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
-        final TSPTWProblem problem = TSPTWProblem.readInstance(file);
+        final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
 
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();

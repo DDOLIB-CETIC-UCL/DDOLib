@@ -10,7 +10,6 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public class TalentScheduling {
+public class TSMain {
 
 
     /**
@@ -30,7 +29,7 @@ public class TalentScheduling {
      * @return An instance the talent scheduling problem.
      * @throws IOException If something goes wrong while reading input file.
      */
-    public static TalentSchedulingProblem readFile(String fileName) throws IOException {
+    public static TSProblem readFile(String fileName) throws IOException {
         int nbScenes = 0;
         int nbActors = 0;
         int[] cost = new int[0];
@@ -80,7 +79,7 @@ public class TalentScheduling {
                 lineCount++;
             }
 
-            return new TalentSchedulingProblem(nbScenes, nbActors, cost, duration, actors, opti);
+            return new TSProblem(nbScenes, nbActors, cost, duration, actors, opti);
         }
     }
 
@@ -88,15 +87,15 @@ public class TalentScheduling {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
-        final TalentSchedulingProblem problem = readFile(file);
-        final TalentSchedRelax relax = new TalentSchedRelax(problem);
-        final TalentSchedRanking ranking = new TalentSchedRanking();
+        final TSProblem problem = readFile(file);
+        final TSRelax relax = new TSRelax(problem);
+        final TSRanking ranking = new TSRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
+        final WidthHeuristic<TSState> width = new FixedWidth<>(maxWidth);
+        final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver<TalentSchedState,Integer> solver = new SequentialSolver(
+        SequentialSolver<TSState,Integer> solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,

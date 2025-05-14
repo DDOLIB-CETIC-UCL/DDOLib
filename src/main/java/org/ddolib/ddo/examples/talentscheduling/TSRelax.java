@@ -8,38 +8,38 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class TalentSchedRelax implements Relaxation<TalentSchedState> {
+public class TSRelax implements Relaxation<TSState> {
 
-    private final TalentSchedulingProblem problem;
+    private final TSProblem problem;
 
-    public TalentSchedRelax(TalentSchedulingProblem problem) {
+    public TSRelax(TSProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public TalentSchedState mergeStates(Iterator<TalentSchedState> states) {
+    public TSState mergeStates(Iterator<TSState> states) {
         BitSet mergedRemaining = new BitSet(problem.nbVars());
         mergedRemaining.set(0, problem.nbVars(), true);
         BitSet mergedMaybe = new BitSet(problem.nbVars());
 
         while (states.hasNext()) {
-            TalentSchedState state = states.next();
+            TSState state = states.next();
             mergedRemaining.and(state.remainingScenes());
             mergedMaybe.or(state.remainingScenes());
             mergedMaybe.or(state.maybeScenes());
         }
         mergedMaybe.andNot(mergedRemaining);
 
-        return new TalentSchedState(mergedRemaining, mergedMaybe);
+        return new TSState(mergedRemaining, mergedMaybe);
     }
 
     @Override
-    public int relaxEdge(TalentSchedState from, TalentSchedState to, TalentSchedState merged, Decision d, int cost) {
+    public int relaxEdge(TSState from, TSState to, TSState merged, Decision d, int cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(TalentSchedState state, Set<Integer> variables) {
+    public int fastUpperBound(TSState state, Set<Integer> variables) {
         return -fastLowerBound(state);
     }
 
@@ -47,7 +47,7 @@ public class TalentSchedRelax implements Relaxation<TalentSchedState> {
      * Based on the lower bound of
      * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>
      */
-    private int fastLowerBound(TalentSchedState state) {
+    private int fastLowerBound(TSState state) {
         double lb = 0.0;
 
         BitSet presentActors = problem.onLocationActors(state);

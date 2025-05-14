@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public final class MCP {
+public final class MCPMain {
 
     public static void main(String[] args) throws IOException {
 

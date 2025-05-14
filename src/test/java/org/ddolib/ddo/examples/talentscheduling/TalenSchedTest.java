@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TalenSchedTest {
 
-    static Stream<TalentSchedulingProblem> dataProvider() {
+    static Stream<TSProblem> dataProvider() {
         String dir = Paths.get("src", "test", "resources", "TalentScheduling").toString();
 
         File[] files = new File(dir).listFiles();
@@ -32,7 +32,7 @@ public class TalenSchedTest {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        TalentSchedulingProblem problem = TalentScheduling.readFile(filePath.toString());
+                        TSProblem problem = TSMain.readFile(filePath.toString());
                         problem.setName(filePath.getFileName().toString());
                         return problem;
                     } catch (IOException e) {
@@ -43,13 +43,13 @@ public class TalenSchedTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testTalentScheduling(TalentSchedulingProblem problem) {
-        final TalentSchedRelax relax = new TalentSchedRelax(problem);
-        final TalentSchedRanking ranking = new TalentSchedRanking();
+    public void testTalentScheduling(TSProblem problem) {
+        final TSRelax relax = new TSRelax(problem);
+        final TSRanking ranking = new TSRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
+        final WidthHeuristic<TSState> width = new FixedWidth<>(1000);
+        final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking);
 
         SequentialSolver solver = new SequentialSolver<>(
                 problem,
@@ -67,8 +67,8 @@ public class TalenSchedTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testFastUpperBound(TalentSchedulingProblem problem) {
-        final TalentSchedRelax relax = new TalentSchedRelax(problem);
+    public void testFastUpperBound(TSProblem problem) {
+        final TSRelax relax = new TSRelax(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -85,13 +85,13 @@ public class TalenSchedTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testTalentSchedulingWithRelaxation(TalentSchedulingProblem problem) {
-        final TalentSchedRelax relax = new TalentSchedRelax(problem);
-        final TalentSchedRanking ranking = new TalentSchedRanking();
+    public void testTalentSchedulingWithRelaxation(TSProblem problem) {
+        final TSRelax relax = new TSRelax(problem);
+        final TSRanking ranking = new TSRanking();
 
-        final WidthHeuristic<TalentSchedState> width = new FixedWidth<>(2);
-        final VariableHeuristic<TalentSchedState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TalentSchedState> frontier = new SimpleFrontier<>(ranking);
+        final WidthHeuristic<TSState> width = new FixedWidth<>(2);
+        final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking);
 
         SequentialSolver solver = new SequentialSolver<>(
                 problem,

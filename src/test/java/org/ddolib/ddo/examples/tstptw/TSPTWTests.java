@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TSPTWTests {
 
-    static Stream<TSPTWProblem> dataProvider() throws IOException {
+    static Stream<TSPTWInstance> dataProvider() throws IOException {
         String dir = Paths.get("src", "test", "resources", "TSPTW").toString();
 
         File[] files = new File(dir).listFiles();
@@ -35,8 +35,7 @@ public class TSPTWTests {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        TSPTWProblem problem = TSPTWProblem.readInstance(filePath.toString());
-                        problem.setName(filePath.getFileName().toString());
+                        TSPTWInstance problem = new TSPTWInstance(filePath.toString());
                         return problem;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -46,7 +45,8 @@ public class TSPTWTests {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testFastUpperBoundAtRoot(TSPTWProblem problem) {
+    public void testFastUpperBoundAtRoot(TSPTWInstance instance) {
+        final TSPTWProblem problem = new TSPTWProblem(instance);
         final TSPTWRelax relax = new TSPTWRelax(problem);
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -55,15 +55,16 @@ public class TSPTWTests {
 
         int rub = relax.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
-        assertTrue(rub >= problem.optimal.get(),
+        assertTrue(rub >= instance.optimal.get(),
                 String.format("Upper bound %d is not bigger than the expected optimal solution %d",
                         rub,
-                        problem.optimal.get()));
+                        instance.optimal.get()));
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testTSPTW(TSPTWProblem problem) {
+    public void testTSPTW(TSPTWInstance instance) {
+        final TSPTWProblem problem = new TSPTWProblem(instance);
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
@@ -84,12 +85,13 @@ public class TSPTWTests {
         );
         solver.maximize();
 
-        assertEquals(solver.bestValue().get(), problem.optimal.get());
+        assertEquals(solver.bestValue().get(), instance.optimal.get());
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testTSPTWWithRelax(TSPTWProblem problem) {
+    public void testTSPTWWithRelax(TSPTWInstance instance) {
+        final TSPTWProblem problem = new TSPTWProblem(instance);
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
@@ -110,7 +112,7 @@ public class TSPTWTests {
         );
         solver.maximize();
 
-        assertEquals(solver.bestValue().get(), problem.optimal.get());
+        assertEquals(solver.bestValue().get(), instance.optimal.get());
     }
 
 

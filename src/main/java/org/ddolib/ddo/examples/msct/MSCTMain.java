@@ -5,7 +5,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.File;
@@ -20,7 +19,7 @@ import java.util.*;
  * - the set of remaining jobs
  * - the current time (the end time of last sequenced job)
  */
-public class MSCT {
+public class MSCTMain {
 
     public static void main(final String[] args) throws Exception {
         final String instance = "data/MSCT/msct1.txt";

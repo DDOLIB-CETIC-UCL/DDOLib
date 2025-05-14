@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * Class to model the Talent scheduling problem.
  */
-public class TalentSchedulingProblem implements Problem<TalentSchedState> {
+public class TSProblem implements Problem<TSState> {
 
     final int nbScene;
     final int nbActors;
@@ -29,7 +29,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
      * @param duration For each scene {@code i}, gives its duration.
      * @param actors   For each scene, returns the set of actors needed
      */
-    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Integer> optimal) {
+    public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Integer> optimal) {
         this.nbScene = nbScene;
         this.nbActors = nbActors;
         this.costs = costs;
@@ -38,7 +38,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
         this.optimal = optimal;
     }
 
-    public TalentSchedulingProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
+    public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
         this(nbScene, nbActors, costs, duration, actors, Optional.empty());
     }
 
@@ -53,10 +53,10 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     }
 
     @Override
-    public TalentSchedState initialState() {
+    public TSState initialState() {
         BitSet scenes = new BitSet(nbScene);
         scenes.set(0, nbScene, true); // All scenes must be performed
-        return new TalentSchedState(scenes, new BitSet(nbScene));
+        return new TSState(scenes, new BitSet(nbScene));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     }
 
     @Override
-    public Iterator<Integer> domain(TalentSchedState state, int var) {
+    public Iterator<Integer> domain(TSState state, int var) {
         BitSet toReturn = new BitSet(nbVars());
         toReturn.or(state.remainingScenes());
 
@@ -85,17 +85,17 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
     }
 
     @Override
-    public TalentSchedState transition(TalentSchedState state, Decision decision) {
+    public TSState transition(TSState state, Decision decision) {
         BitSet newRemaining = (BitSet) state.remainingScenes().clone();
         BitSet newMaybe = (BitSet) state.maybeScenes().clone();
         newRemaining.set(decision.val(), false);
         newMaybe.set(decision.val(), false);
 
-        return new TalentSchedState(newRemaining, newMaybe);
+        return new TSState(newRemaining, newMaybe);
     }
 
     @Override
-    public int transitionCost(TalentSchedState state, Decision decision) {
+    public int transitionCost(TSState state, Decision decision) {
         int scene = decision.val();
 
         // All the already present actors (playing for this scene or waiting)
@@ -120,7 +120,7 @@ public class TalentSchedulingProblem implements Problem<TalentSchedState> {
      * @param state A state of the mdd.
      * @return Which actors are currently on location.
      */
-    public BitSet onLocationActors(TalentSchedState state) {
+    public BitSet onLocationActors(TSState state) {
         BitSet before = new BitSet(); //Actors for past scenes
         BitSet after = new BitSet(); // Actors for future scenes
 
