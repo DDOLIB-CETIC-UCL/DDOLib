@@ -3,8 +3,10 @@ package org.ddolib.ddo.examples.srflp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 public class SRFLPProblem implements Problem<SRFLPState> {
 
@@ -87,5 +89,24 @@ public class SRFLPProblem implements Problem<SRFLPState> {
             }
         }
         return toReturn;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SRFLP Problem:\n");
+        String lengthsStr = Arrays.stream(lengths)
+                .mapToObj(x -> String.format("%2s", x))
+                .collect(Collectors.joining(", "));
+        sb.append("Lengths: ").append(lengthsStr).append("\n");
+        String flowStr = Arrays.stream(flows)
+                .map(row -> Arrays.stream(row)
+                        .mapToObj(x -> String.format("%2s", x))
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining("\n"));
+        sb.append("Flows: \n").append(flowStr);
+
+        return sb.toString();
+
     }
 }

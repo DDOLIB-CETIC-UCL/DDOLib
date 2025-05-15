@@ -10,25 +10,21 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public final class SRFLP {
 
 
-    public static void main(String[] args) {
-        int[] lengths = {5, 3, 2, 6};
-        int[][] flows = {
-                {0, 8, 3, 5},
-                {8, 0, 1, 4},
-                {3, 1, 0, 6},
-                {5, 4, 6, 0}
-        };
+    public static void main(String[] args) throws IOException {
+        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl5").toString() : args[0];
 
-        final SRFLPProblem problem = new SRFLPProblem(lengths, flows);
+        final SRFLPProblem problem = SRFLPIO.readInstance(filename);
         final SRFLPRelax relax = new SRFLPRelax(problem);
         final SRFLPRanking ranking = new SRFLPRanking();
 
-        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(500);
+        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(2);
         final VariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
 
@@ -58,10 +54,10 @@ public final class SRFLP {
         double obj = -solver.bestValue().get() + problem.rootValue();
 
 
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", obj);
+        System.out.printf("Instance: %s%n", filename);
+        System.out.printf("Duration : %f seconds%n", duration);
+        System.out.printf("Objective: %s%n", obj);
         System.out.printf("Solution : %s", Arrays.toString(solution));
-
 
     }
 }
