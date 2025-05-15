@@ -3,8 +3,7 @@ package org.ddolib.ddo.examples.srflp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.*;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -13,8 +12,19 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
 
     private final SRFLPProblem problem;
 
+    private ArrayList<Pair> pairsSortedByFlow = new ArrayList<>();
+
     public SRFLPRelax(SRFLPProblem problem) {
         this.problem = problem;
+
+        for (int i = 0; i < problem.nbVars(); i++) {
+            for (int j = i + 1; j < problem.nbVars(); j++) {
+                pairsSortedByFlow.add(new Pair(i, j, problem.flows[i][j]));
+            }
+        }
+
+        Collections.sort(pairsSortedByFlow);
+        Collections.reverse(pairsSortedByFlow);
     }
 
 
@@ -44,12 +54,51 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
 
         }
 
-
         return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);
     }
 
     @Override
     public int relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d, int cost) {
-        return 0;
+        return cost;
     }
+
+    @Override
+    public int fastUpperBound(SRFLPState state, Set<Integer> variables) {
+        return Relaxation.super.fastUpperBound(state, variables);
+    }
+
+    private static class Pair implements Comparable<Pair> {
+        final int x;
+        final int y;
+        final int flow;
+
+
+        Pair(int x, int y, int flow) {
+            this.x = x;
+            this.y = y;
+            this.flow = flow;
+        }
+
+        @Override
+        public int compareTo(Pair o) {
+            return Integer.compare(this.flow, o.flow);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Pair other) return this.x == other.x && this.y == other.y;
+            else return false;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("(%d, %d)", x, y);
+        }
+    }
+
 }
