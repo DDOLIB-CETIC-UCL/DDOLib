@@ -18,13 +18,14 @@ public final class SRFLP {
 
 
     public static void main(String[] args) throws IOException {
-        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl5").toString() : args[0];
+        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl7").toString() : args[0];
 
         final SRFLPProblem problem = SRFLPIO.readInstance(filename);
         final SRFLPRelax relax = new SRFLPRelax(problem);
         final SRFLPRanking ranking = new SRFLPRanking();
 
-        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(2);
+
+        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(5000);
         final VariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
 
