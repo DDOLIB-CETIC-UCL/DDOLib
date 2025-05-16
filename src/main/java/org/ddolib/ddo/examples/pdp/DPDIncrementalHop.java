@@ -1,7 +1,6 @@
 package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.TSPIncrementalHop.EdgeList;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;

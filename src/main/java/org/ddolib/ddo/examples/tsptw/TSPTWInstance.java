@@ -32,7 +32,6 @@ public class TSPTWInstance {
      * </ul>
      *
      * @param fileName The path to the input file.
-     * @return An instance of TSPTWProblem
      * @throws IOException If something goes wrong while reading input file.
      */
     public TSPTWInstance(String fileName) throws IOException {
