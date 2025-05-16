@@ -7,7 +7,7 @@
 
 # DDOLib
 
-DDOLib is a java solver for solving dynamic programming (DP) problems developped 
+DDOLib is a open-source (MIT) java solver for solving dynamic programming (DP) problems developped 
 by the [CETIC](https://www.cetic.be/) (team of [Renaud De Landtsheer](https://www.cetic.be/Renaud-DE-LANDTSHEER)) and the [UCLouvain](https://uclouvain.be/en/index.html) (team of [Pierre Schaus](https://pschaus.github.io/)).
 It includes a modeling API for users to define their DP problem and solve them efficiently.
 
@@ -43,13 +43,14 @@ If you use this Java version, please cite the DDO paper:
 
 ## Examples
 
-The project contains two sets of example models located in the example package.
+The project contains two sets of example models located in the [examples](./src/main/java/org/ddolib/ddo/examples/) package.
 
 The Knapsack problem is a classic optimization problem where the goal is to maximize the total value of items while staying within a given weight limit. The dynamic programming model used to solve this problem uses the recurrence relation:
 
 `KS(i, c) = max(KS(i-1, c), KS(i-1, c - w[i]) + p[i])`
 
-where `KS(i, c)` is the maximum value of the first `i` items with a knapsack capacity of ``c, `p[i]` is the profit of item `i`, and `w[i]` is the weight of item `i`.
+where `KS(i, c)` is the maximum value of the first `i` items with a knapsack capacity of `c`, 
+`p[i]` is the profit of item `i`, and `w[i]` is the weight of item `i`.
 
 For modeling this problem in DDOLib, we define the `KSProblem` class that implements the `Problem` interface. 
 This interface requires to define a state. This state is the remaining capacity of the knapsack (an Integer).
