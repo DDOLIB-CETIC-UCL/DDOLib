@@ -7,20 +7,25 @@ public class Bin {
     int totalWeight = 0;
     HashSet<Integer> items = new HashSet<>();
     final BPPProblem problem;
+    boolean verbose;
 
-    public Bin(BPPProblem problem) {
+    public Bin(BPPProblem problem, boolean verbose) {
         this.problem = problem;
+        this.verbose = verbose;
     }
 
     public Bin(Bin other){
         this.problem = other.problem;
         this.totalWeight = other.totalWeight;
-        this.items = new HashSet<>();
-        items.addAll(other.items);
+        this.verbose = other.verbose;
+        if(verbose) {
+            this.items = new HashSet<>();
+            items.addAll(other.items);
+        }
     }
 
-    public void packItem(int item, int weight){
-        items.add(item);
+    public void packItem(int item, int weight) {
+        if(verbose) items.add(item);
         totalWeight += weight;
     }
 

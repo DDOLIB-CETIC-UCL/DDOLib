@@ -5,6 +5,7 @@ import org.ddolib.ddo.core.Relaxation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class BPPRelax implements Relaxation<BPPState> {
@@ -42,9 +43,18 @@ public class BPPRelax implements Relaxation<BPPState> {
 
     @Override
     public int fastUpperBound(BPPState state, Set<Integer> variables) {
-        int totalRemainingSpace = state.bins.stream().map(Bin::remainingSpace).reduce(0, Integer::sum);
-        int totalWeight = variables.stream().map(v -> problem.itemWeight[v]).reduce(0, Integer::sum);
+        List<Integer> remItemWeights = variables.stream().map(v -> problem.itemWeight[v]).toList();
+        int totalRemainingUsableSpace =
+                state.bins.stream().map(Bin::remainingSpace).
+                        reduce(0, (acc,bin) -> {
+                            if(remItemWeights.stream().anyMatch(i -> i <= bin)) return acc + bin;
+                            else return acc;
+                        });
 
-        return -(int)Math.ceil((double)(totalWeight-totalRemainingSpace)/problem.binMaxSpace);
+        int weightToPutInNewBins = Math.max(0,state.remainingTotalWeight-totalRemainingUsableSpace);
+        int minBinsToOpen = (int)Math.ceil((double)weightToPutInNewBins/problem.binMaxSpace);
+
+
+        return -minBinsToOpen;
     }
 }
