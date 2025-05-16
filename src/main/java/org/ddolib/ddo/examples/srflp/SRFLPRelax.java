@@ -37,6 +37,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         mergedMust.set(0, problem.nbVars());
         BitSet mergedMaybes = new BitSet(problem.nbVars());
         int[] mergedCut = new int[problem.nbVars()];
+        Arrays.fill(mergedCut, Integer.MAX_VALUE);
         int mergedDepth = 0;
 
         while (states.hasNext()) {
@@ -53,9 +54,9 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
             for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
                 mergedCut[i] = min(mergedCut[i], state.cut()[i]);
             }
-
-
         }
+
+        mergedMaybes.andNot(mergedMust);
 
         return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);
     }
@@ -65,7 +66,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return cost;
     }
 
-    @Override
+    /*@Override
     public int fastUpperBound(SRFLPState state, Set<Integer> variables) {
         int complete = problem.nbVars() - state.depth();
         int maxFromMaybe = complete - state.must().cardinality();
@@ -74,7 +75,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         int fixed = fixedLB(selectCutRatio(state, complete, maxFromMaybe));
 
         return -(free + fixed);
-    }
+    }*/
 
     private int freeLB(ArrayList<DepartmentAndLength> selectedLength,
                        ArrayList<PairAndFlow> selectedFLows, int complete) {
