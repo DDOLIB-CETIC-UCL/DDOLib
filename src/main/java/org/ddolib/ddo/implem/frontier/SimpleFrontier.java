@@ -13,6 +13,11 @@ import java.util.PriorityQueue;
  * The simple frontier is a plain priority queue of subproblems which are
  * pushed and popped from by the solver.
  */
+
+/**
+ *
+ * @param <T> the type of state
+ */
 public final class SimpleFrontier<T> implements Frontier<T> {
     /**
      * The underlying priority sub problem priority queue

@@ -11,6 +11,7 @@ import java.util.Set;
  * approximation standing for an arbitrarily selected set of nodes.
  *
  * Again, the type parameter `T` denotes the type of the states.
+ * @param <T> the type of state
  */
 public interface Relaxation<T> {
     /** 

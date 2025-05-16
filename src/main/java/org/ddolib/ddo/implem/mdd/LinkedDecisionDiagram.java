@@ -11,6 +11,12 @@ import java.util.Map.Entry;
 /**
  * This class implements the decision diagram as a linked structure.
  */
+
+/**
+ *
+ * @param <T> the type of state
+ * @param <K> the type of key
+ */
 public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
     /**
      * The list of decisions that have led to the root of this DD

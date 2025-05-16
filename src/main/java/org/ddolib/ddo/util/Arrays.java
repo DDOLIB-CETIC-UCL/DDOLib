@@ -1,5 +1,9 @@
 package org.ddolib.ddo.util;
 
+/**
+ * This class applies the function shuffle to an array
+ */
+
 public class Arrays {
 
     public static void shuffle(int [] array) {

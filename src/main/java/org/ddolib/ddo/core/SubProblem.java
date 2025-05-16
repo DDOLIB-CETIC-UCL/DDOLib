@@ -7,7 +7,8 @@ import java.util.Set;
  * resolution of the original problem which had been defined.
  * <p>
  * Subproblems are instantiated from nodes in the exact custsets of relaxed decision
- * diagrams
+ * diagrams.
+ * @param <T> the type of state
  */
 public final class SubProblem<T> {
     /**

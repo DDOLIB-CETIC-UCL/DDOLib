@@ -14,7 +14,9 @@ import java.util.ArrayList;
  *     </li>
  *     <li>for each {@code k < depth}, {@code 0}, modeling that these variable has been assigned in
  *     previous layer and cannot influence the objective anymore.</li>
- * </ul>
+ * </ul>.
+ * @param netBenefit the list of cumulative net benefits
+ * @param depth the current depth of the search
  */
 public record MCPState(ArrayList<Integer> netBenefit, int depth) {
 

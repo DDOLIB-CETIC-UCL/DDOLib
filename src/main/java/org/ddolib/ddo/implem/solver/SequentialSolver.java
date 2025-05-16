@@ -33,6 +33,12 @@ import java.util.Set;
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  */
+
+/**
+ *
+ * @param <K> the type of key
+ * @param <T> the type of state
+ */
 public final class SequentialSolver<K,T> implements Solver {
     /**
      * The problem we want to maximize

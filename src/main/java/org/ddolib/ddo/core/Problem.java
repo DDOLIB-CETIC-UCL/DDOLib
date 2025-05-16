@@ -6,6 +6,7 @@ import java.util.Iterator;
  * This is the definition of the problem one tries to optimize. It basically
  * consists of a problem's formulation in terms of the labeled transition
  * system semantics of a dynamic programme.
+ * @param <T> the type of state
  */
 public interface Problem<T> {
     /** @return the number of variables in the problem */

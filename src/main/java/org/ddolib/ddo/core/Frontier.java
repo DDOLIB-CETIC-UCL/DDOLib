@@ -2,7 +2,8 @@ package org.ddolib.ddo.core;
 
 /**
  * An abstraction of the solver frontier that maintains all the remaining open
- * subproblems that must be solved
+ * subproblems that must be solved.
+ * @param <T> the type of state
  */
 public interface Frontier<T> {
     /**

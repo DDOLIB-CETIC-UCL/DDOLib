@@ -24,6 +24,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * WILL WANT TO TAKE A LOOK AT THE `processOneNode()`. THIS IS WHERE THE INFO
  * YOU ARE LOOKING FOR IS LOCATED.
  */
+
+/**
+ *
+ * @param <T> the type of state
+ * @param <K> the type of key
+ */
 public final class ParallelSolver<T,K> implements Solver {
     /*
      * The various threads of the solver share a common zone of memory. That 
