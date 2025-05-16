@@ -7,7 +7,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 /**
  * The set of parameters used to tweak the compilation of a MDD
  * @param <T> The type used to model the state of your problem.
- * @param  <K> the type of key
+ * @param <K> the type of key.
  *
  */
 public final class CompilationInput<T,K> {
