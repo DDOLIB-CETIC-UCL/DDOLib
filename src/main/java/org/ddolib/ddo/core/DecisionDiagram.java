@@ -7,6 +7,8 @@ import java.util.Set;
 /**
  * Obviously, this abstraction encapsulates the behavior of a reusable decision diagram.
  * The latter can be compiled either as a relaxed DD or as a restricted DD.
+ * @param <T> the type of state.
+ * @param <K> the type of key
  */
 public interface DecisionDiagram<T,K> {
     /** 

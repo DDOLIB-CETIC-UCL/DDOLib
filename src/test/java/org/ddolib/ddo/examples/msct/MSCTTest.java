@@ -4,6 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -41,7 +42,7 @@ class MSCTTest {
         final SequencingRanking ranking = new SequencingRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
                 problem,
@@ -49,6 +50,7 @@ class MSCTTest {
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier);
 
         solver.maximize();

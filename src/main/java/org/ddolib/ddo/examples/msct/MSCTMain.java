@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.msct;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -22,15 +23,17 @@ import java.util.*;
 public class MSCTMain {
 
     public static void main(final String[] args) throws Exception {
-        final String instance = "data/MSCT/msct1.txt";
-        final MSCTProblem problem = readInstance(instance);
+//        final String instance = "data/MSCT/msct1.txt";
+//        final MSCTProblem problem = readInstance(instance);
+        int n = 10;
+        MSCTProblem problem = instanceGenerator(n);
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
         final MSCTRelax relax = new MSCTRelax(problem);
         final SequencingRanking ranking = new SequencingRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(10);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
                 problem,
@@ -38,6 +41,7 @@ public class MSCTMain {
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier);
 
 
@@ -73,6 +77,17 @@ public class MSCTMain {
         }
         s.close();
         return new MSCTProblem(releas, proces);
+    }
+
+    public static MSCTProblem instanceGenerator(int n) {
+        int[] release = new int[n];
+        int[] processing = new int[n];
+        Random rand = new Random();
+        for (int i = 0; i < n; i++) {
+            release[i] = rand.nextInt(100);
+            processing[i] = rand.nextInt(100);
+        }
+        return new MSCTProblem(release, processing);
     }
 }
 
