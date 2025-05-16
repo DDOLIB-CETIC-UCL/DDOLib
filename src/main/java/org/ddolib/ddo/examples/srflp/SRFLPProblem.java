@@ -43,7 +43,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
             toReturn.or(state.maybe());
         }
 
-        return state.must().stream().iterator();
+        return toReturn.stream().iterator();
     }
 
     @Override

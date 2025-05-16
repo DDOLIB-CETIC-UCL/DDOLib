@@ -34,7 +34,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
     @Override
     public SRFLPState mergeStates(Iterator<SRFLPState> states) {
         BitSet mergedMust = new BitSet(problem.nbVars());
-        mergedMust.set(0, problem.nbVars());
+        mergedMust.set(0, problem.nbVars(), true);
         BitSet mergedMaybes = new BitSet(problem.nbVars());
         int[] mergedCut = new int[problem.nbVars()];
         Arrays.fill(mergedCut, Integer.MAX_VALUE);
@@ -66,16 +66,16 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return cost;
     }
 
-    /*@Override
+    @Override
     public int fastUpperBound(SRFLPState state, Set<Integer> variables) {
         int complete = problem.nbVars() - state.depth();
         int maxFromMaybe = complete - state.must().cardinality();
         int free = freeLB(selectLength(state, complete, maxFromMaybe), selectFlow(state, complete, maxFromMaybe),
                 complete);
-        int fixed = fixedLB(selectCutRatio(state, complete, maxFromMaybe));
+        int fixed = fixedLB(selectCutRatio(state, maxFromMaybe));
 
         return -(free + fixed);
-    }*/
+    }
 
     private int freeLB(ArrayList<DepartmentAndLength> selectedLength,
                        ArrayList<PairAndFlow> selectedFLows, int complete) {
@@ -152,7 +152,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return selectedFlows;
     }
 
-    private ArrayList<CutRatio> selectCutRatio(SRFLPState state, int complete, int maxFromMaybe) {
+    private ArrayList<CutRatio> selectCutRatio(SRFLPState state, int maxFromMaybe) {
         ArrayList<DepartmentAndLength> selectedLengthsFromMaybe = new ArrayList<>();
         int selectedFromMaybe = maxFromMaybe;
         for (DepartmentAndLength dl : departmentsSortedByLength) {

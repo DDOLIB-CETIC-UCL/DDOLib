@@ -8,7 +8,8 @@ public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {
 
     @Override
     public String toString() {
-        return String.format("State: must: %s - maybe: %s - cut: %s", must, maybe, Arrays.toString(cut));
+        return String.format("State: must: %s - maybe: %s - cut: %s - depth: %d",
+                must, maybe, Arrays.toString(cut), depth);
     }
 
     @Override
