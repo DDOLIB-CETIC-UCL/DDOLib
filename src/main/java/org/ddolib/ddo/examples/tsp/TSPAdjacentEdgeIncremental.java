@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPAdjacentHopsIncremental;
+package org.ddolib.ddo.examples.tsp;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;

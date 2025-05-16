@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.TSPAdjacentHopsIncremental;
+package org.ddolib.ddo.examples.tsp;
 
 import java.util.Comparator;
 import java.util.stream.IntStream;
