@@ -23,11 +23,16 @@ public class BPP {
         int binMaxSize = 0;
         int[] itemWeights = new int[1];
         int lineCounter = 0;
+        Optional<Integer> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = bf.readLine()) != null) {
                 if (lineCounter == 0) {
-                    nbItems = Integer.parseInt(line);
+                    String[] splitLine = line.split("\\s+");
+                    if(splitLine.length > 1) {
+                        optimal = Optional.of(Integer.parseInt(splitLine[1]));
+                    }
+                    nbItems = Integer.parseInt(splitLine[0]);
                     itemWeights = new int[nbItems];
                 } else if (lineCounter == 1) {
                     binMaxSize = Integer.parseInt(line);
@@ -38,12 +43,14 @@ public class BPP {
             }
         }
 
-        return new BPPProblem(nbItems, binMaxSize, itemWeights);
+        Arrays.sort(itemWeights);
+
+        return new BPPProblem(nbItems, binMaxSize, itemWeights, optimal);
     }
 
     public static void main(String[] args) throws IOException {
         final String file = args.length == 0 ? "data/BPP/test.txt" : args[0];
-        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 1;
 
         BPPProblem problem = extractFile(file);
         BPPRelax relax = new BPPRelax(problem);
@@ -77,7 +84,7 @@ public class BPP {
                 .orElse(new Decision[0]);
 
 
-        BPPState finalState = problem.initialState();
+        BPPState finalState = problem.verboseInitialState();
         for (Decision decision : solution)
             finalState = problem.transition(finalState, decision);
 
@@ -91,33 +98,6 @@ public class BPP {
         System.out.printf("Solution : \n Final State : %s\n", finalState);
 
 
-    }
-
-    static class Bin{
-        int totalWeight = 0;
-        final ArrayList<Integer> items = new ArrayList<>();
-        final ArrayList<Integer> itemWeights = new ArrayList<>();
-        final BPPProblem problem;
-
-        public Bin(BPPProblem problem) {
-            this.problem = problem;
-        }
-
-        public void packItem(int item){
-            int weight = problem.itemWeight[item];
-            items.add(item);
-            itemWeights.add(weight);
-            totalWeight += weight;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder res = new StringBuilder(String.format("Total weight : %d - Remaining weight : %d%n", totalWeight, problem.binMaxSpace-totalWeight));
-            for(int i = 0; i < items.size(); i++){
-                res.append(String.format("Item %d - weight %d%n", items.get(i), itemWeights.get(i)));
-            }
-            return res.toString();
-        }
     }
 
 }
