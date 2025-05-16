@@ -7,7 +7,11 @@ import java.util.Set;
  * A variable heuristic is used to determine the next variable to branch on.
  * To help making its decision, the heuristic is given access to the
  * nodes from the layer that is about to be expanded.
- * @param <T> the type of state
+ */
+/**
+ *
+ * @param <T> the type of state.
+ *
  */
 public interface VariableHeuristic<T> {
     /**

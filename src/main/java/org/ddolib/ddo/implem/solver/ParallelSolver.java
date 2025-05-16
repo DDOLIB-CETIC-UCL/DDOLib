@@ -23,9 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * SEE WHAT IT LOOKS LIKE WITHOUT PAYING ATTENTION TO THE PARALLEL STUFFS, YOU
  * WILL WANT TO TAKE A LOOK AT THE `processOneNode()`. THIS IS WHERE THE INFO
  * YOU ARE LOOKING FOR IS LOCATED.
- */
-
-/**
  *
  * @param <T> the type of state
  * @param <K> the type of key

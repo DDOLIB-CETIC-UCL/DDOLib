@@ -40,7 +40,17 @@ public final class CompilationInput<T,K> {
     final int bestLB;
 
     /**
-     * Creates the inputs to parameterize the compilation of an MDD
+     * Creates the inputs to parameterize the compilation of an MDD.
+     *
+     * @param compType compilation type
+     * @param problem problem to solve
+     * @param relaxation a relaxation
+     * @param var
+     * @param ranking
+     * @param residual
+     * @param maxWidth
+     * @param dominance
+     * @param bestLB
      */
     public CompilationInput(
             final CompilationType compType,

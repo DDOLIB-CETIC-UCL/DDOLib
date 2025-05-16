@@ -10,10 +10,6 @@ import java.util.Map.Entry;
 
 /**
  * This class implements the decision diagram as a linked structure.
- */
-
-/**
- *
  * @param <T> the type of state
  * @param <K> the type of key
  */

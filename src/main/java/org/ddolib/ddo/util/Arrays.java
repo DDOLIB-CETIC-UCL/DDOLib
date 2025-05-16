@@ -1,11 +1,13 @@
 package org.ddolib.ddo.util;
 
 /**
- * This class applies the function shuffle to an array
+ * Utility class for array-related operations
  */
 
 public class Arrays {
-
+    /**
+     * This function shuffles an array of integers
+     */
     public static void shuffle(int [] array) {
         for (int i = array.length - 1; i > 0; i--) {
             int j = (int) (Math.random() * (i + 1));
