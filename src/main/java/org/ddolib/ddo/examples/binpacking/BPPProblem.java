@@ -10,11 +10,22 @@ public class BPPProblem implements Problem<BPPState> {
     int nbItems;
     int binMaxSpace;
     int[] itemWeight;
+    // Optimal solution
+    Optional<Integer> optimal;
 
-    BPPProblem(int nbItems, int binMaxSpace, int[] itemWeight) {
+    BPPProblem(int nbItems, int binMaxSpace, int[] itemWeight, Optional<Integer> optimal) {
         this.nbItems = nbItems;
         this.binMaxSpace = binMaxSpace;
         this.itemWeight = itemWeight;
+        this.optimal = optimal;
+    }
+
+    public BPPState verboseInitialState(){
+        return new BPPState(this, true);
+    }
+
+    public Optional<Integer> getOptimal() {
+        return optimal;
     }
 
     @Override
