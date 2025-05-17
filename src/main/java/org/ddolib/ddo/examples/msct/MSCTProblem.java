@@ -50,7 +50,7 @@ class MSCTProblem implements Problem<MSCTState> {
     @Override
     public MSCTState transition(MSCTState state, Decision decision) {
         Set<Integer> remaining = new HashSet<>(state.remainingJobs);
-        remaining.remove(decision.val());
+        remaining.remove(decision.var());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
         return new MSCTState(remaining,currentTime);
     }

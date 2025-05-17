@@ -30,7 +30,7 @@ public class MSCTMain {
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
         final MSCTRelax relax = new MSCTRelax(problem);
-        final SequencingRanking ranking = new SequencingRanking();
+        final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(10);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
