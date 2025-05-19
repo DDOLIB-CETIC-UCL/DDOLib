@@ -14,6 +14,20 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/**
+ * Given a set J= {1,..., n} of jobs, partitioned into set J−
+ * of loading jobs and set J+ of unloading jobs. Each job j ∈ J has a
+ * processing time p_j ∈ R+, a release date r_j ∈ R+ and an inventory
+ * modification δ_j ∈ R, where δ_j ≥ 0 for j ∈ J+ and δ_j < 0 for j ∈ J−.
+ * All jobs are to be executed by a single machine, which can only serve
+ * one job at a time. The initial inventory is denoted by I_0 and the
+ * capacity of the inventory storage is I_C. The objective is to sequence
+ * the jobs in J such that the makespan (the completion time of the
+ * last job in the sequence) is minimized while the inventory is never
+ * below 0 nor above I_C.
+ * This problem is considerd in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
+ * Minimizing makespan on a single machine with release dates and inventory constraints. Eur. J. Oper. Res. 286(1): 115-128 (2020)
+ */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
         SMICProblem problem = readProblem("data/SMIC/example.txt");

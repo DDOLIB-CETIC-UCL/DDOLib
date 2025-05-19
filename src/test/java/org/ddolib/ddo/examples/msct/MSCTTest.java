@@ -39,7 +39,7 @@ class MSCTTest {
     public int solve(MSCTData data, int w) {
         MSCTProblem problem = new MSCTProblem(data.release, data.processing);
         final MSCTRelax relax = new MSCTRelax(problem);
-        final SequencingRanking ranking = new SequencingRanking();
+        final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
