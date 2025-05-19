@@ -111,12 +111,12 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.10</version>
-                <configuration>
+                <!--configuration>
                     <append>true</append>
                     <excludes>
                         <exclude>**/examples/**</exclude>
                     </excludes>
-                </configuration>
+                </configuration-->
                 <executions>
                     <execution>
                         <goals>

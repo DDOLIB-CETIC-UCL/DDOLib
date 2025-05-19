@@ -1,8 +1,6 @@
-package org.ddolib.ddo.examples.PDPKruskal;
+package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.PDPIncrementalHop.DPDIncrementalHop;
-import org.ddolib.ddo.examples.TSPKruskal.Kruskal;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -13,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public final class DPDKruskal {
+public final class DPDIncrementalHop {
 
     static class PDState{
 
@@ -29,10 +27,15 @@ public final class DPDKruskal {
         // However, most of the time, it is a singleton
         BitSet current;
 
-        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit) {
+        //the sorted list of all edges that are incident to the current node and to the allToVisitNodes
+        //this list might include more edges
+        EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+
+        public PDState(BitSet current, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
             this.openToVisit = openToVisit;
             this.allToVisit = allToVisit;
             this.current = current;
+            this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         }
 
         public int hashCode() {
@@ -58,26 +61,44 @@ public final class DPDKruskal {
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
-            //good idea, but wrong idea
             if(problem.deliveryToAssociatedPickup.containsKey(node) ){
                 int p = problem.deliveryToAssociatedPickup.get(node);
                 if(newOpenToVisit.get(p)){
-                    //System.out.println("Pruning toVisitPickups " + p);
                     newOpenToVisit.clear(p);
                 }
             }
 
-            //System.out.println("goto(from:" + this + " step:" + node+ ")=" + next);
             return new PDState(
                     singleton(node),
                     newOpenToVisit,
-                    newAllToVisit);
+                    newAllToVisit,
+                    sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
         }
 
         public BitSet singleton(int singletonValue){
             BitSet toReturn = new BitSet(singletonValue+1);
             toReturn.set(singletonValue);
             return toReturn;
+        }
+
+        public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance){
+
+            if(current.cardinality() != 1) throw new Error("no bound for merged");
+            int currentNode = current.nextSetBit(0);
+            allToVisit.set(currentNode);
+            sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
+                    sortedEdgeListIncidentToToVisitNodesAndCurrentNode.filterUpToLength(nbHops, allToVisit);
+            allToVisit.clear(currentNode);
+
+            int total = 0;
+            int hopsToDo = nbHops;
+            EdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+            while(hopsToDo > 0 && current != null){
+                total += distance[current.nodeA][current.nodeB];
+                hopsToDo --;
+                current = current.next;
+            }
+            return total;
         }
 
         @Override
@@ -100,13 +121,14 @@ public final class DPDKruskal {
         HashMap<Integer,Integer> deliveryToAssociatedPickup;
 
         Set<Integer> unrelatedNodes;
+        EdgeList initSortedEdges;
 
         @Override
         public String toString() {
-            return "PDProblem(n:" + n + "\n" +
-                    "pdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> "(" + p + "->" + pickupToAssociatedDelivery.get(p) + ")").toList() + ")\n" +
-                    "unrelated:" + unrelatedNodes.stream().toList() + "\n" +
-                    Arrays.stream(distanceMatrix).map(l -> Arrays.toString(l)+"\n").toList();
+            return "PDProblem(\n\tn:" + n + "\n" +
+                    "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
+                    "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
+                    "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
         }
 
         public int eval(int[] solution){
@@ -130,6 +152,24 @@ public final class DPDKruskal {
                 unrelatedNodes.remove(d);
                 deliveryToAssociatedPickup.put(d,p);
             }
+
+            //TODO: remove all edges that go from delivery to related pickup?
+            Iterator<EdgeList> sortedEdges = IntStream.range(1,n).boxed().flatMap(
+                    node1 ->
+                            IntStream.range(1,n)
+                                    .filter(node2 -> node1 > node2)
+                                    .boxed()
+                                    .map(node2 -> new EdgeList(node1, node2, null))
+            ).sorted(Comparator.comparing(e -> distanceMatrix[e.nodeA][e.nodeB])).iterator();
+
+            sortedEdges.hasNext();
+            EdgeList current = sortedEdges.next();
+            this.initSortedEdges = current;
+            while(sortedEdges.hasNext()){
+                EdgeList newCurrent = sortedEdges.next();
+                current.next = newCurrent;
+                current = newCurrent;
+            }
         }
 
         @Override
@@ -150,7 +190,7 @@ public final class DPDKruskal {
             BitSet allToVisit = new BitSet(n);
             allToVisit.set(1,n);
 
-            return new PDState(singleton(0), openToVisit ,allToVisit);
+            return new PDState(singleton(0), openToVisit, allToVisit, initSortedEdges);
         }
 
         public BitSet singleton(int singletonValue){
@@ -195,7 +235,6 @@ public final class DPDKruskal {
         @Override
         public PDState mergeStates(final Iterator<PDState> states) {
             //NB: the current node is normally the same in all states
-
             BitSet openToVisit = new BitSet(problem.n);
             BitSet current = new BitSet(problem.n);
             BitSet allToVisit = new BitSet(problem.n);
@@ -207,7 +246,8 @@ public final class DPDKruskal {
                 allToVisit.or(state.allToVisit);
                 current.or(state.current);
             }
-            return new PDState(current,openToVisit,allToVisit);
+            //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
+            return new PDState(current,openToVisit,allToVisit, problem.initSortedEdges);
         }
 
         @Override
@@ -217,17 +257,12 @@ public final class DPDKruskal {
 
         @Override
         public int fastUpperBound(PDState state, Set<Integer> variables) {
-            //min spanning tree on current U toVisit
-            //we can only take the variables.size() first edges, so Kruskal might not run until it ends
             if (state.current.cardinality() != 1) {
                 throw new Error("no fast upper bound when no current");
             } else {
-                BitSet toConsider = (BitSet) state.allToVisit.clone();
-                toConsider.or(state.current);
-                int nbStepsToRemain = variables.size();
-                Kruskal a = new Kruskal(problem.distanceMatrix, toConsider, nbStepsToRemain);
-                int ub = a.minimalSpanningTreeWeight;
-                return -ub;
+                int nbHopsToDo = variables.size();
+                int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo,problem.distanceMatrix);
+                return -lb;
             }
         }
     }
@@ -251,7 +286,7 @@ public final class DPDKruskal {
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
      */
-    public static PDProblem genInstance(int n, int unrelated) {
+    public static PDProblem genInstance(int n,int unrelated) {
 
         int[] x = new int[n];
         int[] y = new int[n];
@@ -271,7 +306,7 @@ public final class DPDKruskal {
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
 
-        int firstDelivery = (n-unrelated-1)/2+1;
+        int firstDelivery = (n-unrelated-1)/2+1; //some  nodes are not pdp nodes
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);
@@ -286,7 +321,7 @@ public final class DPDKruskal {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(24,1);
+        final PDProblem problem = genInstance(24,0);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -299,7 +334,7 @@ public final class DPDKruskal {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDState> width = new FixedWidth<>(3000);
+        final FixedWidth<PDState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
@@ -328,9 +363,9 @@ public final class DPDKruskal {
 
         System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.println("eval from scratch: " + problem.eval(solution));
+        System.out.println("Eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println("problem:" + problem);
+        System.out.println("Problem:" + problem);
     }
 }
 

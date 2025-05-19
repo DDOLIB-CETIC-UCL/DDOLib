@@ -61,19 +61,15 @@ public class SMICProblem  implements Problem<SMICState> {
     @Override
     public SMICState transition(SMICState state, Decision decision) {
         Set<Integer> remaining = new HashSet<>(state.getRemainingJobs());
-        if (decision.val() == 1) {
-            remaining.remove(decision.val());
-            int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-            return new SMICState(remaining, currentTime, state.getCurrentInventory()-inventory[decision.val()]);
-        }
-        else {
-            return state;
-        }
+        remaining.remove(decision.val());
+        int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
+        int currentInventory = (type[decision.val()] <= 0) ? (state.getCurrentInventory()-inventory[decision.val()]) : state.getCurrentInventory()+inventory[decision.val()];
+        return new SMICState(remaining, currentTime, currentInventory);
     }
 
     @Override
     public int transitionCost(SMICState state, Decision decision) {
-        int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
+        int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0)  + processing[decision.val()];
         return -currentTime;
     }
 }
