@@ -50,7 +50,7 @@ public class BPP {
 
     public static void main(String[] args) throws IOException {
         final String file = args.length == 0 ? "data/BPP/test.txt" : args[0];
-        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 1;
+        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         BPPProblem problem = extractFile(file);
         BPPRelax relax = new BPPRelax(problem);

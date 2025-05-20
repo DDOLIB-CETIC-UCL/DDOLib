@@ -3,55 +3,77 @@ package org.ddolib.ddo.examples.binpacking;
 import java.util.*;
 
 public class BPPState {
-    ArrayList<Bin> bins = new ArrayList<>();
-    // Set of remaining object that need to be packed sorted by its id.
-    // With the hypothesis that for i,j in ids, if i < j ==> weight(i) < weight(j)
-    int remainingItems;
+    HashSet<Integer> remainingItems;
     int remainingTotalWeight;
-    BPPProblem problem;
-    boolean verbose = false;
+
+    private Bin currentBin;
+    private int currentBinId = 0;
+    private HashSet<Bin> usedBins = new HashSet<>();
+    private final BPPProblem problem;
+    private boolean verbose = false;
 
     BPPState(BPPProblem problem) {
-        remainingItems = problem.nbItems;
+        remainingItems = new HashSet<>();
+        for(int i = 0; i < problem.nbItems; i++)remainingItems.add(i);
         remainingTotalWeight = Arrays.stream(problem.itemWeight).sum();
         this.problem = problem;
+        this.currentBin = new Bin(problem,verbose);
     }
 
     BPPState(BPPProblem problem, Boolean verbose) {
-        remainingItems = problem.nbItems;
+        remainingItems = new HashSet<>();
+        for(int i = 0; i < problem.nbItems; i++)remainingItems.add(i);
+        remainingTotalWeight = Arrays.stream(problem.itemWeight).sum();
         this.problem = problem;
         this.verbose = verbose;
+        this.currentBin = new Bin(problem,verbose);
     }
 
     BPPState(BPPState other) {
-        for(Bin bin : other.bins) this.bins.add(new Bin(bin));
-        this.remainingItems = other.remainingItems;
+        this.usedBins = new HashSet<>();
+        this.usedBins.addAll(other.usedBins);
+        this.remainingItems = new HashSet<>();
+        this.remainingItems.addAll(other.remainingItems);
         this.problem = other.problem;
         this.verbose = other.verbose;
         this.remainingTotalWeight = other.remainingTotalWeight;
+        this.currentBin = new Bin(other.currentBin);
+        this.currentBinId = other.currentBinId;
+    }
+
+    public int totalUsedBin(){
+        return usedBins.size();
+    }
+
+    public int currentBinId(){
+        return currentBinId;
+    }
+
+    public int remainingSpace(){
+        return currentBin.remainingSpace();
     }
 
     public void packItem(int item, int itemWeight, int bin) {
-        bins.get(bin).packItem(item, itemWeight);
+        currentBin.packItem(item, itemWeight);
         remainingTotalWeight -= itemWeight;
-        remainingItems -= 1;
+        remainingItems.remove(item);
     }
 
     public void newBin() {
-        bins.add(new Bin(problem,verbose));
+        usedBins.add(currentBin);
+        currentBin = new Bin(problem, verbose);
+        currentBinId++;
     }
 
     @Override
     public String toString() {
-        String binString = String.format("Bins : %s%n", String.join("", bins.stream().map(Bin::toString).toList()));
-        return String.format("Remaining item to pack : \t%d%nBins : \n%s", remainingItems, binString);
+        String binString = String.format("%s%n", String.join("", usedBins.stream().map(Bin::toString).toList()));
+        String remainingItemsAndWeight = String.join("", remainingItems.stream().map(item -> String.format("\tId %d - Weight %d%n",item,problem.itemWeight[item])).toList());
+        return String.format("Remaining item to pack : \n%s%nCurrent bin : \t%sBins : \n%s", remainingItemsAndWeight, currentBin.toString(), binString);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + bins.hashCode();
-        hash = 29 * hash + remainingItems;
-        return hash;
+        return Objects.hash(usedBins,remainingItems,currentBin);
     }
 }

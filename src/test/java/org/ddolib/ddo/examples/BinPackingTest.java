@@ -59,10 +59,10 @@ public class BinPackingTest {
 
         @ParameterizedTest
         @MethodSource("dataProvider")
-        public void testLCS(BPPProblem problem) {
+        public void testBPP(BPPProblem problem) {
             final BPPRelax relax = new BPPRelax(problem);
             final BPPRanking ranking = new BPPRanking();
-            final FixedWidth<BPPState> width = new FixedWidth<>(250);
+            final FixedWidth<BPPState> width = new FixedWidth<>(50);
             final VariableHeuristic<BPPState> varh = new DefaultVariableHeuristic<BPPState>();
 
             final Frontier<BPPState> frontier = new SimpleFrontier<>(ranking);
@@ -76,7 +76,7 @@ public class BinPackingTest {
                     width,
                     frontier);
             solver.maximize();
-            assertEquals(-solver.bestValue().get(), problem.getOptimal().get());
+            assertEquals(problem.getOptimal().get(), -solver.bestValue().get());
         }
 
         @ParameterizedTest
@@ -85,11 +85,11 @@ public class BinPackingTest {
             final BPPRelax relax = new BPPRelax(problem);
             final BPPRanking ranking = new BPPRanking();
             final FixedWidth<BPPState> width = new FixedWidth<>(2);
-            final VariableHeuristic<BPPState> varh = new DefaultVariableHeuristic<BPPState>();
+            final VariableHeuristic<BPPState> varh = new DefaultVariableHeuristic<>();
 
             final Frontier<BPPState> frontier = new SimpleFrontier<>(ranking);
 
-            final Solver solver = new ParallelSolver<BPPState>(
+            final Solver solver = new ParallelSolver<>(
                     Runtime.getRuntime().availableProcessors(),
                     problem,
                     relax,
@@ -98,6 +98,6 @@ public class BinPackingTest {
                     width,
                     frontier);
             solver.maximize();
-            assertEquals(-solver.bestValue().get(), problem.getOptimal().get());
+            assertEquals(problem.getOptimal().get(), -solver.bestValue().get());
         }
 }
