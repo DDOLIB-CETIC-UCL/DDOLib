@@ -3,10 +3,7 @@ package org.ddolib.ddo.examples.binpacking;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BPPRelax implements Relaxation<BPPState> {
 
@@ -19,19 +16,21 @@ public class BPPRelax implements Relaxation<BPPState> {
     @Override
     public BPPState mergeStates(Iterator<BPPState> states) {
         BPPState mergedState = new BPPState(states.next());
+        int remainingItems = mergedState.remainingItems.size();
+        HashSet<Integer> mergedRemainingItems = new HashSet<>(mergedState.remainingItems);
         while (states.hasNext()) {
             BPPState state = states.next();
-            if (mergedState.bins.size() > state.bins.size()) {
-                mergedState.bins = new ArrayList<>();
-                mergedState.bins.addAll(state.bins);
-            } else if (mergedState.bins.size() == state.bins.size()) {
-                for (int i = 0; i < mergedState.bins.size(); i++) {
-                    if(state.bins.get(i).remainingSpace() > mergedState.bins.get(i).remainingSpace()){
-                        // meh
-                        mergedState.bins.get(i).copy(state.bins.get(i));
-                    }
-                }
-            }
+            // If a state is using less bin or has more space in the current bin, take it.
+            if (mergedState.remainingSpace() < state.remainingSpace() || mergedState.totalUsedBin() > state.totalUsedBin())
+                mergedState = new BPPState(state);
+            mergedRemainingItems.addAll(state.remainingItems);
+        }
+        int i = 0;
+        mergedState.remainingItems.clear();
+        List<Integer> listMergedRemainingItems = mergedRemainingItems.stream().toList();
+        while(i < remainingItems){
+            mergedState.remainingItems.add(listMergedRemainingItems.get(i));
+            i++;
         }
         return mergedState;
     }
@@ -43,17 +42,8 @@ public class BPPRelax implements Relaxation<BPPState> {
 
     @Override
     public int fastUpperBound(BPPState state, Set<Integer> variables) {
-        List<Integer> remItemWeights = variables.stream().map(v -> problem.itemWeight[v]).toList();
-        int totalRemainingUsableSpace =
-                state.bins.stream().map(Bin::remainingSpace).
-                        reduce(0, (acc,bin) -> {
-                            if(remItemWeights.stream().anyMatch(i -> i <= bin)) return acc + bin;
-                            else return acc;
-                        });
-
-        int weightToPutInNewBins = Math.max(0,state.remainingTotalWeight-totalRemainingUsableSpace);
-        int minBinsToOpen = (int)Math.ceil((double)weightToPutInNewBins/problem.binMaxSpace);
-
+        if (variables.isEmpty()) return 0;
+        int minBinsToOpen = (int) Math.ceil((double) (state.remainingTotalWeight - state.remainingSpace()) / problem.binMaxSpace);
 
         return -minBinsToOpen;
     }
