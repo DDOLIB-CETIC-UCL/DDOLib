@@ -30,7 +30,7 @@ public class SMICMain {
         SMICProblem problem = readProblem("data/SMIC/data10_10.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(100);
+        final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking);
