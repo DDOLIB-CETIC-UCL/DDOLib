@@ -3,7 +3,9 @@ package org.ddolib.ddo.examples.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.examples.msct.MSCTDominance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -15,26 +17,22 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Given a set J= {1,..., n} of jobs, partitioned into set J−
- * of loading jobs and set J+ of unloading jobs. Each job j ∈ J has a
- * processing time p_j ∈ R+, a release date r_j ∈ R+ and an inventory
- * modification δ_j ∈ R, where δ_j ≥ 0 for j ∈ J+ and δ_j < 0 for j ∈ J−.
- * All jobs are to be executed by a single machine, which can only serve
- * one job at a time. The initial inventory is denoted by I_0 and the
- * capacity of the inventory storage is I_C. The objective is to sequence
- * the jobs in J such that the makespan (the completion time of the
- * last job in the sequence) is minimized while the inventory is never
- * below 0 nor above I_C.
- * This problem is considerd in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
+ * Given a set J of n jobs, partitioned into a set J1
+ * of n1 loading jobs and set J2 of n2 unloading jobs. Each job j ∈ J has a
+ * processing time p ∈ R+, a release date r ∈ R+ and a positive (resp. negative) inventory
+ * modification for loading (resp. unloading) task. The objective is to sequence
+ * the jobs in J such that the makespan is minimized while the inventory is between a given range.
+ * This problem is considered in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
  * Minimizing makespan on a single machine with release dates and inventory constraints. Eur. J. Oper. Res. 286(1): 115-128 (2020)
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/example.txt");
+        SMICProblem problem = readProblem("data/SMIC/data10_10.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(10);
+        final FixedWidth<SMICState> width = new FixedWidth<>(100);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
                 problem,
@@ -42,6 +40,7 @@ public class SMICMain {
                 varh,
                 ranking,
                 width,
+                dominance,
                 frontier);
 
 

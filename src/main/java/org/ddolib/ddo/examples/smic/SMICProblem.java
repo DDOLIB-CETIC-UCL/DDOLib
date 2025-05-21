@@ -38,7 +38,7 @@ public class SMICProblem  implements Problem<SMICState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.add(i);
         }
-        return new SMICState(jobs,0, initInventory);
+        return new SMICState(jobs,0, initInventory, initInventory);
     }
 
     @Override
@@ -50,8 +50,9 @@ public class SMICProblem  implements Problem<SMICState> {
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
         for (Integer job : state.getRemainingJobs()) {
-            int currentInventory = (type[job] <= 0) ? (state.getCurrentInventory() - inventory[job]) : (state.getCurrentInventory() + inventory[job]);
-            if (currentInventory >= 0 && currentInventory <= capaInventory) {
+            int minCurrentInventory = (type[job] == 0) ? (state.getMinCurrentInventory() - inventory[job]) : (state.getMinCurrentInventory() + inventory[job]);
+            int maxCurrentInventory = (type[job] == 0) ? (state.getMaxCurrentInventory() - inventory[job]) : (state.getMaxCurrentInventory() + inventory[job]);
+            if (minCurrentInventory >= 0 && maxCurrentInventory <= capaInventory) {
                 domain.add(job);
             }
         }
@@ -63,8 +64,9 @@ public class SMICProblem  implements Problem<SMICState> {
         Set<Integer> remaining = new HashSet<>(state.getRemainingJobs());
         remaining.remove(decision.val());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        int currentInventory = (type[decision.val()] <= 0) ? (state.getCurrentInventory()-inventory[decision.val()]) : state.getCurrentInventory()+inventory[decision.val()];
-        return new SMICState(remaining, currentTime, currentInventory);
+        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory()-inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
+        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory()-inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
+        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     @Override

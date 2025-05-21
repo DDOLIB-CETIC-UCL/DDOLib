@@ -8,12 +8,14 @@ public class SMICState {
 
     private Set<Integer> remainingJobs;
     private int currentTime;
-    private int currentInventory;
+    private int minCurrentInventory;
+    private int maxCurrentInventory;
 
-    public SMICState(Set<Integer> remainingJobs, int currentTime, int currentInventory) {
+    public SMICState(Set<Integer> remainingJobs, int currentTime, int minCurrentInventory, int maxCurrentInventory) {
         this.remainingJobs = remainingJobs;
         this.currentTime = currentTime;
-        this.currentInventory = currentInventory;
+        this.minCurrentInventory = minCurrentInventory;
+        this.maxCurrentInventory = maxCurrentInventory;
     }
 
     public Set<Integer> getRemainingJobs() {
@@ -24,20 +26,22 @@ public class SMICState {
         return currentTime;
     }
 
-    public int getCurrentInventory() {
-        return currentInventory;
+    public int getMinCurrentInventory() {
+        return minCurrentInventory;
     }
+
+    public int getMaxCurrentInventory() {return maxCurrentInventory;}
 
 
 
     @Override
     public String toString() {
-        return "RemainingJobs " + Arrays.toString(remainingJobs.toArray()) + " ----> currentTime " + currentTime + " ---> currentInventory"+ currentInventory;
+        return "RemainingJobs " + Arrays.toString(remainingJobs.toArray()) + " ----> currentTime " + currentTime + " ---> minCurrentInventory"+ minCurrentInventory + " ---> maxCurrentInventory"+ maxCurrentInventory;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(remainingJobs.hashCode(),currentTime,currentInventory);
+        return Objects.hash(remainingJobs.hashCode(),currentTime,minCurrentInventory,maxCurrentInventory);
     }
 }
 

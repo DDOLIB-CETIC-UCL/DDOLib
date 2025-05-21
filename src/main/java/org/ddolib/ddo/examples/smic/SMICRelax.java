@@ -13,16 +13,20 @@ public class SMICRelax implements Relaxation<SMICState> {
 
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-        Set<Integer> unionJobs = new HashSet<>();
+//        final SMICState s = states.next();
+//        Set<Integer> intersectionJobs = new HashSet<>(s.getRemainingJobs());
+        Set<Integer> intersectionJobs = new HashSet<>();
         int minCurrentTime = Integer.MAX_VALUE;
+        int minCurrentInventory = Integer.MAX_VALUE;
         int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
-            unionJobs.addAll(state.getRemainingJobs());
+            intersectionJobs.addAll(state.getRemainingJobs());
             minCurrentTime = Math.min(minCurrentTime, state.getCurrentTime());
-            maxCurrentInventory = Math.max(maxCurrentInventory, state.getCurrentInventory());
+            minCurrentInventory = Math.min(minCurrentInventory, state.getMinCurrentInventory());
+            maxCurrentInventory = Math.max(maxCurrentInventory, state.getMaxCurrentInventory());
         }
-        return new SMICState(unionJobs, minCurrentTime, maxCurrentInventory);
+        return new SMICState(intersectionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
     }
     @Override
     public int relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, int cost) {
