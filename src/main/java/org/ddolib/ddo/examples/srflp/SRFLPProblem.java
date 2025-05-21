@@ -6,17 +6,31 @@ import org.ddolib.ddo.core.Problem;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SRFLPProblem implements Problem<SRFLPState> {
 
     public final int[] lengths;
     public final int[][] flows;
+    public Optional<Integer> optimal;
 
-    public SRFLPProblem(int[] lengths, int[][] flows) {
+    private Optional<String> name = Optional.empty();
+
+    public SRFLPProblem(int[] lengths, int[][] flows, Optional<Integer> optimal) {
         this.lengths = lengths;
         this.flows = flows;
+        this.optimal = optimal;
     }
+
+    public SRFLPProblem(int[] lengths, int[][] flows) {
+        this(lengths, flows, Optional.empty());
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
 
     @Override
     public int nbVars() {
@@ -93,20 +107,24 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SRFLP Problem:\n");
-        String lengthsStr = Arrays.stream(lengths)
-                .mapToObj(x -> String.format("%2s", x))
-                .collect(Collectors.joining(", "));
-        sb.append("Lengths: ").append(lengthsStr).append("\n");
-        String flowStr = Arrays.stream(flows)
-                .map(row -> Arrays.stream(row)
-                        .mapToObj(x -> String.format("%2s", x))
-                        .collect(Collectors.joining(" ")))
-                .collect(Collectors.joining("\n"));
-        sb.append("Flows: \n").append(flowStr);
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("SRFLP Problem:\n");
+            String lengthsStr = Arrays.stream(lengths)
+                    .mapToObj(x -> String.format("%2s", x))
+                    .collect(Collectors.joining(", "));
+            sb.append("Lengths: ").append(lengthsStr).append("\n");
+            String flowStr = Arrays.stream(flows)
+                    .map(row -> Arrays.stream(row)
+                            .mapToObj(x -> String.format("%2s", x))
+                            .collect(Collectors.joining(" ")))
+                    .collect(Collectors.joining("\n"));
+            sb.append("Flows: \n").append(flowStr);
 
-        return sb.toString();
+            return sb.toString();
+        }
 
     }
 }

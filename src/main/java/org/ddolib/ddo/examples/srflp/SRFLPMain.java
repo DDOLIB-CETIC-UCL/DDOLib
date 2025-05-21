@@ -14,16 +14,16 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-public final class SRFLP {
+public final class SRFLPMain {
 
     public static void main(String[] args) throws IOException {
-        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl12").toString() : args[0];
+        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() : args[0];
 
         final SRFLPProblem problem = SRFLPIO.readInstance(filename);
         final SRFLPRelax relax = new SRFLPRelax(problem);
         final SRFLPRanking ranking = new SRFLPRanking();
 
-        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(2);
+        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(500);
         final VariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
 
