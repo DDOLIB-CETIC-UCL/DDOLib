@@ -2,6 +2,9 @@ package org.ddolib.ddo.examples.srflp;
 
 import org.ddolib.ddo.heuristics.StateRanking;
 
+/**
+ * Class that define a ranking between two {@link SRFLPState}
+ */
 public class SRFLPRanking implements StateRanking<SRFLPState> {
 
     @Override

@@ -4,6 +4,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
 
+/**
+ * Represents a state for a SRFLP instance.
+ *
+ * @param must  The set of the remaining department that must be placed.
+ * @param maybe Used by merged nodes. Contains department that must be placed for some of the merged nodes but that
+ *              has already been placed for other ones.
+ * @param cut   For each free department, contains the sum of all traffic intensities from the fixed departments and
+ *              each free department.
+ * @param depth The depth of the state in the associated MDD.
+ */
 public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {
 
     @Override

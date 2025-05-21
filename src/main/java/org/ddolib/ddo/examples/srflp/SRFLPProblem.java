@@ -9,24 +9,48 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Class to model the SRFLP.
+ */
 public class SRFLPProblem implements Problem<SRFLPState> {
 
-    public final int[] lengths;
-    public final int[][] flows;
+    final int[] lengths;
+    final int[][] flows;
+    /**
+     * The optimal solution of this instance if known (used for tests).
+     */
     public Optional<Integer> optimal;
 
     private Optional<String> name = Optional.empty();
 
+    /**
+     * Constructs a new instance of the SRFLP.
+     *
+     * @param lengths The length of each department to place.
+     * @param flows   The traffic flow between each pair of departments. It is assumed to be symmetrical.
+     * @param optimal The optimal solution of this instance if known (used for tests).
+     */
     public SRFLPProblem(int[] lengths, int[][] flows, Optional<Integer> optimal) {
         this.lengths = lengths;
         this.flows = flows;
         this.optimal = optimal;
     }
 
+    /**
+     * Constructs a new instance of the SRFLP.
+     *
+     * @param lengths The length of each department to place.
+     * @param flows   The traffic flow between each pair of departments. It is assumed to be symmetrical.
+     */
     public SRFLPProblem(int[] lengths, int[][] flows) {
         this(lengths, flows, Optional.empty());
     }
 
+    /**
+     * Used to replace the default {@code toString()} value.
+     *
+     * @param name A descriptive of the instance. It will be used instead of the default  {@code toString()} value.
+     */
     public void setName(String name) {
         this.name = Optional.of(name);
     }
@@ -95,6 +119,11 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         return -cut * lengths[decision.val()];
     }
 
+    /**
+     * Returns a constant accounting for all contributions of half department lengths.
+     *
+     * @return A constant accounting for all contributions of half department lengths.
+     */
     public double rootValue() {
         double toReturn = 0;
         for (int i = 0; i < nbVars(); i++) {
