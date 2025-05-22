@@ -6,6 +6,9 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public final class TSPMain {
@@ -28,6 +31,49 @@ public final class TSPMain {
             }
         }
         return new TSPPRoblem(distance);
+    }
+
+
+    /**
+     * Creates instance from data files.<br>
+     * <p>
+     * The expected format is the following:
+     * <ul>
+     *     <li>
+     *         The first line must contain the number of points
+     *     </li>
+     *     <li>
+     *         The distance matrix.
+     *     </li>
+     * </ul>
+     *
+     * @param fileName The path to the input file.
+     * @throws IOException If something goes wrong while reading input file.
+     */
+    public static TSPPRoblem loadInstance(String fileName) throws IOException {
+        int numVar = 0;
+        int[][] myDistanceMatrix = null;
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            int lineCount = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                //Skip comment
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue;
+                }
+                if (lineCount == 0) {
+                    String[] tokens = line.split("\\s+");
+                    numVar = Integer.parseInt(tokens[0]);
+                    myDistanceMatrix = new int[numVar][numVar];
+                } else if (1 <= lineCount && lineCount <= numVar) {
+                    int i = lineCount - 1;
+                    String[] distanceFromI = line.split("\\s+");
+                    myDistanceMatrix[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
+                }
+                lineCount++;
+            }
+        }
+        return new TSPPRoblem(myDistanceMatrix);
     }
 
     static int dist(int dx, int dy){
@@ -62,7 +108,8 @@ public final class TSPMain {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(2);
+        SearchStatistics stats = solver.maximize(1);
+
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
@@ -76,7 +123,7 @@ public final class TSPMain {
                 })
                 .get();
 
-
+        System.out.println(stats);
         System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));

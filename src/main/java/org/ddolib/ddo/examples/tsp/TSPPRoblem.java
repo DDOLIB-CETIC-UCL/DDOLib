@@ -3,14 +3,11 @@ package org.ddolib.ddo.examples.tsp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.*;
 
 class TSPPRoblem implements Problem<TSPState> {
-    final int n;
-    final int[][] distanceMatrix;
+    int n;
+    int[][] distanceMatrix;
     final SortedAdjacents sortedAdjacents;
 
     @Override

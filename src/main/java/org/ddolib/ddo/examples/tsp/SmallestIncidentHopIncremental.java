@@ -14,13 +14,6 @@ public class SmallestIncidentHopIncremental {
         int hop = sortedAdjacents.distanceMatrix[baseNode][adj];
         return "SmallestIncidentHopIncremental(base:" + baseNode + " pos:" + positionInSortedAdjacents + " adj:" +  adj + " hop:" + hop + ")";
     }
-    public String allString(SortedAdjacents sortedAdjacents) {
-        if (next == null) {
-            return thisString(sortedAdjacents);
-        } else {
-            return thisString(sortedAdjacents) + "\n\t" + next.allString(sortedAdjacents);
-        }
-    }
 
     public SmallestIncidentHopIncremental(int baseNode, int positionInSortedAdjacents, SmallestIncidentHopIncremental next){
         this.baseNode = baseNode;
@@ -65,10 +58,13 @@ public class SmallestIncidentHopIncremental {
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);
 
-        //TODO this is awfully too slow because of the sort.
-        // normally, we do not need a sort actually; only the nbHops smallers
+        //TODO this is too slow because of the sort.
+        // we do not need a sort actually; only the nbHops smallers
         // and this could be obtained faster than by sorting the whole thing
         IntSummaryStatistics stats = b.build().sorted().limit(nbHops).summaryStatistics();
+
+        //TODO: this returns the smallest adjacent to each node to visit
+        //we miss the return at the end however it is not counted in the main either.
 
         return (int)(stats.getSum() - stats.getMax());
     }
