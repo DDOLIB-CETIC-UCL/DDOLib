@@ -79,7 +79,7 @@ public final class ParallelSolver<T,K> implements Solver {
 
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
-
+        long start = System.currentTimeMillis();
         final AtomicInteger nbIter = new AtomicInteger(0);
         final AtomicInteger queueMaxSize = new AtomicInteger(0);
 
@@ -116,8 +116,8 @@ public final class ParallelSolver<T,K> implements Solver {
         for (int i = 0; i < shared.nbThreads; i++) {
             try { workers[i].join(); } catch (InterruptedException e) {}
         }
-
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get());
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start);
     }
     @Override
     public Optional<Integer> bestValue() {

@@ -107,10 +107,7 @@ public final class TSPMain {
                 width,
                 frontier);
 
-        long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(1);
-
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
+        SearchStatistics stats = solver.maximize(2);
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
@@ -124,7 +121,6 @@ public final class TSPMain {
                 .get();
 
         System.out.println(stats);
-        System.out.printf("Duration : %.3f%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));

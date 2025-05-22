@@ -154,6 +154,7 @@ public final class SequentialSolver<K,T> implements Solver {
 
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
+        long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -172,7 +173,8 @@ public final class SequentialSolver<K,T> implements Solver {
             if (verbosityLevel >= 1) System.out.println("\n");
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize);
+                long end = System.currentTimeMillis();
+                return new SearchStatistics(nbIter, queueMaxSize, end-start);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -213,7 +215,8 @@ public final class SequentialSolver<K,T> implements Solver {
                 enqueueCutset();
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize);
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(nbIter, queueMaxSize,end-start);
     }
 
     @Override
