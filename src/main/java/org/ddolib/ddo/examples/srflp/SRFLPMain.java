@@ -33,13 +33,14 @@ import java.util.Arrays;
 public final class SRFLPMain {
 
     public static void main(String[] args) throws IOException {
-        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() : args[0];
+        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl5").toString() : args[0];
+        final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
         final SRFLPProblem problem = SRFLPIO.readInstance(filename);
         final SRFLPRelax relax = new SRFLPRelax(problem);
         final SRFLPRanking ranking = new SRFLPRanking();
 
-        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(500);
+        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
 
@@ -68,8 +69,8 @@ public final class SRFLPMain {
 
         double obj = -solver.bestValue().get() + problem.rootValue();
 
-
         System.out.printf("Instance: %s%n", filename);
+        System.out.printf("Max width: %s%n", maxWidth);
         System.out.printf("Duration : %f seconds%n", duration);
         System.out.printf("Objective: %s%n", obj);
         System.out.printf("Solution : %s", Arrays.toString(solution));
