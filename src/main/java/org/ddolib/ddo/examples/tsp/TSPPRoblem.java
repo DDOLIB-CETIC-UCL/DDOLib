@@ -11,7 +11,7 @@ import java.util.Iterator;
 class TSPPRoblem implements Problem<TSPState> {
     final int n;
     final int[][] distanceMatrix;
-    SortedAdjacents sortedAdjacents;
+    final SortedAdjacents sortedAdjacents;
 
     @Override
     public String toString() {

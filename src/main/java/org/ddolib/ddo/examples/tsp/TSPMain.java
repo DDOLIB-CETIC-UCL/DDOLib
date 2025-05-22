@@ -6,14 +6,9 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
 
-import java.io.IOException;
 import java.util.*;
 
 public final class TSPMain {
-
-    private static void require(Boolean a, String str){
-        if(!a) throw new Error(str);
-    }
 
     public static TSPPRoblem genInstance(int n) {
 
@@ -39,7 +34,7 @@ public final class TSPMain {
         return (int)Math.sqrt(dx*dx+dy*dy);
     }
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) {
 
         final TSPPRoblem problem = genInstance(15);
 

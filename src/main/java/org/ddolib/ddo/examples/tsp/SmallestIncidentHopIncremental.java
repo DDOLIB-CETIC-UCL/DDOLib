@@ -5,9 +5,9 @@ import java.util.IntSummaryStatistics;
 import java.util.stream.IntStream;
 
 public class SmallestIncidentHopIncremental {
-    int baseNode;
-    int positionInSortedAdjacents;
-    SmallestIncidentHopIncremental next;
+    final int baseNode;
+    final int positionInSortedAdjacents;
+    final SmallestIncidentHopIncremental next;
 
     public String thisString(SortedAdjacents sortedAdjacents){
         int adj = sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents];
@@ -47,7 +47,7 @@ public class SmallestIncidentHopIncremental {
             while(!allowedNodes.get(sortedAdjacents.sortedAdjacents[baseNode][newCurrent])){
                 newCurrent++;
             }
-            if(next == null) return new SmallestIncidentHopIncremental(baseNode, newCurrent, null);;
+            if(next == null) return new SmallestIncidentHopIncremental(baseNode, newCurrent, null);
             SmallestIncidentHopIncremental newNext = next.updateToRestrictedNodeSet(allowedNodes,sortedAdjacents);
             return new SmallestIncidentHopIncremental(baseNode, newCurrent, newNext);
         }

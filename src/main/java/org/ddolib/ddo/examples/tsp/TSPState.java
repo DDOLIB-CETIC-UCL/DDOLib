@@ -5,11 +5,11 @@ import java.util.BitSet;
 class TSPState {
 
     //every node that has not been visited yet
-    BitSet toVisit;
+    final BitSet toVisit;
 
     //the current node. It is a set because in case of a fusion, we must take the union.
     // However, most of the time, it is a singleton
-    BitSet current;
+    final BitSet current;
 
     SmallestIncidentHopIncremental heuristics;
 
