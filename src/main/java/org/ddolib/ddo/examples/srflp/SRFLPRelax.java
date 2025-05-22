@@ -8,13 +8,27 @@ import java.util.*;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
+/**
+ * Implementation of the relaxation for the SRFLP.
+ */
 public class SRFLPRelax implements Relaxation<SRFLPState> {
 
     private final SRFLPProblem problem;
 
+    /**
+     * Pairs of departments sorted by their flow in decreasing order.
+     */
     private final ArrayList<PairAndFlow> pairsSortedByFlow = new ArrayList<>();
+    /**
+     * Departments sorted by their length in increasing order.
+     */
     private final ArrayList<DepartmentAndLength> departmentsSortedByLength = new ArrayList<>();
 
+    /**
+     * Constructs a new instance of a relaxation for the SRFLP.
+     *
+     * @param problem The problem instance that must be solved.
+     */
     public SRFLPRelax(SRFLPProblem problem) {
         this.problem = problem;
 
@@ -77,6 +91,16 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return -(free + fixed);
     }
 
+    /**
+     * Computes a lower bound based on the remaining free departments. This bound is cumulatively computed, based on
+     * the length of the free department (sorted in increasing order) and the flows between each pair of free
+     * departments.
+     *
+     * @param selectedLength The department's lengths that will be used to compute the bound.
+     * @param selectedFLows  The traffic flows that will be used to compute the bound.
+     * @param complete       How many department must be placed to complete the solution.
+     * @return A lower bound based on the remaining free departments.
+     */
     private int freeLB(ArrayList<DepartmentAndLength> selectedLength,
                        ArrayList<PairAndFlow> selectedFLows, int complete) {
         int bound = 0;
@@ -93,6 +117,14 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return bound;
     }
 
+    /**
+     * Computes a lower bound based on the already fixed departments. This bound is cumulatively computed, based on
+     * the cut (see {@link SRFLPState}) of the input state.
+     *
+     * @param ratios The pairs {@code (length, cut)} sorted in decreasing order according to the ration {@code cut / length} that
+     *               will be used to compute the bound.
+     * @return A lower bound based on the already fixed departments.
+     */
     private int fixedLB(ArrayList<CutRatio> ratios) {
         int bound = 0;
         int cumulative = 0;
@@ -105,6 +137,15 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return bound;
     }
 
+    /**
+     * Selects the departments and lengths that will be used to computes the free lower bound.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param complete     How many department must be placed to complete the solution.
+     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @return The departments and lengths, sorted in increasing order, that will be used to compute the free lower
+     * bound.
+     */
     private ArrayList<DepartmentAndLength> selectLength(SRFLPState state, int complete, int maxFromMaybe) {
 
         ArrayList<DepartmentAndLength> selectedLengths = new ArrayList<>();
@@ -117,6 +158,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
                 selectedLengths.add(dl);
                 selectedFromMaybe--;
             }
+
             if (selectedLengths.size() == complete) {
                 break;
             }
@@ -125,6 +167,15 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return selectedLengths;
     }
 
+    /**
+     * Selects the pairs of department and flows that will be used to compute the free lower bound.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param complete     How many department must be placed to complete the solution.
+     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @return The pairs of departments and flows, sorted in decreasing order, that will be used
+     * to compute the free lower bound.
+     */
     private ArrayList<PairAndFlow> selectFlow(SRFLPState state, int complete, int maxFromMaybe) {
         int nbFlow = complete * (complete - 1) / 2;
 
@@ -152,6 +203,14 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         return selectedFlows;
     }
 
+    /**
+     * Selects the cuts from the input state that will be used to compute the fixed lower bound.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @return The cuts from the inputs state, sorted in decreasing order, that will be used
+     * to compute the fixed lower bound.
+     */
     private ArrayList<CutRatio> selectCutRatio(SRFLPState state, int maxFromMaybe) {
         ArrayList<DepartmentAndLength> selectedLengthsFromMaybe = new ArrayList<>();
         int selectedFromMaybe = maxFromMaybe;
@@ -186,6 +245,13 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
     }
 
 
+    /**
+     * Contains a pair of department and their flow. It is used to sort the pairs of départment by their flow.
+     *
+     * @param x    The first department.
+     * @param y    The seconde department.
+     * @param flow The traffic flow between the first department and the second.
+     */
     private record PairAndFlow(int x, int y, int flow) implements Comparable<PairAndFlow> {
 
         @Override
@@ -199,6 +265,12 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         }
     }
 
+    /**
+     * Contains the id of a department and its length. Used to sort the department by their length.
+     *
+     * @param dep The id of the department.
+     * @param len The length of the department.
+     */
     private record DepartmentAndLength(int dep, int len) implements Comparable<DepartmentAndLength> {
         @Override
         public int compareTo(DepartmentAndLength o) {
@@ -206,6 +278,12 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
         }
     }
 
+    /**
+     * Contains the length and the cut associated to a state. Used to be sort following the ratio {@code cut / length}
+     *
+     * @param length The length associated to a state.
+     * @param cut    The cut value associated to a state (see {@link SRFLPState}
+     */
     private record CutRatio(int length, int cut) implements Comparable<CutRatio> {
         @Override
         public int compareTo(CutRatio o) {
