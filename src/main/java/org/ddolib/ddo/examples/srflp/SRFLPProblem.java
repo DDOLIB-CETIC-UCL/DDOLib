@@ -49,7 +49,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * Used to replace the default {@code toString()} value.
      *
-     * @param name A descriptive of the instance. It will be used instead of the default  {@code toString()} value.
+     * @param name A descriptive of the instance. It will be used instead of the default {@code toString()} value.
      */
     public void setName(String name) {
         this.name = Optional.of(name);

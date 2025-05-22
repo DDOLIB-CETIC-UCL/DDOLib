@@ -193,6 +193,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
                 selectedFromMustAndMaybe--;
             } else if (selectedFromMaybe > 0 && state.maybe().get(pf.x) && state.maybe().get(pf.y)) {
                 selectedFlows.add(pf);
+                selectedFromMaybe--;
             }
 
             if (selectedFlows.size() == nbFlow) {
@@ -226,16 +227,8 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
             selectedCutRatios.add(new CutRatio(problem.lengths[i], state.cut()[i]));
         }
 
-        ArrayList<Integer> maybeCuts = new ArrayList<>();
-        for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
-            maybeCuts.add(i);
-        }
-
-        Collections.sort(maybeCuts);
-        Collections.reverse(maybeCuts);
-
-        for (int i = 0; i < maxFromMaybe; i++) {
-            selectedCutRatios.add(new CutRatio(selectedLengthsFromMaybe.get(i).len, maybeCuts.get(i)));
+        for (DepartmentAndLength dl : selectedLengthsFromMaybe) {
+            selectedCutRatios.add(new CutRatio(dl.len, state.cut()[dl.dep]));
         }
 
         Collections.sort(selectedCutRatios);
