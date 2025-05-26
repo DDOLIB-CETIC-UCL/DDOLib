@@ -21,7 +21,7 @@ public class BPP {
 
         int nbItems = 0;
         int binMaxSize = 0;
-        int[] itemWeights = new int[1];
+        Integer[] itemWeights = new Integer[1];
         int lineCounter = 0;
         Optional<Integer> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
@@ -33,7 +33,7 @@ public class BPP {
                         optimal = Optional.of(Integer.parseInt(splitLine[1]));
                     }
                     nbItems = Integer.parseInt(splitLine[0]);
-                    itemWeights = new int[nbItems];
+                    itemWeights = new Integer[nbItems];
                 } else if (lineCounter == 1) {
                     binMaxSize = Integer.parseInt(line);
                 } else {
@@ -43,9 +43,9 @@ public class BPP {
             }
         }
 
-        Arrays.sort(itemWeights);
+        Arrays.sort(itemWeights, Comparator.reverseOrder());
 
-        return new BPPProblem(nbItems, binMaxSize, itemWeights, optimal);
+        return new BPPProblem(nbItems, binMaxSize, Arrays.stream(itemWeights).mapToInt(i -> i).toArray(), optimal);
     }
 
     public static void main(String[] args) throws IOException {
@@ -84,9 +84,7 @@ public class BPP {
                 .orElse(new Decision[0]);
 
 
-        BPPState finalState = problem.verboseInitialState();
-        for (Decision decision : solution)
-            finalState = problem.transition(finalState, decision);
+
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
@@ -95,9 +93,29 @@ public class BPP {
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());
         System.out.printf("Max width : %d%n", maxWidth);
-        System.out.printf("Solution : \n Final State : %s\n", finalState);
+        System.out.println("Solution : \n############\n");
 
+        int d = 0;
 
+        for(int bin = 0; bin < -solver.bestValue().orElse(0); bin++) {
+            int remSpace = problem.binMaxSpace;
+            boolean newBin = false;
+            StringBuffer sb = new StringBuffer();
+            sb.append(String.format("Bin number %d :\n", bin));
+            while(!newBin && d < problem.nbVars()) {
+                int item = solution[d].val();
+                int weight = problem.itemWeight[item];
+                if(weight < remSpace) {
+                    sb.append(String.format("\tItem %d of weight %d\n",item,weight));
+                    remSpace -= weight;
+                    d++;
+                } else {
+                    newBin = true;
+                }
+            }
+            sb.append(String.format("\tTotal weight %d - Free weight %d\n",problem.binMaxSpace-remSpace,remSpace));
+            System.out.println(sb);
+        }
     }
 
 }
