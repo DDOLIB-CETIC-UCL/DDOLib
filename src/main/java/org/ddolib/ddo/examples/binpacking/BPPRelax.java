@@ -4,6 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BPPRelax implements Relaxation<BPPState> {
 
@@ -15,35 +16,43 @@ public class BPPRelax implements Relaxation<BPPState> {
 
     @Override
     public BPPState mergeStates(Iterator<BPPState> states) {
-        BPPState mergedState = new BPPState(states.next());
-        int remainingItems = mergedState.remainingItems.size();
-        HashSet<Integer> mergedRemainingItems = new HashSet<>(mergedState.remainingItems);
+        Comparator<Integer> weightComparator = (o1, o2) -> Integer.compare(problem.itemWeight[o1],problem.itemWeight[o2]);
+
+        int remainingItemToPack = 0;
+        int minUsedBin = Integer.MAX_VALUE;
+
+        HashSet<Integer> newRemainingSpaces = new HashSet<>();
+        HashSet<Integer> newRemainingItems = new HashSet<>();
         while (states.hasNext()) {
             BPPState state = states.next();
-            // If a state is using less bin or has more space in the current bin, take it.
-            if (mergedState.remainingSpace() < state.remainingSpace() || mergedState.totalUsedBin() > state.totalUsedBin())
-                mergedState = new BPPState(state);
-            mergedRemainingItems.addAll(state.remainingItems);
+            if(remainingItemToPack == 0)
+                remainingItemToPack = state.remainingItems.size();
+            if(state.remainingSpace == -1)
+                newRemainingSpaces.addAll(state.remainingSpaces);
+            else
+                newRemainingSpaces.add(state.remainingSpace);
+            newRemainingItems.addAll(state.remainingItems);
+            minUsedBin = Math.min(minUsedBin, state.usedBins);
         }
-        int i = 0;
-        mergedState.remainingItems.clear();
-        List<Integer> listMergedRemainingItems = mergedRemainingItems.stream().toList();
-        while(i < remainingItems){
-            mergedState.remainingItems.add(listMergedRemainingItems.get(i));
-            i++;
-        }
-        return mergedState;
+        newRemainingItems = newRemainingItems.stream().sorted(weightComparator).limit(remainingItemToPack).collect(Collectors.toCollection(HashSet::new));
+        return new BPPState(newRemainingSpaces, newRemainingItems, minUsedBin);
     }
 
     @Override
     public int relaxEdge(BPPState from, BPPState to, BPPState merged, Decision d, int cost) {
-        return cost;
+        return -(merged.usedBins-from.usedBins);
     }
 
     @Override
     public int fastUpperBound(BPPState state, Set<Integer> variables) {
+
         if (variables.isEmpty()) return 0;
-        int minBinsToOpen = (int) Math.ceil((double) (state.remainingTotalWeight - state.remainingSpace()) / problem.binMaxSpace);
+        int remainingTotalWeight = state.remainingItems.stream().map(i -> problem.itemWeight[i]).reduce(0,Integer::sum);
+        int minRemainingSpace = state.remainingSpace;
+        if(minRemainingSpace == -1)
+            minRemainingSpace = state.remainingSpaces.stream().min(Integer::compareTo).orElse(0);
+
+        int minBinsToOpen = (int) Math.ceil((double) (remainingTotalWeight - minRemainingSpace) / problem.binMaxSpace);
 
         return -minBinsToOpen;
     }
