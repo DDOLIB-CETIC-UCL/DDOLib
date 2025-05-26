@@ -20,35 +20,8 @@ public class BPPProblem implements Problem<BPPState> {
         this.optimal = optimal;
     }
 
-    public BPPState verboseInitialState() {
-        return new BPPState(this, true);
-    }
-
     public Optional<Integer> getOptimal() {
         return optimal;
-    }
-
-    /**
-     * Formats the BPPDecision as an Integer.
-     *
-     * @param decision The decision.
-     * @return The formated decision.
-     */
-    public int toDecision(BPPDecision decision) {
-        return decision.item + nbItems * decision.bin;
-    }
-
-    /**
-     * Restores a decision object from its Integer form.
-     *
-     * @param value The formatted Integer form of the decision.
-     * @return An BPPDecision object.
-     */
-    public BPPDecision fromDecision(int value) {
-        return new BPPDecision(
-                value % nbItems,
-                value / nbItems
-        );
     }
 
     @Override
@@ -58,7 +31,11 @@ public class BPPProblem implements Problem<BPPState> {
 
     @Override
     public BPPState initialState() {
-        return new BPPState(this);
+        HashSet<Integer> remainingItems = new HashSet<>();
+        for(int i = 0; i<nbItems; i++) {
+            remainingItems.add(i);
+        }
+        return new BPPState(binMaxSpace, remainingItems, 1);
     }
 
     @Override
@@ -73,32 +50,34 @@ public class BPPProblem implements Problem<BPPState> {
 
         // Filtering item that can still fit current bin.
         List<Integer> decisionsOnCurrent =
-                state.remainingItems.stream().filter(item -> itemWeight[item] <= state.remainingSpace()).
-                        map(item -> toDecision(new BPPDecision(item, state.currentBinId()))).toList();
+                state.remainingItems.stream().filter(item -> state.itemFitInBin(itemWeight[item])).toList();
 
         // If some items fit the current bin, use them, else add a new one.
         if (!decisionsOnCurrent.isEmpty())
             return decisionsOnCurrent.iterator();
         else
-            return state.remainingItems.stream().map(item -> toDecision(new BPPDecision(item, state.currentBinId()+1))).iterator();
+            return state.remainingItems.iterator();
     }
 
     @Override
     public BPPState transition(BPPState state, Decision decision) {
-        BPPDecision bppDecision = fromDecision(decision.val());
-        int bin = bppDecision.bin;
-        int item = bppDecision.item;
+        int item = decision.val();
         int weight = itemWeight[item];
-        BPPState newState = new BPPState(state);
-        if (state.currentBinId() != bppDecision.bin) newState.newBin();
-        newState.packItem(item, weight, bin);
+        BPPState newState;
+        if (!state.itemFitInBin(weight)) {
+            newState = state.newBin(binMaxSpace).packItem(item,weight);
+        } else {
+            newState = state.packItem(item, weight);
+        }
         return newState;
     }
 
     @Override
     public int transitionCost(BPPState state, Decision decision) {
-        // If we are creating a new bin ==> -1 else 0
-        if (fromDecision(decision.val()).bin != state.currentBinId()) return -1;
+        int item = decision.val();
+        int weight = itemWeight[item];
+        // Not enough space ==> new bin ==> -1 else 0
+        if (!state.itemFitInBin(weight)) return -1;
         else return 0;
     }
 }
