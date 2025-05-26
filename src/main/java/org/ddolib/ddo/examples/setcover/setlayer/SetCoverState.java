@@ -23,8 +23,18 @@ public class SetCoverState {
     }
 
     @Override
+    public int hashCode() {
+        return uncoveredElements.hashCode();
+    }
+
+    @Override
     public boolean equals(Object o) {
         assert o instanceof SetCoverState;
+        /* System.out.println("***************");
+        System.out.println("Equality between: ");
+        System.out.println(this);
+        System.out.println(o);
+        System.out.println(uncoveredElements.keySet().equals(((SetCoverState) o).uncoveredElements.keySet())); */
         return uncoveredElements.keySet().equals(((SetCoverState) o).uncoveredElements.keySet());
     }
 

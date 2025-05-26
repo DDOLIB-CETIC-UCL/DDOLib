@@ -7,7 +7,10 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+
+import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.MinCentrality;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,14 +22,15 @@ public class SetCover {
 
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
+        final int w = Integer.parseInt(args[1]);
 
         final SetCoverProblem problem = readInstance(instance);
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
+        final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = new RelaxationSolver<>(
                 problem,
                 relax,
                 varh,
@@ -39,7 +43,7 @@ public class SetCover {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
-        int[] solution = solver.bestSolution().map(decisions -> {
+        /*int[] solution = solver.bestSolution().map(decisions -> {
             System.out.println("Solution Found");
             int[] values = new int[problem.nbVars()];
             for (Decision d : decisions) {
@@ -50,7 +54,7 @@ public class SetCover {
 
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));*/
     }
 
     /**

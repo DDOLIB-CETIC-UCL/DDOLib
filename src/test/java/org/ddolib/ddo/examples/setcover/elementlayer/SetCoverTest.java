@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverProblem;
@@ -18,6 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
@@ -153,6 +155,7 @@ public class SetCoverTest {
         Assertions.assertTrue(testValidity(problem, solution));
     }
 
+    @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testRelaxation(String fname) throws IOException {
@@ -164,7 +167,7 @@ public class SetCoverTest {
         final SetCoverRanking ranking = new SetCoverRanking();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         FixedWidth<SetCoverState> width;
-        for (int widthVal = 1; widthVal < 1000000; widthVal = widthVal * 10) {
+        for (int widthVal = 1; widthVal < 10000; widthVal = widthVal + Math.max(1, (int) (widthVal*0.1))) {
             System.out.println("@@@@@@@@@");
             width = new FixedWidth<>(widthVal);
             varh = new MinCentrality(problem);
@@ -186,13 +189,66 @@ public class SetCoverTest {
         }
     }
 
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxationStrength(String file) throws IOException {
+        SetCoverProblem problem = readInstance(file);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        SetCoverRelax relax;
+        FixedWidth<SetCoverState> width;
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        VariableHeuristic<SetCoverState> varh;
+
+        StringBuilder csvString = new StringBuilder();
+
+        Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
+        heuristics.put("elementDefault", new DefaultVariableHeuristic<>());
+        heuristics.put("elementMinCentrality", new MinCentrality(problem));
+
+        for (String heuristic : heuristics.keySet()) {
+            varh = heuristics.get(heuristic);
+            System.out.println(heuristic);
+            for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
+                System.out.print(maxWidth + ", ");
+                relax = new SetCoverRelax();
+                width = new FixedWidth<>(maxWidth);
+                Solver solver = new RelaxationSolver<>(problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
+
+                long start = System.currentTimeMillis();
+                SearchStatistics stats = solver.maximize();
+                double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+                csvString.append(file).append(";");
+                csvString.append(maxWidth).append(";");
+                csvString.append(heuristic).append(";");
+                csvString.append(duration).append(";");
+                csvString.append(solver.bestValue().get()).append("\n");
+            }
+        }
+
+        FileWriter writer = new FileWriter("tmp/setCoverElementStats.csv", true);
+        writer.write(csvString.toString());
+        writer.close();
+
+    }
+
     // *************************************************************************
 
-     static Stream<String> dataProvider() {
+    static Stream<String> dataProvider() {
         return Stream.of(
+                "data/SetCover/generated/n_6_b_5_d_5",
+                "data/SetCover/generated/n_10_b_8_d_3",
+                "data/SetCover/1id_problem/abilene",
+                "data/SetCover/1id_problem/ai3",
                 "data/SetCover/1id_problem/aarnet"
         );
-     }
+    }
 
     /**
      * Test the validity of a solution, i.e. if the collection of selected sets covers all elements in the universe

@@ -7,7 +7,9 @@ import java.util.*;
 public class SetCoverHeuristics {
 
     public static final class MinCentrality implements VariableHeuristic<SetCoverState> {
-        private final PriorityQueue<Integer> pq;
+        // private final PriorityQueue<Integer> pq;
+        private final SetCoverProblem problem;
+        private final Integer[] ordering;
 
         /**
          * This heuristic orders the elements are ordered following their centrality.
@@ -15,15 +17,23 @@ public class SetCoverHeuristics {
          * @param problem
          */
         public MinCentrality(SetCoverProblem problem) {
-            pq = new PriorityQueue<>(Comparator.comparingInt(x -> problem.constraints.get(x).size()));
-            for (int elem = 0; elem < problem.constraints.size(); elem++) {
-                pq.add(elem);
+            this.problem = problem;
+            ordering = new Integer[problem.nElem];
+            for (int i = 0; i < problem.nElem; i++) {
+                ordering[i] = i;
             }
+            Arrays.sort(ordering, Comparator.comparingInt(x -> this.problem.constraints.get(x).size()));
         }
 
         @Override
         public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
-            return pq.poll();
+            for (int elem: ordering) {
+                if (variables.contains(elem)) {
+                    System.out.println("Next element: " + elem);
+                    return elem;
+                }
+            }
+            return null;
         }
     }
 

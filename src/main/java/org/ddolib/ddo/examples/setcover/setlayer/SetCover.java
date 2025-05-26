@@ -1,11 +1,11 @@
 package org.ddolib.ddo.examples.setcover.setlayer;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
@@ -17,20 +17,40 @@ import java.util.*;
 public class SetCover {
 
     public static void main(String[] args) throws IOException {
-        final String instance = "data/SetCover/1id_problem/tripode";
+        final String instance = args[0];
+        final String solverString = args[1];
+        final String branchingString = args[2];
+
         final SetCoverProblem problem = readInstance(instance);
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1000000);
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+
+        final Solver solver;
+        switch (solverString) {
+            case "relax":
+                solver = new RelaxationSolver<>(
+                        problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
+                break;
+            default: // sequential
+                solver = new SequentialSolver<>(
+                        problem,
+                        relax,
+                        varh,
+                        ranking,
+                        width,
+                        frontier);
+                break;
+        }
+
+
 
         long start = System.currentTimeMillis();
         solver.maximize();

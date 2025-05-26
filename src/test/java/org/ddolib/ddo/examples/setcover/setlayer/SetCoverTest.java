@@ -226,8 +226,8 @@ public class SetCoverTest {
 
     @Disabled
     @ParameterizedTest
-    @MethodSource("dataProviderLight")
-    public void testHeuristic(String file) throws IOException {
+    @MethodSource("dataProvider")
+    public void testRelaxationStrength(String file) throws IOException {
         SetCoverProblem problem = readInstance(file);
         final SetCoverRanking ranking = new SetCoverRanking();
         SetCoverRelax relax;
@@ -239,14 +239,14 @@ public class SetCoverTest {
 
         Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
         heuristics.put("default", new DefaultVariableHeuristic<>());
-        // heuristics.put("minCentrality", new MinCentralityHeuristic(problem));
+        heuristics.put("minCentrality", new MinCentralityHeuristic(problem));
         // heuristics.put("focusSmallState", new FocusMostSmallState(problem));
         heuristics.put("focusClosingElement", new FocusClosingElements(problem));
 
         for (String heuristic : heuristics.keySet()) {
             varh = heuristics.get(heuristic);
             System.out.println(heuristic);
-            for (int maxWidth = 1; maxWidth <= 10000; maxWidth = maxWidth * 10) {
+            for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
                 System.out.print(maxWidth + ", ");
                 relax = new SetCoverRelax();
                 width = new FixedWidth<>(maxWidth);
@@ -269,7 +269,7 @@ public class SetCoverTest {
             }
         }
 
-        FileWriter writer = new FileWriter("tmp/setCoverStats.csv", true);
+        FileWriter writer = new FileWriter("tmp/setCoverSetStats.csv", true);
         writer.write(csvString.toString());
         writer.close();
 
@@ -339,6 +339,7 @@ public class SetCoverTest {
 
     }
 
+    @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testRelaxation(String fname) throws IOException {
@@ -377,6 +378,10 @@ public class SetCoverTest {
 
     static Stream<String> dataProvider() {
         return Stream.of(
+                "data/SetCover/generated/n_6_b_5_d_5",
+                "data/SetCover/generated/n_10_b_8_d_3",
+                "data/SetCover/1id_problem/abilene",
+                "data/SetCover/1id_problem/ai3",
                 "data/SetCover/1id_problem/aarnet"
         );
     }

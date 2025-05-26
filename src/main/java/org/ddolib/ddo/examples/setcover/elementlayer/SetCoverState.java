@@ -23,6 +23,11 @@ public class SetCoverState {
     }
 
     @Override
+    public int hashCode() {
+        return uncoveredElements.hashCode();
+    }
+
+    @Override
     public boolean equals(Object o) {
         assert o instanceof SetCoverState;
         return uncoveredElements.equals(((SetCoverState) o).uncoveredElements);
