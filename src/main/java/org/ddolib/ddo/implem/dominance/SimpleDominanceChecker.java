@@ -4,7 +4,7 @@ package org.ddolib.ddo.implem.dominance;
 import java.util.*;
 
 
-public class SimpleDominanceChecker<T, K> {
+public class SimpleDominanceChecker<T, K> implements DominanceChecker<T, K> {
 
     private final Dominance<T, K> dominance;
 
@@ -58,12 +58,14 @@ public class SimpleDominanceChecker<T, K> {
      * @param objValue the objective value of the state
      * @return true if the state is dominated, false otherwise
      */
+    @Override
     public boolean updateDominance(T state, int depth, int objValue) {
         Map<K, TreeSet<ValueState>> front = fronts.get(depth);
         K key = dominance.getKey(state);
         boolean dominated = false;
         if (front.containsKey(key)) {
-            for (ValueState vs : front.get(key)) {
+            TreeSet<ValueState> set = (TreeSet<ValueState>) front.get(key).clone();
+            for (ValueState vs : set) {
                 if (vs.value > objValue && dominance.isDominatedOrEqual(state, vs.state)) {
                     dominated = true;
                     break;

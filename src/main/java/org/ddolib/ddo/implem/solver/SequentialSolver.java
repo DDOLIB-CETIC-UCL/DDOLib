@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
@@ -36,7 +37,7 @@ import java.util.Set;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolver<K,T> implements Solver {
+public final class SequentialSolver<K, T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -81,7 +82,7 @@ public final class SequentialSolver<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagram<T,K> mdd;
+    private final DecisionDiagram<T, K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -95,7 +96,7 @@ public final class SequentialSolver<K,T> implements Solver {
     /**
      * This is the dominance object that will be used to prune the search space.
      */
-    private SimpleDominanceChecker<T,K> dominance;
+    private DominanceChecker<T, K> dominance;
 
     /**
      * Creates a fully qualified instance
@@ -106,7 +107,7 @@ public final class SequentialSolver<K,T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final SimpleDominanceChecker<T,K> dominance,
+            final DominanceChecker<T, K> dominance,
             final Frontier<T> frontier) {
         this.problem = problem;
         this.relax = relax;
@@ -138,6 +139,7 @@ public final class SequentialSolver<K,T> implements Solver {
                     public Integer getKey(T t) {
                         return 0;
                     }
+
                     @Override
                     public boolean isDominatedOrEqual(T state1, T state2) {
                         return false;
@@ -176,7 +178,7 @@ public final class SequentialSolver<K,T> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInput<T,K> compilation = new CompilationInput<>(
+            CompilationInput<T, K> compilation = new CompilationInput<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -195,7 +197,7 @@ public final class SequentialSolver<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<T,K>(
+            compilation = new CompilationInput<T, K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,

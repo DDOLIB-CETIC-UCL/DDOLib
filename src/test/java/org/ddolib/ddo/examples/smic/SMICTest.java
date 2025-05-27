@@ -7,15 +7,14 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.ddolib.ddo.examples.smic.SMICMain.readProblem;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SMICTest {
@@ -30,18 +29,20 @@ public class SMICTest {
             }
         });
     }
+
     final int[] cpSolution = new int[]{60, 55, 58, 41, 69, 55, 56, 72, 48, 73};
 
     @ParameterizedTest
     @MethodSource("easySMICInstances")
-    public void testSMIC(SMICProblem problem)  {
+    public void testSMIC(SMICProblem problem) {
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
+        final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
+                new SMICDominance(), problem.nbVars());
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,

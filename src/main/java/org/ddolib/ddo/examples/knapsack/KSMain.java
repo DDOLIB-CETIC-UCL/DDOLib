@@ -9,13 +9,14 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * The Knapsack problem is a classic optimization problem
@@ -37,10 +38,11 @@ public class KSMain {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
+                problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
 
-        final Solver solver = new SequentialSolver(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -54,7 +56,7 @@ public class KSMain {
         SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        System.out.println("Search statistics:"+stats);
+        System.out.println("Search statistics:" + stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {

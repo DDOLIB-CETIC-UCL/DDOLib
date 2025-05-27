@@ -2,8 +2,6 @@ package org.ddolib.ddo.examples.tsptw;
 
 import org.ddolib.ddo.implem.dominance.Dominance;
 
-import java.util.BitSet;
-
 /**
  * Dominance class for the TSPTW problem.
  * If for two states, the position is the same and the {@code mustVisit} set is the same,
@@ -22,11 +20,3 @@ public class TSPTWDominance implements Dominance<TSPTWState, TSPTWDominanceKey> 
     }
 }
 
-record TSPTWDominanceKey(Position p, BitSet mustVisit) {
-    @Override
-    public String toString() {
-        return String.format("position: %s - must visit: %s",
-                p,
-                mustVisit);
-    }
-}

@@ -8,13 +8,12 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MSCTTest {
 
@@ -42,9 +41,10 @@ class MSCTTest {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
+        final SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker(new MSCTDominance(),
+                problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -117,11 +117,13 @@ class MSCTTest {
         int bestSolutionValue = Integer.MAX_VALUE;
         List<Integer> bestSolution = new ArrayList<>();
         for (List<Integer> permutation : permutations) {
-            int t = 0; int objective = 0;
-            int[] ends = new int[n]; int k = 0;
+            int t = 0;
+            int objective = 0;
+            int[] ends = new int[n];
+            int k = 0;
             for (Integer i : permutation) {
                 t = Math.max(t, release[i]) + processing[i];
-                objective +=  t;
+                objective += t;
             }
             if (objective < bestSolutionValue) {
                 bestSolutionValue = objective;

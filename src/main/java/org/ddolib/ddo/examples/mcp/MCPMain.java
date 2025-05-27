@@ -1,17 +1,19 @@
 package org.ddolib.ddo.examples.mcp;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public final class MCPMain {
 
@@ -29,21 +31,21 @@ public final class MCPMain {
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
 
-        SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
+        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
 
         long start = System.currentTimeMillis();
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        Optional<Set<Decision>> bestSol =  solver.bestSolution();
+        Optional<Set<Decision>> bestSol = solver.bestSolution();
 
         int[] solution = bestSol.map(decisions -> {
-                    int[] values = new int[problem.nbVars()];
-                    for (Decision d : decisions) {
-                        values[d.var()] = d.val();
-                    }
-                    return values;
-                }).get();
+            int[] values = new int[problem.nbVars()];
+            for (Decision d : decisions) {
+                values[d.var()] = d.val();
+            }
+            return values;
+        }).get();
 
         HashSet<Integer> s = new HashSet<>();
         HashSet<Integer> t = new HashSet<>();

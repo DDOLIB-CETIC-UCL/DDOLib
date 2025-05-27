@@ -15,7 +15,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-/** The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.*/
+import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
+
+/**
+ * The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.
+ */
 public final class LCSMain {
 
     public static LCSProblem extractFile(String fileName) throws IOException {
@@ -112,7 +116,7 @@ public final class LCSMain {
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        ParallelSolver<LCSState,Integer> solver = new ParallelSolver<>(
+        final ParallelSolver<LCSState, Integer> solver = parallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -135,7 +139,7 @@ public final class LCSMain {
                 })
                 .orElse(new int[0]);
 
-        int[] filteredSolution = Arrays.stream(solution).filter(x -> x >=0).toArray();
+        int[] filteredSolution = Arrays.stream(solution).filter(x -> x >= 0).toArray();
         Character[] charNbSolution = Arrays.stream(filteredSolution).
                 mapToObj(x -> problem.idToChar[x]).toArray(Character[]::new);
 
