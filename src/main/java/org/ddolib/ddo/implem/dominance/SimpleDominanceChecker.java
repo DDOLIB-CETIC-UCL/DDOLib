@@ -67,8 +67,7 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
         K key = dominance.getKey(state);
         boolean dominated = false;
         if (front.containsKey(key)) {
-            TreeSet<ValueState> set = (TreeSet<ValueState>) front.get(key).clone();
-            for (ValueState vs : set) {
+            for (ValueState vs : new TreeSet<>(front.get(key))) {
                 if (vs.value > objValue && dominance.isDominatedOrEqual(state, vs.state)) {
                     dominated = true;
                     break;
