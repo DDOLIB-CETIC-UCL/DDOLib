@@ -71,7 +71,7 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
                 if (vs.value > objValue && dominance.isDominatedOrEqual(state, vs.state)) {
                     dominated = true;
                     break;
-                } else if (objValue > vs.value && dominance.isDominatedOrEqual(vs.state, state)) {
+                } else if (objValue >= vs.value && dominance.isDominatedOrEqual(vs.state, state)) {
                     front.get(key).remove(vs);
                 }
             }
