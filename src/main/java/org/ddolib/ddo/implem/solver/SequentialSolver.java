@@ -105,8 +105,7 @@ public final class SequentialSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final DominanceChecker<T, K> dominance,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;

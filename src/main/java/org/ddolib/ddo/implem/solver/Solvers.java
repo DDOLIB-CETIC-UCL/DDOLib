@@ -16,9 +16,9 @@ public class Solvers {
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
                                                                  final WidthHeuristic<T> width,
-                                                                 final DominanceChecker<T, K> dominance,
-                                                                 final Frontier<T> frontier) {
-        return new SequentialSolver<>(problem, relax, varh, ranking, width, dominance, frontier);
+                                                                 final Frontier<T> frontier,
+                                                                 final DominanceChecker<T, K> dominance) {
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance);
     }
 
     public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
@@ -28,7 +28,7 @@ public class Solvers {
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        return new SequentialSolver<>(problem, relax, varh, ranking, width, defaultDominance, frontier);
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance);
     }
 
     public static <K, T> ParallelSolver<T, K> parallelSolver(final int nbThreads,
@@ -37,9 +37,9 @@ public class Solvers {
                                                              final VariableHeuristic<T> varh,
                                                              final StateRanking<T> ranking,
                                                              final WidthHeuristic<T> width,
-                                                             final DominanceChecker<T, K> dominance,
-                                                             final Frontier<T> frontier) {
-        return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, dominance, frontier);
+                                                             final Frontier<T> frontier,
+                                                             final DominanceChecker<T, K> dominance) {
+        return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, dominance);
     }
 
     public static <T> ParallelSolver<T, Integer> parallelSolver(final int nbThreads,
@@ -50,6 +50,6 @@ public class Solvers {
                                                                 final WidthHeuristic<T> width,
                                                                 final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, defaultDominance, frontier);
+        return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, defaultDominance);
     }
 }

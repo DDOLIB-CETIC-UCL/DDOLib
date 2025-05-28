@@ -60,8 +60,7 @@ public class TSPTWMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier
+                frontier, dominance
         );
 
         long start = System.currentTimeMillis();

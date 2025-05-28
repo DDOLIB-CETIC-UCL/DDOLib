@@ -89,8 +89,8 @@ public class KSTest {
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier, dominance
+        );
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);

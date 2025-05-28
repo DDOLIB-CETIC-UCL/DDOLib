@@ -42,8 +42,8 @@ public class SMICMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier, dominance
+        );
 
 
         long start = System.currentTimeMillis();

@@ -129,8 +129,7 @@ public class TSPTWTests {
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier
+                frontier, dominance
         );
         solver.maximize();
 

@@ -47,8 +47,8 @@ public class MSCTMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier, dominance
+        );
 
 
         long start = System.currentTimeMillis();

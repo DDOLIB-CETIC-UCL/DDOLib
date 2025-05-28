@@ -48,8 +48,7 @@ public final class ParallelSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final DominanceChecker<T, K> dominance,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
         this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
         this.critical = new Critical<>(nbThreads, frontier);
     }
