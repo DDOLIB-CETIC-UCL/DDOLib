@@ -6,7 +6,12 @@ package org.ddolib.ddo.implem.dominance;
  *
  * @param <T> The type of states.
  */
-public class DefaultDominanceChecker<T> implements DominanceChecker<T, Integer> {
+public class DefaultDominanceChecker<T> extends DominanceChecker<T, Integer> {
+
+    public DefaultDominanceChecker() {
+        super(new DefaultDominance<>());
+    }
+
     @Override
     public boolean updateDominance(T state, int depth, int objValue) {
         return false;

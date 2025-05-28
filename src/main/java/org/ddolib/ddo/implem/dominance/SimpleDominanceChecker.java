@@ -3,10 +3,13 @@ package org.ddolib.ddo.implem.dominance;
 
 import java.util.*;
 
-
-public class SimpleDominanceChecker<T, K> implements DominanceChecker<T, K> {
-
-    private final Dominance<T, K> dominance;
+/**
+ * DominanceChecker that maintains lists of non dominated nodes for each level of the mdd.
+ *
+ * @param <T> The type of states.
+ * @param <K> The type of dominance keys.
+ */
+public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
     /**
      * Container for a state and the value of the longest path to this state
@@ -41,7 +44,7 @@ public class SimpleDominanceChecker<T, K> implements DominanceChecker<T, K> {
     private final ArrayList<Map<K, TreeSet<ValueState>>> fronts;
 
     public SimpleDominanceChecker(Dominance<T, K> dominance, int nVars) {
-        this.dominance = dominance;
+        super(dominance);
         this.fronts = new ArrayList<>(nVars);
         for (int i = 0; i < nVars; i++) {
             fronts.add(new HashMap<>());
