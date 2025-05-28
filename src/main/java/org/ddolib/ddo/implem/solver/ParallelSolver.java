@@ -41,6 +41,27 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final Critical<T> critical;
 
+    /**
+     * Creates a fully qualified instance
+     *
+     * @param nbThreads The number of threads that can be used in parallel.
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     */
     public ParallelSolver(
             final int nbThreads,
             final Problem<T> problem,
