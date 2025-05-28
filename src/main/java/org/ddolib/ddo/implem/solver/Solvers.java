@@ -11,7 +11,7 @@ import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 public class Solvers {
 
-    public static <K, T> SequentialSolver<K, T> sequentialSolver(final Problem<T> problem,
+    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
                                                                  final Relaxation<T> relax,
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
@@ -21,7 +21,7 @@ public class Solvers {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, dominance, frontier);
     }
 
-    public static <T> SequentialSolver<Integer, T> sequentialSolver(final Problem<T> problem,
+    public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
                                                                     final Relaxation<T> relax,
                                                                     final VariableHeuristic<T> varh,
                                                                     final StateRanking<T> ranking,

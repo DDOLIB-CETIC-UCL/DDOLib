@@ -11,7 +11,7 @@ public class TSPTWInstance {
 
     public int[][] distance;
     public TimeWindow[] timeWindows;
-    public Optional<Integer> optimal;
+    public Optional<Integer> optimal = Optional.empty();
     public String name;
 
     /**
@@ -68,8 +68,8 @@ public class TSPTWInstance {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(name + "\n");
-        sb.append(Arrays.toString(timeWindows) + "\n");
+        sb.append(name).append("\n");
+        sb.append(Arrays.toString(timeWindows)).append("\n");
         String timeStr = Arrays.stream(distance)
                 .map(row -> Arrays.stream(row)
                         .mapToObj(x -> String.format("%4s", x))
@@ -80,4 +80,5 @@ public class TSPTWInstance {
     }
 }
 
-record TimeWindow(int start, int end) { }
+record TimeWindow(int start, int end) {
+}

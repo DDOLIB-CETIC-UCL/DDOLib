@@ -4,9 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -53,29 +51,6 @@ public final class ParallelSolver<T, K> implements Solver {
             final DominanceChecker<T, K> dominance,
             final Frontier<T> frontier) {
         this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
-        this.critical = new Critical<>(nbThreads, frontier);
-    }
-
-    public ParallelSolver(
-            final int nbThreads,
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier) {
-        this.shared = new Shared(nbThreads, problem, relax, varh, ranking, width,
-                new SimpleDominanceChecker<T, Integer>(new Dominance<T, Integer>() {
-                    @Override
-                    public Integer getKey(T state) {
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean isDominatedOrEqual(T state1, T state2) {
-                        return false;
-                    }
-                }, problem.nbVars()));
         this.critical = new Critical<>(nbThreads, frontier);
     }
 

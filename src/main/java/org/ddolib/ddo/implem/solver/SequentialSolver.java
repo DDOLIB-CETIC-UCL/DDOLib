@@ -4,9 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -37,7 +35,7 @@ import java.util.Set;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolver<K, T> implements Solver {
+public final class SequentialSolver<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -47,7 +45,7 @@ public final class SequentialSolver<K, T> implements Solver {
      */
     private final Relaxation<T> relax;
     /**
-     * An heuristic to identify the most promising nodes
+     * A heuristic to identify the most promising nodes
      */
     private final StateRanking<T> ranking;
     /**
@@ -96,7 +94,7 @@ public final class SequentialSolver<K, T> implements Solver {
     /**
      * This is the dominance object that will be used to prune the search space.
      */
-    private DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T, K> dominance;
 
     /**
      * Creates a fully qualified instance
@@ -119,33 +117,6 @@ public final class SequentialSolver<K, T> implements Solver {
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-    }
-
-    public SequentialSolver(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier) {
-
-        this(problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                new SimpleDominanceChecker(new Dominance<T, Integer>() {
-                    @Override
-                    public Integer getKey(T t) {
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean isDominatedOrEqual(T state1, T state2) {
-                        return false;
-                    }
-                }, problem.nbVars()),
-                frontier);
     }
 
 
