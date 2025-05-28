@@ -50,7 +50,8 @@ class MSCTTest {
                 varh,
                 ranking,
                 width,
-                frontier, dominance
+                frontier,
+                dominance
         );
 
         solver.maximize();

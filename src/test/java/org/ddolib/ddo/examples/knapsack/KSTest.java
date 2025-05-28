@@ -89,7 +89,8 @@ public class KSTest {
                 varh,
                 ranking,
                 width,
-                frontier, dominance
+                frontier,
+                dominance
         );
 
         solver.maximize();

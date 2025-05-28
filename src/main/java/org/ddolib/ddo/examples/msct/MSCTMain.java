@@ -47,7 +47,8 @@ public class MSCTMain {
                 varh,
                 ranking,
                 width,
-                frontier, dominance
+                frontier,
+                dominance
         );
 
 

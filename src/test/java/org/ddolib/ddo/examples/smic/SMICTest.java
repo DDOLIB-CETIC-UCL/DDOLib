@@ -48,7 +48,8 @@ public class SMICTest {
                 varh,
                 ranking,
                 width,
-                frontier, dominance
+                frontier,
+                dominance
         );
 
 
