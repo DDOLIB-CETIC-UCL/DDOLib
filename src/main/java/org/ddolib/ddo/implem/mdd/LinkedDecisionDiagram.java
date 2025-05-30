@@ -432,7 +432,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             }
         }
         if (node == null) {
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+            Node newNode = new Node(Integer.MIN_VALUE);
+            newNode.setType(NodeType.RELAXED);
+            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
         }
 
         // redirect and relax all arcs entering the merged node
@@ -478,6 +480,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
+            if (node.node.type == NodeType.RELAXED) {
+                n.setType(NodeType.RELAXED);
+            }
             nextLayer.put(state, n);
         }
 
