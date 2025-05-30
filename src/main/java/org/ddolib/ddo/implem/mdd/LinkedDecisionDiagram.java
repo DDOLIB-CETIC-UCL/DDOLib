@@ -31,13 +31,16 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      */
     private HashMap<T, Node> nextLayer = new HashMap<T, Node>();
     /**
-     * All the nodes from the last exact layer cutset
+     * All the nodes from the last exact layer cutset or the frontier cutset
      */
-    private List<NodeSubProblem<T>> lel = new ArrayList<>();
+    private List<NodeSubProblem<T>> cutset = new ArrayList<>();
     /**
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
-    private boolean lelWasSet = false;
+
+    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    private boolean exact = true;
+
     /**
      * The best node in the terminal layer (if it exists at all)
      */
@@ -270,19 +273,24 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             // requested from this decision diagram  
             //
             // IMPORTANT NOTE:
-            // The check is on depth 2 because the method maybeSaveLel() saves the parent
-            // of the current layer if a LEL is to be remembered. In order to be sure
+            // The check is on depth 2 because the parent of the current layer is saved
+            // if a LEL is to be remembered. In order to be sure
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depth >= 2 && currentLayer.size() > maxWidth) {
                 switch (input.getCompilationType()) {
                     case Restricted:
-                        maybeSaveLel();
+                        exact = false;
                         restrict(maxWidth, ranking);
                         break;
                     case Relaxed:
-                        maybeSaveLel();
+                        if (exact) {
+                            exact = false;
+                            if (input.getCutSetType() == CutSetType.LastExactLayer) {
+                                cutset.addAll(prevLayer.values());
+                            }
+                        }
                         relax(maxWidth, ranking, relax);
                         break;
                     case Exact:
@@ -319,12 +327,16 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+            if (!exact && input.getCutSetType() == CutSetType.Frontier) {
+                computeFrontierCutSet();
+            }
         }
     }
 
     @Override
     public boolean isExact() {
-        return !lelWasSet;
+        return exact;
+        //return !lelWasSet;
     }
 
     @Override
@@ -355,7 +367,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
     @Override
     public Iterator<SubProblem<T>> exactCutset() {
-        return new NodeSubProblemsAsSubProblemsIterator<>(lel.iterator(), pathToRoot);
+        return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
 
     // --- UTILITY METHODS -----------------------------------------------
@@ -379,19 +391,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         prevLayer.clear();
         currentLayer.clear();
         nextLayer.clear();
-        lel.clear();
-        lelWasSet = false;
+        cutset.clear();
+        exact = true;
         best = null;
-    }
-
-    /**
-     * Saves the last exact layer cutset if needed
-     */
-    private void maybeSaveLel() {
-        if (!lelWasSet) {
-            lel.addAll(prevLayer.values());
-        }
-        lelWasSet = true;
     }
 
     /**
@@ -493,6 +495,36 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             n.best = edge;
             n.value = value;
         }
+    }
+
+
+    private void computeFrontierCutSet() {
+        HashSet<Node> current = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>();
+        parent.addAll(nextLayer.values());
+        /*
+        while (!parent.isEmpty()) {
+            // swap current and parent
+            HashSet<Node> tmp = current;
+            current = parent;
+            parent = tmp;
+            parent.clear();
+
+            for (Node n : current) {
+                if (n.isExact()) {
+                    n.setAboveCutset(true);
+                } else {
+                    for (Edge e : n.edges) {
+                        Node origin = e.origin;
+                        if (origin.isExact() && !origin.isCutset()) {
+                            this.cutset.push(origin);
+                            origin.setCutset(true);
+                        }
+                        parent.add(origin);
+                    }
+                }
+            }
+        }*/
     }
 
     /**

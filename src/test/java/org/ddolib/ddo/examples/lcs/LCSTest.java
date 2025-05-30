@@ -7,6 +7,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -66,8 +67,7 @@ public class LCSTest {
 
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        final Solver solver = new ParallelSolver(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
@@ -88,8 +88,7 @@ public class LCSTest {
 
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
 
-        final Solver solver = new ParallelSolver(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
