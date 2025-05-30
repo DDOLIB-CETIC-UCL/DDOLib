@@ -68,6 +68,11 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         private List<Edge> edges;
 
         /**
+         * The type of this node (exact, relaxed, marked etc...)
+         */
+        private NodeType type;
+
+        /**
          * Creates a new node
          */
         public Node(final int value) {
@@ -75,6 +80,15 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             this.suffix = null;
             this.best = null;
             this.edges = new ArrayList<>();
+            this.type = NodeType.EXACT;
+        }
+
+        /**
+         * set the type of the node when different to exact type
+         * @param nodeType
+         */
+        public void setType(final NodeType nodeType) {
+            this.type = nodeType;
         }
 
         @Override
@@ -83,6 +97,15 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                     value, suffix, best, edges);
         }
     }
+
+    /**
+     * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
+     */
+    public enum NodeType {
+        EXACT, RELAXED, MARKED;
+    }
+
+
 
     /**
      * This is an edge that connects two nodes from the decision diagram
