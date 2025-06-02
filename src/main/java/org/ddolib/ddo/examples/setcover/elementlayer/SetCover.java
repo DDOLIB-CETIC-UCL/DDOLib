@@ -2,15 +2,15 @@ package org.ddolib.ddo.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.RelaxationType;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.MinCentrality;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,7 +30,8 @@ public class SetCover {
         final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new RelaxationSolver<>(
+        final Solver solver = new SequentialSolver<>(
+                RelaxationType.Cluster,
                 problem,
                 relax,
                 varh,
@@ -43,7 +44,7 @@ public class SetCover {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
-        /*int[] solution = solver.bestSolution().map(decisions -> {
+        int[] solution = solver.bestSolution().map(decisions -> {
             System.out.println("Solution Found");
             int[] values = new int[problem.nbVars()];
             for (Decision d : decisions) {
@@ -54,7 +55,7 @@ public class SetCover {
 
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));*/
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
     /**
@@ -110,7 +111,6 @@ public class SetCover {
                     }
                 }
             });
-
 
             return new SetCoverProblem(context.nElem, context.nSet, convertSetsToConstraints(context.sets, context.nElem));
         }

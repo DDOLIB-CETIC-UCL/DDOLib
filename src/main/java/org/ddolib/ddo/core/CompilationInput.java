@@ -8,6 +8,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
  * @param <T> The type used to model the state of your problem
  */
 public final class CompilationInput<T> {
+    final RelaxationType relaxType;
     /** How is the mdd being compiled ? */
     final CompilationType compType;
     /** A reference to the original problem we try to maximize */
@@ -27,15 +28,17 @@ public final class CompilationInput<T> {
 
     /** Creates the inputs to parameterize the compilation of an MDD */
     public CompilationInput(
-        final CompilationType compType,
-        final Problem<T> problem,
-        final Relaxation<T> relaxation,
-        final VariableHeuristic<T> var,
-        final StateRanking<T> ranking,
-        final SubProblem<T> residual,
-        final int maxWidth,
-        final int bestLB
+            final RelaxationType relaxType,
+            final CompilationType compType,
+            final Problem<T> problem,
+            final Relaxation<T> relaxation,
+            final VariableHeuristic<T> var,
+            final StateRanking<T> ranking,
+            final SubProblem<T> residual,
+            final int maxWidth,
+            final int bestLB
     ) {
+        this.relaxType = relaxType;
         this.compType = compType;
         this.problem  = problem;
         this.relaxation = relaxation;
@@ -45,6 +48,28 @@ public final class CompilationInput<T> {
         this.maxWidth = maxWidth;
         this.bestLB = bestLB;
     }
+
+    /** Creates the inputs to parameterize the compilation of an MDD */
+    public CompilationInput(
+            final CompilationType compType,
+            final Problem<T> problem,
+            final Relaxation<T> relaxation,
+            final VariableHeuristic<T> var,
+            final StateRanking<T> ranking,
+            final SubProblem<T> residual,
+            final int maxWidth,
+            final int bestLB
+    ) {
+        this(
+                RelaxationType.Cost, compType, problem, relaxation, var, ranking, residual, maxWidth, bestLB
+        );
+    }
+
+    /** @return how are the relaxed nodes selected */
+    public RelaxationType getRelaxType() {
+        return relaxType;
+    }
+
     /** @return how is the dd being compiled ? */
     public CompilationType getCompilationType() {
         return compType;

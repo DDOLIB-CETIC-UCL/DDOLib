@@ -165,6 +165,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
             this.nextLayer.clear();
 
+            /*System.out.println("Layer before relaxation: ");
+            for (NodeSubProblem<T> n : this.currentLayer) {
+                System.out.print(n.state + ", ");
+            }
+            System.out.println();*/
+
             if (currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
                 return;
@@ -202,13 +208,26 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                         break;
                     case Relaxed:
                         maybeSaveLel();
-                        relax(maxWidth, ranking, relax);
+                        switch (input.getRelaxType()) {
+                            case Cost:
+                                relax(maxWidth, ranking, relax);
+                                break;
+                            case Cluster:
+                                relaxST(maxWidth, input.getStateRanking(), relax);
+                                break;
+                        }
                         break;
                     case Exact: 
                         /* nothing to do */
                         break;
                 }
             }
+
+            /*System.out.println("Layer after relaxation: ");
+            for (NodeSubProblem<T> n : this.currentLayer) {
+                System.out.print(n.state + ", ");
+            }
+            System.out.println();*/
 
             for (NodeSubProblem<T> n : currentLayer) {
                 // System.out.println("State: " + n.state);
@@ -226,6 +245,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     // System.out.println();
                 }
             }
+            // System.out.println("********************************");
             depth += 1;
         }
 
@@ -321,53 +341,146 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
 
-    private void relaxClosest(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+    private class STNode {
+        public final T A;
+        public final T B;
+        public final T merged;
 
-        this.currentLayer.sort(ranking.reversed());
-
-        final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
-
-        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
-
-        // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> node = null;
-        boolean fresh = true;
-        for (NodeSubProblem<T> n : keep) {
-            if (n.state.equals(merged)) {
-                node = n;
-                fresh = false;
-                break;
-            }
+        public STNode(T A, T B, T merged) {
+            this.A = A;
+            this.B = B;
+            this.merged = merged;
         }
-        if (node == null) {
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
-        }
+    }
 
+    private void redirectArcs(NodeSubProblem<T> merged, List<NodeSubProblem<T>> toMerge, final Relaxation<T> relax) {
         // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : merge) {
-            node.ub = Math.max(node.ub, drop.ub);
+        for (NodeSubProblem<T> drop : toMerge) {
+            merged.ub = Math.max(merged.ub, drop.ub);
 
             for (Edge e : drop.node.edges) {
-                int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+                int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged.state, e.decision, e.weight);
 
                 int value = saturatedAdd(e.origin.value, rcost);
                 e.weight  = rcost;
 
-                node.node.edges.add(e);
-                if (value > node.node.value) {
-                    node.node.value = value;
-                    node.node.best  = e;
+                merged.node.edges.add(e);
+                if (value > merged.node.value) {
+                    merged.node.value = value;
+                    merged.node.best  = e;
                 }
             }
         }
+    }
 
-        // delete the nodes that have been merged
-        merge.clear();
-        // append the newly merged node if needed
-        if (fresh) {
+    /**
+     * Performs a relaxation of the current layer using spanning tree algorithm
+     * @param maxWidth the maximum tolerated layer width
+     * @param ranking a ranking that orders the nodes from the most promising (greatest)
+     *  to the least promising (lowest)
+     * @param relax the relaxation operators which we will use to merge nodes
+     */
+    private void relaxST(final int maxWidth, final StateRanking<T> ranking, final Relaxation<T> relax) {
+
+        System.out.println("******************************************");
+        System.out.print("current layer: ");
+        /*for (NodeSubProblem<T> node: currentLayer) {
+            System.out.print(node.state + ", ");
+        }
+        System.out.println();*/
+        System.out.println("size of layer: " + currentLayer.size());
+        System.out.println("max width: " + maxWidth);
+
+        NodeSubroblemComparator<T> rankingComparator = new NodeSubroblemComparator<>(ranking);
+        this.currentLayer.sort(rankingComparator.reversed());
+        final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth/2);
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth/2, currentLayer.size());
+
+        // Maps each state with the node that needs to be merged to obtain it
+        Map<T, List<NodeSubProblem<T>>> stateMergeMap = new HashMap<>(merge.size());
+        for (NodeSubProblem<T> node: merge) {
+            stateMergeMap.put(node.state, new ArrayList<>(List.of(node)));
+        }
+
+        // The pq contains each potential pair of clusters
+        // the problem is that the size of the layer can quickly explode, quicly create memory issues
+        // Maybe all potential merge don't need to be considered
+        PriorityQueue<STNode> pq = new PriorityQueue<>((a,b) -> ranking.compare(a.merged, b.merged));
+        T mergedState;
+        for (int i = 0; i < merge.size() - 1; i++) {
+            for (int j = i + 1; j < merge.size(); j++) {
+                // System.out.println(pq.size());
+                mergedState = relax.mergeStates(Arrays.asList(merge.get(i).state, merge.get(j).state).iterator());
+                // System.out.print(mergedState);
+                pq.add(new STNode(merge.get(i).state,
+                        merge.get(j).state,
+                        mergedState));
+                if (pq.size() > maxWidth) {}
+            }
+        }
+        currentLayer.clear();
+
+        while (stateMergeMap.size() > maxWidth) {
+            STNode current = pq.poll();
+            assert current != null;
+
+            // if the merging became unvalid because of previous merge we skip it
+            if (!stateMergeMap.containsKey(current.A) || !stateMergeMap.containsKey(current.B)) {
+                continue;
+            }
+
+            List<NodeSubProblem<T>> mergeList;
+            boolean newState = false;
+            if (stateMergeMap.containsKey(current.merged)) {
+                mergeList = stateMergeMap.get(current.merged);
+            } else {
+                mergeList = new ArrayList<>();
+                newState = true;
+            }
+            mergeList.addAll(stateMergeMap.get(current.A));
+            mergeList.addAll(stateMergeMap.get(current.B));
+
+            stateMergeMap.remove(current.A);
+            stateMergeMap.remove(current.B);
+
+
+            if (newState) {
+                assert !stateMergeMap.containsKey(current.merged);
+                for (T node : stateMergeMap.keySet()) {
+                    T newMerged = relax.mergeStates(Arrays.asList(current.merged, node).iterator());
+                    pq.add(new STNode(current.merged, node, newMerged));
+                }
+            }
+            stateMergeMap.put(current.merged, mergeList);
+            // TODO a unit test to verify that each list in stateMergeMap contains different elements
+            // i.e. that no node is merged several times
+        }
+
+        NodeSubProblem<T> node;
+
+        for (T state: stateMergeMap.keySet()) {
+            /*System.out.print("Merging : ");
+            for (NodeSubProblem<T> n: stateMergeMap.get(state)) {
+                System.out.print(n.state + ", ");
+            }
+            System.out.println();
+            System.out.println("result : " + state);*/
+            List<NodeSubProblem<T>> mergeList = stateMergeMap.get(state);
+            if (mergeList.size() == 1) node = mergeList.getFirst(); // no merge is performed
+            else {
+                // Create a new node and redirect all the arcs entering the new node
+                node = new NodeSubProblem<>(state, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+                redirectArcs(node, mergeList, relax);
+            }
             currentLayer.add(node);
         }
+        /*System.out.print("resulting layer: ");
+        for (NodeSubProblem<T> n: currentLayer) {
+            System.out.print(n.state + ", ");
+        }
+        System.out.println();*/
+        System.out.println("size of layer: " + currentLayer.size());
+
     }
 
     /**
@@ -379,37 +492,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param relax the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
-        /*System.out.println("Relaxing !!!!!!!!!!");
-        System.out.print("[");
-        for (NodeSubProblem<T> sub: currentLayer) {
-            System.out.print(sub.state + "; ");
-        }
-        System.out.println("]");*/
         this.currentLayer.sort(ranking.reversed());
-        /*System.out.print("[");
-        for (NodeSubProblem<T> sub: currentLayer) {
-            System.out.print(sub.state + ": " + sub.node.value + "; ");
-        }
-        System.out.println("]");
-        System.out.println(currentLayer.size());
-        System.out.print("[");
-        for (NodeSubProblem<T> sub: currentLayer.subList(0, maxWidth-1)) {
-            System.out.print(sub.state + ": " + sub.node.value + "; ");
-        }
-        System.out.println("]");
-        System.out.print("[");
-        for (NodeSubProblem<T> sub: currentLayer.subList(maxWidth-1, currentLayer.size())) {
-            System.out.print(sub.state + ": " + sub.node.value + "; ");
-        }
-        System.out.println("]");*/
         final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
-        /*System.out.print("[");
-        for (NodeSubProblem<T> sub: merge) {
-            System.out.print(sub.state + ": " + sub.node.value + "; ");
+        /*System.out.println("Merging states: ");
+        for (NodeSubProblem<T> n : merge) {
+            System.out.print(n.state + ", ");
         }
-        System.out.println("]");*/
+        System.out.println();*/
+
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
+        // System.out.println("merged: " + merged);
 
         // is there another state in the kept partition having the same state as the merged state ?
         NodeSubProblem<T> node = null;
@@ -563,6 +656,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             return it.next().state;
         }
     }
+
     /** This utility class implements a decorator pattern to sort NodeSubProblems by their value then state */
     private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>>{
         /** This is the decorated ranking */
@@ -584,6 +678,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             } else {
                 return cmp;
             }
-        }        
+        }
     }
+
 }

@@ -12,6 +12,7 @@ import java.util.*;
 Solver that solve only a relaxed MDD from the root node
  */
 public final class RelaxationSolver<T> implements Solver {
+    private final RelaxationType relaxType;
     /** The problem we want to maximize */
     private final Problem<T> problem;
     /** A suitable relaxation for the problem we want to maximize */
@@ -56,6 +57,7 @@ public final class RelaxationSolver<T> implements Solver {
 
     /** Creates a fully qualified instance */
     public RelaxationSolver(
+            final RelaxationType relaxType,
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
@@ -63,6 +65,7 @@ public final class RelaxationSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
+        this.relaxType = relaxType;
         this.problem = problem;
         this.relax   = relax;
         this.varh    = varh;
@@ -74,6 +77,18 @@ public final class RelaxationSolver<T> implements Solver {
         this.bestSol = Optional.empty();
     }
 
+    /** Creates a fully qualified instance */
+    public RelaxationSolver(
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier)
+    {
+        this(RelaxationType.Cost, problem, relax, varh, ranking, width, frontier);
+    }
+
     @Override
     public SearchStatistics maximize() {
 
@@ -81,6 +96,7 @@ public final class RelaxationSolver<T> implements Solver {
         int maxWidth = width.maximumWidth(sub.getState());
 
         CompilationInput<T> compilation = new CompilationInput<>(
+                relaxType,
                 CompilationType.Relaxed,
                 problem,
                 relax,

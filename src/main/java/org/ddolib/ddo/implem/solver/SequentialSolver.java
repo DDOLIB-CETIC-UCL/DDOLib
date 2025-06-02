@@ -29,6 +29,7 @@ import java.util.*;
  * EASY TO COMPLETE.
  */
 public final class SequentialSolver<T> implements Solver {
+    private final RelaxationType relaxType;
     /** The problem we want to maximize */
     private final Problem<T> problem;
     /** A suitable relaxation for the problem we want to maximize */
@@ -77,6 +78,7 @@ public final class SequentialSolver<T> implements Solver {
 
     /** Creates a fully qualified instance */
     public SequentialSolver(
+            final RelaxationType relaxType,
         final Problem<T> problem,
         final Relaxation<T> relax,
         final VariableHeuristic<T> varh,
@@ -84,6 +86,7 @@ public final class SequentialSolver<T> implements Solver {
         final WidthHeuristic<T> width,
         final Frontier<T> frontier)  
     {
+        this.relaxType = relaxType;
         this.problem = problem;
         this.relax   = relax;
         this.varh    = varh;
@@ -95,6 +98,18 @@ public final class SequentialSolver<T> implements Solver {
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
+
+    public SequentialSolver(
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier)
+    {
+        this(null, problem, relax, varh, ranking, width, frontier);
+    }
+
 
     @Override
     public SearchStatistics maximize() {

@@ -29,7 +29,7 @@ public class SetCoverHeuristics {
         public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
             for (int elem: ordering) {
                 if (variables.contains(elem)) {
-                    System.out.println("Next element: " + elem);
+                    // System.out.println("Next element: " + elem);
                     return elem;
                 }
             }
