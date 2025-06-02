@@ -64,6 +64,7 @@ public class SmallestIncidentHopIncremental {
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);
 
+        //many times, the list is actually of size nbHops+1, and the sort operation is useless.
         if(nbHops == size-1){
             IntSummaryStatistics stats = b.build().limit(nbHops).summaryStatistics();
 
