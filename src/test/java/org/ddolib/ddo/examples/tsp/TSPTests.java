@@ -41,7 +41,7 @@ public class TSPTests {
 
     static Stream<TSPProblem> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
-                TSPMain.genInstance(i%10, new Random(i)));
+                TSPMain.genInstance(5+i%10, new Random(i)));
     }
 
     @ParameterizedTest
