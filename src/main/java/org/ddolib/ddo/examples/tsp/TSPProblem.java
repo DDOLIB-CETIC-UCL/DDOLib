@@ -34,6 +34,22 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
 
+    /**
+     * Creates instance from data files.<br>
+     * <p>
+     * The expected format is the following:
+     * <ul>
+     *     <li>
+     *         The first line must contain the number of points
+     *     </li>
+     *     <li>
+     *         The distance matrix.
+     *     </li>
+     * </ul>
+     *
+     * @param fileName The path to the input file.
+     * @throws IOException If something goes wrong while reading input file.
+     */
     public TSPProblem(String fileName) throws IOException {
         int numVar = 0;
         int[][] myDistanceMatrix = null;

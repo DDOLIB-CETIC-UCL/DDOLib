@@ -1,15 +1,16 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.SearchStatistics;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Random;
 
 public final class TSPMain {
 
@@ -31,49 +32,6 @@ public final class TSPMain {
             }
         }
         return new TSPProblem(distance);
-    }
-
-
-    /**
-     * Creates instance from data files.<br>
-     * <p>
-     * The expected format is the following:
-     * <ul>
-     *     <li>
-     *         The first line must contain the number of points
-     *     </li>
-     *     <li>
-     *         The distance matrix.
-     *     </li>
-     * </ul>
-     *
-     * @param fileName The path to the input file.
-     * @throws IOException If something goes wrong while reading input file.
-     */
-    public static TSPProblem loadInstance(String fileName) throws IOException {
-        int numVar = 0;
-        int[][] myDistanceMatrix = null;
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            int lineCount = 0;
-            String line;
-            while ((line = br.readLine()) != null) {
-                //Skip comment
-                if (line.startsWith("#") || line.isEmpty()) {
-                    continue;
-                }
-                if (lineCount == 0) {
-                    String[] tokens = line.split("\\s+");
-                    numVar = Integer.parseInt(tokens[0]);
-                    myDistanceMatrix = new int[numVar][numVar];
-                } else if (1 <= lineCount && lineCount <= numVar) {
-                    int i = lineCount - 1;
-                    String[] distanceFromI = line.split("\\s+");
-                    myDistanceMatrix[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
-                }
-                lineCount++;
-            }
-        }
-        return new TSPProblem(myDistanceMatrix);
     }
 
     static int dist(int dx, int dy){
