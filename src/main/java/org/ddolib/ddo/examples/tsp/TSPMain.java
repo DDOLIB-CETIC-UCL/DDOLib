@@ -8,6 +8,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -52,7 +53,7 @@ public final class TSPMain {
 
         final TSPRelax                    relax = new TSPRelax(problem);
         final TSPRanking                ranking = new TSPRanking();
-        final FixedWidth<TSPState> width = new FixedWidth<>(500);
+        final FixedWidth<TSPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
@@ -65,7 +66,7 @@ public final class TSPMain {
                 width,
                 frontier);
 
-        SearchStatistics stats = solver.maximize(2);
+        SearchStatistics stats = solver.maximize(1);
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {

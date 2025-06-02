@@ -155,12 +155,12 @@ public final class SequentialSolver<K,T> implements Solver {
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
         long start = System.currentTimeMillis();
+        int printInterval = 100; //ms a tenth of a second
+        long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
         while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
-                    "bestObj:" + bestLB);
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -168,9 +168,21 @@ public final class SequentialSolver<K,T> implements Solver {
             SubProblem<T> sub = frontier.pop();
             int nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 2)
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            if (verbosityLevel >= 1) System.out.println("\n");
+            if(verbosityLevel ==1){
+                long now = System.currentTimeMillis();
+                if(now >= nextPrint) {
+                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
+                            "bestObj:" + bestLB + "\tcurrentFrontier:" + nodeUB);
+                     nextPrint = now + printInterval;
+                }
+            }else if (verbosityLevel >= 2){
+              System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
+                        "bestObj:" + bestLB + "\tcurrentFrontier:" + nodeUB);
+                if(verbosityLevel >= 3){
+                    System.out.println("\tsubProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+                }
+            }
+
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 long end = System.currentTimeMillis();
