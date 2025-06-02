@@ -7,10 +7,10 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Set;
 
-class TSPRelax implements Relaxation<TSPState> {
-    private final TSPPRoblem problem;
+public class TSPRelax implements Relaxation<TSPState> {
+    private final TSPProblem problem;
 
-    public TSPRelax(TSPPRoblem problem) {
+    public TSPRelax(TSPProblem problem) {
         this.problem = problem;
     }
 

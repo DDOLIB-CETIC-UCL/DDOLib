@@ -2,7 +2,7 @@ package org.ddolib.ddo.examples.tsp;
 
 import java.util.BitSet;
 
-class TSPState {
+public class TSPState {
 
     //every node that has not been visited yet
     final BitSet toVisit;

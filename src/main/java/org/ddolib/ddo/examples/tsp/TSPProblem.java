@@ -3,9 +3,12 @@ package org.ddolib.ddo.examples.tsp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
-class TSPPRoblem implements Problem<TSPState> {
+public class TSPProblem implements Problem<TSPState> {
     int n;
     int[][] distanceMatrix;
     final SortedAdjacents sortedAdjacents;
@@ -24,8 +27,37 @@ class TSPPRoblem implements Problem<TSPState> {
         return toReturn;
     }
 
-    public TSPPRoblem(final int[][] distanceMatrix) {
+    public TSPProblem(final int[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
+        this.n = distanceMatrix.length;
+        this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
+    }
+
+
+    public TSPProblem(String fileName) throws IOException {
+        int numVar = 0;
+        int[][] myDistanceMatrix = null;
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            int lineCount = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                //Skip comment
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue;
+                }
+                if (lineCount == 0) {
+                    String[] tokens = line.split("\\s+");
+                    numVar = Integer.parseInt(tokens[0]);
+                    myDistanceMatrix = new int[numVar][numVar];
+                } else if (1 <= lineCount && lineCount <= numVar) {
+                    int i = lineCount - 1;
+                    String[] distanceFromI = line.split("\\s+");
+                    myDistanceMatrix[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
+                }
+                lineCount++;
+            }
+        }
+        this.distanceMatrix = myDistanceMatrix;
         this.n = distanceMatrix.length;
         this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
     }

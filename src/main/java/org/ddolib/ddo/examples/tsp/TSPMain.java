@@ -13,7 +13,7 @@ import java.util.*;
 
 public final class TSPMain {
 
-    public static TSPPRoblem genInstance(int n) {
+    public static TSPProblem genInstance(int n) {
 
         int[] x = new int[n];
         int[] y = new int[n];
@@ -30,7 +30,7 @@ public final class TSPMain {
                 distance[i][j] = dist(x[i] - x[j] , y[i]-y[j]);
             }
         }
-        return new TSPPRoblem(distance);
+        return new TSPProblem(distance);
     }
 
 
@@ -50,7 +50,7 @@ public final class TSPMain {
      * @param fileName The path to the input file.
      * @throws IOException If something goes wrong while reading input file.
      */
-    public static TSPPRoblem loadInstance(String fileName) throws IOException {
+    public static TSPProblem loadInstance(String fileName) throws IOException {
         int numVar = 0;
         int[][] myDistanceMatrix = null;
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
@@ -73,7 +73,7 @@ public final class TSPMain {
                 lineCount++;
             }
         }
-        return new TSPPRoblem(myDistanceMatrix);
+        return new TSPProblem(myDistanceMatrix);
     }
 
     static int dist(int dx, int dy){
@@ -82,7 +82,7 @@ public final class TSPMain {
 
     public static void main(final String[] args) {
 
-        final TSPPRoblem problem = genInstance(15);
+        final TSPProblem problem = genInstance(15);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -90,7 +90,7 @@ public final class TSPMain {
         System.out.println("end");
     }
 
-    public static void solveTsp(TSPPRoblem problem){
+    public static void solveTsp(TSPProblem problem){
 
         final TSPRelax                    relax = new TSPRelax(problem);
         final TSPRanking                ranking = new TSPRanking();
