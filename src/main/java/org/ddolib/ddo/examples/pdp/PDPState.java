@@ -19,9 +19,9 @@ class PDPState {
 
     //the sorted list of all edges that are incident to the current node and to the allToVisitNodes
     //this list might include more edges
-    EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+    SortedEdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
 
-    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, EdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
+    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, SortedEdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
@@ -82,7 +82,7 @@ class PDPState {
 
         int total = 0;
         int hopsToDo = nbHops;
-        EdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+        SortedEdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
         while (hopsToDo > 0 && current != null) {
             total += distance[current.nodeA][current.nodeB];
             hopsToDo--;

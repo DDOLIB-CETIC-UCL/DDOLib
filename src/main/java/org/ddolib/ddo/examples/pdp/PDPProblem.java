@@ -14,7 +14,7 @@ class PDPProblem implements Problem<PDPState> {
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
     Set<Integer> unrelatedNodes;
-    EdgeList initSortedEdges;
+    SortedEdgeList initSortedEdges;
 
     @Override
     public String toString() {
@@ -47,19 +47,19 @@ class PDPProblem implements Problem<PDPState> {
         }
 
         //TODO: remove all edges that go from delivery to related pickup?
-        Iterator<EdgeList> sortedEdges = IntStream.range(1, n).boxed().flatMap(
+        Iterator<SortedEdgeList> sortedEdges = IntStream.range(1, n).boxed().flatMap(
                 node1 ->
                         IntStream.range(1, n)
                                 .filter(node2 -> node1 > node2)
                                 .boxed()
-                                .map(node2 -> new EdgeList(node1, node2, null))
+                                .map(node2 -> new SortedEdgeList(node1, node2, null))
         ).sorted(Comparator.comparing(e -> distanceMatrix[e.nodeA][e.nodeB])).iterator();
 
         sortedEdges.hasNext();
-        EdgeList current = sortedEdges.next();
+        SortedEdgeList current = sortedEdges.next();
         this.initSortedEdges = current;
         while (sortedEdges.hasNext()) {
-            EdgeList newCurrent = sortedEdges.next();
+            SortedEdgeList newCurrent = sortedEdges.next();
             current.next = newCurrent;
             current = newCurrent;
         }
