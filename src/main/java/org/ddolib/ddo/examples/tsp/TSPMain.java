@@ -15,14 +15,14 @@ import java.util.Random;
 
 public final class TSPMain {
 
-    public static TSPProblem genInstance(int n) {
+    //
+    public static TSPProblem genInstance(int n, Random random) {
 
         int[] x = new int[n];
         int[] y = new int[n];
-        Random r = new Random(1);
         for(int i = 0 ; i < n ;  i++){
-            x[i] = r.nextInt(100);
-            y[i] = r.nextInt(100);
+            x[i] = random.nextInt(100);
+            y[i] = random.nextInt(100);
         }
 
         int[][] distance = new int[n][];
@@ -41,7 +41,7 @@ public final class TSPMain {
 
     public static void main(final String[] args) {
 
-        final TSPProblem problem = genInstance(15);
+        final TSPProblem problem = genInstance(15, new Random(1));
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());

@@ -9,10 +9,13 @@ import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.w3c.dom.ranges.Range;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Random;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class TSPTests {
@@ -36,8 +39,13 @@ public class TSPTests {
                 });
     }
 
+    static Stream<TSPProblem> dataProvider2() throws IOException {
+        return IntStream.range(0, 100).boxed().map(i ->
+                TSPMain.genInstance(i%10, new Random(i)));
+    }
+
     @ParameterizedTest
-    @MethodSource("dataProvider")
+    @MethodSource("dataProvider2")
     public void testTSP(TSPProblem problem) {
         final TSPRelax relax = new TSPRelax(problem);
         final TSPRanking ranking = new TSPRanking();
