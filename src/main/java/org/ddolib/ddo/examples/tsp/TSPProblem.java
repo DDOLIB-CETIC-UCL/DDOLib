@@ -24,6 +24,7 @@ public class TSPProblem implements Problem<TSPState> {
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
         }
+        //toReturn += distanceMatrix[solution[solution.length - 1]][solution[0]];
         return toReturn;
     }
 

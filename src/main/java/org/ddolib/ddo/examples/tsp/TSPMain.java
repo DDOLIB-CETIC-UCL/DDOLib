@@ -45,14 +45,20 @@ public final class TSPMain {
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
-        solveTsp(problem);
+        Solver s = solveTsp(problem,1);
+
+        int[] solution = extractSolution(s);
+        System.out.printf("Objective: %d%n", s.bestValue().get());
+        System.out.println("eval from scratch: " + problem.eval(solution));
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+
         System.out.println("end");
     }
 
-    public static void solveTsp(TSPProblem problem){
+    public static Solver solveTsp(TSPProblem problem, int verbosityLevel) {
 
-        final TSPRelax                    relax = new TSPRelax(problem);
-        final TSPRanking                ranking = new TSPRanking();
+        final TSPRelax relax = new TSPRelax(problem);
+        final TSPRanking ranking = new TSPRanking();
         final FixedWidth<TSPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
@@ -65,24 +71,26 @@ public final class TSPMain {
                 width,
                 frontier);
 
-        SearchStatistics stats = solver.maximize(1);
-
-        int[] solution = solver.bestSolution()
-                .map(decisions -> {
-                    int[] route = new int[problem.nbVars()+1];
-                    route[0] = 0;
-                    for (Decision d : decisions) {
-                        route[d.var()+1] = d.val();
-                    }
-                    return route;
-                })
-                .get();
-
+        SearchStatistics stats = solver.maximize(verbosityLevel);
         System.out.println(stats);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.println("eval from scratch: " + problem.eval(solution));
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+
+        return solver;
     }
+
+    public static int[] extractSolution(Solver solver){
+
+        return solver.bestSolution()
+            .map(decisions -> {
+                int[] route = new int[decisions.size()+1];
+                route[0] = 0;
+                for (Decision d : decisions) {
+                    route[d.var() + 1] = d.val();
+                }
+                return route;
+            })
+            .get();
+
+}
 }
 
 

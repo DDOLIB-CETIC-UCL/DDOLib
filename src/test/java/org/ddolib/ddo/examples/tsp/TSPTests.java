@@ -13,9 +13,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TSPTests {
 
@@ -46,21 +49,11 @@ public class TSPTests {
     @ParameterizedTest
     @MethodSource("dataProvider2")
     public void testTSP(TSPProblem problem) {
-        final TSPRelax relax = new TSPRelax(problem);
-        final TSPRanking ranking = new TSPRanking();
 
-        final FixedWidth<TSPState> width = new FixedWidth<>(50);
-        final VariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
+        Solver s = TSPMain.solveTsp(problem, 0);
 
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier
-        );
-        solver.maximize();
+        int[] solution = TSPMain.extractSolution(s);
+        assertEquals(s.bestValue().get() , -problem.eval(solution));
+
     }
 }
