@@ -39,6 +39,7 @@ public class TSPState {
         toConsider.or(current);
 
         //update the heuristics
+        //it includes ll nodes and the current node
         heuristics = heuristics.updateToRestrictedNodeSet(toConsider, sortedAdjacents);
 
         return heuristics.computeHeuristics(sortedAdjacents, nbHops);

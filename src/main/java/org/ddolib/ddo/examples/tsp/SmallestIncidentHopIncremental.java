@@ -8,6 +8,7 @@ public class SmallestIncidentHopIncremental {
     final int baseNode;
     final int positionInSortedAdjacents;
     final SmallestIncidentHopIncremental next;
+    final int size;
 
     public String thisString(SortedAdjacents sortedAdjacents){
         int adj = sortedAdjacents.sortedAdjacents[baseNode][positionInSortedAdjacents];
@@ -19,6 +20,11 @@ public class SmallestIncidentHopIncremental {
         this.baseNode = baseNode;
         this.positionInSortedAdjacents = positionInSortedAdjacents;
         this.next = next;
+        if(next==null){
+            this.size=1;
+        }else {
+            this.size = next.size + 1;
+        }
     }
 
     SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes, SortedAdjacents sortedAdjacents){
@@ -58,14 +64,23 @@ public class SmallestIncidentHopIncremental {
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);
 
-        //TODO this is too slow because of the sort.
-        // we do not need a sort actually; only the nbHops smallers
-        // and this could be obtained faster than by sorting the whole thing
-        IntSummaryStatistics stats = b.build().sorted().limit(nbHops).summaryStatistics();
+        if(nbHops == size-1){
+            IntSummaryStatistics stats = b.build().limit(nbHops).summaryStatistics();
 
-        //TODO: this returns the smallest adjacent to each node to visit
-        //we miss the return at the end however it is not counted in the main either.
+            //TODO: this returns the smallest adjacent to each node to visit
+            //we miss the return at the end however it is not counted in the main either.
+            return (int)(stats.getSum() - stats.getMax());
 
-        return (int)(stats.getSum() - stats.getMax());
+        }else{
+            //TODO this is too slow because of the sort.
+            // we do not need a sort actually; only the nbHops smallers
+            // and this could be obtained faster than by sorting the whole thing
+            IntSummaryStatistics stats = b.build().sorted().limit(nbHops).summaryStatistics();
+
+            //TODO: this returns the smallest adjacent to each node to visit
+            //we miss the return at the end however it is not counted in the main either.
+
+            return (int)(stats.getSum() - stats.getMax());
+        }
     }
 }
