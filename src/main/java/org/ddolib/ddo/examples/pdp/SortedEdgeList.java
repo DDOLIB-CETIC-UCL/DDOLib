@@ -32,6 +32,18 @@ public class SortedEdgeList {
             return next.filterUpToLength(length, nodes);
         }
     }
+
+    public int sumOfFirstHops(int nbHops, int[][] distance){
+        int total = 0;
+        int hopsToDo = nbHops;
+        SortedEdgeList current = this;
+        while (hopsToDo > 0 && current != null) {
+            total += distance[current.nodeA][current.nodeB];
+            hopsToDo--;
+            current = current.next;
+        }
+        return total;
+    }
 }
 
 

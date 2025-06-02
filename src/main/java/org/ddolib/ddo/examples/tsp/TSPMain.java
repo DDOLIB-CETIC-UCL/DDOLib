@@ -57,8 +57,7 @@ public final class TSPMain {
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors()/2,
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

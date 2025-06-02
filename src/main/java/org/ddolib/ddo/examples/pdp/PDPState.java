@@ -80,15 +80,7 @@ class PDPState {
                 sortedEdgeListIncidentToToVisitNodesAndCurrentNode.filterUpToLength(nbHops, allToVisit);
         allToVisit.clear(currentNode);
 
-        int total = 0;
-        int hopsToDo = nbHops;
-        SortedEdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
-        while (hopsToDo > 0 && current != null) {
-            total += distance[current.nodeA][current.nodeB];
-            hopsToDo--;
-            current = current.next;
-        }
-        return total;
+        return sortedEdgeListIncidentToToVisitNodesAndCurrentNode.sumOfFirstHops(nbHops, distance);
     }
 
     @Override
