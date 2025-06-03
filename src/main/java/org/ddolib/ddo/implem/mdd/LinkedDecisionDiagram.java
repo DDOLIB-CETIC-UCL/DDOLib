@@ -120,6 +120,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             return new SubProblem<>(state, node.value, ub, path);
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            return ((NodeSubProblem<T>) o).state == this.state;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.state.hashCode();
+        }
     }
 
     @Override
@@ -342,18 +352,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     private class STNode {
-        public final T A;
-        public final T B;
+        public final NodeSubProblem<T> A;
+        public final NodeSubProblem<T> B;
         public final T merged;
 
-        public STNode(T A, T B, T merged) {
+        public STNode(NodeSubProblem<T> A, NodeSubProblem<T> B, T merged) {
             this.A = A;
             this.B = B;
             this.merged = merged;
         }
     }
 
-    private void redirectArcs(NodeSubProblem<T> merged, List<NodeSubProblem<T>> toMerge, final Relaxation<T> relax) {
+    private void redirectArcs(NodeSubProblem<T> merged, Set<NodeSubProblem<T>> toMerge, final Relaxation<T> relax) {
         // redirect and relax all arcs entering the merged node
         for (NodeSubProblem<T> drop : toMerge) {
             merged.ub = Math.max(merged.ub, drop.ub);
@@ -373,6 +383,19 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    private boolean shareParents(NodeSubProblem<T> a, NodeSubProblem<T> b) {
+        Set<Node> parentA = new HashSet<>();
+        Set<Node> parentB = new HashSet<>();
+        for (Edge e : a.node.edges) {
+            parentA.add(e.origin);
+        }
+        for (Edge e : b.node.edges) {
+            parentB.add(e.origin);
+        }
+        parentA.retainAll(parentB);
+        return !parentA.isEmpty();
+    }
+
     /**
      * Performs a relaxation of the current layer using clustering to determine nodes to merge
      * @param maxWidth the maximum tolerated layer width
@@ -388,80 +411,65 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         // TODO: find a smarter and more scalable way to determine which nodes should be considered for merging
         this.currentLayer.sort(rankingComparator.reversed());
         int nbrKept = (int) Math.ceil(maxWidth* 2.0/4.0);
+        /// final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, nbrKept);
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(nbrKept, currentLayer.size());
+        Set<NodeSubProblem<T>> currentLayerSet = new HashSet<>(merge);
         // final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, nbrKept);
         // final List<NodeSubProblem<T>> merge = this.currentLayer.subList(nbrKept, currentLayer.size());*/
-
-        // Maps each state with the node that needs to be merged to obtain it
-        Map<T, List<NodeSubProblem<T>>> stateMergeMap = new HashMap<>(this.currentLayer.size());
-        for (NodeSubProblem<T> node: this.currentLayer) {
-            stateMergeMap.put(node.state, new ArrayList<>(List.of(node)));
-        }
 
         // The pq contains each potential pair of clusters
         // the problem is that the size of the layer can quickly explode, quickly create memory issues
         // Maybe all potential merge don't need to be considered
+
         PriorityQueue<STNode> pq = new PriorityQueue<>((a,b) -> ranking.compare(a.merged, b.merged));
         T mergedState;
-        for (int i = 0; i < this.currentLayer.size() - 1; i++) {
-            for (int j = i + 1; j < this.currentLayer.size(); j++) {
-                mergedState = relax.mergeStates(Arrays.asList(this.currentLayer.get(i).state, this.currentLayer.get(j).state).iterator());
-                pq.add(new STNode(this.currentLayer.get(i).state,
-                        this.currentLayer.get(j).state,
+        for (int i = 0; i < merge.size() - 1; i++) {
+            for (int j = i + 1; j < merge.size(); j++) {
+                mergedState = relax.mergeStates(Arrays.asList(merge.get(i).state, merge.get(j).state).iterator());
+                pq.add(new STNode(merge.get(i),
+                        merge.get(j),
                         mergedState));
             }
         }
-        currentLayer.clear();
-
-        while ((stateMergeMap.size() > maxWidth) && !pq.isEmpty()) {
+        merge.clear();
+        while ((currentLayerSet.size()+ nbrKept > maxWidth) && !pq.isEmpty()) {
             STNode current = pq.poll();
             assert current != null;
 
             // if the merging became unvalid because of previous merge we skip it
-            if (!stateMergeMap.containsKey(current.A) || !stateMergeMap.containsKey(current.B)) {
+            if (!currentLayerSet.contains(current.A) || !currentLayerSet.contains(current.B)) {
                 continue;
             }
 
-            List<NodeSubProblem<T>> mergeList;
+            Set<NodeSubProblem<T>> mergeSet;
             boolean newState = false;
-            if (stateMergeMap.containsKey(current.merged)) {
-                mergeList = stateMergeMap.get(current.merged);
-            } else {
-                mergeList = new ArrayList<>();
-                newState = true;
-            }
-            mergeList.addAll(stateMergeMap.get(current.A));
-            mergeList.addAll(stateMergeMap.get(current.B));
 
-            stateMergeMap.remove(current.A);
-            stateMergeMap.remove(current.B);
+            currentLayerSet.remove(current.A);
+            currentLayerSet.remove(current.B);
 
-
-            if (newState) {
-                assert !stateMergeMap.containsKey(current.merged);
-                for (T node : stateMergeMap.keySet()) {
-                    T newMerged = relax.mergeStates(Arrays.asList(current.merged, node).iterator());
-                    pq.add(new STNode(current.merged, node, newMerged));
+            NodeSubProblem<T> newNode = null;
+            boolean fresh = true;
+            for (NodeSubProblem<T> node: currentLayerSet) {
+                if (node.state == current.merged) {
+                    newNode = node;
+                    fresh = false;
+                    break;
                 }
             }
-            stateMergeMap.put(current.merged, mergeList);
-            // TODO a unit test to verify that each list in stateMergeMap contains different elements
-            // i.e. that no node is merged several times
-        }
+            if (newNode == null) newNode = new NodeSubProblem<>(current.merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+            redirectArcs(newNode, Set.of(current.A, current.B), relax);
 
-        NodeSubProblem<T> node = null;
-
-        for (T state: stateMergeMap.keySet()) {
-            List<NodeSubProblem<T>> mergeList = stateMergeMap.get(state);
-            if (mergeList.size() == 1) node = mergeList.getFirst(); // no merge is performed
-            else {
-                // System.out.println("Merging:" + mergeList.size());
-                // Create a new node and redirect all the arcs entering the new node
-                node = new NodeSubProblem<>(state, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
-                redirectArcs(node, mergeList, relax);
+            if (fresh) {
+                assert !currentLayerSet.contains(newNode);
+                for (NodeSubProblem<T> node : currentLayerSet) {
+                    T newMerged = relax.mergeStates(Arrays.asList(current.merged, node.state).iterator());
+                    pq.add(new STNode(newNode, node, newMerged));
+                }
             }
-
-            this.currentLayer.add(node);
+            currentLayerSet.add(newNode);
         }
+        // currentLayer.clear();
+        currentLayer.addAll(currentLayerSet);
     }
 
     /**
