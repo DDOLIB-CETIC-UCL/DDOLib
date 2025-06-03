@@ -30,7 +30,7 @@ public class SetCover {
         final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = new RelaxationSolver<>(
                 RelaxationType.Cluster,
                 problem,
                 relax,

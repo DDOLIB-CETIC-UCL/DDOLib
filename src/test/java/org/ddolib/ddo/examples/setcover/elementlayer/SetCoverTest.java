@@ -1,9 +1,6 @@
 package org.ddolib.ddo.examples.setcover.elementlayer;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverProblem;
 import static org.ddolib.ddo.examples.setcover.elementlayer.SetCover.readInstance;
@@ -120,6 +117,50 @@ public class SetCoverTest {
      */
     @ParameterizedTest
     @MethodSource("smallGeneratedInstances")
+    public void testClusterRelaxation(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
+        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Solver solver = new SequentialSolver<>(
+                RelaxationType.Cluster,
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        solver.maximize();
+
+        // Retrieve solution
+        Set<Integer> solution = solver.bestSolution().map(decisions -> {
+            System.out.println("Solution Found");
+            Set<Integer> values = new HashSet<>();
+            for (Decision d : decisions) {
+                if (d.val() != -1) {
+                    values.add(d.val());
+                }
+            }
+            return values;
+        }).get();
+
+        Assertions.assertTrue(solver.bestValue().isPresent());
+        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+        Assertions.assertTrue(testValidity(problem, solution));
+    }
+
+    /**
+     * Test on small random instances to verify that the solution returned by the sequential solver is really
+     * optimal.
+     * The returned solution is compared with the optimal cost computed by a brute-force approach
+     * @param problem
+     */
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
     public void testCompleteness(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
@@ -203,7 +244,7 @@ public class SetCoverTest {
         StringBuilder csvString = new StringBuilder();
 
         Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
-        heuristics.put("elementDefault", new DefaultVariableHeuristic<>());
+        // heuristics.put("elementDefault", new DefaultVariableHeuristic<>());
         heuristics.put("elementMinCentrality", new MinCentrality(problem));
 
         for (String heuristic : heuristics.keySet()) {
@@ -213,7 +254,9 @@ public class SetCoverTest {
                 System.out.print(maxWidth + ", ");
                 relax = new SetCoverRelax();
                 width = new FixedWidth<>(maxWidth);
-                Solver solver = new RelaxationSolver<>(problem,
+                Solver solver = new RelaxationSolver<>(
+                        RelaxationType.Cluster,
+                        problem,
                         relax,
                         varh,
                         ranking,
@@ -232,7 +275,7 @@ public class SetCoverTest {
             }
         }
 
-        FileWriter writer = new FileWriter("tmp/setCoverElementStats.csv", true);
+        FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", true);
         writer.write(csvString.toString());
         writer.close();
 
@@ -270,7 +313,7 @@ public class SetCoverTest {
      */
     private static Stream<SetCoverProblem> smallGeneratedInstances() {
         Random rnd = new Random(684654654);
-        int nInstances = 5; // number of instances to generate
+        int nInstances = 20; // number of instances to generate
         int nElem = 10; // number of elements in the instances
         int nSet = 20; // number of sets
         int constraintSize = 2; // the number of sets that must cover each element
