@@ -1,7 +1,6 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import java.util.BitSet;
-import java.util.Objects;
 
 /**
  * State of ta DP-model for the TSPTW

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pdp;
+package org.ddolib.ddo.examples.routing.pdp;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public final class DPDIncrementalHop {
 
-    static class PDState{
+    static class PDState {
 
         //the nodes that we can visit, including
         // all non-visited pick-up nodes
@@ -45,25 +45,25 @@ public final class DPDIncrementalHop {
         @Override
         public boolean equals(Object obj) {
             PDState that = (PDState) obj;
-            if(!that.current.equals(this.current)) return false;
-            if(!that.openToVisit.equals(this.openToVisit)) return false;
+            if (!that.current.equals(this.current)) return false;
+            if (!that.openToVisit.equals(this.openToVisit)) return false;
             return (that.allToVisit.equals(this.allToVisit));
         }
 
-        public PDState goTo(int node, PDProblem problem){
+        public PDState goTo(int node, PDProblem problem) {
             BitSet newOpenToVisit = (BitSet) openToVisit.clone();
             newOpenToVisit.clear(node);
 
             BitSet newAllToVisit = (BitSet) allToVisit.clone();
             newAllToVisit.clear(node);
 
-            if(problem.pickupToAssociatedDelivery.containsKey(node)){
+            if (problem.pickupToAssociatedDelivery.containsKey(node)) {
                 newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
             }
 
-            if(problem.deliveryToAssociatedPickup.containsKey(node) ){
+            if (problem.deliveryToAssociatedPickup.containsKey(node)) {
                 int p = problem.deliveryToAssociatedPickup.get(node);
-                if(newOpenToVisit.get(p)){
+                if (newOpenToVisit.get(p)) {
                     newOpenToVisit.clear(p);
                 }
             }
@@ -75,15 +75,15 @@ public final class DPDIncrementalHop {
                     sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
         }
 
-        public BitSet singleton(int singletonValue){
-            BitSet toReturn = new BitSet(singletonValue+1);
+        public BitSet singleton(int singletonValue) {
+            BitSet toReturn = new BitSet(singletonValue + 1);
             toReturn.set(singletonValue);
             return toReturn;
         }
 
-        public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance){
+        public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance) {
 
-            if(current.cardinality() != 1) throw new Error("no bound for merged");
+            if (current.cardinality() != 1) throw new Error("no bound for merged");
             int currentNode = current.nextSetBit(0);
             allToVisit.set(currentNode);
             sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
@@ -93,9 +93,9 @@ public final class DPDIncrementalHop {
             int total = 0;
             int hopsToDo = nbHops;
             EdgeList current = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
-            while(hopsToDo > 0 && current != null){
+            while (hopsToDo > 0 && current != null) {
                 total += distance[current.nodeA][current.nodeB];
-                hopsToDo --;
+                hopsToDo--;
                 current = current.next;
             }
             return total;
@@ -105,20 +105,20 @@ public final class DPDIncrementalHop {
         public String toString() {
             BitSet closedToVisit = (BitSet) allToVisit.clone();
             closedToVisit.xor(openToVisit);
-            if(current.cardinality() != 1){
+            if (current.cardinality() != 1) {
                 return "PDState(possibleCurrent:" + current + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
-            }else{
+            } else {
                 return "PDState(current:" + current.nextSetBit(0) + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
             }
         }
     }
 
     private static class PDProblem implements Problem<PDState> {
-        final int   n;
+        final int n;
         final int[][] distanceMatrix;
 
-        HashMap<Integer,Integer> pickupToAssociatedDelivery;
-        HashMap<Integer,Integer> deliveryToAssociatedPickup;
+        HashMap<Integer, Integer> pickupToAssociatedDelivery;
+        HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
         Set<Integer> unrelatedNodes;
         EdgeList initSortedEdges;
@@ -131,32 +131,32 @@ public final class DPDIncrementalHop {
                     "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
         }
 
-        public int eval(int[] solution){
+        public int eval(int[] solution) {
             int toReturn = 0;
-            for(int i = 1 ; i < solution.length ; i ++){
-                toReturn = toReturn + distanceMatrix[solution[i-1]][solution[i]];
+            for (int i = 1; i < solution.length; i++) {
+                toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
             }
             return toReturn;
         }
 
-        public PDProblem(final int[][] distanceMatrix, HashMap<Integer,Integer> pickupToAssociatedDelivery) {
+        public PDProblem(final int[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery) {
             this.distanceMatrix = distanceMatrix;
             this.n = distanceMatrix.length;
             this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
-            this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0,n).boxed().toList());
+            this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
 
             deliveryToAssociatedPickup = new HashMap<>();
-            for(int p : pickupToAssociatedDelivery.keySet()) {
+            for (int p : pickupToAssociatedDelivery.keySet()) {
                 int d = pickupToAssociatedDelivery.get(p);
                 unrelatedNodes.remove(p);
                 unrelatedNodes.remove(d);
-                deliveryToAssociatedPickup.put(d,p);
+                deliveryToAssociatedPickup.put(d, p);
             }
 
             //TODO: remove all edges that go from delivery to related pickup?
-            Iterator<EdgeList> sortedEdges = IntStream.range(1,n).boxed().flatMap(
+            Iterator<EdgeList> sortedEdges = IntStream.range(1, n).boxed().flatMap(
                     node1 ->
-                            IntStream.range(1,n)
+                            IntStream.range(1, n)
                                     .filter(node2 -> node1 > node2)
                                     .boxed()
                                     .map(node2 -> new EdgeList(node1, node2, null))
@@ -165,7 +165,7 @@ public final class DPDIncrementalHop {
             sortedEdges.hasNext();
             EdgeList current = sortedEdges.next();
             this.initSortedEdges = current;
-            while(sortedEdges.hasNext()){
+            while (sortedEdges.hasNext()) {
                 EdgeList newCurrent = sortedEdges.next();
                 current.next = newCurrent;
                 current = newCurrent;
@@ -174,26 +174,26 @@ public final class DPDIncrementalHop {
 
         @Override
         public int nbVars() {
-            return n-1; //since zero is the initial point
+            return n - 1; //since zero is the initial point
         }
 
         @Override
         public PDState initialState() {
             System.out.println("init");
             BitSet openToVisit = new BitSet(n);
-            openToVisit.set(1,n);
+            openToVisit.set(1, n);
 
-            for(int p : pickupToAssociatedDelivery.keySet()) {
+            for (int p : pickupToAssociatedDelivery.keySet()) {
                 openToVisit.clear(pickupToAssociatedDelivery.get(p));
             }
 
             BitSet allToVisit = new BitSet(n);
-            allToVisit.set(1,n);
+            allToVisit.set(1, n);
 
             return new PDState(singleton(0), openToVisit, allToVisit, initSortedEdges);
         }
 
-        public BitSet singleton(int singletonValue){
+        public BitSet singleton(int singletonValue) {
             BitSet toReturn = new BitSet(n);
             toReturn.set(singletonValue);
             return toReturn;
@@ -212,12 +212,12 @@ public final class DPDIncrementalHop {
 
         @Override
         public PDState transition(PDState state, Decision decision) {
-            return state.goTo(decision.val(),this);
+            return state.goTo(decision.val(), this);
         }
 
         @Override
         public int transitionCost(PDState state, Decision decision) {
-            return - state.current.stream()
+            return -state.current.stream()
                     .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                     .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                     .min()
@@ -247,7 +247,7 @@ public final class DPDIncrementalHop {
                 current.or(state.current);
             }
             //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
-            return new PDState(current,openToVisit,allToVisit, problem.initSortedEdges);
+            return new PDState(current, openToVisit, allToVisit, problem.initSortedEdges);
         }
 
         @Override
@@ -261,7 +261,7 @@ public final class DPDIncrementalHop {
                 throw new Error("no fast upper bound when no current");
             } else {
                 int nbHopsToDo = variables.size();
-                int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo,problem.distanceMatrix);
+                int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo, problem.distanceMatrix);
                 return -lb;
             }
         }
@@ -281,47 +281,47 @@ public final class DPDIncrementalHop {
      * in a pair, the pickup node must be reached before the delivery node
      * the problem can also have "unrelated nodes" that are not involved in such a pair
      *
-     * @param n the number of nodes of the PDP problem
+     * @param n         the number of nodes of the PDP problem
      * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
      */
-    public static PDProblem genInstance(int n,int unrelated) {
+    public static PDProblem genInstance(int n, int unrelated) {
 
         int[] x = new int[n];
         int[] y = new int[n];
         Random r = new Random(1);
-        for(int i = 0 ; i < n ;  i++){
+        for (int i = 0; i < n; i++) {
             x[i] = r.nextInt(100);
             y[i] = r.nextInt(100);
         }
 
         int[][] distance = new int[n][];
-        for(int i = 0 ; i < n ;  i++){
+        for (int i = 0; i < n; i++) {
             distance[i] = new int[n];
-            for(int j = 0 ; j < n ;  j++){
-                distance[i][j] = dist(x[i] - x[j] , y[i]-y[j]);
+            for (int j = 0; j < n; j++) {
+                distance[i][j] = dist(x[i] - x[j], y[i] - y[j]);
             }
         }
 
-        HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
+        HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<Integer, Integer>();
 
-        int firstDelivery = (n-unrelated-1)/2+1; //some  nodes are not pdp nodes
-        for(int p = 1; p < firstDelivery ; p ++){
+        int firstDelivery = (n - unrelated - 1) / 2 + 1; //some  nodes are not pdp nodes
+        for (int p = 1; p < firstDelivery; p++) {
             int d = firstDelivery + p - 1;
-            pickupToAssociatedDelivery.put(p,d);
+            pickupToAssociatedDelivery.put(p, d);
         }
 
-        return new PDProblem(distance,pickupToAssociatedDelivery);
+        return new PDProblem(distance, pickupToAssociatedDelivery);
     }
 
-    static int dist(int dx, int dy){
-        return (int)Math.sqrt(dx*dx+dy*dy);
+    static int dist(int dx, int dy) {
+        return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
     public static void main(final String[] args) throws IOException {
 
-        final PDProblem problem = genInstance(24,0);
+        final PDProblem problem = genInstance(24, 0);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -330,7 +330,7 @@ public final class DPDIncrementalHop {
         System.out.println("end");
     }
 
-    public static void solveDPD(PDProblem problem){
+    public static void solveDPD(PDProblem problem) {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
@@ -352,10 +352,10 @@ public final class DPDIncrementalHop {
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] route = new int[problem.nbVars()+1];
+                    int[] route = new int[problem.nbVars() + 1];
                     route[0] = 0;
                     for (Decision d : decisions) {
-                        route[d.var()+1] = d.val();
+                        route[d.var() + 1] = d.val();
                     }
                     return route;
                 })

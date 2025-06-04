@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsp;
+package org.ddolib.ddo.examples.routing.tsp;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
@@ -12,7 +12,7 @@ import java.util.*;
 
 public final class TSPAdjacentEdgeIncremental {
 
-    static class TSPState{
+    static class TSPState {
 
         //every node that has not been visited yet
         BitSet toVisit;
@@ -23,13 +23,13 @@ public final class TSPAdjacentEdgeIncremental {
 
         SmallestIncidentHopIncremental heuristics;
 
-        public TSPState(BitSet current, BitSet toVisit, SmallestIncidentHopIncremental heuristics){
+        public TSPState(BitSet current, BitSet toVisit, SmallestIncidentHopIncremental heuristics) {
             this.toVisit = toVisit;
             this.current = current;
             this.heuristics = heuristics;
         }
 
-        public TSPState goTo(int node){
+        public TSPState goTo(int node) {
             BitSet newToVisit = (BitSet) toVisit.clone();
             newToVisit.clear(node);
 
@@ -37,35 +37,35 @@ public final class TSPAdjacentEdgeIncremental {
                     heuristics);
         }
 
-        public BitSet singleton(int singletonValue){
-            BitSet toReturn = new BitSet(singletonValue+1);
+        public BitSet singleton(int singletonValue) {
+            BitSet toReturn = new BitSet(singletonValue + 1);
             toReturn.set(singletonValue);
             return toReturn;
         }
 
-        public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents){
+        public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents) {
 
             BitSet toConsider = (BitSet) toVisit.clone();
             toConsider.or(current);
 
             //update the heuristics
-            heuristics = heuristics.updateToRestrictedNodeSet(toConsider,sortedAdjacents);
+            heuristics = heuristics.updateToRestrictedNodeSet(toConsider, sortedAdjacents);
 
-            return heuristics.computeHeuristics(sortedAdjacents,nbHops);
+            return heuristics.computeHeuristics(sortedAdjacents, nbHops);
         }
 
         @Override
         public String toString() {
-            if(current.cardinality() != 1){
+            if (current.cardinality() != 1) {
                 return "TSPState(possibleCurrent:" + current + " toVisit:" + toVisit + ")";
-            }else{
+            } else {
                 return "TSPState(current:" + current.nextSetBit(0) + " toVisit:" + toVisit + ")";
             }
         }
     }
 
     private static class TSP implements Problem<TSPState> {
-        final int   n;
+        final int n;
         final int[][] distanceMatrix;
         SortedAdjacents sortedAdjacents;
 
@@ -75,10 +75,10 @@ public final class TSPAdjacentEdgeIncremental {
                     "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
         }
 
-        public int eval(int[] solution){
+        public int eval(int[] solution) {
             int toReturn = 0;
-            for(int i = 1 ; i < solution.length ; i ++){
-                toReturn = toReturn + distanceMatrix[solution[i-1]][solution[i]];
+            for (int i = 1; i < solution.length; i++) {
+                toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
             }
             return toReturn;
         }
@@ -91,19 +91,19 @@ public final class TSPAdjacentEdgeIncremental {
 
         @Override
         public int nbVars() {
-            return n-1; //since zero is the initial point
+            return n - 1; //since zero is the initial point
         }
 
         @Override
         public TSPState initialState() {
             System.out.println("init");
             BitSet toVisit = new BitSet(n);
-            toVisit.set(1,n);
+            toVisit.set(1, n);
 
             return new TSPState(singleton(0), toVisit, sortedAdjacents.initialHeuristics());
         }
 
-        public BitSet singleton(int singletonValue){
+        public BitSet singleton(int singletonValue) {
             BitSet toReturn = new BitSet(n);
             toReturn.set(singletonValue);
             return toReturn;
@@ -117,7 +117,7 @@ public final class TSPAdjacentEdgeIncremental {
         @Override
         public Iterator<Integer> domain(TSPState state, int var) {
             ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
-            return  domain.iterator();
+            return domain.iterator();
         }
 
         @Override
@@ -127,7 +127,7 @@ public final class TSPAdjacentEdgeIncremental {
 
         @Override
         public int transitionCost(TSPState state, Decision decision) {
-            return - state.current.stream()
+            return -state.current.stream()
                     .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                     .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                     .min()
@@ -155,7 +155,7 @@ public final class TSPAdjacentEdgeIncremental {
                 current.or(state.current);
             }
 
-            return new TSPState(current,toVisit,problem.sortedAdjacents.initialHeuristics());
+            return new TSPState(current, toVisit, problem.sortedAdjacents.initialHeuristics());
         }
 
         @Override
@@ -171,8 +171,8 @@ public final class TSPAdjacentEdgeIncremental {
         }
     }
 
-    private static void require(Boolean a, String str){
-        if(!a) throw new Error(str);
+    private static void require(Boolean a, String str) {
+        if (!a) throw new Error(str);
     }
 
     public static class TSPRanking implements StateRanking<TSPState> {
@@ -187,23 +187,23 @@ public final class TSPAdjacentEdgeIncremental {
         int[] x = new int[n];
         int[] y = new int[n];
         Random r = new Random(1);
-        for(int i = 0 ; i < n ;  i++){
+        for (int i = 0; i < n; i++) {
             x[i] = r.nextInt(100);
             y[i] = r.nextInt(100);
         }
 
         int[][] distance = new int[n][];
-        for(int i = 0 ; i < n ;  i++){
+        for (int i = 0; i < n; i++) {
             distance[i] = new int[n];
-            for(int j = 0 ; j < n ;  j++){
-                distance[i][j] = dist(x[i] - x[j] , y[i]-y[j]);
+            for (int j = 0; j < n; j++) {
+                distance[i][j] = dist(x[i] - x[j], y[i] - y[j]);
             }
         }
         return new TSP(distance);
     }
 
-    static int dist(int dx, int dy){
-        return (int)Math.sqrt(dx*dx+dy*dy);
+    static int dist(int dx, int dy) {
+        return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
     public static void main(final String[] args) throws IOException {
@@ -216,16 +216,16 @@ public final class TSPAdjacentEdgeIncremental {
         System.out.println("end");
     }
 
-    public static void solveTsp(TSP problem){
+    public static void solveTsp(TSP problem) {
 
-        final TSPRelax                    relax = new TSPRelax(problem);
-        final TSPRanking                ranking = new TSPRanking();
+        final TSPRelax relax = new TSPRelax(problem);
+        final TSPRanking ranking = new TSPRanking();
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors()/2,
+                Runtime.getRuntime().availableProcessors() / 2,
                 problem,
                 relax,
                 varh,
@@ -239,10 +239,10 @@ public final class TSPAdjacentEdgeIncremental {
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] route = new int[problem.nbVars()+1];
+                    int[] route = new int[problem.nbVars() + 1];
                     route[0] = 0;
                     for (Decision d : decisions) {
-                        route[d.var()+1] = d.val();
+                        route[d.var() + 1] = d.val();
                     }
                     return route;
                 })

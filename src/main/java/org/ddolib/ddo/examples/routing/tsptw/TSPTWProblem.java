@@ -1,13 +1,12 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 

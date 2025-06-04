@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.implem.dominance.Dominance;
 
@@ -9,11 +9,11 @@ import java.util.BitSet;
  * If for two states, the position is the same and the must visit set is the same,
  * then we can only keep the state with the lowest time.
  */
-public class TSPTWDominance implements Dominance<TSPTWState,TSPTWDominanceKey> {
+public class TSPTWDominance implements Dominance<TSPTWState, TSPTWDominanceKey> {
 
     @Override
     public TSPTWDominanceKey getKey(TSPTWState state) {
-        return new TSPTWDominanceKey(state.position(),state.mustVisit());
+        return new TSPTWDominanceKey(state.position(), state.mustVisit());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -80,4 +80,5 @@ public class TSPTWInstance {
     }
 }
 
-record TimeWindow(int start, int end) { }
+record TimeWindow(int start, int end) {
+}

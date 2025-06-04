@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
@@ -38,7 +38,8 @@ public class TSPTWMain {
      */
     public static void main(String[] args) throws IOException {
 
-        final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
+        final String file = args.length == 0 ? Paths.get("data", "Routing", "TSPTW", "AFG", "rbg020a.tw").toString() :
+                args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
 

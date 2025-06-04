@@ -1,14 +1,13 @@
-package org.ddolib.ddo.examples.tstptw;
+package org.ddolib.ddo.examples.routing.tstptw;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.tsptw.*;
+import org.ddolib.ddo.examples.routing.tsptw.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TSPTWTests {
 
     static Stream<TSPTWInstance> dataProvider() throws IOException {
-        String dir = Paths.get("src", "test", "resources", "TSPTW").toString();
+        String dir = Paths.get("src", "test", "resources", "Routing", "TSPTW").toString();
 
         File[] files = new File(dir).listFiles();
         assert files != null;

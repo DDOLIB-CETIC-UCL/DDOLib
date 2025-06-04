@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
