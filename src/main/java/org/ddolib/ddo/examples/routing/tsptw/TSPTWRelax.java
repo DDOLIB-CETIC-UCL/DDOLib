@@ -2,6 +2,8 @@ package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.examples.routing.util.RoutingNode;
+import org.ddolib.ddo.examples.routing.util.VirtualRoutingNodes;
 
 import java.util.*;
 
@@ -35,8 +37,8 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
             TSPTWState current = states.next();
             //The merged position is the union of all the position
             switch (current.position()) {
-                case TSPNode(int value) -> mergedPos.add(value);
-                case VirtualNodes(Set<Integer> nodes) -> mergedPos.addAll(nodes);
+                case RoutingNode(int value) -> mergedPos.add(value);
+                case VirtualRoutingNodes(Set<Integer> nodes) -> mergedPos.addAll(nodes);
             }
             // The merged must is the intersection of all must set
             mergedMust.and(current.mustVisit());
@@ -50,7 +52,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         // We exclude the intersection of the must from the merged possibly
         mergedPossibly.andNot(mergedMust);
 
-        return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
+        return new TSPTWState(new VirtualRoutingNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
     }
 
     @Override
@@ -69,8 +71,9 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         int completeTour = numVar - state.depth() - 1;
         //From the current state we go to the closest node
         int start = switch (state.position()) {
-            case TSPNode(int value) -> cheapestEdges[value];
-            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
+            case RoutingNode(int value) -> cheapestEdges[value];
+            case VirtualRoutingNodes(Set<Integer> nodes) ->
+                    nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
         int mandatory = 0; // The sum of shortest edges
         int backToDepot = 0; // The shortest edges to the depot

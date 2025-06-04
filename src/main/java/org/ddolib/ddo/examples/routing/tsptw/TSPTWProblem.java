@@ -2,6 +2,8 @@ package org.ddolib.ddo.examples.routing.tsptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.examples.routing.util.RoutingNode;
+import org.ddolib.ddo.examples.routing.util.VirtualRoutingNodes;
 
 import java.util.BitSet;
 import java.util.Collections;
@@ -26,7 +28,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         BitSet must = new BitSet(nbVars());
         must.set(1, nbVars(), true);
         BitSet might = new BitSet(nbVars());
-        return new TSPTWState(new TSPNode(0), 0, must, might, 0);
+        return new TSPTWState(new RoutingNode(0), 0, must, might, 0);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     @Override
     public TSPTWState transition(TSPTWState state, Decision decision) {
         int target = decision.val();
-        TSPNode newPos = new TSPNode(target);
+        RoutingNode newPos = new RoutingNode(target);
         int newTime = arrivalTime(state, target);
         BitSet newMust = (BitSet) state.mustVisit().clone();
         newMust.set(target, false);
@@ -109,8 +111,8 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      */
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
-            case TSPNode(int value) -> instance.distance[value][to];
-            case VirtualNodes(Set<Integer> nodes) ->
+            case RoutingNode(int value) -> instance.distance[value][to];
+            case VirtualRoutingNodes(Set<Integer> nodes) ->
                     nodes.stream().mapToInt(x -> instance.distance[x][to]).min().getAsInt();
         };
     }
@@ -129,37 +131,4 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
 }
-
-/**
- * Interface to model the position of the vehicle in a {@link TSPTWState}.
- */
-sealed interface Position permits TSPNode, VirtualNodes {
-}
-
-
-/**
- * Unique position of the vehicle.
- *
- * @param value Last position of the vehicle in the current route.
- */
-record TSPNode(int value) implements Position {
-    @Override
-    public String toString() {
-        return "" + value;
-    }
-}
-
-
-/**
- * Used for merged states. The vehicle can be at all the position of the merged states.
- *
- * @param nodes All the position of the merged states.
- */
-record VirtualNodes(Set<Integer> nodes) implements Position {
-    @Override
-    public String toString() {
-        return nodes.toString();
-    }
-}
-
 

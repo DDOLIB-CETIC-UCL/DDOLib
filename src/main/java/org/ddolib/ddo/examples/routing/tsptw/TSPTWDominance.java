@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.routing.tsptw;
 
+import org.ddolib.ddo.examples.routing.util.RoutePosition;
 import org.ddolib.ddo.implem.dominance.Dominance;
 
 import java.util.BitSet;
@@ -22,7 +23,7 @@ public class TSPTWDominance implements Dominance<TSPTWState, TSPTWDominanceKey> 
     }
 }
 
-record TSPTWDominanceKey(Position p, BitSet mustVisit) {
+record TSPTWDominanceKey(RoutePosition p, BitSet mustVisit) {
     @Override
     public String toString() {
         return String.format("position: %s - must visit: %s",
