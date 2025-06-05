@@ -7,25 +7,27 @@ import org.ddolib.ddo.examples.routing.util.RoutingNode;
 import org.ddolib.ddo.examples.routing.util.VirtualRoutingNodes;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.min;
 
 public class CVRPProblem implements Problem<CVRPState> {
-    private final int v;
-    private final int n;
+    final int v;
+    final int n;
     final int maxCapacity;
     final int[][] distancesMatrix;
-    final int[] loading;
+    final int[] demands;
 
-    private final ArrayList<VRPDecision> decisions;
+    final ArrayList<VRPDecision> decisions;
     private final HashMap<VRPDecision, Integer> decisionIndexes;
 
-    public CVRPProblem(int v, int n, int maxCapacity, int[][] distancesMatrix, int[] loading) {
+    public CVRPProblem(int v, int n, int maxCapacity, int[][] distancesMatrix, int[] demands) {
         this.v = v;
         this.n = n;
         this.maxCapacity = maxCapacity;
         this.distancesMatrix = distancesMatrix;
-        this.loading = loading;
+        this.demands = demands;
 
         this.decisions = new ArrayList<>();
         this.decisionIndexes = new HashMap<>();
@@ -80,7 +82,7 @@ public class CVRPProblem implements Problem<CVRPState> {
                         node != -1;
                         node = state.mustVisit().nextSetBit(node + 1)
                 ) {
-                    if (state.capacity()[vehicle] >= loading[node]) {
+                    if (state.capacity()[vehicle] >= demands[node]) {
                         VRPDecision d = new VRPDecision(vehicle, node);
                         toReturn.add(decisionIndexes.get(d));
                     }
@@ -95,21 +97,40 @@ public class CVRPProblem implements Problem<CVRPState> {
     public CVRPState transition(CVRPState state, Decision decision) {
         VRPDecision d = decisions.get(decision.var());
         int[] newCapacity = state.capacity().clone();
-        newCapacity[d.vehicle()] -= loading[d.node()];
         RoutePosition[] newPos = state.pos().clone();
-        newPos[d.vehicle()] = new RoutingNode(d.node());
-        int newLast = d.vehicle() > state.lastUsedVehicle() ? state.lastUsedVehicle() + 1 : state.lastUsedVehicle();
         BitSet newMust = new BitSet(n);
-        newMust.or(state.mustVisit());
-        newMust.clear(d.node());
+        int newLast = d.vehicle() > state.lastUsedVehicle() ? state.lastUsedVehicle() + 1 : state.lastUsedVehicle();
+
+        Consumer<Integer> updateNewState = vehicle -> {
+            newCapacity[vehicle] -= demands[d.node()];
+            newPos[vehicle] = new RoutingNode(d.node());
+            newMust.or(state.mustVisit());
+            newMust.clear(d.node());
+        };
+
+        if (d.vehicle() == -1) {
+            for (int vehicle = 0; vehicle <= min(state.lastUsedVehicle() + 1, v - 1); vehicle++) {
+                updateNewState.accept(vehicle);
+            }
+        } else {
+            updateNewState.accept(d.vehicle());
+        }
+
         return new CVRPState(newPos, newCapacity, newLast, newMust, new BitSet(), state.depth() + 1);
     }
 
     @Override
     public int transitionCost(CVRPState state, Decision decision) {
         VRPDecision d = decisions.get(decision.var());
-
-        return -minDistance(state.pos()[d.vehicle()], d.node());
+        if (d.vehicle() == -1) {
+            int sumDist = 0;
+            for (int vehicle = 0; vehicle <= min(state.lastUsedVehicle() + 1, v - 1); vehicle++) {
+                sumDist += minDistance(state.pos()[vehicle], 0);
+            }
+            return -sumDist;
+        } else {
+            return -minDistance(state.pos()[d.vehicle()], d.node());
+        }
     }
 
     int minDistance(RoutePosition from, int to) {
@@ -120,4 +141,18 @@ public class CVRPProblem implements Problem<CVRPState> {
         };
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("v: %d - n: %d%n", v, n));
+        sb.append(String.format("Max capacity: %d%n", maxCapacity));
+        sb.append(String.format("Demands: %s%n", Arrays.toString(demands)));
+        String matrixStr = Arrays.stream(distancesMatrix)
+                .map(row -> Arrays.stream(row)
+                        .mapToObj(x -> String.format("%6s", x))
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining("\n"));
+        sb.append(matrixStr);
+        return sb.toString();
+    }
 }
