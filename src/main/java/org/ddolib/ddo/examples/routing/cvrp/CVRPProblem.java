@@ -119,4 +119,5 @@ public class CVRPProblem implements Problem<CVRPState> {
                     nodes.stream().mapToInt(x -> distancesMatrix[x][to]).min().getAsInt();
         };
     }
+
 }
