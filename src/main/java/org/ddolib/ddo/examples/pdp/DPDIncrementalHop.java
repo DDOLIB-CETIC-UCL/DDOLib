@@ -337,7 +337,7 @@ public final class DPDIncrementalHop {
         final FixedWidth<PDState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
-        final Frontier<PDState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<PDState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//new SequentialSolver<>(//
                 problem,
                 relax,

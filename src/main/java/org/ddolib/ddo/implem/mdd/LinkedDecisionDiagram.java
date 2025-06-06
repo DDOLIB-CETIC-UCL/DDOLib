@@ -321,7 +321,8 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                         branchOn(n, decision, problem);
                     }
                 }
-                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier) {
+                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
+                        && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
                     for (Edge e : n.node.edges) {
                         Node origin = e.origin;
                         if (origin.getNodeType() == NodeType.EXACT) {
@@ -333,7 +334,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
             depth += 1;
         }
-        if (input.getCutSetType() == CutSetType.Frontier)
+        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier)
             cutset.addAll(currentCutSet);
 
         // finalize: find best
@@ -449,6 +450,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 break;
             }
         }
+        // when the merged node is new, set its type to relaxed
         if (node == null) {
             Node newNode = new Node(Integer.MIN_VALUE);
             newNode.setNodeType(NodeType.RELAXED);
@@ -464,7 +466,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
                 int value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
-
+                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                if (e.origin.getNodeType() == NodeType.RELAXED) {
+                    node.node.setNodeType(NodeType.RELAXED);
+                }
                 node.node.edges.add(e);
                 if (value > node.node.value) {
                     node.node.value = value;
@@ -495,18 +500,22 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         int cost = problem.transitionCost(node.state, decision);
         int value = saturatedAdd(node.node.value, cost);
 
+        // when the origin is relaxed, the destination must be relaxed
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
-            if (node.node.type == NodeType.RELAXED) {
+            if (node.node.getNodeType() == NodeType.RELAXED) {
                 n.setNodeType(NodeType.RELAXED);
             }
             nextLayer.put(state, n);
+        } else {
+            if (node.node.getNodeType() == NodeType.RELAXED) {
+                n.setNodeType(NodeType.RELAXED);
+            }
         }
 
         Edge edge = new Edge(node.node, decision, cost);
         n.edges.add(edge);
-
         if (value >= n.value) {
             n.best = edge;
             n.value = value;

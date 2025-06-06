@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -41,7 +42,7 @@ class PSTest {
         final PSRanking ranking = new PSRanking();
         final FixedWidth<PSState> width = new FixedWidth<>(10);
         final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic();
-        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,

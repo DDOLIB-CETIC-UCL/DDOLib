@@ -36,6 +36,11 @@ public interface Frontier<T> {
     int size();
 
     /**
+     * @return the type of the frontier
+     */
+    CutSetType cutSetType();
+
+    /**
      * @return true iff the frontier is empty (size == 0)
      */
     default boolean isEmpty() {

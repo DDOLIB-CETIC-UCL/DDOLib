@@ -223,7 +223,7 @@ public final class TSPAdjacentEdgeIncremental {
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
-        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors()/2,
                 problem,

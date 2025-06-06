@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
@@ -43,7 +44,7 @@ class MSCTTest {
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,

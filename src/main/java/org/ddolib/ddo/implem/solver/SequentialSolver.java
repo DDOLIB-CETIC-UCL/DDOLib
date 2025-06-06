@@ -186,7 +186,7 @@ public final class SequentialSolver<K,T> implements Solver {
                     maxWidth,
                     dominance,
                     bestLB,
-                    CutSetType.LastExactLayer
+                    frontier.cutSetType()
             );
 
             mdd.compile(compilation);
@@ -206,7 +206,7 @@ public final class SequentialSolver<K,T> implements Solver {
                     maxWidth,
                     dominance,
                     bestLB,
-                    CutSetType.Frontier
+                    frontier.cutSetType()
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {

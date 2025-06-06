@@ -34,7 +34,7 @@ public class MSCTMain {
         final FixedWidth<MSCTState> width = new FixedWidth<>(10);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,

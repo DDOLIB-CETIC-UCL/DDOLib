@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.gruler;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
@@ -30,12 +31,12 @@ import java.util.Arrays;
 public class GRMain {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(8);
+        GRProblem problem = new GRProblem(9);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver(
                 problem,
                 relax,

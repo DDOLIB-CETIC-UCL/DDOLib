@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -65,7 +66,7 @@ public class LCSTest {
         final FixedWidth<LCSState> width = new FixedWidth<>(250);
         final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = new SequentialSolver<>(
                 problem,
@@ -86,7 +87,7 @@ public class LCSTest {
         final FixedWidth<LCSState> width = new FixedWidth<>(2);
         final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = new SequentialSolver<>(
                 problem,
