@@ -30,14 +30,12 @@ import java.util.Arrays;
 public class GRMain {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(10);
+        GRProblem problem = new GRProblem(8);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking);
-
-
         final Solver solver = new SequentialSolver(
                 problem,
                 relax,

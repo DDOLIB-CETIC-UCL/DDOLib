@@ -90,9 +90,15 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
          * set the type of the node when different to exact type
          * @param nodeType
          */
-        public void setType(final NodeType nodeType) {
+        public void setNodeType(final NodeType nodeType) {
             this.type = nodeType;
         }
+
+        /**
+         * get the type of the node
+         * @return NodeType
+         */
+        public NodeType getNodeType() {return this.type;}
 
         @Override
         public String toString() {
@@ -232,6 +238,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final Set<Integer> variables = varSet(input);
         //
         int depth = 0;
+        Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -246,7 +253,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (!dominance.updateDominance(state, depth, node.value)) {
+                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
+                    continue;
+                } else {
                     int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
@@ -312,10 +321,20 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                         branchOn(n, decision, problem);
                     }
                 }
+                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier) {
+                    for (Edge e : n.node.edges) {
+                        Node origin = e.origin;
+                        if (origin.getNodeType() == NodeType.EXACT) {
+                            currentCutSet.add(prevLayer.get(origin));
+                        }
+                    }
+                }
             }
 
             depth += 1;
         }
+        if (input.getCutSetType() == CutSetType.Frontier)
+            cutset.addAll(currentCutSet);
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -327,9 +346,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
-            if (!exact && input.getCutSetType() == CutSetType.Frontier) {
-                computeFrontierCutSet();
-            }
         }
     }
 
@@ -435,7 +451,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         }
         if (node == null) {
             Node newNode = new Node(Integer.MIN_VALUE);
-            newNode.setType(NodeType.RELAXED);
+            newNode.setNodeType(NodeType.RELAXED);
             node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
         }
 
@@ -483,7 +499,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         if (n == null) {
             n = new Node(value);
             if (node.node.type == NodeType.RELAXED) {
-                n.setType(NodeType.RELAXED);
+                n.setNodeType(NodeType.RELAXED);
             }
             nextLayer.put(state, n);
         }
@@ -497,35 +513,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         }
     }
 
-
-    private void computeFrontierCutSet() {
-        HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent = new HashSet<>();
-        parent.addAll(nextLayer.values());
-        /*
-        while (!parent.isEmpty()) {
-            // swap current and parent
-            HashSet<Node> tmp = current;
-            current = parent;
-            parent = tmp;
-            parent.clear();
-
-            for (Node n : current) {
-                if (n.isExact()) {
-                    n.setAboveCutset(true);
-                } else {
-                    for (Edge e : n.edges) {
-                        Node origin = e.origin;
-                        if (origin.isExact() && !origin.isCutset()) {
-                            this.cutset.push(origin);
-                            origin.setCutset(true);
-                        }
-                        parent.add(origin);
-                    }
-                }
-            }
-        }*/
-    }
 
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
