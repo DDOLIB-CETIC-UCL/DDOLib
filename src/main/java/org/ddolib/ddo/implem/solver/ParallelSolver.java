@@ -194,7 +194,7 @@ public final class ParallelSolver<T,K> implements Solver {
             width,
             shared.dominance,
             bestLB,
-            CutSetType.LastExactLayer
+            critical.frontier.cutSetType()
         );
 
         mdd.compile(compilation);
@@ -215,7 +215,7 @@ public final class ParallelSolver<T,K> implements Solver {
             width,
             shared.dominance,
             bestLB,
-            CutSetType.LastExactLayer
+            critical.frontier.cutSetType()
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {

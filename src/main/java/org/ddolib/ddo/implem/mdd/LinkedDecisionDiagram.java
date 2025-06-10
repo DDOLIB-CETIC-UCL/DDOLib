@@ -71,9 +71,14 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         private List<Edge> edges;
 
         /**
-         * The type of this node (exact, relaxed, marked etc...)
+         * The type of this node (exact, relaxed, etc...)
          */
         private NodeType type;
+
+        /**
+         * The falg to indicate if a node is marked
+         */
+        private boolean isMarked;
 
         /**
          * Creates a new node
@@ -84,6 +89,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             this.best = null;
             this.edges = new ArrayList<>();
             this.type = NodeType.EXACT;
+            this.isMarked = false;
         }
 
         /**
@@ -111,10 +117,8 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
      */
     public enum NodeType {
-        EXACT, RELAXED, MARKED;
+        EXACT, RELAXED;
     }
-
-
 
     /**
      * This is an edge that connects two nodes from the decision diagram
@@ -334,8 +338,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
             depth += 1;
         }
-        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier)
+        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
+        }
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -533,6 +538,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
         for (Node n : parent) {
             n.suffix = 0;
+            n.isMarked = true;
         }
 
         while (!parent.isEmpty()) {
@@ -542,15 +548,18 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             parent.clear();
 
             for (Node n : current) {
-                for (Edge e : n.edges) {
-                    // Note: we might want to do something and stop as soon as the lel has been reached
-                    Node origin = e.origin;
-                    parent.add(origin);
+                if (n.isMarked) {
+                    for (Edge e : n.edges) {
+                        // Note: we might want to do something and stop as soon as the lel has been reached
+                        Node origin = e.origin;
+                        parent.add(origin);
 
-                    if (origin.suffix == null) {
-                        origin.suffix = saturatedAdd(n.suffix, e.weight);
-                    } else {
-                        origin.suffix = Math.max(origin.suffix, saturatedAdd(n.suffix, e.weight));
+                        if (origin.suffix == null) {
+                            origin.suffix = saturatedAdd(n.suffix, e.weight);
+                        } else {
+                            origin.suffix = Math.max(origin.suffix, saturatedAdd(n.suffix, e.weight));
+                        }
+                        origin.isMarked = true;
                     }
                 }
             }
