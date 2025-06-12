@@ -2,17 +2,15 @@ package org.ddolib.ddo.implem.heuristics;
 
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverDistance;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverState;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class FastMapTest {
 
+    // TODO add tests not linked to any particular pb
     @Test
     public void smallTest1d() {
         SetCoverState a = new SetCoverState(Set.of(0, 1));
@@ -39,6 +37,47 @@ public class FastMapTest {
         Assertions.assertEquals(0.0,  map.getCoordinates(c)[0]);
     }
 
-    // TODO add tests not linked to any particular pb
+    private static class TestDistance implements StateDistance<String> {
+        Map<Set<String>, Double> distanceMap;
+
+        public TestDistance() {
+            distanceMap = new HashMap<>();
+            distanceMap.put(Set.of("A", "B"), 10.0);
+            distanceMap.put(Set.of("C", "D"), 8.0);
+            distanceMap.put(Set.of("A", "C"), 6.4031242374328485);
+            distanceMap.put(Set.of("A", "D"), 6.4031242374328485);
+            distanceMap.put(Set.of("B", "C"), 6.4031242374328485);
+            distanceMap.put(Set.of("B", "D"), 6.4031242374328485);
+
+        }
+
+        @Override
+        public double distance(String a, String b) {
+            if (Objects.equals(a, b)) return 0.0;
+            return distanceMap.get(Set.of(a, b));
+        }
+    }
+
+    @Test
+    public void test2D() {
+        FastMap<String> map = new FastMap<>(
+                List.of("A", "B", "C", "D"),
+                2,
+                new TestDistance()
+        );
+        // Assertions on first dimension
+        // A and B should be selected as the first pivots
+        Assertions.assertTrue(map.getCoordinates("A")[0] == 0.0 || map.getCoordinates("A")[0] == 10.0);
+        Assertions.assertTrue(map.getCoordinates("B")[0] == 0.0 || map.getCoordinates("B")[0] == 10.0);
+        Assertions.assertTrue(map.getCoordinates("C")[0] == 5.0);
+        Assertions.assertTrue(map.getCoordinates("D")[0] == 5.0);
+
+        // Assertions on second dimension
+        // C and D should be selected as the seconds pivots
+        Assertions.assertTrue(map.getCoordinates("A")[1] == 4.0);
+        Assertions.assertTrue(map.getCoordinates("B")[1] == 4.0);
+        Assertions.assertTrue(map.getCoordinates("C")[1] == 0.0 || map.getCoordinates("C")[1] == 8.0);
+        Assertions.assertTrue(map.getCoordinates("D")[1] == 0.0 || map.getCoordinates("D")[1] == 8.0);
+    }
 
 }

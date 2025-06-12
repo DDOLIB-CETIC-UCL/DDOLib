@@ -18,6 +18,6 @@ public interface StateDistance<T> {
      * @param b the second state
      * @return the distance between them
      */
-    int distance(T a, T b);
+    double distance(T a, T b);
 
 }

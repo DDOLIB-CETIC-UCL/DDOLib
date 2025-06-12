@@ -99,6 +99,7 @@ public class FastMap<T> {
             }
 
             k -= 1;
+            currentColumn++;
         }
     }
 

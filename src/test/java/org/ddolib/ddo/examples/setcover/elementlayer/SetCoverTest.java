@@ -80,6 +80,7 @@ public class SetCoverTest {
         final SetCoverState a = new SetCoverState(Set.of(0, 1));
         final SetCoverState b = new SetCoverState(Set.of(2, 3));
         final SetCoverState c = new SetCoverState(Set.of(0));
+        final SetCoverState d = new SetCoverState(Set.of(0));
 
         final SetCoverDistance dist = new SetCoverDistance();
         Assertions.assertEquals(dist.distance(a,b), 4);
@@ -88,6 +89,8 @@ public class SetCoverTest {
         Assertions.assertEquals(dist.distance(b,a), 4);
         Assertions.assertEquals(dist.distance(c,a), 1);
         Assertions.assertEquals(dist.distance(c,b), 3);
+        Assertions.assertEquals(dist.distance(d,c), 0);
+        Assertions.assertEquals(dist.distance(c,d), 0);
     }
 
     @Test
