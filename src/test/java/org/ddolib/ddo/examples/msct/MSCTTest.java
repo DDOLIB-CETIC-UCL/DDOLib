@@ -42,7 +42,7 @@ class MSCTTest {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker(new MSCTDominance(),
+        final SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker<>(new MSCTDominance(),
                 problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
@@ -152,7 +152,7 @@ class MSCTTest {
         int n = 8;
         MSCTData data = randomMSCTData(n);
         List<List<Integer>> permutations = new ArrayList<>();
-        List<Integer> list = new ArrayList();
+        List<Integer> list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             list.add(i);
         }

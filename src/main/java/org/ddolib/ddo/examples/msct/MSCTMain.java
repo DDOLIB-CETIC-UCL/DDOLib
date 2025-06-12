@@ -1,6 +1,9 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -8,7 +11,11 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * The problem is to sequence n jobs such that:

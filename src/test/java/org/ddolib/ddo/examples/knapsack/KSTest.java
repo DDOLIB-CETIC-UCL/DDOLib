@@ -41,7 +41,7 @@ public class KSTest {
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,
@@ -83,7 +83,7 @@ public class KSTest {
                 problem.nbVars());
 
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,

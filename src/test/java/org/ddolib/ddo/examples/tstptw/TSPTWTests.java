@@ -69,7 +69,7 @@ public class TSPTWTests {
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(50);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
 
         final Solver solver = sequentialSolver(
@@ -94,7 +94,7 @@ public class TSPTWTests {
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
 
         final Solver solver = sequentialSolver(
@@ -121,7 +121,7 @@ public class TSPTWTests {
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
                 new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
 
         final Solver solver = sequentialSolver(
