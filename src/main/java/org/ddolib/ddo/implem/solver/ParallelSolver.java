@@ -208,15 +208,16 @@ public final class ParallelSolver<T, K> implements Solver {
 
         int width = shared.width.maximumWidth(sub.getState());
         CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Restricted,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.dominance,
-                bestLB
+            CompilationType.Restricted,
+            shared.problem,
+            shared.relax,
+            shared.varh,
+            shared.ranking,
+            sub,
+            width,
+            shared.dominance,
+            bestLB,
+            critical.frontier.cutSetType()
         );
 
         mdd.compile(compilation);
@@ -228,15 +229,16 @@ public final class ParallelSolver<T, K> implements Solver {
         // 2. RELAXATION
         bestLB = bestLB();
         compilation = new CompilationInput<>(
-                CompilationType.Relaxed,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.dominance,
-                bestLB
+            CompilationType.Relaxed,
+            shared.problem,
+            shared.relax,
+            shared.varh,
+            shared.ranking,
+            sub,
+            width,
+            shared.dominance,
+            bestLB,
+            critical.frontier.cutSetType()
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {

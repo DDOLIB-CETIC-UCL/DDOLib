@@ -1,8 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -10,11 +8,7 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Scanner;
-
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import java.util.*;
 
 /**
  * The problem is to sequence n jobs such that:
@@ -40,7 +34,7 @@ public class MSCTMain {
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker<MSCTState, Integer> dominance =
                 new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,
@@ -89,10 +83,10 @@ public class MSCTMain {
     public static MSCTProblem instanceGenerator(int n) {
         int[] release = new int[n];
         int[] processing = new int[n];
-        Random rand = new Random();
+        Random rand = new Random(100);
         for (int i = 0; i < n; i++) {
-            release[i] = rand.nextInt(100);
-            processing[i] = rand.nextInt(100);
+            release[i] = rand.nextInt(10);
+            processing[i] = rand.nextInt(10);
         }
         return new MSCTProblem(release, processing);
     }

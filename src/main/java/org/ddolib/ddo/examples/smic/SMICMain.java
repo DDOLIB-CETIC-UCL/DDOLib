@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.smic;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
@@ -27,7 +28,7 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data10_10.txt");
+        SMICProblem problem = readProblem("data/SMIC/data100_2.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
@@ -35,7 +36,7 @@ public class SMICMain {
         final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                 new SMICDominance(), problem.nbVars()
         );
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,

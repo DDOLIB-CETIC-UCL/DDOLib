@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.talentscheduling;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -50,7 +51,7 @@ public class TalenSchedTest {
 
         final WidthHeuristic<TSState> width = new FixedWidth<>(1000);
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = sequentialSolver(
                 problem,
@@ -92,7 +93,7 @@ public class TalenSchedTest {
 
         final WidthHeuristic<TSState> width = new FixedWidth<>(2);
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = sequentialSolver(
                 problem,

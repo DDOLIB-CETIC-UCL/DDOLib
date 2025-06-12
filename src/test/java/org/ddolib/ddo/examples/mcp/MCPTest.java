@@ -1,10 +1,13 @@
 package org.ddolib.ddo.examples.mcp;
 
+import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.examples.mcp.*;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -49,7 +52,7 @@ public class MCPTest {
 
         final FixedWidth<MCPState> width = new FixedWidth<>(1000);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
+        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
 
@@ -84,7 +87,7 @@ public class MCPTest {
 
         final FixedWidth<MCPState> width = new FixedWidth<>(2);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
+        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
 

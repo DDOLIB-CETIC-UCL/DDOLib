@@ -174,7 +174,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     sub,
                     maxWidth,
                     dominance,
-                    bestLB
+                    bestLB,
+                    frontier.cutSetType()
             );
 
             mdd.compile(compilation);
@@ -193,7 +194,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     sub,
                     maxWidth,
                     dominance,
-                    bestLB
+                    bestLB,
+                    frontier.cutSetType()
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {

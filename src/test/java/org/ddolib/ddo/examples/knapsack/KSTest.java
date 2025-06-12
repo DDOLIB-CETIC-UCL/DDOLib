@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
