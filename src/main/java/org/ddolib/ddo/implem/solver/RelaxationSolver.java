@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -23,6 +24,8 @@ public final class RelaxationSolver<T> implements Solver {
     private final WidthHeuristic<T> width;
     /** A heuristic to choose the next variable to branch on when developing a DD */
     private final VariableHeuristic<T> varh;
+    /** A distance function to identify the close nodes */
+    private final StateDistance<T> distance;
 
     /**
      * This is the fringe: the set of nodes that must still be explored before
@@ -62,6 +65,7 @@ public final class RelaxationSolver<T> implements Solver {
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
+            final StateDistance<T> distance,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
@@ -70,6 +74,7 @@ public final class RelaxationSolver<T> implements Solver {
         this.relax   = relax;
         this.varh    = varh;
         this.ranking = ranking;
+        this.distance = distance;
         this.width   = width;
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
@@ -86,7 +91,7 @@ public final class RelaxationSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(RelaxationType.Cost, problem, relax, varh, ranking, width, frontier);
+        this(RelaxationType.Cost, problem, relax, varh, ranking, null, width, frontier);
     }
 
     @Override
@@ -102,6 +107,7 @@ public final class RelaxationSolver<T> implements Solver {
                 relax,
                 varh,
                 ranking,
+                distance,
                 sub,
                 maxWidth,
                 //

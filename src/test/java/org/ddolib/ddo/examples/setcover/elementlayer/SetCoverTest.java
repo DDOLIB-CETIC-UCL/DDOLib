@@ -76,6 +76,46 @@ public class SetCoverTest {
     }
 
     @Test
+    public void testDistance() {
+        final SetCoverState a = new SetCoverState(Set.of(0, 1));
+        final SetCoverState b = new SetCoverState(Set.of(2, 3));
+        final SetCoverState c = new SetCoverState(Set.of(0));
+
+        final SetCoverDistance dist = new SetCoverDistance();
+        Assertions.assertEquals(dist.distance(a,b), 4);
+        Assertions.assertEquals(dist.distance(a,c), 1);
+        Assertions.assertEquals(dist.distance(b,c), 3);
+        Assertions.assertEquals(dist.distance(b,a), 4);
+        Assertions.assertEquals(dist.distance(c,a), 1);
+        Assertions.assertEquals(dist.distance(c,b), 3);
+    }
+
+    @Test
+    public void testDistanceRnd() {
+        Random rnd = new Random(684654654);
+        SetCoverDistance dist = new SetCoverDistance();
+        for (int test = 0; test < 100; test++) {
+            Set<Integer> a = new HashSet<>(50);
+            while (a.size() < 50) {
+                a.add(rnd.nextInt());
+            }
+
+            Set<Integer> b = new HashSet<>(a);
+            int nbrRemoved = rnd.nextInt(5, 10);
+            List<Integer> tmp = new ArrayList<>(b);
+            Collections.shuffle(tmp, rnd);
+            tmp.subList(0, nbrRemoved).forEach(b::remove);
+            int nbrAdded = rnd.nextInt(5, 10);
+            while (b.size() < a.size() - nbrRemoved + nbrAdded) {
+                b.add(rnd.nextInt());
+            }
+
+            int distRef = nbrRemoved + nbrAdded;
+            Assertions.assertEquals(distRef, dist.distance(new SetCoverState(a), new SetCoverState(b)));
+        }
+    }
+
+    @Test
     public void testSmallRelaxation() {
         int nElem = 6;
         int nSets = 6;
@@ -250,7 +290,7 @@ public class SetCoverTest {
         for (String heuristic : heuristics.keySet()) {
             varh = heuristics.get(heuristic);
             System.out.println(heuristic);
-            for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
+            for (int maxWidth = 1; maxWidth < 149; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
                 System.out.print(maxWidth + ", ");
                 relax = new SetCoverRelax();
                 width = new FixedWidth<>(maxWidth);
@@ -260,12 +300,14 @@ public class SetCoverTest {
                         relax,
                         varh,
                         ranking,
+                        null,
                         width,
                         frontier);
 
                 long start = System.currentTimeMillis();
                 SearchStatistics stats = solver.maximize();
                 double duration = (System.currentTimeMillis() - start) / 1000.0;
+                System.out.println(duration);
 
                 csvString.append(file).append(";");
                 csvString.append(maxWidth).append(";");

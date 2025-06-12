@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core;
 
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
@@ -19,6 +20,8 @@ public final class CompilationInput<T> {
     final VariableHeuristic<T> var;
     /** The state ranking heuristic to choose the nodes to keep and those to discard */
     final StateRanking<T> ranking;
+    /** A distance function to identify the close nodes */
+    final StateDistance<T> distance;
     /** The subproblem whose state space must be explored */
     final SubProblem<T> residual;
     /** What is the maximum width of the mdd ? */
@@ -34,6 +37,7 @@ public final class CompilationInput<T> {
             final Relaxation<T> relaxation,
             final VariableHeuristic<T> var,
             final StateRanking<T> ranking,
+            final StateDistance<T> distance,
             final SubProblem<T> residual,
             final int maxWidth,
             final int bestLB
@@ -44,6 +48,7 @@ public final class CompilationInput<T> {
         this.relaxation = relaxation;
         this.var = var;
         this.ranking = ranking;
+        this.distance = distance;
         this.residual = residual;
         this.maxWidth = maxWidth;
         this.bestLB = bestLB;
@@ -61,7 +66,16 @@ public final class CompilationInput<T> {
             final int bestLB
     ) {
         this(
-                RelaxationType.Cost, compType, problem, relaxation, var, ranking, residual, maxWidth, bestLB
+                RelaxationType.Cost,
+                compType,
+                problem,
+                relaxation,
+                var,
+                ranking,
+                null,
+                residual,
+                maxWidth,
+                bestLB
         );
     }
 

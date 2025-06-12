@@ -8,9 +8,8 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
-
-import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.MinCentrality;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.MinCentrality;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +28,7 @@ public class SetCover {
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
+        final SetCoverDistance distance = new SetCoverDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new RelaxationSolver<>(
                 RelaxationType.Cluster,
@@ -36,6 +36,7 @@ public class SetCover {
                 relax,
                 varh,
                 ranking,
+                distance,
                 width,
                 frontier);
 
