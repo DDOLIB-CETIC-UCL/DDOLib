@@ -59,7 +59,7 @@ public final class MCPMain {
         System.out.printf("Instance: %s%n", filename);
         System.out.printf("Nodes: %d - Edges: %d%n", problem.graph.numNodes, problem.graph.numEdges);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : S = %s T = %s%n", s, t);
 
 

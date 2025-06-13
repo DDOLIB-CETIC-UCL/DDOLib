@@ -177,7 +177,7 @@ public final class MispMain {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Max width : %d%n", maxWidth);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 

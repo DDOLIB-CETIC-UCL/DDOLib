@@ -36,7 +36,7 @@ public class SMICMain {
         final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                 new SMICDominance(), problem.nbVars()
         );
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,
@@ -61,7 +61,7 @@ public class SMICMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
