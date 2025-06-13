@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -228,7 +229,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %d - value: %d", state, ub, node.value);
+            DecimalFormat df = new DecimalFormat("#.##########");
+            return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
         }
     }
 
@@ -624,9 +626,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
         sb.append("];\n");
 
+        DecimalFormat df = new DecimalFormat("#.##########");
         for (Edge e : node.node.edges) {
             sb.append(e.origin.hashCode()).append(" -> ").append(node.node.hashCode());
-            sb.append(" [label=").append(e.weight);
+            sb.append(" [label=").append(df.format(e.weight));
             sb.append("tooltip=\"").append(e.decision.toString());
             sb.append("\"];\n");
         }
