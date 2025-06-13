@@ -7,6 +7,10 @@ import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -97,6 +101,15 @@ public final class SequentialSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
+    private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
+    private boolean firstRelaxed = true;
+
+    /**
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
@@ -138,11 +151,11 @@ public final class SequentialSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -175,17 +188,25 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     dominance,
                     bestLB,
-                    frontier.cutSetType()
+                    frontier.cutSetType(),
+                    exportAsDot && firstRestricted
             );
 
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
+            if (exportAsDot && firstRestricted) {
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problem.getClass().getSimpleName() + "_restricted.dot").toString());
+            }
+            firstRestricted = false;
+
+
             if (mdd.isExact()) {
                 continue;
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<T, K>(
+            compilation = new CompilationInput<>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -195,9 +216,15 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     dominance,
                     bestLB,
-                    frontier.cutSetType()
+                    frontier.cutSetType(),
+                    exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
+            if (exportAsDot && firstRelaxed) {
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problem.getClass().getSimpleName() + "_relaxed.dot").toString());
+            }
+            firstRelaxed = false;
             if (mdd.isExact()) {
                 maybeUpdateBest(verbosityLevel);
             } else {
@@ -257,6 +284,14 @@ public final class SequentialSolver<T, K> implements Solver {
             if (cutsetNode.getUpperBound() > bestLB) {
                 frontier.push(cutsetNode);
             }
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

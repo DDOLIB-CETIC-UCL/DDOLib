@@ -21,7 +21,7 @@ public class TSPMain {
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = parallelSolver(
                 Runtime.getRuntime().availableProcessors() / 2,
                 problem,
@@ -32,7 +32,7 @@ public class TSPMain {
                 frontier);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(1);
+        SearchStatistics stats = solver.maximize(1, false);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

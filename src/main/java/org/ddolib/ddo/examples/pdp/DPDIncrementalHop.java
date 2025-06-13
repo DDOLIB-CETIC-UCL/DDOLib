@@ -348,7 +348,7 @@ public final class DPDIncrementalHop {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1);
+        solver.maximize(1, false);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
