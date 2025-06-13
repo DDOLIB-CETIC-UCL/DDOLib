@@ -1,0 +1,24 @@
+Digraph restricted{
+1534030866 [label="15 - ub: 264 - value: 0", tooltip="Exact node"];
+666641942 [label="12 - ub: 227 - value: 15", tooltip="Exact node"];
+1534030866 -> 666641942 [label=15tooltip="Decision: assign 1 to var 0"];
+960604060 [label="15 - ub: 249 - value: 0", tooltip="Exact node"];
+1534030866 -> 960604060 [label=0tooltip="Decision: assign 0 to var 0"];
+1338668845 [label="9 - ub: 189 - value: 27", tooltip="Exact node"];
+666641942 -> 1338668845 [label=12tooltip="Decision: assign 1 to var 1"];
+159413332 [label="12 - ub: 215 - value: 15", tooltip="Exact node"];
+666641942 -> 159413332 [label=0tooltip="Decision: assign 0 to var 1"];
+960604060 -> 159413332 [label=12tooltip="Decision: assign 1 to var 1"];
+1028214719 [label="2 - ub: 151 - value: 135", tooltip="Exact node"];
+159413332 -> 1028214719 [label=120tooltip="Decision: assign 1 to var 2"];
+500977346 [label="9 - ub: 189 - value: 27", tooltip="Exact node"];
+1338668845 -> 500977346 [label=0tooltip="Decision: assign 0 to var 2"];
+20132171 [label="2 - ub: 160 - value: 135", tooltip="Exact node"];
+1028214719 -> 20132171 [label=0tooltip="Decision: assign 0 to var 3"];
+186370029 [label="3 - ub: 114 - value: 77", tooltip="Exact node"];
+500977346 -> 186370029 [label=50tooltip="Decision: assign 1 to var 3"];
+2094548358 [label="2 - ub: 135 - value: 135", tooltip="Exact node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
+20132171 -> 2094548358 [label=0tooltip="Decision: assign 0 to var 4"];
+51228289 [label="3 - ub: 135 - value: 77", tooltip="Exact node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
+186370029 -> 51228289 [label=0tooltip="Decision: assign 0 to var 4"];
+}
