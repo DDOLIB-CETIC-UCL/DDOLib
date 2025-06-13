@@ -58,7 +58,7 @@ public final class ParallelSolver<T, K> implements Solver {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      */
@@ -208,16 +208,16 @@ public final class ParallelSolver<T, K> implements Solver {
 
         int width = shared.width.maximumWidth(sub.getState());
         CompilationInput<T, K> compilation = new CompilationInput<>(
-            CompilationType.Restricted,
-            shared.problem,
-            shared.relax,
-            shared.varh,
-            shared.ranking,
-            sub,
-            width,
-            shared.dominance,
-            bestLB,
-            critical.frontier.cutSetType()
+                CompilationType.Restricted,
+                shared.problem,
+                shared.relax,
+                shared.varh,
+                shared.ranking,
+                sub,
+                width,
+                shared.dominance,
+                bestLB,
+                critical.frontier.cutSetType()
         );
 
         mdd.compile(compilation);
@@ -229,16 +229,16 @@ public final class ParallelSolver<T, K> implements Solver {
         // 2. RELAXATION
         bestLB = bestLB();
         compilation = new CompilationInput<>(
-            CompilationType.Relaxed,
-            shared.problem,
-            shared.relax,
-            shared.varh,
-            shared.ranking,
-            sub,
-            width,
-            shared.dominance,
-            bestLB,
-            critical.frontier.cutSetType()
+                CompilationType.Relaxed,
+                shared.problem,
+                shared.relax,
+                shared.varh,
+                shared.ranking,
+                sub,
+                width,
+                shared.dominance,
+                bestLB,
+                critical.frontier.cutSetType()
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {
@@ -455,7 +455,7 @@ public final class ParallelSolver<T, K> implements Solver {
          * to pop first). So, it is guaranteed that the upper bound of the first
          * node being popped is an upper bound on the value reachable by exploring
          * any of the nodes remaining on the fringe. As a consequence, the
-         * exploration can be stopped as soon as a node with an ub <= current best
+         * exploration can be stopped as soon as a node with an ub &#8804; current best
          * lower bound is popped.
          */
         private final Frontier<T> frontier;
