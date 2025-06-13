@@ -33,7 +33,7 @@ public class KSMain {
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
@@ -51,7 +51,7 @@ public class KSMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(3);
+        SearchStatistics stats = solver.maximize(0, true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);

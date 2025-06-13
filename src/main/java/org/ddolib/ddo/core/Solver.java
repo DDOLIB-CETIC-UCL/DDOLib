@@ -16,12 +16,11 @@ public interface Solver {
      *                       <li> Level 1: The iteration number, the size of the frontier and the current objective
      *                       value are printed. </li>
      *                       <li> Level 2: In addition, the root node of the current exploration is printed.</li>
-     *                       <li> Level 3: In addition, the first restricted and relaxed explored mdd are exported
-     *                       as .dot files in the output directory. Circle nodes are exact nodes, square nodes are
-     *                       relaxed nodes.</li>
      *                       </ul>
+     * @param exportAsDot    Whether we want to export the first explored restricted and relaxed mdd. Tooltips are
+     *                       configured to give additional information on nodes and edges.
      */
-    SearchStatistics maximize(int verbosityLevel);
+    SearchStatistics maximize(int verbosityLevel, boolean exportAsDot);
 
     /**
      * Tries to maximize the objective value of the problem which is being solved

@@ -607,6 +607,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         sb.append(" [label=").append(nodeStr);
         if (node.node.getNodeType() == NodeType.RELAXED) {
             sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        } else {
+            sb.append(", tooltip=\"Exact node\"");
         }
         if (lastLayer) {
             sb.append(", color=black, style=filled, fontcolor=white, tooltip=\"Terminal node\"");

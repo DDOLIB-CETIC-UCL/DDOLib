@@ -145,11 +145,11 @@ public final class SequentialSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -183,12 +183,12 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    verbosityLevel >= 3 && firstRestricted
+                    exportAsDot && firstRestricted
             );
 
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
-            if (verbosityLevel >= 3 && firstRestricted) {
+            if (exportAsDot && firstRestricted) {
                 exportDot(mdd.exportAsDot(),
                         Paths.get("output", problem.getClass().getSimpleName() + "_restricted.dot").toString());
             }
@@ -211,10 +211,10 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    verbosityLevel >= 3 && firstRelaxed
+                    exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
-            if (verbosityLevel >= 3 && firstRelaxed) {
+            if (exportAsDot && firstRelaxed) {
                 exportDot(mdd.exportAsDot(),
                         Paths.get("output", problem.getClass().getSimpleName() + "_relaxed.dot").toString());
             }
