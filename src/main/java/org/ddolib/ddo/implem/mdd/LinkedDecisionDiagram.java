@@ -10,10 +10,11 @@ import java.util.Map.Entry;
 
 /**
  * This class implements the decision diagram as a linked structure.
+ *
  * @param <T> the type of state
  * @param <K> the type of key
  */
-public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
+public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -38,13 +39,17 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
 
-    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    /**
+     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
+     */
     private boolean exact = true;
 
     /**
      * The best node in the terminal layer (if it exists at all)
      */
     private Node best = null;
+
+    private StringBuilder dotStr = new StringBuilder();
 
     // --- UTILITY CLASSES -----------------------------------------------
 
@@ -94,6 +99,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
         /**
          * set the type of the node when different to exact type
+         *
          * @param nodeType
          */
         public void setNodeType(final NodeType nodeType) {
@@ -102,9 +108,12 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
         /**
          * get the type of the node
+         *
          * @return NodeType
          */
-        public NodeType getNodeType() {return this.type;}
+        public NodeType getNodeType() {
+            return this.type;
+        }
 
         @Override
         public String toString() {
@@ -221,7 +230,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
     }
 
     @Override
-    public void compile(CompilationInput<T,K> input) {
+    public void compile(CompilationInput<T, K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
@@ -231,6 +240,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
+
+        dotStr.append("Digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n\n");
+        dotStr.append(input.getCompilationType().toString().toLowerCase());
+        dotStr.append("{\n");
 
         // proceed to compilation
         final Problem<T> problem = input.getProblem();
@@ -313,7 +326,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                int lb = input.getBestLB();
+                if (input.getExportAsDot()) {
+                    dotStr.append(generateDotStr(n));
+                }
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -340,6 +355,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         }
         if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
+        }
+
+        if (input.getExportAsDot()) {
+            dotStr.append("}");
         }
 
         // finalize: find best
@@ -392,8 +411,13 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
 
+    @Override
+    public String exportAsDot() {
+        return dotStr.toString();
+    }
+
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T,K> input) {
+    private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.getProblem().nbVars(); i++) {
             set.add(i);
@@ -416,6 +440,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         cutset.clear();
         exact = true;
         best = null;
+        dotStr = new StringBuilder();
     }
 
     /**
@@ -564,6 +589,21 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 }
             }
         }
+    }
+
+    private StringBuilder generateDotStr(NodeSubProblem<T> node) {
+        String nodeStr = "\"" + node.toString() + "\"";
+        StringBuilder sb = new StringBuilder(nodeStr);
+        if (node.node.getNodeType() == NodeType.RELAXED) sb.append(" [shape=box]");
+        sb.append(";\n");
+
+        for (Edge e : node.node.edges) {
+            NodeSubProblem<T> parent = prevLayer.get(e.origin);
+            String parentStr = "\"" + parent.toString() + "\"";
+            sb.append(parentStr).append(" -> ").append(nodeStr);
+            sb.append(" [label=").append(e.weight).append("];\n");
+        }
+        return sb;
     }
 
     /**

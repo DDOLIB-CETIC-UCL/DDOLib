@@ -6,18 +6,26 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 /**
  * The set of parameters used to tweak the compilation of a MDD
+ *
  * @param <T> The type used to model the state of your problem.
  * @param <K> the type of key.
- *
  */
-public final class CompilationInput<T,K> {
-    /** How is the mdd being compiled ? */
+public final class CompilationInput<T, K> {
+    /**
+     * How is the mdd being compiled ?
+     */
     final CompilationType compType;
-    /** A reference to the original problem we try to maximize */
+    /**
+     * A reference to the original problem we try to maximize
+     */
     final Problem<T> problem;
-    /** The relaxation which we use to merge nodes in a relaxed dd */
+    /**
+     * The relaxation which we use to merge nodes in a relaxed dd
+     */
     final Relaxation<T> relaxation;
-    /** The variable heuristic which is used to decide the variable to branch on next */
+    /**
+     * The variable heuristic which is used to decide the variable to branch on next
+     */
     final VariableHeuristic<T> var;
     /**
      * The state ranking heuristic to choose the nodes to keep and those to discard
@@ -34,19 +42,27 @@ public final class CompilationInput<T,K> {
     /**
      * The best known lower bound at the time when the dd is being compiled
      */
-    /** The dominance checker used to prune the search space */
-    final SimpleDominanceChecker<T,K> dominance;
-    /** The best known lower bound at the time when the dd is being compiled */
+    /**
+     * The dominance checker used to prune the search space
+     */
+    final SimpleDominanceChecker<T, K> dominance;
+    /**
+     * The best known lower bound at the time when the dd is being compiled
+     */
     final int bestLB;
 
-    /** The type of cut set to be used in the compilation */
+    /**
+     * The type of cut set to be used in the compilation
+     */
     final CutSetType cutSetType;
+
+    final boolean exportAsDot;
 
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
      *
-     * @param compType compilation type
-     * @param problem problem to solve
+     * @param compType   compilation type
+     * @param problem    problem to solve
      * @param relaxation a relaxation
      * @param var
      * @param ranking
@@ -63,9 +79,10 @@ public final class CompilationInput<T,K> {
             final StateRanking<T> ranking,
             final SubProblem<T> residual,
             final int maxWidth,
-            final SimpleDominanceChecker<T,K> dominance,
+            final SimpleDominanceChecker<T, K> dominance,
             final int bestLB,
-            final CutSetType cutSetType
+            final CutSetType cutSetType,
+            boolean exportAsDot
     ) {
         this.compType = compType;
         this.problem = problem;
@@ -77,6 +94,7 @@ public final class CompilationInput<T,K> {
         this.dominance = dominance;
         this.bestLB = bestLB;
         this.cutSetType = cutSetType;
+        this.exportAsDot = exportAsDot;
     }
 
     /**
@@ -142,9 +160,16 @@ public final class CompilationInput<T,K> {
         return cutSetType;
     }
 
-    /** @return the dominance rule of the problem */
+    /**
+     * @return the dominance rule of the problem
+     */
     public SimpleDominanceChecker<T, K> getDominance() {
         return dominance;
+    }
+
+
+    public boolean getExportAsDot() {
+        return exportAsDot;
     }
 
     @Override
