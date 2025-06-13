@@ -253,75 +253,7 @@ public class SetCoverTest {
         Assertions.assertTrue(testValidity(problem, solution));
     }
 
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testRelaxationStrength(String file) throws IOException {
-        SetCoverProblem problem = readInstance(file);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        SetCoverRelax relax;
-        FixedWidth<SetCoverState> width;
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        VariableHeuristic<SetCoverState> varh;
-
-        StringBuilder csvString;
-
-        Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
-        // heuristics.put("elementDefault", new DefaultVariableHeuristic<>());
-        heuristics.put("elementMinCentrality", new MinCentrality(problem));
-
-        FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", true);
-        for (String heuristic : heuristics.keySet()) {
-            varh = heuristics.get(heuristic);
-            System.out.println(heuristic);
-            for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
-                csvString = new StringBuilder();
-                System.out.print(maxWidth + ", ");
-                relax = new SetCoverRelax();
-                width = new FixedWidth<>(maxWidth);
-                Solver solver = new RelaxationSolver<>(
-                        RelaxationType.Cost,
-                        problem,
-                        relax,
-                        varh,
-                        ranking,
-                        distance,
-                        width,
-                        frontier);
-
-                long start = System.currentTimeMillis();
-                SearchStatistics stats = solver.maximize();
-                double duration = (System.currentTimeMillis() - start) / 1000.0;
-                System.out.println(duration);
-
-                csvString.append(file).append(";");
-                csvString.append(maxWidth).append(";");
-                csvString.append(heuristic).append(";");
-                csvString.append(duration).append(";");
-                csvString.append(solver.bestValue().get()).append("\n");
-                writer.write(csvString.toString());
-            }
-        }
-
-        // FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", false);
-        // writer.write(csvString.toString());
-        writer.close();
-
-    }
-
     // *************************************************************************
-
-    static Stream<String> dataProvider() {
-        return Stream.of(
-                "data/SetCover/generated/n_6_b_5_d_5",
-                "data/SetCover/generated/n_10_b_8_d_3",
-                "data/SetCover/1id_problem/abilene",
-                "data/SetCover/1id_problem/ai3",
-                "data/SetCover/1id_problem/gblnet",
-                "data/SetCover/1id_problem/aarnet"
-        );
-    }
 
     /**
      * Test the validity of a solution, i.e. if the collection of selected sets covers all elements in the universe
