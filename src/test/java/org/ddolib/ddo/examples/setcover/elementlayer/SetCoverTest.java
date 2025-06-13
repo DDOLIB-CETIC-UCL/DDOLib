@@ -2,8 +2,10 @@ package org.ddolib.ddo.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.*;
-import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverProblem;
+
 import static org.ddolib.ddo.examples.setcover.elementlayer.SetCover.readInstance;
+
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -12,6 +14,7 @@ import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,6 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import static java.lang.Math.max;
 
@@ -136,20 +140,26 @@ public class SetCoverTest {
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new RelaxationSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
 
-        long start = System.currentTimeMillis();
-        solver.maximize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
-        Assertions.assertTrue(solver.bestValue().get() <= 1 );
+        for (RelaxationType relaxType: RelaxationType.values()) {
+            final Solver solver = new RelaxationSolver<>(
+                    relaxType,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    distance,
+                    width,
+                    frontier);
+
+            long start = System.currentTimeMillis();
+            solver.maximize();
+            double duration = (System.currentTimeMillis() - start) / 1000.0;
+            System.out.printf("Duration : %.3f seconds%n", duration);
+            System.out.printf("Objective: %d%n", solver.bestValue().get());
+            Assertions.assertTrue(solver.bestValue().get() <= 1);
+        }
     }
 
     /**
@@ -167,33 +177,37 @@ public class SetCoverTest {
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                RelaxationType.Cluster,
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        for (RelaxationType relaxType: RelaxationType.values()) {
+            final Solver solver = new SequentialSolver<>(
+                    RelaxationType.KClosest,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    distance,
+                    width,
+                    frontier);
 
-        solver.maximize();
+            solver.maximize();
 
-        // Retrieve solution
-        Set<Integer> solution = solver.bestSolution().map(decisions -> {
-            System.out.println("Solution Found");
-            Set<Integer> values = new HashSet<>();
-            for (Decision d : decisions) {
-                if (d.val() != -1) {
-                    values.add(d.val());
+            // Retrieve solution
+            Set<Integer> solution = solver.bestSolution().map(decisions -> {
+                System.out.println("Solution Found");
+                Set<Integer> values = new HashSet<>();
+                for (Decision d : decisions) {
+                    if (d.val() != -1) {
+                        values.add(d.val());
+                    }
                 }
-            }
-            return values;
-        }).get();
+                return values;
+            }).get();
 
-        Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
-        Assertions.assertTrue(testValidity(problem, solution));
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertTrue(testValidity(problem, solution));
+        }
     }
 
     /**
@@ -242,68 +256,37 @@ public class SetCoverTest {
     @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testRelaxation(String fname) throws IOException {
-        System.out.println("******************");
-        System.out.println(fname);
-        final SetCoverProblem problem = readInstance(fname);
-        final SetCoverRelax relax = new SetCoverRelax();
-        VariableHeuristic<SetCoverState> varh;
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        FixedWidth<SetCoverState> width;
-        for (int widthVal = 1; widthVal < 10000; widthVal = widthVal + Math.max(1, (int) (widthVal*0.1))) {
-            System.out.println("@@@@@@@@@");
-            width = new FixedWidth<>(widthVal);
-            varh = new MinCentrality(problem);
-
-            Solver solver = new RelaxationSolver<>(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier);
-
-            long start = System.currentTimeMillis();
-            solver.maximize();
-            double duration = (System.currentTimeMillis() - start) / 1000.0;
-            System.out.printf("Max width: %d%n", width.maximumWidth(null));
-            System.out.printf("Duration : %.3f seconds%n", duration);
-            System.out.printf("Objective: %d%n", solver.bestValue().get());
-        }
-    }
-
-    @Disabled
-    @ParameterizedTest
-    @MethodSource("dataProvider")
     public void testRelaxationStrength(String file) throws IOException {
         SetCoverProblem problem = readInstance(file);
         final SetCoverRanking ranking = new SetCoverRanking();
         SetCoverRelax relax;
         FixedWidth<SetCoverState> width;
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
         VariableHeuristic<SetCoverState> varh;
 
-        StringBuilder csvString = new StringBuilder();
+        StringBuilder csvString;
 
         Map<String, VariableHeuristic<SetCoverState>> heuristics = new HashMap<>();
         // heuristics.put("elementDefault", new DefaultVariableHeuristic<>());
         heuristics.put("elementMinCentrality", new MinCentrality(problem));
 
+        FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", true);
         for (String heuristic : heuristics.keySet()) {
             varh = heuristics.get(heuristic);
             System.out.println(heuristic);
-            for (int maxWidth = 1; maxWidth < 149; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
+            for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth*0.1))) {
+                csvString = new StringBuilder();
                 System.out.print(maxWidth + ", ");
                 relax = new SetCoverRelax();
                 width = new FixedWidth<>(maxWidth);
                 Solver solver = new RelaxationSolver<>(
-                        RelaxationType.Cluster,
+                        RelaxationType.Cost,
                         problem,
                         relax,
                         varh,
                         ranking,
-                        null,
+                        distance,
                         width,
                         frontier);
 
@@ -317,11 +300,12 @@ public class SetCoverTest {
                 csvString.append(heuristic).append(";");
                 csvString.append(duration).append(";");
                 csvString.append(solver.bestValue().get()).append("\n");
+                writer.write(csvString.toString());
             }
         }
 
-        FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", true);
-        writer.write(csvString.toString());
+        // FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", false);
+        // writer.write(csvString.toString());
         writer.close();
 
     }
@@ -334,6 +318,7 @@ public class SetCoverTest {
                 "data/SetCover/generated/n_10_b_8_d_3",
                 "data/SetCover/1id_problem/abilene",
                 "data/SetCover/1id_problem/ai3",
+                "data/SetCover/1id_problem/gblnet",
                 "data/SetCover/1id_problem/aarnet"
         );
     }

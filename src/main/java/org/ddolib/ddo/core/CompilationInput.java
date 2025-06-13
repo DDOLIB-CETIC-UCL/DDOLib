@@ -116,4 +116,7 @@ public final class CompilationInput<T> {
     public int getBestLB() {
         return bestLB;
     }
+
+    /** @return the distance function */
+    public StateDistance<T> getDistance() {return distance;}
 }

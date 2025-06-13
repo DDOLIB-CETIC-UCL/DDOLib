@@ -31,7 +31,7 @@ public class SetCover {
         final SetCoverDistance distance = new SetCoverDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new RelaxationSolver<>(
-                RelaxationType.Cluster,
+                RelaxationType.KClosest,
                 problem,
                 relax,
                 varh,

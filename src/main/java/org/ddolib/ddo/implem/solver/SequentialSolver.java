@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -66,6 +67,8 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final DecisionDiagram<T> mdd;
 
+    private final StateDistance<T> distance;
+
     /** This is the value of the best known lower bound. */
     private int bestLB;
 
@@ -79,18 +82,20 @@ public final class SequentialSolver<T> implements Solver {
     /** Creates a fully qualified instance */
     public SequentialSolver(
             final RelaxationType relaxType,
-        final Problem<T> problem,
-        final Relaxation<T> relax,
-        final VariableHeuristic<T> varh,
-        final StateRanking<T> ranking,
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final StateDistance<T> distance,
         final WidthHeuristic<T> width,
-        final Frontier<T> frontier)  
+            final Frontier<T> frontier)
     {
         this.relaxType = relaxType;
         this.problem = problem;
         this.relax   = relax;
         this.varh    = varh;
         this.ranking = ranking;
+        this.distance = distance;
         this.width   = width;
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
@@ -107,7 +112,7 @@ public final class SequentialSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(null, problem, relax, varh, ranking, width, frontier);
+        this(null, problem, relax, varh, ranking, null, width, frontier);
     }
 
 
@@ -135,11 +140,13 @@ public final class SequentialSolver<T> implements Solver {
 
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInput<T> compilation = new CompilationInput<>(
+                    relaxType,
                 CompilationType.Restricted,
                 problem,
                 relax,
                 varh,
                 ranking,
+                distance,
                 sub,
                 maxWidth,
                 //
