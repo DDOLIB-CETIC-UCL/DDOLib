@@ -30,7 +30,7 @@ public class Solvers {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
@@ -63,7 +63,7 @@ public class Solvers {
      *                 to pop first). So, it is guaranteed that the upper bound of the first
      *                 node being popped is an upper bound on the value reachable by exploring
      *                 any of the nodes remaining on the fringe. As a consequence, the
-     *                 exploration can be stopped as soon as a node with an ub <= current best
+     *                 exploration can be stopped as soon as a node with an ub &#8804; current best
      *                 lower bound is popped.
      * @param <T>      The type of the states.
      * @return A solver for the input problem using the given configuration.
@@ -95,7 +95,7 @@ public class Solvers {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
@@ -130,7 +130,7 @@ public class Solvers {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param <T>       The type of the states.
      * @return A solver for the input problem using the given configuration.
