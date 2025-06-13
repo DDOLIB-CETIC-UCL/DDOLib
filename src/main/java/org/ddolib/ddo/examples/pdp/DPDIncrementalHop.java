@@ -363,7 +363,7 @@ public final class DPDIncrementalHop {
                 .get();
 
         System.out.printf("Duration : %.3f%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.println("Eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
         System.out.println("Problem:" + problem);

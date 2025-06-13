@@ -57,9 +57,9 @@ public class PSMain {
                 })
                 .get();
 
-        System.out.println(String.format("Duration : %.3f", duration));
-        System.out.println(String.format("Objective: %d", solver.bestValue().get()));
-        System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
+        System.out.printf("Duration : %.3f%n", duration);
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
         System.out.println(stats);
 
     }
