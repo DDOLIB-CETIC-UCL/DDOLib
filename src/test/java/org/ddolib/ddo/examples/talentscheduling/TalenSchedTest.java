@@ -77,9 +77,9 @@ public class TalenSchedTest {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = relax.fastUpperBound(problem.initialState(), vars);
         assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
                         rub,
                         problem.optimal.get()));
     }
@@ -106,7 +106,7 @@ public class TalenSchedTest {
 
         solver.maximize();
 
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        assertEquals(problem.optimal.get().doubleValue(), solver.bestValue().get());
     }
 
 }

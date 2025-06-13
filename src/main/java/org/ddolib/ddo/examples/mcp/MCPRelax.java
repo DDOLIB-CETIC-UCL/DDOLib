@@ -14,7 +14,7 @@ import static java.lang.Math.abs;
 public class MCPRelax implements Relaxation<MCPState> {
 
     final MCPProblem problem;
-    private final int initVal;
+    private final double initVal;
     private final int[] estimation;
     private final int[] partialSum;
 
@@ -54,8 +54,8 @@ public class MCPRelax implements Relaxation<MCPState> {
     }
 
     @Override
-    public int relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, int cost) {
-        int toReturn = cost;
+    public double relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, double cost) {
+        double toReturn = cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
@@ -63,7 +63,7 @@ public class MCPRelax implements Relaxation<MCPState> {
     }
 
     @Override
-    public int fastUpperBound(MCPState state, Set<Integer> variables) {
+    public double fastUpperBound(MCPState state, Set<Integer> variables) {
         int k = state.depth();
         return MCPRanking.rank(state) + estimation[k] + partialSum[k] - initVal;
     }

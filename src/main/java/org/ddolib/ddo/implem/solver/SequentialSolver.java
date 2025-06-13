@@ -70,7 +70,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * to pop first). So, it is guaranteed that the upper bound of the first
      * node being popped is an upper bound on the value reachable by exploring
      * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an ub <= current best
+     * exploration can be stopped as soon as a node with an ub &#8804; current best
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
@@ -89,7 +89,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * Value of the best known lower bound.
      */
-    private int bestLB;
+    private double bestLB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
@@ -125,7 +125,7 @@ public final class SequentialSolver<T, K> implements Solver {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      */
@@ -167,7 +167,7 @@ public final class SequentialSolver<T, K> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
-            int nodeUB = sub.getUpperBound();
+            double nodeUB = sub.getUpperBound();
 
             if (verbosityLevel >= 2)
                 System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
@@ -235,7 +235,7 @@ public final class SequentialSolver<T, K> implements Solver {
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestLB);
         } else {
@@ -265,7 +265,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * bounds.
      */
     private void maybeUpdateBest(int verbosityLevel) {
-        Optional<Integer> ddval = mdd.bestValue();
+        Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();

@@ -16,7 +16,7 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
      */
     private class ValueState implements Comparable<ValueState> {
 
-        int value;
+        double value;
         T state;
 
         /**
@@ -25,14 +25,14 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
          * @param value The length of the longest path to the input state.
          * @param state The input state.
          */
-        ValueState(int value, T state) {
+        ValueState(double value, T state) {
             this.value = value;
             this.state = state;
         }
 
         @Override
         public int compareTo(ValueState o) {
-            return Integer.compare(value, o.value);
+            return Double.compare(value, o.value);
         }
 
         @Override
@@ -62,7 +62,7 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
      * @return true if the state is dominated, false otherwise
      */
     @Override
-    public boolean updateDominance(T state, int depth, int objValue) {
+    public boolean updateDominance(T state, int depth, double objValue) {
         Map<K, TreeSet<ValueState>> front = fronts.get(depth);
         K key = dominance.getKey(state);
         boolean dominated = false;

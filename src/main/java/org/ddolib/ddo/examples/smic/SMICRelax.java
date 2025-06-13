@@ -29,7 +29,7 @@ public class SMICRelax implements Relaxation<SMICState> {
         return new SMICState(intersectionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
     }
     @Override
-    public int relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, int cost) {
+    public double relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, double cost) {
         return cost;
     }
 }

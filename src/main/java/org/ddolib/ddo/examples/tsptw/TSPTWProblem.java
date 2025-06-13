@@ -3,11 +3,7 @@ package org.ddolib.ddo.examples.tsptw;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 
@@ -31,7 +27,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -82,7 +78,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
-    public int transitionCost(TSPTWState state, Decision decision) {
+    public double transitionCost(TSPTWState state, Decision decision) {
         int to = decision.val();
 
         int travel = minDuration(state, to);

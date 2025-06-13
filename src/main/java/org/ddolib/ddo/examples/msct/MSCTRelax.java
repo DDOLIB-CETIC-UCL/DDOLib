@@ -27,7 +27,7 @@ class MSCTRelax implements Relaxation<MSCTState> {
     }
 
     @Override
-    public int relaxEdge(MSCTState from, MSCTState to, MSCTState merged, Decision d, int cost) {
+    public double relaxEdge(MSCTState from, MSCTState to, MSCTState merged, Decision d, double cost) {
         return cost;
     }
 }

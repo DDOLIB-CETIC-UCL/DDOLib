@@ -77,7 +77,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int initialValue() {
+        public double initialValue() {
             return 0;
         }
 
@@ -100,7 +100,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int transitionCost(Integer state, Decision decision) {
+        public double transitionCost(Integer state, Decision decision) {
             // If the item is taken (1) the cost is the profit of the item, 0 otherwise
             return values[decision.var()] * decision.val();
         }
@@ -124,7 +124,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+        public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
             return cost;
         }
     }

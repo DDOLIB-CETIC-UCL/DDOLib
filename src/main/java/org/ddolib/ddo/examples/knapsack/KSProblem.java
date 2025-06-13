@@ -17,9 +17,9 @@ public class KSProblem implements Problem<Integer> {
     final int capa;
     final int[] profit;
     final int[] weight;
-    public final Integer optimal;
+    public final double optimal;
 
-    public KSProblem(final int capa, final int[] profit, final int[] weight, final Integer optimal) {
+    public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
@@ -37,7 +37,7 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -57,7 +57,7 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
-    public int transitionCost(Integer state, Decision decision) {
+    public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return profit[decision.var()] * decision.val();
     }

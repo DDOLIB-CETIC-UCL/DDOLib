@@ -201,7 +201,7 @@ public final class DPDIncrementalHop {
         }
 
         @Override
-        public int initialValue() {
+        public double initialValue() {
             return 0;
         }
 
@@ -217,7 +217,7 @@ public final class DPDIncrementalHop {
         }
 
         @Override
-        public int transitionCost(PDState state, Decision decision) {
+        public double transitionCost(PDState state, Decision decision) {
             return -state.current.stream()
                     .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                     .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
@@ -252,12 +252,12 @@ public final class DPDIncrementalHop {
         }
 
         @Override
-        public int relaxEdge(PDState from, PDState to, PDState merged, Decision d, int cost) {
+        public double relaxEdge(PDState from, PDState to, PDState merged, Decision d, double cost) {
             return cost;
         }
 
         @Override
-        public int fastUpperBound(PDState state, Set<Integer> variables) {
+        public double fastUpperBound(PDState state, Set<Integer> variables) {
             if (state.current.cardinality() != 1) {
                 throw new Error("no fast upper bound when no current");
             } else {

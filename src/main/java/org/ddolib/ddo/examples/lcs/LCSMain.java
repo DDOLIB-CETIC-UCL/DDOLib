@@ -44,8 +44,8 @@ public final class LCSMain {
         int diffCharNb = Integer.parseInt(splitFirst[1]);
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
-        Optional<Integer> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(Integer.parseInt(splitFirst[2]));
+        Optional<Double> optimal;
+        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
@@ -146,7 +146,7 @@ public final class LCSMain {
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().orElse(Integer.MIN_VALUE));
+        System.out.printf("Objective: %d%n", solver.bestValue().orElse(Double.MIN_VALUE));
         System.out.printf("Upper Bnd : %s%n", solver.upperBound());
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());

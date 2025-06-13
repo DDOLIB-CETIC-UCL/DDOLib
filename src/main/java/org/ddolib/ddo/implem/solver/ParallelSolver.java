@@ -58,7 +58,7 @@ public final class ParallelSolver<T, K> implements Solver {
      *                  to pop first). So, it is guaranteed that the upper bound of the first
      *                  node being popped is an upper bound on the value reachable by exploring
      *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      */
@@ -127,7 +127,7 @@ public final class ParallelSolver<T, K> implements Solver {
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         synchronized (critical) {
             if (critical.bestSol.isPresent()) {
                 return Optional.of(critical.bestLB);
@@ -156,7 +156,7 @@ public final class ParallelSolver<T, K> implements Solver {
     /**
      * @return best known lower bound so far
      */
-    public int lowerBound() {
+    public double lowerBound() {
         synchronized (critical) {
             return critical.bestLB;
         }
@@ -165,7 +165,7 @@ public final class ParallelSolver<T, K> implements Solver {
     /**
      * @return best known upper bound so far
      */
-    public int upperBound() {
+    public double upperBound() {
         synchronized (critical) {
             return critical.bestUB;
         }
@@ -178,7 +178,7 @@ public final class ParallelSolver<T, K> implements Solver {
         return new SubProblem<>(
                 shared.problem.initialState(),
                 shared.problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.MAX_VALUE,
                 Collections.emptySet());
     }
 
@@ -199,8 +199,8 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION
-        int nodeUB = sub.getUpperBound();
-        int bestLB = bestLB();
+        double nodeUB = sub.getUpperBound();
+        double bestLB = bestLB();
 
         if (nodeUB <= bestLB) {
             return;
@@ -253,7 +253,7 @@ public final class ParallelSolver<T, K> implements Solver {
     /**
      * @return the current best known lower bound
      */
-    private int bestLB() {
+    private double bestLB() {
         synchronized (critical) {
             return critical.bestLB;
         }
@@ -266,7 +266,7 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private void maybeUpdateBest(final DecisionDiagram<T, K> mdd, int verbosityLevel) {
         synchronized (critical) {
-            Optional<Integer> ddval = mdd.bestValue();
+            Optional<Double> ddval = mdd.bestValue();
 
             if (ddval.isPresent() && ddval.get() > critical.bestLB) {
                 critical.bestLB = ddval.get();
@@ -282,7 +282,7 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private void enqueueCutset(final DecisionDiagram<T, K> mdd) {
         synchronized (critical) {
-            int bestLB = critical.bestLB;
+            double bestLB = critical.bestLB;
             Iterator<SubProblem<T>> cutset = mdd.exactCutset();
             while (cutset.hasNext()) {
                 SubProblem<T> cutsetNode = cutset.next();
@@ -457,7 +457,7 @@ public final class ParallelSolver<T, K> implements Solver {
          * to pop first). So, it is guaranteed that the upper bound of the first
          * node being popped is an upper bound on the value reachable by exploring
          * any of the nodes remaining on the fringe. As a consequence, the
-         * exploration can be stopped as soon as a node with an ub <= current best
+         * exploration can be stopped as soon as a node with an ub &#8804; current best
          * lower bound is popped.
          */
         private final Frontier<T> frontier;
@@ -470,7 +470,7 @@ public final class ParallelSolver<T, K> implements Solver {
          * it node), it should place the value i32::min_value() in its corresponding
          * cell.
          */
-        final int[] upperBounds;
+        final double[] upperBounds;
         /**
          * This is the number of nodes that are currently being explored.
          * <p>
@@ -491,12 +491,12 @@ public final class ParallelSolver<T, K> implements Solver {
         /**
          * This is the value of the best known lower bound.
          */
-        int bestLB;
+        double bestLB;
         /**
          * This is the value of the best known lower bound.
          * *WARNING* This one only gets set when the interrupt condition is satisfied
          */
-        int bestUB;
+        double bestUB;
         /**
          * If set, this keeps the info about the best solution so far.
          */
@@ -508,7 +508,7 @@ public final class ParallelSolver<T, K> implements Solver {
             this.explored = 0;
             this.bestLB = Integer.MIN_VALUE;
             this.bestUB = Integer.MAX_VALUE;
-            this.upperBounds = new int[nbThreads];
+            this.upperBounds = new double[nbThreads];
             this.bestSol = Optional.empty();
             for (int i = 0; i < nbThreads; i++) {
                 upperBounds[i] = Integer.MAX_VALUE;

@@ -42,8 +42,7 @@ public final class MispMain {
         }
         neighbor[0].set(n - 1);
         neighbor[n - 1].set(0);
-
-        return new MispProblem(state, neighbor, weight, Optional.of(n / 2));
+        return new MispProblem(state, neighbor, weight, Optional.of((double) (n / 2)));
     }
 
     /**
@@ -118,14 +117,14 @@ public final class MispMain {
      * <code>Optional.empty</code> otherwise.
      * @throws IOException If the input file does not exist.
      */
-    private static Optional<Integer> findOptimum(String fileName) throws IOException {
+    private static Optional<Double> findOptimum(String fileName) throws IOException {
         Optional<String> line = findLine(fileName);
         if (line.isEmpty()) {
             return Optional.empty();
         } else {
             String optiLine = line.get();
             int optimalStrLength = "optimal=".length();
-            int opti = Integer.parseInt(optiLine.substring(optimalStrLength, optiLine.length() - 1));
+            double opti = Double.parseDouble(optiLine.substring(optimalStrLength, optiLine.length() - 1));
             return Optional.of(opti);
         }
 

@@ -11,7 +11,7 @@ public class TSPTWInstance {
 
     public int[][] distance;
     public TimeWindow[] timeWindows;
-    public Optional<Integer> optimal = Optional.empty();
+    public Optional<Double> optimal = Optional.empty();
     public String name;
 
     /**
@@ -50,7 +50,7 @@ public class TSPTWInstance {
                     numVar = Integer.parseInt(tokens[0]);
                     distance = new int[numVar][numVar];
                     timeWindows = new TimeWindow[numVar];
-                    if (tokens.length == 2) optimal = Optional.of(Integer.parseInt(tokens[1]));
+                    if (tokens.length == 2) optimal = Optional.of(Double.parseDouble(tokens[1]));
                 } else if (1 <= lineCount && lineCount <= numVar) {
                     int i = lineCount - 1;
                     String[] distanceFromI = line.split("\\s+");

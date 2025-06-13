@@ -31,13 +31,13 @@ public class LCSProblem implements Problem<LCSState> {
     // DP tables for 2-strings problems.
     int[][][] tables;
     // Optimal solution
-    Optional<Integer> optimal;
+    Optional<Double> optimal;
 
     final int GO_TO_END_OF_STRINGS = -1;
 
 
     LCSProblem(String instance, int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
-               int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Integer> optimal) {
+               int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Double> optimal) {
         this.instance = instance;
         this.stringNb = stringNb;
         this.diffCharNb = diffCharNb;
@@ -59,7 +59,7 @@ public class LCSProblem implements Problem<LCSState> {
         }
     }
 
-    public Optional<Integer> getOptimal() {
+    public Optional<Double> getOptimal() {
         return optimal;
     }
 
@@ -76,7 +76,7 @@ public class LCSProblem implements Problem<LCSState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -121,7 +121,7 @@ public class LCSProblem implements Problem<LCSState> {
     }
 
     @Override
-    public int transitionCost(LCSState state, Decision decision) {
+    public double transitionCost(LCSState state, Decision decision) {
         if (decision.val() == GO_TO_END_OF_STRINGS) return 0;
         return 1;
     }

@@ -34,12 +34,12 @@ public class TSRelax implements Relaxation<TSState> {
     }
 
     @Override
-    public int relaxEdge(TSState from, TSState to, TSState merged, Decision d, int cost) {
+    public double relaxEdge(TSState from, TSState to, TSState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(TSState state, Set<Integer> variables) {
+    public double fastUpperBound(TSState state, Set<Integer> variables) {
         return -fastLowerBound(state);
     }
 

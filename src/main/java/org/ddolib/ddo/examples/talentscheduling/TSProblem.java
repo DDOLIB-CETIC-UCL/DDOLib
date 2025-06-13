@@ -19,7 +19,7 @@ public class TSProblem implements Problem<TSState> {
     final int[] duration;
     final BitSet[] actors;
 
-    public final Optional<Integer> optimal;
+    public final Optional<Double> optimal;
     private Optional<String> name = Optional.empty();
 
     /**
@@ -29,7 +29,7 @@ public class TSProblem implements Problem<TSState> {
      * @param duration For each scene {@code i}, gives its duration.
      * @param actors   For each scene, returns the set of actors needed
      */
-    public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Integer> optimal) {
+    public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Double> optimal) {
         this.nbScene = nbScene;
         this.nbActors = nbActors;
         this.costs = costs;
@@ -60,7 +60,7 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         int cost = 0;
         for (int scene = 0; scene < nbScene; scene++) {
             for (int actor = actors[scene].nextSetBit(0);
@@ -95,7 +95,7 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
-    public int transitionCost(TSState state, Decision decision) {
+    public double transitionCost(TSState state, Decision decision) {
         int scene = decision.val();
 
         // All the already present actors (playing for this scene or waiting)

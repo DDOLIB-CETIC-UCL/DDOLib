@@ -13,7 +13,7 @@ public class MispProblem implements Problem<BitSet> {
     public final BitSet remainingNodes;
     public final BitSet[] neighbors;
     public final int[] weight;
-    public final Optional<Integer> optimal;
+    public final Optional<Double> optimal;
 
     /**
      * @param remainingNodes The remaining node that can be selected in the current independent set. Considered
@@ -22,7 +22,7 @@ public class MispProblem implements Problem<BitSet> {
      * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
      *                       in the problem instance.
      */
-    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Integer> optimal) {
+    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Double> optimal) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
@@ -63,7 +63,7 @@ public class MispProblem implements Problem<BitSet> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -91,7 +91,7 @@ public class MispProblem implements Problem<BitSet> {
     }
 
     @Override
-    public int transitionCost(BitSet state, Decision decision) {
+    public double transitionCost(BitSet state, Decision decision) {
         return weight[decision.var()] * decision.val();
     }
 }
