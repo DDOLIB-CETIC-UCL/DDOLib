@@ -184,13 +184,15 @@ public final class SequentialSolver<T, K> implements Solver {
 
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
-            System.out.println(mdd.exportAsDot());
+            if (verbosityLevel >= 3 && firstRestricted) {
+                System.out.println(mdd.exportAsDot());
+            }
+            firstRestricted = false;
             if (mdd.isExact()) {
                 continue;
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<T, K>(
             compilation = new CompilationInput<>(
                     CompilationType.Relaxed,
                     problem,
