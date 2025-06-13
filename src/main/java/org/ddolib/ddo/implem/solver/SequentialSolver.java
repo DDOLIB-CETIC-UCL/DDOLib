@@ -100,7 +100,13 @@ public final class SequentialSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
+    /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
     private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
     private boolean firstRelaxed = true;
 
     /**

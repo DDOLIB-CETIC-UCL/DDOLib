@@ -49,6 +49,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private Node best = null;
 
+    /**
+     * Used to build the .dot file displaying the compiled mdd.
+     */
     private StringBuilder dotStr = new StringBuilder();
 
     // --- UTILITY CLASSES -----------------------------------------------
@@ -599,9 +602,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
-    private void updateLayers() {
-    }
-
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
     private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         String nodeStr = "\"" + node.toString() + "\"";
         StringBuilder sb = new StringBuilder();

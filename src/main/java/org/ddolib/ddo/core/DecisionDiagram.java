@@ -41,5 +41,10 @@ public interface DecisionDiagram<T, K> {
      */
     Iterator<SubProblem<T>> exactCutset();
 
+    /**
+     * Export the compiled MDD in .dot file format.
+     *
+     * @return A .dot formatted string of the compiled mdd.
+     */
     String exportAsDot();
 }
