@@ -38,7 +38,7 @@ public class TSMain {
         int[] cost = new int[0];
         int[] duration = new int[0];
         BitSet[] actors = new BitSet[0];
-        Optional<Integer> opti = Optional.empty();
+        Optional<Double> opti = Optional.empty();
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -51,7 +51,7 @@ public class TSMain {
                 } else if (lineCount == 0) {
                     String[] tokens = line.split("\\s+");
                     if (tokens.length == 3) {
-                        opti = Optional.of(Integer.parseInt(tokens[2]));
+                        opti = Optional.of(Double.parseDouble(tokens[2]));
                     }
                 } else if (lineCount == 1) {
                     nbScenes = Integer.parseInt(line);

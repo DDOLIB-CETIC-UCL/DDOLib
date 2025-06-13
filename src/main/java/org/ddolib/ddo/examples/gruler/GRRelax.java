@@ -24,7 +24,7 @@ public class GRRelax implements Relaxation<GRState>  {
     }
 
     @Override
-    public int relaxEdge(GRState from, GRState to, GRState merged, Decision d, int cost) {
+    public double relaxEdge(GRState from, GRState to, GRState merged, Decision d, double cost) {
         return cost;
     }
 }

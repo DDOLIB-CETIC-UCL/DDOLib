@@ -36,7 +36,7 @@ class MSCTTest {
         }
     }
 
-    public int solve(MSCTData data, int w) {
+    public double solve(MSCTData data, int w) {
         MSCTProblem problem = new MSCTProblem(data.release, data.processing);
         final MSCTRelax relax = new MSCTRelax(problem);
         final MSCTRanking ranking = new MSCTRanking();
@@ -102,8 +102,8 @@ class MSCTTest {
             int n = 7;
             int releaseTime = 15;
             MSCTData data = randomMSCTDataFixedRelease(n, releaseTime);
-            int bestSolDDO = solve(data, w);
-            int bestSolRef = bestSol(releaseTime, data.processing);
+            double bestSolDDO = solve(data, w);
+            double bestSolRef = bestSol(releaseTime, data.processing);
             assertEquals(bestSolRef, bestSolDDO);
         }
     }
@@ -159,7 +159,7 @@ class MSCTTest {
         generatePermutations(list, 0, permutations);
         int bestBruteForceSol = bestBruteForceSolution(data.release, data.processing);
         for (int w = 10; w < 100; w += 10) {
-            int bestSolDDO = solve(data, w);
+            double bestSolDDO = solve(data, w);
             assertEquals(bestBruteForceSol, bestSolDDO);
         }
     }

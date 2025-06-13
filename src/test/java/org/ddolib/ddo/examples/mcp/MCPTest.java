@@ -70,10 +70,10 @@ public class MCPTest {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = relax.fastUpperBound(problem.initialState(), vars);
 
         assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",
                         rub,
                         problem.optimal.get()));
     }

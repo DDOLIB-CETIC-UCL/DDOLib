@@ -31,12 +31,12 @@ public class LCSRelax implements Relaxation<LCSState> {
     }
 
     @Override
-    public int relaxEdge(LCSState from, LCSState to, LCSState merged, Decision d, int cost) {
+    public double relaxEdge(LCSState from, LCSState to, LCSState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(LCSState state, Set<Integer> variables) {
+    public double fastUpperBound(LCSState state, Set<Integer> variables) {
         // For each character, gets the minimal amount left in common between all strings.
         int total = 0;
         for(int c = 0; c < problem.diffCharNb; ++c) {

@@ -22,5 +22,5 @@ public abstract class DominanceChecker<T, K> {
      * @param objValue The length of the longest path from the root to the input state.
      * @return Whether the input state is dominated.
      */
-    public abstract boolean updateDominance(T state, int depth, int objValue);
+    public abstract boolean updateDominance(T state, int depth, double objValue);
 }

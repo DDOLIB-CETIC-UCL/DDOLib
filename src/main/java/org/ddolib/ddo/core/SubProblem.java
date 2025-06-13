@@ -18,11 +18,11 @@ public final class SubProblem<T> {
     /**
      * The root value of this sub problem
      */
-    final int value;
+    final double value;
     /**
      * An upper bound on the objective reachable in this subproblem
      */
-    final int ub;
+    final double ub;
     /**
      * The path to traverse to reach this subproblem from the root of the original
      * problem
@@ -40,8 +40,8 @@ public final class SubProblem<T> {
      */
     public SubProblem(
             final T state,
-            final int value,
-            final int ub,
+            final double value,
+            final double ub,
             final Set<Decision> path) {
         this.state = state;
         this.value = value;
@@ -59,14 +59,14 @@ public final class SubProblem<T> {
     /**
      * @return the objective value at the root of this subproblem
      */
-    public int getValue() {
+    public double getValue() {
         return this.value;
     }
 
     /**
      * @return an upper bound on the global objective if solved using this subproblem
      */
-    public int getUpperBound() {
+    public double getUpperBound() {
         return this.ub;
     }
 

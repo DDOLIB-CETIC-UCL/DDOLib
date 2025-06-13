@@ -12,7 +12,7 @@ import java.util.Iterator;
 public class TSPProblem implements Problem<TSPState> {
 
     final int n;
-    final int[][] distanceMatrix;
+    final double[][] distanceMatrix;
 
     @Override
     public String toString() {
@@ -20,15 +20,15 @@ public class TSPProblem implements Problem<TSPState> {
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
     }
 
-    public int eval(int[] solution) {
-        int toReturn = 0;
+    public double eval(int[] solution) {
+        double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
         }
         return toReturn;
     }
 
-    public TSPProblem(final int[][] distanceMatrix) {
+    public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
     }
@@ -54,7 +54,7 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -70,11 +70,11 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public int transitionCost(TSPState state, Decision decision) {
+    public double transitionCost(TSPState state, Decision decision) {
         return -state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .getAsInt();
+                .getAsDouble();
     }
 }

@@ -49,10 +49,10 @@ public class LCSTest {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = relax.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.getOptimal().get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
                         rub,
                         problem.getOptimal().get()));
     }

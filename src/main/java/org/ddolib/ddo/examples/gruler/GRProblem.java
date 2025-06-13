@@ -19,7 +19,7 @@ public class GRProblem implements Problem<GRState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -63,7 +63,7 @@ public class GRProblem implements Problem<GRState> {
     }
 
     @Override
-    public int transitionCost(GRState state, Decision decision) {
+    public double transitionCost(GRState state, Decision decision) {
         return -(decision.val() - state.getLastMark()); // put a minus to turn objective into maximization (ddo requirement
     }
 

@@ -57,11 +57,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         /**
          * The length of the longest path to this node
          */
-        private int value;
+        private double value;
         /**
          * The length of the longest suffix of this node (bottom part of a local bound)
          */
-        private Integer suffix;
+        private Double suffix;
         /**
          * The edge terminating the longest path to this node
          */
@@ -84,7 +84,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         /**
          * Creates a new node
          */
-        public Node(final int value) {
+        public Node(final double value) {
             this.value = value;
             this.suffix = null;
             this.best = null;
@@ -136,7 +136,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         /**
          * The weight of the arc
          */
-        private int weight;
+        private double weight;
 
         /**
          * Creates a new edge between pairs of nodes
@@ -145,7 +145,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          * @param d   the decision that was made when traversing this edge
          * @param w   the weight of the edge
          */
-        public Edge(final Node src, final Decision d, final int w) {
+        public Edge(final Node src, final Decision d, final double w) {
             this.origin = src;
             this.decision = d;
             this.weight = w;
@@ -182,12 +182,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         /**
          * The upper bound associated with this node (if state were the root)
          */
-        private int ub;
+        private double ub;
 
         /**
          * Creates a new instance
          */
-        public NodeSubProblem(final T state, final int ub, final Node node) {
+        public NodeSubProblem(final T state, final double ub, final Node node) {
             this.state = state;
             this.ub = ub;
             this.node = node;
@@ -206,7 +206,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            int locb = Integer.MIN_VALUE;
+            double locb = Double.MIN_VALUE;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -261,7 +261,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
                     continue;
                 } else {
-                    int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -314,7 +314,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                int lb = input.getBestLB();
+                double lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -363,7 +363,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (best == null) {
             return Optional.empty();
         } else {
@@ -468,9 +468,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             node.ub = Math.max(node.ub, drop.ub);
 
             for (Edge e : drop.node.edges) {
-                int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
-                int value = saturatedAdd(e.origin.value, rcost);
+                double value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
                 // if there exists an entring arc with relaxed origin, set the merged node to relaxed
                 if (e.origin.getNodeType() == NodeType.RELAXED) {
@@ -503,8 +503,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private void branchOn(final NodeSubProblem<T> node, final Decision decision, final Problem<T> problem) {
         T state = problem.transition(node.state, decision);
-        int cost = problem.transitionCost(node.state, decision);
-        int value = saturatedAdd(node.node.value, cost);
+        double cost = problem.transitionCost(node.state, decision);
+        double value = saturatedAdd(node.node.value, cost);
 
         // when the origin is relaxed, the destination must be relaxed
         Node n = nextLayer.get(state);
@@ -538,7 +538,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         parent.addAll(nextLayer.values());
 
         for (Node n : parent) {
-            n.suffix = 0;
+            n.suffix = 0.0;
             n.isMarked = true;
         }
 
@@ -570,11 +570,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static final int saturatedAdd(int a, int b) {
-        long sum = (long) a + (long) b;
-        sum = sum >= Integer.MAX_VALUE ? Integer.MAX_VALUE : sum;
-        sum = sum <= Integer.MIN_VALUE ? Integer.MIN_VALUE : sum;
-        return (int) sum;
+    private static final double saturatedAdd(double a, double b) {
+        double sum = a + b;
+        if (Double.isInfinite(sum)) {
+            return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;
+        }
+        return sum;
     }
 
     /**
@@ -661,11 +662,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            int cmp = o1.node.value - o2.node.value;
+            double cmp = o1.node.value - o2.node.value;
             if (cmp == 0) {
                 return delegate.compare(o1.state, o2.state);
             } else {
-                return cmp;
+                return Double.compare(o1.node.value, o2.node.value);
             }
         }
     }

@@ -9,13 +9,13 @@ import java.util.*;
 public class TSPRelax implements Relaxation<TSPState> {
 
     private final TSPProblem problem;
-    private final int [] leastIncidentEdge;
+    private final double [] leastIncidentEdge;
 
     public TSPRelax(TSPProblem problem) {
         this.problem = problem;
-        this.leastIncidentEdge = new int[problem.n];
+        this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
-            int min = Integer.MAX_VALUE;
+            double min = Double.MAX_VALUE;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
                     min = Math.min(min, problem.distanceMatrix[i][j]);
@@ -40,15 +40,15 @@ public class TSPRelax implements Relaxation<TSPState> {
     }
 
     @Override
-    public int relaxEdge(TSPState from, TSPState to, TSPState merged, Decision d, int cost) {
+    public double relaxEdge(TSPState from, TSPState to, TSPState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
+    public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
         BitSet toVisit = state.toVisit;
         // for each unvisited node, we take the smallest incident edge
-        ArrayList<Integer> toVisitLB = new ArrayList(unassignedVariables.size());
+        ArrayList<Double> toVisitLB = new ArrayList(unassignedVariables.size());
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }

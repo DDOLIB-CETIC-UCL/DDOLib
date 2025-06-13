@@ -5,7 +5,6 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 class MSCTProblem implements Problem<MSCTState> {
 
@@ -34,7 +33,7 @@ class MSCTProblem implements Problem<MSCTState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -56,7 +55,7 @@ class MSCTProblem implements Problem<MSCTState> {
     }
 
     @Override
-    public int transitionCost(MSCTState state, Decision decision) {
+    public double transitionCost(MSCTState state, Decision decision) {
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
         return -currentTime;
     }

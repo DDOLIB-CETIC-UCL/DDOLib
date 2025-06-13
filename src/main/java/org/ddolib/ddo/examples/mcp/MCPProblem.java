@@ -24,7 +24,7 @@ public class MCPProblem implements Problem<MCPState> {
     public final int T = 1;
 
     final Graph graph;
-    public Optional<Integer> optimal = Optional.empty();
+    public Optional<Double> optimal = Optional.empty();
 
     /**
      * A name to ease the readability of the tests.
@@ -35,7 +35,7 @@ public class MCPProblem implements Problem<MCPState> {
         this.graph = graph;
     }
 
-    public MCPProblem(Graph graph, Integer optimal) {
+    public MCPProblem(Graph graph, Double optimal) {
         this.graph = graph;
         this.optimal = Optional.of(optimal);
     }
@@ -61,7 +61,7 @@ public class MCPProblem implements Problem<MCPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         int val = 0;
         for (int i = 0; i < nbVars(); i++) {
             for (int j = i + 1; j < nbVars(); j++) {
@@ -99,7 +99,7 @@ public class MCPProblem implements Problem<MCPState> {
     }
 
     @Override
-    public int transitionCost(MCPState state, Decision decision) {
+    public double transitionCost(MCPState state, Decision decision) {
         if (state.depth() == 0) return 0;
         else if (decision.val() == S) return branchOnS(state, decision.var());
         else return branchOnT(state, decision.var());

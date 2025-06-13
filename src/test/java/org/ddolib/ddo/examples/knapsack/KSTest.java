@@ -64,10 +64,10 @@ public class KSTest {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.capa, vars);
+        double rub = relax.fastUpperBound(problem.capa, vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.optimal,
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
                         rub,
                         problem.optimal));
     }

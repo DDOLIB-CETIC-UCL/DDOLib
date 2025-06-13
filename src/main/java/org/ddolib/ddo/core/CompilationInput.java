@@ -49,7 +49,7 @@ public final class CompilationInput<T, K> {
     /**
      * The best known lower bound at the time when the dd is being compiled
      */
-    final int bestLB;
+    final double bestLB;
 
     /** The type of cut set to be used in the compilation */
     final CutSetType cutSetType;
@@ -76,7 +76,7 @@ public final class CompilationInput<T, K> {
             final SubProblem<T> residual,
             final int maxWidth,
             final DominanceChecker<T, K> dominance,
-            final int bestLB,
+            final double bestLB,
             final CutSetType cutSetType
     ) {
         this.compType = compType;
@@ -143,7 +143,7 @@ public final class CompilationInput<T, K> {
     /**
      * @return best known lower bound at the time when the dd is being compiled
      */
-    public int getBestLB() {
+    public double getBestLB() {
         return bestLB;
     }
 

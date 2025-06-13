@@ -14,7 +14,8 @@ public class TSPMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final TSPProblem problem = new TSPProblem(TSPInstance.randomMatrix(17));
+        TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
+        final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         final TSPRelax relax = new TSPRelax(problem);
         final TSPRanking ranking = new TSPRanking();
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
@@ -46,8 +47,8 @@ public class TSPMain {
                 .get();
 
         System.out.println(stats);
-        System.out.printf("Duration : %.3f%n (s)", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Duration : %.3f(s)%n ", duration);
+        System.out.printf("Objective: %.1f%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
