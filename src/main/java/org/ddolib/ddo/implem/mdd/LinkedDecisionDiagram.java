@@ -605,15 +605,19 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         StringBuilder sb = new StringBuilder();
         sb.append(node.node.hashCode());
         sb.append(" [label=").append(nodeStr);
-        if (node.node.getNodeType() == NodeType.RELAXED) sb.append(", shape=box");
+        if (node.node.getNodeType() == NodeType.RELAXED) {
+            sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        }
         if (lastLayer) {
-            sb.append(", color=black, style=filled, fontcolor=white");
+            sb.append(", color=black, style=filled, fontcolor=white, tooltip=\"Terminal node\"");
         }
         sb.append("];\n");
 
         for (Edge e : node.node.edges) {
             sb.append(e.origin.hashCode()).append(" -> ").append(node.node.hashCode());
-            sb.append(" [label=").append(e.weight).append("];\n");
+            sb.append(" [label=").append(e.weight);
+            sb.append("tooltip=\"").append(e.decision.toString());
+            sb.append("\"];\n");
         }
         return sb;
     }

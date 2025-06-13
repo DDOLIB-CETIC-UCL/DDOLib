@@ -17,7 +17,8 @@ public interface Solver {
      *                       value are printed. </li>
      *                       <li> Level 2: In addition, the root node of the current exploration is printed.</li>
      *                       <li> Level 3: In addition, the first restricted and relaxed explored mdd are exported
-     *                       as .dot files in the output directory.</li>
+     *                       as .dot files in the output directory. Circle nodes are exact nodes, square nodes are
+     *                       relaxed nodes.</li>
      *                       </ul>
      */
     SearchStatistics maximize(int verbosityLevel);

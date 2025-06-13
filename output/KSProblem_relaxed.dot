@@ -1,0 +1,29 @@
+Digraph relaxed{
+1237514926 [label="15 - ub: 264 - value: 0"];
+548246552 [label="12 - ub: 227 - value: 15"];
+1237514926 -> 548246552 [label=15tooltip="Decision: assign 1 to var 0"];
+835648992 [label="15 - ub: 249 - value: 0"];
+1237514926 -> 835648992 [label=0tooltip="Decision: assign 0 to var 0"];
+1368884364 [label="9 - ub: 189 - value: 27"];
+548246552 -> 1368884364 [label=12tooltip="Decision: assign 1 to var 1"];
+401625763 [label="15 - ub: 330 - value: 15", shape=box, tooltip="Relaxed node"];
+548246552 -> 401625763 [label=0tooltip="Decision: assign 0 to var 1"];
+835648992 -> 401625763 [label=12tooltip="Decision: assign 1 to var 1"];
+835648992 -> 401625763 [label=0tooltip="Decision: assign 0 to var 1"];
+772777427 [label="5 - ub: 176 - value: 135", shape=box, tooltip="Relaxed node"];
+401625763 -> 772777427 [label=120tooltip="Decision: assign 1 to var 2"];
+83954662 [label="15 - ub: 189 - value: 27", shape=box, tooltip="Relaxed node"];
+1368884364 -> 83954662 [label=0tooltip="Decision: assign 0 to var 2"];
+401625763 -> 83954662 [label=0tooltip="Decision: assign 0 to var 2"];
+1751075886 [label="5 - ub: 197 - value: 135", shape=box, tooltip="Relaxed node"];
+772777427 -> 1751075886 [label=0tooltip="Decision: assign 0 to var 3"];
+2108649164 [label="15 - ub: 177 - value: 77", shape=box, tooltip="Relaxed node"];
+83954662 -> 2108649164 [label=50tooltip="Decision: assign 1 to var 3"];
+83954662 -> 2108649164 [label=0tooltip="Decision: assign 0 to var 3"];
+777874839 [label="5 - ub: 177 - value: 135", shape=box, tooltip="Relaxed node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
+1751075886 -> 777874839 [label=0tooltip="Decision: assign 0 to var 4"];
+596512129 [label="7 - ub: 177 - value: 177", shape=box, tooltip="Relaxed node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
+2108649164 -> 596512129 [label=100tooltip="Decision: assign 1 to var 4"];
+824318946 [label="15 - ub: 177 - value: 77", shape=box, tooltip="Relaxed node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
+2108649164 -> 824318946 [label=0tooltip="Decision: assign 0 to var 4"];
+}

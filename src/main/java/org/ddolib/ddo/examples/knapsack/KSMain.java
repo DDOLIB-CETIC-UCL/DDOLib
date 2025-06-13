@@ -51,7 +51,7 @@ public class KSMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(2);
+        SearchStatistics stats = solver.maximize(3);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);
