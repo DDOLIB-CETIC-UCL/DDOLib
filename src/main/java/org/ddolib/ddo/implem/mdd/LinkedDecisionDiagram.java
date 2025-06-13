@@ -279,11 +279,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             if (currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
+                dotStr.append("}");
                 return;
             }
 
             if (nextVar == null) {
                 // Some variables simply can't be assigned
+                dotStr.append("}");
                 clear();
                 return;
             } else {
