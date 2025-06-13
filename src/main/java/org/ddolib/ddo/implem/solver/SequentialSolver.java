@@ -7,6 +7,10 @@ import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -185,9 +189,12 @@ public final class SequentialSolver<T, K> implements Solver {
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
             if (verbosityLevel >= 3 && firstRestricted) {
-                System.out.println(mdd.exportAsDot());
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problem.getClass().getSimpleName() + "_restricted.dot").toString());
             }
             firstRestricted = false;
+
+
             if (mdd.isExact()) {
                 continue;
             }
@@ -204,9 +211,14 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    false
+                    verbosityLevel >= 3 && firstRelaxed
             );
             mdd.compile(compilation);
+            if (verbosityLevel >= 3 && firstRelaxed) {
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problem.getClass().getSimpleName() + "_relaxed.dot").toString());
+            }
+            firstRelaxed = false;
             if (mdd.isExact()) {
                 maybeUpdateBest(verbosityLevel);
             } else {
@@ -266,6 +278,14 @@ public final class SequentialSolver<T, K> implements Solver {
             if (cutsetNode.getUpperBound() > bestLB) {
                 frontier.push(cutsetNode);
             }
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

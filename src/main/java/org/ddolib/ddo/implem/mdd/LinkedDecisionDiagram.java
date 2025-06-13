@@ -225,7 +225,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %d", state, ub);
+            return String.format("%s - ub: %d - value: %d", state, ub, node.value);
         }
     }
 
@@ -241,9 +241,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
-        dotStr.append("Digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n\n");
-        dotStr.append(input.getCompilationType().toString().toLowerCase());
-        dotStr.append("{\n");
+        dotStr.append("Digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
         final Problem<T> problem = input.getProblem();
@@ -327,7 +325,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             for (NodeSubProblem<T> n : currentLayer) {
                 if (input.getExportAsDot()) {
-                    dotStr.append(generateDotStr(n));
+                    dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.getBestLB()) {
                     continue;
@@ -357,9 +355,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             cutset.addAll(currentCutSet);
         }
 
-        if (input.getExportAsDot()) {
-            dotStr.append("}");
-        }
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -367,6 +362,17 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 best = n;
             }
         }
+
+        if (input.getExportAsDot()) {
+            for (Entry<T, Node> entry : nextLayer.entrySet()) {
+                T state = entry.getKey();
+                Node node = entry.getValue();
+                NodeSubProblem<T> subProblem = new NodeSubProblem<>(state, best.value, node);
+                dotStr.append(generateDotStr(subProblem, true));
+            }
+            dotStr.append("}");
+        }
+
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
@@ -591,16 +597,22 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
-    private StringBuilder generateDotStr(NodeSubProblem<T> node) {
+    private void updateLayers() {
+    }
+
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         String nodeStr = "\"" + node.toString() + "\"";
-        StringBuilder sb = new StringBuilder(nodeStr);
-        if (node.node.getNodeType() == NodeType.RELAXED) sb.append(" [shape=box]");
-        sb.append(";\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.node.hashCode());
+        sb.append(" [label=").append(nodeStr);
+        if (node.node.getNodeType() == NodeType.RELAXED) sb.append(", shape=box");
+        if (lastLayer) {
+            sb.append(", color=black, style=filled, fontcolor=white");
+        }
+        sb.append("];\n");
 
         for (Edge e : node.node.edges) {
-            NodeSubProblem<T> parent = prevLayer.get(e.origin);
-            String parentStr = "\"" + parent.toString() + "\"";
-            sb.append(parentStr).append(" -> ").append(nodeStr);
+            sb.append(e.origin.hashCode()).append(" -> ").append(node.node.hashCode());
             sb.append(" [label=").append(e.weight).append("];\n");
         }
         return sb;
