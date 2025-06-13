@@ -225,7 +225,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 relax(maxWidth, ranking, relax);
                                 break;
                             case MinDist:
-                                relaxCluster(maxWidth, input.getStateRanking(), relax);
+                                relaxClusterMinDistance(maxWidth, input.getDistance(), relax);
                                 break;
                             case KClosest:
                                 relaxKClosest(maxWidth, input.getDistance(), relax);
@@ -362,17 +362,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     private class STNode {
         public final NodeSubProblem<T> A;
         public final NodeSubProblem<T> B;
-        public final T merged;
+        public final double distance;
 
-        public STNode(NodeSubProblem<T> A, NodeSubProblem<T> B, T merged) {
+        public STNode(NodeSubProblem<T> A, NodeSubProblem<T> B, double distance) {
             this.A = A;
             this.B = B;
-            this.merged = merged;
+            this.distance = distance;
         }
 
         @Override
         public String toString() {
-            return A.state.toString() + " + " + B.state.toString() + " -> " + merged;
+            return A.state.toString() + " + " + B.state.toString() + " -> " + distance;
         }
     }
 
@@ -396,27 +396,14 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
-    private boolean shareParents(NodeSubProblem<T> a, NodeSubProblem<T> b) {
-        Set<Node> parentA = new HashSet<>();
-        Set<Node> parentB = new HashSet<>();
-        for (Edge e : a.node.edges) {
-            parentA.add(e.origin);
-        }
-        for (Edge e : b.node.edges) {
-            parentB.add(e.origin);
-        }
-        parentA.retainAll(parentB);
-        return !parentA.isEmpty();
-    }
-
     /**
      * Performs a relaxation of the current layer using clustering to determine nodes to merge
+     * Here clusters are created by iteratively merging the two nodes that are the less distant among all pairs of nodes
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking a ranking that orders the nodes from the most promising (greatest)
-     *  to the least promising (lowest)
+     * @param distance
      * @param relax the relaxation operators which we will use to merge nodes
      */
-    private void relaxCluster(final int maxWidth, final StateRanking<T> ranking, final Relaxation<T> relax) {
+    private void relaxClusterMinDistance(final int maxWidth, final StateDistance<T> distance, final Relaxation<T> relax) {
         /*System.out.println("************************");
         System.out.print("Layer: ");
         for (NodeSubProblem<T> node: currentLayer) {
@@ -424,31 +411,30 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
         System.out.println();*/
 
-        NodeSubroblemComparator<T> rankingComparator = new NodeSubroblemComparator<>(ranking);
+        // NodeSubroblemComparator<T> rankingComparator = new NodeSubroblemComparator<>(ranking);
 
         // To reduce memory consumption and computational cost, the maxWidth/2 best state are not merged
         // TODO: find a smarter and more scalable way to determine which nodes should be considered for merging
-        this.currentLayer.sort(rankingComparator.reversed());
-        int nbrKept = (int) Math.ceil(maxWidth* 0.0/4.0);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(nbrKept, currentLayer.size());
-        Set<NodeSubProblem<T>> currentLayerSet = new HashSet<>(merge);
+        // this.currentLayer.sort(rankingComparator.reversed());
+        // int nbrKept = (int) Math.ceil(maxWidth* 0.0/4.0);
+        // final List<NodeSubProblem<T>> merge = this.currentLayer.subList(nbrKept, currentLayer.size());
+        Set<NodeSubProblem<T>> currentLayerSet = new HashSet<>(currentLayer);
 
         // The pq contains each potential pair of clusters
         // the problem is that the size of the layer can quickly explode, quickly create memory issues
         // Maybe all potential merge don't need to be considered
-        PriorityQueue<STNode> pq = new PriorityQueue<>((a,b) -> ranking.compare(a.merged, b.merged));
+        PriorityQueue<STNode> pq = new PriorityQueue<>((a,b) -> Double.compare(a.distance, b.distance));
         T mergedState;
-        for (int i = 0; i < merge.size() - 1; i++) {
-            for (int j = i + 1; j < merge.size(); j++) {
-                mergedState = relax.mergeStates(Arrays.asList(merge.get(i).state, merge.get(j).state).iterator());
-                pq.add(new STNode(merge.get(i),
-                        merge.get(j),
-                        mergedState));
+        for (int i = 0; i < currentLayer.size() - 1; i++) {
+            for (int j = i + 1; j < currentLayer.size(); j++) {
+                pq.add(new STNode(currentLayer.get(i),
+                        currentLayer.get(j),
+                        distance.distance(currentLayer.get(i).state, currentLayer.get(j).state)));
             }
         }
-        merge.clear();
+        currentLayer.clear();
 
-        while ((currentLayerSet.size()+ nbrKept > maxWidth) && !pq.isEmpty()) {
+        while ((currentLayerSet.size() > maxWidth) && !pq.isEmpty()) {
             STNode current = pq.poll();
             assert current != null;
 
@@ -458,26 +444,27 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
             // System.out.println(current);
 
+            T merged = relax.mergeStates(List.of(current.A.state, current.B.state).iterator());
+
             currentLayerSet.remove(current.A);
             currentLayerSet.remove(current.B);
 
             NodeSubProblem<T> newNode = null;
             boolean fresh = true;
             for (NodeSubProblem<T> node: currentLayerSet) {
-                if (node.state == current.merged) {
+                if (node.state == merged) {
                     newNode = node;
                     fresh = false;
                     break;
                 }
             }
-            if (newNode == null) newNode = new NodeSubProblem<>(current.merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+            if (newNode == null) newNode = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
             redirectArcs(newNode, Set.of(current.A, current.B), relax);
 
             if (fresh) {
                 assert !currentLayerSet.contains(newNode);
                 for (NodeSubProblem<T> node : currentLayerSet) {
-                    T newMerged = relax.mergeStates(Arrays.asList(current.merged, node.state).iterator());
-                    pq.add(new STNode(newNode, node, newMerged));
+                    pq.add(new STNode(newNode, node, distance.distance(newNode.state, node.state)));
                 }
             }
             currentLayerSet.add(newNode);

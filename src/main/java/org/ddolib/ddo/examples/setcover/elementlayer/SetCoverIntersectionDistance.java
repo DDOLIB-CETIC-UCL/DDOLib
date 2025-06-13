@@ -1,0 +1,24 @@
+package org.ddolib.ddo.examples.setcover.elementlayer;
+
+import org.ddolib.ddo.heuristics.StateDistance;
+
+public class SetCoverIntersectionDistance implements StateDistance<SetCoverState> {
+
+    /**
+     * The distance between two states in the set cover problem is the
+     * size of the intersection the two sets of uncovered elements
+     * @param a the first state
+     * @param b the second state
+     * @return
+     */
+    @Override
+    public double distance(SetCoverState a, SetCoverState b) {
+        int intersectionSize = 0;
+        for (int elem: a.uncoveredElements) {
+            if(b.uncoveredElements.contains(elem)) {
+                intersectionSize++;
+            }
+        }
+        return -intersectionSize;
+    }
+}
