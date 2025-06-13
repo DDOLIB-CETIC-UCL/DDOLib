@@ -2,7 +2,7 @@ package org.ddolib.ddo.core;
 
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 /**
  * The set of parameters used to tweak the compilation of a MDD
@@ -45,7 +45,7 @@ public final class CompilationInput<T, K> {
     /**
      * The dominance checker used to prune the search space
      */
-    final SimpleDominanceChecker<T, K> dominance;
+    final DominanceChecker<T, K> dominance;
     /**
      * The best known lower bound at the time when the dd is being compiled
      */
@@ -79,7 +79,7 @@ public final class CompilationInput<T, K> {
             final StateRanking<T> ranking,
             final SubProblem<T> residual,
             final int maxWidth,
-            final SimpleDominanceChecker<T, K> dominance,
+            final DominanceChecker<T, K> dominance,
             final int bestLB,
             final CutSetType cutSetType,
             boolean exportAsDot
@@ -154,19 +154,18 @@ public final class CompilationInput<T, K> {
     }
 
     /**
+     * @return the dominance rule of the problem
+     */
+    public DominanceChecker<T, K> getDominance() {
+        return dominance;
+    }
+
+    /**
      * @return the type of cut set to be used in the compilation
      */
     public CutSetType getCutSetType() {
         return cutSetType;
     }
-
-    /**
-     * @return the dominance rule of the problem
-     */
-    public SimpleDominanceChecker<T, K> getDominance() {
-        return dominance;
-    }
-
 
     public boolean getExportAsDot() {
         return exportAsDot;

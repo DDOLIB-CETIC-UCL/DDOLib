@@ -4,8 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.Dominance;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -42,6 +41,27 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final Critical<T> critical;
 
+    /**
+     * Creates a fully qualified instance
+     *
+     * @param nbThreads The number of threads that can be used in parallel.
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub <= current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     */
     public ParallelSolver(
             final int nbThreads,
             final Problem<T> problem,
@@ -49,31 +69,8 @@ public final class ParallelSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final SimpleDominanceChecker<T, K> dominance,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
         this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
-        this.critical = new Critical<>(nbThreads, frontier);
-    }
-
-    public ParallelSolver(
-            final int nbThreads,
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier) {
-        this.shared = new Shared(nbThreads, problem, relax, varh, ranking, width, new SimpleDominanceChecker<T, Integer>(new Dominance<T, Integer>() {
-            @Override
-            public Integer getKey(T state) {
-                return 0;
-            }
-
-            @Override
-            public boolean isDominatedOrEqual(T state1, T state2) {
-                return false;
-            }
-        }, problem.nbVars()));
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -423,7 +420,7 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final WidthHeuristic<T> width;
 
-        private final SimpleDominanceChecker<T, K> dominance;
+        private final DominanceChecker<T, K> dominance;
         /**
          * A heuristic to choose the next variable to branch on when developing a DD
          */
@@ -436,7 +433,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
-                final SimpleDominanceChecker<T, K> dominance) {
+                final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;

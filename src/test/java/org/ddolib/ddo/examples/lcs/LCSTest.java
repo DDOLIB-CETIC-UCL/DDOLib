@@ -7,8 +7,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -17,6 +15,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,7 +67,7 @@ public class LCSTest {
 
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -89,7 +88,7 @@ public class LCSTest {
 
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,

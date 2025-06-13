@@ -7,13 +7,13 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PSTest {
@@ -41,9 +41,9 @@ class PSTest {
         final PSRelax relax = new PSRelax(instance);
         final PSRanking ranking = new PSRanking();
         final FixedWidth<PSState> width = new FixedWidth<>(10);
-        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic();
-        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
+        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -53,7 +53,6 @@ class PSTest {
 
         long start = System.currentTimeMillis();
         solver.maximize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
         assertEquals(solver.bestValue().get(), -instance.optimal); // put a minus since it is a minimization problem
     }
 }

@@ -3,7 +3,7 @@ package org.ddolib.ddo.implem.mdd;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -250,7 +250,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final Relaxation<T> relax = input.getRelaxation();
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
-        final SimpleDominanceChecker<T, K> dominance = input.getDominance();
+        final DominanceChecker<T, K> dominance = input.getDominance();
 
         final Set<Integer> variables = varSet(input);
         //

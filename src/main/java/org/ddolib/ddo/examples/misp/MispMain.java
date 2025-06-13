@@ -8,7 +8,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
@@ -22,6 +21,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
+
+import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
 
 public final class MispMain {
 
@@ -150,7 +151,7 @@ public final class MispMain {
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new ParallelSolver<BitSet,Integer>(
+        final Solver solver = parallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,

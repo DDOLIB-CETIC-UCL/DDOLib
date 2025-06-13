@@ -1,19 +1,30 @@
 package org.ddolib.ddo.implem.dominance;
 
+
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-public class SimpleDominanceChecker<T,K> {
+/**
+ * DominanceChecker that maintains lists of non dominated nodes for each level of the mdd.
+ *
+ * @param <T> The type of states.
+ * @param <K> The type of dominance keys.
+ */
+public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
-    private Dominance <T,K> dominance;
-    private int nVars;
-    private Comparator<T> cmp;
-
-    class ValueState implements Comparable<ValueState> {
+    /**
+     * Container for a state and the value of the longest path to this state
+     */
+    private class ValueState implements Comparable<ValueState> {
 
         int value;
         T state;
+
+        /**
+         * Instantiate a new ValueState
+         *
+         * @param value The length of the longest path to the input state.
+         * @param state The input state.
+         */
         ValueState(int value, T state) {
             this.value = value;
             this.state = state;
@@ -30,14 +41,13 @@ public class SimpleDominanceChecker<T,K> {
         }
     }
 
-    public Map<K, TreeSet<ValueState>>[] fronts;
+    private final ArrayList<Map<K, TreeSet<ValueState>>> fronts;
 
-    public SimpleDominanceChecker(Dominance<T,K> dominance, int nVars) {
-        this.dominance = dominance;
-        this.nVars = nVars;
-        this.fronts = new Map[nVars];
+    public SimpleDominanceChecker(Dominance<T, K> dominance, int nVars) {
+        super(dominance);
+        this.fronts = new ArrayList<>(nVars);
         for (int i = 0; i < nVars; i++) {
-            fronts[i] = new HashMap<>();//new ConcurrentHashMap<>();
+            fronts.add(new HashMap<>());
         }
     }
 
@@ -45,32 +55,30 @@ public class SimpleDominanceChecker<T,K> {
      * Check if the state is dominated by any of the states in the front
      * If it is, return true
      * If it is not, add the state and remove the dominated states from the front
-     * @param state the state to check
-     * @param depth the depth of the state in the MDD
-     * @param val the objective value of the state
+     *
+     * @param state    the state to check
+     * @param depth    the depth of the state in the MDD
+     * @param objValue the objective value of the state
      * @return true if the state is dominated, false otherwise
      */
-    public boolean updateDominance(T state, int depth, int val) {
-        Map<K, TreeSet<ValueState>> front = fronts[depth];
+    @Override
+    public boolean updateDominance(T state, int depth, int objValue) {
+        Map<K, TreeSet<ValueState>> front = fronts.get(depth);
         K key = dominance.getKey(state);
         boolean dominated = false;
         if (front.containsKey(key)) {
-            for (ValueState vs : front.get(key)) {
-                if (vs.value > val && dominance.isDominatedOrEqual (state,vs.state)) {
+            for (ValueState vs : new TreeSet<>(front.get(key))) {
+                if (vs.value > objValue && dominance.isDominatedOrEqual(state, vs.state)) {
                     dominated = true;
                     break;
-                } else if (val > vs.value && dominance.isDominatedOrEqual (vs.state, state)) {
-                    front.remove(vs);
+                } else if (objValue >= vs.value && dominance.isDominatedOrEqual(vs.state, state)) {
+                    front.get(key).remove(vs);
                 }
             }
         }
         if (!dominated) {
-            TreeSet<ValueState> set = front.get(key);
-            if (set == null) {
-                set = new TreeSet<>();
-                front.put(key, set);
-            }
-            set.add(new ValueState(val, state));
+            TreeSet<ValueState> set = front.computeIfAbsent(key, k -> new TreeSet<>());
+            set.add(new ValueState(objValue, state));
         }
         return dominated;
     }

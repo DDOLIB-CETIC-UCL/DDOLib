@@ -4,12 +4,12 @@ import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,6 +18,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public class TSMain {
 
@@ -96,7 +98,7 @@ public class TSMain {
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<TSState,Integer> solver = new SequentialSolver(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
