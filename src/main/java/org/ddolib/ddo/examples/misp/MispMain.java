@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.misp;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
@@ -147,7 +148,7 @@ public final class MispMain {
         final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
 
-        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = new ParallelSolver<BitSet,Integer>(
                 Runtime.getRuntime().availableProcessors(),

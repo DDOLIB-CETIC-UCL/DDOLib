@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -7,6 +8,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -64,10 +66,9 @@ public class LCSTest {
         final FixedWidth<LCSState> width = new FixedWidth<>(250);
         final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new ParallelSolver(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
@@ -86,10 +87,9 @@ public class LCSTest {
         final FixedWidth<LCSState> width = new FixedWidth<>(2);
         final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new ParallelSolver(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,

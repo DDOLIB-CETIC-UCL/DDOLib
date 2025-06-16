@@ -34,7 +34,7 @@ public class MSCTMain {
         final FixedWidth<MSCTState> width = new FixedWidth<>(10);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
@@ -82,10 +82,10 @@ public class MSCTMain {
     public static MSCTProblem instanceGenerator(int n) {
         int[] release = new int[n];
         int[] processing = new int[n];
-        Random rand = new Random();
+        Random rand = new Random(100);
         for (int i = 0; i < n; i++) {
-            release[i] = rand.nextInt(100);
-            processing[i] = rand.nextInt(100);
+            release[i] = rand.nextInt(10);
+            processing[i] = rand.nextInt(10);
         }
         return new MSCTProblem(release, processing);
     }

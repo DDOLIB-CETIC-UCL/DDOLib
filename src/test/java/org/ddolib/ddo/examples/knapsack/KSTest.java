@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -60,7 +61,7 @@ public class KSTest {
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
 
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver(
                 problem,
                 relax,

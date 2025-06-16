@@ -31,13 +31,16 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      */
     private HashMap<T, Node> nextLayer = new HashMap<T, Node>();
     /**
-     * All the nodes from the last exact layer cutset
+     * All the nodes from the last exact layer cutset or the frontier cutset
      */
-    private List<NodeSubProblem<T>> lel = new ArrayList<>();
+    private List<NodeSubProblem<T>> cutset = new ArrayList<>();
     /**
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
-    private boolean lelWasSet = false;
+
+    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    private boolean exact = true;
+
     /**
      * The best node in the terminal layer (if it exists at all)
      */
@@ -68,6 +71,16 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         private List<Edge> edges;
 
         /**
+         * The type of this node (exact, relaxed, etc...)
+         */
+        private NodeType type;
+
+        /**
+         * The falg to indicate if a node is marked
+         */
+        private boolean isMarked;
+
+        /**
          * Creates a new node
          */
         public Node(final int value) {
@@ -75,13 +88,36 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             this.suffix = null;
             this.best = null;
             this.edges = new ArrayList<>();
+            this.type = NodeType.EXACT;
+            this.isMarked = false;
         }
+
+        /**
+         * set the type of the node when different to exact type
+         * @param nodeType
+         */
+        public void setNodeType(final NodeType nodeType) {
+            this.type = nodeType;
+        }
+
+        /**
+         * get the type of the node
+         * @return NodeType
+         */
+        public NodeType getNodeType() {return this.type;}
 
         @Override
         public String toString() {
             return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
+    }
+
+    /**
+     * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
+     */
+    public enum NodeType {
+        EXACT, RELAXED;
     }
 
     /**
@@ -206,6 +242,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final Set<Integer> variables = varSet(input);
         //
         int depth = 0;
+        Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -220,7 +257,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (!dominance.updateDominance(state, depth, node.value)) {
+                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
+                    continue;
+                } else {
                     int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
@@ -247,19 +286,24 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             // requested from this decision diagram  
             //
             // IMPORTANT NOTE:
-            // The check is on depth 2 because the method maybeSaveLel() saves the parent
-            // of the current layer if a LEL is to be remembered. In order to be sure
+            // The check is on depth 2 because the parent of the current layer is saved
+            // if a LEL is to be remembered. In order to be sure
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depth >= 2 && currentLayer.size() > maxWidth) {
                 switch (input.getCompilationType()) {
                     case Restricted:
-                        maybeSaveLel();
+                        exact = false;
                         restrict(maxWidth, ranking);
                         break;
                     case Relaxed:
-                        maybeSaveLel();
+                        if (exact) {
+                            exact = false;
+                            if (input.getCutSetType() == CutSetType.LastExactLayer) {
+                                cutset.addAll(prevLayer.values());
+                            }
+                        }
                         relax(maxWidth, ranking, relax);
                         break;
                     case Exact:
@@ -281,9 +325,21 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                         branchOn(n, decision, problem);
                     }
                 }
+                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
+                        && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                    for (Edge e : n.node.edges) {
+                        Node origin = e.origin;
+                        if (origin.getNodeType() == NodeType.EXACT) {
+                            currentCutSet.add(prevLayer.get(origin));
+                        }
+                    }
+                }
             }
 
             depth += 1;
+        }
+        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
+            cutset.addAll(currentCutSet);
         }
 
         // finalize: find best
@@ -301,7 +357,8 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
     @Override
     public boolean isExact() {
-        return !lelWasSet;
+        return exact;
+        //return !lelWasSet;
     }
 
     @Override
@@ -332,7 +389,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
     @Override
     public Iterator<SubProblem<T>> exactCutset() {
-        return new NodeSubProblemsAsSubProblemsIterator<>(lel.iterator(), pathToRoot);
+        return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
 
     // --- UTILITY METHODS -----------------------------------------------
@@ -356,19 +413,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         prevLayer.clear();
         currentLayer.clear();
         nextLayer.clear();
-        lel.clear();
-        lelWasSet = false;
+        cutset.clear();
+        exact = true;
         best = null;
-    }
-
-    /**
-     * Saves the last exact layer cutset if needed
-     */
-    private void maybeSaveLel() {
-        if (!lelWasSet) {
-            lel.addAll(prevLayer.values());
-        }
-        lelWasSet = true;
     }
 
     /**
@@ -408,8 +455,11 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 break;
             }
         }
+        // when the merged node is new, set its type to relaxed
         if (node == null) {
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+            Node newNode = new Node(Integer.MIN_VALUE);
+            newNode.setNodeType(NodeType.RELAXED);
+            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
         }
 
         // redirect and relax all arcs entering the merged node
@@ -421,7 +471,10 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
                 int value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
-
+                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                if (e.origin.getNodeType() == NodeType.RELAXED) {
+                    node.node.setNodeType(NodeType.RELAXED);
+                }
                 node.node.edges.add(e);
                 if (value > node.node.value) {
                     node.node.value = value;
@@ -452,20 +505,28 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         int cost = problem.transitionCost(node.state, decision);
         int value = saturatedAdd(node.node.value, cost);
 
+        // when the origin is relaxed, the destination must be relaxed
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
+            if (node.node.getNodeType() == NodeType.RELAXED) {
+                n.setNodeType(NodeType.RELAXED);
+            }
             nextLayer.put(state, n);
+        } else {
+            if (node.node.getNodeType() == NodeType.RELAXED) {
+                n.setNodeType(NodeType.RELAXED);
+            }
         }
 
         Edge edge = new Edge(node.node, decision, cost);
         n.edges.add(edge);
-
         if (value >= n.value) {
             n.best = edge;
             n.value = value;
         }
     }
+
 
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
@@ -477,6 +538,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
 
         for (Node n : parent) {
             n.suffix = 0;
+            n.isMarked = true;
         }
 
         while (!parent.isEmpty()) {
@@ -486,15 +548,18 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             parent.clear();
 
             for (Node n : current) {
-                for (Edge e : n.edges) {
-                    // Note: we might want to do something and stop as soon as the lel has been reached
-                    Node origin = e.origin;
-                    parent.add(origin);
+                if (n.isMarked) {
+                    for (Edge e : n.edges) {
+                        // Note: we might want to do something and stop as soon as the lel has been reached
+                        Node origin = e.origin;
+                        parent.add(origin);
 
-                    if (origin.suffix == null) {
-                        origin.suffix = saturatedAdd(n.suffix, e.weight);
-                    } else {
-                        origin.suffix = Math.max(origin.suffix, saturatedAdd(n.suffix, e.weight));
+                        if (origin.suffix == null) {
+                            origin.suffix = saturatedAdd(n.suffix, e.weight);
+                        } else {
+                            origin.suffix = Math.max(origin.suffix, saturatedAdd(n.suffix, e.weight));
+                        }
+                        origin.isMarked = true;
                     }
                 }
             }

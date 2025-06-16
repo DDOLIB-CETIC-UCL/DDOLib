@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -110,7 +111,7 @@ public final class LCSMain {
 
         final FixedWidth<LCSState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         ParallelSolver<LCSState,Integer> solver = new ParallelSolver<>(
                 Runtime.getRuntime().availableProcessors(),

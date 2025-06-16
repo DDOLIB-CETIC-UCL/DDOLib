@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples.tsptw;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
@@ -49,7 +50,7 @@ public class TSPTWMain {
         //final TSPTWWidth width = new TSPTWWidth(problem.nbVars(), widthFactor);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new TSPTWDominance(), problem.nbVars());
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
 
         SequentialSolver solver = new SequentialSolver(

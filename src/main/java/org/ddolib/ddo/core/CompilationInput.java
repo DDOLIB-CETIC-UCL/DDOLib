@@ -39,6 +39,9 @@ public final class CompilationInput<T,K> {
     /** The best known lower bound at the time when the dd is being compiled */
     final int bestLB;
 
+    /** The type of cut set to be used in the compilation */
+    final CutSetType cutSetType;
+
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
      *
@@ -61,7 +64,8 @@ public final class CompilationInput<T,K> {
             final SubProblem<T> residual,
             final int maxWidth,
             final SimpleDominanceChecker<T,K> dominance,
-            final int bestLB
+            final int bestLB,
+            final CutSetType cutSetType
     ) {
         this.compType = compType;
         this.problem = problem;
@@ -72,6 +76,7 @@ public final class CompilationInput<T,K> {
         this.maxWidth = maxWidth;
         this.dominance = dominance;
         this.bestLB = bestLB;
+        this.cutSetType = cutSetType;
     }
 
     /**
@@ -128,6 +133,13 @@ public final class CompilationInput<T,K> {
      */
     public int getBestLB() {
         return bestLB;
+    }
+
+    /**
+     * @return the type of cut set to be used in the compilation
+     */
+    public CutSetType getCutSetType() {
+        return cutSetType;
     }
 
     /** @return the dominance rule of the problem */

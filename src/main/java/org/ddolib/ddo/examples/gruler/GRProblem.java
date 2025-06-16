@@ -67,6 +67,7 @@ public class GRProblem implements Problem<GRState> {
         return -(decision.val() - state.getLastMark()); // put a minus to turn objective into maximization (ddo requirement
     }
 
+    /*
     public boolean isValidMark(GRState state, int mark) {
         BitSet distances = state.getDistances();
         for (int i = state.getMarks().nextSetBit(0); i >= 0; i = state.getMarks().nextSetBit(i + 1)) {
@@ -95,4 +96,5 @@ public class GRProblem implements Problem<GRState> {
     public int transitionCost(GRState state, int newMark) {
         return -(newMark - state.getLastMark()); // Negative for maximization
     }
+    */
 }

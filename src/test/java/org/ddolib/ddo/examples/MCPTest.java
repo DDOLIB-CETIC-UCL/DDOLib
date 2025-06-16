@@ -1,5 +1,6 @@
 package org.ddolib.ddo.examples;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.examples.mcp.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -49,7 +50,7 @@ public class MCPTest {
 
         final FixedWidth<MCPState> width = new FixedWidth<>(1000);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
+        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
@@ -84,7 +85,7 @@ public class MCPTest {
 
         final FixedWidth<MCPState> width = new FixedWidth<>(2);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking);
+        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         SequentialSolver solver = new SequentialSolver<>(problem, relax, varh, ranking, width, frontier);
 
