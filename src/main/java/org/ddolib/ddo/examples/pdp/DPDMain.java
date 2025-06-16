@@ -41,7 +41,7 @@ public final class DPDMain {
             }
         }
 
-        HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<Integer,Integer>();
+        HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<>();
 
         int firstDelivery = (n-unrelated-1)/2+1; //some  nodes are not pdp nodes
         for(int p = 1; p < firstDelivery ; p ++){
@@ -74,7 +74,7 @@ public final class DPDMain {
         final FixedWidth<PDPState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
-        final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
         final Solver solver = new ParallelSolver<>(Runtime.getRuntime().availableProcessors(),//new SequentialSolver<>(//
                 problem,
                 relax,

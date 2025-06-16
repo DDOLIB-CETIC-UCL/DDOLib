@@ -1,13 +1,9 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.util.Arrays;
@@ -62,7 +58,7 @@ public final class TSPMain {
         final FixedWidth<TSPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
-        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
