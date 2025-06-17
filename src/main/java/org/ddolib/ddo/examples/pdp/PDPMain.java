@@ -12,7 +12,7 @@ import java.util.Random;
 
 import static java.lang.Math.max;
 
-public final class DPDMain {
+public final class PDPMain {
 
     /**
      * Generates a PDP problem
