@@ -11,7 +11,6 @@ import java.util.Random;
 
 public final class TSPMain {
 
-    //
     public static TSPProblem genInstance(int n, Random random) {
 
         int[] x = new int[n];
@@ -76,18 +75,15 @@ public final class TSPMain {
     public static int[] extractSolution(Solver solver){
 
         return solver.bestSolution()
-            .map(decisions -> {
-                int[] route = new int[decisions.size()+1];
-                route[0] = 0;
-                for (Decision d : decisions) {
-                    route[d.var() + 1] = d.val();
-                }
-                return route;
-            })
-            .get();
+                .map(decisions -> {
+                    int[] route = new int[decisions.size()+1];
+                    route[0] = 0;
+                    for (Decision d : decisions) {
+                        route[d.var() + 1] = d.val();
+                    }
+                    return route;
+                })
+                .get();
 
+    }
 }
-}
-
-
-

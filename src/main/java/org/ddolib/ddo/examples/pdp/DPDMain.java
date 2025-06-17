@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
+import static java.lang.Math.max;
+
 public final class DPDMain {
 
     /**
@@ -43,7 +45,8 @@ public final class DPDMain {
 
         HashMap<Integer,Integer> pickupToAssociatedDelivery = new HashMap<>();
 
-        int firstDelivery = (n-unrelated-1)/2+1; //some  nodes are not pdp nodes
+        int numberOfPairs = Math.floorDiv(n - max(1,unrelated), 2);
+        int firstDelivery = numberOfPairs+1;
         for(int p = 1; p < firstDelivery ; p ++){
             int d = firstDelivery + p - 1;
             pickupToAssociatedDelivery.put(p,d);
@@ -58,7 +61,7 @@ public final class DPDMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPProblem problem = genInstance(24,3, new Random(1));
+        final PDPProblem problem = genInstance(18,2, new Random(1));
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -80,7 +83,7 @@ public final class DPDMain {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDPState> width = new FixedWidth<>(1000);
+        final FixedWidth<PDPState> width = new FixedWidth<>(2000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
