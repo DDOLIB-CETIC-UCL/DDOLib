@@ -4,14 +4,13 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Random;
 
 public final class DPDMain {
-
 
     /**
      * Generates a PDP problem
@@ -81,7 +80,7 @@ public final class DPDMain {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDPState> width = new FixedWidth<>(2000);
+        final FixedWidth<PDPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
 
         final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
@@ -93,7 +92,7 @@ public final class DPDMain {
                 width,
                 frontier);
 
-        SearchStatistics statistics = solver.maximize(2);
+        SearchStatistics statistics = solver.maximize(1);
         System.out.printf("statistics: " + statistics);
 
         return solver;

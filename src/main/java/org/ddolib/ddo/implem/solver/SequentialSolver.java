@@ -155,7 +155,7 @@ public final class SequentialSolver<K,T> implements Solver {
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
         long start = System.currentTimeMillis();
-        int printInterval = 100; //ms a tenth of a second
+        int printInterval = 500; //ms a tenth of a second
         long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;

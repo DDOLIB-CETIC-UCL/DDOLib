@@ -1,6 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
 
-
 import java.util.BitSet;
 
 public class SortedEdgeList {

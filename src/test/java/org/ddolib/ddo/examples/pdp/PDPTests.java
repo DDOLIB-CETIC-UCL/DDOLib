@@ -16,27 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PDPTests {
 
-    static Stream<TSPProblem> dataProvider() throws IOException {
-        String dir = Paths.get("src", "test", "resources", "TSP").toString();
-
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> {
-                    try {
-                        return new TSPProblem(filePath.toString());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-    }
-
-
-
-
     static Stream<PDPProblem> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
                 DPDMain.genInstance(5+i%14, i%3, new Random(i)));
