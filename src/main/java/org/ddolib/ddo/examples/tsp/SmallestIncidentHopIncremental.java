@@ -27,7 +27,7 @@ public class SmallestIncidentHopIncremental {
         }
     }
 
-    SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes, SortedAdjacents sortedAdjacents){
+    public SmallestIncidentHopIncremental updateToRestrictedNodeSet(BitSet allowedNodes, SortedAdjacents sortedAdjacents){
 
         if(!allowedNodes.get(baseNode)) {
             //drop me
@@ -59,7 +59,7 @@ public class SmallestIncidentHopIncremental {
         next.accumulateHops(b,sortedAdjacents);
     }
 
-    int computeHeuristics(SortedAdjacents sortedAdjacents,int nbHops){
+    public int computeHeuristics(SortedAdjacents sortedAdjacents, int nbHops){
         //build the stream of all hops
         IntStream.Builder b = IntStream.builder();
         accumulateHops(b,sortedAdjacents);

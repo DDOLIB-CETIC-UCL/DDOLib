@@ -29,7 +29,7 @@ class PDPRelax implements Relaxation<PDPState> {
             current.or(state.current);
         }
         //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
-        return new PDPState(current, openToVisit, allToVisit, problem.initSortedEdges);
+        return new PDPState(current, openToVisit, allToVisit, problem.sortedAdjacents.initialHeuristics());
     }
 
     @Override
@@ -43,7 +43,7 @@ class PDPRelax implements Relaxation<PDPState> {
             throw new Error("no fast upper bound when no current");
         } else {
             int nbHopsToDo = variables.size();
-            int lb = state.getSummedLengthOfNSmallestHops(nbHopsToDo, problem.distanceMatrix);
+            int lb = state.getHeuristics(nbHopsToDo, this.problem.sortedAdjacents);
             return -lb;
         }
     }

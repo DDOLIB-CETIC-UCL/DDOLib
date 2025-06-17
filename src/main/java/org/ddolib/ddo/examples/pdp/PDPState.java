@@ -1,5 +1,8 @@
 package org.ddolib.ddo.examples.pdp;
 
+import org.ddolib.ddo.examples.tsp.SmallestIncidentHopIncremental;
+import org.ddolib.ddo.examples.tsp.SortedAdjacents;
+
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -17,15 +20,13 @@ class PDPState {
     // However, most of the time, it is a singleton
     BitSet current;
 
-    //the sorted list of all edges that are incident to the current node and to the allToVisitNodes
-    //this list might include more edges
-    SortedEdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+    SmallestIncidentHopIncremental heuristics;
 
-    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, SortedEdgeList sortedEdgeListIncidentToToVisitNodesAndCurrentNode) {
+    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, SmallestIncidentHopIncremental heuristics) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
-        this.sortedEdgeListIncidentToToVisitNodesAndCurrentNode = sortedEdgeListIncidentToToVisitNodesAndCurrentNode;
+        this.heuristics = heuristics;
     }
 
     public int hashCode() {
@@ -62,7 +63,7 @@ class PDPState {
                 singleton(node),
                 newOpenToVisit,
                 newAllToVisit,
-                sortedEdgeListIncidentToToVisitNodesAndCurrentNode);
+                heuristics);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -71,16 +72,16 @@ class PDPState {
         return toReturn;
     }
 
-    public int getSummedLengthOfNSmallestHops(int nbHops, int[][] distance) {
+    public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents) {
 
-        if (current.cardinality() != 1) throw new Error("no bound for merged");
-        int currentNode = current.nextSetBit(0);
-        allToVisit.set(currentNode);
-        sortedEdgeListIncidentToToVisitNodesAndCurrentNode =
-                sortedEdgeListIncidentToToVisitNodesAndCurrentNode.filterUpToLength(nbHops, allToVisit);
-        allToVisit.clear(currentNode);
+        BitSet toConsider = (BitSet) allToVisit.clone();
+        toConsider.or(current);
 
-        return sortedEdgeListIncidentToToVisitNodesAndCurrentNode.sumOfFirstHops(nbHops, distance);
+        //update the heuristics
+        //it includes ll nodes and the current node
+        heuristics = heuristics.updateToRestrictedNodeSet(toConsider, sortedAdjacents);
+
+        return heuristics.computeHeuristics(sortedAdjacents, nbHops);
     }
 
     @Override

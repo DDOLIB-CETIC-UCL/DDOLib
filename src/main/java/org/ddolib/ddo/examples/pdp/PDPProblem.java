@@ -2,6 +2,7 @@ package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.examples.tsp.SortedAdjacents;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -9,12 +10,12 @@ import java.util.stream.IntStream;
 public class PDPProblem implements Problem<PDPState> {
     final int n;
     final int[][] distanceMatrix;
+    final SortedAdjacents sortedAdjacents;
 
     HashMap<Integer, Integer> pickupToAssociatedDelivery;
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
     Set<Integer> unrelatedNodes;
-    SortedEdgeList initSortedEdges;
 
     @Override
     public String toString() {
@@ -35,6 +36,8 @@ public class PDPProblem implements Problem<PDPState> {
     public PDPProblem(final int[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
+        this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
+
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
         this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
 
@@ -44,24 +47,6 @@ public class PDPProblem implements Problem<PDPState> {
             unrelatedNodes.remove(p);
             unrelatedNodes.remove(d);
             deliveryToAssociatedPickup.put(d, p);
-        }
-
-        //TODO: remove all edges that go from delivery to related pickup?
-        Iterator<SortedEdgeList> sortedEdges = IntStream.range(1, n).boxed().flatMap(
-                node1 ->
-                        IntStream.range(1, n)
-                                .filter(node2 -> node1 > node2)
-                                .boxed()
-                                .map(node2 -> new SortedEdgeList(node1, node2, null))
-        ).sorted(Comparator.comparing(e -> distanceMatrix[e.nodeA][e.nodeB])).iterator();
-
-        sortedEdges.hasNext();
-        SortedEdgeList current = sortedEdges.next();
-        this.initSortedEdges = current;
-        while (sortedEdges.hasNext()) {
-            SortedEdgeList newCurrent = sortedEdges.next();
-            current.next = newCurrent;
-            current = newCurrent;
         }
     }
 
@@ -83,7 +68,7 @@ public class PDPProblem implements Problem<PDPState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPState(singleton(0), openToVisit, allToVisit, initSortedEdges);
+        return new PDPState(singleton(0), openToVisit, allToVisit, sortedAdjacents.initialHeuristics());
     }
 
     public BitSet singleton(int singletonValue) {
