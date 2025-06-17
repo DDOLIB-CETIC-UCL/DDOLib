@@ -39,7 +39,7 @@ public class PDPTests {
 
     static Stream<PDPProblem> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
-                DPDMain.genInstance(3+i%10, 1+i%5, new Random(i)));
+                DPDMain.genInstance(5+i%14, i%3, new Random(i)));
     }
 
     @ParameterizedTest
