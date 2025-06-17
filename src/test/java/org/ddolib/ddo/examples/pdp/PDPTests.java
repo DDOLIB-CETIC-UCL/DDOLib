@@ -1,8 +1,6 @@
 package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.pdp.PDPMain;
-import org.ddolib.ddo.examples.pdp.PDPProblem;
 import org.ddolib.ddo.examples.tsp.TSPProblem;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,7 +8,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -30,8 +27,7 @@ public class PDPTests {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        TSPProblem problem = new TSPProblem(filePath.toString());
-                        return problem;
+                        return new TSPProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -52,8 +48,8 @@ public class PDPTests {
 
         Solver s = DPDMain.solveDPD(problem);
 
-        int[] solution = DPDMain.extractSolution(s);
-        assertEquals(s.bestValue().get() , -problem.eval(solution));
+        PDPSolution solution = DPDMain.extractSolution(s, problem);
 
+        assertEquals(s.bestValue().get() , -problem.eval(solution.solution));
     }
 }

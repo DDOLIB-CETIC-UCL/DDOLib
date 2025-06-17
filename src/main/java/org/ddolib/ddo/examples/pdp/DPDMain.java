@@ -64,7 +64,16 @@ public final class DPDMain {
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
 
-        solveDPD(problem);
+        Solver solver = solveDPD(problem);
+
+        PDPSolution solution = extractSolution(solver,problem);
+
+
+        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.println("Eval from scratch: " + problem.eval(solution.solution));
+        System.out.printf("Solution : %s%n", solution);
+        System.out.println("Problem:" + problem);
+
         System.out.println("end");
     }
 
@@ -84,14 +93,13 @@ public final class DPDMain {
                 width,
                 frontier);
 
-        long start = System.currentTimeMillis();
-        solver.maximize(2);
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
+        SearchStatistics statistics = solver.maximize(2);
+        System.out.printf("statistics: " + statistics);
 
-        return solver
+        return solver;
     }
 
-    public PDPSolution extractSolution(Solver solver, PDPProblem problem){
+    public static PDPSolution extractSolution(Solver solver, PDPProblem problem){
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
                     int[] route = new int[problem.nbVars()+1];
@@ -103,11 +111,7 @@ public final class DPDMain {
                 })
                 .get();
 
-        System.out.printf("Duration : %.3f%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
-        System.out.println("Eval from scratch: " + problem.eval(solution));
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println("Problem:" + problem);
+        return new PDPSolution(problem, solution);
     }
 }
 
