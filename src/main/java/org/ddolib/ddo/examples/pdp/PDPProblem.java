@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.Problem;
 import java.util.*;
 import java.util.stream.IntStream;
 
-class PDPProblem implements Problem<PDPState> {
+public class PDPProblem implements Problem<PDPState> {
     final int n;
     final int[][] distanceMatrix;
 

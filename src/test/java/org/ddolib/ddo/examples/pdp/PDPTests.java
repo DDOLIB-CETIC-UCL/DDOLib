@@ -1,26 +1,23 @@
-package org.ddolib.ddo.examples.tsp;
+package org.ddolib.ddo.examples.pdp;
 
-import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.examples.pdp.PDPMain;
+import org.ddolib.ddo.examples.pdp.PDPProblem;
+import org.ddolib.ddo.examples.tsp.TSPProblem;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TSPTests {
+public class PDPTests {
 
     static Stream<TSPProblem> dataProvider() throws IOException {
         String dir = Paths.get("src", "test", "resources", "TSP").toString();
@@ -41,18 +38,21 @@ public class TSPTests {
                 });
     }
 
-    static Stream<TSPProblem> dataProvider2() throws IOException {
+
+
+
+    static Stream<PDPProblem> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
-                TSPMain.genInstance(3+i%10, new Random(i)));
+                DPDMain.genInstance(3+i%10, 1+i%5, new Random(i)));
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider2")
-    public void testTSP(TSPProblem problem) {
+    public void testPDP(PDPProblem problem) {
 
-        Solver s = TSPMain.solveTsp(problem, 0);
+        Solver s = DPDMain.solveDPD(problem);
 
-        int[] solution = TSPMain.extractSolution(s);
+        int[] solution = DPDMain.extractSolution(s);
         assertEquals(s.bestValue().get() , -problem.eval(solution));
 
     }
