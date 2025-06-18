@@ -145,4 +145,20 @@ public class Solvers {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, defaultDominance);
     }
+
+    public static <T, K> ExactSolver<T, K> exactSolver(final Problem<T> problem,
+                                                       final Relaxation<T> relax,
+                                                       final VariableHeuristic<T> varh,
+                                                       final StateRanking<T> ranking,
+                                                       final DominanceChecker<T, K> dominance) {
+        return new ExactSolver<>(problem, relax, varh, ranking, dominance);
+    }
+
+    public static <T> ExactSolver<T, Integer> exactSolver(final Problem<T> problem,
+                                                          final Relaxation<T> relax,
+                                                          final VariableHeuristic<T> varh,
+                                                          final StateRanking<T> ranking) {
+        DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
+        return new ExactSolver<>(problem, relax, varh, ranking, defaultDominance);
+    }
 }
