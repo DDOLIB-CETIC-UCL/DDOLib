@@ -39,7 +39,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
 
-    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    /**
+     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
+     */
     private boolean exact = true;
 
     /**
@@ -95,6 +97,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * set the type of the node when different to exact type
+         *
          * @param nodeType
          */
         public void setNodeType(final NodeType nodeType) {
@@ -103,9 +106,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * get the type of the node
+         *
          * @return NodeType
          */
-        public NodeType getNodeType() {return this.type;}
+        public NodeType getNodeType() {
+            return this.type;
+        }
 
         @Override
         public String toString() {
@@ -227,18 +233,18 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.clear();
 
         // initialize the compilation
-        final int maxWidth = input.getMaxWidth();
-        final SubProblem<T> residual = input.getResidual();
+        final int maxWidth = input.maxWidth();
+        final SubProblem<T> residual = input.residual();
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
         // proceed to compilation
-        final Problem<T> problem = input.getProblem();
-        final Relaxation<T> relax = input.getRelaxation();
-        final VariableHeuristic<T> var = input.getVariableHeuristic();
-        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
-        final DominanceChecker<T, K> dominance = input.getDominance();
+        final Problem<T> problem = input.problem();
+        final Relaxation<T> relax = input.relaxation();
+        final VariableHeuristic<T> var = input.variableHeuristic();
+        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.stateRanking());
+        final DominanceChecker<T, K> dominance = input.dominance();
 
         final Set<Integer> variables = varSet(input);
         //
@@ -261,7 +267,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
                     continue;
                 } else {
-                    double rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.relaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -293,7 +299,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depth >= 2 && currentLayer.size() > maxWidth) {
-                switch (input.getCompilationType()) {
+                switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
                         restrict(maxWidth, ranking);
@@ -301,7 +307,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     case Relaxed:
                         if (exact) {
                             exact = false;
-                            if (input.getCutSetType() == CutSetType.LastExactLayer) {
+                            if (input.cutSetType() == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
                             }
                         }
@@ -314,8 +320,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                double lb = input.getBestLB();
-                if (n.ub <= input.getBestLB()) {
+                double lb = input.bestLB();
+                if (n.ub <= input.bestLB()) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -326,8 +332,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
-                        && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                if (n.node.getNodeType() == NodeType.RELAXED && input.cutSetType() == CutSetType.Frontier
+                        && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
                     for (Edge e : n.node.edges) {
                         Node origin = e.origin;
                         if (origin.getNodeType() == NodeType.EXACT) {
@@ -339,7 +345,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             depth += 1;
         }
-        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
+        if (input.compilationType() == CompilationType.Relaxed && input.cutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
 
@@ -351,7 +357,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
-        if (input.getCompilationType() == CompilationType.Relaxed) {
+        if (input.compilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
         }
     }
@@ -396,11 +402,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     // --- UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.getProblem().nbVars(); i++) {
+        for (int i = 0; i < input.problem().nbVars(); i++) {
             set.add(i);
         }
 
-        for (Decision d : input.getResidual().getPath()) {
+        for (Decision d : input.residual().getPath()) {
             set.remove(d.var());
         }
         return set;
