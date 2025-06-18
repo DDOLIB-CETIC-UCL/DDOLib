@@ -32,6 +32,11 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      CutSetType cutSetType) {
 
 
+    /**
+     * Returns a string representation of this record class.
+     *
+     * @return Returns a string representation of this record class.
+     */
     @Override
     public String toString() {
         return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestLB);
