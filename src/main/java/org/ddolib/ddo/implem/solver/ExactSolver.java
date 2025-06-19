@@ -10,6 +10,14 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Solver that compile an unique exact mdd.
+ *
+ * @param <T> The type of states.
+ * @param <K> The type of dominance keys.
+ * @implNote By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
+ * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
+ */
 public final class ExactSolver<T, K> implements Solver {
 
     /**
@@ -44,23 +52,27 @@ public final class ExactSolver<T, K> implements Solver {
      * object, then you can simply ignore this field (and remove it altogether).
      */
     private final DecisionDiagram<T, K> mdd;
-
+    /**
+     * The dominance object that will be used to prune the search space.
+     */
+    private final DominanceChecker<T, K> dominance;
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-
     /**
      * Value of the best known lower bound.
      */
     private double bestLB;
 
-
     /**
-     * The dominance object that will be used to prune the search space.
+     * Creates a new instance.
+     *
+     * @param problem The problem we want to maximize.
+     * @param relax   A suitable relaxation for the problem we want to maximize
+     * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking A heuristic to identify the most promising nodes.
      */
-    private final DominanceChecker<T, K> dominance;
-
     public ExactSolver(final Problem<T> problem,
                        final Relaxation<T> relax,
                        final VariableHeuristic<T> varh,

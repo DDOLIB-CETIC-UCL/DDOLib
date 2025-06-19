@@ -33,8 +33,8 @@ public class Solvers {
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
-     * @param <T>       The type of the states.
-     * @param <K>       The type of the dominance keys.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
     public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
@@ -65,7 +65,7 @@ public class Solvers {
      *                 any of the nodes remaining on the fringe. As a consequence, the
      *                 exploration can be stopped as soon as a node with an ub &#8804; current best
      *                 lower bound is popped.
-     * @param <T>      The type of the states.
+     * @param <T>      The type of states.
      * @return A solver for the input problem using the given configuration.
      */
     public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
@@ -98,8 +98,8 @@ public class Solvers {
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
-     * @param <T>       The type of the states.
-     * @param <K>       The type of the dominance keys.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
     public static <T, K> ParallelSolver<T, K> parallelSolver(final int nbThreads,
@@ -146,6 +146,17 @@ public class Solvers {
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, defaultDominance);
     }
 
+    /**
+     * Instantiates a solver using only exact mdd.
+     *
+     * @param problem The problem we want to maximize.
+     * @param relax   A suitable relaxation for the problem we want to maximize
+     * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking A heuristic to identify the most promising nodes.
+     * @param <T>     The type of states.
+     * @param <K>     The type of dominance keys.
+     * @return A solver for the input problem using the given configuration.
+     */
     public static <T, K> ExactSolver<T, K> exactSolver(final Problem<T> problem,
                                                        final Relaxation<T> relax,
                                                        final VariableHeuristic<T> varh,
@@ -154,6 +165,16 @@ public class Solvers {
         return new ExactSolver<>(problem, relax, varh, ranking, dominance);
     }
 
+    /**
+     * Instantiates a solver using only exact mdd. The instance does not use dominance.
+     *
+     * @param problem The problem we want to maximize.
+     * @param relax   A suitable relaxation for the problem we want to maximize
+     * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking A heuristic to identify the most promising nodes.
+     * @param <T>     The type of states.
+     * @return A solver for the input problem using the given configuration.
+     */
     public static <T> ExactSolver<T, Integer> exactSolver(final Problem<T> problem,
                                                           final Relaxation<T> relax,
                                                           final VariableHeuristic<T> varh,
