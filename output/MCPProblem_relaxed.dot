@@ -1,20 +1,27 @@
 Digraph relaxed{
-1349277854 [label="[0, 0, 0, 0] - ub: 6 - value: -4", tooltip="Exact node"];
-1775282465 [label="[0, 1, 2, -2] - ub: 8 - value: -4", tooltip="Exact node"];
-1349277854 -> 1775282465 [label=0tooltip="Decision: assign 0 to var 0"];
-1147985808 [label="[0, 0, -1, -1] - ub: 6 - value: 0", tooltip="Exact node"];
-1775282465 -> 1147985808 [label=4tooltip="Decision: assign 1 to var 1"];
-2040495657 [label="[0, 0, 5, -3] - ub: 8 - value: -4", tooltip="Exact node"];
-1775282465 -> 2040495657 [label=0tooltip="Decision: assign 0 to var 1"];
-96639997 [label="[0, 0, 0, -2] - ub: 8 - value: 2", tooltip="Exact node"];
-1147985808 -> 96639997 [label=1tooltip="Decision: assign 0 to var 2"];
-2040495657 -> 96639997 [label=6tooltip="Decision: assign 1 to var 2"];
-128893786 [label="[0, 0, 0, 0] - ub: 5 - value: 1", shape=box, tooltip="Relaxed node"];
-1147985808 -> 128893786 [label=1tooltip="Decision: assign 1 to var 2"];
-2040495657 -> 128893786 [label=4tooltip="Decision: assign 0 to var 2"];
-1732398722 [label="[0, 0, 0, 0] - ub: 4 - value: 4", shape=box, tooltip="Relaxed node", color=black, style=filled, fontcolor=white, tooltip="Terminal node"];
-96639997 -> 1732398722 [label=2tooltip="Decision: assign 0 to var 3"];
-96639997 -> 1732398722 [label=0tooltip="Decision: assign 1 to var 3"];
-128893786 -> 1732398722 [label=0tooltip="Decision: assign 0 to var 3"];
-128893786 -> 1732398722 [label=0tooltip="Decision: assign 1 to var 3"];
+670700378 [label="[0, 0, 0, 0]
+ub: 6 - value: -4", style=rounded, shape=rectangle, tooltip="Exact node"];
+1190654826 [label="[0, 1, 2, -2]
+ub: 8 - value: -4", style=rounded, shape=rectangle, tooltip="Exact node"];
+670700378 -> 1190654826 [label=0, tooltip="Decision: assign 0 to var 0"];
+1109371569 [label="[0, 0, -1, -1]
+ub: 6 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+1190654826 -> 1109371569 [label=4, tooltip="Decision: assign 1 to var 1"];
+728890494 [label="[0, 0, 5, -3]
+ub: 8 - value: -4", style=rounded, shape=rectangle, tooltip="Exact node"];
+1190654826 -> 728890494 [label=0, tooltip="Decision: assign 0 to var 1"];
+445051633 [label="[0, 0, 0, -2]
+ub: 8 - value: 2", style=rounded, shape=rectangle, tooltip="Exact node"];
+1109371569 -> 445051633 [label=1, tooltip="Decision: assign 0 to var 2"];
+728890494 -> 445051633 [label=6, tooltip="Decision: assign 1 to var 2"];
+1051754451 [label="[0, 0, 0, 0]
+ub: 5 - value: 1", shape=box, tooltip="Relaxed node"];
+1109371569 -> 1051754451 [label=1, tooltip="Decision: assign 1 to var 2"];
+728890494 -> 1051754451 [label=4, tooltip="Decision: assign 0 to var 2"];
+1349277854 [label="[0, 0, 0, 0]
+ub: 4 - value: 4", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+445051633 -> 1349277854 [label=2, tooltip="Decision: assign 0 to var 3"];
+445051633 -> 1349277854 [label=0, tooltip="Decision: assign 1 to var 3"];
+1051754451 -> 1349277854 [label=0, tooltip="Decision: assign 0 to var 3"];
+1051754451 -> 1349277854 [label=0, tooltip="Decision: assign 1 to var 3"];
 }

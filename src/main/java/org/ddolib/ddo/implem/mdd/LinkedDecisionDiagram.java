@@ -612,25 +612,33 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @return A .dot formatted string containing the node and the edges leading to this node.
      */
     private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
-        String nodeStr = "\"" + node.toString() + "\"";
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        String nodeStr = String.format(
+                "\"%s\nub: %s - value: %s\"",
+                node.state,
+                df.format(node.ub),
+                df.format(node.node.value)
+        );
+
         StringBuilder sb = new StringBuilder();
         sb.append(node.node.hashCode());
         sb.append(" [label=").append(nodeStr);
         if (node.node.getNodeType() == NodeType.RELAXED) {
             sb.append(", shape=box, tooltip=\"Relaxed node\"");
         } else {
-            sb.append(", tooltip=\"Exact node\"");
+            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
         }
         if (lastLayer) {
-            sb.append(", color=black, style=filled, fontcolor=white, tooltip=\"Terminal node\"");
+            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
+            sb.append(", tooltip=\"Terminal node\"");
         }
         sb.append("];\n");
 
-        DecimalFormat df = new DecimalFormat("#.##########");
         for (Edge e : node.node.edges) {
             sb.append(e.origin.hashCode()).append(" -> ").append(node.node.hashCode());
             sb.append(" [label=").append(df.format(e.weight));
-            sb.append("tooltip=\"").append(e.decision.toString());
+            sb.append(", tooltip=\"").append(e.decision.toString());
             sb.append("\"];\n");
         }
         return sb;
