@@ -226,7 +226,7 @@ public final class DPDIncrementalHop {
         }
     }
 
-    private static class PDPRelax implements Relaxation<PDState> {
+    private static class PDPRelax extends Relaxation<PDState> {
         private final PDProblem problem;
 
         public PDPRelax(PDProblem problem) {

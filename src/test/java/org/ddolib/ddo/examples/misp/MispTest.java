@@ -50,7 +50,7 @@ public class MispTest {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.remainingNodes, vars);
+        double rub = relax.fub(problem.remainingNodes, vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.optimal.get(),
                 String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",

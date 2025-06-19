@@ -3,16 +3,19 @@ package org.ddolib.ddo.examples.pigmentscheduling;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 import org.ddolib.ddo.util.TSPLowerBound;
-import static org.ddolib.ddo.examples.pigmentscheduling.PSProblem.IDLE;
+
 import java.util.*;
 
-public class PSRelax implements Relaxation<PSState> {
+import static org.ddolib.ddo.examples.pigmentscheduling.PSProblem.IDLE;
 
-    record ItemDemand(int cost, int deadLline) { }
+public class PSRelax extends Relaxation<PSState> {
+
+    record ItemDemand(int cost, int deadLline) {
+    }
 
     // lower bound of the TSP for all subsets of items types
     // indices are the binary representation of the subsets
-    public int [] tspLb;
+    public int[] tspLb;
     PSInstance instance;
 
     public PSRelax(PSInstance instance) {
@@ -67,7 +70,7 @@ public class PSRelax implements Relaxation<PSState> {
      * overlap between the two lower bounds described, the RLB for the PSP can
      * sum their individual contributions to obtain a stronger lower bound."
      *
-     * @param state the state for which the estimate is to be computed
+     * @param state     the state for which the estimate is to be computed
      * @param variables the set of unassigned variables
      * @return
      */
