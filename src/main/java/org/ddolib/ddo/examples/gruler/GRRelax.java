@@ -5,8 +5,9 @@ import org.ddolib.ddo.core.Relaxation;
 
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Set;
 
-public class GRRelax implements Relaxation<GRState>  {
+public class GRRelax extends Relaxation<GRState> {
     @Override
     public GRState mergeStates(final Iterator<GRState> states) {
         // take the intersection of the marks and distances sets
@@ -26,5 +27,10 @@ public class GRRelax implements Relaxation<GRState>  {
     @Override
     public double relaxEdge(GRState from, GRState to, GRState merged, Decision d, double cost) {
         return cost;
+    }
+
+    @Override
+    protected double fastUpperBound(GRState state, Set<Integer> variables) {
+        return Double.MAX_VALUE;
     }
 }

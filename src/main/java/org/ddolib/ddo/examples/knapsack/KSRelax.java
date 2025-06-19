@@ -8,9 +8,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
-public class KSRelax implements Relaxation<Integer>  {
+public class KSRelax extends Relaxation<Integer> {
     private final KSProblem problem;
-    public KSRelax(KSProblem problem) {this.problem = problem;}
+
+    public KSRelax(KSProblem problem) {
+        this.problem = problem;
+    }
 
     @Override
     public Integer mergeStates(final Iterator<Integer> states) {
