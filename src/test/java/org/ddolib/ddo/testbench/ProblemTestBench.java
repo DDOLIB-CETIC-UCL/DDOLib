@@ -5,35 +5,34 @@ import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.junit.jupiter.api.DynamicTest;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class ExampleTestBench<T, K> {
+public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
-    protected final ArrayList<Problem<T>> problems;
+    protected final List<P> problems;
 
-    abstract public ArrayList<Problem<T>> generateProblems();
+    abstract protected List<P> generateProblems();
 
-    abstract SolverConfig<T, K> configSolver(Problem<T> problem);
+    abstract protected SolverConfig<T, K> configSolver(P problem);
 
-    public ExampleTestBench() {
+    public ProblemTestBench() {
         problems = generateProblems();
     }
 
-    protected void testTransitionModel(Problem<T> problem) {
+    protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), config.width(), config.frontier());
-
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
 
-    protected void testFub(Problem<T> problem) {
+    protected void testFub(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
 
         HashSet<Integer> vars = new HashSet<>();
@@ -48,7 +47,7 @@ public abstract class ExampleTestBench<T, K> {
                         problem.optimalValue().get()));
     }
 
-    protected void testRelaxation(Problem<T> problem) {
+    protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
 
         if (config.relax() != null) {
@@ -61,7 +60,7 @@ public abstract class ExampleTestBench<T, K> {
         }
     }
 
-    protected void testDominance(Problem<T> problem) {
+    protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), config.width(),
                 config.frontier(), config.dominance());
