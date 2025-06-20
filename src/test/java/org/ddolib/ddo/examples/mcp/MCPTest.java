@@ -1,99 +1,66 @@
 package org.ddolib.ddo.examples.mcp;
 
 import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.examples.mcp.*;
-import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.ddolib.ddo.testbench.ProblemTestBench;
+import org.ddolib.ddo.testbench.SolverConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Stream;
-
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MCPTest {
 
-    static Stream<MCPProblem> dataProvider() {
-        String dir = Paths.get("src", "test", "resources", "MCP").toString();
+    private static class MCPBench extends ProblemTestBench<MCPState, Integer, MCPProblem> {
 
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> {
-                    try {
-                        MCPProblem problem = MCPIO.readInstance(filePath.toString());
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-    }
+        @Override
+        protected List<MCPProblem> generateProblems() {
+            String dir = Paths.get("src", "test", "resources", "MCP").toString();
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testMCP(MCPProblem problem) {
+            File[] files = new File(dir).listFiles();
+            assert files != null;
+            Stream<File> stream = Stream.of(files);
 
-        final MCPRelax relax = new MCPRelax(problem);
-        final MCPRanking ranking = new MCPRanking();
-
-        final FixedWidth<MCPState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
-
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
-    }
-
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testFastUpperBound(MCPProblem problem) {
-        final MCPRelax relax = new MCPRelax(problem);
-
-        HashSet<Integer> vars = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            vars.add(i);
+            return stream.filter(file -> !file.isDirectory())
+                    .map(File::getName)
+                    .map(fileName -> Paths.get(dir, fileName))
+                    .map(filePath -> {
+                        try {
+                            MCPProblem problem = MCPIO.readInstance(filePath.toString());
+                            problem.setName(filePath.getFileName().toString());
+                            return problem;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
         }
 
-        double rub = relax.fastUpperBound(problem.initialState(), vars);
+        @Override
+        protected SolverConfig<MCPState, Integer> configSolver(MCPProblem problem) {
+            MCPRelax relax = new MCPRelax(problem);
+            MCPRanking ranking = new MCPRanking();
+            FixedWidth<MCPState> width = new FixedWidth<>(1000);
+            VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
+            SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+            DefaultDominanceChecker<MCPState> dominanceChecker = new DefaultDominanceChecker<>();
 
-        assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",
-                        rub,
-                        problem.optimal.get()));
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testMCPWithRelax(MCPProblem problem) {
-
-        final MCPRelax relax = new MCPRelax(problem);
-        final MCPRanking ranking = new MCPRanking();
-
-        final FixedWidth<MCPState> width = new FixedWidth<>(2);
-        final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
-
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+    @DisplayName("MCP")
+    @TestFactory
+    public Stream<DynamicTest> testMCP() {
+        var bench = new MCPBench();
+        return bench.generateTests();
     }
-
-
 }
