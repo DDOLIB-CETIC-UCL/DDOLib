@@ -8,7 +8,7 @@ import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 /**
- * Class containing the input of {@link org.ddolib.ddo.implem.solver.SequentialSolver}.
+ * Class containing the input of {@link org.ddolib.ddo.implem.solver.SequentialSolver}. It is used for testing.
  *
  * @param relax     A suitable relaxation for the problem we want to maximize.
  * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
