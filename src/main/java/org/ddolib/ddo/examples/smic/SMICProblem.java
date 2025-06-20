@@ -42,7 +42,7 @@ public class SMICProblem  implements Problem<SMICState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -70,7 +70,7 @@ public class SMICProblem  implements Problem<SMICState> {
     }
 
     @Override
-    public int transitionCost(SMICState state, Decision decision) {
+    public double transitionCost(SMICState state, Decision decision) {
         int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0)  + processing[decision.val()];
         return -currentTime;
     }

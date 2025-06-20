@@ -4,61 +4,26 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 
-public final class TSPMain {
+import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
 
-    public static TSPProblem genInstance(int n, Random random) {
+public class TSPMain {
 
-        int[] x = new int[n];
-        int[] y = new int[n];
-        for(int i = 0 ; i < n ;  i++){
-            x[i] = random.nextInt(100);
-            y[i] = random.nextInt(100);
-        }
+    public static void main(final String[] args) throws IOException {
 
-        int[][] distance = new int[n][];
-        for(int i = 0 ; i < n ;  i++){
-            distance[i] = new int[n];
-            for(int j = 0 ; j < n ;  j++){
-                distance[i][j] = dist(x[i] - x[j] , y[i]-y[j]);
-            }
-        }
-        return new TSPProblem(distance);
-    }
-
-    static int dist(int dx, int dy){
-        return (int)Math.sqrt(dx*dx+dy*dy);
-    }
-
-    public static void main(final String[] args) {
-
-        final TSPProblem problem = genInstance(15, new Random(1));
-
-        System.out.println("problem:" + problem);
-        System.out.println("initState:" + problem.initialState());
-        Solver s = solveTsp(problem,1);
-
-        int[] solution = extractSolution(s);
-        System.out.printf("Objective: %d%n", s.bestValue().get());
-        System.out.println("eval from scratch: " + problem.eval(solution));
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-
-        System.out.println("end");
-    }
-
-    public static Solver solveTsp(TSPProblem problem, int verbosityLevel) {
-
+        TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
+        final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         final TSPRelax relax = new TSPRelax(problem);
         final TSPRanking ranking = new TSPRanking();
-        final FixedWidth<TSPState> width = new FixedWidth<>(1000);
-        final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
+        final FixedWidth<TSPState> width = new FixedWidth<>(500);
+        final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = parallelSolver(
+                Runtime.getRuntime().availableProcessors() / 2,
                 problem,
                 relax,
                 varh,
@@ -66,17 +31,13 @@ public final class TSPMain {
                 width,
                 frontier);
 
-        SearchStatistics stats = solver.maximize(verbosityLevel);
-        System.out.println(stats);
+        long start = System.currentTimeMillis();
+        SearchStatistics stats = solver.maximize(1);
+        double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        return solver;
-    }
-
-    public static int[] extractSolution(Solver solver){
-
-        return solver.bestSolution()
+        int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] route = new int[decisions.size()+1];
+                    int[] route = new int[problem.nbVars() + 1];
                     route[0] = 0;
                     for (Decision d : decisions) {
                         route[d.var() + 1] = d.val();
@@ -85,5 +46,10 @@ public final class TSPMain {
                 })
                 .get();
 
+        System.out.println(stats);
+        System.out.printf("Duration : %.3f(s)%n ", duration);
+        System.out.printf("Objective: %.1f%n", solver.bestValue().get());
+        System.out.println("eval from scratch: " + problem.eval(solution));
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 }

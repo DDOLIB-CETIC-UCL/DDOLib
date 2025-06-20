@@ -1,17 +1,18 @@
 package org.ddolib.ddo.examples.tsp;
 
+
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
 
 public class TSPProblem implements Problem<TSPState> {
-    int n;
-    int[][] distanceMatrix;
-    final SortedAdjacents sortedAdjacents;
+
+    final int n;
+    final double[][] distanceMatrix;
 
     @Override
     public String toString() {
@@ -19,64 +20,17 @@ public class TSPProblem implements Problem<TSPState> {
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
     }
 
-    public int eval(int[] solution) {
-        int toReturn = 0;
+    public double eval(int[] solution) {
+        double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
         }
-        //toReturn += distanceMatrix[solution[solution.length - 1]][solution[0]];
         return toReturn;
     }
 
-    public TSPProblem(final int[][] distanceMatrix) {
+    public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
-        this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
-    }
-
-
-    /**
-     * Creates instance from data files.<br>
-     * <p>
-     * The expected format is the following:
-     * <ul>
-     *     <li>
-     *         The first line must contain the number of points
-     *     </li>
-     *     <li>
-     *         The distance matrix.
-     *     </li>
-     * </ul>
-     *
-     * @param fileName The path to the input file.
-     * @throws IOException If something goes wrong while reading input file.
-     */
-    public TSPProblem(String fileName) throws IOException {
-        int numVar = 0;
-        int[][] myDistanceMatrix = null;
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            int lineCount = 0;
-            String line;
-            while ((line = br.readLine()) != null) {
-                //Skip comment
-                if (line.startsWith("#") || line.isEmpty()) {
-                    continue;
-                }
-                if (lineCount == 0) {
-                    String[] tokens = line.split("\\s+");
-                    numVar = Integer.parseInt(tokens[0]);
-                    myDistanceMatrix = new int[numVar][numVar];
-                } else if (1 <= lineCount && lineCount <= numVar) {
-                    int i = lineCount - 1;
-                    String[] distanceFromI = line.split("\\s+");
-                    myDistanceMatrix[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
-                }
-                lineCount++;
-            }
-        }
-        this.distanceMatrix = myDistanceMatrix;
-        this.n = distanceMatrix.length;
-        this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
     }
 
     @Override
@@ -90,7 +44,7 @@ public class TSPProblem implements Problem<TSPState> {
         BitSet toVisit = new BitSet(n);
         toVisit.set(1, n);
 
-        return new TSPState(singleton(0), toVisit, sortedAdjacents.initialHeuristics());
+        return new TSPState(singleton(0), toVisit);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -100,7 +54,7 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -116,11 +70,11 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public int transitionCost(TSPState state, Decision decision) {
+    public double transitionCost(TSPState state, Decision decision) {
         return -state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .getAsInt();
+                .getAsDouble();
     }
 }

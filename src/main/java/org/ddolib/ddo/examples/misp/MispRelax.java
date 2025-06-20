@@ -27,12 +27,12 @@ public class MispRelax implements Relaxation<BitSet> {
     }
 
     @Override
-    public int relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, int cost) {
+    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(BitSet state, Set<Integer> variables) {
+    public double fastUpperBound(BitSet state, Set<Integer> variables) {
         // We select all the remaining nodes
         return state.stream().map(i -> problem.weight[i]).sum();
     }

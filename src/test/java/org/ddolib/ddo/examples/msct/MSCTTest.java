@@ -9,13 +9,12 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MSCTTest {
 
@@ -37,22 +36,24 @@ class MSCTTest {
         }
     }
 
-    public int solve(MSCTData data, int w) {
+    public double solve(MSCTData data, int w) {
         MSCTProblem problem = new MSCTProblem(data.release, data.processing);
         final MSCTRelax relax = new MSCTRelax(problem);
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(w);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
+        final SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker<>(new MSCTDominance(),
+                problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier,
+                dominance
+        );
 
         solver.maximize();
 
@@ -101,8 +102,8 @@ class MSCTTest {
             int n = 7;
             int releaseTime = 15;
             MSCTData data = randomMSCTDataFixedRelease(n, releaseTime);
-            int bestSolDDO = solve(data, w);
-            int bestSolRef = bestSol(releaseTime, data.processing);
+            double bestSolDDO = solve(data, w);
+            double bestSolRef = bestSol(releaseTime, data.processing);
             assertEquals(bestSolRef, bestSolDDO);
         }
     }
@@ -118,11 +119,13 @@ class MSCTTest {
         int bestSolutionValue = Integer.MAX_VALUE;
         List<Integer> bestSolution = new ArrayList<>();
         for (List<Integer> permutation : permutations) {
-            int t = 0; int objective = 0;
-            int[] ends = new int[n]; int k = 0;
+            int t = 0;
+            int objective = 0;
+            int[] ends = new int[n];
+            int k = 0;
             for (Integer i : permutation) {
                 t = Math.max(t, release[i]) + processing[i];
-                objective +=  t;
+                objective += t;
             }
             if (objective < bestSolutionValue) {
                 bestSolutionValue = objective;
@@ -149,14 +152,14 @@ class MSCTTest {
         int n = 8;
         MSCTData data = randomMSCTData(n);
         List<List<Integer>> permutations = new ArrayList<>();
-        List<Integer> list = new ArrayList();
+        List<Integer> list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             list.add(i);
         }
         generatePermutations(list, 0, permutations);
         int bestBruteForceSol = bestBruteForceSolution(data.release, data.processing);
         for (int w = 10; w < 100; w += 10) {
-            int bestSolDDO = solve(data, w);
+            double bestSolDDO = solve(data, w);
             assertEquals(bestBruteForceSol, bestSolDDO);
         }
     }

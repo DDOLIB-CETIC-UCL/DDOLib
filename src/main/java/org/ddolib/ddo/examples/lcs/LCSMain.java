@@ -16,7 +16,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
-/** The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.*/
+import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
+
+/**
+ * The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.
+ */
 public final class LCSMain {
 
     public static LCSProblem extractFile(String fileName) throws IOException {
@@ -40,8 +44,8 @@ public final class LCSMain {
         int diffCharNb = Integer.parseInt(splitFirst[1]);
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
-        Optional<Integer> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(Integer.parseInt(splitFirst[2]));
+        Optional<Double> optimal;
+        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
@@ -113,7 +117,7 @@ public final class LCSMain {
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
         final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        ParallelSolver<LCSState,Integer> solver = new ParallelSolver<>(
+        final ParallelSolver<LCSState, Integer> solver = parallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -136,13 +140,13 @@ public final class LCSMain {
                 })
                 .orElse(new int[0]);
 
-        int[] filteredSolution = Arrays.stream(solution).filter(x -> x >=0).toArray();
+        int[] filteredSolution = Arrays.stream(solution).filter(x -> x >= 0).toArray();
         Character[] charNbSolution = Arrays.stream(filteredSolution).
                 mapToObj(x -> problem.idToChar[x]).toArray(Character[]::new);
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().orElse(Integer.MIN_VALUE));
+        System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.MIN_VALUE));
         System.out.printf("Upper Bnd : %s%n", solver.upperBound());
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());

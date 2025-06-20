@@ -89,7 +89,7 @@ public class MCPIO {
      */
     public static MCPProblem readInstance(String fileName) throws IOException {
         int[][] matrix = new int[0][0];
-        int optimal = 0;
+        double optimal = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             int linesCount = 0;

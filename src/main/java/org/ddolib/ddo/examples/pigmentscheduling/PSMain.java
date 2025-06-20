@@ -5,10 +5,11 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * The Pigment Sequencing Problem (PSP) is a single-machine production planning problem
@@ -25,14 +26,15 @@ import java.util.Arrays;
 public class PSMain {
 
     public static void main(final String[] args) throws IOException {
-        PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");;
+        PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");
+        ;
         PSProblem problem = new PSProblem(instance);
         final PSRelax relax = new PSRelax(instance);
         final PSRanking ranking = new PSRanking();
         final FixedWidth<PSState> width = new FixedWidth<>(10);
-        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic();
+        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
         final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -55,9 +57,9 @@ public class PSMain {
                 })
                 .get();
 
-        System.out.println(String.format("Duration : %.3f", duration));
-        System.out.println(String.format("Objective: %d", solver.bestValue().get()));
-        System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
+        System.out.printf("Duration : %.3f%n", duration);
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
         System.out.println(stats);
 
     }

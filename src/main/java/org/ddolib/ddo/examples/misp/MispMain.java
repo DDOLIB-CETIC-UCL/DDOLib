@@ -8,7 +8,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
@@ -22,6 +21,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
+
+import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
 
 public final class MispMain {
 
@@ -41,8 +42,7 @@ public final class MispMain {
         }
         neighbor[0].set(n - 1);
         neighbor[n - 1].set(0);
-
-        return new MispProblem(state, neighbor, weight, Optional.of(n / 2));
+        return new MispProblem(state, neighbor, weight, Optional.of((double) (n / 2)));
     }
 
     /**
@@ -117,14 +117,14 @@ public final class MispMain {
      * <code>Optional.empty</code> otherwise.
      * @throws IOException If the input file does not exist.
      */
-    private static Optional<Integer> findOptimum(String fileName) throws IOException {
+    private static Optional<Double> findOptimum(String fileName) throws IOException {
         Optional<String> line = findLine(fileName);
         if (line.isEmpty()) {
             return Optional.empty();
         } else {
             String optiLine = line.get();
             int optimalStrLength = "optimal=".length();
-            int opti = Integer.parseInt(optiLine.substring(optimalStrLength, optiLine.length() - 1));
+            double opti = Double.parseDouble(optiLine.substring(optimalStrLength, optiLine.length() - 1));
             return Optional.of(opti);
         }
 
@@ -150,7 +150,7 @@ public final class MispMain {
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new ParallelSolver<BitSet,Integer>(
+        final Solver solver = parallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -177,7 +177,7 @@ public final class MispMain {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Max width : %d%n", maxWidth);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 

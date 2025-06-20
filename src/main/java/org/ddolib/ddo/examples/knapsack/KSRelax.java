@@ -23,12 +23,12 @@ public class KSRelax implements Relaxation<Integer>  {
     }
 
     @Override
-    public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+    public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastUpperBound(Integer state, Set<Integer> variables) {
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {

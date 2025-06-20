@@ -72,7 +72,7 @@ public class PSRelax implements Relaxation<PSState> {
      * @return
      */
     @Override
-    public int fastUpperBound(PSState state, final Set<Integer> variables) {
+    public double fastUpperBound(PSState state, final Set<Integer> variables) {
         // Convert to bitset-like index
         int idx = members(state).stream().
                 mapToInt(Integer::intValue).
@@ -101,7 +101,7 @@ public class PSRelax implements Relaxation<PSState> {
 
 
     @Override
-    public int relaxEdge(PSState from, PSState to, PSState merged, Decision d, int cost) {
+    public double relaxEdge(PSState from, PSState to, PSState merged, Decision d, double cost) {
         return cost;
     }
 

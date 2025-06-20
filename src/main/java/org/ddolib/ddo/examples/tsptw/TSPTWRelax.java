@@ -54,16 +54,16 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
     }
 
     @Override
-    public int relaxEdge(TSPTWState from, TSPTWState to, TSPTWState merged, Decision d, int cost) {
+    public double relaxEdge(TSPTWState from, TSPTWState to, TSPTWState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(TSPTWState state, Set<Integer> variables) {
+    public double fastUpperBound(TSPTWState state, Set<Integer> variables) {
         return -fastLowerBound(state);
     }
 
-    private int fastLowerBound(TSPTWState state) {
+    private double fastLowerBound(TSPTWState state) {
         // This lower bound assumes that we will always select the cheapest edges from each node
 
         int completeTour = numVar - state.depth() - 1;

@@ -8,8 +8,8 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GRTest {
@@ -20,7 +20,7 @@ public class GRTest {
         final FixedWidth<GRState> width = new FixedWidth<>(32);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -29,7 +29,6 @@ public class GRTest {
                 frontier);
         long start = System.currentTimeMillis();
         solver.maximize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
                     int[] values = new int[problem.nbVars() + 1];

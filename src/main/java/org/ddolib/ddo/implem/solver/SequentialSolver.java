@@ -4,8 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.Dominance;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
@@ -33,10 +32,10 @@ import java.util.Set;
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  *
- * @param <K> the type of key
- * @param <T> the type of state
+ * @param <T> The type of states.
+ * @param <K> The type of dominance keys.
  */
-public final class SequentialSolver<K,T> implements Solver {
+public final class SequentialSolver<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -46,7 +45,7 @@ public final class SequentialSolver<K,T> implements Solver {
      */
     private final Relaxation<T> relax;
     /**
-     * An heuristic to identify the most promising nodes
+     * A heuristic to identify the most promising nodes
      */
     private final StateRanking<T> ranking;
     /**
@@ -59,7 +58,7 @@ public final class SequentialSolver<K,T> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * This is the fringe: the set of nodes that must still be explored before
+     * Set of nodes that must still be explored before
      * the problem can be considered 'solved'.
      * <p>
      * # Note:
@@ -67,7 +66,7 @@ public final class SequentialSolver<K,T> implements Solver {
      * to pop first). So, it is guaranteed that the upper bound of the first
      * node being popped is an upper bound on the value reachable by exploring
      * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an ub <= current best
+     * exploration can be stopped as soon as a node with an ub &#8804; current best
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
@@ -81,24 +80,41 @@ public final class SequentialSolver<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagram<T,K> mdd;
+    private final DecisionDiagram<T, K> mdd;
 
     /**
-     * This is the value of the best known lower bound.
+     * Value of the best known lower bound.
      */
-    private int bestLB;
+    private double bestLB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * This is the dominance object that will be used to prune the search space.
+     * The dominance object that will be used to prune the search space.
      */
-    private SimpleDominanceChecker<T,K> dominance;
+    private final DominanceChecker<T, K> dominance;
 
     /**
      * Creates a fully qualified instance
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
      */
     public SequentialSolver(
             final Problem<T> problem,
@@ -106,8 +122,7 @@ public final class SequentialSolver<K,T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final SimpleDominanceChecker<T,K> dominance,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -118,32 +133,6 @@ public final class SequentialSolver<K,T> implements Solver {
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-    }
-
-    public SequentialSolver(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier) {
-
-        this(problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                new SimpleDominanceChecker(new Dominance<T, Integer>() {
-                    @Override
-                    public Integer getKey(T t) {
-                        return 0;
-                    }
-                    @Override
-                    public boolean isDominatedOrEqual(T state1, T state2) {
-                        return false;
-                    }
-                }, problem.nbVars()),
-                frontier);
     }
 
 
@@ -166,7 +155,7 @@ public final class SequentialSolver<K,T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
-            int nodeUB = sub.getUpperBound();
+            double nodeUB = sub.getUpperBound();
 
             if(verbosityLevel ==1){
                 long now = System.currentTimeMillis();
@@ -190,7 +179,7 @@ public final class SequentialSolver<K,T> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInput<T,K> compilation = new CompilationInput<>(
+            CompilationInput<T, K> compilation = new CompilationInput<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -210,7 +199,7 @@ public final class SequentialSolver<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<T,K>(
+            compilation = new CompilationInput<T, K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -234,7 +223,7 @@ public final class SequentialSolver<K,T> implements Solver {
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestLB);
         } else {
@@ -264,7 +253,7 @@ public final class SequentialSolver<K,T> implements Solver {
      * bounds.
      */
     private void maybeUpdateBest(int verbosityLevel) {
-        Optional<Integer> ddval = mdd.bestValue();
+        Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();

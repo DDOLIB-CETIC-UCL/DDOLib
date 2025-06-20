@@ -23,7 +23,7 @@ public class PSProblem implements Problem<PSState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -85,7 +85,7 @@ public class PSProblem implements Problem<PSState> {
     }
 
     @Override
-    public int transitionCost(PSState state, Decision decision) {
+    public double transitionCost(PSState state, Decision decision) {
         int item = decision.val();
         if (item == IDLE) {
             return 0;

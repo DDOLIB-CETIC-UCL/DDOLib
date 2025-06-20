@@ -10,27 +10,30 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class SequentialSolverTest {
     public static void main(String[] args) {
 
-        final BKP problem = new BKP(15, new int[]{2,3,6,6,1}, new int[]{4,6,4,2,5}, new int[]{1,1,2,2,1});
+        final BKP problem = new BKP(15, new int[]{2, 3, 6, 6, 1}, new int[]{4, 6, 4, 2, 5}, new int[]{1, 1, 2, 2, 1});
         final BKPRelax relax = new BKPRelax(problem);
         final BKPRanking ranking = new BKPRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new BKPDominance(), problem.nbVars());
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new BKPDominance(),
+                problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
-        final Solver solver = new SequentialSolver(
+        final Solver solver = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier,
+                dominance);
 
 
         long start = System.currentTimeMillis();
@@ -50,17 +53,19 @@ public class SequentialSolverTest {
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
-    public static class BKP implements Problem<Integer>{
+    public static class BKP implements Problem<Integer> {
         final int capacity;
         final int[] values;
         final int[] weights;
         final int[] quantity;
+
         public BKP(int capacity, int[] values, int[] weights, int[] quantity) {
             this.capacity = capacity;
             this.values = values;
             this.weights = weights;
             this.quantity = quantity;
         }
+
         @Override
         public int nbVars() {
             return values.length;
@@ -72,7 +77,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int initialValue() {
+        public double initialValue() {
             return 0;
         }
 
@@ -95,7 +100,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int transitionCost(Integer state, Decision decision) {
+        public double transitionCost(Integer state, Decision decision) {
             // If the item is taken (1) the cost is the profit of the item, 0 otherwise
             return values[decision.var()] * decision.val();
         }
@@ -103,7 +108,10 @@ public class SequentialSolverTest {
 
     public static class BKPRelax implements Relaxation<Integer> {
         private final BKP problem;
-        public BKPRelax(BKP problem) {this.problem = problem;}
+
+        public BKPRelax(BKP problem) {
+            this.problem = problem;
+        }
 
         @Override
         public Integer mergeStates(final Iterator<Integer> states) {
@@ -116,7 +124,7 @@ public class SequentialSolverTest {
         }
 
         @Override
-        public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+        public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
             return cost;
         }
     }

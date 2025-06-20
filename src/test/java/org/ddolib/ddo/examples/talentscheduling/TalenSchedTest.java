@@ -2,12 +2,12 @@ package org.ddolib.ddo.examples.talentscheduling;
 
 import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,7 +53,7 @@ public class TalenSchedTest {
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -76,9 +77,9 @@ public class TalenSchedTest {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = relax.fastUpperBound(problem.initialState(), vars);
         assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
                         rub,
                         problem.optimal.get()));
     }
@@ -94,7 +95,7 @@ public class TalenSchedTest {
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -105,7 +106,7 @@ public class TalenSchedTest {
 
         solver.maximize();
 
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        assertEquals(problem.optimal.get().doubleValue(), solver.bestValue().get());
     }
 
 }
