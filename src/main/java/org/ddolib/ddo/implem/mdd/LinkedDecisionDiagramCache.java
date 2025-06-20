@@ -287,15 +287,13 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             if (depth > minDepth) {
                 for (NodeSubProblem<T> n : this.currentLayer) {
                     if (cache.getLayer(depth).containsKey(n.state) && cache.getThreshold(n.state, depth).isPresent() &&
-                            (n.node.value < cache.getThreshold(n.state, depth).get().getValue() || !cache.getThreshold(n.state, depth).get().getExplored())) {
+                            n.node.value < cache.getThreshold(n.state, depth).get().getValue()) {
                         pruned.add(n);
-//                        System.out.println(n +  " depth : " + depth + " root : " + root);
                     }
                 }
-//                System.out.println(Arrays.toString(currentLayer.toArray()) + " depth : " + depth);
             }
-//            if (pruned.size() > 0)
-//                System.out.println(pruned.size());
+            if (pruned.size() > 0)
+                System.out.println(pruned.size());
             this.currentLayer.removeAll(pruned);
             this.nextLayer.clear();
 
@@ -638,7 +636,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                         int value = saturatedDiff(lb, rub);
                         currentCache.get(j).get(i).setValue(value);
                     } else if (inExactCutSet(sub)) {
-                        if (saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
                             int value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
                             currentCache.get(j).get(i).setValue(value);
                         } else {

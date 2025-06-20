@@ -31,7 +31,7 @@ public class KSCacheTest {
         Random rand = new Random(10);
         int number = 1000;
         boolean found = false;
-        int nbVars = 4; int cap = 5;
+        int nbVars = 13; int cap = 5;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
         return testStream.flatMap(k -> {
             int[] profit = new int[nbVars];
@@ -69,7 +69,7 @@ public class KSCacheTest {
     public void testOptimalSolutionFound(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(3);
+        final FixedWidth<Integer> width = new FixedWidth<>(2);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleCache<Integer> cache = new SimpleCache();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
@@ -85,7 +85,7 @@ public class KSCacheTest {
         SearchStatistics stats = solverWithCaching.maximize();
 
         assertEquals(optimalSolutionNoCaching(problem), solverWithCaching.bestValue().get());
-        if (solverWithCaching.bestValue().get() != solverWithCaching.bestValue().get()) {
+        if (optimalSolutionNoCaching(problem) != solverWithCaching.bestValue().get()) {
             System.out.println(problem);
         }
     }
