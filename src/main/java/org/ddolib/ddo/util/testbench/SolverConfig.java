@@ -10,8 +10,7 @@ import org.ddolib.ddo.implem.dominance.DominanceChecker;
 /**
  * Class containing the input of {@link org.ddolib.ddo.implem.solver.SequentialSolver}.
  *
- * @param relax     A suitable relaxation for the problem we want to maximize. If set to {@code null}, the relaxation
- *                  will not be tested.
+ * @param relax     A suitable relaxation for the problem we want to maximize.
  * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
  * @param ranking   A heuristic to identify the most promising nodes.
  * @param width     A heuristic to choose the maximum width of the DD you compile.

@@ -30,6 +30,21 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected final List<P> problems;
 
     /**
+     * Whether the relaxation must be tested.
+     */
+    protected final boolean testRelaxation;
+
+    /**
+     * Whether the fast upper bound must be tested.
+     */
+    protected final boolean testFUB;
+
+    /**
+     * Whether the dominance must be tested.
+     */
+    protected final boolean testDominance;
+
+    /**
      * Generates {@link Problem} instances to test.
      *
      * @return A list of problems used for tests.
@@ -44,7 +59,17 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     abstract protected SolverConfig<T, K> configSolver(P problem);
 
-    public ProblemTestBench() {
+    /**
+     * Instantiate a test bench.
+     *
+     * @param testRelaxation Whether the relaxation must be tested.
+     * @param testFUB        Whether the fast upper bound must be tested.
+     * @param testDominance  Whether the dominance must be tested.
+     */
+    public ProblemTestBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
+        this.testRelaxation = testRelaxation;
+        this.testFUB = testFUB;
+        this.testDominance = testDominance;
         problems = generateProblems();
     }
 
@@ -123,22 +148,35 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @return A stream of tests over all the generated instances.
      */
     public Stream<DynamicTest> generateTests() {
+
+        Stream<DynamicTest> allTests = Stream.empty();
+
         Stream<DynamicTest> modelTests = problems.stream().map(p ->
                 DynamicTest.dynamicTest(String.format("Model for %s", p.toString()), () -> testTransitionModel(p))
         );
 
-        Stream<DynamicTest> relaxTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("Relaxation for %s", p.toString()), () -> testRelaxation(p))
-        );
+        allTests = Stream.concat(allTests, modelTests);
 
-        Stream<DynamicTest> fubTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFub(p))
-        );
+        if (testRelaxation) {
+            Stream<DynamicTest> relaxTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Relaxation for %s", p.toString()), () -> testRelaxation(p))
+            );
+            allTests = Stream.concat(allTests, relaxTests);
+        }
+        if (testFUB) {
+            Stream<DynamicTest> fubTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFub(p))
+            );
+            allTests = Stream.concat(allTests, fubTests);
+        }
 
-        Stream<DynamicTest> dominanceTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("Dominance for %s", p.toString()), () -> testDominance(p))
-        );
+        if (testDominance) {
+            Stream<DynamicTest> dominanceTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Dominance for %s", p.toString()), () -> testDominance(p))
+            );
+            allTests = Stream.concat(allTests, dominanceTests);
+        }
 
-        return Stream.of(modelTests, relaxTests, fubTests, dominanceTests).flatMap(x -> x);
+        return allTests;
     }
 }
