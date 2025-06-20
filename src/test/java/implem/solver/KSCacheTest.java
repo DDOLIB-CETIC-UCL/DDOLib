@@ -2,6 +2,7 @@ package implem.solver;
 
 import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class KSCacheTest {
+
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
         int number = 100;
@@ -44,8 +46,7 @@ public class KSCacheTest {
         });
     }
 
-    @MethodSource("dataProvider")
-    public int testOptimalSolution1(KSProblem problem) {
+    private static int optimalSolutionNoCaching(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
@@ -65,14 +66,14 @@ public class KSCacheTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testOptimalSolution2(KSProblem problem) {
+    public void testOptimalSolutionFound(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleCache<Integer> cache = new SimpleCache();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver2 = new SequentialSolverCache(
+        final Solver solverWithCaching = new SequentialSolverCache(
                 problem,
                 relax,
                 varh,
@@ -81,9 +82,11 @@ public class KSCacheTest {
                 cache,
                 frontier);
 
-        solver2.maximize();
-        assertEquals(testOptimalSolution1(problem), solver2.bestValue().get());
-        if (solver2.bestValue().get() != testOptimalSolution1(problem))
+        SearchStatistics stats = solverWithCaching.maximize();
+
+        assertEquals(optimalSolutionNoCaching(problem), solverWithCaching.bestValue().get());
+        if (solverWithCaching.bestValue().get() != solverWithCaching.bestValue().get()) {
             System.out.println(problem);
+        }
     }
 }
