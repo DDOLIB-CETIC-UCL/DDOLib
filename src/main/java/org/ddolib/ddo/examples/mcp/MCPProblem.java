@@ -5,8 +5,6 @@ import org.ddolib.ddo.core.Problem;
 
 import java.util.*;
 
-import java.lang.Integer;
-
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.Math.abs;
@@ -103,6 +101,11 @@ public class MCPProblem implements Problem<MCPState> {
         if (state.depth() == 0) return 0;
         else if (decision.val() == S) return branchOnS(state, decision.var());
         else return branchOnT(state, decision.var());
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     private int branchOnS(MCPState state, int k) {
