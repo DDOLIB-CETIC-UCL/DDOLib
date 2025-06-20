@@ -1,4 +1,4 @@
-package org.ddolib.ddo.testbench;
+package org.ddolib.ddo.util.testbench;
 
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Relaxation;

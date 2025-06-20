@@ -1,4 +1,4 @@
-package org.ddolib.ddo.testbench;
+package org.ddolib.ddo.util.testbench;
 
 import org.ddolib.ddo.core.Problem;
 import org.ddolib.ddo.core.Solver;
