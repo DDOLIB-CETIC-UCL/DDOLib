@@ -9,6 +9,7 @@ import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
+import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramCache;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ import java.util.*;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolver<K,T> implements Solver {
+public final class SequentialSolverCache<K,T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -80,7 +81,7 @@ public final class SequentialSolver<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagram<T,K> mdd;
+    private final DecisionDiagramCache<T,K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -95,16 +96,23 @@ public final class SequentialSolver<K,T> implements Solver {
      * This is the dominance object that will be used to prune the search space.
      */
     private SimpleDominanceChecker<T,K> dominance;
+
+    /**
+     * This is the cache used to prune the search tree
+     */
+    private SimpleCache<T> cache;
+
     /**
      * Creates a fully qualified instance
      */
-    public SequentialSolver(
+    public SequentialSolverCache(
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final SimpleDominanceChecker<T,K> dominance,
+            final SimpleCache<T> cache,
             final Frontier<T> frontier) {
         this.problem = problem;
         this.relax = relax;
@@ -112,18 +120,20 @@ public final class SequentialSolver<K,T> implements Solver {
         this.ranking = ranking;
         this.width = width;
         this.dominance = dominance;
+        this.cache = cache;
         this.frontier = frontier;
-        this.mdd = new LinkedDecisionDiagram<>();
+        this.mdd = new LinkedDecisionDiagramCache<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
 
-    public SequentialSolver(
+    public SequentialSolverCache(
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
+            final SimpleCache<T> cache,
             final Frontier<T> frontier) {
 
         this(problem,
@@ -141,10 +151,10 @@ public final class SequentialSolver<K,T> implements Solver {
                         return false;
                     }
                 }, problem.nbVars()),
+                cache,
                 frontier);
 
     }
-
 
 
     @Override
@@ -157,6 +167,7 @@ public final class SequentialSolver<K,T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
+        cache.initialize(problem);
         while (!frontier.isEmpty()) {
             if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
                     "bestObj:" + bestLB);
@@ -174,9 +185,19 @@ public final class SequentialSolver<K,T> implements Solver {
                 frontier.clear();
                 return new SearchStatistics(nbIter, queueMaxSize);
             }
+            int depth = sub.getPath().size();
+            if (cache.getLayer(depth).containsKey(sub.getState())) {
+                if (cache.mustExplore(sub, depth)) {
+                    continue;
+//                    frontier.clear();
+//                    System.out.println(sub.getState() + " -----> " + cache.getLayer(depth).get(sub.getState()).get());
+//                    return new SearchStatistics(nbIter, queueMaxSize);
+                }
+            }
+
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInput<T,K> compilation = new CompilationInput<>(
+            CompilationInputCache<T,K> compilation = new CompilationInputCache<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -185,6 +206,7 @@ public final class SequentialSolver<K,T> implements Solver {
                     sub,
                     maxWidth,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType()
             );
@@ -196,7 +218,7 @@ public final class SequentialSolver<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<T,K>(
+            compilation = new CompilationInputCache<T,K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -205,6 +227,7 @@ public final class SequentialSolver<K,T> implements Solver {
                     sub,
                     maxWidth,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType()
             );
@@ -214,8 +237,6 @@ public final class SequentialSolver<K,T> implements Solver {
             } else {
                 enqueueCutset();
             }
-
-
         }
         return new SearchStatistics(nbIter, queueMaxSize);
     }

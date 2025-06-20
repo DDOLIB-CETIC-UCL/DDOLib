@@ -11,7 +11,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
  * @param <K> the type of key.
  *
  */
-public final class CompilationInput<T,K> {
+public final class CompilationInputCache<T,K> {
     /** How is the mdd being compiled ? */
     final CompilationType compType;
     /** A reference to the original problem we try to maximize */
@@ -42,6 +42,8 @@ public final class CompilationInput<T,K> {
 
     /** The type of cut set to be used in the compilation */
     final CutSetType cutSetType;
+    /** The cache used to prune the search space */
+    final SimpleCache<T> cache;
 
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
@@ -55,8 +57,9 @@ public final class CompilationInput<T,K> {
      * @param maxWidth
      * @param dominance
      * @param bestLB
+     * @param cache
      */
-    public CompilationInput(
+    public CompilationInputCache(
             final CompilationType compType,
             final Problem<T> problem,
             final Relaxation<T> relaxation,
@@ -65,6 +68,7 @@ public final class CompilationInput<T,K> {
             final SubProblem<T> residual,
             final int maxWidth,
             final SimpleDominanceChecker<T,K> dominance,
+            final SimpleCache<T> cache,
             final int bestLB,
             final CutSetType cutSetType
     ) {
@@ -76,6 +80,7 @@ public final class CompilationInput<T,K> {
         this.residual = residual;
         this.maxWidth = maxWidth;
         this.dominance = dominance;
+        this.cache = cache;
         this.bestLB = bestLB;
         this.cutSetType = cutSetType;
     }
@@ -147,6 +152,9 @@ public final class CompilationInput<T,K> {
     public SimpleDominanceChecker<T, K> getDominance() {
         return dominance;
     }
+
+    /** @return the cache of the problem */
+    public SimpleCache<T> getCache() {return cache;}
 
     @Override
     public String toString() {

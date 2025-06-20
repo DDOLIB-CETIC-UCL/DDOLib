@@ -3,16 +3,21 @@ package implem.solver;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolverCache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
 
-public class SequentialSolverTest {
+public class SequentialSolverCacheTest {
     public static void main(String[] args) {
 
         final BKP problem = new BKP(15, new int[]{2,3,6,6,1}, new int[]{4,6,4,2,5}, new int[]{1,1,2,2,1});
@@ -20,16 +25,18 @@ public class SequentialSolverTest {
         final BKPRanking ranking = new BKPRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new BKPDominance(), problem.nbVars());
+//        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new BKPDominance(), problem.nbVars());
+        final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
-        final Solver solver = new SequentialSolver(
+        final Solver solver = new SequentialSolverCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                dominance,
+//                dominance,
+                cache,
                 frontier);
 
 
@@ -37,6 +44,7 @@ public class SequentialSolverTest {
         SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
+
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
             for (Decision d : decisions) {
@@ -118,6 +126,15 @@ public class SequentialSolverTest {
         @Override
         public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
             return cost;
+        }
+
+        @Override
+        public int fastUpperBound(Integer state, Set<Integer> variables) {
+            int rub = 0;
+            for (int v : variables) {
+                rub += this.problem.quantity[v] * this.problem.values[v];
+            }
+            return rub;
         }
     }
 

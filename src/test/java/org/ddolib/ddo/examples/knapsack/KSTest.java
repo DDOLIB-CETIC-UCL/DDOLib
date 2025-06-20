@@ -59,8 +59,6 @@ public class KSTest {
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
-
-
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver(
                 problem,

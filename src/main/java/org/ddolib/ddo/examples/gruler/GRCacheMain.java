@@ -2,10 +2,12 @@ package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolverCache;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,7 +27,7 @@ import java.util.Arrays;
  * The cost of a transition is defined as the distance between the new mark and the
  * previous last mark. Consequently, the cost of a solution is the position of the last mark.
  */
-public class GRMain {
+public class GRCacheMain {
 
     public static void main(final String[] args) throws IOException {
         GRProblem problem = new GRProblem(8);
@@ -33,19 +35,22 @@ public class GRMain {
         final GRRanking ranking = new GRRanking();
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
+        final SimpleCache<GRState> cache = new SimpleCache<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver(
+        final Solver solver = new SequentialSolverCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                cache,
                 frontier);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
+
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
                     int[] values = new int[problem.nbVars()+1];

@@ -4,6 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
@@ -39,18 +40,19 @@ public final class ParallelSolver<T,K> implements Solver {
     private final Critical<T> critical;
 
     public ParallelSolver(
-        final int nbThreads, 
-        final Problem<T> problem,
-        final Relaxation<T> relax,
-        final VariableHeuristic<T> varh,
-        final StateRanking<T> ranking,
-        final WidthHeuristic<T> width,
-        final SimpleDominanceChecker<T,K> dominance,
-        final Frontier<T> frontier)
+            final int nbThreads,
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final SimpleDominanceChecker<T,K> dominance,
+            final Frontier<T> frontier)
     {
         this.shared   = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
         this.critical = new Critical<>(nbThreads, frontier);
     }
+
 
     public ParallelSolver(
             final int nbThreads,

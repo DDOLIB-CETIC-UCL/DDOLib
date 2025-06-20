@@ -3,8 +3,11 @@ package org.ddolib.ddo.implem.mdd;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
+import java.sql.SQLOutput;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -13,7 +16,7 @@ import java.util.Map.Entry;
  * @param <T> the type of state
  * @param <K> the type of key
  */
-public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
+public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCache<T,K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -214,6 +217,8 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             return new SubProblem<>(state, node.value, ub, path);
         }
 
+
+
         @Override
         public String toString() {
             return String.format("%s - ub: %d", state, ub);
@@ -221,7 +226,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
     }
 
     @Override
-    public void compile(CompilationInput<T,K> input) {
+    public void compile(CompilationInputCache<T,K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
@@ -238,12 +243,24 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
         final SimpleDominanceChecker<T, K> dominance = input.getDominance();
-        final int bestLb = input.getMaxWidth();
+        final SimpleCache<T> cache = input.getCache();
+        int bestLb = input.getBestLB();
 
         final Set<Integer> variables = varSet(input);
-        //
-        int depth = 0;
+
+        int depth = residual.getPath().size();
+        int minDepth = depth;
+        int maxDepth = minDepth + variables.size();
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
+        // list of depth for the current relax compilation of the DD
+        ArrayList<Integer> listDepths = new ArrayList<>();
+        // the list of NodeSubProblem of the corresponding depth
+        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = new ArrayList<>();
+        // the list of Threshold of the corresponding depth
+        ArrayList<ArrayList<Threshold>> layersThresholds = new ArrayList<>();
+        // list of nodes pruned
+        ArrayList<NodeSubProblem<T>> pruned = new ArrayList<>();
+
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
@@ -265,8 +282,21 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
-
-
+            // prunes the current layer with the current values of the cache
+            pruned.clear();
+            if (depth > minDepth) {
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    if (cache.getLayer(depth).containsKey(n.state) && cache.getThreshold(n.state, depth).isPresent() &&
+                            (n.node.value < cache.getThreshold(n.state, depth).get().getValue() || !cache.getThreshold(n.state, depth).get().getExplored())) {
+                        pruned.add(n);
+//                        System.out.println(n +  " depth : " + depth + " root : " + root);
+                    }
+                }
+//                System.out.println(Arrays.toString(currentLayer.toArray()) + " depth : " + depth);
+            }
+//            if (pruned.size() > 0)
+//                System.out.println(pruned.size());
+            this.currentLayer.removeAll(pruned);
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {
@@ -339,6 +369,20 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                 }
             }
 
+            // Compute the list of sub-problems per layer with the current layer
+            // Initialize the list of thresholds per layer to their default values
+
+            if (input.getCompilationType() == CompilationType.Relaxed) {
+                listDepths.add(depth);
+                int k = depth - minDepth;
+                nodeSubProblemPerLayer.add(new ArrayList<>());
+                layersThresholds.add(new ArrayList<>());
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    nodeSubProblemPerLayer.get(k).add(n);
+                    layersThresholds.get(k).add(new Threshold(Integer.MAX_VALUE, false));
+                }
+            }
+
             depth += 1;
         }
         if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
@@ -352,9 +396,14 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             }
         }
 
+
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+        }
+        // Compute the threshold of every exact node in the relaxed DD and update the cache
+        if (input.getCompilationType() == CompilationType.Relaxed) {
+            computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb);
         }
     }
 
@@ -395,18 +444,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
 
-    public boolean inExactCutset(NodeSubProblem<T> problem) {
-        while (cutset.iterator().hasNext()) {
-            NodeSubProblem<T> node = cutset.iterator().next();
-            if (node == problem) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T,K> input) {
+    private Set<Integer> varSet(final CompilationInputCache<T,K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.getProblem().nbVars(); i++) {
             set.add(i);
@@ -579,7 +619,63 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         }
     }
 
+    /**
+     * perform the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, int lb) {
+        for (int j = listDepth.size()-1; j > 0; j--) {
+            int depth = listDepth.get(j);
+            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
+                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
+                if (simpleCache.getLayer(depth).containsKey(sub.state) && simpleCache.getLayer(depth).get(sub.state).isPresent() &&
+                        sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                    int value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    currentCache.get(j).get(i).setValue(value);
+                }
+                else {
+                    if (sub.ub <= lb) {
+                        int rub = saturatedDiff(sub.ub, sub.node.value);
+                        int value = saturatedDiff(lb, rub);
+                        currentCache.get(j).get(i).setValue(value);
+                    } else if (inExactCutSet(sub)) {
+                        if (saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
+                            int value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
+                            currentCache.get(j).get(i).setValue(value);
+                        } else {
+                            currentCache.get(j).get(i).setValue(sub.node.value);
+                        }
+                    }
+                    if (sub.node.getNodeType() == NodeType.EXACT) {
+                        boolean expanded = !inExactCutSet(sub);
+                        currentCache.get(j).get(i).setExplored(expanded);
+                        simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                    }
+                }
+                for (Edge e : sub.node.edges) {
+                    Node origin = e.origin;
+                    int index = -1;
+                    for (int k = 0; k < nodePerLayer.get(j-1).size(); k++) {
+                        if (nodePerLayer.get(j-1).get(k).node.equals(origin)) {
+                            index = k;
+                            break;
+                        }
+                    }
+                    int value = Math.min(currentCache.get(j-1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j-1).get(index).setValue(value);
+                }
+            }
+        }
+    }
 
+
+    public boolean inExactCutSet(NodeSubProblem<T> sub) {
+        for (NodeSubProblem<T> n : cutset) {
+            if (n.state.equals(sub.state) && n.node.isMarked) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Performs a saturated addition (no overflow)
@@ -595,7 +691,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      * Performs a saturated difference (no overflow)
      */
     private static final int saturatedDiff(int a, int b) {
-        long diff = (long) a + (long) b;
+        long diff = (long) a - (long) b;
         diff = diff >= Integer.MAX_VALUE ? Integer.MAX_VALUE : diff;
         diff = diff <= Integer.MIN_VALUE ? Integer.MIN_VALUE : diff;
         return (int) diff;
