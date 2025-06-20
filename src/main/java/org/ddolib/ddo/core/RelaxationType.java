@@ -9,4 +9,6 @@ public enum RelaxationType {
     /** Clusters the nodes following their similarities and merge the nodes of a same cluster*/
     MinDist,
     KClosest,
+    OneD,
+    GHP, // General Hyperplan Partition
 }

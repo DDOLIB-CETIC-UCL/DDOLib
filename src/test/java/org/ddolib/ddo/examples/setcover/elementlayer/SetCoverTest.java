@@ -44,7 +44,7 @@ public class SetCoverTest {
         final int optimalCost = bruteForce(problem);
 
         final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(Integer.MAX_VALUE);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
@@ -136,7 +136,7 @@ public class SetCoverTest {
 
         final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
         final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
@@ -151,13 +151,11 @@ public class SetCoverTest {
                     ranking,
                     distance,
                     width,
-                    frontier);
+                    frontier,
+                    684564);
 
-            long start = System.currentTimeMillis();
             solver.maximize();
-            double duration = (System.currentTimeMillis() - start) / 1000.0;
-            System.out.printf("Duration : %.3f seconds%n", duration);
-            System.out.printf("Objective: %d%n", solver.bestValue().get());
+            Assertions.assertTrue(solver.bestValue().isPresent());
             Assertions.assertTrue(solver.bestValue().get() <= 1);
         }
     }
@@ -176,25 +174,25 @@ public class SetCoverTest {
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         for (RelaxationType relaxType: RelaxationType.values()) {
             final Solver solver = new SequentialSolver<>(
-                    RelaxationType.KClosest,
+                    relaxType,
                     problem,
                     relax,
                     varh,
                     ranking,
                     distance,
                     width,
-                    frontier);
+                    frontier,
+                    6546488);
 
             solver.maximize();
 
             // Retrieve solution
             Set<Integer> solution = solver.bestSolution().map(decisions -> {
-                System.out.println("Solution Found");
                 Set<Integer> values = new HashSet<>();
                 for (Decision d : decisions) {
                     if (d.val() != -1) {
@@ -224,7 +222,7 @@ public class SetCoverTest {
         final SetCoverRanking ranking = new SetCoverRanking();
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new SequentialSolver<>(
                 problem,
@@ -238,7 +236,6 @@ public class SetCoverTest {
 
         // Retrieve solution
         Set<Integer> solution = solver.bestSolution().map(decisions -> {
-            System.out.println("Solution Found");
             Set<Integer> values = new HashSet<>();
             for (Decision d : decisions) {
                 if (d.val() != -1) {

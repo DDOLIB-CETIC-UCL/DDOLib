@@ -16,7 +16,7 @@ public class FastMap<T> {
     private int currentColumn;
     private double currentPivotDist;
 
-    FastMap(List<T> states, int dimensions, StateDistance<T> distanceFunction) {
+    public FastMap(List<T> states, int dimensions, StateDistance<T> distanceFunction) {
         this.coordinates = new HashMap<>(states.size());
         this.dimensions = dimensions;
         for (T state : states) {

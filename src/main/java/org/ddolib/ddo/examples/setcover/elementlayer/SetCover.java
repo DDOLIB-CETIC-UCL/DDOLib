@@ -4,6 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.RelaxationType;
 import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -28,17 +29,20 @@ public class SetCover {
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
-        final SetCoverDistance distance = new SetCoverDistance();
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
+        // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
         final Solver solver = new RelaxationSolver<>(
-                RelaxationType.KClosest,
+                RelaxationType.GHP,
+                // RelaxationType.MinDist,
                 problem,
                 relax,
                 varh,
                 ranking,
                 distance,
                 width,
-                frontier);
+                frontier,
+                646646545);
 
         long start = System.currentTimeMillis();
         solver.maximize();

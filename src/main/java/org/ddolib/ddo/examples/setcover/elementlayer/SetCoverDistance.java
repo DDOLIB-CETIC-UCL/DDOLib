@@ -14,8 +14,10 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
     @Override
     public double distance(SetCoverState a, SetCoverState b) {
         int intersectionSize = 0;
-        for (int elem: a.uncoveredElements) {
-            if(b.uncoveredElements.contains(elem)) {
+        SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
+        SetCoverState larger = a.uncoveredElements.size() < b.uncoveredElements.size() ? b : a;
+        for (int elem: smaller.uncoveredElements) {
+            if(larger.uncoveredElements.contains(elem)) {
                 intersectionSize++;
             }
         }

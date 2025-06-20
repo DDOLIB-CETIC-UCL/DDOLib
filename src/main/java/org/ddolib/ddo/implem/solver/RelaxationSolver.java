@@ -58,6 +58,8 @@ public final class RelaxationSolver<T> implements Solver {
     /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
 
+    private final Random rnd;
+
     /** Creates a fully qualified instance */
     public RelaxationSolver(
             final RelaxationType relaxType,
@@ -67,7 +69,8 @@ public final class RelaxationSolver<T> implements Solver {
             final StateRanking<T> ranking,
             final StateDistance<T> distance,
             final WidthHeuristic<T> width,
-            final Frontier<T> frontier)
+            final Frontier<T> frontier,
+            final int seed)
     {
         this.relaxType = relaxType;
         this.problem = problem;
@@ -80,6 +83,7 @@ public final class RelaxationSolver<T> implements Solver {
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
+        rnd = new Random(seed);
     }
 
     /** Creates a fully qualified instance */
@@ -91,7 +95,7 @@ public final class RelaxationSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(RelaxationType.Cost, problem, relax, varh, ranking, null, width, frontier);
+        this(RelaxationType.Cost, problem, relax, varh, ranking, null, width, frontier, 654865);
     }
 
     @Override
@@ -111,11 +115,16 @@ public final class RelaxationSolver<T> implements Solver {
                 sub,
                 maxWidth,
                 //
-                bestLB
+                bestLB,
+                rnd
         );
         mdd.compile(compilation);
         maybeUpdateBest();
         return new SearchStatistics(1, 0);
+    }
+
+    public boolean isExact() {
+        return mdd.isExact();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.ddolib.ddo.examples;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -125,6 +126,13 @@ public final class Knapsack {
             }
 
             return maxProfit;
+        }
+    }
+
+    public static class KnapsackCoordinates implements StateCoordinates<Integer> {
+        @Override
+        public double[] getCoordinates(Integer state) {
+            return new double[] {state};
         }
     }
 

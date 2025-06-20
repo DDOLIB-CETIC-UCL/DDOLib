@@ -1,10 +1,14 @@
 package org.ddolib.ddo.implem.mdd;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FastMap;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -26,7 +30,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     private boolean lelWasSet = false;
     /** The best node in the terminal layer (if it exists at all) */
     private Node best = null;
-    private Random rnd = new Random(6584454);
 
     // --- UTILITY CLASSES -----------------------------------------------
     /**
@@ -228,7 +231,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 relaxClusterMinDistance(maxWidth, input.getDistance(), relax);
                                 break;
                             case KClosest:
-                                relaxKClosest(maxWidth, input.getDistance(), relax);
+                                relaxKClosest(maxWidth, input.getDistance(), relax, input.getRandom());
+                                break;
+                            case OneD:
+                                relax1D(maxWidth, input.getDistance(), relax);
+                                break;
+                            case GHP:
+                                relaxGHP(maxWidth, input.getDistance(), relax, input.getRandom());
                                 break;
                             default:
                                 System.err.println("Unsupported relax type: " + input.getRelaxType());
@@ -412,17 +421,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         System.out.println();*/
 
         // NodeSubroblemComparator<T> rankingComparator = new NodeSubroblemComparator<>(ranking);
-
-        // To reduce memory consumption and computational cost, the maxWidth/2 best state are not merged
-        // TODO: find a smarter and more scalable way to determine which nodes should be considered for merging
-        // this.currentLayer.sort(rankingComparator.reversed());
-        // int nbrKept = (int) Math.ceil(maxWidth* 0.0/4.0);
-        // final List<NodeSubProblem<T>> merge = this.currentLayer.subList(nbrKept, currentLayer.size());
         Set<NodeSubProblem<T>> currentLayerSet = new HashSet<>(currentLayer);
 
         // The pq contains each potential pair of clusters
         // the problem is that the size of the layer can quickly explode, quickly create memory issues
         // Maybe all potential merge don't need to be considered
+        // System.out.println("Layer size: " + currentLayer.size());
         PriorityQueue<STNode> pq = new PriorityQueue<>((a,b) -> Double.compare(a.distance, b.distance));
         T mergedState;
         for (int i = 0; i < currentLayer.size() - 1; i++) {
@@ -482,16 +486,22 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param clusters an array containing the clusters
      * @param relax the relaxation operators which we will use to merge nodes
      */
-    private void mergeClusters(final Set<NodeSubProblem<T>>[] clusters, final Relaxation<T> relax) {
-        List<NodeSubProblem<T>> mergedNodes = new ArrayList<>(clusters.length);
-        for (Set<NodeSubProblem<T>> cluster : clusters) {
+    private void mergeClusters(final List<NodeSubProblem<T>>[] clusters, final Relaxation<T> relax) {
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            /*for (NodeSubProblem<T> node : cluster) {
+                System.out.print(node.state + ", ");
+            }
+            System.out.println();*/
+            if (cluster.isEmpty()) {
+                continue;
+            }
+
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            // System.out.println(merged);
             NodeSubProblem<T> node = null;
-            boolean fresh = true;
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
                     node = n;
-                    fresh = false;
                     break;
                 }
             }
@@ -520,6 +530,93 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    private NodeSubProblem<T> selectFarthest(NodeSubProblem<T> ref, List<NodeSubProblem<T>> nodes, final StateDistance<T> distance) {
+        double maxDistance = -1;
+        NodeSubProblem<T> farthest = null;
+        for (NodeSubProblem<T> node : nodes) {
+            double currentDistance = distance.distance(node.state, ref.state);
+            if (currentDistance > maxDistance) {
+                maxDistance = currentDistance;
+                farthest = node;
+            }
+        }
+        return farthest;
+    }
+
+    private void relaxGHP(final int maxWidth, final StateDistance<T> distance, final Relaxation<T> relax, final Random rnd) {
+        Collections.shuffle(currentLayer, rnd);
+
+        System.out.println("*************");
+        System.out.print("Layer (" + currentLayer.size() + "): ");
+        for (NodeSubProblem<T> node : currentLayer) {
+            System.out.print(node.state + ", ");
+        }
+        System.out.println();
+
+        PriorityQueue<List<NodeSubProblem<T>>> pq = new PriorityQueue<>((a, b) -> b.size() - a.size());
+        pq.add(new ArrayList<>(currentLayer));
+
+        while (pq.size() < maxWidth) {
+            List<NodeSubProblem<T>> current = pq.poll();
+            assert current != null;
+
+            // Select the two pivots as the farthest nodes in the layer
+            /*NodeSubProblem<T> pivotA = current.getFirst();
+            NodeSubProblem<T> pivotB = selectFarthest(pivotA, current, distance);
+            for (int i = 0; i < 4; i++) {
+                NodeSubProblem<T> tmp = selectFarthest(pivotB, current, distance);
+                if (tmp == pivotA) break;
+                pivotA = tmp;
+                tmp = selectFarthest(pivotA, current, distance);
+                if (tmp == pivotB) break;
+                pivotB = tmp;
+            }
+            System.out.println("pivot A: " + pivotA.state);
+            System.out.println("pivot B: " + pivotB.state);*/
+            Collections.shuffle(current, rnd);
+            NodeSubProblem<T> pivotA = current.getFirst();
+            NodeSubProblem<T> pivotB = current.get(1);
+
+            List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
+            List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
+
+            for (NodeSubProblem<T> node : current) {
+                double distWithA = distance.distance(node.state, pivotA.state);
+                double distWithB = distance.distance(node.state, pivotB.state);
+
+                if (distWithA < distWithB) {
+                    newClusterA.add(node);
+                } else {
+                    newClusterB.add(node);
+                }
+            }
+
+            pq.add(newClusterA);
+            pq.add(newClusterB);
+        }
+
+        List<NodeSubProblem<T>>[] clusters = new List[pq.size()];
+        int index = 0;
+        for (List<NodeSubProblem<T>> cluster : pq) {
+            for (NodeSubProblem<T> node : cluster) {
+                System.out.print(node.state + ", ");
+            }
+            System.out.println();
+            clusters[index] = cluster;
+            index++;
+        }
+
+        currentLayer.clear();
+        mergeClusters(clusters, relax);
+
+        System.out.print("Layer (" + currentLayer.size() + "): ");
+        for (NodeSubProblem<T> node : currentLayer) {
+            System.out.print(node.state + ", ");
+        }
+        System.out.println();
+
+    }
+
     /**
      * Merges nodes in the current layer by creating cluster of nodes.
      * Here the clustering consist in randomly selecting maxWidth centroides among the nodes
@@ -528,23 +625,27 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param distance a function that returns the distance between two states. It is problem specific.
      * @param relax the relaxation operators which we will use to merge nodes
      */
-    private void relaxKClosest(final int maxWidth, StateDistance<T> distance, final Relaxation<T> relax) {
+    private void relaxKClosest(final int maxWidth, StateDistance<T> distance, final Relaxation<T> relax, final Random rnd) {
         Collections.shuffle(currentLayer, rnd);
+        // System.out.println("Layer size: " + currentLayer.size());
 
-        Set<NodeSubProblem<T>>[] clusters = new Set[maxWidth];
+        // O(W)
+        List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
         for (int i = 0; i < clusters.length; i++) {
-            clusters[i] = new HashSet<>();
+            clusters[i] = new ArrayList<>();
             clusters[i].add(currentLayer.get(i));
         }
 
+        // O(W*(L-W)*n), but when W augments both W and L-W augments if W is "small"
         for (int i = maxWidth; i < currentLayer.size(); i++) {
             double minDistance = Double.MAX_VALUE;
             int indexClosest = -1;
             for (int j = 0; j < clusters.length; j++) {
-                double dist = distance.distance(currentLayer.get(j).state, currentLayer.get(i).state);
+                double dist = distance.distance(currentLayer.get(j).state, currentLayer.get(i).state); // O(n)
                 if (dist < minDistance) {
                     minDistance = dist;
                     indexClosest = j;
+                    if (dist <= 1) break;
                 }
             }
             clusters[indexClosest].add(currentLayer.get(i));
@@ -552,6 +653,115 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         currentLayer.clear();
         mergeClusters(clusters, relax);
+        // System.out.println("Resulting size: " + currentLayer.size());
+    }
+
+    /** Computes the euclidean distance between the two array of coordinates */
+    private double euclideanDistance(double[] a, double[] b) {
+        assert a.length == b.length;
+        double sum = 0.0;
+        for (int i = 0; i < a.length; i++) {
+            double diff = a[i] - b[i];
+            sum += diff * diff;
+        }
+        return Math.sqrt(sum);
+    }
+
+    private void relaxKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Relaxation<T> relax, final Random rnd) {
+        int maxIterations = 5;
+        int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
+        Collections.shuffle(currentLayer, rnd);
+        double[][] centroides = new double[maxWidth][dimensions];
+        for (int i = 0 ; i < maxWidth; i++) {
+            NodeSubProblem<T> node = currentLayer.get(i);
+            double[] nodeCoordinates = coordinates.getCoordinates(node.state);
+            System.arraycopy(nodeCoordinates, 0, centroides[i], 0, dimensions);
+        }
+
+        int[] assignments = new int[currentLayer.size()];
+
+        for(int iter = 0; iter < maxIterations; iter++) {
+            boolean changed = false;
+
+            // Assign each node to its closest centroide
+            for (int i = 0; i < currentLayer.size(); i++) {
+                NodeSubProblem<T> node = currentLayer.get(i);
+                double minDistance = Double.MAX_VALUE;
+                for (int j = 0; j < centroides.length; j++) {
+                    double distance = euclideanDistance(coordinates.getCoordinates(node.state), centroides[j]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        assignments[i] = j;
+                        changed = true;
+                    }
+                }
+            }
+
+            if (!changed) break;
+
+            int[] clustersSize = new int[maxWidth];
+
+            // Update the centroides
+            for (double[] centroideCoord: centroides) {
+                Arrays.fill(centroideCoord, 0);
+            }
+
+            for (int i = 0; i < assignments.length; i++) {
+                int cluster = assignments[i];
+                double[] point = coordinates.getCoordinates(currentLayer.get(i).state);
+                for (int j = 0; j < dimensions; j++) {
+                    centroides[cluster][j] += point[j];
+                }
+                clustersSize[cluster]++;
+            }
+
+            for (int cluster = 0; cluster < maxWidth; cluster++) {
+                if (clustersSize[cluster] == 0) continue;
+                for (int d = 0; d < dimensions; d++) {
+                    centroides[cluster][d] /= clustersSize[cluster];
+                }
+            }
+        }
+
+        List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
+        for (int i = 0; i < clusters.length; i++) {
+            clusters[i] = new ArrayList<>();
+        }
+        for (int node = 0; node < currentLayer.size(); node++) {
+            clusters[assignments[node]].add(currentLayer.get(node));
+        }
+        currentLayer.clear();
+        mergeClusters(clusters, relax);
+    }
+
+    private void relax1D(final int maxWidth, final StateDistance<T> distance, final Relaxation<T> relax) {
+        List<T> states = new ArrayList<>(currentLayer.size());
+        for (NodeSubProblem<T> node: currentLayer) {
+            states.add(node.state);
+        }
+        FastMap<T> map = new FastMap<>(states, 1, distance);
+        /*for (T state: states) {
+            System.out.print(state + ": " + Arrays.toString(map.getCoordinates(state)) + ";");
+        }
+        System.out.println();*/
+        try {
+            FileWriter writer = new FileWriter("tmp/distribution2D.txt");
+            for (NodeSubProblem<T> node: currentLayer) {
+                writer.write(node.state + " " + Arrays.toString(map.getCoordinates(node.state)) + "\n");
+            }
+            writer.close();
+        }catch (IOException e) {
+            System.exit(0);
+        }
+        System.exit(0);
+        System.out.println("*************");
+        for (int i = 0; i < currentLayer.size(); i++) {
+            for (int j = i + 1; j < currentLayer.size(); j++) {
+                T a = currentLayer.get(i).state;
+                T b = currentLayer.get(j).state;
+                System.out.println(distance.distance(a, b) + " -> " + euclideanDistance(map.getCoordinates(a), map.getCoordinates(b)));
+            }
+        }
     }
 
     /**
@@ -573,10 +783,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         final List<NodeSubProblem<T>> keep  = this.currentLayer.subList(0, maxWidth-1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth-1, currentLayer.size());
         // System.out.println("Merging states: ");
-        for (NodeSubProblem<T> n : merge) {
+        /*for (NodeSubProblem<T> n : merge) {
             System.out.print(n.state + ", ");
         }
-        System.out.println();
+        System.out.println();*/
 
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
         // System.out.println("merged: " + merged);

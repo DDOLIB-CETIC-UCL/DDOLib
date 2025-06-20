@@ -4,9 +4,13 @@ import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverDistance;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverState;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class FastMapTest {
 
@@ -78,6 +82,45 @@ public class FastMapTest {
         Assertions.assertTrue(map.getCoordinates("B")[1] == 4.0);
         Assertions.assertTrue(map.getCoordinates("C")[1] == 0.0 || map.getCoordinates("C")[1] == 8.0);
         Assertions.assertTrue(map.getCoordinates("D")[1] == 0.0 || map.getCoordinates("D")[1] == 8.0);
+    }
+
+    @Disabled
+    @Test
+    public void test2DLarge() throws IOException {
+        int elementNbr = 190;
+        int setNumber = 10000;
+        int setSize = 60;
+        List<SetCoverState> states = generateSets(elementNbr, setNumber, setSize);
+
+        FastMap<SetCoverState> map = new FastMap<>(states, 2, new SetCoverDistance());
+        FileWriter fw = new FileWriter("tmp/FastMapDistribution.txt", false);
+
+        for (SetCoverState state : states) {
+            double[] coordinates =  map.getCoordinates(state);
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < coordinates.length; i++) {
+                str.append(coordinates[i]).append(" ");
+            }
+            str.append("\n");
+            fw.write(str.toString());
+        }
+        fw.close();
+    }
+
+    private List<SetCoverState> generateSets(int elementNbr, int setNumber, int setSize) {
+            List<SetCoverState> states = new ArrayList<>(setNumber);
+            List<Integer> range = new ArrayList<>(elementNbr);
+            for (int i = 0; i < elementNbr; i++) {
+                range.add(i);
+            }
+
+            for (int i = 0; i < setNumber; i++) {
+                Collections.shuffle(range);
+                Set<Integer> set = new HashSet<>(range.subList(0, setSize));
+                states.add(new SetCoverState(set));
+            }
+
+            return states;
     }
 
 }

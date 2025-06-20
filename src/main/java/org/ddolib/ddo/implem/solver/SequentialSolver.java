@@ -75,6 +75,7 @@ public final class SequentialSolver<T> implements Solver {
     private int bestUB;
     private long startTime;
     public double timeForBest;
+    private final Random rnd;
 
     /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
@@ -88,7 +89,8 @@ public final class SequentialSolver<T> implements Solver {
             final StateRanking<T> ranking,
             final StateDistance<T> distance,
         final WidthHeuristic<T> width,
-            final Frontier<T> frontier)
+            final Frontier<T> frontier,
+            final int seed)
     {
         this.relaxType = relaxType;
         this.problem = problem;
@@ -102,6 +104,7 @@ public final class SequentialSolver<T> implements Solver {
         this.bestLB  = Integer.MIN_VALUE;
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
+        rnd = new Random(seed);
     }
 
     public SequentialSolver(
@@ -112,7 +115,7 @@ public final class SequentialSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(null, problem, relax, varh, ranking, null, width, frontier);
+        this(null, problem, relax, varh, ranking, null, width, frontier, 65846);
     }
 
 
@@ -150,7 +153,8 @@ public final class SequentialSolver<T> implements Solver {
                 sub,
                 maxWidth,
                 //
-                bestLB
+                bestLB,
+                    this.rnd
             );
 
             mdd.compile(compilation);

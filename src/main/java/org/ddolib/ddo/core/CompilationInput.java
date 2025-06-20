@@ -4,6 +4,8 @@ import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 
+import java.util.Random;
+
 /**
  * The set of parameters used to tweak the compilation of a MDD
  * @param <T> The type used to model the state of your problem
@@ -28,6 +30,7 @@ public final class CompilationInput<T> {
     final int maxWidth;
     /** The best known lower bound at the time when the dd is being compiled */
     final int bestLB;
+    final Random rnd;
 
     /** Creates the inputs to parameterize the compilation of an MDD */
     public CompilationInput(
@@ -40,7 +43,8 @@ public final class CompilationInput<T> {
             final StateDistance<T> distance,
             final SubProblem<T> residual,
             final int maxWidth,
-            final int bestLB
+            final int bestLB,
+            final Random rnd
     ) {
         this.relaxType = relaxType;
         this.compType = compType;
@@ -52,6 +56,7 @@ public final class CompilationInput<T> {
         this.residual = residual;
         this.maxWidth = maxWidth;
         this.bestLB = bestLB;
+        this.rnd = rnd;
     }
 
     /** Creates the inputs to parameterize the compilation of an MDD */
@@ -75,7 +80,8 @@ public final class CompilationInput<T> {
                 null,
                 residual,
                 maxWidth,
-                bestLB
+                bestLB,
+                new Random()
         );
     }
 
@@ -119,4 +125,5 @@ public final class CompilationInput<T> {
 
     /** @return the distance function */
     public StateDistance<T> getDistance() {return distance;}
+    public Random getRandom() {return rnd;}
 }

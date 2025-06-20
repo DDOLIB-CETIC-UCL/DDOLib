@@ -1,5 +1,7 @@
-package org.ddolib.ddo.examples.setcover.elementlayer;
+package org.ddolib.ddo.examples.setcover.setlayer;
 
+import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverDistance;
+import org.ddolib.ddo.examples.setcover.setlayer.SetCoverState;
 import org.ddolib.ddo.heuristics.StateDistance;
 
 public class SetCoverIntersectionDistance implements StateDistance<SetCoverState> {
@@ -16,8 +18,8 @@ public class SetCoverIntersectionDistance implements StateDistance<SetCoverState
         SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
         SetCoverState larger = a.uncoveredElements.size() < b.uncoveredElements.size() ? b : a;
         int intersectionSize = 0;
-        for (int elem: smaller.uncoveredElements) {
-            if(larger.uncoveredElements.contains(elem)) {
+        for (int elem: smaller.uncoveredElements.keySet()) {
+            if(larger.uncoveredElements.containsKey(elem)) {
                 intersectionSize++;
             }
         }
