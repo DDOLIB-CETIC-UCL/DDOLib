@@ -29,9 +29,9 @@ public class KSCacheTest {
 
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
-        int number = 100;
+        int number = 1000;
         boolean found = false;
-        int nbVars = 5; int cap = 10;
+        int nbVars = 4; int cap = 5;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
         return testStream.flatMap(k -> {
             int[] profit = new int[nbVars];
@@ -49,7 +49,7 @@ public class KSCacheTest {
     private static int optimalSolutionNoCaching(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(3);
+        final FixedWidth<Integer> width = new FixedWidth<>(2);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver1 = new SequentialSolver(
