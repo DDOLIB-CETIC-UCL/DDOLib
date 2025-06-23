@@ -8,14 +8,8 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.nio.dot.DOTImporter;
-import org.jgrapht.util.SupplierUtil;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,108 +20,55 @@ import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
 
 public final class MispMain {
 
-    public static MispProblem cycleGraph(int n) {
-        BitSet state = new BitSet(n);
-        state.set(0, n, true);
-        int[] weight = new int[n];
-        BitSet[] neighbor = new BitSet[n];
-        for (int i = 0; i < n; i++) {
-            weight[i] = 1;
-            neighbor[i] = new BitSet(n);
-        }
-
-        for (int i = 0; i < n; i++) {
-            if (i != 0) neighbor[i].set(i - 1);
-            if (i != n - 1) neighbor[i].set(i + 1);
-        }
-        neighbor[0].set(n - 1);
-        neighbor[n - 1].set(0);
-        return new MispProblem(state, neighbor, weight, Optional.of((double) (n / 2)));
-    }
 
     /**
      * Creates an instance of Maximum Independent Set Problem from a .dot file.
-     * If given, the expected optimal solution <code>x</code> of the problem must in the second line written as
-     * <code>optimal=x</code>
+     * If given, the expected value of the optimal solution {@code x} of the problem must in the second line written as
+     * {@code optimal=x}.
+     * <p>
+     * To be correctly read, the file must contain first the list of the nodes and then the edges. If given the
+     * optimal value must be written before the nodes.
      *
      * @param fileName A .dot file containing a graph.
      * @return An instance of the Maximum Independent Set Problem.
      */
-    public static MispProblem readGraph(String fileName) throws IOException {
-        Graph<Integer, DefaultEdge> g = new SimpleGraph<>(
-                SupplierUtil.createIntegerSupplier(),
-                SupplierUtil.createDefaultEdgeSupplier(),
-                false
-        );
-        DOTImporter<Integer, DefaultEdge> importer = new DOTImporter<>();
-        File f = new File(fileName);
-        importer.importGraph(g, f);
+    public static MispProblem readFile(String fileName) throws IOException {
+        int[] weight;
+        BitSet[] neighbor;
+        Optional<Double> optimal = Optional.empty();
+        int n = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line = br.readLine();
+            while ((line = br.readLine()) != null && !line.contains("--")) {
 
+                if (line.contains("optimal")) {
+                    String optiStr = line.replace(";", "");
+                    String[] tokens = optiStr.split("=");
+                    optimal = Optional.of(Double.parseDouble(tokens[1]));
+                } else {
+                    n++;
+                }
+            }
+            weight = new int[n];
+            neighbor = new BitSet[n];
+            for (int i = 0; i < n; i++) {
+                weight[i] = 1;
+                neighbor[i] = new BitSet(n);
+            }
 
-        int n = g.vertexSet().size();
-        int[] weight = new int[n];
-        BitSet[] neighbor = new BitSet[n];
-        for (int i = 0; i < n; i++) {
-            weight[i] = 1;
-            neighbor[i] = new BitSet(n);
+            while (line != null && !line.equals("}")) {
+                String[] tokens = line.replace(" ", "").replace(";", "").split("--");
+                int source = Integer.parseInt(tokens[0]) - 1;
+                int target = Integer.parseInt(tokens[1]) - 1;
+                neighbor[source].set(target);
+                neighbor[target].set(source);
+                line = br.readLine();
+            }
         }
-
-        for (DefaultEdge e : g.edgeSet()) {
-            int source = g.getEdgeSource(e);
-            int target = g.getEdgeTarget(e);
-            neighbor[source].set(target);
-            neighbor[target].set(source);
-        }
-
         BitSet initialState = new BitSet(n);
         initialState.set(0, n, true);
 
-        return new MispProblem(initialState, neighbor, weight, findOptimum(fileName));
-    }
-
-    /**
-     * Helper function that read a .dot file and find the line containing the optimal solution
-     *
-     * @param fileName The .dot file containing a graph
-     * @return The line containing the optimal solution if it exists
-     * <code>Optional.empty</code> otherwise.
-     * @throws IOException If the input file does not exist.
-     */
-    private static Optional<String> findLine(String fileName) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
-        String line;
-        int lineCounter = 0;
-        while ((line = br.readLine()) != null || lineCounter < 2) {
-            if (line.contains("optimal")) {
-                return Optional.of(line);
-            }
-            lineCounter++;
-        }
-        br.close();
-        return Optional.empty();
-    }
-
-
-    /**
-     * Function that read a .dot file, find the line containing the optimal solution and returns the optimal
-     * solution as an Integer.
-     *
-     * @param fileName The .dot file containing a graph
-     * @return The expected optimal solution if present in the file.
-     * <code>Optional.empty</code> otherwise.
-     * @throws IOException If the input file does not exist.
-     */
-    private static Optional<Double> findOptimum(String fileName) throws IOException {
-        Optional<String> line = findLine(fileName);
-        if (line.isEmpty()) {
-            return Optional.empty();
-        } else {
-            String optiLine = line.get();
-            int optimalStrLength = "optimal=".length();
-            double opti = Double.parseDouble(optiLine.substring(optimalStrLength, optiLine.length() - 1));
-            return Optional.of(opti);
-        }
-
+        return new MispProblem(initialState, neighbor, weight, optimal);
     }
 
 
@@ -142,7 +83,11 @@ public final class MispMain {
         final String file = args.length == 0 ? "data/MISP/C6.dot" : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
-        final MispProblem problem = readGraph(file);
+        final MispProblem problem = readFile(file);
+
+        System.out.println(problem.nbVars());
+        System.out.println(Arrays.toString(problem.neighbors));
+
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);

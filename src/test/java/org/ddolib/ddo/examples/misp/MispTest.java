@@ -33,7 +33,7 @@ public class MispTest {
                 .map(fileName -> dir + fileName)
                 .map(fileName -> {
                     try {
-                        return MispMain.readGraph(fileName);
+                        return MispMain.readFile(fileName);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
