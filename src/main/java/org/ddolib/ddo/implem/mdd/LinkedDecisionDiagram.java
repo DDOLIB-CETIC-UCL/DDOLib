@@ -54,6 +54,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Used to build the .dot file displaying the compiled mdd.
      */
     private StringBuilder dotStr = new StringBuilder();
+    /**
+     * Given the hashcode of an edge, save its .dot representation
+     */
+    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     // --- UTILITY CLASSES -----------------------------------------------
 
@@ -246,7 +250,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
-        dotStr.append("Digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
+        dotStr.append("digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
         final Problem<T> problem = input.getProblem();
@@ -284,13 +288,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             if (currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
-                dotStr.append("}");
                 return;
             }
 
             if (nextVar == null) {
                 // Some variables simply can't be assigned
-                dotStr.append("}");
                 clear();
                 return;
             } else {
@@ -377,7 +379,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 NodeSubProblem<T> subProblem = new NodeSubProblem<>(state, best.value, node);
                 dotStr.append(generateDotStr(subProblem, true));
             }
-            dotStr.append("}");
         }
 
 
@@ -413,6 +414,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
+                updateBestEdgeColor(eb.hashCode());
                 eb = eb.origin == null ? null : eb.origin.best;
             }
             return Optional.of(sol);
@@ -426,6 +428,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
     @Override
     public String exportAsDot() {
+        for (String e : edgesDotStr.values()) {
+            dotStr.append(e);
+            dotStr.append("];\n");
+        }
+        dotStr.append("}");
         return dotStr.toString();
     }
 
@@ -454,6 +461,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         exact = true;
         best = null;
         dotStr = new StringBuilder();
+        edgesDotStr = new HashMap<>();
     }
 
     /**
@@ -636,18 +644,31 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         sb.append("];\n");
 
         for (Edge e : node.node.edges) {
-            sb.append(e.origin.hashCode()).append(" -> ").append(node.node.hashCode());
-            sb.append(" [label=").append(df.format(e.weight));
-            sb.append(", tooltip=\"").append(e.decision.toString());
-            sb.append("\"];\n");
+            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
+                    " [label=" + df.format(e.weight) +
+                    ", tooltip=\"" + e.decision.toString() + "\"";
+            edgesDotStr.put(e.hashCode(), edgeStr);
         }
         return sb;
     }
 
     /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     */
+    private void updateBestEdgeColor(int edgeHash) {
+        String edgeStr = edgesDotStr.get(edgeHash);
+        if (edgeStr != null) {
+            edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
+            edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
+
+    /**
      * Performs a saturated addition (no overflow)
      */
-    private static final double saturatedAdd(double a, double b) {
+    private static double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
             return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;

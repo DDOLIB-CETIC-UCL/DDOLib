@@ -193,10 +193,11 @@ public final class SequentialSolver<T, K> implements Solver {
             );
 
             mdd.compile(compilation);
-            maybeUpdateBest(verbosityLevel);
+            String problemName = problem.getClass().getSimpleName().replace("Problem", "");
+            maybeUpdateBest(verbosityLevel, exportAsDot && firstRestricted);
             if (exportAsDot && firstRestricted) {
                 exportDot(mdd.exportAsDot(),
-                        Paths.get("output", problem.getClass().getSimpleName() + "_restricted.dot").toString());
+                        Paths.get("output", problemName + "_restricted.dot").toString());
             }
             firstRestricted = false;
 
@@ -221,12 +222,13 @@ public final class SequentialSolver<T, K> implements Solver {
             );
             mdd.compile(compilation);
             if (exportAsDot && firstRelaxed) {
+                if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
                 exportDot(mdd.exportAsDot(),
-                        Paths.get("output", problem.getClass().getSimpleName() + "_relaxed.dot").toString());
+                        Paths.get("output", problemName + "_relaxed.dot").toString());
             }
             firstRelaxed = false;
             if (mdd.isExact()) {
-                maybeUpdateBest(verbosityLevel);
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
             } else {
                 enqueueCutset();
             }
@@ -264,12 +266,14 @@ public final class SequentialSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(int verbosityLevel) {
+    private void maybeUpdateBest(int verbosityLevel, boolean exportAsDot) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
             if (verbosityLevel > 2) System.out.println("new best " + bestLB);
+        } else if (exportAsDot) {
+            mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }
 
