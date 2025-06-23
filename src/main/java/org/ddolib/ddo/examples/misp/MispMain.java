@@ -38,9 +38,9 @@ public final class MispMain {
         Optional<Double> optimal = Optional.empty();
         int n = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line = br.readLine();
+            br.readLine();
+            String line;
             while ((line = br.readLine()) != null && !line.contains("--")) {
-
                 if (line.contains("optimal")) {
                     String optiStr = line.replace(";", "");
                     String[] tokens = optiStr.split("=");
@@ -68,7 +68,8 @@ public final class MispMain {
         BitSet initialState = new BitSet(n);
         initialState.set(0, n, true);
 
-        return new MispProblem(initialState, neighbor, weight, optimal);
+        return optimal.map(aDouble -> new MispProblem(initialState, neighbor, weight, aDouble))
+                .orElseGet(() -> new MispProblem(initialState, neighbor, weight));
     }
 
 
@@ -84,14 +85,10 @@ public final class MispMain {
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         final MispProblem problem = readFile(file);
-
-        System.out.println(problem.nbVars());
-        System.out.println(Arrays.toString(problem.neighbors));
-
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
+        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 

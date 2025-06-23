@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.stream.Stream;
@@ -23,17 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MispTest {
 
     static Stream<MispProblem> dataProvider() throws IOException {
-        String dir = "src/test/resources/MISP/";
+        String dir = Paths.get("src", "test", "resources", "MISP").toString();
 
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
-                .map(fileName -> dir + fileName)
-                .map(fileName -> {
+                .map(fileName -> Paths.get(dir, fileName))
+                .map(filePath -> {
                     try {
-                        return MispMain.readFile(fileName);
+                        MispProblem problem = MispMain.readFile(filePath.toString());
+                        problem.setName(filePath.getFileName().toString());
+                        return problem;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
