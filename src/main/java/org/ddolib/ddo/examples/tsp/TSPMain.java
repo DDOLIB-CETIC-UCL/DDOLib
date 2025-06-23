@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static org.ddolib.ddo.implem.solver.Solvers.parallelSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public class TSPMain {
 
@@ -22,8 +23,8 @@ public class TSPMain {
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
-        final Solver solver = parallelSolver(
-                Runtime.getRuntime().availableProcessors() / 2,
+        final Solver solver = sequentialSolver(
+//                Runtime.getRuntime().availableProcessors() / 2,
                 problem,
                 relax,
                 varh,
@@ -32,7 +33,7 @@ public class TSPMain {
                 frontier);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(1);
+        SearchStatistics stats = solver.maximize(2);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

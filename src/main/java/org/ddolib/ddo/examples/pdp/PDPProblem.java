@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-
+/*
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
 import org.ddolib.ddo.examples.tsp.SortedAdjacents;
@@ -102,3 +102,4 @@ public class PDPProblem implements Problem<PDPState> {
                 .getAsInt();
     }
 }
+*/

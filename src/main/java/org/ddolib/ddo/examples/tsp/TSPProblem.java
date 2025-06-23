@@ -40,7 +40,6 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public TSPState initialState() {
-        System.out.println("init");
         BitSet toVisit = new BitSet(n);
         toVisit.set(1, n);
 

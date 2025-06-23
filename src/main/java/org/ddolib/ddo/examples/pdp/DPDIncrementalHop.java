@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-
+/*
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -275,7 +275,7 @@ public final class DPDIncrementalHop {
         }
     }
 
-    /**
+    **
      * Generates a PDP problem
      * a TSP problem such that
      * nodes are grouped by pair: (pickup node; delivery node)
@@ -286,7 +286,7 @@ public final class DPDIncrementalHop {
      * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
-     */
+     *
     public static PDProblem genInstance(int n, int unrelated) {
 
         int[] x = new int[n];
@@ -371,4 +371,4 @@ public final class DPDIncrementalHop {
 }
 
 
-
+*/

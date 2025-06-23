@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-
+/*
 public class PDPSolution{
     PDPProblem problem;
     int[] solution;
@@ -33,3 +33,6 @@ public class PDPSolution{
         return toReturn.toString();
     }
 }
+
+
+ */

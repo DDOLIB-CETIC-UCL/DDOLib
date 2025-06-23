@@ -1,8 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-
-import org.ddolib.ddo.examples.tsp.SmallestIncidentHopIncremental;
-import org.ddolib.ddo.examples.tsp.SortedAdjacents;
-
+/*
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -95,3 +92,4 @@ class PDPState {
         }
     }
 }
+*/

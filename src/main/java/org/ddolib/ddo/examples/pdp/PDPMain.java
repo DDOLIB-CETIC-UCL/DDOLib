@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-
+/*
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -11,10 +11,11 @@ import java.util.HashMap;
 import java.util.Random;
 
 import static java.lang.Math.max;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public final class PDPMain {
 
-    /**
+    **
      * Generates a PDP problem
      * a TSP problem such that
      * nodes are grouped by pair: (pickup node; delivery node)
@@ -25,7 +26,7 @@ public final class PDPMain {
      * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
-     */
+     *
     public static PDPProblem genInstance(int n, int unrelated, Random random) {
 
         int[] x = new int[n];
@@ -84,10 +85,10 @@ public final class PDPMain {
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
         final FixedWidth<PDPState> width = new FixedWidth<>(2000);
-        final DefaultVariableHeuristic varh = new DefaultVariableHeuristic();
+        final DefaultVariableHeuristic<PDPState> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -116,6 +117,4 @@ public final class PDPMain {
         return new PDPSolution(problem, solution);
     }
 }
-
-
-
+*/

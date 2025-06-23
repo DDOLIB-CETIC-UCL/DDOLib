@@ -11,10 +11,11 @@ public interface Solver {
     /**
      * Tries to maximize the objective value of the problem which is being solved
      *@param verbosityLevel
-     *            0: no verbosities
-     *            1: statistics about the front every tenth of a second (or so)
-     *            2: statistics about the front at every sub-problem
-     *            3: 2 + the detail of the sub-problem at hand
+     *            0: no verbositie
+     *            1: display newBest whenever there is a newBest
+     *            2: 1 + statistics about the front every half a second (or so)
+     *            3: 2 + every developed sub-problem
+     *            4: 3 + details about the developed state
      * @return statistics about the search
      */
     SearchStatistics maximize(int verbosityLevel);
