@@ -12,6 +12,7 @@ import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
@@ -33,10 +34,10 @@ public final class MispMain {
      * @return An instance of the Maximum Independent Set Problem.
      */
     public static MispProblem readFile(String fileName) throws IOException {
-        int[] weight;
+        ArrayList<Integer> weight = new ArrayList<>();
         BitSet[] neighbor;
         Optional<Double> optimal = Optional.empty();
-        int n = 0;
+        int n;
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             br.readLine();
             String line;
@@ -45,17 +46,17 @@ public final class MispMain {
                     String optiStr = line.replace(";", "");
                     String[] tokens = optiStr.split("=");
                     optimal = Optional.of(Double.parseDouble(tokens[1]));
+                } else if (line.contains("weight")) {
+                    String w = line.trim().split(" ")[1];
+                    w = w.replace("[weight=", "").replace("];", "");
+                    weight.add(Integer.parseInt(w));
                 } else {
-                    n++;
+                    weight.add(1);
                 }
             }
-            weight = new int[n];
+            n = weight.size();
             neighbor = new BitSet[n];
-            for (int i = 0; i < n; i++) {
-                weight[i] = 1;
-                neighbor[i] = new BitSet(n);
-            }
-
+            Arrays.setAll(neighbor, i -> new BitSet(n));
             while (line != null && !line.equals("}")) {
                 String[] tokens = line.replace(" ", "").replace(";", "").split("--");
                 int source = Integer.parseInt(tokens[0]) - 1;
@@ -68,8 +69,11 @@ public final class MispMain {
         BitSet initialState = new BitSet(n);
         initialState.set(0, n, true);
 
-        return optimal.map(aDouble -> new MispProblem(initialState, neighbor, weight, aDouble))
-                .orElseGet(() -> new MispProblem(initialState, neighbor, weight));
+        if (optimal.isPresent()) {
+            return new MispProblem(initialState, neighbor, weight.stream().mapToInt(i -> i).toArray(), optimal.get());
+        } else {
+            return new MispProblem(initialState, neighbor, weight.stream().mapToInt(i -> i).toArray());
+        }
     }
 
 
@@ -81,7 +85,7 @@ public final class MispMain {
      * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/MISP/C6.dot" : args[0];
+        final String file = args.length == 0 ? "data/MISP/weighted.dot" : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         final MispProblem problem = readFile(file);
