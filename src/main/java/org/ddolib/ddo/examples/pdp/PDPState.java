@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-/*
+
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -17,13 +17,10 @@ class PDPState {
     // However, most of the time, it is a singleton
     BitSet current;
 
-    SmallestIncidentHopIncremental heuristics;
-
-    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, SmallestIncidentHopIncremental heuristics) {
+    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
-        this.heuristics = heuristics;
     }
 
     public int hashCode() {
@@ -59,26 +56,13 @@ class PDPState {
         return new PDPState(
                 singleton(node),
                 newOpenToVisit,
-                newAllToVisit,
-                heuristics);
+                newAllToVisit);
     }
 
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(singletonValue + 1);
         toReturn.set(singletonValue);
         return toReturn;
-    }
-
-    public int getHeuristics(int nbHops, SortedAdjacents sortedAdjacents) {
-
-        BitSet toConsider = (BitSet) allToVisit.clone();
-        toConsider.or(current);
-
-        //update the heuristics
-        //it includes ll nodes and the current node
-        heuristics = heuristics.updateToRestrictedNodeSet(toConsider, sortedAdjacents);
-
-        return heuristics.computeHeuristics(sortedAdjacents, nbHops);
     }
 
     @Override
@@ -92,4 +76,3 @@ class PDPState {
         }
     }
 }
-*/

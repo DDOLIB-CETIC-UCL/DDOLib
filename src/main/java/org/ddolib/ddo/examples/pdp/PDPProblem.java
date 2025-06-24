@@ -1,16 +1,14 @@
 package org.ddolib.ddo.examples.pdp;
-/*
+
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.examples.tsp.SortedAdjacents;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
 public class PDPProblem implements Problem<PDPState> {
     final int n;
-    final int[][] distanceMatrix;
-    final SortedAdjacents sortedAdjacents;
+    final double[][] distanceMatrix;
 
     HashMap<Integer, Integer> pickupToAssociatedDelivery;
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
@@ -25,18 +23,17 @@ public class PDPProblem implements Problem<PDPState> {
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
     }
 
-    public int eval(int[] solution) {
-        int toReturn = 0;
+    public double eval(int[] solution) {
+        double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
         }
         return toReturn;
     }
 
-    public PDPProblem(final int[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery) {
+    public PDPProblem(final double[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
-        this.sortedAdjacents = new SortedAdjacents(distanceMatrix);
 
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
         this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
@@ -68,7 +65,7 @@ public class PDPProblem implements Problem<PDPState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPState(singleton(0), openToVisit, allToVisit, sortedAdjacents.initialHeuristics());
+        return new PDPState(singleton(0), openToVisit, allToVisit);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -78,7 +75,7 @@ public class PDPProblem implements Problem<PDPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -94,12 +91,11 @@ public class PDPProblem implements Problem<PDPState> {
     }
 
     @Override
-    public int transitionCost(PDPState state, Decision decision) {
+    public double transitionCost(PDPState state, Decision decision) {
         return -state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .map(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .getAsInt();
+                .getAsDouble();
     }
 }
-*/

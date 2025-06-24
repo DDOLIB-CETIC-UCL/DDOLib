@@ -139,7 +139,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(2);
     }
 
     @Override

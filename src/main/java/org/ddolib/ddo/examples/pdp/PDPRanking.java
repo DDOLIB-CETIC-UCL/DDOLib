@@ -1,5 +1,5 @@
 package org.ddolib.ddo.examples.pdp;
-/*
+
 import org.ddolib.ddo.heuristics.StateRanking;
 
 public class PDPRanking implements StateRanking<PDPState> {
@@ -8,4 +8,3 @@ public class PDPRanking implements StateRanking<PDPState> {
         return 0;
     }
 }
-*/

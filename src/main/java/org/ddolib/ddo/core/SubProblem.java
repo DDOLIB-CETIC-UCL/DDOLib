@@ -78,7 +78,7 @@ public final class SubProblem<T> {
     }
 
     public String statistics() {
-            return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d XXX)", value, ub, (value-ub), this.getPath().size());
+            return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value-ub), this.getPath().size());
     }
 
     @Override

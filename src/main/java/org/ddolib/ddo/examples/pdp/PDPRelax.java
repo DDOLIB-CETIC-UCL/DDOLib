@@ -1,17 +1,28 @@
 package org.ddolib.ddo.examples.pdp;
-/*
+
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.examples.tsp.TSPProblem;
+import org.ddolib.ddo.examples.tsp.TSPState;
 
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 class PDPRelax implements Relaxation<PDPState> {
     private final PDPProblem problem;
+    private final double [] leastIncidentEdge;
 
     public PDPRelax(PDPProblem problem) {
         this.problem = problem;
+        this.leastIncidentEdge = new double[problem.n];
+        for (int i = 0; i < problem.n; i++) {
+            double min = Double.MAX_VALUE;
+            for (int j = 0; j < problem.n; j++) {
+                if (i != j) {
+                    min = Math.min(min, problem.distanceMatrix[i][j]);
+                }
+            }
+            leastIncidentEdge[i] = min;
+        }
     }
 
     @Override
@@ -29,23 +40,28 @@ class PDPRelax implements Relaxation<PDPState> {
             current.or(state.current);
         }
         //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
-        return new PDPState(current, openToVisit, allToVisit, problem.sortedAdjacents.initialHeuristics());
+        return new PDPState(current, openToVisit, allToVisit);
     }
 
     @Override
-    public int relaxEdge(PDPState from, PDPState to, PDPState merged, Decision d, int cost) {
+    public double relaxEdge(PDPState from, PDPState to, PDPState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(PDPState state, Set<Integer> variables) {
-        if (state.current.cardinality() != 1) {
-            throw new Error("no fast upper bound when no current");
-        } else {
-            int nbHopsToDo = variables.size();
-            int lb = state.getHeuristics(nbHopsToDo, this.problem.sortedAdjacents);
-            return -lb;
+    public double fastUpperBound(PDPState state, Set<Integer> unassignedVariables) {
+        BitSet toVisit = state.allToVisit;
+        // for each unvisited node, we take the smallest incident edge
+        ArrayList<Double> toVisitLB = new ArrayList(unassignedVariables.size());
+        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+            toVisitLB.add(leastIncidentEdge[i]);
         }
+        // only unassigned.size() elements are to be visited
+        int lb = 0;
+        Collections.sort(toVisitLB);
+        for (int i = 0; i < unassignedVariables.size(); i++) {
+            lb += toVisitLB.get(i);
+        }
+        return -lb;
     }
 }
-*/

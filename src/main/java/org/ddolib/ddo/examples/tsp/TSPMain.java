@@ -16,6 +16,28 @@ public class TSPMain {
     public static void main(final String[] args) throws IOException {
 
         TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
+        Solver solver = solveTSP(instance);
+
+        TSPProblem problem = new TSPProblem(instance.distanceMatrix);
+        int[] solution = extractSpolution(problem, solver);
+        System.out.printf("Objective: %.1f%n", solver.bestValue().get());
+        System.out.println("eval from scratch: " + problem.eval(solution));
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+    }
+
+    public static int[] extractSpolution(TSPProblem problem, Solver solver){
+        return solver.bestSolution()
+                .map(decisions -> {
+                    int[] route = new int[problem.nbVars() + 1];
+                    route[0] = 0;
+                    for (Decision d : decisions) {
+                        route[d.var() + 1] = d.val();
+                    }
+                    return route;
+                })
+                .get();
+    }
+    public static Solver solveTSP(TSPInstance instance){
         final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         final TSPRelax relax = new TSPRelax(problem);
         final TSPRanking ranking = new TSPRanking();
@@ -32,25 +54,9 @@ public class TSPMain {
                 width,
                 frontier);
 
-        long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize(2);
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.bestSolution()
-                .map(decisions -> {
-                    int[] route = new int[problem.nbVars() + 1];
-                    route[0] = 0;
-                    for (Decision d : decisions) {
-                        route[d.var() + 1] = d.val();
-                    }
-                    return route;
-                })
-                .get();
-
         System.out.println(stats);
-        System.out.printf("Duration : %.3f(s)%n ", duration);
-        System.out.printf("Objective: %.1f%n", solver.bestValue().get());
-        System.out.println("eval from scratch: " + problem.eval(solution));
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+
+        return solver;
     }
 }

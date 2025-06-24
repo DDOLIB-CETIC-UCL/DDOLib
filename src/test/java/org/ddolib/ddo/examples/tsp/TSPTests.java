@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TSPTests {
 
-    static Stream<TSPProblem> dataProvider() throws IOException {
+    static Stream<TSPInstance> dataProvider() throws IOException {
         String dir = Paths.get("src", "test", "resources", "TSP").toString();
 
         File[] files = new File(dir).listFiles();
@@ -31,29 +31,22 @@ public class TSPTests {
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
                 .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> {
-                    try {
-                        TSPProblem problem = new TSPProblem(filePath.toString());
-                        return problem;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                .map(filePath -> new TSPInstance(filePath.toString()));
     }
 
-    static Stream<TSPProblem> dataProvider2() throws IOException {
+    static Stream<TSPInstance> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
-                TSPMain.genInstance(3+i%10, new Random(i)));
+                new TSPInstance(3+i%10, i, 1000));
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider2")
-    public void testTSP(TSPProblem problem) {
+    public void testTSP(TSPInstance instance) {
 
-        Solver s = TSPMain.solveTsp(problem, 0);
-
-        int[] solution = TSPMain.extractSolution(s);
+        Solver s = TSPMain.solveTSP(instance);
+        TSPProblem problem = new TSPProblem(instance.distanceMatrix);
+        int[] solution = TSPMain.extractSpolution(problem, s);
         assertEquals(s.bestValue().get() , -problem.eval(solution));
-
+        //TODO compare with best in instance;
     }
 }

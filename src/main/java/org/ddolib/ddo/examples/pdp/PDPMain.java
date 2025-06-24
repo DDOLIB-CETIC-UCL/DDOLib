@@ -1,10 +1,9 @@
 package org.ddolib.ddo.examples.pdp;
-/*
+
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,8 +14,8 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public final class PDPMain {
 
-    **
-     * Generates a PDP problem
+    /**
+     * Generates a PDP problem with a single vehicle:
      * a TSP problem such that
      * nodes are grouped by pair: (pickup node; delivery node)
      * in a pair, the pickup node must be reached before the delivery node
@@ -26,7 +25,7 @@ public final class PDPMain {
      * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
-     *
+     */
     public static PDPProblem genInstance(int n, int unrelated, Random random) {
 
         int[] x = new int[n];
@@ -36,9 +35,9 @@ public final class PDPMain {
             y[i] = random.nextInt(100);
         }
 
-        int[][] distance = new int[n][];
+        double[][] distance = new double[n][];
         for(int i = 0 ; i < n ;  i++){
-            distance[i] = new int[n];
+            distance[i] = new double[n];
             for(int j = 0 ; j < n ;  j++){
                 distance[i][j] = dist(x[i] - x[j] , y[i]-y[j]);
             }
@@ -71,8 +70,7 @@ public final class PDPMain {
 
         PDPSolution solution = extractSolution(solver,problem);
 
-
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.println("Eval from scratch: " + problem.eval(solution.solution));
         System.out.printf("Solution : %s%n", solution);
         System.out.println("Problem:" + problem);
@@ -117,4 +115,3 @@ public final class PDPMain {
         return new PDPSolution(problem, solution);
     }
 }
-*/
