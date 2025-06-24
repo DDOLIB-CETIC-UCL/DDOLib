@@ -239,6 +239,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                             case GHP:
                                 relaxGHP(maxWidth, input.getDistance(), relax, input.getRandom());
                                 break;
+                            case Kmeans:
+                                relaxKMeans(maxWidth, input.getCoord(), relax, input.getRandom());
+                                break;
                             default:
                                 System.err.println("Unsupported relax type: " + input.getRelaxType());
                                 System.exit(1);
@@ -753,13 +756,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }catch (IOException e) {
             System.exit(0);
         }
-        System.exit(0);
-        System.out.println("*************");
+        // System.out.println("*************");
         for (int i = 0; i < currentLayer.size(); i++) {
             for (int j = i + 1; j < currentLayer.size(); j++) {
                 T a = currentLayer.get(i).state;
                 T b = currentLayer.get(j).state;
-                System.out.println(distance.distance(a, b) + " -> " + euclideanDistance(map.getCoordinates(a), map.getCoordinates(b)));
+                // System.out.println(distance.distance(a, b) + " -> " + euclideanDistance(map.getCoordinates(a), map.getCoordinates(b)));
             }
         }
     }

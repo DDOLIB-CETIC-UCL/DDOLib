@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core;
 
+import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -24,6 +25,8 @@ public final class CompilationInput<T> {
     final StateRanking<T> ranking;
     /** A distance function to identify the close nodes */
     final StateDistance<T> distance;
+    /** A function to express the coordinates of a state (for kmeans) */
+    final StateCoordinates<T> coord;
     /** The subproblem whose state space must be explored */
     final SubProblem<T> residual;
     /** What is the maximum width of the mdd ? */
@@ -41,6 +44,7 @@ public final class CompilationInput<T> {
             final VariableHeuristic<T> var,
             final StateRanking<T> ranking,
             final StateDistance<T> distance,
+            final StateCoordinates<T> coord,
             final SubProblem<T> residual,
             final int maxWidth,
             final int bestLB,
@@ -53,6 +57,7 @@ public final class CompilationInput<T> {
         this.var = var;
         this.ranking = ranking;
         this.distance = distance;
+        this.coord = coord;
         this.residual = residual;
         this.maxWidth = maxWidth;
         this.bestLB = bestLB;
@@ -77,6 +82,7 @@ public final class CompilationInput<T> {
                 relaxation,
                 var,
                 ranking,
+                null,
                 null,
                 residual,
                 maxWidth,
@@ -125,5 +131,6 @@ public final class CompilationInput<T> {
 
     /** @return the distance function */
     public StateDistance<T> getDistance() {return distance;}
+    public StateCoordinates<T> getCoord() {return coord;}
     public Random getRandom() {return rnd;}
 }

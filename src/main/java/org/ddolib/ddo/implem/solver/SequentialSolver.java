@@ -1,10 +1,9 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.heuristics.*;
+import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
+import org.ddolib.ddo.implem.heuristics.DefaultStateDistance;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.*;
@@ -68,6 +67,7 @@ public final class SequentialSolver<T> implements Solver {
     private final DecisionDiagram<T> mdd;
 
     private final StateDistance<T> distance;
+    private final StateCoordinates<T> coord;
 
     /** This is the value of the best known lower bound. */
     private int bestLB;
@@ -88,7 +88,8 @@ public final class SequentialSolver<T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final StateDistance<T> distance,
-        final WidthHeuristic<T> width,
+            final StateCoordinates<T> coord,
+            final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final int seed)
     {
@@ -98,13 +99,14 @@ public final class SequentialSolver<T> implements Solver {
         this.varh    = varh;
         this.ranking = ranking;
         this.distance = distance;
+        this.coord = coord;
         this.width   = width;
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
-        rnd = new Random(seed);
+        this.rnd = new Random(seed);
     }
 
     public SequentialSolver(
@@ -115,7 +117,7 @@ public final class SequentialSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(null, problem, relax, varh, ranking, null, width, frontier, 65846);
+        this(null, problem, relax, varh, ranking, new DefaultStateDistance<>(), new DefaultStateCoordinates<>(), width, frontier, 65846);
     }
 
 
@@ -143,18 +145,15 @@ public final class SequentialSolver<T> implements Solver {
 
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInput<T> compilation = new CompilationInput<>(
-                    relaxType,
                 CompilationType.Restricted,
                 problem,
                 relax,
                 varh,
                 ranking,
-                distance,
                 sub,
                 maxWidth,
                 //
-                bestLB,
-                    this.rnd
+                bestLB
             );
 
             mdd.compile(compilation);
@@ -166,15 +165,19 @@ public final class SequentialSolver<T> implements Solver {
 
             // 2. RELAXATION
             compilation = new CompilationInput<>(
+                    relaxType,
                 CompilationType.Relaxed,
                 problem,
                 relax,
                 varh,
                 ranking,
+                distance,
+                coord,
                 sub,
                 maxWidth,
                 //
-                bestLB
+                bestLB,
+                    rnd
             );
             mdd.compile(compilation);
             if (mdd.isExact()) {

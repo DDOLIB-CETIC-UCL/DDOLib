@@ -1,10 +1,9 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.heuristics.*;
+import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
+import org.ddolib.ddo.implem.heuristics.DefaultStateDistance;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.*;
@@ -26,6 +25,7 @@ public final class RelaxationSolver<T> implements Solver {
     private final VariableHeuristic<T> varh;
     /** A distance function to identify the close nodes */
     private final StateDistance<T> distance;
+    private final StateCoordinates<T> coord;
 
     /**
      * This is the fringe: the set of nodes that must still be explored before
@@ -68,6 +68,7 @@ public final class RelaxationSolver<T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final StateDistance<T> distance,
+            final StateCoordinates<T> coord,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final int seed)
@@ -78,6 +79,7 @@ public final class RelaxationSolver<T> implements Solver {
         this.varh    = varh;
         this.ranking = ranking;
         this.distance = distance;
+        this.coord = coord;
         this.width   = width;
         this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
@@ -95,7 +97,7 @@ public final class RelaxationSolver<T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier)
     {
-        this(RelaxationType.Cost, problem, relax, varh, ranking, null, width, frontier, 654865);
+        this(RelaxationType.Cost, problem, relax, varh, ranking, new DefaultStateDistance<>(), new DefaultStateCoordinates<>(), width, frontier, 654865);
     }
 
     @Override
@@ -112,6 +114,7 @@ public final class RelaxationSolver<T> implements Solver {
                 varh,
                 ranking,
                 distance,
+                coord,
                 sub,
                 maxWidth,
                 //

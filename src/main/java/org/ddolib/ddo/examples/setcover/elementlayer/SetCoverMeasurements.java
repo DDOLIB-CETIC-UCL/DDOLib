@@ -56,6 +56,7 @@ public class SetCoverMeasurements {
                             varh,
                             ranking,
                             distance,
+                            null,
                             width,
                             frontier,
                             seed);

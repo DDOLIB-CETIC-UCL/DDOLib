@@ -2,12 +2,14 @@ package org.ddolib.ddo.examples;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.RelaxationSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -129,6 +131,13 @@ public final class Knapsack {
         }
     }
 
+    public static class KnapsackDistance implements StateDistance<Integer> {
+        @Override
+        public double distance(Integer state, Integer var) {
+            return Math.abs(state - var);
+        }
+    }
+
     public static class KnapsackCoordinates implements StateCoordinates<Integer> {
         @Override
         public double[] getCoordinates(Integer state) {
@@ -196,14 +205,23 @@ public final class Knapsack {
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new ParallelSolver<Integer>(
+        /*final Solver solver = new ParallelSolver<Integer>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier);*/
+
+        final Solver solver = new RelaxationSolver<Integer>(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier
+        );
 
 
         long start = System.currentTimeMillis();

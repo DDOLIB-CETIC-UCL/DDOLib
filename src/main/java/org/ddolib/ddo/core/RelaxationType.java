@@ -11,4 +11,5 @@ public enum RelaxationType {
     KClosest,
     OneD,
     GHP, // General Hyperplan Partition
+    Kmeans,
 }

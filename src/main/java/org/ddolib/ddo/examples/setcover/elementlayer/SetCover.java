@@ -40,6 +40,7 @@ public class SetCover {
                 varh,
                 ranking,
                 distance,
+                null,
                 width,
                 frontier,
                 646646545);
