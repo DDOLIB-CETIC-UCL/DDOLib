@@ -5,16 +5,33 @@ import org.ddolib.ddo.core.Problem;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class PSProblem implements Problem<PSState> {
 
     public static final int IDLE = -1; // represent the idle state of the machine i.e. no production
 
-    private final PSInstance instance;
+    public final PSInstance instance;
+
+    private Optional<String> name = Optional.empty();
 
     public PSProblem(PSInstance instance) {
         this.instance = instance;
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return Optional.of(-1.0 * instance.optimal);
+    }
+
+    @Override
+    public String toString() {
+        return name.orElse(super.toString());
     }
 
     @Override
@@ -29,7 +46,7 @@ public class PSProblem implements Problem<PSState> {
 
     @Override
     public PSState initialState() {
-        int prevDemands[] = new int[instance.nItems];
+        int[] prevDemands = new int[instance.nItems];
         for (int i = 0; i < instance.nItems; i++) {
             prevDemands[i] = instance.previousDemands[i][instance.horizon];
         }

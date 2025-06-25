@@ -9,8 +9,24 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     TSPTWInstance instance;
 
+    private Optional<String> name = Optional.empty();
+
     public TSPTWProblem(TSPTWInstance instance) {
         this.instance = instance;
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return instance.optimal;
+    }
+
+    @Override
+    public String toString() {
+        return name.orElse(instance.toString());
     }
 
     @Override

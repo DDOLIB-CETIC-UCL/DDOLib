@@ -28,7 +28,7 @@ public class MispProblem implements Problem<BitSet> {
     /**
      * The value of the optimal solution if known.
      */
-    public Optional<Double> optimal = Optional.empty();
+    private Optional<Double> optimal = Optional.empty();
 
 
     /**
@@ -83,6 +83,11 @@ public class MispProblem implements Problem<BitSet> {
             return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
                     weighStr, neighStr);
         }
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override
