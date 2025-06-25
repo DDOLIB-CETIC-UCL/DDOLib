@@ -35,9 +35,9 @@ public class SimpleCache<T> implements Cache<T> {
     }
 
     @Override
-    public void updateThreshold(T state, int depth, int value, boolean explored) {
+    public void updateThreshold(T state, int depth, Threshold threshold) {
         if (depth >= thresholdsByLayer.size()) return;
-        thresholdsByLayer.get(depth).update(state, new Threshold(value, explored));
+        thresholdsByLayer.get(depth).update(state, threshold);
     }
 
     @Override

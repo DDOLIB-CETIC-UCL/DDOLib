@@ -31,7 +31,7 @@ public class KSCacheTest {
         Random rand = new Random(10);
         int number = 1000;
         boolean found = false;
-        int nbVars = 13; int cap = 5;
+        int nbVars = 4; int cap = 10;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
         return testStream.flatMap(k -> {
             int[] profit = new int[nbVars];
@@ -49,7 +49,7 @@ public class KSCacheTest {
     private static int optimalSolutionNoCaching(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver1 = new SequentialSolver(
@@ -69,10 +69,10 @@ public class KSCacheTest {
     public void testOptimalSolutionFound(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final Solver solverWithCaching = new SequentialSolverCache(
                 problem,
                 relax,
@@ -83,10 +83,12 @@ public class KSCacheTest {
                 frontier);
 
         SearchStatistics stats = solverWithCaching.maximize();
+//        System.out.println("optimal Solution No Caching : " + optimalSolutionNoCaching(problem) + "\nsolver With Caching: " + solverWithCaching.bestValue().get());
 
         assertEquals(optimalSolutionNoCaching(problem), solverWithCaching.bestValue().get());
         if (optimalSolutionNoCaching(problem) != solverWithCaching.bestValue().get()) {
             System.out.println(problem);
         }
     }
+
 }

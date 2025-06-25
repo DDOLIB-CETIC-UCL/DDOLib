@@ -46,7 +46,7 @@ public interface Cache<T>  {
     /**
      * Updates the threshold associated with the given state, only if it is increased.
      */
-    void updateThreshold(final T state, final int depth, final int value, final boolean explored);
+    void updateThreshold(final T state, final int depth, Threshold threshold);
 
     /**
      * Removes all thresholds associated with states at the given depth.

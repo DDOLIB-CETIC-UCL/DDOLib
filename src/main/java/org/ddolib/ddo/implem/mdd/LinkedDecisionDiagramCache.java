@@ -11,6 +11,8 @@ import java.sql.SQLOutput;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static org.apache.commons.lang3.ArrayUtils.isSorted;
+
 /**
  * This class implements the decision diagram as a linked structure.
  * @param <T> the type of state
@@ -84,6 +86,23 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         private boolean isMarked;
 
         /**
+         * The flag to indicate if a node is in exact cutset
+         */
+        private boolean isInExactCutSet;
+
+        /**
+         * The flag to indicate if a node is above the exact cutset
+         */
+        private boolean isAboveExactCutSet;
+
+        /**
+         * The flag to indicate if a node is an exact successor of an exact cutset
+         */
+        private boolean isSuccessorOfExactCutSet;
+
+
+
+        /**
          * Creates a new node
          */
         public Node(final int value) {
@@ -93,6 +112,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             this.edges = new ArrayList<>();
             this.type = NodeType.EXACT;
             this.isMarked = false;
+            this.isInExactCutSet = false;
+            this.isAboveExactCutSet = false;
+            this.isSuccessorOfExactCutSet = false;
         }
 
         /**
@@ -218,10 +240,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         }
 
 
-
         @Override
         public String toString() {
-            return String.format("%s - ub: %d", state, ub);
+            return String.format("%s - ub: %d - type: %s", state, ub, node.type);
         }
     }
 
@@ -248,9 +269,10 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
         final Set<Integer> variables = varSet(input);
 
-        int depth = residual.getPath().size();
-        int minDepth = depth;
-        int maxDepth = minDepth + variables.size();
+        int depth = 0;
+        int minDepth = residual.getPath().size();
+        int depthCutSet = -1;
+        int maxDepth = minDepth + variables.size() - 1;
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
         // list of depth for the current relax compilation of the DD
         ArrayList<Integer> listDepths = new ArrayList<>();
@@ -269,7 +291,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             for (NodeSubProblem<T> n : this.currentLayer) {
                 this.prevLayer.put(n.node, n);
             }
-
             this.currentLayer.clear();
 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
@@ -282,22 +303,23 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
+
             // prunes the current layer with the current values of the cache
             pruned.clear();
             if (depth > minDepth) {
                 for (NodeSubProblem<T> n : this.currentLayer) {
                     if (cache.getLayer(depth).containsKey(n.state) && cache.getThreshold(n.state, depth).isPresent() &&
-                            n.node.value < cache.getThreshold(n.state, depth).get().getValue()) {
+                            n.node.value <= cache.getThreshold(n.state, depth).get().getValue()) {
                         pruned.add(n);
                     }
                 }
             }
-            if (pruned.size() > 0)
-                System.out.println(pruned.size());
+            if (!pruned.isEmpty())
+                System.out.println("pruned : " + pruned.size());
             this.currentLayer.removeAll(pruned);
             this.nextLayer.clear();
 
-            if (currentLayer.isEmpty()) {
+            if (this.currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
                 return;
             }
@@ -322,7 +344,8 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (depth >= 2 && currentLayer.size() > maxWidth) {
+
+            if (depth >= 2 && this.currentLayer.size() > maxWidth) {
                 switch (input.getCompilationType()) {
                     case Restricted:
                         exact = false;
@@ -333,6 +356,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                             exact = false;
                             if (input.getCutSetType() == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
+                                if (depthCutSet == -1) {
+                                    depthCutSet = depth - 1;
+                                }
                             }
                         }
                         relax(maxWidth, ranking, relax);
@@ -343,7 +369,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                 }
             }
 
-            for (NodeSubProblem<T> n : currentLayer) {
+            for (NodeSubProblem<T> n : this.currentLayer) {
                 int lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
@@ -356,12 +382,17 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                         branchOn(n, decision, problem);
                     }
                 }
-                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
-                        && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
-                    for (Edge e : n.node.edges) {
-                        Node origin = e.origin;
-                        if (origin.getNodeType() == NodeType.EXACT) {
-                            currentCutSet.add(prevLayer.get(origin));
+            }
+
+            // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
+            if (input.getCutSetType() == CutSetType.Frontier && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    if (n.node.getNodeType() == NodeType.RELAXED) {
+                        for (Edge e : n.node.edges) {
+                            Node origin = e.origin;
+                            if (origin.getNodeType() == NodeType.EXACT) {
+                                currentCutSet.add(prevLayer.get(origin));
+                            }
                         }
                     }
                 }
@@ -371,13 +402,13 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             // Initialize the list of thresholds per layer to their default values
 
             if (input.getCompilationType() == CompilationType.Relaxed) {
-                listDepths.add(depth);
-                int k = depth - minDepth;
+                listDepths.add(depth + minDepth);
                 nodeSubProblemPerLayer.add(new ArrayList<>());
                 layersThresholds.add(new ArrayList<>());
+//                System.out.println(this.currentLayer   + " --->  " + depth);
                 for (NodeSubProblem<T> n : this.currentLayer) {
-                    nodeSubProblemPerLayer.get(k).add(n);
-                    layersThresholds.get(k).add(new Threshold(Integer.MAX_VALUE, false));
+                    nodeSubProblemPerLayer.get(depth).add(n);
+                    layersThresholds.get(depth).add(new Threshold(Integer.MAX_VALUE, false));
                 }
             }
 
@@ -399,9 +430,29 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
         }
+
         // Compute the threshold of every exact node in the relaxed DD and update the cache
         if (input.getCompilationType() == CompilationType.Relaxed) {
-            computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb);
+            for (NodeSubProblem<T> n : cutset) {
+                if (n.node.isMarked) {
+                    n.node.isInExactCutSet = true;
+                }
+            }
+            for (int i = 0; i < depthCutSet; i++) {
+                for (NodeSubProblem<T> n: nodeSubProblemPerLayer.get(i)) {
+                    if (n.node.getNodeType() == NodeType.EXACT) {
+                        n.node.isAboveExactCutSet = true;
+                    }
+                }
+            }
+            for (int i = depthCutSet+1; i < nodeSubProblemPerLayer.size(); i++) {
+                for (NodeSubProblem<T> n: nodeSubProblemPerLayer.get(i)) {
+                    if (n.node.getNodeType() == NodeType.EXACT) {
+                        n.node.isSuccessorOfExactCutSet = true;
+                    }
+                }
+            }
+            computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb, input.getCutSetType());
         }
     }
 
@@ -477,6 +528,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
      *                 to the least promising (lowest)
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
+//        System.out.println("before restriction : " +  this.currentLayer);
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
@@ -490,10 +542,12 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
      * @param relax    the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+//        System.out.println("before relaxation : " +  this.currentLayer);
         this.currentLayer.sort(ranking.reversed());
+//        System.out.println("before relaxation : " +  this.currentLayer);
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, this.currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?
@@ -539,7 +593,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         merge.clear();
         // append the newly merged node if needed
         if (fresh) {
-            currentLayer.add(node);
+            this.currentLayer.add(node);
         }
     }
 
@@ -620,8 +674,8 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
     /**
      * perform the bottom up traversal of the mdd to compute and update the cache
      */
-    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, int lb) {
-        for (int j = listDepth.size()-1; j > 0; j--) {
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, int lb, CutSetType cutSetType) {
+        for (int j = listDepth.size()-1; j >= 0; j--) {
             int depth = listDepth.get(j);
             for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
                 NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
@@ -635,7 +689,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                         int rub = saturatedDiff(sub.ub, sub.node.value);
                         int value = saturatedDiff(lb, rub);
                         currentCache.get(j).get(i).setValue(value);
-                    } else if (inExactCutSet(sub)) {
+                    } else if (sub.node.isInExactCutSet) {
                         if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
                             int value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
                             currentCache.get(j).get(i).setValue(value);
@@ -644,9 +698,25 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                         }
                     }
                     if (sub.node.getNodeType() == NodeType.EXACT) {
-                        boolean expanded = !inExactCutSet(sub);
-                        currentCache.get(j).get(i).setExplored(expanded);
-                        simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                        if (cutSetType == CutSetType.LastExactLayer) {
+                            if ((sub.node.isSuccessorOfExactCutSet && sub.node.isMarked)  || (sub.node.isInExactCutSet && sub.node.value == currentCache.get(j).get(i).getValue())) {
+                                currentCache.get(j).get(i).setExplored(false);
+                            } else if (sub.node.isAboveExactCutSet || (sub.node.isInExactCutSet && sub.node.value < currentCache.get(j).get(i).getValue())) {
+                                currentCache.get(j).get(i).setExplored(true);
+                            }
+
+                            if (currentCache.get(j).get(i).isExplored()) {
+                                simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                            }
+                        }
+                        if (cutSetType == CutSetType.Frontier) {
+                            if (!sub.node.isInExactCutSet) {
+                                currentCache.get(j).get(i).setExplored(true);
+                            }
+                            if (currentCache.get(j).get(i).isExplored()) {
+                                simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                            }
+                        }
                     }
                 }
                 for (Edge e : sub.node.edges) {
@@ -663,16 +733,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                 }
             }
         }
-    }
-
-
-    public boolean inExactCutSet(NodeSubProblem<T> sub) {
-        for (NodeSubProblem<T> n : cutset) {
-            if (n.state.equals(sub.state) && n.node.isMarked) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

@@ -453,7 +453,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
-
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
