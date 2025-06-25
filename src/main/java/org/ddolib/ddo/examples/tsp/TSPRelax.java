@@ -9,7 +9,7 @@ import java.util.*;
 public class TSPRelax implements Relaxation<TSPState> {
 
     private final TSPProblem problem;
-    private final double [] leastIncidentEdge;
+    private final double[] leastIncidentEdge;
 
     public TSPRelax(TSPProblem problem) {
         this.problem = problem;
@@ -48,7 +48,7 @@ public class TSPRelax implements Relaxation<TSPState> {
     public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
         BitSet toVisit = state.toVisit;
         // for each unvisited node, we take the smallest incident edge
-        ArrayList<Double> toVisitLB = new ArrayList(unassignedVariables.size());
+        ArrayList<Double> toVisitLB = new ArrayList<>(unassignedVariables.size());
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }

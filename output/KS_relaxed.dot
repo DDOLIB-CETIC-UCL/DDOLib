@@ -1,0 +1,41 @@
+digraph relaxed{
+1896277646 [label="15
+ub: 264 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+2128227771 [label="12
+ub: 227 - value: 15", style=rounded, shape=rectangle, tooltip="Exact node"];
+1996181658 [label="15
+ub: 249 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+1637070917 [label="9
+ub: 189 - value: 27", style=rounded, shape=rectangle, tooltip="Exact node"];
+205797316 [label="15
+ub: 330 - value: 15", shape=box, tooltip="Relaxed node"];
+935044096 [label="5
+ub: 176 - value: 135", shape=box, tooltip="Relaxed node"];
+625576447 [label="15
+ub: 189 - value: 27", shape=box, tooltip="Relaxed node"];
+1237514926 [label="5
+ub: 197 - value: 135", shape=box, tooltip="Relaxed node"];
+835648992 [label="15
+ub: 177 - value: 77", shape=box, tooltip="Relaxed node"];
+1368884364 [label="5
+ub: 177 - value: 135", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+772777427 [label="7
+ub: 177 - value: 177", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+1751075886 [label="15
+ub: 177 - value: 77", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+2128227771 -> 205797316 [label=0, tooltip="Decision: assign 0 to var 1"];
+625576447 -> 835648992 [label=50, tooltip="Decision: assign 1 to var 3", color="#6fb052", fontcolor="#6fb052"];
+835648992 -> 1751075886 [label=0, tooltip="Decision: assign 0 to var 4"];
+1896277646 -> 2128227771 [label=15, tooltip="Decision: assign 1 to var 0", color="#6fb052", fontcolor="#6fb052"];
+835648992 -> 772777427 [label=100, tooltip="Decision: assign 1 to var 4", color="#6fb052", fontcolor="#6fb052"];
+1637070917 -> 625576447 [label=0, tooltip="Decision: assign 0 to var 2", color="#6fb052", fontcolor="#6fb052"];
+1896277646 -> 1996181658 [label=0, tooltip="Decision: assign 0 to var 0"];
+1996181658 -> 205797316 [label=0, tooltip="Decision: assign 0 to var 1"];
+1237514926 -> 1368884364 [label=0, tooltip="Decision: assign 0 to var 4"];
+935044096 -> 1237514926 [label=0, tooltip="Decision: assign 0 to var 3"];
+205797316 -> 935044096 [label=120, tooltip="Decision: assign 1 to var 2"];
+2128227771 -> 1637070917 [label=12, tooltip="Decision: assign 1 to var 1", color="#6fb052", fontcolor="#6fb052"];
+625576447 -> 835648992 [label=0, tooltip="Decision: assign 0 to var 3"];
+1996181658 -> 205797316 [label=12, tooltip="Decision: assign 1 to var 1"];
+205797316 -> 625576447 [label=0, tooltip="Decision: assign 0 to var 2"];
+}

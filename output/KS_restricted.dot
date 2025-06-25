@@ -1,0 +1,35 @@
+digraph restricted{
+668386784 [label="15
+ub: 264 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+1791741888 [label="12
+ub: 227 - value: 15", style=rounded, shape=rectangle, tooltip="Exact node"];
+2094548358 [label="15
+ub: 249 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+1323165413 [label="9
+ub: 189 - value: 27", style=rounded, shape=rectangle, tooltip="Exact node"];
+511754216 [label="12
+ub: 215 - value: 15", style=rounded, shape=rectangle, tooltip="Exact node"];
+214126413 [label="2
+ub: 151 - value: 135", style=rounded, shape=rectangle, tooltip="Exact node"];
+1706234378 [label="9
+ub: 189 - value: 27", style=rounded, shape=rectangle, tooltip="Exact node"];
+2046562095 [label="2
+ub: 160 - value: 135", style=rounded, shape=rectangle, tooltip="Exact node"];
+769287236 [label="3
+ub: 114 - value: 77", style=rounded, shape=rectangle, tooltip="Exact node"];
+1199823423 [label="2
+ub: 135 - value: 135", style=rounded, shape=rectangle, tooltip="Exact node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+1225358173 [label="3
+ub: 135 - value: 77", style=rounded, shape=rectangle, tooltip="Exact node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+2094548358 -> 511754216 [label=12, tooltip="Decision: assign 1 to var 1"];
+2046562095 -> 1199823423 [label=0, tooltip="Decision: assign 0 to var 4", color="#6fb052", fontcolor="#6fb052"];
+511754216 -> 214126413 [label=120, tooltip="Decision: assign 1 to var 2", color="#6fb052", fontcolor="#6fb052"];
+668386784 -> 1791741888 [label=15, tooltip="Decision: assign 1 to var 0", color="#6fb052", fontcolor="#6fb052"];
+1791741888 -> 511754216 [label=0, tooltip="Decision: assign 0 to var 1", color="#6fb052", fontcolor="#6fb052"];
+769287236 -> 1225358173 [label=0, tooltip="Decision: assign 0 to var 4"];
+214126413 -> 2046562095 [label=0, tooltip="Decision: assign 0 to var 3", color="#6fb052", fontcolor="#6fb052"];
+1791741888 -> 1323165413 [label=12, tooltip="Decision: assign 1 to var 1"];
+1706234378 -> 769287236 [label=50, tooltip="Decision: assign 1 to var 3"];
+668386784 -> 2094548358 [label=0, tooltip="Decision: assign 0 to var 0"];
+1323165413 -> 1706234378 [label=0, tooltip="Decision: assign 0 to var 2"];
+}
