@@ -5,6 +5,7 @@ import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.junit.jupiter.api.DynamicTest;
 
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
@@ -86,7 +87,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
-     * Test if the fast upper bound is an upper bound for the root node and if the compilation with the fast upper
+     * Test if the fast upper bound is an upper bound for the root node and if the compilation with only the fast upper
      * bound enabled lead to the optimal solution.
      *
      * @param problem The instance to test.
@@ -101,31 +102,46 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         }
 
         double rub = config.relax().fastUpperBound(problem.initialState(), vars);
+        DecimalFormat df = new DecimalFormat("#.##########");
         assertTrue(rub >= problem.optimalValue().get(),
-                String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",
-                        rub,
-                        problem.optimalValue().get()));
+                String.format("Upper bound %s is not bigger than the expected optimal solution %s",
+                        df.format(rub),
+                        df.format(problem.optimalValue().get())));
 
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
 
     /**
-     * Test if the model with relaxation enabled lead to the optimal solution.
+     * Test if the model only with relaxation enabled lead to the optimal solution.
      *
      * @param problem The instance to test.
      */
     protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
+        FixedWidth<T> width = new FixedWidth<>(2);
+        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
+                config.frontier());
 
-        if (config.relax() != null) {
-            FixedWidth<T> width = new FixedWidth<>(2);
-            Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
-                    config.frontier());
+        solver.maximize();
+        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
 
-            solver.maximize();
-            assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
-        }
+    }
+
+    /**
+     * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
+     * effect, it tests if the fast upper bound on merged states does not cause errors.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testFubOnRelaxedNodes(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        FixedWidth<T> width = new FixedWidth<>(2);
+        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
+                config.frontier());
+
+        solver.maximize();
+        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
 
     /**
@@ -168,6 +184,13 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
                     DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFub(p))
             );
             allTests = Stream.concat(allTests, fubTests);
+        }
+
+        if (testRelaxation && testFUB) {
+            Stream<DynamicTest> relaxAndFubTest = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Relax and FUB for %s", p.toString()), () -> testFubOnRelaxedNodes(p))
+            );
+            allTests = Stream.concat(allTests, relaxAndFubTest);
         }
 
         if (testDominance) {
