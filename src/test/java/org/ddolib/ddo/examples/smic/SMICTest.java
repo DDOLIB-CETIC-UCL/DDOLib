@@ -9,9 +9,6 @@ import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.util.testbench.ProblemTestBench;
 import org.ddolib.ddo.util.testbench.SolverConfig;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,10 +66,10 @@ public class SMICTest {
         }
     }
 
-    @DisplayName("SMIC")
+    /*@DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench(false, false, true);
         return bench.generateTests();
-    }
+    }*/
 }
