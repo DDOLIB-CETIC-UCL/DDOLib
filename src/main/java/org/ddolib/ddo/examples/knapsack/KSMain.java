@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
@@ -83,7 +84,7 @@ public class KSMain {
                     context.capa = Integer.parseInt(tokens[1]);
 
                     if (tokens.length == 3) {
-                        context.optimal = Integer.parseInt(tokens[2]);
+                        context.optimal = Optional.of(Double.parseDouble(tokens[2]));
                     }
 
                     context.profit = new int[context.n];
@@ -99,7 +100,11 @@ public class KSMain {
                 }
             });
 
-            return new KSProblem(context.capa, context.profit, context.weight, context.optimal);
+            if (context.optimal.isPresent()) {
+                return new KSProblem(context.capa, context.profit, context.weight, context.optimal.get());
+            } else {
+                return new KSProblem(context.capa, context.profit, context.weight);
+            }
         }
     }
 
@@ -110,6 +115,6 @@ public class KSMain {
         int capa = 0;
         int[] profit = new int[0];
         int[] weight = new int[0];
-        Integer optimal = null;
+        Optional<Double> optimal = Optional.empty();
     }
 }
