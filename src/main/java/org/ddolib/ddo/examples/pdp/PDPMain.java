@@ -61,7 +61,7 @@ public final class PDPMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPProblem problem = genInstance(18,2, new Random(1));
+        final PDPProblem problem = genInstance(15,2, new Random(1));
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
@@ -82,7 +82,7 @@ public final class PDPMain {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
-        final FixedWidth<PDPState> width = new FixedWidth<>(2000);
+        final FixedWidth<PDPState> width = new FixedWidth<>(3000);
         final DefaultVariableHeuristic<PDPState> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
@@ -94,7 +94,7 @@ public final class PDPMain {
                 width,
                 frontier);
 
-        SearchStatistics statistics = solver.maximize(1);
+        SearchStatistics statistics = solver.maximize(2);
         System.out.println("statistics: " + statistics);
 
         return solver;
