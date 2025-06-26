@@ -56,7 +56,9 @@ public class TSPRelax implements Relaxation<TSPState> {
         // only unassigned.size() elements are to be visited
         // and there can be fewer than toVisit.size()
         int lb = 0;
-        Collections.sort(toVisitLB);
+        if(toVisitLB.size() > unassignedVariables.size()) {
+            Collections.sort(toVisitLB);
+        }
         for (int i = 0; i < unassignedVariables.size(); i++) {
             lb += toVisitLB.get(i);
         }
