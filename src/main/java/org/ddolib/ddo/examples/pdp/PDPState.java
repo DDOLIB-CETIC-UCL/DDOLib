@@ -35,30 +35,6 @@ class PDPState {
         return (that.allToVisit.equals(this.allToVisit));
     }
 
-    public PDPState goTo(int node, PDPProblem problem) {
-        BitSet newOpenToVisit = (BitSet) openToVisit.clone();
-        newOpenToVisit.clear(node);
-
-        BitSet newAllToVisit = (BitSet) allToVisit.clone();
-        newAllToVisit.clear(node);
-
-        if (problem.pickupToAssociatedDelivery.containsKey(node)) {
-            newOpenToVisit.set(problem.pickupToAssociatedDelivery.get(node));
-        }
-
-        if (problem.deliveryToAssociatedPickup.containsKey(node)) {
-            int p = problem.deliveryToAssociatedPickup.get(node);
-            if (newOpenToVisit.get(p)) {
-                newOpenToVisit.clear(p);
-            }
-        }
-
-        return new PDPState(
-                singleton(node),
-                newOpenToVisit,
-                newAllToVisit);
-    }
-
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(singletonValue + 1);
         toReturn.set(singletonValue);

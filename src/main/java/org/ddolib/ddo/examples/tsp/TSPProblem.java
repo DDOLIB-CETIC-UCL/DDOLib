@@ -71,7 +71,13 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public TSPState transition(TSPState state, Decision decision) {
-        return state.goTo(decision.val());
+        int node = decision.val();
+
+
+        BitSet newToVisit = (BitSet) state.toVisit.clone();
+        newToVisit.clear(node);
+
+        return new TSPState(state.singleton(node), newToVisit);
     }
 
     @Override
