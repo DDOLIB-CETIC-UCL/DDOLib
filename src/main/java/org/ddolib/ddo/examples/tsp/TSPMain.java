@@ -60,7 +60,7 @@ public class TSPMain {
                 width,
                 frontier);
 
-        SearchStatistics stats = solver.maximize(4);
+        SearchStatistics stats = solver.maximize(2);
         System.out.println(stats);
 
         return solver;

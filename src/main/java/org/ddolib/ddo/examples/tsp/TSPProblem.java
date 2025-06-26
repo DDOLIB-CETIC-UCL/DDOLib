@@ -60,8 +60,7 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public Iterator<Integer> domain(TSPState state, int var) {
-        if(var == n) {
-            System.out.println("final come back");
+        if(var == n-1) {
             //the final decision is to come back to node zero
             return singleton(0).stream().iterator();
         }else{
