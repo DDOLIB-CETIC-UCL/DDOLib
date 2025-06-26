@@ -19,13 +19,13 @@ public class TSPMain {
         Solver solver = solveTSP(instance);
 
         TSPProblem problem = new TSPProblem(instance.distanceMatrix);
-        int[] solution = extractSpolution(problem, solver);
+        int[] solution = extractSolution(problem, solver);
         System.out.printf("Objective: %.1f%n", solver.bestValue().get());
         System.out.println("eval from scratch: " + problem.eval(solution));
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
-    public static int[] extractSpolution(TSPProblem problem, Solver solver){
+    public static int[] extractSolution(TSPProblem problem, Solver solver){
         return solver.bestSolution()
                 .map(decisions -> {
                     int[] route = new int[problem.nbVars() + 1];

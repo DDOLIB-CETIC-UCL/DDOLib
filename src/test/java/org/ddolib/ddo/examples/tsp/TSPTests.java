@@ -1,20 +1,12 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -40,13 +32,16 @@ public class TSPTests {
     }
 
     @ParameterizedTest
-    @MethodSource("dataProvider2")
+    @MethodSource("dataProvider")
     public void testTSP(TSPInstance instance) {
 
         Solver s = TSPMain.solveTSP(instance);
         TSPProblem problem = new TSPProblem(instance.distanceMatrix);
-        int[] solution = TSPMain.extractSpolution(problem, s);
+        int[] solution = TSPMain.extractSolution(problem, s);
         assertEquals(s.bestValue().get() , -problem.eval(solution));
-        //TODO compare with best in instance;
+        if(instance.objective >=0) {
+            System.out.println("comparing obj with actual best");
+            assertEquals(instance.objective, -s.bestValue().get());
+        }
     }
 }
