@@ -52,7 +52,7 @@ public class TSPTWTests {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = relax.fub(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= instance.optimal.get(),
                 String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
