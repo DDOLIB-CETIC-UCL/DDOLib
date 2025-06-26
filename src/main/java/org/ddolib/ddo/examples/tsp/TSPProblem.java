@@ -25,6 +25,7 @@ public class TSPProblem implements Problem<TSPState> {
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
         }
+        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
         return toReturn;
     }
 
@@ -35,7 +36,7 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public int nbVars() {
-        return n - 1; //since zero is the initial point
+        return n; //the last decision will be to come back to point zero
     }
 
     @Override
@@ -59,8 +60,14 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public Iterator<Integer> domain(TSPState state, int var) {
-        ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
-        return domain.iterator();
+        if(var == n) {
+            System.out.println("final come back");
+            //the final decision is to come back to node zero
+            return singleton(0).stream().iterator();
+        }else{
+            ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
+            return domain.iterator();
+        }
     }
 
     @Override

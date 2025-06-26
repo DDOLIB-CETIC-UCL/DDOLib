@@ -17,6 +17,8 @@ public class TSPState {
         }
 
         public TSPState goTo(int node) {
+
+
             BitSet newToVisit = (BitSet) toVisit.clone();
             newToVisit.clear(node);
 
