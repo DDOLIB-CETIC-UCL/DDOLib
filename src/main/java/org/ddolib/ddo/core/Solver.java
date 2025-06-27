@@ -8,7 +8,16 @@ import java.util.Set;
  * that maximizes the objective value of some underlying optimization problem. 
  */
 public interface Solver {
-    /** Tries to maximize the objective value of the problem which is being solved */
+    /**
+     * Tries to maximize the objective value of the problem which is being solved
+     *@param verbosityLevel
+     *            0: no verbositie
+     *            1: display newBest whenever there is a newBest
+     *            2: 1 + statistics about the front every half a second (or so)
+     *            3: 2 + every developed sub-problem
+     *            4: 3 + details about the developed state
+     * @return statistics about the search
+     */
     SearchStatistics maximize(int verbosityLevel);
     /** Tries to maximize the objective value of the problem which is being solved */
     SearchStatistics maximize();

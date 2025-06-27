@@ -16,14 +16,7 @@ public class TSPState {
             this.current = current;
         }
 
-        public TSPState goTo(int node) {
-            BitSet newToVisit = (BitSet) toVisit.clone();
-            newToVisit.clear(node);
-
-            return new TSPState(singleton(node), newToVisit);
-        }
-
-        public BitSet singleton(int singletonValue) {
+    public BitSet singleton(int singletonValue) {
             BitSet toReturn = new BitSet(singletonValue + 1);
             toReturn.set(singletonValue);
             return toReturn;
