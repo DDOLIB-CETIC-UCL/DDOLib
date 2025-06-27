@@ -18,7 +18,7 @@ class PDPRelax implements Relaxation<PDPState> {
             double min = Double.MAX_VALUE;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
-                    min = Math.min(min, problem.distanceMatrix[i][j]);
+                    min = Math.min(min, problem.instance.distanceMatrix[i][j]);
                 }
             }
             leastIncidentEdge[i] = min;

@@ -13,19 +13,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PDPTests {
 
-    static Stream<PDPProblem> dataProvider2() throws IOException {
+    static Stream<PDPInstance> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
                 PDPMain.genInstance(5+i%14, i%3, new Random(i)));
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider2")
-    public void testPDP(PDPProblem problem) {
+    public void testPDP(PDPInstance instance) {
 
+        PDPProblem problem = new PDPProblem(instance);
         Solver s = PDPMain.solveDPD(problem);
 
         PDPSolution solution = PDPMain.extractSolution(s, problem);
 
-        assertEquals(s.bestValue().get() , -problem.eval(solution.solution));
+        assertEquals(solution.value , instance.eval(solution.solution));
     }
 }

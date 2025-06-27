@@ -26,7 +26,7 @@ public final class PDPMain {
      *                  there might be one more unrelated node than specified here
      * @return a PDP problem
      */
-    public static PDPProblem genInstance(int n, int unrelated, Random random) {
+    public static PDPInstance genInstance(int n, int unrelated, Random random) {
 
         int[] x = new int[n];
         int[] y = new int[n];
@@ -52,7 +52,7 @@ public final class PDPMain {
             pickupToAssociatedDelivery.put(p,d);
         }
 
-        return new PDPProblem(distance,pickupToAssociatedDelivery);
+        return new PDPInstance(distance,pickupToAssociatedDelivery);
     }
 
     static int dist(int dx, int dy){
@@ -61,17 +61,17 @@ public final class PDPMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPProblem problem = genInstance(15,2, new Random(1));
+        final PDPInstance instance = genInstance(15,2, new Random(1));
+        final PDPProblem problem = new PDPProblem(instance);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
 
         Solver solver = solveDPD(problem);
-
         PDPSolution solution = extractSolution(solver,problem);
 
         System.out.printf("Objective: %f%n", solver.bestValue().get());
-        System.out.println("Eval from scratch: " + problem.eval(solution.solution));
+        System.out.println("Eval from scratch: " + instance.eval(solution.solution));
         System.out.printf("Solution : %s%n", solution);
         System.out.println("Problem:" + problem);
 
@@ -112,6 +112,8 @@ public final class PDPMain {
                 })
                 .get();
 
-        return new PDPSolution(problem, solution);
+        double value = -solver.bestValue().get();
+
+        return new PDPSolution(problem, solution, value);
     }
 }
