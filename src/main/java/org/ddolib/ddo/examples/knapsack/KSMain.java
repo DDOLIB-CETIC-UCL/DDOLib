@@ -28,7 +28,7 @@ import java.util.Arrays;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance =  "data/Knapsack/example3";//"data/Knapsack/instance_n100_c500_10_5_10_5_1"; //
+        final String instance =  "data/Knapsack/instance_n100_c500_10_5_10_5_1"; //
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();

@@ -240,7 +240,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final SimpleDominanceChecker<T, K> dominance = input.getDominance();
 
         final Set<Integer> variables = varSet(input);
-        //
+
         int depth = 0;
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
         while (!variables.isEmpty()) {
@@ -336,9 +336,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                         }
                     }
                 }
-            }
-            if (input.getCompilationType() == CompilationType.Relaxed) {
-                System.out.println(currentLayer + " ---> depth " + depth);
             }
             depth += 1;
         }

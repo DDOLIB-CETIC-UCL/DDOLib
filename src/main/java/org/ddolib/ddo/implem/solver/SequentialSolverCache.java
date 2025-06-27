@@ -190,7 +190,6 @@ public final class SequentialSolverCache<K,T> implements Solver {
                 if (cache.mustExplore(sub, depth)) {
                     continue;
 //                    frontier.clear();
-//                    System.out.println(sub.getState() + " -----> " + cache.getLayer(depth).get(sub.getState()).get());
 //                    return new SearchStatistics(nbIter, queueMaxSize);
                 }
             }

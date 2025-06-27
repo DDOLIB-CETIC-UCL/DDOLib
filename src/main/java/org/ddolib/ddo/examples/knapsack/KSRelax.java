@@ -32,7 +32,7 @@ public class KSRelax implements Relaxation<Integer>  {
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {
-            ratio[v] = ((double) capacity / problem.weight[v]);
+            ratio[v] = ((double) problem.profit[v] / problem.weight[v]);
         }
 
         class RatioComparator implements Comparator<Integer> {
@@ -53,7 +53,7 @@ public class KSRelax implements Relaxation<Integer>  {
                 maxProfit += problem.profit[item];
                 capacity -= problem.weight[item];
             } else {
-                double itemProfit = ratio[item] * problem.profit[item];
+                double itemProfit = ratio[item] * capacity; //problem.profit[item];
                 maxProfit += (int) Math.floor(itemProfit);
                 capacity = 0;
             }

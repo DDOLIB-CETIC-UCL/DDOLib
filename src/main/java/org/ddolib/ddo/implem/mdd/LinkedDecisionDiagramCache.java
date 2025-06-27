@@ -1,5 +1,6 @@
 package org.ddolib.ddo.implem.mdd;
 
+import org.apache.commons.lang3.concurrent.Computable;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -31,12 +32,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
      * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
      */
     private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
-    /**
-     * sorted nodes of the current layer
-     */
-
-    private List<NodeSubProblem<T>> sortedCurrentLayer = new ArrayList<>();
-
 
     /**
      * All the nodes from the next layer
@@ -249,7 +244,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %d - type: %s - abov: %s -bel: %s ", state, ub, node.type, node.isAboveExactCutSet, node.isSuccessorOfExactCutSet);
+            return String.format("%s - ub: %d - type: %s - abov: %s - mark:  %s", state, ub, node.type, node.isAboveExactCutSet, node.isMarked);
         }
     }
 
@@ -296,7 +291,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             // change the layer focus: what was previously the next layer is now
             // becoming the current layer
             this.prevLayer.clear();
-            System.out.println(currentLayer + " initial depth: " + depth + " compilation type "+ input.getCompilationType() + " next layer " + nextLayer.keySet() + " next variable " + nextVar + " variables " + variables);
             for (NodeSubProblem<T> n : this.currentLayer) {
                 this.prevLayer.put(n.node, n);
             }
@@ -312,7 +306,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
-//            System.out.println(nextLayer.keySet() + " --> bbb " + depth + " --> " + input.getCompilationType() + " ---> " + input.getCutSetType() + " ---> " + currentLayer);
 
             // prunes the current layer with the current values of the cache
             pruned.clear();
@@ -324,14 +317,11 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                     }
                 }
             }
-
-
             this.currentLayer.removeAll(pruned);
             this.nextLayer.clear();
 
             if (this.currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
-//                System.out.println(" bbb " + depth + " --> " + input.getCompilationType() + " ---> " + input.getCutSetType());
                 return;
             }
 
@@ -370,6 +360,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                             }
                             if (depthLELCutSet == -1) {
                                 depthLELCutSet = depth - 1;
+                                currentCutSet.addAll(prevLayer.values());
                             }
                         }
                         relax(maxWidth, ranking, relax);
@@ -379,6 +370,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                         break;
                 }
             }
+
 
             for (NodeSubProblem<T> n : this.currentLayer) {
                 int lb = input.getBestLB();
@@ -405,20 +397,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                 }
             }
 
-            // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
-//            if (input.getCutSetType() == CutSetType.Frontier && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
-//                for (NodeSubProblem<T> n : this.currentLayer) {
-//                    if (n.node.getNodeType() == NodeType.RELAXED) {
-//                        for (Edge e : n.node.edges) {
-//                            Node origin = e.origin;
-//                            if (origin.getNodeType() == NodeType.EXACT) {
-//                                currentCutSet.add(prevLayer.get(origin));
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
             // Compute the list of sub-problems per layer with the current layer
             // Initialize the list of thresholds per layer to their default values
 
@@ -430,9 +408,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                     nodeSubProblemPerLayer.get(depth).add(n);
                     layersThresholds.get(depth).add(new Threshold(Integer.MAX_VALUE, false));
                 }
-//                System.out.println(currentLayer + " ----> depth " + depth);
             }
-
             depthOfCache += 1;
             depth += 1;
         }
@@ -462,11 +438,10 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             // extends the maks for the frontier cutset
             if (input.getCutSetType() == CutSetType.Frontier) {
                 for (NodeSubProblem<T> n : cutset) {
-                    if (n.node.isMarked) {
-                        n.node.isInExactCutSet = true;
+                    if (n.node.isInExactCutSet) {
                         for (Edge e : n.node.edges) {
                             Node origin = e.origin;
-                            if (origin.getNodeType() == NodeType.EXACT && origin.isMarked && origin.isAboveExactCutSet && !origin.isInExactCutSet) {
+                            if (origin.getNodeType() == NodeType.EXACT && origin.isMarked && !origin.isInExactCutSet) {
                                 origin.isAboveExactCutSet = true;
                             }
                         }
@@ -475,10 +450,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             }
             // compute and update the threshold of the global cache following the current relaxed DD
             computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb, input.getCutSetType());
-            for (int u = 0; u < listDepths.size(); u++) {
-                System.out.println(nodeSubProblemPerLayer.get(u) + " ---> " + listDepths.get(u));
-            }
-            System.out.println(cutset);
+
         }
     }
 
