@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PDPTests {
 
-    static Stream<PDPInstance> dataProvider2() throws IOException {
+    static Stream<PDPInstance> dataProvider2() {
         return IntStream.range(0, 100).boxed().map(i ->
                 PDPMain.genInstance(5+i%14, i%3, new Random(i)));
     }
