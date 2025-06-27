@@ -238,7 +238,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
         final VariableHeuristic<T> var = input.getVariableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
         final SimpleDominanceChecker<T, K> dominance = input.getDominance();
-        final int bestLb = input.getMaxWidth();
 
         final Set<Integer> variables = varSet(input);
         //
@@ -254,7 +253,6 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
             }
 
             this.currentLayer.clear();
-
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
@@ -328,6 +326,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                         branchOn(n, decision, problem);
                     }
                 }
+                // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
                 if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
                         && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
                     for (Edge e : n.node.edges) {
@@ -338,7 +337,9 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                     }
                 }
             }
-
+            if (input.getCompilationType() == CompilationType.Relaxed) {
+                System.out.println(currentLayer + " ---> depth " + depth);
+            }
             depth += 1;
         }
         if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
@@ -440,7 +441,7 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
-        this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
+        currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
 
     /**
@@ -453,8 +454,8 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
-        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
+        final List<NodeSubProblem<T>> keep = currentLayer.subList(0, maxWidth - 1);
+        final List<NodeSubProblem<T>> merge = currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?

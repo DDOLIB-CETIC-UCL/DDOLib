@@ -50,6 +50,7 @@ public class SimpleDominanceChecker<T,K> {
      * @param val the objective value of the state
      * @return true if the state is dominated, false otherwise
      */
+
     public boolean updateDominance(T state, int depth, int val) {
         Map<K, TreeSet<ValueState>> front = fronts[depth];
         K key = dominance.getKey(state);
