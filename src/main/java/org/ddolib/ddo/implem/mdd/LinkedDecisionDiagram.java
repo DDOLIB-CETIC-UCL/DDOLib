@@ -546,21 +546,33 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return farthest;
     }
 
-    private void relaxGHP(final int maxWidth, final StateDistance<T> distance, final Relaxation<T> relax, final Random rnd) {
-        Collections.shuffle(currentLayer, rnd);
+    private class ClusterNode {
+        public double avgDistance; // average distance of nodes in the cluster with the pivot
+        public List<NodeSubProblem<T>> cluster;
 
-        System.out.println("*************");
+        ClusterNode(double meanDistance, List<NodeSubProblem<T>> cluster) {
+            this.avgDistance = meanDistance;
+            this.cluster = cluster;
+        }
+    }
+
+    private void relaxGHP(final int maxWidth, final StateDistance<T> distance, final Relaxation<T> relax, final Random rnd) {
+        // Collections.shuffle(currentLayer, rnd);
+
+        /*System.out.println("*************");
         System.out.print("Layer (" + currentLayer.size() + "): ");
         for (NodeSubProblem<T> node : currentLayer) {
             System.out.print(node.state + ", ");
         }
-        System.out.println();
+        System.out.println();*/
+        int initSize = currentLayer.size();
+        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>((a, b) -> Double.compare(b.avgDistance, a.avgDistance));
+        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(currentLayer)));
 
-        PriorityQueue<List<NodeSubProblem<T>>> pq = new PriorityQueue<>((a, b) -> b.size() - a.size());
-        pq.add(new ArrayList<>(currentLayer));
 
-        while (pq.size() < maxWidth) {
-            List<NodeSubProblem<T>> current = pq.poll();
+        while (pqClusters.size() < maxWidth) {
+            ClusterNode nodeCurrent = pqClusters.poll();
+            List<NodeSubProblem<T>> current = nodeCurrent.cluster;
             assert current != null;
 
             // Select the two pivots as the farthest nodes in the layer
@@ -573,9 +585,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 tmp = selectFarthest(pivotA, current, distance);
                 if (tmp == pivotB) break;
                 pivotB = tmp;
-            }
-            System.out.println("pivot A: " + pivotA.state);
-            System.out.println("pivot B: " + pivotB.state);*/
+            }*/
+
+            // System.out.println("pivot A: " + pivotA.state);
+            // System.out.println("pivot B: " + pivotB.state);
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
             NodeSubProblem<T> pivotB = current.get(1);
@@ -583,40 +596,75 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
+            double avgDistA = 0;
+            double avgDistB = 0;
+            double maxDistA = 0;
+            double maxDistB = 0;
+
             for (NodeSubProblem<T> node : current) {
                 double distWithA = distance.distance(node.state, pivotA.state);
                 double distWithB = distance.distance(node.state, pivotB.state);
 
                 if (distWithA < distWithB) {
+                    avgDistA *= newClusterA.size();
+                    avgDistA += distWithA;
+                    avgDistA = avgDistA / (newClusterA.size() + 1);
+                    maxDistA = Math.max(distWithA, maxDistA);
                     newClusterA.add(node);
                 } else {
+                    avgDistB *= newClusterB.size();
+                    avgDistB += distWithB;
+                    avgDistB = avgDistB / (newClusterB.size() + 1);
+                    maxDistB = Math.max(distWithB, maxDistB);
                     newClusterB.add(node);
                 }
             }
 
-            pq.add(newClusterA);
-            pq.add(newClusterB);
+            pqClusters.add(new ClusterNode(avgDistA, newClusterA));
+            pqClusters.add(new ClusterNode(avgDistB, newClusterB));
         }
 
-        List<NodeSubProblem<T>>[] clusters = new List[pq.size()];
+        List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
         int index = 0;
-        for (List<NodeSubProblem<T>> cluster : pq) {
-            for (NodeSubProblem<T> node : cluster) {
+        for (ClusterNode cluster : pqClusters) {
+            /*for (NodeSubProblem<T> node : cluster) {
                 System.out.print(node.state + ", ");
             }
-            System.out.println();
-            clusters[index] = cluster;
+            System.out.println();*/
+            clusters[index] = cluster.cluster;
             index++;
         }
+
+        /*try {
+            FileWriter writer = new FileWriter("tmp/distributionKP/KP1_GHP_MDP");
+            for (int i = 0; i < clusters.length; i++) {
+                for (NodeSubProblem<T> node: clusters[i]) {
+                    writer.write(node.state + " " + i + "\n");
+                }
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            System.exit(-1);
+        }
+        System.exit(0);*/
+        /*Set<NodeSubProblem<T>> mergedClusters = new HashSet<>();
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            mergedClusters.addAll(cluster);
+        }
+
+        Set<NodeSubProblem<T>> layerSet = new HashSet<>(currentLayer);
+        assert mergedClusters == layerSet;
+        assert initSize == mergedClusters.size();*/
 
         currentLayer.clear();
         mergeClusters(clusters, relax);
 
-        System.out.print("Layer (" + currentLayer.size() + "): ");
+        /*System.out.print("Layer (" + currentLayer.size() + "): ");
         for (NodeSubProblem<T> node : currentLayer) {
             System.out.print(node.state + ", ");
         }
-        System.out.println();
+        System.out.println();*/
 
     }
 
@@ -671,27 +719,32 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     private void relaxKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Relaxation<T> relax, final Random rnd) {
-        int maxIterations = 5;
+        int maxIterations = 50;
         int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
+
+
+        // each lines correspond to the coordinates of one centroide
+        double[][] centroides = new double[maxWidth][dimensions]; // O(W)
+
+        // Select random nodes to be the first centroides
         Collections.shuffle(currentLayer, rnd);
-        double[][] centroides = new double[maxWidth][dimensions];
-        for (int i = 0 ; i < maxWidth; i++) {
-            NodeSubProblem<T> node = currentLayer.get(i);
-            double[] nodeCoordinates = coordinates.getCoordinates(node.state);
-            System.arraycopy(nodeCoordinates, 0, centroides[i], 0, dimensions);
+        for (int i = 0 ; i < maxWidth; i++) { // O(W)
+            NodeSubProblem<T> node = currentLayer.get(i); // O(1)
+            double[] nodeCoordinates = coordinates.getCoordinates(node.state);// O(d)
+            System.arraycopy(nodeCoordinates, 0, centroides[i], 0, dimensions); // O(d) for KP
         }
 
         int[] assignments = new int[currentLayer.size()];
 
-        for(int iter = 0; iter < maxIterations; iter++) {
+        for(int iter = 0; iter < maxIterations; iter++) { // 50 iterations
             boolean changed = false;
 
             // Assign each node to its closest centroide
-            for (int i = 0; i < currentLayer.size(); i++) {
+            for (int i = 0; i < currentLayer.size(); i++) { // O(n)
                 NodeSubProblem<T> node = currentLayer.get(i);
                 double minDistance = Double.MAX_VALUE;
-                for (int j = 0; j < centroides.length; j++) {
-                    double distance = euclideanDistance(coordinates.getCoordinates(node.state), centroides[j]);
+                for (int j = 0; j < centroides.length; j++) { // O(W)
+                    double distance = euclideanDistance(coordinates.getCoordinates(node.state), centroides[j]); // O(d)
                     if (distance < minDistance) {
                         minDistance = distance;
                         assignments[i] = j;
@@ -704,23 +757,23 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             int[] clustersSize = new int[maxWidth];
 
-            // Update the centroides
-            for (double[] centroideCoord: centroides) {
-                Arrays.fill(centroideCoord, 0);
+            // Update the centroides by computing the mean coordinates of each node in the cluster
+            for (double[] centroideCoord: centroides) { // O(w)
+                Arrays.fill(centroideCoord, 0); // O(d)
             }
 
-            for (int i = 0; i < assignments.length; i++) {
+            for (int i = 0; i < assignments.length; i++) { // O(n)
                 int cluster = assignments[i];
-                double[] point = coordinates.getCoordinates(currentLayer.get(i).state);
-                for (int j = 0; j < dimensions; j++) {
+                double[] point = coordinates.getCoordinates(currentLayer.get(i).state); // O(d)
+                for (int j = 0; j < dimensions; j++) { // O(d)
                     centroides[cluster][j] += point[j];
                 }
                 clustersSize[cluster]++;
             }
 
-            for (int cluster = 0; cluster < maxWidth; cluster++) {
+            for (int cluster = 0; cluster < maxWidth; cluster++) { // O(W)
                 if (clustersSize[cluster] == 0) continue;
-                for (int d = 0; d < dimensions; d++) {
+                for (int d = 0; d < dimensions; d++) { // O(d)
                     centroides[cluster][d] /= clustersSize[cluster];
                 }
             }
@@ -733,6 +786,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         for (int node = 0; node < currentLayer.size(); node++) {
             clusters[assignments[node]].add(currentLayer.get(node));
         }
+
+        /*try {
+            FileWriter writer = new FileWriter("tmp/distributionKP/KP1_Kmeans");
+            for (int i = 0; i < clusters.length; i++) {
+                for (NodeSubProblem<T> node: clusters[i]) {
+                    writer.write(node.state + " " + i + "\n");
+                }
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            System.exit(-1);
+        }
+        System.exit(0);*/
+
         currentLayer.clear();
         mergeClusters(clusters, relax);
     }

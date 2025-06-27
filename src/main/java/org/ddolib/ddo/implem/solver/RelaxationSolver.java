@@ -161,7 +161,7 @@ public final class RelaxationSolver<T> implements Solver {
     private void maybeUpdateBest() {
         Optional<Integer> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
-            System.out.println("New Best Value: " + ddval.get());
+            // System.out.println("New Best Value: " + ddval.get());
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
         }

@@ -196,13 +196,16 @@ public final class Knapsack {
     }
 
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
+        final String instance = "data/Knapsack/Nafar_2024/KP_1.txt";
         final KnapsackProblem problem = readInstance(instance);
         final KnapsackRelax relax = new KnapsackRelax(problem);
         final KnapsackRanking ranking = new KnapsackRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
+        final FixedWidth<Integer> width = new FixedWidth<>(100);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-
+        final StateDistance<Integer> distance = new KnapsackDistance();
+        final StateCoordinates<Integer> coord = new KnapsackCoordinates();
+        final int seed = 54646;
+        final RelaxationType relaxationType = RelaxationType.GHP;
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
         /*final Solver solver = new ParallelSolver<Integer>(
@@ -214,13 +217,17 @@ public final class Knapsack {
                 width,
                 frontier);*/
 
-        final Solver solver = new RelaxationSolver<Integer>(
+        Solver solver = new RelaxationSolver<>(
+                relaxationType,
                 problem,
                 relax,
                 varh,
                 ranking,
+                distance,
+                coord,
                 width,
-                frontier
+                frontier,
+                seed
         );
 
 

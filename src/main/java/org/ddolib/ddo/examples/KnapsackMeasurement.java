@@ -30,21 +30,26 @@ public class KnapsackMeasurement {
         FilenameFilter filter = (dir1, name) -> name.endsWith(".txt");
         File[] instances = dir.listFiles(filter);
 
-        String header = "Name;Solver;Seed;MaxWidth;Model;VarHeuristic;MergeStrategy;DistanceFunction;CoordFunction;Time(s);Objective";
+        String header = "Name;Solver;Seed;MaxWidth;Model;VarHeuristic;MergeStrategy;DistanceFunction;CoordFunction;Time(s);Objective;Optimal\n";
         FileWriter writer = new FileWriter("tmp/knapsackStats.csv", false);
+        writer.write(header);
 
-        RelaxationType[] relaxationTypes = new RelaxationType[] {
-                RelaxationType.Cost,
-                RelaxationType.Kmeans,
-                RelaxationType.KClosest
+        RelaxationType[] rtTested = new RelaxationType[] {
+                // RelaxationType.Cost,
+                // RelaxationType.Kmeans,
+                // RelaxationType.KClosest,
+                RelaxationType.GHP
         };
 
         Map<RelaxationType, String> rtMap = new HashMap<>();
         rtMap.put(RelaxationType.Cost, "Cost");
         rtMap.put(RelaxationType.Kmeans, "KMeans");
         rtMap.put(RelaxationType.KClosest, "KClosest");
+        rtMap.put(RelaxationType.GHP, "GHP");
 
+        // for (File instance : List.of(new File("./data/Knapsack/Nafar_2024/KP_45.txt"))) {
         for (File instance : instances) {
+            System.out.println(instance.getName());
             final KnapsackProblem problem = readInstance(instance.getPath());
             final KnapsackRelax relax = new KnapsackRelax(problem);
             final KnapsackRanking ranking = new KnapsackRanking();
@@ -56,11 +61,11 @@ public class KnapsackMeasurement {
             FixedWidth<Integer> width;
 
             StringBuilder csvString;
-            for (RelaxationType relaxationType : relaxationTypes) {
+            for (RelaxationType relaxationType : rtTested) {
                 for (int maxWidth = 1; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.1))) {
-                    for (int seed: List.of(54646, 8797, 132343)) {
+                    for (int seed: List.of(132343)) { //, 8797, 132343, 54646)) {
                         csvString = new StringBuilder();
-                        System.out.print(maxWidth + ", ");
+                        // System.out.print(maxWidth + ", ");
                         width = new FixedWidth<>(maxWidth);
                         Solver solver = new RelaxationSolver<>(
                                 relaxationType,
@@ -77,7 +82,7 @@ public class KnapsackMeasurement {
                         long start = System.currentTimeMillis();
                         SearchStatistics stats = solver.maximize();
                         double duration = (System.currentTimeMillis() - start) / 1000.0;
-                        System.out.println(duration);
+                        // System.out.println(duration);
 
                         csvString.append(instance.getName()).append(";");
                         csvString.append("relax").append(";");
@@ -89,7 +94,9 @@ public class KnapsackMeasurement {
                         csvString.append("capaDiff").append(";");
                         csvString.append("capacity").append(";");
                         csvString.append(duration).append(";");
-                        csvString.append(solver.bestValue().get()).append("\n");
+                        csvString.append(solver.bestValue().get()).append(";");
+                        csvString.append(problem.optimal).append("\n");
+
 
                         writer.write(csvString.toString());
                     }
@@ -97,6 +104,7 @@ public class KnapsackMeasurement {
             }
 
         }
+        writer.close();
     }
 
 }
