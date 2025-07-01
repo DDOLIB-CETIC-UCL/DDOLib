@@ -6,6 +6,10 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -90,7 +94,8 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+        long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
@@ -107,17 +112,24 @@ public final class ExactSolver<T, K> implements Solver {
                 Integer.MAX_VALUE,
                 dominance,
                 bestLB,
-                CutSetType.LastExactLayer
+                CutSetType.LastExactLayer,
+                exportAsDot
         );
         mdd.compile(compilation);
         maybeUpdateBest(verbosityLevel);
+        if (exportAsDot) {
+            String problemName = problem.getClass().getSimpleName().replace("Problem", "");
+            exportDot(mdd.exportAsDot(),
+                    Paths.get("output", problemName + "_exact.dot").toString());
+        }
 
-        return new SearchStatistics(1, 1);
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(1, 1, end - start);
     }
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(0, false);
     }
 
     @Override
@@ -142,6 +154,14 @@ public final class ExactSolver<T, K> implements Solver {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
             if (verbosityLevel > 2) System.out.println("new best " + bestLB);
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
