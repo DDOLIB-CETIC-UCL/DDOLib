@@ -1,10 +1,6 @@
 package org.ddolib.ddo.examples.tsptw;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -30,11 +26,11 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class TSPTWMain {
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW"} in your terminal to execute
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain"} in your terminal to execute
      * default instance. <br>
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTW -Dexec.args="<your file> <maximum
-     * width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain -Dexec.args="<your file>
+     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
      * <p>
      * Given Data files comes from
      * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
@@ -52,7 +48,7 @@ public class TSPTWMain {
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
         final SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
                 new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
 
         final Solver solver = sequentialSolver(

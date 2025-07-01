@@ -10,21 +10,16 @@ import java.util.Set;
 public interface Solver {
     /**
      * Tries to maximize the objective value of the problem which is being solved
-     *
-     * @param verbosityLevel <ul>
-     *                       <li>Level 0: nothing is printed.</li>
-     *                       <li> Level 1: The iteration number, the size of the frontier and the current objective
-     *                       value are printed. </li>
-     *                       <li> Level 2: In addition, the root node of the current exploration is printed.</li>
-     *                       </ul>
-     * @param exportAsDot    Whether we want to export the first explored restricted and relaxed mdd. Tooltips are
-     *                       configured to give additional information on nodes and edges.
+     *@param verbosityLevel
+     *            0: no verbositie
+     *            1: display newBest whenever there is a newBest
+     *            2: 1 + statistics about the front every half a second (or so)
+     *            3: 2 + every developed sub-problem
+     *            4: 3 + details about the developed state
+     * @return statistics about the search
      */
-    SearchStatistics maximize(int verbosityLevel, boolean exportAsDot);
-
-    /**
-     * Tries to maximize the objective value of the problem which is being solved
-     */
+    SearchStatistics maximize(int verbosityLevel);
+    /** Tries to maximize the objective value of the problem which is being solved */
     SearchStatistics maximize();
 
     /**

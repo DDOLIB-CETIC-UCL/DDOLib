@@ -1,24 +1,24 @@
-package org.ddolib.ddo.examples.tsp;
-
+package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.examples.tsp.TSPProblem;
+import org.ddolib.ddo.examples.tsp.TSPState;
 
 import java.util.*;
 
-public class TSPRelax implements Relaxation<TSPState> {
+class PDPRelax implements Relaxation<PDPState> {
+    private final PDPProblem problem;
+    private final double [] leastIncidentEdge;
 
-    private final TSPProblem problem;
-    private final double[] leastIncidentEdge;
-
-    public TSPRelax(TSPProblem problem) {
+    public PDPRelax(PDPProblem problem) {
         this.problem = problem;
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.MAX_VALUE;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
-                    min = Math.min(min, problem.distanceMatrix[i][j]);
+                    min = Math.min(min, problem.instance.distanceMatrix[i][j]);
                 }
             }
             leastIncidentEdge[i] = min;
@@ -26,27 +26,31 @@ public class TSPRelax implements Relaxation<TSPState> {
     }
 
     @Override
-    public TSPState mergeStates(final Iterator<TSPState> states) {
-        BitSet toVisit = new BitSet(problem.n);
+    public PDPState mergeStates(final Iterator<PDPState> states) {
+        //NB: the current node is normally the same in all states
+        BitSet openToVisit = new BitSet(problem.n);
         BitSet current = new BitSet(problem.n);
+        BitSet allToVisit = new BitSet(problem.n);
 
         while (states.hasNext()) {
-            TSPState state = states.next();
-            toVisit.or(state.toVisit); // union
-            current.or(state.current); // union
+            PDPState state = states.next();
+            //take the union; loose precision here
+            openToVisit.or(state.openToVisit);
+            allToVisit.or(state.allToVisit);
+            current.or(state.current);
         }
-
-        return new TSPState(current, toVisit);
+        //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
+        return new PDPState(current, openToVisit, allToVisit);
     }
 
     @Override
-    public double relaxEdge(TSPState from, TSPState to, TSPState merged, Decision d, double cost) {
+    public double relaxEdge(PDPState from, PDPState to, PDPState merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
-        BitSet toVisit = state.toVisit;
+    public double fastUpperBound(PDPState state, Set<Integer> unassignedVariables) {
+        BitSet toVisit = state.allToVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(unassignedVariables.size());
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
@@ -65,4 +69,3 @@ public class TSPRelax implements Relaxation<TSPState> {
         return -lb;
     }
 }
-

@@ -135,7 +135,8 @@ public final class SequentialSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
+            final Frontier<T> frontier,
+            final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -156,25 +157,43 @@ public final class SequentialSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+        long start = System.currentTimeMillis();
+        int printInterval = 500; //ms; half a second
+        long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
         while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
-                    "bestObj:" + bestLB);
-
             nbIter++;
+            if(verbosityLevel >= 2){
+                long now = System.currentTimeMillis();
+                if(now >= nextPrint) {
+                    double bestInFrontier = frontier.bestInFrontier();
+                    double gap = 100*(bestInFrontier - bestLB)/bestLB;
+
+                    System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
+                            nbIter, frontier.size(), bestLB, bestInFrontier, gap);
+
+                    nextPrint = now + printInterval;
+                }
+            }
+
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             double nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 2)
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            if (verbosityLevel >= 1) System.out.println("\n");
+            if (verbosityLevel >= 3){
+                System.out.println("it:" + nbIter + "\t" + sub.statistics());
+                if(verbosityLevel >= 4) {
+                    System.out.println("\t" + sub.getState());
+                }
+            }
+
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize);
+                long end = System.currentTimeMillis();
+                return new SearchStatistics(nbIter, queueMaxSize, end-start);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -233,7 +252,8 @@ public final class SequentialSolver<T, K> implements Solver {
                 enqueueCutset();
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize);
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(nbIter, queueMaxSize,end-start);
     }
 
     @Override
@@ -271,7 +291,7 @@ public final class SequentialSolver<T, K> implements Solver {
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
-            if (verbosityLevel > 2) System.out.println("new best " + bestLB);
+            if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
         } else if (exportAsDot) {
             mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
