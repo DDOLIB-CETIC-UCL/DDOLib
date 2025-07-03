@@ -159,11 +159,11 @@ public final class SequentialSolverCache<K,T> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(0, true);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;

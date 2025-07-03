@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -39,13 +40,24 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
 
-    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    /**
+     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
+     */
     private boolean exact = true;
 
     /**
      * The best node in the terminal layer (if it exists at all)
      */
     private Node best = null;
+
+    /**
+     * Used to build the .dot file displaying the compiled mdd.
+     */
+    private StringBuilder dotStr = new StringBuilder();
+    /**
+     * Given the hashcode of an edge, save its .dot representation
+     */
+    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     // --- UTILITY CLASSES -----------------------------------------------
 
@@ -95,6 +107,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * set the type of the node when different to exact type
+         *
          * @param nodeType
          */
         public void setNodeType(final NodeType nodeType) {
@@ -103,13 +116,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * get the type of the node
+         *
          * @return NodeType
          */
-        public NodeType getNodeType() {return this.type;}
+        public NodeType getNodeType() {
+            return this.type;
+        }
 
         @Override
         public String toString() {
-            return String.format("Node: value:%s - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -217,7 +233,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %s", state, ub);
+            DecimalFormat df = new DecimalFormat("#.##########");
+            return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
         }
     }
 
@@ -233,6 +250,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
+        dotStr.append("digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
+
         // proceed to compilation
         final Problem<T> problem = input.getProblem();
         final Relaxation<T> relax = input.getRelaxation();
@@ -241,9 +260,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final DominanceChecker<T, K> dominance = input.getDominance();
 
         final Set<Integer> variables = varSet(input);
-
+        //
         int depth = 0;
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
+
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
@@ -252,8 +272,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (NodeSubProblem<T> n : this.currentLayer) {
                 this.prevLayer.put(n.node, n);
             }
-
             this.currentLayer.clear();
+
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
@@ -264,8 +284,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
-
-
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {
@@ -315,7 +333,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                double lb = input.getBestLB();
+                if (input.getExportAsDot()) {
+                    dotStr.append(generateDotStr(n, false));
+                }
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -327,7 +347,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
                 if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
                         && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
                     for (Edge e : n.node.edges) {
@@ -338,14 +357,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     }
                 }
             }
+
             depth += 1;
         }
         if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
-        if (input.getCutSetType() == CutSetType.Frontier)
-            System.out.println("Frontier1 " + cutset);
-        else System.out.println("LEL1 : " + cutset);
+
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -353,6 +371,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 best = n;
             }
         }
+
+        if (input.getExportAsDot()) {
+            for (Entry<T, Node> entry : nextLayer.entrySet()) {
+                T state = entry.getKey();
+                Node node = entry.getValue();
+                NodeSubProblem<T> subProblem = new NodeSubProblem<>(state, best.value, node);
+                dotStr.append(generateDotStr(subProblem, true));
+            }
+        }
+
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
@@ -386,6 +414,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
+                updateBestEdgeColor(eb.hashCode());
                 eb = eb.origin == null ? null : eb.origin.best;
             }
             return Optional.of(sol);
@@ -397,14 +426,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
 
-    public boolean inExactCutset(NodeSubProblem<T> problem) {
-        while (cutset.iterator().hasNext()) {
-            NodeSubProblem<T> node = cutset.iterator().next();
-            if (node == problem) {
-                return true;
-            }
+    @Override
+    public String exportAsDot() {
+        for (String e : edgesDotStr.values()) {
+            dotStr.append(e);
+            dotStr.append("];\n");
         }
-        return false;
+        dotStr.append("}");
+        return dotStr.toString();
     }
 
     // --- UTILITY METHODS -----------------------------------------------
@@ -431,6 +460,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         cutset.clear();
         exact = true;
         best = null;
+        dotStr = new StringBuilder();
+        edgesDotStr = new HashMap<>();
     }
 
     /**
@@ -442,7 +473,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
-        currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
+        this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
 
     /**
@@ -455,8 +486,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
-        final List<NodeSubProblem<T>> keep = currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = currentLayer.subList(maxWidth - 1, currentLayer.size());
+
+        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?
@@ -580,20 +612,69 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
+        DecimalFormat df = new DecimalFormat("#.##########");
 
+        String nodeStr = String.format(
+                "\"%s\nub: %s - value: %s\"",
+                node.state,
+                df.format(node.ub),
+                df.format(node.node.value)
+        );
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.node.hashCode());
+        sb.append(" [label=").append(nodeStr);
+        if (node.node.getNodeType() == NodeType.RELAXED) {
+            sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        } else {
+            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
+        }
+        if (lastLayer) {
+            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
+            sb.append(", tooltip=\"Terminal node\"");
+        }
+        sb.append("];\n");
+
+        for (Edge e : node.node.edges) {
+            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
+                    " [label=" + df.format(e.weight) +
+                    ", tooltip=\"" + e.decision.toString() + "\"";
+            edgesDotStr.put(e.hashCode(), edgeStr);
+        }
+        return sb;
+    }
+
+    /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     */
+    private void updateBestEdgeColor(int edgeHash) {
+        String edgeStr = edgesDotStr.get(edgeHash);
+        if (edgeStr != null) {
+            edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
+            edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
 
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static final double saturatedAdd(double a, double b) {
+    private static double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
             return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;
         }
         return sum;
     }
-
-
 
     /**
      * An iterator that transforms the inner subroblems into actual subroblems

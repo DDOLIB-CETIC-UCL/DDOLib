@@ -15,15 +15,15 @@ public final class CompilationInput<T, K> {
      */
     final CompilationType compType;
     /**
-     * A reference to the original problem we try to maximize
+     * A reference to the original problem to solve
      */
     final Problem<T> problem;
     /**
-     * The relaxation which we use to merge nodes in a relaxed dd
+     * The relaxation used to merge nodes in a relaxed mdd
      */
     final Relaxation<T> relaxation;
     /**
-     * The variable heuristic which is used to decide the variable to branch on next
+     * The variable heuristic used to decide the variable to branch on next
      */
     final VariableHeuristic<T> var;
     /**
@@ -35,12 +35,9 @@ public final class CompilationInput<T, K> {
      */
     final SubProblem<T> residual;
     /**
-     * What is the maximum width of the mdd ?
+     * The maximum width of the mdd
      */
     final int maxWidth;
-    /**
-     * The best known lower bound at the time when the dd is being compiled
-     */
     /**
      * The dominance checker used to prune the search space
      */
@@ -50,21 +47,30 @@ public final class CompilationInput<T, K> {
      */
     final double bestLB;
 
-    /** The type of cut set to be used in the compilation */
+    /**
+     * The type of cut set to be used in the compilation
+     */
     final CutSetType cutSetType;
+
+    /**
+     * Whether .dot file must be written during the compilation.
+     */
+    final boolean exportAsDot;
 
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
      *
-     * @param compType   compilation type
-     * @param problem    problem to solve
-     * @param relaxation a relaxation
-     * @param var
-     * @param ranking
-     * @param residual
-     * @param maxWidth
-     * @param dominance
-     * @param bestLB
+     * @param compType    How is the mdd being compiled ?
+     * @param problem     A reference to the original problem to solve.
+     * @param relaxation  The relaxation used to merge nodes in a relaxed mdd.
+     * @param var         The variable heuristic used to decide the variable to branch on next.
+     * @param ranking     The state ranking heuristic to choose the nodes to keep and those to discard.
+     * @param residual    The subproblem whose state space must be explored.
+     * @param maxWidth    The maximum width of the mdd.
+     * @param dominance   The dominance checker used to prune the search space.
+     * @param bestLB      The best known lower bound at the time when the dd is being compiled.
+     * @param cutSetType  The type of cut set used in the compilation.
+     * @param exportAsDot Whether .dot file must be written during the compilation.
      */
     public CompilationInput(
             final CompilationType compType,
@@ -76,7 +82,8 @@ public final class CompilationInput<T, K> {
             final int maxWidth,
             final DominanceChecker<T, K> dominance,
             final double bestLB,
-            final CutSetType cutSetType
+            final CutSetType cutSetType,
+            final boolean exportAsDot
     ) {
         this.compType = compType;
         this.problem = problem;
@@ -88,6 +95,7 @@ public final class CompilationInput<T, K> {
         this.dominance = dominance;
         this.bestLB = bestLB;
         this.cutSetType = cutSetType;
+        this.exportAsDot = exportAsDot;
     }
 
     /**
@@ -112,7 +120,7 @@ public final class CompilationInput<T, K> {
     }
 
     /**
-     * @return an heuristic to pick the least promising nodes
+     * @return a heuristic to pick the least promising nodes
      */
     public VariableHeuristic<T> getVariableHeuristic() {
         return var;
@@ -158,6 +166,13 @@ public final class CompilationInput<T, K> {
      */
     public CutSetType getCutSetType() {
         return cutSetType;
+    }
+
+    /**
+     * @return Whether .dot file must be written during the compilation.
+     */
+    public boolean getExportAsDot() {
+        return exportAsDot;
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.*;
 public class TSPRelax implements Relaxation<TSPState> {
 
     private final TSPProblem problem;
-    private final double [] leastIncidentEdge;
+    private final double[] leastIncidentEdge;
 
     public TSPRelax(TSPProblem problem) {
         this.problem = problem;

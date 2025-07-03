@@ -6,14 +6,14 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * The Knapsack problem is a classic optimization problem
@@ -29,30 +29,32 @@ import java.util.Arrays;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance =  "data/Knapsack/instance_n100_c500_10_5_10_5_1"; //
+        final String instance = "data/Knapsack/simple.txt";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
+                problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final SequentialSolver<Integer, Integer> solver = Solvers.sequentialSolver(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                dominance);
+                dominance
+        );
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.maximize(0, true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        System.out.println("Search statistics:"+stats);
+        System.out.println("Search statistics:" + stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {
@@ -64,7 +66,7 @@ public class KSMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %s%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
