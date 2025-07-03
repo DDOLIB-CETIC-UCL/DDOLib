@@ -2,10 +2,12 @@ package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,7 +36,7 @@ public class GRMain {
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver(
+        final SequentialSolver<GRState, Integer> solver =  Solvers.sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -58,7 +60,7 @@ public class GRMain {
                 .get();
 
         System.out.println(String.format("Duration : %.3f", duration));
-        System.out.println(String.format("Objective: %d", solver.bestValue().get()));
+        System.out.println(String.format("Objective: %s", solver.bestValue().get()));
         System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
     }
 }

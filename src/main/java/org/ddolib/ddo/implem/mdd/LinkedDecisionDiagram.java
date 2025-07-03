@@ -109,7 +109,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%s - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -217,7 +217,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %d", state, ub);
+            return String.format("%s - ub: %s", state, ub);
         }
     }
 
@@ -343,6 +343,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
+        if (input.getCutSetType() == CutSetType.Frontier)
+            System.out.println("Frontier1 " + cutset);
+        else System.out.println("LEL1 : " + cutset);
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -590,15 +593,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return sum;
     }
 
-    /**
-     * Performs a saturated difference (no overflow)
-     */
-    private static final int saturatedDiff(int a, int b) {
-        long diff = (long) a + (long) b;
-        diff = diff >= Integer.MAX_VALUE ? Integer.MAX_VALUE : diff;
-        diff = diff <= Integer.MIN_VALUE ? Integer.MIN_VALUE : diff;
-        return (int) diff;
-    }
+
 
     /**
      * An iterator that transforms the inner subroblems into actual subroblems

@@ -31,8 +31,8 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     @Override
-    public int initialValue() {
-        return 0;
+    public double initialValue() {
+        return 0.0;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     @Override
-    public int transitionCost(Integer state, Decision decision) {
+    public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return values[decision.var()] * decision.val();
     }

@@ -1,9 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;

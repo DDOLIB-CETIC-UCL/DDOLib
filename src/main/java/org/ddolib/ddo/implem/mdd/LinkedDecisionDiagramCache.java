@@ -1,18 +1,13 @@
 package org.ddolib.ddo.implem.mdd;
 
-import org.apache.commons.lang3.concurrent.Computable;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.Map.Entry;
-
-import static org.apache.commons.lang3.ArrayUtils.isSorted;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -63,11 +58,11 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         /**
          * The length of the longest path to this node
          */
-        private int value;
+        private double value;
         /**
          * The length of the longest suffix of this node (bottom part of a local bound)
          */
-        private Integer suffix;
+        private Double suffix;
         /**
          * The edge terminating the longest path to this node
          */
@@ -97,17 +92,12 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
          */
         private boolean isAboveExactCutSet;
 
-        /**
-         * The flag to indicate if a node is an exact successor of an exact cutset
-         */
-        private boolean isSuccessorOfExactCutSet;
-
 
 
         /**
          * Creates a new node
          */
-        public Node(final int value) {
+        public Node(final double value) {
             this.value = value;
             this.suffix = null;
             this.best = null;
@@ -116,7 +106,6 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             this.isMarked = false;
             this.isInExactCutSet = false;
             this.isAboveExactCutSet = false;
-            this.isSuccessorOfExactCutSet = false;
         }
 
         /**
@@ -135,7 +124,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
         @Override
         public String toString() {
-            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%s - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -162,7 +151,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         /**
          * The weight of the arc
          */
-        private int weight;
+        private double weight;
 
         /**
          * Creates a new edge between pairs of nodes
@@ -171,7 +160,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
          * @param d   the decision that was made when traversing this edge
          * @param w   the weight of the edge
          */
-        public Edge(final Node src, final Decision d, final int w) {
+        public Edge(final Node src, final Decision d, final double w) {
             this.origin = src;
             this.decision = d;
             this.weight = w;
@@ -208,12 +197,12 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         /**
          * The upper bound associated with this node (if state were the root)
          */
-        private int ub;
+        private double ub;
 
         /**
          * Creates a new instance
          */
-        public NodeSubProblem(final T state, final int ub, final Node node) {
+        public NodeSubProblem(final T state, final double ub, final Node node) {
             this.state = state;
             this.ub = ub;
             this.node = node;
@@ -232,7 +221,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            int locb = Integer.MIN_VALUE;
+            double locb = Double.MIN_VALUE;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -244,7 +233,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
         @Override
         public String toString() {
-            return String.format("%s - ub: %d - type: %s - abov: %s - mark:  %s", state, ub, node.type, node.isAboveExactCutSet, node.isMarked);
+            return String.format("%s - ub: %s - type: %s - abov: %s - mark:  %s", state, ub, node.type, node.isAboveExactCutSet, node.isMarked);
         }
     }
 
@@ -267,7 +256,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
         final SimpleDominanceChecker<T, K> dominance = input.getDominance();
         final SimpleCache<T> cache = input.getCache();
-        int bestLb = input.getBestLB();
+        double bestLb = input.getBestLB();
 
         final Set<Integer> variables = varSet(input);
 
@@ -302,7 +291,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
                     continue;
                 } else {
-                    int rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -357,10 +346,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                             exact = false;
                             if (input.getCutSetType() == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
-                            }
-                            if (depthLELCutSet == -1) {
-                                depthLELCutSet = depth - 1;
-                                currentCutSet.addAll(prevLayer.values());
+                                if (depthLELCutSet == -1) {
+                                    depthLELCutSet = depth - 1;
+                                }
                             }
                         }
                         relax(maxWidth, ranking, relax);
@@ -373,7 +361,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
 
             for (NodeSubProblem<T> n : this.currentLayer) {
-                int lb = input.getBestLB();
+                double lb = input.getBestLB();
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -412,9 +400,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             depthOfCache += 1;
             depth += 1;
         }
-        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
+        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier)
             cutset.addAll(currentCutSet);
-        }
+
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -427,6 +415,14 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+            if (input.getCutSetType() == CutSetType.Frontier) {
+                for (NodeSubProblem<T> n : currentCutSet) {
+                    if (n.node.isMarked) {
+                        cutset.add(n);
+                    }
+                }
+
+            }
             // marke nodes above the exact CutSet as such for LEL
             for (int i = 0; i < depthLELCutSet; i++) {
                 for (NodeSubProblem<T> n : nodeSubProblemPerLayer.get(i)) {
@@ -461,7 +457,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (best == null) {
             return Optional.empty();
         } else {
@@ -567,9 +563,9 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
             node.ub = Math.max(node.ub, drop.ub);
 
             for (Edge e : drop.node.edges) {
-                int rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
-                int value = saturatedAdd(e.origin.value, rcost);
+                double value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
                 // if there exists an entring arc with relaxed origin, set the merged node to relaxed
                 if (e.origin.getNodeType() == NodeType.RELAXED) {
@@ -602,8 +598,8 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
      */
     private void branchOn(final NodeSubProblem<T> node, final Decision decision, final Problem<T> problem) {
         T state = problem.transition(node.state, decision);
-        int cost = problem.transitionCost(node.state, decision);
-        int value = saturatedAdd(node.node.value, cost);
+        double cost = problem.transitionCost(node.state, decision);
+        double value = saturatedAdd(node.node.value, cost);
 
         // when the origin is relaxed, the destination must be relaxed
         Node n = nextLayer.get(state);
@@ -631,13 +627,14 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
      */
+
     private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
         HashSet<Node> parent = new HashSet<>();
         parent.addAll(nextLayer.values());
 
         for (Node n : parent) {
-            n.suffix = 0;
+            n.suffix = 0.0;
             n.isMarked = true;
         }
 
@@ -669,24 +666,24 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
     /**
      * perform the bottom up traversal of the mdd to compute and update the cache
      */
-    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, int lb, CutSetType cutSetType) {
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
         for (int j = listDepth.size()-1; j >= 0; j--) {
             int depth = listDepth.get(j);
             for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
                 NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
                 if (simpleCache.getLayer(depth).containsKey(sub.state) && simpleCache.getLayer(depth).get(sub.state).isPresent() &&
                         sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
-                    int value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
                     currentCache.get(j).get(i).setValue(value);
                 }
                 else {
                     if (sub.ub <= lb) {
-                        int rub = saturatedDiff(sub.ub, sub.node.value);
-                        int value = saturatedDiff(lb, rub);
+                        double rub = saturatedDiff(sub.ub, sub.node.value);
+                        double value = saturatedDiff(lb, rub);
                         currentCache.get(j).get(i).setValue(value);
                     } else if (sub.node.isInExactCutSet) {
                         if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
-                            int value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
+                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
                             currentCache.get(j).get(i).setValue(value);
                         } else {
                             currentCache.get(j).get(i).setValue(sub.node.value);
@@ -714,7 +711,7 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
                             break;
                         }
                     }
-                    int value = Math.min(currentCache.get(j-1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    double value = Math.min(currentCache.get(j-1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
                     currentCache.get(j-1).get(index).setValue(value);
                 }
             }
@@ -724,21 +721,23 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static final int saturatedAdd(int a, int b) {
-        long sum = (long) a + (long) b;
-        sum = sum >= Integer.MAX_VALUE ? Integer.MAX_VALUE : sum;
-        sum = sum <= Integer.MIN_VALUE ? Integer.MIN_VALUE : sum;
-        return (int) sum;
+    private static final double saturatedAdd(double a, double b) {
+        double sum = a + b;
+        if (Double.isInfinite(sum)) {
+            return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;
+        }
+        return sum;
     }
 
     /**
-     * Performs a saturated difference (no overflow)
+     * Performs a saturated difference (no underflow)
      */
-    private static final int saturatedDiff(int a, int b) {
-        long diff = (long) a - (long) b;
-        diff = diff >= Integer.MAX_VALUE ? Integer.MAX_VALUE : diff;
-        diff = diff <= Integer.MIN_VALUE ? Integer.MIN_VALUE : diff;
-        return (int) diff;
+    private static final double saturatedDiff(double a, double b) {
+        double diff =  a - b;
+        if (Double.isInfinite(diff)) {
+            return diff < 0 ? Double.MIN_VALUE : -Double.MIN_VALUE;
+        }
+        return diff;
     }
 
     /**
@@ -825,11 +824,11 @@ public final class LinkedDecisionDiagramCache<T,K> implements DecisionDiagramCac
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            int cmp = o1.node.value - o2.node.value;
+            double cmp = o1.node.value - o2.node.value;
             if (cmp == 0) {
-                return delegate.compare(o1.state, o2.state);
+                return (int) delegate.compare(o1.state, o2.state);
             } else {
-                return cmp;
+                return (int) cmp;
             }
         }
     }

@@ -38,7 +38,7 @@ public final class CompilationInputCache<T,K> {
     /** The dominance checker used to prune the search space */
     final SimpleDominanceChecker<T,K> dominance;
     /** The best known lower bound at the time when the dd is being compiled */
-    final int bestLB;
+    final double bestLB;
 
     /** The type of cut set to be used in the compilation */
     final CutSetType cutSetType;
@@ -69,7 +69,7 @@ public final class CompilationInputCache<T,K> {
             final int maxWidth,
             final SimpleDominanceChecker<T,K> dominance,
             final SimpleCache<T> cache,
-            final int bestLB,
+            final double bestLB,
             final CutSetType cutSetType
     ) {
         this.compType = compType;
@@ -137,7 +137,7 @@ public final class CompilationInputCache<T,K> {
     /**
      * @return best known lower bound at the time when the dd is being compiled
      */
-    public int getBestLB() {
+    public double getBestLB() {
         return bestLB;
     }
 

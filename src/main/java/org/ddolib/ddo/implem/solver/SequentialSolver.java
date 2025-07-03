@@ -4,7 +4,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.implem.dominance.*;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;

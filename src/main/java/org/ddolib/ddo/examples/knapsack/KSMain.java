@@ -7,6 +7,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,19 +33,19 @@ public class KSMain {
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolver(
+        final SequentialSolver<Integer, Integer> solver = Solvers.sequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                dominance,
-                frontier);
+                frontier,
+                dominance);
 
 
         long start = System.currentTimeMillis();
@@ -63,7 +64,7 @@ public class KSMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 

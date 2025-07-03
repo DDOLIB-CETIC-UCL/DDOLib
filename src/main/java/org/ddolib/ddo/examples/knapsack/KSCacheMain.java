@@ -34,7 +34,7 @@ public class KSCacheMain {
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
         final SimpleCache<Integer> cache = new SimpleCache();
@@ -67,7 +67,7 @@ public class KSCacheMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 

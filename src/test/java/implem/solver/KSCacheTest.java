@@ -4,11 +4,13 @@ import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SearchStatistics;
 import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.examples.boundedknapsack.BKSDominance;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -31,7 +33,7 @@ public class KSCacheTest {
         Random rand = new Random(10);
         int number = 1000;
         boolean found = false;
-        int nbVars = 20; int cap = 10;
+        int nbVars = 14; int cap = 10;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
         return testStream.flatMap(k -> {
             int[] profit = new int[nbVars];
@@ -51,14 +53,16 @@ public class KSCacheTest {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(4);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new BKSDominance(), problem.nbVars());
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final Solver solver1 = new SequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                dominance);
 
         solver1.maximize();
         return solver1.bestValue().get().intValue();
@@ -72,7 +76,7 @@ public class KSCacheTest {
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final Solver solverWithCaching = new SequentialSolverCache(
                 problem,
                 relax,

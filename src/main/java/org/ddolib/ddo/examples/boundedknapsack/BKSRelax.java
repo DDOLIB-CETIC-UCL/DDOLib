@@ -26,12 +26,12 @@ public class BKSRelax implements Relaxation<Integer> {
     }
 
     @Override
-    public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+    public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
         return cost;
     }
 
     @Override
-    public int fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastUpperBound(Integer state, Set<Integer> variables) {
         int rub = 0;
         for (int v : variables) {
             rub += this.problem.quantity[v] * this.problem.values[v];

@@ -22,7 +22,7 @@ public interface DecisionDiagramCache<T,K> {
     /** @return true iff the diagram resulting from the compilation is an exact dd */
     boolean isExact();
     /** @return the value of the best solution in this decision diagram if there is one */
-    Optional<Integer> bestValue();
+    Optional<Double> bestValue();
     /** @return the solution leading to the best solution in this decision diagram (if it exists) */
     Optional<Set<Decision>> bestSolution();
     /** @return an iterator to the nodes of the exact cutset of the problem */

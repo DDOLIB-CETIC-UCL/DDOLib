@@ -86,7 +86,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
     /**
      * This is the value of the best known lower bound.
      */
-    private int bestLB;
+    private double bestLB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
@@ -164,6 +164,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
 
     @Override
     public SearchStatistics maximize(int verbosityLevel) {
+        long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -176,14 +177,15 @@ public final class SequentialSolverCache<K,T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
-            int nodeUB = sub.getUpperBound();
+            double nodeUB = sub.getUpperBound();
 
             if (verbosityLevel >= 2)
                 System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
             if (verbosityLevel >= 1) System.out.println("\n");
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize);
+                long end = System.currentTimeMillis();
+                return new SearchStatistics(nbIter, queueMaxSize, end-start);
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -237,11 +239,12 @@ public final class SequentialSolverCache<K,T> implements Solver {
                 enqueueCutset();
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize);
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(nbIter, queueMaxSize,end-start);
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestLB);
         } else {
@@ -271,7 +274,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
      * bounds.
      */
     private void maybeUpdateBest(int verbosityLevel) {
-        Optional<Integer> ddval = mdd.bestValue();
+        Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();

@@ -19,7 +19,7 @@ import java.util.Arrays;
  * A bounded knapsack problem is a variation of the classic knapsack problem
  * where each item can be included in the knapsack a limited number of times.
  */
-public class BKSMain {
+public class BKSCacheMain {
 
     public static void main(String[] args) {
         // Example from the paper "Decision Diagram-Based Branch and Bound with Caching"
@@ -31,18 +31,19 @@ public class BKSMain {
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final DominanceChecker dominance = new SimpleDominanceChecker(new BKSDominance(), problem.nbVars());
+//        final DominanceChecker dominance = new SimpleDominanceChecker(new BKSDominance(), problem.nbVars());
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
-        final SequentialSolver<Integer, Integer> solver = Solvers.sequentialSolver(
+        final Solver solver = new SequentialSolverCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                frontier,
-                dominance);
+//                dominance,
+                cache,
+                frontier);
 
 
         long start = System.currentTimeMillis();

@@ -2,13 +2,7 @@ package org.ddolib.ddo.core;
 
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-<<<<<<< HEAD
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-=======
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
->>>>>>> cache
-
 /**
  * The set of parameters used to tweak the compilation of a MDD
  *
