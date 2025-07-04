@@ -6,16 +6,36 @@ import org.ddolib.ddo.core.Problem;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class GRProblem implements Problem<GRState> {
     final int n;
+
+    private Optional<Double> optimal = Optional.empty();
+
     public GRProblem(int n) {
         this.n = n;
     }
+
+    public GRProblem(int n, double optimal) {
+        this.n = n;
+        this.optimal = Optional.of(-optimal);
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("GRuler: %d", n);
+    }
+
     @Override
     public int nbVars() {
-        return n-1;
+        return n - 1;
     }
 
     @Override
@@ -30,6 +50,7 @@ public class GRProblem implements Problem<GRState> {
         mark.set(0);
         return new GRState(mark, new BitSet(), 0);
     }
+
     @Override
     public Iterator<Integer> domain(GRState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
@@ -40,8 +61,7 @@ public class GRProblem implements Problem<GRState> {
                         .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
                         .boxed()
                         .toList());
-//        System.out.println(state + " --> " +  Arrays.toString(domain.toArray()));
-        return  domain.iterator();
+        return domain.iterator();
     }
 
     @Override
@@ -56,7 +76,7 @@ public class GRProblem implements Problem<GRState> {
             assert !newDistances.get(newMark - i);
             newDistances.set(newMark - i);
         }
-        assert(newMark >= newState.getLastMark());
+        assert (newMark >= newState.getLastMark());
         newState.getMarks().set(newMark);
         newState.getDistances().or(newDistances);
         return new GRState(newState.getMarks(), newState.getDistances(), newMark);

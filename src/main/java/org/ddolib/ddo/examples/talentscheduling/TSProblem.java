@@ -48,6 +48,11 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
     public int nbVars() {
         return nbScene;
     }
@@ -100,7 +105,7 @@ public class TSProblem implements Problem<TSState> {
 
         // All the already present actors (playing for this scene or waiting)
         // Actors not longer needed are discarded from this BitSet.
-        BitSet toPay = onLocationActors(state); 
+        BitSet toPay = onLocationActors(state);
         toPay.andNot(actors[scene]); // Add new actors
 
         int cost = 0;

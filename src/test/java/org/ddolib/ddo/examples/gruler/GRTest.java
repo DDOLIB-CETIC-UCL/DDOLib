@@ -1,55 +1,61 @@
 package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.util.testbench.ProblemTestBench;
+import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class GRTest {
-    public int[] solve(int n) {
-        GRProblem problem = new GRProblem(n);
-        final GRRelax relax = new GRRelax();
-        final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(32);
-        final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        long start = System.currentTimeMillis();
-        solver.maximize();
-        int[] solution = solver.bestSolution()
-                .map(decisions -> {
-                    int[] values = new int[problem.nbVars() + 1];
-                    values[0] = 0;
-                    for (Decision d : decisions) {
-                        values[d.var() + 1] = d.val();
-                    }
-                    return values;
-                })
-                .get();
-        return solution;
+
+    private static class GRBench extends ProblemTestBench<GRState, Integer, GRProblem> {
+
+        /**
+         * Instantiate a test bench.
+         *
+         * @param testRelaxation Whether the relaxation must be tested.
+         * @param testFUB        Whether the fast upper bound must be tested.
+         * @param testDominance  Whether the dominance must be tested.
+         */
+        public GRBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
+            super(testRelaxation, testFUB, testDominance);
+        }
+
+        @Override
+        protected List<GRProblem> generateProblems() {
+            // Known solutions
+            int[] solutions = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
+            return IntStream.range(1, 7).mapToObj(i -> new GRProblem(i, solutions[i - 1])).toList();
+        }
+
+        @Override
+        protected SolverConfig<GRState, Integer> configSolver(GRProblem problem) {
+            GRRelax relax = new GRRelax();
+            GRRanking ranking = new GRRanking();
+            FixedWidth<GRState> width = new FixedWidth<>(32);
+            VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
+            Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+            DominanceChecker<GRState, Integer> dominance = new DefaultDominanceChecker<>();
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominance);
+        }
     }
 
-    // unit test for Golomb sequence
-    @org.junit.jupiter.api.Test
-    void test() {
-        // known solutions
-        int[] solution = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
-        for (int n = 3; n < 7; n++) {
-            int[] result = solve(n);
-            assertEquals(solution[n - 1], result[n - 1]);
-        }
+    @DisplayName("Golomb ruler")
+    @TestFactory
+    public Stream<DynamicTest> testGR() {
+        var bench = new GRBench(true, false, false);
+        return bench.generateTests();
     }
 }

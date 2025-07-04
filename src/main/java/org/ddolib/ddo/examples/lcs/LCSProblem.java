@@ -35,6 +35,7 @@ public class LCSProblem implements Problem<LCSState> {
 
     final int GO_TO_END_OF_STRINGS = -1;
 
+    private Optional<String> name = Optional.empty();
 
     LCSProblem(String instance, int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
                int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Double> optimal) {
@@ -59,7 +60,17 @@ public class LCSProblem implements Problem<LCSState> {
         }
     }
 
-    public Optional<Double> getOptimal() {
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public String toString() {
+        return name.orElse(super.toString());
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
         return optimal;
     }
 

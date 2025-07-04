@@ -2,9 +2,10 @@ package org.ddolib.ddo.examples.smic;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;
+
 import java.util.*;
 
-public class SMICProblem  implements Problem<SMICState> {
+public class SMICProblem implements Problem<SMICState> {
     final String name;
     final int nbJob;
     final int initInventory;
@@ -15,7 +16,18 @@ public class SMICProblem  implements Problem<SMICState> {
     final int[] release;
     final int[] inventory;
 
-    public SMICProblem(String name, int nbJob, int initInventory, int capaInventory, int[] type, int[] processing, int[] weight, int[] release, int[] inventory) {
+    private Optional<Double> optimal = Optional.empty();
+
+    public SMICProblem(String name,
+                       int nbJob,
+                       int initInventory,
+                       int capaInventory,
+                       int[] type,
+                       int[] processing,
+                       int[] weight,
+                       int[] release,
+                       int[] inventory,
+                       double optimal) {
         this.name = name;
         this.nbJob = nbJob;
         this.initInventory = initInventory;
@@ -25,6 +37,37 @@ public class SMICProblem  implements Problem<SMICState> {
         this.weight = weight;
         this.release = release;
         this.inventory = inventory;
+        this.optimal = Optional.of(optimal);
+    }
+
+    public SMICProblem(String name,
+                       int nbJob,
+                       int initInventory,
+                       int capaInventory,
+                       int[] type,
+                       int[] processing,
+                       int[] weight,
+                       int[] release,
+                       int[] inventory) {
+        this.name = name;
+        this.nbJob = nbJob;
+        this.initInventory = initInventory;
+        this.capaInventory = capaInventory;
+        this.type = type;
+        this.processing = processing;
+        this.weight = weight;
+        this.release = release;
+        this.inventory = inventory;
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     @Override
@@ -38,7 +81,7 @@ public class SMICProblem  implements Problem<SMICState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.add(i);
         }
-        return new SMICState(jobs,0, initInventory, initInventory);
+        return new SMICState(jobs, 0, initInventory, initInventory);
     }
 
     @Override
@@ -64,14 +107,14 @@ public class SMICProblem  implements Problem<SMICState> {
         Set<Integer> remaining = new HashSet<>(state.getRemainingJobs());
         remaining.remove(decision.val());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory()-inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
-        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory()-inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
+        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory() - inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
+        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory() - inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     @Override
     public double transitionCost(SMICState state, Decision decision) {
-        int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0)  + processing[decision.val()];
+        int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0) + processing[decision.val()];
         return -currentTime;
     }
 }
