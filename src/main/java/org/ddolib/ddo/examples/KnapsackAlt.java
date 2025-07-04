@@ -8,7 +8,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
 
 import java.io.BufferedReader;
@@ -17,9 +16,42 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public final class Knapsack {
+public class KnapsackAlt {
 
-    public static class KnapsackProblem implements Problem<Integer> {
+    public static class KnapsackState {
+        int capacity;
+        int profit;
+
+        public KnapsackState(int capacity, int profit) {
+            this.capacity = capacity;
+            this.profit = profit;
+        }
+
+        @Override
+        protected KnapsackState clone() {
+            return new KnapsackState(capacity, profit);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(capacity);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            assert o instanceof KnapsackState;
+            return ((KnapsackState) o).capacity == capacity;
+        }
+
+        @Override
+        public String toString() {
+            return "KnapsackState [capacity=" + capacity + ", cost=" + profit + "]";
+        }
+
+    }
+
+    public static class KnapsackProblem implements Problem<KnapsackState> {
+
         final int capa;
         final int[] profit;
         final int[] weight;
@@ -38,8 +70,8 @@ public final class Knapsack {
         }
 
         @Override
-        public Integer initialState() {
-            return capa;
+        public KnapsackState initialState() {
+            return new KnapsackState(capa, 0);
         }
 
         @Override
@@ -48,8 +80,8 @@ public final class Knapsack {
         }
 
         @Override
-        public Iterator<Integer> domain(Integer state, int var) {
-            if (state >= weight[var]) {
+        public Iterator<Integer> domain(KnapsackState state, int var) {
+            if (state.capacity >= weight[var]) {
                 return Arrays.asList(1, 0).iterator();
             } else {
                 return List.of(0).iterator();
@@ -57,51 +89,51 @@ public final class Knapsack {
         }
 
         @Override
-        public Integer transition(Integer state, Decision decision) {
+        public KnapsackState transition(KnapsackState state, Decision decision) {
             if (decision.val() == 1) {
-                return state - weight[decision.var()];
+                return new KnapsackState(state.capacity - weight[decision.var()], profit[decision.var()]);
             } else {
                 return state;
             }
         }
 
         @Override
-        public int transitionCost(Integer state, Decision decision) {
+        public int transitionCost(KnapsackState state, Decision decision) {
             return profit[decision.var()] * decision.val();
         }
     }
 
-    public static class KnapsackRelax implements Relaxation<Integer> {
-
+    public static class KnapsackRelax implements Relaxation<KnapsackState> {
         private final KnapsackProblem problem;
 
         public KnapsackRelax(KnapsackProblem problem) {
             this.problem = problem;
         }
 
+
         @Override
-        public Integer mergeStates(final Iterator<Integer> states) {
+        public KnapsackState mergeStates(Iterator<KnapsackState> states) {
             int capa = 0;
+            int profit = 0;
             while (states.hasNext()) {
-                final Integer state = states.next();
-                capa = Math.max(capa, state);
+                final KnapsackState state = states.next();
+                capa = Math.max(capa, state.capacity);
+                profit = Math.max(profit, state.profit);
             }
-            return capa;
+            return new KnapsackState(capa, profit);
         }
 
         @Override
-        public int relaxEdge(Integer from, Integer to, Integer merged, Decision d, int cost) {
+        public int relaxEdge(KnapsackState from, KnapsackState to, KnapsackState merged, Decision d, int cost) {
             return cost;
         }
 
-
         @Override
-        public int fastUpperBound(Integer state, Set<Integer> variables) {
+        public int fastUpperBound(KnapsackState state, Set<Integer> variables) {
             double[] ratio = new double[problem.nbVars()];
-            int capacity = state;
+            int capacity = state.capacity;
             for (int v : variables) {
-                ratio[v] = ((double) capacity) / problem.profit[v];
-                // ratio[v] = ((double) capacity / problem.weight[v]); // profit instead of capacity
+                ratio[v] = ((double) capacity / problem.profit[v]);
             }
 
             class RatioComparator implements Comparator<Integer> {
@@ -122,7 +154,7 @@ public final class Knapsack {
                     maxProfit += problem.profit[item];
                     capacity -= problem.weight[item];
                 } else {
-                    double itemProfit = ratio[item] * problem.weight[item]; // capacity instead of profit
+                    double itemProfit = ratio[item] * problem.weight[item];
                     maxProfit += (int) Math.floor(itemProfit);
                     capacity = 0;
                 }
@@ -130,26 +162,27 @@ public final class Knapsack {
 
             return maxProfit;
         }
+
     }
 
-    public static class KnapsackDistance implements StateDistance<Integer> {
+    public static class KnapsackDistance implements StateDistance<KnapsackState> {
         @Override
-        public double distance(Integer stateA, Integer stateB) {
-            return Math.abs(stateA - stateB);
+        public double distance(KnapsackState stateA, KnapsackState stateB) {
+            return Math.sqrt(Math.pow(stateA.capacity - stateB.capacity, 2) + Math.pow(stateA.profit - stateB.profit, 2));
         }
     }
 
-    public static class KnapsackCoordinates implements StateCoordinates<Integer> {
+    public static class KnapsackCoordinates implements StateCoordinates<KnapsackState> {
         @Override
-        public double[] getCoordinates(Integer state) {
-            return new double[] {state};
+        public double[] getCoordinates(KnapsackState state) {
+            return new double[] {state.capacity, state.profit};
         }
     }
 
-    public static class KnapsackRanking implements StateRanking<Integer> {
+    public static class KnapsackRanking implements StateRanking<KnapsackState> {
         @Override
-        public int compare(final Integer o1, final Integer o2) {
-            return o1 - o2;
+        public int compare(final KnapsackState o1, final KnapsackState o2) {
+            return o1.capacity - o2.capacity;
         }
     }
 
@@ -201,14 +234,14 @@ public final class Knapsack {
         final KnapsackProblem problem = readInstance(instance);
         final KnapsackRelax relax = new KnapsackRelax(problem);
         final KnapsackRanking ranking = new KnapsackRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(100);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final StateDistance<Integer> distance = new KnapsackDistance();
-        final StateCoordinates<Integer> coord = new KnapsackCoordinates();
+        final FixedWidth<KnapsackState> width = new FixedWidth<>(100);
+        final VariableHeuristic<KnapsackState> varh = new DefaultVariableHeuristic<KnapsackState>();
+        final StateDistance<KnapsackState> distance = new KnapsackDistance();
+        final StateCoordinates<KnapsackState> coord = new KnapsackCoordinates();
         final int seed = 54646;
         final RelaxationType relaxationType = RelaxationType.GHP;
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<KnapsackState> frontier = new SimpleFrontier<>(ranking);
         /*final Solver solver = new ParallelSolver<Integer>(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
@@ -249,4 +282,5 @@ public final class Knapsack {
         System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
+
 }

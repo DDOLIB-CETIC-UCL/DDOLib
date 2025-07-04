@@ -230,30 +230,39 @@ public class SetCoverTest {
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
         final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
+        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
 
-        solver.maximize();
+        for (RelaxationType relaxType: RelaxationType.values()) {
+            final Solver solver = new SequentialSolver<>(
+                    relaxType,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    distance,
+                    coord,
+                    width,
+                    frontier,
+                    6546488);
 
-        // Retrieve solution
-        Set<Integer> solution = solver.bestSolution().map(decisions -> {
-            Set<Integer> values = new HashSet<>();
-            for (Decision d : decisions) {
-                if (d.val() != -1) {
-                    values.add(d.val());
+            solver.maximize();
+
+            // Retrieve solution
+            Set<Integer> solution = solver.bestSolution().map(decisions -> {
+                Set<Integer> values = new HashSet<>();
+                for (Decision d : decisions) {
+                    if (d.val() != -1) {
+                        values.add(d.val());
+                    }
                 }
-            }
-            return values;
-        }).get();
+                return values;
+            }).get();
 
-        Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
-        Assertions.assertTrue(testValidity(problem, solution));
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertTrue(testValidity(problem, solution));
+        }
     }
 
     // *************************************************************************

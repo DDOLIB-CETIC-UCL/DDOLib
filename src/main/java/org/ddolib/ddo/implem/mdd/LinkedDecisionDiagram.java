@@ -620,8 +620,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
 
-            pqClusters.add(new ClusterNode(avgDistA, newClusterA));
-            pqClusters.add(new ClusterNode(avgDistB, newClusterB));
+            pqClusters.add(new ClusterNode(maxDistA, newClusterA));
+            pqClusters.add(new ClusterNode(maxDistB, newClusterB));
         }
 
         List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
@@ -734,6 +734,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             System.arraycopy(nodeCoordinates, 0, centroides[i], 0, dimensions); // O(d) for KP
         }
 
+        // assignments[i] contains the index of the cluster containing i
         int[] assignments = new int[currentLayer.size()];
 
         for(int iter = 0; iter < maxIterations; iter++) { // 50 iterations
@@ -815,7 +816,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             System.out.print(state + ": " + Arrays.toString(map.getCoordinates(state)) + ";");
         }
         System.out.println();*/
-        try {
+        /*try {
             FileWriter writer = new FileWriter("tmp/distribution2D.txt");
             for (NodeSubProblem<T> node: currentLayer) {
                 writer.write(node.state + " " + Arrays.toString(map.getCoordinates(node.state)) + "\n");
@@ -823,15 +824,14 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             writer.close();
         }catch (IOException e) {
             System.exit(0);
-        }
+        }*/
         // System.out.println("*************");
-        for (int i = 0; i < currentLayer.size(); i++) {
-            for (int j = i + 1; j < currentLayer.size(); j++) {
+        /*    for (int j = i + 1; j < currentLayer.size(); j++) {
                 T a = currentLayer.get(i).state;
                 T b = currentLayer.get(j).state;
                 // System.out.println(distance.distance(a, b) + " -> " + euclideanDistance(map.getCoordinates(a), map.getCoordinates(b)));
             }
-        }
+        }*/
     }
 
     /**

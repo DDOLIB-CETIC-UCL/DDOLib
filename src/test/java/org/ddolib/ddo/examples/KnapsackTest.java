@@ -1,13 +1,18 @@
 package org.ddolib.ddo.examples;
 
 import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.RelaxationType;
 import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.examples.Knapsack.*;
+import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.RelaxationSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -69,6 +74,69 @@ class KnapsackTest {
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxationsCompleteSearch(KnapsackProblem problem) {
+        final KnapsackRelax relax = new KnapsackRelax(problem);
+        final KnapsackRanking ranking = new KnapsackRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(25);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final StateDistance<Integer> distance = new KnapsackDistance();
+        final StateCoordinates<Integer> coord = new KnapsackCoordinates();
+
+        for (RelaxationType relaxType : RelaxationType.values()) {
+            final Solver solver = new SequentialSolver<>(
+                    relaxType,
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    distance,
+                    coord,
+                    width,
+                    frontier,
+                    6546488);
+
+
+            solver.maximize();
+            assertEquals(solver.bestValue().get(), problem.optimal);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxation(KnapsackProblem problem) {
+        final KnapsackRelax relax = new KnapsackRelax(problem);
+        final KnapsackRanking ranking = new KnapsackRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(25);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking);
+        final StateDistance<Integer> distance = new KnapsackDistance();
+        final StateCoordinates<Integer> coord = new KnapsackCoordinates();
+
+        for (RelaxationType relaxType : RelaxationType.values()) {
+            if (relaxType != RelaxationType.MinDist) {
+                System.out.println(relaxType);
+                final Solver solver = new RelaxationSolver<>(
+                        relaxType,
+                        problem,
+                        relax,
+                        varh,
+                        ranking,
+                        distance,
+                        coord,
+                        width,
+                        frontier,
+                        6546488);
+
+
+                solver.maximize();
+                assertTrue(solver.bestValue().get() >= problem.optimal);
+            }
+        }
     }
 
 }
