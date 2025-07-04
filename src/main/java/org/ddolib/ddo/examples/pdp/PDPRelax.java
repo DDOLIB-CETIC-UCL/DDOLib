@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.Relaxation;
 
 import java.util.*;
 
-class PDPRelax extends Relaxation<PDPState> {
+class PDPRelax implements Relaxation<PDPState> {
     private final PDPProblem problem;
     private final double[] leastIncidentEdge;
 
