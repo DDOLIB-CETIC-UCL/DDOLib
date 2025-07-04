@@ -119,13 +119,15 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        FixedWidth<T> width = new FixedWidth<>(2);
-        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
-                config.frontier());
+        for (int w = 2; w <= 20; w++) {
+            System.out.println(w);
+            FixedWidth<T> width = new FixedWidth<>(2);
+            Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
+                    config.frontier());
 
-        solver.maximize();
-        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
-
+            solver.maximize();
+            assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+        }
     }
 
     /**
@@ -136,12 +138,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFubOnRelaxedNodes(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        FixedWidth<T> width = new FixedWidth<>(2);
-        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
-                config.frontier());
+        for (int w = 2; w <= 20; w++) {
+            FixedWidth<T> width = new FixedWidth<>(2);
+            Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
+                    config.frontier());
 
-        solver.maximize();
-        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+            solver.maximize();
+            assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+        }
     }
 
     /**
