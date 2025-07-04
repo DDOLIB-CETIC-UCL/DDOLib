@@ -134,7 +134,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
      */
     public enum NodeType {
-        EXACT, RELAXED;
+        EXACT, RELAXED
     }
 
     /**
@@ -250,7 +250,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
-        dotStr.append("digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
+        dotStr.append("digraph ").append(input.compilationType().toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
         final Problem<T> problem = input.problem();
@@ -333,7 +333,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.getExportAsDot()) {
+                if (input.exportAsDot()) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -372,7 +372,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.getExportAsDot()) {
+        if (input.exportAsDot()) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
