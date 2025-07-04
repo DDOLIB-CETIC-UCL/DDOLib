@@ -280,7 +280,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
                     continue;
                 } else {
-                    double rub = saturatedAdd(node.value, input.relaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }

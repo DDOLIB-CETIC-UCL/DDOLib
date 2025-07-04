@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -60,6 +61,7 @@ public final class ParallelSolver<T, K> implements Solver {
      *                  any of the nodes remaining on the fringe. As a consequence, the
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public ParallelSolver(
@@ -69,8 +71,10 @@ public final class ParallelSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
+            final Frontier<T> frontier,
+            final FastUpperBoundHeuristic<T> fub,
+            final DominanceChecker<T, K> dominance) {
+        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance);
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -123,7 +127,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start);
     }
 
     @Override
@@ -215,6 +219,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.ranking,
                 sub,
                 width,
+                shared.fub,
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
@@ -237,6 +242,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.ranking,
                 sub,
                 width,
+                shared.fub,
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
@@ -420,6 +426,11 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final WidthHeuristic<T> width;
 
+        /**
+         * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+         */
+        private final FastUpperBoundHeuristic<T> fub;
+
         private final DominanceChecker<T, K> dominance;
         /**
          * A heuristic to choose the next variable to branch on when developing a DD
@@ -433,10 +444,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
+                FastUpperBoundHeuristic<T> fub,
                 final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
+            this.fub = fub;
             this.varh = varh;
             this.ranking = ranking;
             this.width = width;
