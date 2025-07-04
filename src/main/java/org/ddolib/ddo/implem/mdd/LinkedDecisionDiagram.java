@@ -40,9 +40,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
 
-    /**
-     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
-     */
+    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
     private boolean exact = true;
 
     /**
@@ -107,7 +105,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * set the type of the node when different to exact type
-         *
          * @param nodeType
          */
         public void setNodeType(final NodeType nodeType) {
@@ -116,12 +113,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         /**
          * get the type of the node
-         *
          * @return NodeType
          */
-        public NodeType getNodeType() {
-            return this.type;
-        }
+        public NodeType getNodeType() {return this.type;}
 
         @Override
         public String toString() {

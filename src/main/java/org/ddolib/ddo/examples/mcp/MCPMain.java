@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.exactSolver;
 
 public final class MCPMain {
 
@@ -32,7 +32,7 @@ public final class MCPMain {
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
+        final Solver solver = exactSolver(problem, relax, varh, ranking);
 
         long start = System.currentTimeMillis();
         solver.maximize();
