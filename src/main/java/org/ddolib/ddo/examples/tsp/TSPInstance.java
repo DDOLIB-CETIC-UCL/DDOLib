@@ -22,13 +22,9 @@ import java.util.Random;
  * Class to read and generate TSP instance instances
  */
 public class TSPInstance {
-    public static void main(String[] args) {
-        TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
-    }
-
     public double [][] distanceMatrix;
     public int n;
-    public final int objective;
+    public final double objective;
 
     public TSPInstance(double [][] distanceMatrix) {
         n = distanceMatrix.length;

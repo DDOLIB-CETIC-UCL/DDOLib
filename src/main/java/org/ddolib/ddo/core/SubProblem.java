@@ -77,9 +77,13 @@ public final class SubProblem<T> {
         return this.path;
     }
 
+    public String statistics() {
+            return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value-ub), this.getPath().size());
+    }
+
     @Override
     public String toString() {
-        return String.format("Subproblem: value: %d - ub: %d - state: %s", value, ub, state);
+        return String.format("SubProblem(val:%d - ub:%d - fub:%d - depth: %d - state:%s", value, ub, (value-ub), this.getPath().size(), state);
     }
 
     @Override
@@ -94,4 +98,5 @@ public final class SubProblem<T> {
     public int hashCode() {
         return this.state.hashCode();
     }
+
 }

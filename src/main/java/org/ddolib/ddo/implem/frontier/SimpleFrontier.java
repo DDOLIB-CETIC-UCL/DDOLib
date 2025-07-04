@@ -93,4 +93,9 @@ public final class SimpleFrontier<T> implements Frontier<T> {
     public String toString() {
         return heap.toString();
     }
+
+    @Override
+    public double bestInFrontier() {
+        return heap.peek().getUpperBound();
+    }
 }

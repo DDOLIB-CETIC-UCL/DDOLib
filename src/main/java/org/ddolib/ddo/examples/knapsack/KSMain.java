@@ -29,7 +29,7 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_1";
+        final String instance = "data/Knapsack/simple.txt";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
@@ -51,7 +51,7 @@ public class KSMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.maximize(0, true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);

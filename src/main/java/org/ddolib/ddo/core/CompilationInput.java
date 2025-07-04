@@ -33,6 +33,18 @@ public record CompilationInput<T, K>(CompilationType compilationType,
 
 
     /**
+     * Whether .dot file must be written during the compilation.
+     */
+    final boolean exportAsDot;
+
+    /**
+     * @return Whether .dot file must be written during the compilation.
+     */
+    public boolean getExportAsDot() {
+        return exportAsDot;
+    }
+
+    /**
      * Returns a string representation of this record class.
      *
      * @return Returns a string representation of this record class.
