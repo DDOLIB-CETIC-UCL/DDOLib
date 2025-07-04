@@ -1,24 +1,18 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
 import org.ddolib.ddo.util.TSPLowerBound;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+import java.util.Set;
 
-import static org.ddolib.ddo.examples.pigmentscheduling.PSProblem.IDLE;
+public class PSFastUpperBound implements FastUpperBoundHeuristic<PSState> {
+    private final PSInstance instance;
+    private final int[] tspLb;
 
-public class PSRelax implements Relaxation<PSState> {
-
-    record ItemDemand(int cost, int deadLline) {
-    }
-
-    // lower bound of the TSP for all subsets of items types
-    // indices are the binary representation of the subsets
-    public int[] tspLb;
-    PSInstance instance;
-
-    public PSRelax(PSInstance instance) {
+    public PSFastUpperBound(PSInstance instance) {
         this.instance = instance;
         tspLb = TSPLowerBound.lowerBoundForAllSubsets(instance.changeoverCost);
     }
@@ -38,26 +32,10 @@ public class PSRelax implements Relaxation<PSState> {
         return mem;
     }
 
-    @Override
-    public PSState mergeStates(final Iterator<PSState> states) {
-        PSState currState = states.next();
-        int[] prevDemands = Arrays.copyOf(currState.previousDemands, currState.previousDemands.length);
-        int time = currState.t;
-        while (states.hasNext()) {
-            PSState state = states.next();
-            time = Math.min(time, state.t);
-            for (int i = 0; i < prevDemands.length; i++) {
-                prevDemands[i] = Math.min(prevDemands[i], state.previousDemands[i]);
-            }
-        }
-        return new PSState(time, IDLE, prevDemands);
-
-    }
-
 
     /**
-     * From the PhD Thesis of Vianney Coppe:
-     * https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf
+     * From the:
+     * <a href="https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf"> PhD Thesis of Vianney Coppe</a>
      * "When the changeover costs are ignored, the PSP falls under the Wagner-
      * Whitin conditions that allow to compute the optimal stocking cost
      * for a given set of remaining items to produce. Conversely, if the stocking
@@ -75,7 +53,7 @@ public class PSRelax implements Relaxation<PSState> {
      * @return
      */
     @Override
-    public double fastUpperBound(PSState state, final Set<Integer> variables) {
+    public double fastUpperBound(PSState state, Set<Integer> variables) {
         // Convert to bitset-like index
         int idx = members(state).stream().
                 mapToInt(Integer::intValue).
@@ -95,47 +73,12 @@ public class PSRelax implements Relaxation<PSState> {
             }
             if (!itemDemands.isEmpty()) {
                 ItemDemand item = itemDemands.poll();
-                stockingCostLb += item.cost * (time - item.deadLline);
+                stockingCostLb += item.cost() * (time - item.deadLine());
             }
         }
-        int ub = -changeOverLb - stockingCostLb;
-        return ub;
+        return -changeOverLb - stockingCostLb;
     }
 
-
-    @Override
-    public double relaxEdge(PSState from, PSState to, PSState merged, Decision d, double cost) {
-        return cost;
+    private record ItemDemand(int cost, int deadLine) {
     }
-
-    private long[] computeMST(int[][] changeover) {
-        int n = changeover.length;
-        long[] minEdge = new long[n];
-        boolean[] inMST = new boolean[n];
-        Arrays.fill(minEdge, Long.MAX_VALUE);
-        minEdge[0] = 0; // Start from the first item
-        long[] mstCost = new long[1 << n]; // To store the MST cost for each subset of nodes
-        for (int i = 0; i < n; i++) {
-            int u = -1;
-            for (int j = 0; j < n; j++) {
-                if (!inMST[j] && (u == -1 || minEdge[j] < minEdge[u])) {
-                    u = j;
-                }
-            }
-            inMST[u] = true;
-            for (int v = 0; v < n; v++) {
-                if (changeover[u][v] < minEdge[v]) {
-                    minEdge[v] = changeover[u][v];
-                }
-            }
-            // Update the MST cost for the current subset
-            for (int mask = 0; mask < (1 << n); mask++) {
-                if ((mask & (1 << u)) == 0) {
-                    mstCost[mask | (1 << u)] = Math.min(mstCost[mask | (1 << u)], mstCost[mask] + minEdge[u]);
-                }
-            }
-        }
-        return mstCost;
-    }
-
 }

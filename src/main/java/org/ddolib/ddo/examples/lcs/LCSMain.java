@@ -112,6 +112,7 @@ public final class LCSMain {
         LCSProblem problem = extractFile(file);
         LCSRelax relax = new LCSRelax(problem);
         LCSRanking ranking = new LCSRanking();
+        LCSFastUpperBound fub = new LCSFastUpperBound(problem);
 
         final FixedWidth<LCSState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
@@ -124,7 +125,8 @@ public final class LCSMain {
                 varH,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                fub);
 
         long start = System.currentTimeMillis();
         solver.maximize(1, false);
