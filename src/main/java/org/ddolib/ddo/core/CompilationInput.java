@@ -17,6 +17,7 @@ import org.ddolib.ddo.implem.dominance.DominanceChecker;
  * @param dominance         The dominance checker used to prune the search space.
  * @param bestLB            The best known lower bound at the time when the dd is being compiled.
  * @param cutSetType        The type of cut set used in the compilation.
+ * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
  * @param <T>               The type used to model the state of your problem.
  * @param <K>               The type of the dominance key.
  */
