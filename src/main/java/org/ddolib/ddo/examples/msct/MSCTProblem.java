@@ -12,10 +12,30 @@ class MSCTProblem implements Problem<MSCTState> {
     final int[] release; // release date of each job
     final int[] processing; // processing time of each job
 
+    private Optional<Double> optimal = Optional.empty();
+
     public MSCTProblem(final int[] release, final int[] processing) {
         this.release = release;
         this.processing = processing;
         this.n = release.length;
+    }
+
+    public MSCTProblem(final int[] release, final int[] processing, double optimal) {
+        this.release = release;
+        this.processing = processing;
+        this.n = release.length;
+        this.optimal = Optional.of(-optimal);
+    }
+
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("release: %s - processing: %s", Arrays.toString(release), Arrays.toString(processing));
     }
 
     @Override
@@ -29,7 +49,7 @@ class MSCTProblem implements Problem<MSCTState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.add(i);
         }
-        return new MSCTState(jobs,0);
+        return new MSCTState(jobs, 0);
     }
 
     @Override
@@ -51,7 +71,7 @@ class MSCTProblem implements Problem<MSCTState> {
         Set<Integer> remaining = new HashSet<>(state.remainingJobs);
         remaining.remove(decision.val());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        return new MSCTState(remaining,currentTime);
+        return new MSCTState(remaining, currentTime);
     }
 
     @Override
