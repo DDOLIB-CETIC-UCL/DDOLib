@@ -72,7 +72,7 @@ public class TSPTWTests {
 
     @DisplayName("TSPTW")
     @TestFactory
-    public Stream<DynamicTest> testTSPTW() throws IOException {
+    public Stream<DynamicTest> testTSPTW() {
         var bench = new TSPTWBench(true, true, true);
         return bench.generateTests();
     }
