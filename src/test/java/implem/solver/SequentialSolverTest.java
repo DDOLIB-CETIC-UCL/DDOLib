@@ -13,7 +13,6 @@ import org.ddolib.ddo.implem.solver.SequentialSolver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Set;
 
 public class SequentialSolverTest {
     public static void main(String[] args) {
@@ -107,7 +106,7 @@ public class SequentialSolverTest {
         }
     }
 
-    public static class BKPRelax extends Relaxation<Integer> {
+    public static class BKPRelax implements Relaxation<Integer> {
         private final BKP problem;
 
         public BKPRelax(BKP problem) {
@@ -127,11 +126,6 @@ public class SequentialSolverTest {
         @Override
         public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
             return cost;
-        }
-
-        @Override
-        protected double fastUpperBound(Integer state, Set<Integer> variables) {
-            return Double.MAX_VALUE;
         }
     }
 

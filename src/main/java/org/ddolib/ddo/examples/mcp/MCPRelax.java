@@ -11,7 +11,7 @@ import static java.lang.Integer.*;
 import static java.lang.Math.abs;
 
 
-public class MCPRelax extends Relaxation<MCPState> {
+public class MCPRelax implements Relaxation<MCPState> {
 
     final MCPProblem problem;
     private final double initVal;

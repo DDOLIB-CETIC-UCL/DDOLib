@@ -4,32 +4,24 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * This is the second most important abstraction that a client should provide
- * when using this library. It defines the relaxation that may be applied to
- * the given problem. In particular, the merge_states method from this trait
- * defines how the nodes of a layer may be combined to provide an upper bound
+ * This is the second most important abstraction that a client should provide 
+ * when using this library. It defines the relaxation that may be applied to 
+ * the given problem. In particular, the merge_states method from this trait 
+ * defines how the nodes of a layer may be combined to provide an upper bound 
  * approximation standing for an arbitrarily selected set of nodes.
- * <p>
- * Again, the type parameter `T` denotes the type of the states.
  *
+ * Again, the type parameter `T` denotes the type of the states.
  * @param <T> the type of state
  */
-public abstract class Relaxation<T> {
-
-    /**
-     * Whether the fast upper bound mechanism must be used or simply return a default value. By default, the
-     * mechanism is used.
-     */
-    protected boolean fubEnabled = true;
-
-    /**
+public interface Relaxation<T> {
+    /** 
      * Merges the given states to create a NEW state which is an over
      * approximation of all the covered states.
-     *
+     * 
      * @param states the set of states that must be merged
      * @return a new state which is an over approximation of all the considered `states`.
      */
-    abstract public T mergeStates(final Iterator<T> states);
+    T mergeStates(final Iterator<T> states);
 
     /**
      * Relaxes the edge that used to go from `from` to `to` and computes the cost
@@ -41,46 +33,18 @@ public abstract class Relaxation<T> {
      * @param merged the destination of the relaxed arc (after relaxation)
      * @param d      the decision which is being challenged
      * @param cost   the cost of the not relaxed arc which used to go from `from` to `to`
-     * @return the cost of the edge that goes from {@code from} to {code merged}.
+     * @return
      */
-    abstract public double relaxEdge(final T from, final T to, final T merged, final Decision d, final double cost);
-
+    double relaxEdge(final T from, final T to, final T merged, final Decision d, final double cost);
 
     /**
-     * Internal problem specific fast upper bound used if the mechanism is enabled.
-     *
-     * @param state     the state for which the estimate is to be computed
-     * @param variables the set of unassigned variables
      * @return a very rough estimation (upper bound) of the optimal value that could be
-     * reached if state were the initial state
-     */
-    abstract protected double fastUpperBound(final T state, final Set<Integer> variables);
-
-    /**
-     * Returns a very rough estimation (upper bound) of the optimal value that could be
-     * reached if state were the initial state or a default value if disabled.
-     *
-     * @param state     the state for which the estimate is to be computed
+     *  reached if state were the initial state
+     * 
+     * @param state the state for which the estimate is to be computed
      * @param variables the set of unassigned variables
-     * @return a very rough estimation (upper bound) of the optimal value that could be
-     * reached if state were the initial state or a default value if disabled.
      */
-    public double fub(final T state, final Set<Integer> variables) {
-        if (fubEnabled) return fastUpperBound(state, variables);
-        else return Double.MAX_VALUE;
-    }
-
-    /**
-     * Disables the fast upper bound mechanism.
-     */
-    public void disableFastUpperBound() {
-        fubEnabled = false;
-    }
-
-    /**
-     * Enables the fast upper bound mechanism (enabled by default).
-     */
-    public void enableFastUpperBound() {
-        fubEnabled = true;
-    }
+    default double fastUpperBound(final T state, final Set<Integer> variables) {
+        return Integer.MAX_VALUE;
+    };
 }

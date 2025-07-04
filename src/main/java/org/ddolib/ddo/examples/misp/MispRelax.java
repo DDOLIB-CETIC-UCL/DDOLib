@@ -7,7 +7,7 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class MispRelax extends Relaxation<BitSet> {
+public class MispRelax implements Relaxation<BitSet> {
 
     private final MispProblem problem;
 

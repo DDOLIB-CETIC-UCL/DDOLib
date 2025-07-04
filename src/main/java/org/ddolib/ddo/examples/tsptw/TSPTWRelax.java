@@ -7,7 +7,7 @@ import java.util.*;
 
 import static java.lang.Integer.min;
 
-public class TSPTWRelax extends Relaxation<TSPTWState> {
+public class TSPTWRelax implements Relaxation<TSPTWState> {
 
     private static final int INFINITY = Integer.MAX_VALUE;
 

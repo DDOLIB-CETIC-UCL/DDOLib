@@ -8,7 +8,7 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class TSRelax extends Relaxation<TSState> {
+public class TSRelax implements Relaxation<TSState> {
 
     private final TSProblem problem;
 

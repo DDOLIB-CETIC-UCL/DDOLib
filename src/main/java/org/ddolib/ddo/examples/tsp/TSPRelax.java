@@ -6,10 +6,10 @@ import org.ddolib.ddo.core.Relaxation;
 
 import java.util.*;
 
-public class TSPRelax extends Relaxation<TSPState> {
+public class TSPRelax implements Relaxation<TSPState> {
 
     private final TSPProblem problem;
-    private final double[] leastIncidentEdge;
+    private final double [] leastIncidentEdge;
 
     public TSPRelax(TSPProblem problem) {
         this.problem = problem;
