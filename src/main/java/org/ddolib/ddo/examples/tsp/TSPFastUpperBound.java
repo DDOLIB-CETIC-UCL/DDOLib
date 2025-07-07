@@ -7,12 +7,13 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Implementation of a fast upper bound for the TSP.
+ */
 public class TSPFastUpperBound implements FastUpperBoundHeuristic<TSPState> {
-    private final TSPProblem problem;
     private final double[] leastIncidentEdge;
 
     public TSPFastUpperBound(TSPProblem problem) {
-        this.problem = problem;
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.MAX_VALUE;

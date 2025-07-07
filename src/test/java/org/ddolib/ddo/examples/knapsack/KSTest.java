@@ -36,7 +36,7 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsack(KSProblem problem) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
@@ -75,7 +75,7 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsackWithDominance(KSProblem problem) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();

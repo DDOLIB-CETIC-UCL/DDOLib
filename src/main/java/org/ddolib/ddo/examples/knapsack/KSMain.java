@@ -31,7 +31,7 @@ public class KSMain {
 
         final String instance = "data/Knapsack/simple.txt";
         final KSProblem problem = readInstance(instance);
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
