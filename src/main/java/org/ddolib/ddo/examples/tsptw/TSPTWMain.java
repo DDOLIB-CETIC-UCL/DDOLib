@@ -43,6 +43,7 @@ public class TSPTWMain {
 
         final TSPTWRelax relax = new TSPTWRelax(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
+        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(20);
         final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
@@ -58,6 +59,7 @@ public class TSPTWMain {
                 ranking,
                 width,
                 frontier,
+                fub,
                 dominance
         );
 

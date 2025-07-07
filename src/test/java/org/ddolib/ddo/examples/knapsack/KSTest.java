@@ -36,7 +36,7 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsack(KSProblem problem) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
@@ -57,14 +57,14 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void fastUpperBoundTest(KSProblem problem) throws IOException {
-        final KSRelax relax = new KSRelax(problem);
+        final KSFastUpperBound fub = new KSFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.capa, vars);
+        double rub = fub.fastUpperBound(problem.capa, vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.optimal,
                 String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
@@ -75,7 +75,7 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsackWithDominance(KSProblem problem) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();

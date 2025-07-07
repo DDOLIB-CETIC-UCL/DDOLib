@@ -46,6 +46,7 @@ public class TSPMain {
         final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         final TSPRelax relax = new TSPRelax(problem);
         final TSPRanking ranking = new TSPRanking();
+        final TSPFastUpperBound fub = new TSPFastUpperBound(problem);
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
 
@@ -57,7 +58,8 @@ public class TSPMain {
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                fub);
 
         SearchStatistics stats = solver.maximize(2, false);
         System.out.println(stats);

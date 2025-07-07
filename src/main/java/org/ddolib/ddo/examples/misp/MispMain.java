@@ -91,6 +91,7 @@ public final class MispMain {
         final MispProblem problem = readFile(file);
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
+        final MispFastUpperBound fub = new MispFastUpperBound(problem);
         final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
 
@@ -103,7 +104,8 @@ public final class MispMain {
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                fub);
 
         long start = System.currentTimeMillis();
         solver.maximize();

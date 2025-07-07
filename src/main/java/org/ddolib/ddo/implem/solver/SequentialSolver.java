@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -96,6 +97,11 @@ public final class SequentialSolver<T, K> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBoundHeuristic<T> fub;
+
+    /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
@@ -108,6 +114,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * Only the first relaxed mdd can be exported to a .dot file
      */
     private boolean firstRelaxed = true;
+
 
     /**
      * Creates a fully qualified instance
@@ -127,6 +134,7 @@ public final class SequentialSolver<T, K> implements Solver {
      *                  any of the nodes remaining on the fringe. As a consequence, the
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public SequentialSolver(
@@ -136,12 +144,14 @@ public final class SequentialSolver<T, K> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
+            final FastUpperBoundHeuristic<T> fub,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
         this.ranking = ranking;
         this.width = width;
+        this.fub = fub;
         this.dominance = dominance;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagram<>();
@@ -165,11 +175,11 @@ public final class SequentialSolver<T, K> implements Solver {
         frontier.push(root());
         while (!frontier.isEmpty()) {
             nbIter++;
-            if(verbosityLevel >= 2){
+            if (verbosityLevel >= 2) {
                 long now = System.currentTimeMillis();
-                if(now >= nextPrint) {
+                if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100*(bestInFrontier - bestLB)/bestLB;
+                    double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
                             nbIter, frontier.size(), bestLB, bestInFrontier, gap);
@@ -183,9 +193,9 @@ public final class SequentialSolver<T, K> implements Solver {
             SubProblem<T> sub = frontier.pop();
             double nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 3){
+            if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
-                if(verbosityLevel >= 4) {
+                if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
                 }
             }
@@ -193,7 +203,7 @@ public final class SequentialSolver<T, K> implements Solver {
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 long end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end-start);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -205,6 +215,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
@@ -234,6 +245,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
@@ -253,7 +265,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start);
     }
 
     @Override

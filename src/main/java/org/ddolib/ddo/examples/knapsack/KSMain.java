@@ -31,10 +31,11 @@ public class KSMain {
 
         final String instance = "data/Knapsack/simple.txt";
         final KSProblem problem = readInstance(instance);
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final KSFastUpperBound fub = new KSFastUpperBound(problem);
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
@@ -46,6 +47,7 @@ public class KSMain {
                 ranking,
                 width,
                 frontier,
+                fub,
                 dominance
         );
 

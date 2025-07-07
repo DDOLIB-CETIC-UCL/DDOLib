@@ -89,6 +89,7 @@ public class TSMain {
         final TSProblem problem = readFile(file);
         final TSRelax relax = new TSRelax(problem);
         final TSRanking ranking = new TSRanking();
+        final TSFastUpperBound fub = new TSFastUpperBound(problem);
 
         final WidthHeuristic<TSState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
@@ -100,7 +101,8 @@ public class TSMain {
                 varh,
                 ranking,
                 width,
-                frontier
+                frontier,
+                fub
         );
 
         long start = System.currentTimeMillis();

@@ -1,23 +1,23 @@
 package org.ddolib.ddo.core;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
- * This is the second most important abstraction that a client should provide 
- * when using this library. It defines the relaxation that may be applied to 
- * the given problem. In particular, the merge_states method from this trait 
- * defines how the nodes of a layer may be combined to provide an upper bound 
+ * This is the second most important abstraction that a client should provide
+ * when using this library. It defines the relaxation that may be applied to
+ * the given problem. In particular, the merge_states method from this trait
+ * defines how the nodes of a layer may be combined to provide an upper bound
  * approximation standing for an arbitrarily selected set of nodes.
- *
+ * <p>
  * Again, the type parameter `T` denotes the type of the states.
+ *
  * @param <T> the type of state
  */
 public interface Relaxation<T> {
-    /** 
+    /**
      * Merges the given states to create a NEW state which is an over
      * approximation of all the covered states.
-     * 
+     *
      * @param states the set of states that must be merged
      * @return a new state which is an over approximation of all the considered `states`.
      */
@@ -36,15 +36,4 @@ public interface Relaxation<T> {
      * @return
      */
     double relaxEdge(final T from, final T to, final T merged, final Decision d, final double cost);
-
-    /**
-     * @return a very rough estimation (upper bound) of the optimal value that could be
-     *  reached if state were the initial state
-     * 
-     * @param state the state for which the estimate is to be computed
-     * @param variables the set of unassigned variables
-     */
-    default double fastUpperBound(final T state, final Set<Integer> variables) {
-        return Integer.MAX_VALUE;
-    };
 }

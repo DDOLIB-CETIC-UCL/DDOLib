@@ -46,14 +46,14 @@ public class MispTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastUpperBound(MispProblem problem) {
-        final MispRelax relax = new MispRelax(problem);
+        final MispFastUpperBound fub = new MispFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.remainingNodes, vars);
+        double rub = fub.fastUpperBound(problem.remainingNodes, vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.optimal.get(),
                 String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",
