@@ -16,11 +16,12 @@ import java.util.Set;
 
 /**
  * Solver that compile an unique exact mdd.
+ * <p>
+ * <b>Note:</b> By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
+ * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
  *
  * @param <T> The type of states.
  * @param <K> The type of dominance keys.
- * @implNote By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
- * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
  */
 public final class ExactSolver<T, K> implements Solver {
 
