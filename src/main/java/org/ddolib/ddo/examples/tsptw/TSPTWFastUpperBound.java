@@ -8,6 +8,9 @@ import java.util.Set;
 
 import static java.lang.Integer.min;
 
+/**
+ * Implementation of a fast upper bound for the TSPTW.
+ */
 public class TSPTWFastUpperBound implements FastUpperBoundHeuristic<TSPTWState> {
 
     private static final int INFINITY = Integer.MAX_VALUE;

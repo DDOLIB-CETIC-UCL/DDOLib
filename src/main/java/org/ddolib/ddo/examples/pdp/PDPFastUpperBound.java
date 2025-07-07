@@ -7,6 +7,9 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Implementation of a fast upper bound for the PDP
+ */
 public class PDPFastUpperBound implements FastUpperBoundHeuristic<PDPState> {
     private final double[] leastIncidentEdge;
 

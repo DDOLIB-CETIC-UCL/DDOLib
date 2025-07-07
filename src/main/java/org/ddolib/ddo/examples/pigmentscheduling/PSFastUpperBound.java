@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+/**
+ * Implementation of a fast upper bound for the PSP.
+ */
 public class PSFastUpperBound implements FastUpperBoundHeuristic<PSState> {
     private final PSInstance instance;
     private final int[] tspLb;

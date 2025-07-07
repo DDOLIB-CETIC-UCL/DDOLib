@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Set;
 
+/**
+ * Implementation of a fast upper bound for the Talent Scheduling problem.
+ */
 public class TSFastUpperBound implements FastUpperBoundHeuristic<TSState> {
     private final TSProblem problem;
 
