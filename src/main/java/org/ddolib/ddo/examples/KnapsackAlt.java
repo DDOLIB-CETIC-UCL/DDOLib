@@ -133,7 +133,7 @@ public class KnapsackAlt {
             double[] ratio = new double[problem.nbVars()];
             int capacity = state.capacity;
             for (int v : variables) {
-                ratio[v] = ((double) capacity / problem.profit[v]);
+                ratio[v] = ((double) capacity / problem.weight[v]);
             }
 
             class RatioComparator implements Comparator<Integer> {
@@ -154,7 +154,7 @@ public class KnapsackAlt {
                     maxProfit += problem.profit[item];
                     capacity -= problem.weight[item];
                 } else {
-                    double itemProfit = ratio[item] * problem.weight[item];
+                    double itemProfit = ratio[item] * problem.profit[item];
                     maxProfit += (int) Math.floor(itemProfit);
                     capacity = 0;
                 }

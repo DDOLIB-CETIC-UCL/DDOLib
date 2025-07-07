@@ -100,7 +100,7 @@ public final class Knapsack {
             double[] ratio = new double[problem.nbVars()];
             int capacity = state;
             for (int v : variables) {
-                ratio[v] = ((double) capacity) / problem.profit[v];
+                ratio[v] = ((double) capacity) / problem.weight[v];
                 // ratio[v] = ((double) capacity / problem.weight[v]); // profit instead of capacity
             }
 
@@ -122,7 +122,7 @@ public final class Knapsack {
                     maxProfit += problem.profit[item];
                     capacity -= problem.weight[item];
                 } else {
-                    double itemProfit = ratio[item] * problem.weight[item]; // capacity instead of profit
+                    double itemProfit = ratio[item] * problem.profit[item]; // capacity instead of profit
                     maxProfit += (int) Math.floor(itemProfit);
                     capacity = 0;
                 }

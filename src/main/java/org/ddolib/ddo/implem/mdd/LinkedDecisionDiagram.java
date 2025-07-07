@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static org.ddolib.ddo.implem.mdd.KMeans.kMeans;
+
 /**
  * This class implements the decision diagram as a linked structure. 
  */
@@ -491,6 +493,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void mergeClusters(final List<NodeSubProblem<T>>[] clusters, final Relaxation<T> relax) {
         for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
+            }
+
             /*for (NodeSubProblem<T> node : cluster) {
                 System.out.print(node.state + ", ");
             }
@@ -715,92 +722,24 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             double diff = a[i] - b[i];
             sum += diff * diff;
         }
-        return Math.sqrt(sum);
+        return sum;
     }
 
     private void relaxKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Relaxation<T> relax, final Random rnd) {
         int maxIterations = 50;
-        int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
-
-
-        // each lines correspond to the coordinates of one centroide
-        double[][] centroides = new double[maxWidth][dimensions]; // O(W)
-
-        // Select random nodes to be the first centroides
-        Collections.shuffle(currentLayer, rnd);
-        for (int i = 0 ; i < maxWidth; i++) { // O(W)
-            NodeSubProblem<T> node = currentLayer.get(i); // O(1)
-            double[] nodeCoordinates = coordinates.getCoordinates(node.state);// O(d)
-            System.arraycopy(nodeCoordinates, 0, centroides[i], 0, dimensions); // O(d) for KP
+        List<T> states = new ArrayList<>(currentLayer.size());
+        for (NodeSubProblem<T> node : currentLayer) {
+            states.add(node.state);
         }
-
-        // assignments[i] contains the index of the cluster containing i
-        int[] assignments = new int[currentLayer.size()];
-
-        for(int iter = 0; iter < maxIterations; iter++) { // 50 iterations
-            boolean changed = false;
-
-            // Assign each node to its closest centroide
-            for (int i = 0; i < currentLayer.size(); i++) { // O(n)
-                NodeSubProblem<T> node = currentLayer.get(i);
-                double minDistance = Double.MAX_VALUE;
-                for (int j = 0; j < centroides.length; j++) { // O(W)
-                    double distance = euclideanDistance(coordinates.getCoordinates(node.state), centroides[j]); // O(d)
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        assignments[i] = j;
-                        changed = true;
-                    }
-                }
-            }
-
-            if (!changed) break;
-
-            int[] clustersSize = new int[maxWidth];
-
-            // Update the centroides by computing the mean coordinates of each node in the cluster
-            for (double[] centroideCoord: centroides) { // O(w)
-                Arrays.fill(centroideCoord, 0); // O(d)
-            }
-
-            for (int i = 0; i < assignments.length; i++) { // O(n)
-                int cluster = assignments[i];
-                double[] point = coordinates.getCoordinates(currentLayer.get(i).state); // O(d)
-                for (int j = 0; j < dimensions; j++) { // O(d)
-                    centroides[cluster][j] += point[j];
-                }
-                clustersSize[cluster]++;
-            }
-
-            for (int cluster = 0; cluster < maxWidth; cluster++) { // O(W)
-                if (clustersSize[cluster] == 0) continue;
-                for (int d = 0; d < dimensions; d++) { // O(d)
-                    centroides[cluster][d] /= clustersSize[cluster];
-                }
-            }
-        }
+        int[] clusterIds = kMeans(states, coordinates, maxWidth, maxIterations, rnd);
 
         List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
         for (int i = 0; i < clusters.length; i++) {
             clusters[i] = new ArrayList<>();
         }
-        for (int node = 0; node < currentLayer.size(); node++) {
-            clusters[assignments[node]].add(currentLayer.get(node));
+        for (int i = 0; i < currentLayer.size(); i++) {
+            clusters[clusterIds[i]].add(currentLayer.get(i));
         }
-
-        /*try {
-            FileWriter writer = new FileWriter("tmp/distributionKP/KP1_Kmeans");
-            for (int i = 0; i < clusters.length; i++) {
-                for (NodeSubProblem<T> node: clusters[i]) {
-                    writer.write(node.state + " " + i + "\n");
-                }
-            }
-            writer.close();
-
-        } catch (IOException e) {
-            System.exit(-1);
-        }
-        System.exit(0);*/
 
         currentLayer.clear();
         mergeClusters(clusters, relax);
