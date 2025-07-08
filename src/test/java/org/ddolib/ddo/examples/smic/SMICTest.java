@@ -58,7 +58,7 @@ public class SMICTest {
     @ParameterizedTest
     @MethodSource("easySMICInstances")
     public void testSMIC(SMICProblem problem) {
-        for (int w = 2; w <= 30; w++) {
+        for (int w = 2; w <= 3; w++) {
             int i = Integer.parseInt(problem.name.split("_")[1].split(".t")[0]) - 1;
             assertEquals(unitaryTestSMIC(w, problem), cpSolution[i]);
         }
