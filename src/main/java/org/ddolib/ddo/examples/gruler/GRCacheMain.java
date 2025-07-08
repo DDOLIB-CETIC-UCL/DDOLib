@@ -6,8 +6,7 @@ import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -37,7 +36,7 @@ public class GRCacheMain {
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final SimpleCache<GRState> cache = new SimpleCache<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverCache(
+        final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,

@@ -28,11 +28,11 @@ import java.util.Arrays;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance =  "data/Knapsack/instance_n100_c500_10_5_10_5_1"; //
+        final String instance =  "data/Knapsack/example"; //
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);

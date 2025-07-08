@@ -7,8 +7,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +33,7 @@ public class SMICCacheMain {
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
         final SimpleCache<SMICState> cache = new SimpleCache<SMICState>();
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverCache<>(
+        final Solver solver = new SequentialSolverWithCache<>(
                 problem,
                 relax,
                 varh,

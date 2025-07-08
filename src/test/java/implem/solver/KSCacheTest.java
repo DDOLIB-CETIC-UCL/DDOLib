@@ -1,9 +1,6 @@
 package implem.solver;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
@@ -13,7 +10,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -31,7 +28,7 @@ public class KSCacheTest {
         Random rand = new Random(10);
         int number = 1000;
         boolean found = false;
-        int nbVars = 20; int cap = 10;
+        int nbVars = 10; int cap = 10;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
         return testStream.flatMap(k -> {
             int[] profit = new int[nbVars];
@@ -49,7 +46,7 @@ public class KSCacheTest {
     private static int optimalSolutionNoCaching(KSProblem problem) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(4);
+        final FixedWidth<Integer> width = new FixedWidth<>(10000);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver1 = new SequentialSolver(
@@ -64,16 +61,15 @@ public class KSCacheTest {
         return solver1.bestValue().get();
     }
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testOptimalSolutionFound(KSProblem problem) {
+
+    private int optimalSolutionWithCache(KSProblem problem, int w, CutSetType cutSetType) {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(3);
+        final FixedWidth<Integer> width = new FixedWidth<>(w);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solverWithCaching = new SequentialSolverCache(
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
+        final Solver solverWithCaching = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
@@ -82,13 +78,18 @@ public class KSCacheTest {
                 cache,
                 frontier);
 
-        SearchStatistics stats = solverWithCaching.maximize();
-//        System.out.println("optimal Solution No Caching : " + optimalSolutionNoCaching(problem) + "\nsolver With Caching: " + solverWithCaching.bestValue().get());
-
-        assertEquals(optimalSolutionNoCaching(problem), solverWithCaching.bestValue().get());
-        if (optimalSolutionNoCaching(problem) != solverWithCaching.bestValue().get()) {
-            System.out.println(problem);
-        }
+        solverWithCaching.maximize();
+        return solverWithCaching.bestValue().get();
     }
 
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testOptimalSolutionFound(KSProblem problem) {
+        CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
+        for (int wid = 1; wid <= 10; wid++) {
+            for (CutSetType ct : cs) {
+                assertEquals(optimalSolutionNoCaching(problem), optimalSolutionWithCache(problem, wid, ct));
+            }
+        }
+    }
 }

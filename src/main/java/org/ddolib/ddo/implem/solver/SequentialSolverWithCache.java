@@ -5,11 +5,9 @@ import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramCache;
+import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramWithCache;
 
 import java.util.*;
 
@@ -36,7 +34,7 @@ import java.util.*;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolverCache<K,T> implements Solver {
+public final class SequentialSolverWithCache<K,T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -81,7 +79,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagramCache<T,K> mdd;
+    private final DecisionDiagramWithCache<T,K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -105,7 +103,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
     /**
      * Creates a fully qualified instance
      */
-    public SequentialSolverCache(
+    public SequentialSolverWithCache(
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
@@ -122,12 +120,12 @@ public final class SequentialSolverCache<K,T> implements Solver {
         this.dominance = dominance;
         this.cache = cache;
         this.frontier = frontier;
-        this.mdd = new LinkedDecisionDiagramCache<>();
+        this.mdd = new LinkedDecisionDiagramWithCache<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
 
-    public SequentialSolverCache(
+    public SequentialSolverWithCache(
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
@@ -189,14 +187,10 @@ public final class SequentialSolverCache<K,T> implements Solver {
             if (cache.getLayer(depth).containsKey(sub.getState())) {
                 if (cache.mustExplore(sub, depth)) {
                     continue;
-//                    frontier.clear();
-//                    return new SearchStatistics(nbIter, queueMaxSize);
                 }
             }
-
-
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInputCache<T,K> compilation = new CompilationInputCache<>(
+            CompilationInputWithCache<T,K> compilation = new CompilationInputWithCache<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -209,7 +203,6 @@ public final class SequentialSolverCache<K,T> implements Solver {
                     bestLB,
                     frontier.cutSetType()
             );
-
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
             if (mdd.isExact()) {
@@ -217,7 +210,7 @@ public final class SequentialSolverCache<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInputCache<T,K>(
+            compilation = new CompilationInputWithCache<T,K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -231,11 +224,15 @@ public final class SequentialSolverCache<K,T> implements Solver {
                     frontier.cutSetType()
             );
             mdd.compile(compilation);
+            if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
+                maybeUpdateBest(verbosityLevel);
+            }
             if (mdd.isExact()) {
                 maybeUpdateBest(verbosityLevel);
             } else {
                 enqueueCutset();
             }
+
         }
         return new SearchStatistics(nbIter, queueMaxSize);
     }

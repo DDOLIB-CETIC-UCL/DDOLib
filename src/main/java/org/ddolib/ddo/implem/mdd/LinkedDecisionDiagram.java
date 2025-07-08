@@ -327,12 +327,17 @@ public final class LinkedDecisionDiagram<T,K> implements DecisionDiagram<T,K> {
                     }
                 }
                 // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
-                if (n.node.getNodeType() == NodeType.RELAXED && input.getCutSetType() == CutSetType.Frontier
+                if (input.getCutSetType() == CutSetType.Frontier
                         && input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
-                    for (Edge e : n.node.edges) {
-                        Node origin = e.origin;
-                        if (origin.getNodeType() == NodeType.EXACT) {
-                            currentCutSet.add(prevLayer.get(origin));
+                    if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
+                        n.node.setNodeType(NodeType.RELAXED);
+                    }
+                    if (n.node.getNodeType() == NodeType.RELAXED) {
+                        for (Edge e : n.node.edges) {
+                            Node origin = e.origin;
+                            if (origin.getNodeType() == NodeType.EXACT) {
+                                currentCutSet.add(prevLayer.get(origin));
+                            }
                         }
                     }
                 }
