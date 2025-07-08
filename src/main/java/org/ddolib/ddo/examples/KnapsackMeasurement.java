@@ -20,6 +20,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 
 import static org.ddolib.ddo.examples.Knapsack.readInstance;
 
@@ -30,20 +31,20 @@ public class KnapsackMeasurement {
         FilenameFilter filter = (dir1, name) -> name.endsWith(".txt");
         File[] instances = dir.listFiles(filter);
 
-        String header = "Name;Solver;Seed;MaxWidth;Model;VarHeuristic;MergeStrategy;DistanceFunction;CoordFunction;Time(s);Objective;Optimal\n";
+        String header = "Name;Solver;Seed;MaxWidth;Model;VarHeuristic;MergeStrategy;DistanceFunction;CoordFunction;Time(s);Objective;Optimal;nbIterations\n";
         FileWriter writer = new FileWriter("tmp/knapsackStats.csv", false);
         writer.write(header);
 
         RelaxationType[] rtTested = new RelaxationType[] {
-                // RelaxationType.Cost,
-                // RelaxationType.Kmeans,
+                RelaxationType.Cost,
+                RelaxationType.Kmeans,
                 // RelaxationType.KClosest,
                 RelaxationType.GHP
         };
 
         Map<RelaxationType, String> rtMap = new HashMap<>();
         rtMap.put(RelaxationType.Cost, "Cost");
-        rtMap.put(RelaxationType.Kmeans, "KMeans");
+        rtMap.put(RelaxationType.Kmeans, "KMeansSmile");
         rtMap.put(RelaxationType.KClosest, "KClosest");
         rtMap.put(RelaxationType.GHP, "GHP");
 
@@ -62,12 +63,12 @@ public class KnapsackMeasurement {
 
             StringBuilder csvString;
             for (RelaxationType relaxationType : rtTested) {
-                for (int maxWidth = 1; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.1))) {
+                for (int maxWidth = 2; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.1))) {
                     for (int seed: List.of(132343)) { //, 8797, 132343, 54646)) {
                         csvString = new StringBuilder();
                         // System.out.print(maxWidth + ", ");
                         width = new FixedWidth<>(maxWidth);
-                        Solver solver = new RelaxationSolver<>(
+                        Solver solver = new SequentialSolver<>(
                                 relaxationType,
                                 problem,
                                 relax,
@@ -85,7 +86,7 @@ public class KnapsackMeasurement {
                         // System.out.println(duration);
 
                         csvString.append(instance.getName()).append(";");
-                        csvString.append("relax").append(";");
+                        csvString.append("sequential").append(";");
                         csvString.append(seed).append(";");
                         csvString.append(maxWidth).append(";");
                         csvString.append("Knapsack").append(";");
@@ -95,6 +96,7 @@ public class KnapsackMeasurement {
                         csvString.append("capacity").append(";");
                         csvString.append(duration).append(";");
                         csvString.append(solver.bestValue().get()).append(";");
+                        csvString.append(stats.nbIterations()).append("\n");
                         csvString.append(problem.optimal).append("\n");
 
 

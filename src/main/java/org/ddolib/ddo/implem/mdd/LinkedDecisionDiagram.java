@@ -14,6 +14,10 @@ import java.util.Map.Entry;
 
 import static org.ddolib.ddo.implem.mdd.KMeans.kMeans;
 
+import smile.clustering.CentroidClustering;
+import smile.clustering.KMeans;
+import smile.math.distance.EuclideanDistance;
+
 /**
  * This class implements the decision diagram as a linked structure. 
  */
@@ -242,7 +246,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 relaxGHP(maxWidth, input.getDistance(), relax, input.getRandom());
                                 break;
                             case Kmeans:
-                                relaxKMeans(maxWidth, input.getCoord(), relax, input.getRandom());
+                                relaxKMeansSmile(maxWidth, input.getCoord(), relax, input.getRandom());
+                                //relaxKMeans(maxWidth, input.getCoord(), relax, input.getRandom());
                                 break;
                             default:
                                 System.err.println("Unsupported relax type: " + input.getRelaxType());
@@ -723,6 +728,29 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             sum += diff * diff;
         }
         return sum;
+    }
+
+    private void relaxKMeansSmile(final int maxWidth, final StateCoordinates<T> coordinates, final Relaxation<T> relax, final Random rnd) {
+        int maxIter = 50;
+        int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
+        double[][] data = new double[currentLayer.size()][dimensions];
+        for (int node = 0; node < currentLayer.size(); node++) {
+            data[node] = coordinates.getCoordinates(currentLayer.get(node).state).clone();
+        }
+        CentroidClustering<double[], double[]> clustering = KMeans.fit(data, maxWidth, maxIter, 1.0E-4);
+
+        List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
+        for (int i = 0; i < clusters.length; i++) {
+            clusters[i] = new ArrayList<>();
+        }
+        for (NodeSubProblem<T> node: currentLayer) {
+            double[] coords = coordinates.getCoordinates(node.state);
+            int clusterIndex = clustering.predict(coords);
+            clusters[clusterIndex].add(node);
+        }
+
+        currentLayer.clear();
+        mergeClusters(clusters, relax);
     }
 
     private void relaxKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Relaxation<T> relax, final Random rnd) {
