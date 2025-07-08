@@ -11,7 +11,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
  * @param <K> the type of key.
  *
  */
-public final class CompilationInputCache<T,K> {
+public final class CompilationInputWithCache<T,K> {
     /** How is the mdd being compiled ? */
     final CompilationType compType;
     /** A reference to the original problem we try to maximize */
@@ -59,7 +59,7 @@ public final class CompilationInputCache<T,K> {
      * @param bestLB
      * @param cache
      */
-    public CompilationInputCache(
+    public CompilationInputWithCache(
             final CompilationType compType,
             final Problem<T> problem,
             final Relaxation<T> relaxation,

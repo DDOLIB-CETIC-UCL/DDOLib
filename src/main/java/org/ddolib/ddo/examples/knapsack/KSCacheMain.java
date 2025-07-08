@@ -7,8 +7,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,7 +29,7 @@ import java.util.Arrays;
 public class KSCacheMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_1";
+        final String instance = "data/Knapsack/example";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
@@ -40,7 +39,7 @@ public class KSCacheMain {
         final SimpleCache<Integer> cache = new SimpleCache();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolverCache(
+        final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,

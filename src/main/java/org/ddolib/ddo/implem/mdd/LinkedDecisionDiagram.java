@@ -347,12 +347,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (n.node.getNodeType() == NodeType.RELAXED && input.cutSetType() == CutSetType.Frontier
-                        && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
-                    for (Edge e : n.node.edges) {
-                        Node origin = e.origin;
-                        if (origin.getNodeType() == NodeType.EXACT) {
-                            currentCutSet.add(prevLayer.get(origin));
+                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                    if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
+                        n.node.setNodeType(NodeType.RELAXED);
+                    }
+                    if (n.node.getNodeType() == NodeType.RELAXED) {
+                        for (Edge e : n.node.edges) {
+                            Node origin = e.origin;
+                            if (origin.getNodeType() == NodeType.EXACT) {
+                                currentCutSet.add(prevLayer.get(origin));
+                            }
                         }
                     }
                 }
@@ -769,3 +773,4 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 }
+

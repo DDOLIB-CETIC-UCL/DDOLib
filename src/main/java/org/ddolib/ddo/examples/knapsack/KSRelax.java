@@ -44,7 +44,7 @@ public class KSRelax implements Relaxation<Integer>  {
 
         Integer[] sorted = variables.toArray(new Integer[0]);
         Arrays.sort(sorted, new RatioComparator().reversed());
-
+//        System.out.println(Arrays.toString(sorted));
         int maxProfit = 0;
         Iterator<Integer> itemIterator = Arrays.stream(sorted).iterator();
         while (capacity > 0 && itemIterator.hasNext()) {

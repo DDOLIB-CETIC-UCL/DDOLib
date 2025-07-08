@@ -9,7 +9,7 @@ import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class BKSCacheMain {
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
-        final Solver solver = new SequentialSolverCache(
+        final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,

@@ -6,13 +6,10 @@ import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverCache;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
@@ -32,14 +29,14 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class GRCacheMain {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(9);
+        GRProblem problem = new GRProblem(8);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final SimpleCache<GRState> cache = new SimpleCache<>();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final Solver solver = new SequentialSolverCache(
+        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
