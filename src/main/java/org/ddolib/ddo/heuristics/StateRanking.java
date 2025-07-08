@@ -10,5 +10,6 @@ import java.util.Comparator;
  * which is defined in the form of a comparator. The solvers and MDD should
  * interpret compare(a, b) > 0 as a should have a higher chance of being kept
  * intact while b should have a higher chance of being merged.
+ * @param <T> the type of state
  */
 public interface StateRanking<T> extends Comparator<T> {}

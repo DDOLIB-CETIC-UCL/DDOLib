@@ -4,133 +4,54 @@ import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 import java.util.Random;
 
 /**
- * The set of parameters used to tweak the compilation of a MDD
- * @param <T> The type used to model the state of your problem
+ * The set of parameters used to tweak the compilation of an MDD
+ *
+ * @param compilationType   How is the mdd being compiled.
+ * @param problem           A reference to the original problem to solve.
+ * @param relaxation        The relaxation used to merge nodes in a relaxed mdd.
+ * @param variableHeuristic The variable heuristic used to decide the variable to branch on next.
+ * @param stateRanking      The state ranking heuristic to choose the nodes to keep and those to discard.
+ * @param residual          The subproblem whose state space must be explored.
+ * @param maxWidth          The maximum width of the mdd.
+ * @param dominance         The dominance checker used to prune the search space.
+ * @param bestLB            The best known lower bound at the time when the dd is being compiled.
+ * @param cutSetType        The type of cut set used in the compilation.
+ * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
+ * @param relaxStrat         Which relaxation method is used
+ * @param distance          The function that returns the distance between two states
+ * @param coord             The function that returns the coordinates of a state
+ * @param rnd               The random generator that will be used when needed
+ * @param <T>               The type used to model the state of your problem.
+ * @param <K>               The type of the dominance key.
  */
-public final class CompilationInput<T> {
-    final RelaxationType relaxType;
-    /** How is the mdd being compiled ? */
-    final CompilationType compType;
-    /** A reference to the original problem we try to maximize */
-    final Problem<T> problem;
-    /** The relaxation which we use to merge nodes in a relaxed dd */
-    final Relaxation<T> relaxation;
-    /** The variable heuristic which is used to decide the variable to branch on next */
-    final VariableHeuristic<T> var;
-    /** The state ranking heuristic to choose the nodes to keep and those to discard */
-    final StateRanking<T> ranking;
-    /** A distance function to identify the close nodes */
-    final StateDistance<T> distance;
-    /** A function to express the coordinates of a state (for kmeans) */
-    final StateCoordinates<T> coord;
-    /** The subproblem whose state space must be explored */
-    final SubProblem<T> residual;
-    /** What is the maximum width of the mdd ? */
-    final int maxWidth;
-    /** The best known lower bound at the time when the dd is being compiled */
-    final int bestLB;
-    final Random rnd;
+public record CompilationInput<T, K>(CompilationType compilationType,
+                                     Problem<T> problem,
+                                     Relaxation<T> relaxation,
+                                     VariableHeuristic<T> variableHeuristic,
+                                     StateRanking<T> stateRanking,
+                                     SubProblem<T> residual,
+                                     int maxWidth,
+                                     DominanceChecker<T, K> dominance,
+                                     double bestLB,
+                                     CutSetType cutSetType,
+                                     boolean exportAsDot,
+                                     RelaxationStrat relaxStrat,
+                                     StateDistance<T> distance,
+                                     StateCoordinates<T> coord,
+                                     Random rnd) {
 
-    /** Creates the inputs to parameterize the compilation of an MDD */
-    public CompilationInput(
-            final RelaxationType relaxType,
-            final CompilationType compType,
-            final Problem<T> problem,
-            final Relaxation<T> relaxation,
-            final VariableHeuristic<T> var,
-            final StateRanking<T> ranking,
-            final StateDistance<T> distance,
-            final StateCoordinates<T> coord,
-            final SubProblem<T> residual,
-            final int maxWidth,
-            final int bestLB,
-            final Random rnd
-    ) {
-        this.relaxType = relaxType;
-        this.compType = compType;
-        this.problem  = problem;
-        this.relaxation = relaxation;
-        this.var = var;
-        this.ranking = ranking;
-        this.distance = distance;
-        this.coord = coord;
-        this.residual = residual;
-        this.maxWidth = maxWidth;
-        this.bestLB = bestLB;
-        this.rnd = rnd;
+    /**
+     * Returns a string representation of this record class.
+     *
+     * @return Returns a string representation of this record class.
+     */
+    @Override
+    public String toString() {
+        return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestLB);
     }
-
-    /** Creates the inputs to parameterize the compilation of an MDD */
-    public CompilationInput(
-            final CompilationType compType,
-            final Problem<T> problem,
-            final Relaxation<T> relaxation,
-            final VariableHeuristic<T> var,
-            final StateRanking<T> ranking,
-            final SubProblem<T> residual,
-            final int maxWidth,
-            final int bestLB
-    ) {
-        this(
-                RelaxationType.Cost,
-                compType,
-                problem,
-                relaxation,
-                var,
-                ranking,
-                null,
-                null,
-                residual,
-                maxWidth,
-                bestLB,
-                new Random()
-        );
-    }
-
-    /** @return how are the relaxed nodes selected */
-    public RelaxationType getRelaxType() {
-        return relaxType;
-    }
-
-    /** @return how is the dd being compiled ? */
-    public CompilationType getCompilationType() {
-        return compType;
-    }
-    /** @return the problem we try to maximize */
-    public Problem<T> getProblem() {
-        return problem;
-    }
-    /** @return the relaxation of the problem */
-    public Relaxation<T> getRelaxation() {
-        return relaxation;
-    }
-    /** @return an heuristic to pick the least promising nodes */
-    public VariableHeuristic<T> getVariableHeuristic() {
-        return var;
-    }
-    /** @return an heuristic to pick the least promising nodes */
-    public StateRanking<T> getStateRanking() {
-        return ranking;
-    }
-    /** @return the subproblem that will be compiled into a dd */
-    public SubProblem<T> getResidual() {
-        return residual;
-    }
-    /** @return the maximum with allowed for any layer in the decision diagram */
-    public int getMaxWidth() {
-        return maxWidth;
-    }
-    /** @return best known lower bound at the time when the dd is being compiled */
-    public int getBestLB() {
-        return bestLB;
-    }
-
-    /** @return the distance function */
-    public StateDistance<T> getDistance() {return distance;}
-    public StateCoordinates<T> getCoord() {return coord;}
-    public Random getRandom() {return rnd;}
 }

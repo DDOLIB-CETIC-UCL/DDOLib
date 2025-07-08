@@ -8,6 +8,11 @@ import java.util.Set;
  * To help making its decision, the heuristic is given access to the
  * nodes from the layer that is about to be expanded.
  */
+/**
+ *
+ * @param <T> the type of state.
+ *
+ */
 public interface VariableHeuristic<T> {
     /**
      * @return The next variable to branch on or null if no decision can be 

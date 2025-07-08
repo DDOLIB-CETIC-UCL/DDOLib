@@ -2,8 +2,7 @@ package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.*;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.ddo.implem.heuristics.DefaultStateDistance;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.*;
@@ -11,69 +10,98 @@ import java.util.*;
 /**
 Solver that solve only a relaxed MDD from the root node
  */
-public final class RelaxationSolver<T> implements Solver {
-    private final RelaxationType relaxType;
-    /** The problem we want to maximize */
+public final class RelaxationSolver<T, K> implements Solver {
+    /**
+     * The problem we want to maximize
+     */
     private final Problem<T> problem;
     /** A suitable relaxation for the problem we want to maximize */
     private final Relaxation<T> relax;
-    /** A heuristic to identify the most promising nodes */
+    /**
+     * A heuristic to identify the most promising nodes
+     */
     private final StateRanking<T> ranking;
-    /** A heuristic to choose the maximum width of the DD you compile */
+    /**
+     * A heuristic to choose the maximum width of the DD you compile
+     */
     private final WidthHeuristic<T> width;
-    /** A heuristic to choose the next variable to branch on when developing a DD */
+    /**
+     * A heuristic to choose the next variable to branch on when developing a DD
+     */
     private final VariableHeuristic<T> varh;
-    /** A distance function to identify the close nodes */
-    private final StateDistance<T> distance;
-    private final StateCoordinates<T> coord;
+    private final RelaxationStrat relaxStrat;
 
     /**
-     * This is the fringe: the set of nodes that must still be explored before
+     * Set of nodes that must still be explored before
      * the problem can be considered 'solved'.
-     *
+     * <p>
      * # Note:
      * This fringe orders the nodes by upper bound (so the highest ub is going
      * to pop first). So, it is guaranteed that the upper bound of the first
      * node being popped is an upper bound on the value reachable by exploring
      * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an ub <= current best
+     * exploration can be stopped as soon as a node with an ub &#8804; current best
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
     /**
      * Your implementation (just like the parallel version) will reuse the same
      * data structure to compile all mdds.
-     *
+     * <p>
      * # Note:
      * This approach is recommended, however we do not force this design choice.
      * You might decide against reusing the same object over and over (even though
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagram<T> mdd;
+    private final DecisionDiagram<T, K> mdd;
 
-    /** This is the value of the best known lower bound. */
-    private int bestLB;
+    private final StateDistance<T> distance;
+    private final StateCoordinates<T> coord;
 
-    /** If set, this keeps the info about the best solution so far. */
+    private int bestUB;
+    private long startTime;
+    public double timeForBest;
+    private final Random rnd;
+
+    /**
+     * Value of the best known lower bound.
+     */
+    private double bestLB;
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
     private Optional<Set<Decision>> bestSol;
 
-    private final Random rnd;
+    /**
+     * The dominance object that will be used to prune the search space.
+     */
+    private final DominanceChecker<T, K> dominance;
+
+    /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
+    private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
+    private boolean firstRelaxed = true;
 
     /** Creates a fully qualified instance */
     public RelaxationSolver(
-            final RelaxationType relaxType,
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
-            final StateDistance<T> distance,
-            final StateCoordinates<T> coord,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
+            final DominanceChecker<T, K> dominance,
+            final RelaxationStrat relaxStrat,
+            final StateDistance<T> distance,
+            final StateCoordinates<T> coord,
             final int seed)
     {
-        this.relaxType = relaxType;
+        this.relaxStrat = relaxStrat;
         this.problem = problem;
         this.relax   = relax;
         this.varh    = varh;
@@ -85,45 +113,42 @@ public final class RelaxationSolver<T> implements Solver {
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
+        this.dominance = dominance;
         rnd = new Random(seed);
-    }
-
-    /** Creates a fully qualified instance */
-    public RelaxationSolver(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier)
-    {
-        this(RelaxationType.Cost, problem, relax, varh, ranking, new DefaultStateDistance<>(), new DefaultStateCoordinates<>(), width, frontier, 654865);
     }
 
     @Override
     public SearchStatistics maximize() {
+        return maximize(0, false);
+    }
 
+    @Override
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+        long start = System.currentTimeMillis();
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
 
-        CompilationInput<T> compilation = new CompilationInput<>(
-                relaxType,
+        CompilationInput<T, K> compilation = new CompilationInput<>(
                 CompilationType.Relaxed,
                 problem,
                 relax,
                 varh,
                 ranking,
-                distance,
-                coord,
                 sub,
                 maxWidth,
-                //
+                dominance,
                 bestLB,
+                frontier.cutSetType(),
+                exportAsDot,
+                relaxStrat,
+                distance,
+                coord,
                 rnd
         );
         mdd.compile(compilation);
-        maybeUpdateBest();
-        return new SearchStatistics(1, 0);
+        maybeUpdateBest(verbosityLevel, exportAsDot);
+        long end = System.currentTimeMillis();
+        return new SearchStatistics(1, 0, end-start);
     }
 
     public boolean isExact() {
@@ -131,7 +156,7 @@ public final class RelaxationSolver<T> implements Solver {
     }
 
     @Override
-    public Optional<Integer> bestValue() {
+    public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestLB);
         } else {
@@ -158,12 +183,14 @@ public final class RelaxationSolver<T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest() {
-        Optional<Integer> ddval = mdd.bestValue();
+    private void maybeUpdateBest(int verbosityLevel, boolean exportAsDot) {
+        Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
-            // System.out.println("New Best Value: " + ddval.get());
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
+            if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
+        } else if (exportAsDot) {
+            mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }
 }

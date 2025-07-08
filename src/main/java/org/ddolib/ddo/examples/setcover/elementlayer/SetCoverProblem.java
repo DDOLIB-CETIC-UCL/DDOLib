@@ -37,7 +37,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -82,7 +82,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     }
 
     @Override
-    public int transitionCost(SetCoverState state, Decision decision) {
+    public double transitionCost(SetCoverState state, Decision decision) {
         if (decision.val() != -1) { // a set is added to the solution
             return -1;
         } else { // no set is added to the solution

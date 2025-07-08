@@ -26,7 +26,7 @@ public class SetCoverRelax implements Relaxation<SetCoverState> {
     }
 
     @Override
-    public int relaxEdge(SetCoverState from, SetCoverState to, SetCoverState merged, Decision d, int cost) {
+    public double relaxEdge(SetCoverState from, SetCoverState to, SetCoverState merged, Decision d, double cost) {
         return cost;
     }
 

@@ -94,7 +94,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -144,7 +144,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     }
 
     @Override
-    public int transitionCost(SetCoverState state, Decision decision) {
+    public double transitionCost(SetCoverState state, Decision decision) {
         return -decision.val();
     }
 }

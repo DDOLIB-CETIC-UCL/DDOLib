@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20230227</version>
+            <version>20250517</version>
         </dependency>
         <dependency>
             <groupId>com.github.haifengl</groupId>
@@ -106,12 +106,12 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.10</version>
-                <configuration>
+                <!--configuration>
                     <append>true</append>
                     <excludes>
                         <exclude>**/examples/**</exclude>
                     </excludes>
-                </configuration>
+                </configuration-->
                 <executions>
                     <execution>
                         <goals>
@@ -153,6 +153,11 @@
                     <destDir>javadoc</destDir>
                     <source>21</source>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
             </plugin>
         </plugins>
     </build>

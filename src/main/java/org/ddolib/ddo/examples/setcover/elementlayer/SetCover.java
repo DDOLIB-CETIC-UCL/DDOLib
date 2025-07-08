@@ -1,15 +1,16 @@
 package org.ddolib.ddo.examples.setcover.elementlayer;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.RelaxationType;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DefaultDominance;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.MinCentrality;
 
 import java.io.BufferedReader;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
+import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
 
 public class SetCover {
 
@@ -30,20 +33,22 @@ public class SetCover {
         final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
         final VariableHeuristic<SetCoverState> varh = new MinCentrality(problem);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
+        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new RelaxationSolver<>(
-                RelaxationType.GHP,
-                // RelaxationType.MinDist,
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final Solver solver = relaxationSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
-                distance,
-                null,
                 width,
                 frontier,
-                646646545);
+                dominance,
+                RelaxationStrat.GHP,
+                distance,
+                coord,
+                54658646);
 
         long start = System.currentTimeMillis();
         solver.maximize();

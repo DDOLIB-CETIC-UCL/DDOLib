@@ -1,10 +1,10 @@
 package org.ddolib.ddo.examples.setcover.setlayer;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
+
 import static org.ddolib.ddo.examples.setcover.setlayer.SetCover.*;
+import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -51,8 +51,8 @@ public class SetCoverTest {
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new RelaxationSolver<>(
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Solver solver = relaxationSolver(
                 problem,
                 relax,
                 varh,
@@ -64,7 +64,7 @@ public class SetCoverTest {
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        // System.out.printf("Objective: %d%n", solver.bestValue().get());
         Assertions.assertTrue(solver.bestValue().get() <= 1 );
     }
 
@@ -82,8 +82,8 @@ public class SetCoverTest {
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,

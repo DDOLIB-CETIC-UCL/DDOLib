@@ -6,14 +6,17 @@ import java.util.Iterator;
  * This is the definition of the problem one tries to optimize. It basically
  * consists of a problem's formulation in terms of the labeled transition
  * system semantics of a dynamic programme.
+ * @param <T> the type of state
  */
 public interface Problem<T> {
     /** @return the number of variables in the problem */
     int nbVars();
     /** @return the intial state of the problem */
     T initialState();
-    /** @return the problem's initial value */
-    int initialValue();
+    /**
+     * @return the problem's initial value
+     */
+    double initialValue();
 
     /**
      * @param state the state from which the transitions should be applicable
@@ -30,12 +33,12 @@ public interface Problem<T> {
      * @param decision the decision which is applied to `state`. 
      */
     T transition(final T state, final Decision decision);
-    /** 
+    /**
      * Computes the impact on the objective value of making the given
      * decision in the specified state.
-     * 
-     * @param state the state from which the transition originates
-     * @param decision the decision which is applied to `state`. 
+     *
+     * @param state    the state from which the transition originates
+     * @param decision the decision which is applied to `state`.
      */
-    int transitionCost(final T state, final Decision decision);
+    double transitionCost(final T state, final Decision decision);
 }

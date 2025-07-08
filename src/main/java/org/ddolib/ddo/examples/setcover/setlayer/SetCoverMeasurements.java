@@ -1,67 +1,69 @@
 package org.ddolib.ddo.examples.setcover.setlayer;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.RelaxationType;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.setcover.setlayer.SetCoverIntersectionDistance;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.ddolib.ddo.examples.setcover.setlayer.SetCover.readInstance;
+import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
 
 public class SetCoverMeasurements {
 
     public static void main(String[] args) throws IOException {
 
-        String[] files = {
-                "data/SetCover/1id_problem/tripode",
-                "data/SetCover/generated/n_6_b_5_d_5",
-                "data/SetCover/generated/n_10_b_8_d_3",
-                "data/SetCover/1id_problem/abilene",
-                "data/SetCover/1id_problem/ai3",
-                "data/SetCover/1id_problem/gblnet",
-                "data/SetCover/1id_problem/aarnet"};
+        File dir = new File("./data/SetCover/measurements/or_library/set_covering");
+        // FilenameFilter filter = (dir1, name) -> name.endsWith(".txt");
+        // File[] instances = dir.listFiles(filter);
+        File[] instances = dir.listFiles();
 
         String header = "Name;Solver;Seed;MaxWidth;Model;VarHeuristic;MergeStrategy;DistanceFunction;Time(s);Objective";
 
-        FileWriter writer = new FileWriter("tmp/setCoverSetClusterStats.csv", false);
+        // String file = args[0];
+        FileWriter writer = new FileWriter("tmp/setCoverElementClusterStats.csv", false);
+        writer.write(header + "\n");
 
-        for (String file: files) {
-            SetCoverProblem problem = readInstance(file);
+        for (File file : instances) {
+            System.out.println(file.getName());
+            SetCoverProblem problem = readInstance(file.getPath());
             final SetCoverRanking ranking = new SetCoverRanking();
             SetCoverRelax relax;
+
             FixedWidth<SetCoverState> width;
-            final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+            final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             final StateDistance<SetCoverState> distance = new SetCoverDistance();
             final VariableHeuristic<SetCoverState> varh = new SetCoverHeuristics.FocusClosingElements(problem);
+            final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+            final DefaultStateCoordinates<SetCoverState> coordinates = new DefaultStateCoordinates<>();
 
             StringBuilder csvString;
             for (int maxWidth = 1; maxWidth < 10000; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.1))) {
-                for (int seed: List.of(54646, 8797, 132343)) {
+                boolean isExact = false;
+                for (int seed : List.of(54646)) { //, 8797, 132343)) {
                     csvString = new StringBuilder();
                     System.out.print(maxWidth + ", ");
                     relax = new SetCoverRelax();
                     width = new FixedWidth<>(maxWidth);
-                    Solver solver = new RelaxationSolver<>(
-                            RelaxationType.MinDist,
+                    Solver solver = relaxationSolver(
                             problem,
                             relax,
                             varh,
                             ranking,
-                            distance,
-                            null,
                             width,
                             frontier,
+                            dominance,
+                            RelaxationStrat.GHP,
+                            distance,
+                            coordinates,
                             seed);
 
                     long start = System.currentTimeMillis();
@@ -69,18 +71,19 @@ public class SetCoverMeasurements {
                     double duration = (System.currentTimeMillis() - start) / 1000.0;
                     System.out.println(duration);
 
-                    csvString.append(file).append(";");
+                    csvString.append(file.getName()).append(";");
                     csvString.append("relax").append(";");
                     csvString.append(seed).append(";");
                     csvString.append(maxWidth).append(";");
-                    csvString.append("set").append(";");
-                    csvString.append("focusClosing").append(";");
-                    csvString.append("MinDist").append(";");
+                    csvString.append("element").append(";");
+                    csvString.append("minCentrality").append(";");
+                    csvString.append("GHPAvgDist").append(";");
                     csvString.append("symDif").append(";");
                     csvString.append(duration).append(";");
                     csvString.append(solver.bestValue().get()).append("\n");
 
                     writer.write(csvString.toString());
+
                 }
             }
         }

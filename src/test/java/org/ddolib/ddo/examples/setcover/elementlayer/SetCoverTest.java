@@ -3,30 +3,24 @@ package org.ddolib.ddo.examples.setcover.elementlayer;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.examples.setcover.elementlayer.SetCoverHeuristics.*;
 
-import static org.ddolib.ddo.examples.setcover.elementlayer.SetCover.readInstance;
-
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import static java.lang.Math.max;
+import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public class SetCoverTest {
 
@@ -49,8 +43,8 @@ public class SetCoverTest {
         final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(Integer.MAX_VALUE);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        final Solver solver = new SequentialSolver<>(
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -74,7 +68,7 @@ public class SetCoverTest {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        // System.out.printf("Objective: %d%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", solution);
 
         Assertions.assertTrue(testValidity(problem, solution));
@@ -141,22 +135,24 @@ public class SetCoverTest {
         final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final SetCoverRanking ranking = new SetCoverRanking();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
 
-        for (RelaxationType relaxType: RelaxationType.values()) {
-            final Solver solver = new RelaxationSolver<>(
-                    relaxType,
+        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
+            final Solver solver = relaxationSolver(
                     problem,
                     relax,
                     varh,
                     ranking,
-                    distance,
-                    coord,
                     width,
                     frontier,
-                    684564);
+                    dominance,
+                    relaxType,
+                    distance,
+                    coord,
+                    54658646);
 
             solver.maximize();
             Assertions.assertTrue(solver.bestValue().isPresent());
@@ -181,19 +177,21 @@ public class SetCoverTest {
         final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
-        for (RelaxationType relaxType: RelaxationType.values()) {
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
             final Solver solver = new SequentialSolver<>(
-                    relaxType,
                     problem,
                     relax,
                     varh,
                     ranking,
-                    distance,
-                    coord,
                     width,
                     frontier,
-                    6546488);
+                    dominance,
+                    relaxType,
+                    distance,
+                    coord,
+                    54658646);
 
             solver.maximize();
 
@@ -229,22 +227,24 @@ public class SetCoverTest {
         final SetCoverRelax relax = new SetCoverRelax();
         final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
         final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
 
-        for (RelaxationType relaxType: RelaxationType.values()) {
-            final Solver solver = new SequentialSolver<>(
-                    relaxType,
+        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
+            final Solver solver = sequentialSolver(
                     problem,
                     relax,
                     varh,
                     ranking,
-                    distance,
-                    coord,
                     width,
                     frontier,
-                    6546488);
+                    dominance,
+                    relaxType,
+                    distance,
+                    coord,
+                    54658646);
 
             solver.maximize();
 
