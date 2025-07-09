@@ -73,10 +73,11 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Creates a new instance.
      *
-     * @param problem The problem we want to maximize.
-     * @param relax   A suitable relaxation for the problem we want to maximize
-     * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking A heuristic to identify the most promising nodes.
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param dominance The dominance object that will be used to prune the search space.
      */
     public ExactSolver(final Problem<T> problem,
                        final Relaxation<T> relax,

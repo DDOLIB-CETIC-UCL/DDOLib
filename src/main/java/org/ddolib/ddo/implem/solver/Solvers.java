@@ -149,12 +149,13 @@ public class Solvers {
     /**
      * Instantiates a solver using only exact mdd.
      *
-     * @param problem The problem we want to maximize.
-     * @param relax   A suitable relaxation for the problem we want to maximize
-     * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking A heuristic to identify the most promising nodes.
-     * @param <T>     The type of states.
-     * @param <K>     The type of dominance keys.
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
     public static <T, K> ExactSolver<T, K> exactSolver(final Problem<T> problem,
