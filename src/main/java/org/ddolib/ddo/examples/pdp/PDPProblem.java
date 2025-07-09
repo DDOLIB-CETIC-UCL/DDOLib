@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.pdp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -11,7 +11,7 @@ public class PDPProblem implements Problem<PDPState> {
     PDPInstance instance;
     public int n;
 
-    public PDPProblem(PDPInstance instance){
+    public PDPProblem(PDPInstance instance) {
         this.instance = instance;
         this.n = instance.n;
     }
@@ -49,10 +49,10 @@ public class PDPProblem implements Problem<PDPState> {
 
     @Override
     public Iterator<Integer> domain(PDPState state, int var) {
-        if(var == n-1) {
+        if (var == n - 1) {
             //the final decision is to come back to node zero
             return singleton(0).stream().iterator();
-        }else{
+        } else {
             ArrayList<Integer> domain = new ArrayList<>(state.openToVisit.stream().boxed().toList());
             return domain.iterator();
         }

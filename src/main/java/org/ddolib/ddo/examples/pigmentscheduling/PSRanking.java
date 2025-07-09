@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 import java.util.Arrays;
 

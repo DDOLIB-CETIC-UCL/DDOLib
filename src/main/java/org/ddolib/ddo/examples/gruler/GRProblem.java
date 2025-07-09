@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,12 +10,14 @@ import java.util.stream.IntStream;
 
 public class GRProblem implements Problem<GRState> {
     final int n;
+
     public GRProblem(int n) {
         this.n = n;
     }
+
     @Override
     public int nbVars() {
-        return n-1;
+        return n - 1;
     }
 
     @Override
@@ -30,6 +32,7 @@ public class GRProblem implements Problem<GRState> {
         mark.set(0);
         return new GRState(mark, new BitSet(), 0);
     }
+
     @Override
     public Iterator<Integer> domain(GRState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
@@ -41,7 +44,7 @@ public class GRProblem implements Problem<GRState> {
                         .boxed()
                         .toList());
 //        System.out.println(state + " --> " +  Arrays.toString(domain.toArray()));
-        return  domain.iterator();
+        return domain.iterator();
     }
 
     @Override
@@ -56,7 +59,7 @@ public class GRProblem implements Problem<GRState> {
             assert !newDistances.get(newMark - i);
             newDistances.set(newMark - i);
         }
-        assert(newMark >= newState.getLastMark());
+        assert (newMark >= newState.getLastMark());
         newState.getMarks().set(newMark);
         newState.getDistances().or(newDistances);
         return new GRState(newState.getMarks(), newState.getDistances(), newMark);

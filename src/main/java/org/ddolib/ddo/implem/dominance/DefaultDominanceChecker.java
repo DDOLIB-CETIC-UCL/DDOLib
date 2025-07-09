@@ -1,5 +1,7 @@
 package org.ddolib.ddo.implem.dominance;
 
+import org.ddolib.ddo.modeling.DefaultDominance;
+
 /**
  * A default implementation of dominance checker that checks nothing. It is used when we don't want to activate the
  * dominance checking.

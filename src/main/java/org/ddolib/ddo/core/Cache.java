@@ -2,17 +2,17 @@ package org.ddolib.ddo.core;
 
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.cache.Threshold;
+import org.ddolib.ddo.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Abstract of the cache use to reduce the search tree
+ *
  * @param <T> the type of the state
  */
 
-public interface Cache<T>  {
+public interface Cache<T> {
     /**
      * Returns true if the subproblem still must be explored,
      * given the thresholds contained in the cache.

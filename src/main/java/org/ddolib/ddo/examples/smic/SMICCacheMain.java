@@ -52,7 +52,7 @@ public class SMICCacheMain {
 
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
-            for (Decision d: decisions) {
+            for (Decision d : decisions) {
                 values[d.var()] = d.val();
             }
             return values;
@@ -66,7 +66,9 @@ public class SMICCacheMain {
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
         String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        while (!s.hasNextLine()) {s.nextLine();}
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
         int nbJob = s.nextInt();
         int initInventory = s.nextInt();
         int capaInventory = s.nextInt();

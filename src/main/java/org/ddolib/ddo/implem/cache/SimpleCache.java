@@ -1,7 +1,7 @@
 package org.ddolib.ddo.implem.cache;
 
 import org.ddolib.ddo.core.Cache;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -105,7 +105,10 @@ public class SimpleCache<T> implements Cache<T> {
                 lock.writeLock().unlock();
             }
         }
+
         @Override
-        public String toString() {return map.keySet().toString() + " ---> " + map.values().toString();}
+        public String toString() {
+            return map.keySet().toString() + " ---> " + map.values().toString();
+        }
     }
 }

@@ -1,13 +1,13 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.ddo.modeling.Relaxation;
+import org.ddolib.ddo.modeling.StateRanking;
 
 /**
  * Factory of solvers.

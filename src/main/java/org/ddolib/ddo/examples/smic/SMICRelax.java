@@ -1,7 +1,8 @@
 package org.ddolib.ddo.examples.smic;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.modeling.Relaxation;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -9,7 +10,9 @@ import java.util.Set;
 public class SMICRelax implements Relaxation<SMICState> {
     final SMICProblem problem;
 
-    public SMICRelax(SMICProblem problem) {this.problem = problem;}
+    public SMICRelax(SMICProblem problem) {
+        this.problem = problem;
+    }
 
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
@@ -28,6 +31,7 @@ public class SMICRelax implements Relaxation<SMICState> {
         }
         return new SMICState(intersectionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
     }
+
     @Override
     public double relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, double cost) {
         return cost;

@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.mcp;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 /**
  * Class used to compare two states for the MCP problem.

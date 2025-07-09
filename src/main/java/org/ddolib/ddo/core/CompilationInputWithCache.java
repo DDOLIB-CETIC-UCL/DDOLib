@@ -1,24 +1,34 @@
 package org.ddolib.ddo.core;
 
-import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.ddo.modeling.Relaxation;
+import org.ddolib.ddo.modeling.StateRanking;
 
 /**
  * The set of parameters used to tweak the compilation of a MDD
+ *
  * @param <T> The type used to model the state of your problem.
  * @param <K> the type of key.
- *
  */
-public final class CompilationInputWithCache<T,K> {
-    /** How is the mdd being compiled ? */
+public final class CompilationInputWithCache<T, K> {
+    /**
+     * How is the mdd being compiled ?
+     */
     final CompilationType compType;
-    /** A reference to the original problem we try to maximize */
+    /**
+     * A reference to the original problem we try to maximize
+     */
     final Problem<T> problem;
-    /** The relaxation which we use to merge nodes in a relaxed dd */
+    /**
+     * The relaxation which we use to merge nodes in a relaxed dd
+     */
     final Relaxation<T> relaxation;
-    /** The variable heuristic which is used to decide the variable to branch on next */
+    /**
+     * The variable heuristic which is used to decide the variable to branch on next
+     */
     final VariableHeuristic<T> var;
     /**
      * The state ranking heuristic to choose the nodes to keep and those to discard
@@ -35,25 +45,35 @@ public final class CompilationInputWithCache<T,K> {
     /**
      * The best known lower bound at the time when the dd is being compiled
      */
-    /** The dominance checker used to prune the search space */
-    final SimpleDominanceChecker<T,K> dominance;
-    /** The best known lower bound at the time when the dd is being compiled */
+    /**
+     * The dominance checker used to prune the search space
+     */
+    final SimpleDominanceChecker<T, K> dominance;
+    /**
+     * The best known lower bound at the time when the dd is being compiled
+     */
     final double bestLB;
 
-    /** The type of cut set to be used in the compilation */
+    /**
+     * The type of cut set to be used in the compilation
+     */
     final CutSetType cutSetType;
-    /** The cache used to prune the search space */
+    /**
+     * The cache used to prune the search space
+     */
     final SimpleCache<T> cache;
-    /**  Whether the compiled diagram have to be exported to a dot file.*/
+    /**
+     * Whether the compiled diagram have to be exported to a dot file.
+     */
     final boolean exportAsDot;
 
 
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
      *
-     * @param compType compilation type
-     * @param problem problem to solve
-     * @param relaxation a relaxation
+     * @param compType    compilation type
+     * @param problem     problem to solve
+     * @param relaxation  a relaxation
      * @param var
      * @param ranking
      * @param residual
@@ -71,7 +91,7 @@ public final class CompilationInputWithCache<T,K> {
             final StateRanking<T> ranking,
             final SubProblem<T> residual,
             final int maxWidth,
-            final SimpleDominanceChecker<T,K> dominance,
+            final SimpleDominanceChecker<T, K> dominance,
             final SimpleCache<T> cache,
             final double bestLB,
             final CutSetType cutSetType,
@@ -154,16 +174,26 @@ public final class CompilationInputWithCache<T,K> {
         return cutSetType;
     }
 
-    /** @return the dominance rule of the problem */
+    /**
+     * @return the dominance rule of the problem
+     */
     public SimpleDominanceChecker<T, K> getDominance() {
         return dominance;
     }
 
-    /** @return the cache of the problem */
-    public SimpleCache<T> getCache() {return cache;}
+    /**
+     * @return the cache of the problem
+     */
+    public SimpleCache<T> getCache() {
+        return cache;
+    }
 
-    /** return an answer if the mdd is expport as dots */
-    public boolean exportAsDot() {return exportAsDot;}
+    /**
+     * return an answer if the mdd is expport as dots
+     */
+    public boolean exportAsDot() {
+        return exportAsDot;
+    }
 
     @Override
     public String toString() {

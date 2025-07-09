@@ -1,5 +1,7 @@
 package org.ddolib.ddo.implem.dominance;
 
+import org.ddolib.ddo.modeling.Dominance;
+
 /**
  * Object that, given a dominance, will check if a state is dominated.
  *

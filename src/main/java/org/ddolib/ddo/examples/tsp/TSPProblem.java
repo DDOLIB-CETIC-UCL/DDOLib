@@ -2,7 +2,7 @@ package org.ddolib.ddo.examples.tsp;
 
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +60,10 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public Iterator<Integer> domain(TSPState state, int var) {
-        if(var == n-1) {
+        if (var == n - 1) {
             //the final decision is to come back to node zero
             return singleton(0).stream().iterator();
-        }else{
+        } else {
             ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
             return domain.iterator();
         }

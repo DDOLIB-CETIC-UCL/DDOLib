@@ -1,7 +1,9 @@
 package org.ddolib.ddo.examples.smic;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.msct.MSCTDominance;
+import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -49,7 +51,7 @@ public class SMICMain {
 
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
-            for (Decision d: decisions) {
+            for (Decision d : decisions) {
                 values[d.var()] = d.val();
             }
             return values;
@@ -63,7 +65,9 @@ public class SMICMain {
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
         String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        while (!s.hasNextLine()) {s.nextLine();}
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
         int nbJob = s.nextInt();
         int initInventory = s.nextInt();
         int capaInventory = s.nextInt();

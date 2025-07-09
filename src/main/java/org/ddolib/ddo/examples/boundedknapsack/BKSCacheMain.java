@@ -3,14 +3,10 @@ package org.ddolib.ddo.examples.boundedknapsack;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
-import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.util.Arrays;
 

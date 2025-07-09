@@ -1,8 +1,9 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
@@ -36,7 +37,7 @@ public class GRMain {
         final FixedWidth<GRState> width = new FixedWidth<>(10);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SequentialSolver<GRState, Integer> solver =  Solvers.sequentialSolver(
+        final SequentialSolver<GRState, Integer> solver = Solvers.sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -50,10 +51,10 @@ public class GRMain {
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] values = new int[problem.nbVars()+1];
+                    int[] values = new int[problem.nbVars() + 1];
                     values[0] = 0;
                     for (Decision d : decisions) {
-                        values[d.var()+1] = d.val();
+                        values[d.var() + 1] = d.val();
                     }
                     return values;
                 })

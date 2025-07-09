@@ -1,4 +1,4 @@
-package org.ddolib.ddo.implem.dominance;
+package org.ddolib.ddo.modeling;
 
 public interface Dominance<T, K> {
     K getKey(T state);

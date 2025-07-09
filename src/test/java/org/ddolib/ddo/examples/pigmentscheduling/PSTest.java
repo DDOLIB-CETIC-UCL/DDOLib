@@ -42,7 +42,7 @@ class PSTest {
         final PSRanking ranking = new PSRanking();
         final FixedWidth<PSState> width = new FixedWidth<>(10);
         final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,

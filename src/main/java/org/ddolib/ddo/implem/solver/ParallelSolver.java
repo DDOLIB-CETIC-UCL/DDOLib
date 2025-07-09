@@ -1,11 +1,13 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
+import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.ddo.modeling.Relaxation;
+import org.ddolib.ddo.modeling.StateRanking;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -123,7 +125,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start);
     }
 
     @Override

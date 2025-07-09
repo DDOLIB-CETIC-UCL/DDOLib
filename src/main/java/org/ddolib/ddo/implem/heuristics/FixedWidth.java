@@ -10,11 +10,14 @@ import org.ddolib.ddo.heuristics.WidthHeuristic;
  * @param <T> the type of state
  */
 public final class FixedWidth<T> implements WidthHeuristic<T> {
-    /** The maximum width */
+    /**
+     * The maximum width
+     */
     private final int w;
 
     /**
      * Creates a new instance
+     *
      * @param w the fixed max width
      */
     public FixedWidth(final int w) {
@@ -24,5 +27,5 @@ public final class FixedWidth<T> implements WidthHeuristic<T> {
     @Override
     public int maximumWidth(final T state) {
         return w;
-    }    
+    }
 }

@@ -55,7 +55,7 @@ public class KSCacheMain {
         SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        System.out.println("Search statistics:"+stats);
+        System.out.println("Search statistics:" + stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {

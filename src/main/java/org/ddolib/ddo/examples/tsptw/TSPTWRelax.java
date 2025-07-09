@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.tsptw;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.modeling.Relaxation;
 
 import java.util.*;
 
@@ -70,7 +70,8 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         //From the current state we go to the closest node
         int start = switch (state.position()) {
             case TSPNode(int value) -> cheapestEdges[value];
-            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
+            case VirtualNodes(Set<Integer> nodes) ->
+                    nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
         int mandatory = 0; // The sum of shortest edges
         int backToDepot = 0; // The shortest edges to the depot

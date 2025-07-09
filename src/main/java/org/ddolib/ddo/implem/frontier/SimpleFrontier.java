@@ -4,10 +4,9 @@ package org.ddolib.ddo.implem.frontier;
 import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.PriorityQueue;
 
 /**
@@ -25,11 +24,12 @@ public final class SimpleFrontier<T> implements Frontier<T> {
      * The type of cutset used in the compilation
      */
     private final CutSetType cutSetType;
+
     /**
      * Creates a new instance
      *
-     * @param ranking an ordering to tell which of the subproblem is the most promising
-     *                and should be explored first.
+     * @param ranking    an ordering to tell which of the subproblem is the most promising
+     *                   and should be explored first.
      * @param cutSetType the type of cutset : LastExactLayer or Frontier
      */
     public SimpleFrontier(final StateRanking<T> ranking, final CutSetType cutSetType) {
@@ -58,7 +58,9 @@ public final class SimpleFrontier<T> implements Frontier<T> {
     }
 
     @Override
-    public CutSetType cutSetType() {return this.cutSetType;}
+    public CutSetType cutSetType() {
+        return this.cutSetType;
+    }
 
     /**
      * This utility class implements a decorator pattern to sort SubProblems by their ub then state

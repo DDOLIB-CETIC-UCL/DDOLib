@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.boundedknapsack;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.Iterator;

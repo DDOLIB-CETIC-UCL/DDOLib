@@ -1,6 +1,8 @@
 package org.ddolib.ddo.implem.dominance;
 
 
+import org.ddolib.ddo.modeling.Dominance;
+
 import java.util.*;
 
 /**

@@ -1,12 +1,12 @@
 package org.ddolib.ddo.examples.gruler;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.modeling.Relaxation;
 
 import java.util.BitSet;
 import java.util.Iterator;
 
-public class GRRelax implements Relaxation<GRState>  {
+public class GRRelax implements Relaxation<GRState> {
     @Override
     public GRState mergeStates(final Iterator<GRState> states) {
         // take the intersection of the marks and distances sets

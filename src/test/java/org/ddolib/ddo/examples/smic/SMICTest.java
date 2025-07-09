@@ -8,7 +8,6 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -41,7 +40,7 @@ public class SMICTest {
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                 new SMICDominance(), problem.nbVars());
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,
@@ -52,7 +51,7 @@ public class SMICTest {
                 dominance
         );
         solver.maximize();
-        return (int)-solver.bestValue().get();
+        return (int) -solver.bestValue().get();
     }
 
     @ParameterizedTest

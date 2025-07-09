@@ -2,7 +2,7 @@ package org.ddolib.ddo.examples.tsp;
 
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.modeling.Relaxation;
 
 import java.util.*;
 
@@ -56,7 +56,7 @@ public class TSPRelax implements Relaxation<TSPState> {
         // only unassigned.size() elements are to be visited
         // and there can be fewer than toVisit.size()
         int lb = 0;
-        if(toVisitLB.size() > unassignedVariables.size()) {
+        if (toVisitLB.size() > unassignedVariables.size()) {
             Collections.sort(toVisitLB);
         }
         for (int i = 0; i < unassignedVariables.size(); i++) {
