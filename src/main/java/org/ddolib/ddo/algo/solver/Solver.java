@@ -1,5 +1,6 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.algo.solver;
 
+import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 
 import java.util.Optional;

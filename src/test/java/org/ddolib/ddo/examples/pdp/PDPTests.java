@@ -1,10 +1,9 @@
 package org.ddolib.ddo.examples.pdp;
 
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.algo.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.IOException;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,7 +14,7 @@ public class PDPTests {
 
     static Stream<PDPInstance> dataProvider2() {
         return IntStream.range(0, 10).boxed().map(i ->
-                PDPMain.genInstance(5+i%14, i%3, new Random(i)));
+                PDPMain.genInstance(5 + i % 14, i % 3, new Random(i)));
     }
 
     @ParameterizedTest
@@ -27,6 +26,6 @@ public class PDPTests {
 
         PDPSolution solution = PDPMain.extractSolution(s, problem);
 
-        assertEquals(solution.value , instance.eval(solution.solution));
+        assertEquals(solution.value, instance.eval(solution.solution));
     }
 }

@@ -3,13 +3,13 @@ package org.ddolib.ddo.examples.gruler;
 import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GRTest {

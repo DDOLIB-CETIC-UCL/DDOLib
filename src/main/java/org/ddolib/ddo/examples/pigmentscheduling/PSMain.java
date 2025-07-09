@@ -3,8 +3,8 @@ package org.ddolib.ddo.examples.pigmentscheduling;
 import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -13,7 +13,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 
 /**
  * The Pigment Sequencing Problem (PSP) is a single-machine production planning problem

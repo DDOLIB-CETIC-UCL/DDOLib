@@ -1,10 +1,11 @@
-package implem.solver;
+package org.ddolib.ddo.core.cache;
 
 import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.algo.solver.Solver;
+import org.ddolib.ddo.algo.solver.ddo.SequentialSolver;
+import org.ddolib.ddo.algo.solver.ddo.SequentialSolverWithCache;
 import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -12,8 +13,6 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

@@ -1,9 +1,9 @@
-package org.ddolib.ddo.implem.solver;
+package org.ddolib.ddo.algo.solver.ddo;
 
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;

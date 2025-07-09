@@ -3,12 +3,12 @@ package org.ddolib.ddo.examples.gruler;
 import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.ddo.SequentialSolver;
+import org.ddolib.ddo.api.Solvers;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.IOException;
 import java.util.Arrays;

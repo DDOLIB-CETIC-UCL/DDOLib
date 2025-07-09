@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.algo.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -28,7 +28,7 @@ public class TSPTests {
 
     static Stream<TSPInstance> dataProvider2() throws IOException {
         return IntStream.range(0, 100).boxed().map(i ->
-                new TSPInstance(3+i%10, i, 1000));
+                new TSPInstance(3 + i % 10, i, 1000));
     }
 
     @ParameterizedTest
@@ -38,8 +38,8 @@ public class TSPTests {
         Solver s = TSPMain.solveTSP(instance);
         TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         int[] solution = TSPMain.extractSolution(problem, s);
-        assertEquals(s.bestValue().get() , -problem.eval(solution));
-        if(instance.objective >=0) {
+        assertEquals(s.bestValue().get(), -problem.eval(solution));
+        if (instance.objective >= 0) {
             System.out.println("comparing obj with actual best");
             assertEquals(instance.objective, -s.bestValue().get());
         }
