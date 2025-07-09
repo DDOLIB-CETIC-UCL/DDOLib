@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -68,11 +69,6 @@ public final class ExactSolver<T, K> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * Value of the best known lower bound.
-     */
-    private double bestLB;
-
-    /**
      * Creates a new instance.
      *
      * @param problem   The problem we want to maximize.
@@ -92,7 +88,6 @@ public final class ExactSolver<T, K> implements Solver {
         this.varh = varh;
         this.dominance = dominance;
         this.mdd = new LinkedDecisionDiagram<>();
-        this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -114,12 +109,12 @@ public final class ExactSolver<T, K> implements Solver {
                 root,
                 Integer.MAX_VALUE,
                 dominance,
-                bestLB,
+                Double.MIN_VALUE,
                 CutSetType.LastExactLayer,
                 exportAsDot
         );
         mdd.compile(compilation);
-        maybeUpdateBest(verbosityLevel);
+        extractBest(verbosityLevel);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(mdd.exportAsDot(),
@@ -137,8 +132,7 @@ public final class ExactSolver<T, K> implements Solver {
 
     @Override
     public Optional<Double> bestValue() {
-        if (bestSol.isPresent()) return Optional.of(bestLB);
-        else return Optional.empty();
+        return mdd.bestValue();
     }
 
     @Override
@@ -147,16 +141,14 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     /**
-     * This private method updates the best known node and lower bound in
-     * case the best value of the current `mdd` expansion improves the current
-     * bounds.
+     * Method that extract the best solution from the compiled mdd
      */
-    private void maybeUpdateBest(int verbosityLevel) {
+    private void extractBest(int verbosityLevel) {
         Optional<Double> ddval = mdd.bestValue();
-        if (ddval.isPresent() && ddval.get() > bestLB) {
-            bestLB = ddval.get();
+        if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();
-            if (verbosityLevel > 2) System.out.println("new best " + bestLB);
+            DecimalFormat df = new DecimalFormat("#.##########");
+            if (verbosityLevel >= 1) System.out.printf("best solution found: %s\n", df.format(ddval.get()));
         }
     }
 
