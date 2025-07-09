@@ -47,7 +47,8 @@ public class MSCTCacheMain {
                 width,
                 dominance,
                 cache,
-                frontier);
+                frontier,
+                false);
 
 
         long start = System.currentTimeMillis();

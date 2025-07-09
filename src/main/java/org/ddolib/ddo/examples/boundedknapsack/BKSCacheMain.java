@@ -43,7 +43,8 @@ public class BKSCacheMain {
                 width,
 //                dominance,
                 cache,
-                frontier);
+                frontier,
+                false);
 
 
         long start = System.currentTimeMillis();

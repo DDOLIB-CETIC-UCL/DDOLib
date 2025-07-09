@@ -44,6 +44,9 @@ public final class CompilationInputWithCache<T,K> {
     final CutSetType cutSetType;
     /** The cache used to prune the search space */
     final SimpleCache<T> cache;
+    /**  Whether the compiled diagram have to be exported to a dot file.*/
+    final boolean exportAsDot;
+
 
     /**
      * Creates the inputs to parameterize the compilation of an MDD.
@@ -58,6 +61,7 @@ public final class CompilationInputWithCache<T,K> {
      * @param dominance
      * @param bestLB
      * @param cache
+     * @param exportAsDot
      */
     public CompilationInputWithCache(
             final CompilationType compType,
@@ -70,7 +74,8 @@ public final class CompilationInputWithCache<T,K> {
             final SimpleDominanceChecker<T,K> dominance,
             final SimpleCache<T> cache,
             final double bestLB,
-            final CutSetType cutSetType
+            final CutSetType cutSetType,
+            final boolean exportAsDot
     ) {
         this.compType = compType;
         this.problem = problem;
@@ -83,6 +88,7 @@ public final class CompilationInputWithCache<T,K> {
         this.cache = cache;
         this.bestLB = bestLB;
         this.cutSetType = cutSetType;
+        this.exportAsDot = exportAsDot;
     }
 
     /**
@@ -155,6 +161,9 @@ public final class CompilationInputWithCache<T,K> {
 
     /** @return the cache of the problem */
     public SimpleCache<T> getCache() {return cache;}
+
+    /** return an answer if the mdd is expport as dots */
+    public boolean exportAsDot() {return exportAsDot;}
 
     @Override
     public String toString() {

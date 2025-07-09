@@ -43,7 +43,8 @@ public class GRCacheMain {
                 ranking,
                 width,
                 cache,
-                frontier);
+                frontier,
+                false);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

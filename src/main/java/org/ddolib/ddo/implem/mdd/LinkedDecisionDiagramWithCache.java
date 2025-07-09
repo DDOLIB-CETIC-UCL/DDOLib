@@ -7,8 +7,11 @@ import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
+
+import static javax.swing.UIManager.put;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -48,6 +51,14 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
      * The best node in the terminal layer (if it exists at all)
      */
     private Node best = null;
+    /**
+     * Used to build the .dot file displaying the compiled mdd.
+     */
+    private StringBuilder dotStr = new StringBuilder();
+    /**
+     * Given the hashcode of an edge, save its .dot representation
+     */
+    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     // --- UTILITY CLASSES -----------------------------------------------
 
@@ -251,6 +262,8 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
+        dotStr.append("digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
+
         // proceed to compilation
         final Problem<T> problem = input.getProblem();
         final Relaxation<T> relax = input.getRelaxation();
@@ -358,7 +371,9 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                 }
             }
             for (NodeSubProblem<T> n : this.currentLayer) {
-                double lb = input.getBestLB();
+                if (input.exportAsDot()) {
+                    dotStr.append(generateDotStr(n, false));
+                }
                 if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
@@ -373,7 +388,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                 // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
                 if (input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2 && input.getCutSetType() == CutSetType.Frontier) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
-                        n.node.setNodeType(NodeType.RELAXED);
+                        currentCutSet.add(n);
                     }
                     if (n.node.getNodeType() == NodeType.RELAXED) {
                         for (Edge e : n.node.edges) {
@@ -410,6 +425,15 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         for (Node n : nextLayer.values()) {
             if (best == null || n.value > best.value) {
                 best = n;
+            }
+        }
+
+        if (input.exportAsDot()) {
+            for (Entry<T, Node> entry : nextLayer.entrySet()) {
+                T state = entry.getKey();
+                Node node = entry.getValue();
+                NodeSubProblem<T> subProblem = new NodeSubProblem<>(state, best.value, node);
+                dotStr.append(generateDotStr(subProblem, true));
             }
         }
 
@@ -511,8 +535,15 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         }
     }
 
-
-
+    @Override
+    public String exportAsDot() {
+        for (String e : edgesDotStr.values()) {
+            dotStr.append(e);
+            dotStr.append("];\n");
+        }
+        dotStr.append("}");
+        return dotStr.toString();
+    }
 
     // --- UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInputWithCache<T,K> input) {
@@ -538,6 +569,8 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         cutset.clear();
         exact = true;
         best = null;
+        dotStr = new StringBuilder();
+        edgesDotStr = new HashMap<>();
     }
 
     /**
@@ -742,6 +775,58 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                     currentCache.get(j-1).get(index).setValue(value);
                 }
             }
+        }
+    }
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        String nodeStr = String.format(
+                "\"%s\nub: %s - value: %s\"",
+                node.state,
+                df.format(node.ub),
+                df.format(node.node.value)
+        );
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.node.hashCode());
+        sb.append(" [label=").append(nodeStr);
+        if (node.node.getNodeType() == NodeType.RELAXED) {
+            sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        } else {
+            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
+        }
+        if (lastLayer) {
+            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
+            sb.append(", tooltip=\"Terminal node\"");
+        }
+        sb.append("];\n");
+
+        for (Edge e : node.node.edges) {
+            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
+                    " [label=" + df.format(e.weight) +
+                    ", tooltip=\"" + e.decision.toString() + "\"";
+            put(e.hashCode(), edgeStr);
+        }
+        return sb;
+    }
+
+    /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     */
+    private void updateBestEdgeColor(int edgeHash) {
+        String edgeStr = edgesDotStr.get(edgeHash);
+        if (edgeStr != null) {
+            edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
+            edgesDotStr.replace(edgeHash, edgeStr);
         }
     }
 

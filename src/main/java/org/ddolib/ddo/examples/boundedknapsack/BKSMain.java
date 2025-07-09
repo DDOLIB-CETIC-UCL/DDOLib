@@ -39,7 +39,8 @@ public class BKSMain {
                 width,
 //                dominance,
                 cache,
-                frontier);
+                frontier,
+                false);
 
 
         long start = System.currentTimeMillis();

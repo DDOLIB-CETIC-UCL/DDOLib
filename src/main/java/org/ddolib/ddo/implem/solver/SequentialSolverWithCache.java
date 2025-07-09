@@ -101,6 +101,11 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
     private SimpleCache<T> cache;
 
     /**
+     * Draw the first DD if activate this boolean
+     */
+    private boolean exportAsDot;
+
+    /**
      * Creates a fully qualified instance
      */
     public SequentialSolverWithCache(
@@ -111,7 +116,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final WidthHeuristic<T> width,
             final SimpleDominanceChecker<T,K> dominance,
             final SimpleCache<T> cache,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier,
+            final boolean exportAsDot) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -123,6 +129,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         this.mdd = new LinkedDecisionDiagramWithCache<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
+        this.exportAsDot = exportAsDot;
     }
 
     public SequentialSolverWithCache(
@@ -132,7 +139,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final SimpleCache<T> cache,
-            final Frontier<T> frontier) {
+            final Frontier<T> frontier,
+            final boolean exportAsDot) {
 
         this(problem,
                 relax,
@@ -150,7 +158,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     }
                 }, problem.nbVars()),
                 cache,
-                frontier);
+                frontier,
+                exportAsDot);
 
     }
 
@@ -203,7 +212,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     dominance,
                     cache,
                     bestLB,
-                    frontier.cutSetType()
+                    frontier.cutSetType(),
+                    exportAsDot
             );
             mdd.compile(compilation);
             maybeUpdateBest(verbosityLevel);
@@ -223,7 +233,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     dominance,
                     cache,
                     bestLB,
-                    frontier.cutSetType()
+                    frontier.cutSetType(),
+                    exportAsDot
             );
             mdd.compile(compilation);
             if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {

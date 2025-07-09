@@ -35,6 +35,9 @@ public interface DecisionDiagram<T, K> {
      */
     Iterator<SubProblem<T>> exactCutset();
 
+    /**@return true iff the relaxed best path of the DD is exact */
+    boolean relaxedBestPathIsExact();
+
     /**
      * Export the compiled MDD in .dot file format.
      *

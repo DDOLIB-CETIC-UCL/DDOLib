@@ -349,7 +349,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
                 if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
-                        n.node.setNodeType(NodeType.RELAXED);
+                        currentCutSet.add(n);
                     }
                     if (n.node.getNodeType() == NodeType.RELAXED) {
                         for (Edge e : n.node.edges) {
@@ -428,6 +428,21 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     @Override
     public Iterator<SubProblem<T>> exactCutset() {
         return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
+    }
+
+    @Override
+    public boolean relaxedBestPathIsExact() {
+        if (best == null) {
+            return false;
+        } else {
+            Edge eb = best.best;
+            while (eb != null) {
+                if (eb.origin.getNodeType() == NodeType.RELAXED)
+                    return false;
+                eb = eb.origin.best;
+            }
+            return true;
+        }
     }
 
     @Override
