@@ -412,8 +412,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (best == null) {
             return Optional.empty();
         } else {
-            Set<Decision> sol = new HashSet<>();
-            sol.addAll(pathToRoot);
+            Set<Decision> sol = new HashSet<>(pathToRoot);
 
             Edge eb = best.best;
             while (eb != null) {
