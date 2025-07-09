@@ -29,21 +29,20 @@ public final class ExactSolver<T, K> implements Solver {
      * The problem we want to maximize
      */
     private final Problem<T> problem;
+
     /**
      * A suitable relaxation for the problem we want to maximize
      */
-
     private final Relaxation<T> relax;
+
     /**
      * A heuristic to identify the most promising nodes
      */
-
     private final StateRanking<T> ranking;
 
     /**
      * A heuristic to choose the next variable to branch on when developing a DD
      */
-
     private final VariableHeuristic<T> varh;
 
     /**
@@ -57,14 +56,17 @@ public final class ExactSolver<T, K> implements Solver {
      * object, then you can simply ignore this field (and remove it altogether).
      */
     private final DecisionDiagram<T, K> mdd;
+
     /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
+
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
+
     /**
      * Value of the best known lower bound.
      */
@@ -74,7 +76,7 @@ public final class ExactSolver<T, K> implements Solver {
      * Creates a new instance.
      *
      * @param problem The problem we want to maximize.
-     * @param relax   A suitable relaxation for the problem we want to maximize
+     * @param relax   A suitable relaxation for the problem we want to maximize.
      * @param varh    A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking A heuristic to identify the most promising nodes.
      */
