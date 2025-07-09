@@ -5,11 +5,11 @@ import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 import java.io.BufferedReader;
 import java.io.File;

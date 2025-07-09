@@ -2,9 +2,9 @@ package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
 import org.ddolib.ddo.modeling.StateRanking;

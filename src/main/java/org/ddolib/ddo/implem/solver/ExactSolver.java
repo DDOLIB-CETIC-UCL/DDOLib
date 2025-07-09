@@ -6,12 +6,12 @@ import org.ddolib.ddo.core.Solver;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
