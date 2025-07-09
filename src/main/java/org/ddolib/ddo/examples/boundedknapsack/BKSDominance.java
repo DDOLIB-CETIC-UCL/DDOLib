@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.boundedknapsack;
 
 
-import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.modeling.Dominance;
 
 public class BKSDominance implements Dominance<Integer, Integer> {
     @Override

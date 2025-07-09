@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.talentscheduling;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -100,7 +100,7 @@ public class TSProblem implements Problem<TSState> {
 
         // All the already present actors (playing for this scene or waiting)
         // Actors not longer needed are discarded from this BitSet.
-        BitSet toPay = onLocationActors(state); 
+        BitSet toPay = onLocationActors(state);
         toPay.andNot(actors[scene]); // Add new actors
 
         int cost = 0;

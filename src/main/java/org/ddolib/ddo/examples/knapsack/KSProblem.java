@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.knapsack;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -61,7 +61,10 @@ public class KSProblem implements Problem<Integer> {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return profit[decision.var()] * decision.val();
     }
+
     @Override
-    public String toString() {return "(" + capa + "," + Arrays.toString(profit) + "," + Arrays.toString(weight) + ")";}
+    public String toString() {
+        return "(" + capa + "," + Arrays.toString(profit) + "," + Arrays.toString(weight) + ")";
+    }
 }
 

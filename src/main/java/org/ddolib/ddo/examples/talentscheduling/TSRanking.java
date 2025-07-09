@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.talentscheduling;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 public class TSRanking implements StateRanking<TSState> {
     @Override

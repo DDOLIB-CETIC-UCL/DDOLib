@@ -1,19 +1,19 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PSTest {
@@ -42,7 +42,7 @@ class PSTest {
         final PSRanking ranking = new PSRanking();
         final FixedWidth<PSState> width = new FixedWidth<>(10);
         final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,

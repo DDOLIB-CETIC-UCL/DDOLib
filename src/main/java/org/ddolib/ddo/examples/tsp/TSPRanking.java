@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 public class TSPRanking implements StateRanking<TSPState> {
     @Override

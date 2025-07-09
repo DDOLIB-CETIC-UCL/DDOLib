@@ -1,22 +1,21 @@
 package org.ddolib.ddo.examples.smic;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
+import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 import static org.ddolib.ddo.examples.smic.SMICMain.readProblem;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SMICTest {
@@ -41,7 +40,7 @@ public class SMICTest {
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                 new SMICDominance(), problem.nbVars());
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking,  CutSetType.LastExactLayer);
+        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
                 problem,
                 relax,
@@ -52,7 +51,7 @@ public class SMICTest {
                 dominance
         );
         solver.maximize();
-        return (int)-solver.bestValue().get();
+        return (int) -solver.bestValue().get();
     }
 
     @ParameterizedTest

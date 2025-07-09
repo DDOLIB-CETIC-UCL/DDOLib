@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.mcp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.*;
 

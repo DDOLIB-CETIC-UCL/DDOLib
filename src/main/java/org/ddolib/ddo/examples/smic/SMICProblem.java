@@ -1,10 +1,11 @@
 package org.ddolib.ddo.examples.smic;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
+
 import java.util.*;
 
-public class SMICProblem  implements Problem<SMICState> {
+public class SMICProblem implements Problem<SMICState> {
     final String name;
     final int nbJob;
     final int initInventory;
@@ -38,7 +39,7 @@ public class SMICProblem  implements Problem<SMICState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.add(i);
         }
-        return new SMICState(jobs,0, initInventory, initInventory);
+        return new SMICState(jobs, 0, initInventory, initInventory);
     }
 
     @Override
@@ -64,14 +65,14 @@ public class SMICProblem  implements Problem<SMICState> {
         Set<Integer> remaining = new HashSet<>(state.getRemainingJobs());
         remaining.remove(decision.val());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory()-inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
-        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory()-inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
+        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory() - inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
+        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory() - inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     @Override
     public double transitionCost(SMICState state, Decision decision) {
-        int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0)  + processing[decision.val()];
+        int currentTime = Math.max(release[decision.val()] - state.getCurrentTime(), 0) + processing[decision.val()];
         return -currentTime;
     }
 }

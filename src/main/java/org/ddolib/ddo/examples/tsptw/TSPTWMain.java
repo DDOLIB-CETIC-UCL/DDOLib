@@ -1,11 +1,15 @@
 package org.ddolib.ddo.examples.tsptw;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.solver.Solver;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -14,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 
 /**
  * The TSPTW (TSP with Time Windows) is
@@ -26,10 +30,10 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class TSPTWMain {
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain"} in your terminal to execute
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain"} in your terminal to execute
      * default instance. <br>
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain -Dexec.args="<your file>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain -Dexec.args="<your file>
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
      * <p>
      * Given Data files comes from

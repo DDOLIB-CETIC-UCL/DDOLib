@@ -2,7 +2,7 @@ package org.ddolib.ddo.examples.msct;
 
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.ddo.modeling.Problem;
 
 import java.util.*;
 
@@ -29,7 +29,7 @@ class MSCTProblem implements Problem<MSCTState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.add(i);
         }
-        return new MSCTState(jobs,0);
+        return new MSCTState(jobs, 0);
     }
 
     @Override
@@ -51,7 +51,7 @@ class MSCTProblem implements Problem<MSCTState> {
         Set<Integer> remaining = new HashSet<>(state.remainingJobs);
         remaining.remove(decision.val());
         int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        return new MSCTState(remaining,currentTime);
+        return new MSCTState(remaining, currentTime);
     }
 
     @Override

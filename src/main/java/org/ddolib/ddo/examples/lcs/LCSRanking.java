@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.modeling.StateRanking;
 
 public class LCSRanking implements StateRanking<LCSState> {
 
@@ -9,11 +9,11 @@ public class LCSRanking implements StateRanking<LCSState> {
         // Best state is the one where the sum of string's position is the smallest.
         int totState1 = 0;
         int totState2 = 0;
-        for(int i = 0; i < state1.position.length; i ++){
+        for (int i = 0; i < state1.position.length; i++) {
             totState1 += state1.position[i];
             totState2 += state2.position[i];
         }
-        return Integer.compare(totState2,totState1);
+        return Integer.compare(totState2, totState1);
     }
 
     @Override
