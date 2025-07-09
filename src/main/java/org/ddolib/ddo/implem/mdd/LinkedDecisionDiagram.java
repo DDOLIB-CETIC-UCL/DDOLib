@@ -664,7 +664,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             if (node == null) {
-                node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, new Node(Integer.MIN_VALUE));
+                Node newNode = new Node(Double.MIN_VALUE);
+                newNode.setNodeType(NodeType.RELAXED);
+                node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
                 currentLayer.add(node);
             }
 
@@ -676,6 +678,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
                     double value = saturatedAdd(e.origin.value, rcost);
                     e.weight  = rcost;
+
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                    if (e.origin.getNodeType() == NodeType.RELAXED) {
+                        node.node.setNodeType(NodeType.RELAXED);
+                    }
 
                     node.node.edges.add(e);
                     if (value > node.node.value) {
