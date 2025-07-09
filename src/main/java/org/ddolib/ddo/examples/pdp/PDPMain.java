@@ -95,7 +95,6 @@ public final class PDPMain {
                 frontier);
 
         SearchStatistics statistics = solver.maximize(0, false);
-        System.out.println("statistics: " + statistics);
 
         return solver;
     }
