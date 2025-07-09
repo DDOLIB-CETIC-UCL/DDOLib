@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.gruler;
 
-//import org.ddolib.ddo.examples.Golomb;
+//import org.ddolib.ddosolver.examples.Golomb;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -65,8 +65,9 @@ public class GRState {
     public int hashCode() {
         return Objects.hash(marks, distances, lastMark);
     }
+
     @Override
     public String toString() {
-        return "("+ Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
+        return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
     }
 }

@@ -2,9 +2,9 @@ package org.ddolib.ddo.api;
 
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.algo.solver.ddo.ExactSolver;
-import org.ddolib.ddo.algo.solver.ddo.ParallelSolver;
-import org.ddolib.ddo.algo.solver.ddo.SequentialSolver;
+import org.ddolib.ddo.algo.solver.ddosolver.ExactSolver;
+import org.ddolib.ddo.algo.solver.ddosolver.ParallelSolver;
+import org.ddolib.ddo.algo.solver.ddosolver.SequentialSolver;
 import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;

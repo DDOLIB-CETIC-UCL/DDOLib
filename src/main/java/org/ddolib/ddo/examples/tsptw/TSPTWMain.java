@@ -30,10 +30,10 @@ import static org.ddolib.ddo.api.Solvers.sequentialSolver;
 public class TSPTWMain {
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain"} in your terminal to execute
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain"} in your terminal to execute
      * default instance. <br>
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.tsptw.TSPTWMain -Dexec.args="<your file>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain -Dexec.args="<your file>
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
      * <p>
      * Given Data files comes from

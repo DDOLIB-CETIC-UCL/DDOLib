@@ -3,7 +3,7 @@ package org.ddolib.ddo.examples.lcs;
 import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.algo.heuristics.FixedWidth;
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.solver.ddo.ParallelSolver;
+import org.ddolib.ddo.algo.solver.ddosolver.ParallelSolver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;

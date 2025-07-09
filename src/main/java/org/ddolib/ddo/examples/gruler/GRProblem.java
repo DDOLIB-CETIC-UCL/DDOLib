@@ -67,7 +67,7 @@ public class GRProblem implements Problem<GRState> {
 
     @Override
     public double transitionCost(GRState state, Decision decision) {
-        return -(decision.val() - state.getLastMark()); // put a minus to turn objective into maximization (ddo requirement
+        return -(decision.val() - state.getLastMark()); // put a minus to turn objective into maximization (ddosolver requirement
     }
 
     /*

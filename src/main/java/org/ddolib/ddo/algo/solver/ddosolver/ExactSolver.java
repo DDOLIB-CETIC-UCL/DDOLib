@@ -1,4 +1,4 @@
-package org.ddolib.ddo.algo.solver.ddo;
+package org.ddolib.ddo.algo.solver.ddosolver;
 
 import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.algo.solver.Solver;

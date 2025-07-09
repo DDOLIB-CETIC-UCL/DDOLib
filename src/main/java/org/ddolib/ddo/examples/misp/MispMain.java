@@ -78,10 +78,10 @@ public final class MispMain {
 
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.MispMain"} in your terminal to execute
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
      * default instance. <br>
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddo.examples.misp.MispMain -Dexec.args="<your file>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain -Dexec.args="<your file>
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
