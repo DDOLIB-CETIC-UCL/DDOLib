@@ -1,8 +1,14 @@
-package org.ddolib.ddo.implem.mdd;
+package org.ddolib.ddo.core.mdd;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.cache.Threshold;
+import org.ddolib.ddo.core.compilation.CompilationInputWithCache;
+import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
 import org.ddolib.ddo.modeling.StateRanking;
@@ -11,13 +17,15 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static javax.swing.UIManager.put;
+
 /**
  * This class implements the decision diagram as a linked structure.
  *
  * @param <T> the type of state
  * @param <K> the type of key
  */
-public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
+public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagramWithCache<T, K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -30,6 +38,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
      */
     private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+
     /**
      * All the nodes from the next layer
      */
@@ -51,7 +60,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * The best node in the terminal layer (if it exists at all)
      */
     private Node best = null;
-
     /**
      * Used to build the .dot file displaying the compiled mdd.
      */
@@ -96,6 +104,17 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         private boolean isMarked;
 
         /**
+         * The flag to indicate if a node is in exact cutset
+         */
+        private boolean isInExactCutSet;
+
+        /**
+         * The flag to indicate if a node is above the exact cutset
+         */
+        private boolean isAboveExactCutSet;
+
+
+        /**
          * Creates a new node
          */
         public Node(final double value) {
@@ -105,6 +124,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             this.edges = new ArrayList<>();
             this.type = NodeType.EXACT;
             this.isMarked = false;
+            this.isInExactCutSet = false;
+            this.isAboveExactCutSet = false;
         }
 
         /**
@@ -127,7 +148,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%s - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -136,7 +157,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
      */
     public enum NodeType {
-        EXACT, RELAXED
+        EXACT, RELAXED;
     }
 
     /**
@@ -233,38 +254,52 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             return new SubProblem<>(state, node.value, ub, path);
         }
 
+
         @Override
         public String toString() {
-            DecimalFormat df = new DecimalFormat("#.##########");
-            return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
+            return String.format("%s -val: %s - ub: %d - type: %s - EC: %s - Abov %s - Mark %s", state, node.value, ub, node.type, node.isInExactCutSet, node.isAboveExactCutSet, node.isMarked);
         }
     }
 
     @Override
-    public void compile(CompilationInput<T, K> input) {
+    public void compile(CompilationInputWithCache<T, K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
         // initialize the compilation
-        final int maxWidth = input.maxWidth();
-        final SubProblem<T> residual = input.residual();
+        final int maxWidth = input.getMaxWidth();
+        final SubProblem<T> residual = input.getResidual();
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
 
-        dotStr.append("digraph ").append(input.compilationType().toString().toLowerCase()).append("{\n");
+        dotStr.append("digraph ").append(input.getCompilationType().toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
-        final Problem<T> problem = input.problem();
-        final Relaxation<T> relax = input.relaxation();
-        final VariableHeuristic<T> var = input.variableHeuristic();
-        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.stateRanking());
-        final DominanceChecker<T, K> dominance = input.dominance();
+        final Problem<T> problem = input.getProblem();
+        final Relaxation<T> relax = input.getRelaxation();
+        final VariableHeuristic<T> var = input.getVariableHeuristic();
+        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.getStateRanking());
+        final SimpleDominanceChecker<T, K> dominance = input.getDominance();
+        final SimpleCache<T> cache = input.getCache();
+        double bestLb = input.getBestLB();
 
         final Set<Integer> variables = varSet(input);
-        //
+
         int depth = 0;
+        int minDepth = residual.getPath().size();
+        int depthOfCache = minDepth;
+        int depthLELCutSet = -1;
+        int maxDepth = minDepth + variables.size() - 1;
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
+        // list of depth for the current relax compilation of the DD
+        ArrayList<Integer> listDepths = new ArrayList<>();
+        // the list of NodeSubProblem of the corresponding depth
+        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = new ArrayList<>();
+        // the list of Threshold of the corresponding depth
+        ArrayList<ArrayList<Threshold>> layersThresholds = new ArrayList<>();
+        // list of nodes pruned
+        ArrayList<NodeSubProblem<T>> pruned = new ArrayList<>();
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -282,13 +317,25 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
                     continue;
                 } else {
-                    double rub = saturatedAdd(node.value, input.relaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.getRelaxation().fastUpperBound(state, variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
+
+            // prunes the current layer with the current values of the cache
+            pruned.clear();
+            if (depthOfCache > minDepth) {
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    if (cache.getLayer(depthOfCache).containsKey(n.state) && cache.getThreshold(n.state, depthOfCache).isPresent() &&
+                            n.node.value <= cache.getThreshold(n.state, depthOfCache).get().getValue()) {
+                        pruned.add(n);
+                    }
+                }
+            }
+            this.currentLayer.removeAll(pruned);
             this.nextLayer.clear();
 
-            if (currentLayer.isEmpty()) {
+            if (this.currentLayer.isEmpty()) {
                 // there is no feasible solution to this subproblem, we can stop the compilation here
                 return;
             }
@@ -313,8 +360,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (depth >= 2 && currentLayer.size() > maxWidth) {
-                switch (input.compilationType()) {
+
+            if (depth >= 2 && this.currentLayer.size() > maxWidth) {
+                switch (input.getCompilationType()) {
                     case Restricted:
                         exact = false;
                         restrict(maxWidth, ranking);
@@ -322,7 +370,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     case Relaxed:
                         if (exact) {
                             exact = false;
-                            if (input.cutSetType() == CutSetType.LastExactLayer) {
+                            if (input.getCutSetType() == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
                             }
                         }
@@ -333,12 +381,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         break;
                 }
             }
-
-            for (NodeSubProblem<T> n : currentLayer) {
+            for (NodeSubProblem<T> n : this.currentLayer) {
                 if (input.exportAsDot()) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.ub <= input.bestLB()) {
+                if (n.ub <= input.getBestLB()) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -349,7 +396,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
+                if (input.getCompilationType() == CompilationType.Relaxed && !exact && depth >= 2 && input.getCutSetType() == CutSetType.Frontier) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
@@ -364,12 +412,25 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
+            // Compute the list of sub-problems per layer with the current layer
+            // Initialize the list of thresholds per layer to their default values
+
+            if (input.getCompilationType() == CompilationType.Relaxed) {
+                listDepths.add(depthOfCache);
+                nodeSubProblemPerLayer.add(new ArrayList<>());
+                layersThresholds.add(new ArrayList<>());
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    nodeSubProblemPerLayer.get(depth).add(n);
+                    layersThresholds.get(depth).add(new Threshold(Integer.MAX_VALUE, false));
+                }
+            }
+
+            depthOfCache += 1;
             depth += 1;
         }
-        if (input.compilationType() == CompilationType.Relaxed && input.cutSetType() == CutSetType.Frontier) {
+        if (input.getCompilationType() == CompilationType.Relaxed && input.getCutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
-
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -389,8 +450,46 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
-        if (input.compilationType() == CompilationType.Relaxed) {
+        if (input.getCompilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+            ArrayList<Node> nodeAboveCutset = new ArrayList<>();
+            if (!cutset.isEmpty()) {
+                for (NodeSubProblem<T> n : cutset) {
+                    if (n.node.isMarked) {
+                        n.node.isInExactCutSet = true;
+                    }
+                }
+                // identify the nodes above the cutset
+                for (NodeSubProblem<T> n : cutset) {
+                    for (Edge e : n.node.edges) {
+                        Node origin = e.origin;
+                        if (origin.getNodeType() == NodeType.EXACT && !origin.isInExactCutSet) {
+                            origin.isAboveExactCutSet = true;
+                            nodeAboveCutset.add(origin);
+                        }
+                    }
+                }
+                while (!nodeAboveCutset.isEmpty()) {
+                    ArrayList<Node> nodeCurrentAboveCutset = new ArrayList<>();
+                    nodeCurrentAboveCutset.addAll(nodeAboveCutset);
+                    nodeAboveCutset.clear();
+                    for (Node n : nodeCurrentAboveCutset) {
+                        for (Edge e : n.edges) {
+                            Node origin = e.origin;
+                            if (origin.getNodeType() == NodeType.EXACT) {
+                                if (!origin.isInExactCutSet) {
+                                    origin.isAboveExactCutSet = true;
+                                    nodeAboveCutset.add(origin);
+                                } else {
+                                    n.isAboveExactCutSet = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                // update the cache to improve the next computation of the BB
+                computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb, input.getCutSetType());
+            }
         }
     }
 
@@ -414,12 +513,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (best == null) {
             return Optional.empty();
         } else {
-            Set<Decision> sol = new HashSet<>(pathToRoot);
+            Set<Decision> sol = new HashSet<>();
+            sol.addAll(pathToRoot);
 
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
-                updateBestEdgeColor(eb.hashCode());
                 eb = eb.origin == null ? null : eb.origin.best;
             }
             return Optional.of(sol);
@@ -457,13 +556,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T, K> input) {
+    private Set<Integer> varSet(final CompilationInputWithCache<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.problem().nbVars(); i++) {
+        for (int i = 0; i < input.getProblem().nbVars(); i++) {
             set.add(i);
         }
 
-        for (Decision d : input.residual().getPath()) {
+        for (Decision d : input.getResidual().getPath()) {
             set.remove(d.var());
         }
         return set;
@@ -508,8 +607,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.currentLayer.sort(ranking.reversed());
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
+        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, this.currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
+
 
         // is there another state in the kept partition having the same state as the merged state ?
         NodeSubProblem<T> node = null;
@@ -521,6 +621,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 break;
             }
         }
+
+
         // when the merged node is new, set its type to relaxed
         if (node == null) {
             Node newNode = new Node(Integer.MIN_VALUE);
@@ -554,7 +656,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         merge.clear();
         // append the newly merged node if needed
         if (fresh) {
-            currentLayer.add(node);
+            this.currentLayer.add(node);
         }
     }
 
@@ -597,6 +699,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
      */
+
     private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
         HashSet<Node> parent = new HashSet<>();
@@ -627,6 +730,58 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         }
                         origin.isMarked = true;
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * perform the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
+        for (int j = listDepth.size() - 1; j >= 0; j--) {
+            int depth = listDepth.get(j);
+            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
+                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
+                if (simpleCache.getLayer(depth).containsKey(sub.state) && simpleCache.getLayer(depth).get(sub.state).isPresent() &&
+                        sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    currentCache.get(j).get(i).setValue(value);
+                } else {
+                    if (sub.ub <= lb) {
+                        double rub = saturatedDiff(sub.ub, sub.node.value);
+                        double value = saturatedDiff(lb, rub);
+                        currentCache.get(j).get(i).setValue(value);
+                    } else if (sub.node.isInExactCutSet) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
+                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
+                            currentCache.get(j).get(i).setValue(value);
+                        } else {
+                            currentCache.get(j).get(i).setValue(sub.node.value);
+                        }
+                    }
+                    if (sub.node.getNodeType() == NodeType.EXACT) {
+                        if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
+                            currentCache.get(j).get(i).setExplored(true);
+                        }
+                        if (cutSetType == CutSetType.LastExactLayer && sub.node.value < currentCache.get(j).get(i).getValue() && sub.node.isInExactCutSet)
+                            currentCache.get(j).get(i).setExplored(true);
+                        if (currentCache.get(j).get(i).isExplored()) {
+                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                        }
+                    }
+                }
+                for (Edge e : sub.node.edges) {
+                    Node origin = e.origin;
+                    int index = -1;
+                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
+                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
+                            index = k;
+                            break;
+                        }
+                    }
+                    double value = Math.min(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j - 1).get(index).setValue(value);
                 }
             }
         }
@@ -667,7 +822,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
                     " [label=" + df.format(e.weight) +
                     ", tooltip=\"" + e.decision.toString() + "\"";
-            edgesDotStr.put(e.hashCode(), edgeStr);
+            put(e.hashCode(), edgeStr);
         }
         return sb;
     }
@@ -688,12 +843,23 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static double saturatedAdd(double a, double b) {
+    private static final double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
             return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;
         }
         return sum;
+    }
+
+    /**
+     * Performs a saturated difference (no underflow)
+     */
+    private static final double saturatedDiff(double a, double b) {
+        double diff = a - b;
+        if (Double.isInfinite(diff)) {
+            return diff < 0 ? Double.MIN_VALUE : -Double.MIN_VALUE;
+        }
+        return diff;
     }
 
     /**
@@ -789,4 +955,3 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 }
-

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.heuristics;
+package org.ddolib.ddo.algo.heuristics;
 
 import java.util.Iterator;
 import java.util.Set;

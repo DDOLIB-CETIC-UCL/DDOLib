@@ -1,4 +1,4 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.profiling;
 
 public record SearchStatistics(int nbIterations, int queueMaxSize, long runTimeMS) {
 

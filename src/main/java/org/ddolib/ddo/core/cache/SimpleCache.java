@@ -1,6 +1,5 @@
-package org.ddolib.ddo.implem.cache;
+package org.ddolib.ddo.core.cache;
 
-import org.ddolib.ddo.core.Cache;
 import org.ddolib.ddo.modeling.Problem;
 
 import java.util.ArrayList;

@@ -1,10 +1,17 @@
 package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
 import org.ddolib.ddo.modeling.StateRanking;

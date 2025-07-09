@@ -1,12 +1,12 @@
 package org.ddolib.ddo.examples.mcp;
 
-import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.FixedWidth;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 
 import java.io.IOException;
 import java.nio.file.Paths;

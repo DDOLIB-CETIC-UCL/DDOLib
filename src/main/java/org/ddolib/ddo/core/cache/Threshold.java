@@ -1,8 +1,8 @@
-package org.ddolib.ddo.implem.cache;
+package org.ddolib.ddo.core.cache;
 
 public class Threshold implements Comparable<Threshold> {
-    private  double value;
-    private  boolean explored;
+    private double value;
+    private boolean explored;
 
     public Threshold(int value, boolean explored) {
         this.value = value;
@@ -13,15 +13,21 @@ public class Threshold implements Comparable<Threshold> {
         return value;
     }
 
-    public boolean getExplored() {return this.explored;}
+    public boolean getExplored() {
+        return this.explored;
+    }
 
     public boolean isExplored() {
         return explored;
     }
 
-    public void setValue(double val) {this.value = val;}
+    public void setValue(double val) {
+        this.value = val;
+    }
 
-    public void setExplored(boolean expl) {this.explored = expl;}
+    public void setExplored(boolean expl) {
+        this.explored = expl;
+    }
 
     @Override
     public int compareTo(Threshold other) {
@@ -31,6 +37,9 @@ public class Threshold implements Comparable<Threshold> {
             return Boolean.compare(this.explored, other.explored);
         }
     }
+
     @Override
-    public String toString() {return "Threshold [value=" + value + ", explored=" + explored + "]";}
+    public String toString() {
+        return "Threshold [value=" + value + ", explored=" + explored + "]";
+    }
 }

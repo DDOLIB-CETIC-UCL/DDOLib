@@ -1,8 +1,11 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.frontier;
+
+import org.ddolib.ddo.core.SubProblem;
 
 /**
  * An abstraction of the solver frontier that maintains all the remaining open
  * subproblems that must be solved.
+ *
  * @param <T> the type of state
  */
 public interface Frontier<T> {

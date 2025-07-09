@@ -1,6 +1,8 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.compilation;
 
-import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;

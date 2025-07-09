@@ -1,8 +1,6 @@
-package org.ddolib.ddo.implem.frontier;
+package org.ddolib.ddo.core.frontier;
 
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.modeling.StateRanking;
 

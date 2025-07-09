@@ -1,5 +1,7 @@
 package org.ddolib.ddo.core;
 
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+
 import java.util.Optional;
 import java.util.Set;
 

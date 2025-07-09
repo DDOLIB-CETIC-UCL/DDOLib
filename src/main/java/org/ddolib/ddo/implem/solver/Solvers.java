@@ -1,8 +1,8 @@
 package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.modeling.Problem;

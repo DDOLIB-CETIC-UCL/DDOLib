@@ -1,6 +1,4 @@
-package org.ddolib.ddo.implem.heuristics;
-
-import org.ddolib.ddo.heuristics.WidthHeuristic;
+package org.ddolib.ddo.algo.heuristics;
 
 /**
  * This class implements a static maximum width heuristic

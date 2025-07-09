@@ -1,4 +1,8 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.mdd;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.compilation.CompilationInput;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -25,9 +29,15 @@ public interface DecisionDiagram<T, K> {
      * @return true iff the diagram resulting from the compilation is an exact dd
      */
     boolean isExact();
-    /** @return the value of the best solution in this decision diagram if there is one */
+
+    /**
+     * @return the value of the best solution in this decision diagram if there is one
+     */
     Optional<Double> bestValue();
-    /** @return the solution leading to the best solution in this decision diagram (if it exists) */
+
+    /**
+     * @return the solution leading to the best solution in this decision diagram (if it exists)
+     */
     Optional<Set<Decision>> bestSolution();
 
     /**
@@ -35,7 +45,9 @@ public interface DecisionDiagram<T, K> {
      */
     Iterator<SubProblem<T>> exactCutset();
 
-    /**@return true iff the relaxed best path of the DD is exact */
+    /**
+     * @return true iff the relaxed best path of the DD is exact
+     */
     boolean relaxedBestPathIsExact();
 
     /**

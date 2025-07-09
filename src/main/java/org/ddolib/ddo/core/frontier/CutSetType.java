@@ -1,4 +1,4 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.frontier;
 
 /**
  * Cutset type for the decision diagram compilation.

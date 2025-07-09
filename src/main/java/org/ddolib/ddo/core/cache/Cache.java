@@ -1,7 +1,6 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.core.cache;
 
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.cache.Threshold;
+import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.modeling.Problem;
 
 import java.util.Optional;

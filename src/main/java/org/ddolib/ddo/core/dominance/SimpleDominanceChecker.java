@@ -1,4 +1,4 @@
-package org.ddolib.ddo.implem.dominance;
+package org.ddolib.ddo.core.dominance;
 
 
 import org.ddolib.ddo.modeling.Dominance;
