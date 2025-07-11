@@ -12,8 +12,11 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -24,6 +27,7 @@ import java.util.stream.Stream;
 
 import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
 import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -139,8 +143,8 @@ public class KSTest {
                     6546488);
 
 
-            solver.maximize();
-            assertEquals(solver.bestValue().get(), problem.optimal);
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
         }
     }
 

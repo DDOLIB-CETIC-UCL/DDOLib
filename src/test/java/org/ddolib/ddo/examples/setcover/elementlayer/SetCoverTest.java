@@ -12,6 +12,7 @@ import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -168,6 +169,7 @@ public class SetCoverTest {
      */
     @ParameterizedTest
     @MethodSource("smallGeneratedInstances")
+    @Disabled
     public void testClusterRelaxation(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 

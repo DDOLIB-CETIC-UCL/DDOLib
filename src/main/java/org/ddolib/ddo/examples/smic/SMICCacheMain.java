@@ -1,20 +1,18 @@
 package org.ddolib.ddo.examples.smic;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.msct.MSCTDominance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
-
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 /**
  * Given a set J of n jobs, partitioned into a set J1
@@ -25,30 +23,32 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
  * This problem is considered in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
  * Minimizing makespan on a single machine with release dates and inventory constraints. Eur. J. Oper. Res. 286(1): 115-128 (2020)
  */
-public class SMICMain {
+public class SMICCacheMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data100_2.txt");
+        SMICProblem problem = readProblem("data/SMIC/data10_5.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
+        final SimpleCache<SMICState> cache = new SimpleCache<SMICState>();
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
+        final Solver solver = new SequentialSolverWithCache<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
+                dominance,
+                cache,
                 frontier,
-                dominance
-        );
+                false);
 
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
-
+        System.out.println(stats);
 
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
