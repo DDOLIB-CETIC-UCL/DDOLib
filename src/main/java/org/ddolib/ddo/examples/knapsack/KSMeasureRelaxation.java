@@ -17,13 +17,12 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
 import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
-public class KSMeasure {
+public class KSMeasureRelaxation {
 
     public static void main(String[] args) throws IOException {
 
