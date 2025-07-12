@@ -50,6 +50,11 @@ public final class SubProblem<T> {
     }
 
     /**
+     * @return the depth of the root of this subproblem
+     */
+    public int getDepth() {return this.path.size();}
+
+    /**
      * @return the root state of this subproblem
      */
     public T getState() {
@@ -83,7 +88,7 @@ public final class SubProblem<T> {
 
     @Override
     public String toString() {
-        return String.format("SubProblem(val:%d - ub:%d - fub:%d - depth: %d - state:%s", value, ub, (value-ub), this.getPath().size(), state);
+        return String.format("SubProblem(val:%.0f - ub:%.0f - fub:%.0f - depth: %d - state:%s", value, ub, (value-ub), this.getPath().size(), state);
     }
 
     @Override
