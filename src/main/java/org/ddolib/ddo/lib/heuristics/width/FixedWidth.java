@@ -1,10 +1,11 @@
-package org.ddolib.ddo.algo.heuristics;
+package org.ddolib.ddo.lib.heuristics.width;
+
+
+import org.ddolib.ddo.core.heuristics.WidthHeuristic;
 
 /**
  * This class implements a static maximum width heuristic
- */
-
-/**
+ *
  * @param <T> the type of state
  */
 public final class FixedWidth<T> implements WidthHeuristic<T> {

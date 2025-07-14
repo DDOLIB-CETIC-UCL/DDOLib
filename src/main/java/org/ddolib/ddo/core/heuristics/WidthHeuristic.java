@@ -1,4 +1,4 @@
-package org.ddolib.ddo.algo.heuristics;
+package org.ddolib.ddo.core.heuristics;
 
 /**
  * This heuristic is used to determine the maximum width of a layer

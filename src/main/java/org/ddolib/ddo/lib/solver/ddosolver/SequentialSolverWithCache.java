@@ -1,8 +1,5 @@
-package org.ddolib.ddo.algo.solver.ddosolver;
+package org.ddolib.ddo.lib.solver.ddosolver;
 
-import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -10,9 +7,12 @@ import org.ddolib.ddo.core.compilation.CompilationInputWithCache;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagramWithCache;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagramWithCache;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.modeling.Dominance;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
@@ -37,7 +37,7 @@ import java.util.Set;
  * *VERY* well, we provide you with a parallel implementation of the algorithm
  * (@see ParallelSolver). Digging into that code, understanding it, and stripping
  * away all the parallel-related concerns should finalize to give you a thorough
- * understanding of the sequential algo.
+ * understanding of the sequential lib.
  * <p>
  * # Note
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY

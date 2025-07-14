@@ -1,17 +1,17 @@
-package org.ddolib.ddo.algo.solver.ddosolver;
+package org.ddolib.ddo.lib.solver.ddosolver;
 
-import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
 import org.ddolib.ddo.modeling.StateRanking;
@@ -204,7 +204,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * This method processes one node from the solver frontier.
      * <p>
      * This is typically the method you are searching for if you are searching after an implementation
-     * of the branch and bound with mdd algo.
+     * of the branch and bound with mdd lib.
      */
     private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION

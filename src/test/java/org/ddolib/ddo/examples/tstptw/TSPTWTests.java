@@ -1,14 +1,14 @@
 package org.ddolib.ddo.examples.tstptw;
 
-import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.FixedWidth;
-import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.examples.tsptw.*;
+import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
+import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

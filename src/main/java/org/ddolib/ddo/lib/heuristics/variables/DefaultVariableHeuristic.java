@@ -1,5 +1,7 @@
-package org.ddolib.ddo.algo.heuristics;
+package org.ddolib.ddo.lib.heuristics.variables;
 
+
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
 
 import java.util.Iterator;
 import java.util.Set;

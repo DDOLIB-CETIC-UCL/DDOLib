@@ -3,4 +3,4 @@
  * which can be used to customize the behavior of an MDD with some default
  * implementations.
  */
-package org.ddolib.ddo.algo.heuristics;
+package org.ddolib.ddo.lib.heuristics;

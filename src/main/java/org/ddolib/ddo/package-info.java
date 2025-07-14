@@ -18,11 +18,11 @@
  *      with BaB + MDD.
  * <p>
  *      You should really think of the content of the core package as the base
- *      vocabulary you need to master to explain someone else the BaB+DD algo.
+ *      vocabulary you need to master to explain someone else the BaB+DD lib.
  *  </li>
  *
  *  <li>
- *      The {@code algo} package provides purely algorithmic components, including various solver and
+ *      The {@code lib} package provides purely algorithmic components, including various solver and
  *      heuristics that can customize the MDD behavior.
  *  </li>
  *

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.algo.solver;
+package org.ddolib.ddo.core.solver;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.profiling.SearchStatistics;

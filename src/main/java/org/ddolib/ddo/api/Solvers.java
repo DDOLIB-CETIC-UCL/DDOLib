@@ -1,13 +1,13 @@
 package org.ddolib.ddo.api;
 
-import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.algo.solver.ddosolver.ExactSolver;
-import org.ddolib.ddo.algo.solver.ddosolver.ParallelSolver;
-import org.ddolib.ddo.algo.solver.ddosolver.SequentialSolver;
 import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.WidthHeuristic;
+import org.ddolib.ddo.lib.solver.ddosolver.ExactSolver;
+import org.ddolib.ddo.lib.solver.ddosolver.ParallelSolver;
+import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolver;
 import org.ddolib.ddo.modeling.Problem;
 import org.ddolib.ddo.modeling.Relaxation;
 import org.ddolib.ddo.modeling.StateRanking;

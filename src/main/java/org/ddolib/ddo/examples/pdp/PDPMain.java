@@ -1,13 +1,13 @@
 package org.ddolib.ddo.examples.pdp;
 
-import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.FixedWidth;
-import org.ddolib.ddo.algo.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
+import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
+import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -1,17 +1,17 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.algo.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.algo.heuristics.FixedWidth;
-import org.ddolib.ddo.algo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.algo.solver.Solver;
-import org.ddolib.ddo.algo.solver.ddosolver.SequentialSolverWithCache;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
+import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
+import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
+import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
 
 import java.io.File;
 import java.util.Arrays;
