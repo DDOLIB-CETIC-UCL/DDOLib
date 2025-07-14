@@ -134,7 +134,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -280,8 +280,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final DominanceChecker<T, K> dominance = input.dominance();
 
         final Set<Integer> variables = varSet(input);
-        //
-        int depth = 0;
+
+        int rootDepth = residual.getDepth();
+        int depth = residual.getDepth();
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         while (!variables.isEmpty()) {
@@ -331,7 +332,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (depth >= 2 && currentLayer.size() > maxWidth) {
+            if (depth - rootDepth >= 2 && currentLayer.size() > maxWidth) {
                 switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
@@ -390,7 +391,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth - rootDepth >= 2) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
