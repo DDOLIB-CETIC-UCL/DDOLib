@@ -1,6 +1,6 @@
 package org.ddolib.ddo.implem.heuristics;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Set;
 
@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * @param <T> The type of the states.
  */
-public class DefaultFastUpperBound<T> implements FastUpperBoundHeuristic<T> {
+public class DefaultFastUpperBound<T> implements FastUpperBound<T> {
     @Override
     public double fastUpperBound(T state, Set<Integer> variables) {
         return Double.MAX_VALUE;

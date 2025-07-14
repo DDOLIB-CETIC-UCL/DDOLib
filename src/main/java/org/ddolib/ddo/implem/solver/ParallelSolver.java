@@ -1,7 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -72,7 +72,7 @@ public final class ParallelSolver<T, K> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
-            final FastUpperBoundHeuristic<T> fub,
+            final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance) {
         this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance);
         this.critical = new Critical<>(nbThreads, frontier);
@@ -429,7 +429,7 @@ public final class ParallelSolver<T, K> implements Solver {
         /**
          * The heuristic defining a very rough estimation (upper bound) of the optimal value.
          */
-        private final FastUpperBoundHeuristic<T> fub;
+        private final FastUpperBound<T> fub;
 
         private final DominanceChecker<T, K> dominance;
         /**
@@ -444,7 +444,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
-                FastUpperBoundHeuristic<T> fub,
+                FastUpperBound<T> fub,
                 final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;

@@ -3,7 +3,7 @@ package org.ddolib.ddo.implem.solver;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.core.Problem;
 import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -46,7 +46,7 @@ public class Solvers {
                                                                  final StateRanking<T> ranking,
                                                                  final WidthHeuristic<T> width,
                                                                  final Frontier<T> frontier,
-                                                                 final FastUpperBoundHeuristic<T> fub,
+                                                                 final FastUpperBound<T> fub,
                                                                  final DominanceChecker<T, K> dominance) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance);
     }
@@ -79,7 +79,7 @@ public class Solvers {
                                                                     final StateRanking<T> ranking,
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier,
-                                                                    final FastUpperBoundHeuristic<T> fub) {
+                                                                    final FastUpperBound<T> fub) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, defaultDominance);
     }
@@ -183,7 +183,7 @@ public class Solvers {
                                                              final StateRanking<T> ranking,
                                                              final WidthHeuristic<T> width,
                                                              final Frontier<T> frontier,
-                                                             final FastUpperBoundHeuristic<T> fub,
+                                                             final FastUpperBound<T> fub,
                                                              final DominanceChecker<T, K> dominance) {
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, fub, dominance);
     }
@@ -218,7 +218,7 @@ public class Solvers {
                                                                 final StateRanking<T> ranking,
                                                                 final WidthHeuristic<T> width,
                                                                 final Frontier<T> frontier,
-                                                                final FastUpperBoundHeuristic<T> fub) {
+                                                                final FastUpperBound<T> fub) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, fub,
                 defaultDominance);

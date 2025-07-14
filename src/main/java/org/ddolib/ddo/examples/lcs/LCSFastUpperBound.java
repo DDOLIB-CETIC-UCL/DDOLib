@@ -1,13 +1,13 @@
 package org.ddolib.ddo.examples.lcs;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Set;
 
 /**
  * Implementation of a fast upper bound heuristic for the LCS.
  */
-public class LCSFastUpperBound implements FastUpperBoundHeuristic<LCSState> {
+public class LCSFastUpperBound implements FastUpperBound<LCSState> {
     LCSProblem problem;
 
     public LCSFastUpperBound(LCSProblem problem) {

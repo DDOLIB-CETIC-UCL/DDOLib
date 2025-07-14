@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @param <T> The type of the states
  */
-public interface FastUpperBoundHeuristic<T> {
+public interface FastUpperBound<T> {
 
 
     /**

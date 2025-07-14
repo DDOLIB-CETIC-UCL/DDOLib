@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound heuristic for the Knapsack problem.
  */
-public class KSFastUpperBound implements FastUpperBoundHeuristic<Integer> {
+public class KSFastUpperBound implements FastUpperBound<Integer> {
     private final KSProblem problem;
 
     /**

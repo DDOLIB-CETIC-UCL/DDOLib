@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.talentscheduling;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the Talent Scheduling problem.
  */
-public class TSFastUpperBound implements FastUpperBoundHeuristic<TSState> {
+public class TSFastUpperBound implements FastUpperBound<TSState> {
     private final TSProblem problem;
 
     public TSFastUpperBound(TSProblem problem) {

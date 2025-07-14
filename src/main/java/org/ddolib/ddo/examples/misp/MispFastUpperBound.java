@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.misp;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.BitSet;
 import java.util.Set;
@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the MISP.
  */
-public class MispFastUpperBound implements FastUpperBoundHeuristic<BitSet> {
+public class MispFastUpperBound implements FastUpperBound<BitSet> {
     private final MispProblem problem;
 
     public MispFastUpperBound(MispProblem problem) {

@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.pdp;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the PDP
  */
-public class PDPFastUpperBound implements FastUpperBoundHeuristic<PDPState> {
+public class PDPFastUpperBound implements FastUpperBound<PDPState> {
     private final double[] leastIncidentEdge;
 
     public PDPFastUpperBound(PDPProblem problem) {

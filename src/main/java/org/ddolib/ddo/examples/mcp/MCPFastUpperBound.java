@@ -1,13 +1,13 @@
 package org.ddolib.ddo.examples.mcp;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Set;
 
 /**
  * Implementation of fast upper bound heuristic for the MCP.
  */
-public class MCPFastUpperBound implements FastUpperBoundHeuristic<MCPState> {
+public class MCPFastUpperBound implements FastUpperBound<MCPState> {
 
     final MCPProblem problem;
     private final double initVal;

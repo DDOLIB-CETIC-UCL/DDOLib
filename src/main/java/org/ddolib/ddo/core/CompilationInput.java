@@ -1,6 +1,6 @@
 package org.ddolib.ddo.core;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
@@ -30,7 +30,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      StateRanking<T> stateRanking,
                                      SubProblem<T> residual,
                                      int maxWidth,
-                                     FastUpperBoundHeuristic<T> fub,
+                                     FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,

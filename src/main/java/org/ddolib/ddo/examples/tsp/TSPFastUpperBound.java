@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.tsp;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the TSP.
  */
-public class TSPFastUpperBound implements FastUpperBoundHeuristic<TSPState> {
+public class TSPFastUpperBound implements FastUpperBound<TSPState> {
     private final double[] leastIncidentEdge;
 
     public TSPFastUpperBound(TSPProblem problem) {

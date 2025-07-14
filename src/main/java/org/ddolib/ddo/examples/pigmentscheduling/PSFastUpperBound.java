@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.util.TSPLowerBound;
 
 import java.util.Comparator;
@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the PSP.
  */
-public class PSFastUpperBound implements FastUpperBoundHeuristic<PSState> {
+public class PSFastUpperBound implements FastUpperBound<PSState> {
     private final PSInstance instance;
     private final int[] tspLb;
 

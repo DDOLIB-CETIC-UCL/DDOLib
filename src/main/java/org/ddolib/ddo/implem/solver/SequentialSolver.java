@@ -1,7 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -99,7 +99,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
-    private final FastUpperBoundHeuristic<T> fub;
+    private final FastUpperBound<T> fub;
 
     /**
      * The dominance object that will be used to prune the search space.
@@ -144,7 +144,7 @@ public final class SequentialSolver<T, K> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
-            final FastUpperBoundHeuristic<T> fub,
+            final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;

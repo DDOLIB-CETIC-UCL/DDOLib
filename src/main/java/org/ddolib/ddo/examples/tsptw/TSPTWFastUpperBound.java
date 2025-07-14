@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.tsptw;
 
-import org.ddolib.ddo.heuristics.FastUpperBoundHeuristic;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +11,7 @@ import static java.lang.Integer.min;
 /**
  * Implementation of a fast upper bound for the TSPTW.
  */
-public class TSPTWFastUpperBound implements FastUpperBoundHeuristic<TSPTWState> {
+public class TSPTWFastUpperBound implements FastUpperBound<TSPTWState> {
 
     private static final int INFINITY = Integer.MAX_VALUE;
 
@@ -41,7 +41,8 @@ public class TSPTWFastUpperBound implements FastUpperBoundHeuristic<TSPTWState> 
         //From the current state we go to the closest node
         int start = switch (state.position()) {
             case TSPNode(int value) -> cheapestEdges[value];
-            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
+            case VirtualNodes(Set<Integer> nodes) ->
+                    nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
         };
         int mandatory = 0; // The sum of shortest edges
         int backToDepot = 0; // The shortest edges to the depot
