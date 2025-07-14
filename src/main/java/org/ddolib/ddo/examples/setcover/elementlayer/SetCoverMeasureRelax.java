@@ -1,15 +1,11 @@
 package org.ddolib.ddo.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.setcover.elementlayer.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
 import java.io.FileWriter;
@@ -22,7 +18,7 @@ import static org.ddolib.ddo.examples.setcover.elementlayer.SetCover.readInstanc
 import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
-public class SetCoverMeasure {
+public class SetCoverMeasureRelax {
 
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
@@ -52,7 +48,7 @@ public class SetCoverMeasure {
                     csvString = new StringBuilder();
                     // System.out.print(maxWidth + ", ");
                     width = new FixedWidth<>(maxWidth);
-                    Solver solver = sequentialSolver(
+                    Solver solver = relaxationSolver(
                             problem,
                             relax,
                             varh,
@@ -71,7 +67,7 @@ public class SetCoverMeasure {
                     assert solver.bestValue().isPresent();
 
                     csvString.append(args[0]).append(";");
-                    csvString.append("sequential").append(";");
+                    csvString.append("relaxation").append(";");
                     csvString.append(seed).append(";");
                     csvString.append(maxWidth).append(";");
                     csvString.append("SetCoverElement").append(";");
