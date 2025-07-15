@@ -3,6 +3,8 @@ package org.ddolib.ddo.examples.msct;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -36,7 +38,7 @@ public class MSCTCacheMain {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(100);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new MSCTDominance(), problem.nbVars());
+        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<MSCTState> cache = new SimpleCache<>();
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolverWithCache<>(
@@ -45,10 +47,9 @@ public class MSCTCacheMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                cache,
                 frontier,
-                false);
+                dominance,
+                cache);
 
 
         long start = System.currentTimeMillis();

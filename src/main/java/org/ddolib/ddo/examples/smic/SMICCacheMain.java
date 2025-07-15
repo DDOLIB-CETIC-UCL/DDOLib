@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.smic;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -30,7 +31,7 @@ public class SMICCacheMain {
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
+        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<SMICState> cache = new SimpleCache<SMICState>();
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolverWithCache<>(
@@ -39,10 +40,9 @@ public class SMICCacheMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                cache,
                 frontier,
-                false);
+                dominance,
+                cache);
 
 
         long start = System.currentTimeMillis();

@@ -3,6 +3,8 @@ package org.ddolib.ddo.examples.knapsack;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -29,15 +31,15 @@ import java.util.Arrays;
 public class KSCacheMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/example";
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
         final Solver solver = new SequentialSolverWithCache(
                 problem,
@@ -45,10 +47,9 @@ public class KSCacheMain {
                 varh,
                 ranking,
                 width,
-                dominance,
-                cache,
                 frontier,
-                false);
+                dominance,
+                cache);
 
 
         long start = System.currentTimeMillis();

@@ -145,7 +145,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.dominance = dominance;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagram<>();
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = -Double.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -240,6 +240,9 @@ public final class SequentialSolver<T, K> implements Solver {
                     exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact() && frontier.cutSetType() == CutSetType.Frontier) {
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+            }
             if (exportAsDot && firstRelaxed) {
                 if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
                 exportDot(mdd.exportAsDot(),
@@ -277,7 +280,7 @@ public final class SequentialSolver<T, K> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.MAX_VALUE,
                 Collections.emptySet());
     }
 

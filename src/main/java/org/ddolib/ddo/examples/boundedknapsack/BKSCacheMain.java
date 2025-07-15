@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.boundedknapsack;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -31,7 +32,7 @@ public class BKSCacheMain {
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-//        final DominanceChecker dominance = new SimpleDominanceChecker(new BKSDominance(), problem.nbVars());
+        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
@@ -41,10 +42,9 @@ public class BKSCacheMain {
                 varh,
                 ranking,
                 width,
-//                dominance,
-                cache,
                 frontier,
-                false);
+                dominance,
+                cache);
 
 
         long start = System.currentTimeMillis();

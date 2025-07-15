@@ -506,8 +506,8 @@ public final class ParallelSolver<T, K> implements Solver {
             this.frontier = frontier;
             this.ongoing = 0;
             this.explored = 0;
-            this.bestLB = Integer.MIN_VALUE;
-            this.bestUB = Integer.MAX_VALUE;
+            this.bestLB = -Double.MAX_VALUE;
+            this.bestUB = Double.MAX_VALUE;
             this.upperBounds = new double[nbThreads];
             this.bestSol = Optional.empty();
             for (int i = 0; i < nbThreads; i++) {

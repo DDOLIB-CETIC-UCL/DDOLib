@@ -6,9 +6,14 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.Dominance;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramWithCache;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -93,7 +98,16 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
     /**
      * This is the dominance object that will be used to prune the search space.
      */
-    private SimpleDominanceChecker<T,K> dominance;
+    private DominanceChecker<T,K> dominance;
+
+    /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
+    private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
+    private boolean firstRelaxed = true;
 
     /**
      * This is the cache used to prune the search tree
@@ -107,6 +121,23 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
 
     /**
      * Creates a fully qualified instance
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
      */
     public SequentialSolverWithCache(
             final Problem<T> problem,
@@ -114,10 +145,9 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final SimpleDominanceChecker<T,K> dominance,
-            final SimpleCache<T> cache,
             final Frontier<T> frontier,
-            final boolean exportAsDot) {
+            final DominanceChecker<T,K> dominance,
+            final SimpleCache<T> cache) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -129,66 +159,49 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         this.mdd = new LinkedDecisionDiagramWithCache<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-        this.exportAsDot = exportAsDot;
     }
-
-    public SequentialSolverWithCache(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final SimpleCache<T> cache,
-            final Frontier<T> frontier,
-            final boolean exportAsDot) {
-
-        this(problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                new SimpleDominanceChecker(new Dominance<T, Integer>() {
-                    @Override
-                    public Integer getKey(T t) {
-                        return 0;
-                    }
-                    @Override
-                    public boolean isDominatedOrEqual(T state1, T state2) {
-                        return false;
-                    }
-                }, problem.nbVars()),
-                cache,
-                frontier,
-                exportAsDot);
-
-    }
-
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, true);
+        return maximize(0, false);
     }
 
     @Override
     public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
+        int printInterval = 500; //ms; half a second
+        long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
         cache.initialize(problem);
         while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
-                    "bestObj:" + bestLB);
-
             nbIter++;
+            if(verbosityLevel >= 2){
+                long now = System.currentTimeMillis();
+                if(now >= nextPrint) {
+                    double bestInFrontier = frontier.bestInFrontier();
+                    double gap = 100*(bestInFrontier - bestLB)/bestLB;
+
+                    System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
+                            nbIter, frontier.size(), bestLB, bestInFrontier, gap);
+
+                    nextPrint = now + printInterval;
+                }
+            }
+
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
+
             double nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 2)
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            if (verbosityLevel >= 1) System.out.println("\n");
+            if (verbosityLevel >= 3){
+                System.out.println("it:" + nbIter + "\t" + sub.statistics());
+                if(verbosityLevel >= 4) {
+                    System.out.println("\t" + sub.getState());
+                }
+            }
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 long end = System.currentTimeMillis();
@@ -200,6 +213,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     continue;
                 }
             }
+
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInputWithCache<T,K> compilation = new CompilationInputWithCache<>(
                     CompilationType.Restricted,
@@ -213,10 +227,17 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot
+                    exportAsDot && firstRestricted
             );
             mdd.compile(compilation);
-            maybeUpdateBest(verbosityLevel);
+            String problemName = problem.getClass().getSimpleName().replace("Problem", "");
+            maybeUpdateBest(verbosityLevel, exportAsDot && firstRestricted);
+            if (exportAsDot && firstRestricted) {
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problemName + "_restricted.dot").toString());
+            }
+            firstRestricted = false;
+
             if (mdd.isExact()) {
                 continue;
             }
@@ -234,14 +255,21 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot
+                    exportAsDot && firstRestricted
             );
             mdd.compile(compilation);
-            if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
-                maybeUpdateBest(verbosityLevel);
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()  && frontier.cutSetType() == CutSetType.Frontier) {
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
             }
+            if (exportAsDot && firstRelaxed) {
+                if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
+                exportDot(mdd.exportAsDot(),
+                        Paths.get("output", problemName + "_relaxed.dot").toString());
+            }
+            firstRelaxed = false;
+
             if (mdd.isExact()) {
-                maybeUpdateBest(verbosityLevel);
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
             } else {
                 enqueueCutset();
             }
@@ -281,12 +309,14 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(int verbosityLevel) {
+    private void maybeUpdateBest(int verbosityLevel, boolean exportAsDot) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
-            if (verbosityLevel > 2) System.out.println("new best " + bestLB);
+            if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
+        } else if (exportAsDot) {
+            mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }
 
@@ -301,6 +331,14 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             if (cutsetNode.getUpperBound() > bestLB) {
                 frontier.push(cutsetNode);
             }
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
