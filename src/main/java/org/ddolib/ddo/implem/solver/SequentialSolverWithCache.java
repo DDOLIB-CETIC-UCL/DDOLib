@@ -237,7 +237,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     exportAsDot
             );
             mdd.compile(compilation);
-            if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
+            if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()  && frontier.cutSetType() == CutSetType.Frontier) {
                 maybeUpdateBest(verbosityLevel);
             }
             if (mdd.isExact()) {

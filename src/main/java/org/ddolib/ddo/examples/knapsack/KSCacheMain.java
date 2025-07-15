@@ -29,7 +29,7 @@ import java.util.Arrays;
 public class KSCacheMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/example";
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
@@ -37,7 +37,7 @@ public class KSCacheMain {
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
         final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
         final Solver solver = new SequentialSolverWithCache(
                 problem,
