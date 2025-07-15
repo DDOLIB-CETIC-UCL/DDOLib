@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.Problem;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class CSProblem implements Problem<CSState> {
     private final int nCars; // Number of cars
@@ -57,7 +58,7 @@ public class CSProblem implements Problem<CSState> {
     public Iterator<Integer> domain(CSState state, int var) {
         ArrayList<Integer> next = new ArrayList<>();
         for (int i = 0; i < nClasses(); i++) {
-            if (state.carsToBuild[i] > 0) { // Build car from class i for next state
+            if (state.carsToBuild()[i] > 0) { // Build car from class i for next state
                 next.add(i);
             }
         }
@@ -66,11 +67,11 @@ public class CSProblem implements Problem<CSState> {
 
     @Override
     public CSState transition(CSState state, Decision decision) {
-        int[] nextCarsToBuild = Arrays.copyOf(state.carsToBuild, nClasses());
+        int[] nextCarsToBuild = Arrays.copyOf(state.carsToBuild(), nClasses());
         nextCarsToBuild[decision.val()]--; // Built a car in class [decision.val()]
         long[] nextPreviousBlocks = new long[nOptions()];
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
+            nextPreviousBlocks[i] = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
         }
         return new CSState(nextCarsToBuild, nextPreviousBlocks);
     }
@@ -79,7 +80,7 @@ public class CSProblem implements Problem<CSState> {
     public double transitionCost(CSState state, Decision decision) {
         double cost = 0;
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            long nextBlock = (state.previousBlocks[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
+            long nextBlock = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
             if (Long.bitCount(nextBlock) > blockMax[i]) cost--; // Too many cars with that option recently
         }
         return cost;
@@ -87,7 +88,7 @@ public class CSProblem implements Problem<CSState> {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder(String.format("CarSequencingInstance [\n\tnClasses = %d, nCars = %d, nOptions = %d\n", nClasses(), nCars, nOptions()));
+        StringBuilder s = new StringBuilder(String.format("CSProblem [\n\tnClasses = %d, nCars = %d, nOptions = %d\n", nClasses(), nCars, nOptions()));
         s.append("\tCars");
         for (int i = 0; i < nClasses(); i++) {
             s.append(" " + classSize[i]);
@@ -100,6 +101,22 @@ public class CSProblem implements Problem<CSState> {
             s.append(String.format("\tClass %d: options", i));
             for (int j = 0; j < nOptions(); j++) {
                 if (carOptions[i][j]) s.append(" " + j);
+            }
+            s.append("\n");
+        }
+        s.append("]");
+        return s.toString();
+    }
+
+    public String solutionToString(int[] cars, int bestValue) {
+        StringBuilder s = new StringBuilder(String.format(
+            "CSSolution [\n\tscore = %d, cars : %s\n", -bestValue,
+            Arrays.stream(cars).mapToObj(String::valueOf).collect(Collectors.joining(" "))
+        ));
+        for (int classIndex : cars) {
+            s.append(String.format("\tclass %d : ", classIndex));
+            for (int i = 0; i < nOptions(); i++) {
+                s.append(carOptions[classIndex][i] ? " 1" : " 0");
             }
             s.append("\n");
         }
