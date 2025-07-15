@@ -240,6 +240,9 @@ public final class SequentialSolver<T, K> implements Solver {
                     exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact() && frontier.cutSetType() == CutSetType.Frontier) {
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+            }
             if (exportAsDot && firstRelaxed) {
                 if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
                 exportDot(mdd.exportAsDot(),
