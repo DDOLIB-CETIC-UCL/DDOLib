@@ -240,7 +240,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            double locb = Double.MIN_VALUE;
+            double locb = -Double.MAX_VALUE;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -596,9 +596,9 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
 
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(Integer.MIN_VALUE);
+            Node newNode = new Node(-Double.MAX_VALUE);
             newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
+            node = new NodeSubProblem<>(merged, -Double.MAX_VALUE, newNode);
         }
 
         // redirect and relax all arcs entering the merged node
@@ -860,7 +860,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
     private static final double saturatedDiff(double a, double b) {
         double diff =  a - b;
         if (Double.isInfinite(diff)) {
-            return diff < 0 ? Double.MIN_VALUE : -Double.MIN_VALUE;
+            return diff < 0 ? -Double.MAX_VALUE : Double.MAX_VALUE;
         }
         return diff;
     }

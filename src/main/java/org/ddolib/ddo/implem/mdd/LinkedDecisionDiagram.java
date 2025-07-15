@@ -222,7 +222,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            double locb = Double.MIN_VALUE;
+            double locb = -Double.MAX_VALUE;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -525,9 +525,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(Integer.MIN_VALUE);
+            Node newNode = new Node(-Double.MAX_VALUE);
             newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
+            node = new NodeSubProblem<>(merged, -Double.MAX_VALUE, newNode);
         }
 
         // redirect and relax all arcs entering the merged node

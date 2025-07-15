@@ -146,7 +146,7 @@ public final class LCSMain {
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.MIN_VALUE));
+        System.out.printf("Objective: %f%n", solver.bestValue().orElse(-Double.MAX_VALUE));
         System.out.printf("Upper Bnd : %s%n", solver.upperBound());
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());

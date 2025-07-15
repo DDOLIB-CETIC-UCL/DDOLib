@@ -145,7 +145,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.dominance = dominance;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagram<>();
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = -Double.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -280,7 +280,7 @@ public final class SequentialSolver<T, K> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.MAX_VALUE,
                 Collections.emptySet());
     }
 
