@@ -962,9 +962,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 double value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
                 // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.getNodeType() == NodeType.RELAXED) {
-                    node.node.setNodeType(NodeType.RELAXED);
-                }
+                // if (e.origin.getNodeType() == NodeType.RELAXED) {
+                //     node.node.setNodeType(NodeType.RELAXED);
+               //  }
                 node.node.edges.add(e);
                 if (value > node.node.value) {
                     node.node.value = value;
@@ -972,6 +972,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
         }
+
+        node.node.setNodeType(NodeType.RELAXED);
 
 
         // delete the nodes that have been merged
