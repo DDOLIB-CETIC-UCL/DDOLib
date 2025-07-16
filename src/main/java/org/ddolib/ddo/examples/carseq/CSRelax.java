@@ -53,6 +53,41 @@ public class CSRelax implements Relaxation<CSState> {
 
     @Override
     public double fastUpperBound(CSState state, Set<Integer> variables) {
-        return 1;
+        // Count remaining number of cars
+        int nToBuild = state.carsToBuild()[problem.nClasses()];
+        int[] nWithOption = new int[problem.nOptions()];
+        for (int i = 0; i < problem.nClasses(); i++) {
+            int nCars = state.carsToBuild()[i];
+            nToBuild += nCars;
+            for (int j = 0; j < problem.nOptions(); j++) {
+                if (problem.carOptions[i][j]) {
+                    nWithOption[j] += nCars;
+                }
+            }
+        }
+
+        // Bound for each option separately
+        double bound = 0;
+        for (int i = 0; i < problem.nOptions(); i++) {
+            // Count number of cars with and without the option in the previous block and in the future
+            int k = problem.blockMax[i], l = problem.blockSize[i];
+            int n = nToBuild + l;
+            int withOption = nWithOption[i] + Long.bitCount(state.previousBlocks()[i]);
+            int withoutOption = n - withOption;
+
+            // Compute bound
+            int maxViolations = (l - k) * (n - l + 1); // Number of violations if [withOption] = [n]
+            int nReduce = (n - l) / l * (l - k) +
+                Math.max((n - l) % l - k, 0); // Number of cars without the option that can reduce the number of violations
+            int nReduceByL = ((n - l - l + 1) / l + 1) * (l - k) -
+                Math.max(l - k - 1 - (n - l - l + 1) % l, 0); // Number of cars without the option that can each reduce the number of violations by [l]
+            double optionBound;
+            if (withoutOption <= nReduceByL) {
+                optionBound = maxViolations - withoutOption * l;
+            }
+            else optionBound = 0;
+            bound -= optionBound;
+        }
+        return bound;
     }
 }
