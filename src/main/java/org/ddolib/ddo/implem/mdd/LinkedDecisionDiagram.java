@@ -658,16 +658,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param relax the relaxation operators which we will use to merge nodes
      */
     private void mergeClusters(final List<NodeSubProblem<T>>[] clusters, final Relaxation<T> relax) {
-        for (List<NodeSubProblem<T>> cluster : clusters) {
+        for (List<NodeSubProblem<T>> cluster: clusters) {
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
                 continue;
             }
 
-            /*for (NodeSubProblem<T> node : cluster) {
-                System.out.print(node.state + ", ");
-            }
-            System.out.println();*/
             if (cluster.isEmpty()) {
                 continue;
             }
@@ -678,6 +674,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
                     node = n;
+                    node.node.setNodeType(NodeType.RELAXED);
                     break;
                 }
             }
@@ -697,11 +694,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
                     double value = saturatedAdd(e.origin.value, rcost);
                     e.weight  = rcost;
-
-                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                    if (e.origin.getNodeType() == NodeType.RELAXED) {
-                        node.node.setNodeType(NodeType.RELAXED);
-                    }
 
                     node.node.edges.add(e);
                     if (value > node.node.value) {
@@ -755,20 +747,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             List<NodeSubProblem<T>> current = nodeCurrent.cluster;
             assert current != null;
 
-            // Select the two pivots as the farthest nodes in the layer
-            /*NodeSubProblem<T> pivotA = current.getFirst();
-            NodeSubProblem<T> pivotB = selectFarthest(pivotA, current, distance);
-            for (int i = 0; i < 4; i++) {
-                NodeSubProblem<T> tmp = selectFarthest(pivotB, current, distance);
-                if (tmp == pivotA) break;
-                pivotA = tmp;
-                tmp = selectFarthest(pivotA, current, distance);
-                if (tmp == pivotB) break;
-                pivotB = tmp;
-            }*/
-
-            // System.out.println("pivot A: " + pivotA.state);
-            // System.out.println("pivot B: " + pivotB.state);
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
             NodeSubProblem<T> pivotB = current.get(1);
@@ -804,47 +782,20 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             pqClusters.add(new ClusterNode(maxDistB, newClusterB));
         }
 
+        Set<T> states = new HashSet<>();
+
         List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
         int index = 0;
         for (ClusterNode cluster : pqClusters) {
-            /*for (NodeSubProblem<T> node : cluster) {
-                System.out.print(node.state + ", ");
-            }
-            System.out.println();*/
             clusters[index] = cluster.cluster;
             index++;
-        }
-
-        /*try {
-            FileWriter writer = new FileWriter("tmp/distributionKP/KP1_GHP_MDP");
-            for (int i = 0; i < clusters.length; i++) {
-                for (NodeSubProblem<T> node: clusters[i]) {
-                    writer.write(node.state + " " + i + "\n");
-                }
+            for (NodeSubProblem<T> node : cluster.cluster) {
+                states.add(node.state);
             }
-            writer.close();
-
-        } catch (IOException e) {
-            System.exit(-1);
         }
-        System.exit(0);*/
-        /*Set<NodeSubProblem<T>> mergedClusters = new HashSet<>();
-        for (List<NodeSubProblem<T>> cluster : clusters) {
-            mergedClusters.addAll(cluster);
-        }
-
-        Set<NodeSubProblem<T>> layerSet = new HashSet<>(currentLayer);
-        assert mergedClusters == layerSet;
-        assert initSize == mergedClusters.size();*/
 
         currentLayer.clear();
         mergeClusters(clusters, relax);
-
-        /*System.out.print("Layer (" + currentLayer.size() + "): ");
-        for (NodeSubProblem<T> node : currentLayer) {
-            System.out.print(node.state + ", ");
-        }
-        System.out.println();*/
 
     }
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public class SetCover {
 
@@ -35,20 +36,19 @@ public class SetCover {
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final Solver solver = relaxationSolver(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                dominance,
                 RelaxationStrat.GHP,
                 distance,
                 coord,
-                54658646);
+                54684);
 
         long start = System.currentTimeMillis();
         solver.maximize();
@@ -65,7 +65,7 @@ public class SetCover {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %.3f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
