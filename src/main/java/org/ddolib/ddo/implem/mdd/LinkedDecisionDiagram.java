@@ -125,7 +125,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("Node: value:%d - suffix: %s - best edge: %s - parent edges: %s",
+            return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
     }
@@ -222,7 +222,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            double locb = Double.MIN_VALUE;
+            double locb = -Double.MAX_VALUE;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -260,8 +260,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final DominanceChecker<T, K> dominance = input.dominance();
 
         final Set<Integer> variables = varSet(input);
-        //
-        int depth = 0;
+
+        int depthGlobalDD = residual.getPath().size();
+        int depthCurrentDD = 0;
+
+
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         while (!variables.isEmpty()) {
@@ -277,7 +280,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depth, node.value)) {
+                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
                     continue;
                 } else {
                     double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
@@ -311,7 +314,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (depth >= 2 && currentLayer.size() > maxWidth) {
+            if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
                 switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
@@ -347,7 +350,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2) {
+                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
@@ -362,7 +365,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
-            depth += 1;
+            depthGlobalDD += 1;
+            depthCurrentDD += 1;
         }
         if (input.compilationType() == CompilationType.Relaxed && input.cutSetType() == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
@@ -521,9 +525,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(Integer.MIN_VALUE);
+            Node newNode = new Node(-Double.MAX_VALUE);
             newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, Integer.MIN_VALUE, newNode);
+            node = new NodeSubProblem<>(merged, -Double.MAX_VALUE, newNode);
         }
 
         // redirect and relax all arcs entering the merged node

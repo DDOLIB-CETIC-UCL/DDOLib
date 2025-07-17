@@ -3,6 +3,7 @@ package org.ddolib.ddo.examples.gruler;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -37,6 +38,7 @@ public class GRCacheMain {
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final SimpleCache<GRState> cache = new SimpleCache<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        DefaultDominanceChecker<GRState> dominance = new DefaultDominanceChecker<>();
         final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
@@ -46,7 +48,8 @@ public class GRCacheMain {
                 new DefaultFastUpperBound<GRState>(),
                 cache,
                 frontier,
-                false);
+                dominance,
+                cache);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

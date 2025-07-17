@@ -80,16 +80,18 @@ public class KSCacheTest {
 
         final SimpleCache<Integer> cache = new SimpleCache();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
+        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
         final Solver solverWithCaching = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                fub,
                 cache,
                 frontier,
-                false);
+                fub,
+                dominance,
+                cache);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();
