@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.dominance.SimpleDominanceChecker;
+import org.ddolib.example.ddo.knapsack.*;
 import org.ddolib.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
+import static org.ddolib.example.ddo.knapsack.KSMain.readInstance;
 import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

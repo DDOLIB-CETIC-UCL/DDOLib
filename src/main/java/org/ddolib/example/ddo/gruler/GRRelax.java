@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.gruler;
+package org.ddolib.example.ddo.gruler;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;

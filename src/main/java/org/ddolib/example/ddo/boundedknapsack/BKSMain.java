@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.boundedknapsack;
+package org.ddolib.example.ddo.boundedknapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -10,8 +10,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.dominance.DominanceChecker;
-import org.ddolib.dominance.SimpleDominanceChecker;
+import org.ddolib.dominance.DefaultDominanceChecker;
 import org.ddolib.solver.Solver;
 
 import java.util.Arrays;
@@ -21,7 +20,7 @@ import java.util.Arrays;
  * A bounded knapsack problem is a variation of the classic knapsack problem
  * where each item can be included in the knapsack a limited number of times.
  */
-public class BKSCacheMain {
+public class BKSMain {
 
     public static void main(String[] args) {
         // Example from the paper "Decision Diagram-Based Branch and Bound with Caching"
@@ -34,18 +33,17 @@ public class BKSCacheMain {
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final DominanceChecker<Integer, Integer> dominance =
-                new SimpleDominanceChecker<>(new BKSDominance(),
-                        problem.nbVars());
+        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
         final SimpleCache<Integer> cache = new SimpleCache<>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = new SequentialSolverWithCache<>(
                 problem,
                 relax,
                 varh,
                 ranking,
-                width, frontier,
+                width,
+                frontier,
                 fub,
                 dominance,
                 cache);

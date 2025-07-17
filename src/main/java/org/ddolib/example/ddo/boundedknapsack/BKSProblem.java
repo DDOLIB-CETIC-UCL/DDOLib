@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.boundedknapsack;
+package org.ddolib.example.ddo.boundedknapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;

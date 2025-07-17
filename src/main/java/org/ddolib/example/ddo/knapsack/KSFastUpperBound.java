@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.knapsack;
+package org.ddolib.example.ddo.knapsack;
 
 import org.ddolib.modeling.FastUpperBound;
 

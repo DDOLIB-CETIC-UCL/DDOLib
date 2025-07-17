@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.gruler;
+package org.ddolib.example.ddo.gruler;
 
 import org.ddolib.modeling.StateRanking;
 

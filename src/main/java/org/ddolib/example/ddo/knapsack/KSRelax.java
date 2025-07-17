@@ -1,15 +1,11 @@
-package org.ddolib.ddo.examples.boundedknapsack;
-
+package org.ddolib.example.ddo.knapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
 
 import java.util.Iterator;
 
-public class BKSRelax implements Relaxation<Integer> {
-
-    public BKSRelax() {
-    }
+public class KSRelax implements Relaxation<Integer> {
 
     @Override
     public Integer mergeStates(final Iterator<Integer> states) {
@@ -27,4 +23,3 @@ public class BKSRelax implements Relaxation<Integer> {
     }
 
 }
-

@@ -7,6 +7,10 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.example.ddo.gruler.GRProblem;
+import org.ddolib.example.ddo.gruler.GRRanking;
+import org.ddolib.example.ddo.gruler.GRRelax;
+import org.ddolib.example.ddo.gruler.GRState;
 import org.ddolib.solver.Solver;
 
 import static org.ddolib.factory.Solvers.sequentialSolver;

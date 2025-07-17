@@ -1,8 +1,8 @@
-package org.ddolib.ddo.examples.boundedknapsack;
+package org.ddolib.example.ddo.knapsack;
 
 import org.ddolib.modeling.StateRanking;
 
-public class BKSRanking implements StateRanking<Integer> {
+public class KSRanking implements StateRanking<Integer> {
     @Override
     public int compare(final Integer o1, final Integer o2) {
         return o1 - o2;

@@ -1,8 +1,8 @@
-package org.ddolib.ddo.examples.knapsack;
+package org.ddolib.example.ddo.knapsack;
 
 import org.ddolib.modeling.Dominance;
 
-class KSDominance implements Dominance<Integer, Integer> {
+public class KSDominance implements Dominance<Integer, Integer> {
 
     @Override
     public Integer getKey(Integer capa) {

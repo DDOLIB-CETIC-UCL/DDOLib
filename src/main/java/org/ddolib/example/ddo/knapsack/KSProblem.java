@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.knapsack;
+package org.ddolib.example.ddo.knapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class KSProblem implements Problem<Integer> {
 
-    final int capa;
+    public final int capa;
     final int[] profit;
     final int[] weight;
     public final double optimal;
