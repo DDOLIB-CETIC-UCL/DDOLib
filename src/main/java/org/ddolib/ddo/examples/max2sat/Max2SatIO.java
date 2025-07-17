@@ -24,7 +24,11 @@ public class Max2SatIO {
      *     <li>
      *         The third value is the weight of the clause formed by the two literals.
      *     </li>
-     * </ul>// According to the decision on l, we can gain (!xk || xl) or (!xk || xl)
+     *     <li>
+     *         You can also specify 2 values on a line for unary clause. In this case, the first
+     *         value is the index of the literal and the second the weight of the clause.
+     *     </li>
+     * </ul>
      *
      * @param fileName The path to the input file.
      * @return An instance of Max2SatProblem.
