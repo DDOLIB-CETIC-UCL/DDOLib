@@ -32,17 +32,14 @@ public class KSMain {
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
-        final KSRanking ranking = new KSRanking();
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
-
 
         final Solver solver = astarSolver(
                 problem,
                 relax,
                 varh,
-                ranking,
                 dominance
         );
 
