@@ -1,9 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
@@ -31,13 +28,13 @@ public class MSCTMain {
     public static void main(final String[] args) throws Exception {
 //        final String instance = "data/MSCT/msct1.txt";
 //        final MSCTProblem problem = readInstance(instance);
-        int n = 10;
+        int n = 11;
         MSCTProblem problem = instanceGenerator(n);
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
         final MSCTRelax relax = new MSCTRelax(problem);
         final MSCTRanking ranking = new MSCTRanking();
-        final FixedWidth<MSCTState> width = new FixedWidth<>(10);
+        final FixedWidth<MSCTState> width = new FixedWidth<>(100);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
         final SimpleDominanceChecker<MSCTState, Integer> dominance =
                 new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
@@ -54,9 +51,9 @@ public class MSCTMain {
 
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
-
+        System.out.println(stats);
 
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];

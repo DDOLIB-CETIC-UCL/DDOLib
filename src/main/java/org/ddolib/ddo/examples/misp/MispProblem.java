@@ -10,10 +10,31 @@ import java.util.Optional;
 
 public class MispProblem implements Problem<BitSet> {
 
+    /**
+     * The remaining node that can be selected in the current independent set. Considered
+     * as the state of the MDD.
+     */
     public final BitSet remainingNodes;
+    /**
+     * For each node {@code i}, {@code neighbors[i]} returns the adjacency list of {@code i}.
+     */
     public final BitSet[] neighbors;
+    /**
+     * For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
+     * in the problem instance.
+     */
     public final int[] weight;
-    public final Optional<Double> optimal;
+
+    /**
+     * The value of the optimal solution if known.
+     */
+    public Optional<Double> optimal = Optional.empty();
+
+
+    /**
+     * String to ease the tests' readability.
+     */
+    private Optional<String> name = Optional.empty();
 
     /**
      * @param remainingNodes The remaining node that can be selected in the current independent set. Considered
@@ -22,34 +43,46 @@ public class MispProblem implements Problem<BitSet> {
      * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
      *                       in the problem instance.
      */
-    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Double> optimal) {
+    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, double optimal) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
-        this.optimal = optimal;
+        this.optimal = Optional.of(optimal);
     }
 
     public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
-        this.optimal = Optional.empty();
+    }
+
+    /**
+     * Sets the name of the instance. The name will override the default toString.
+     *
+     * @param name The new string that will override the default toString.
+     */
+    public void setName(String name) {
+        this.name = Optional.of(name);
     }
 
     @Override
     public String toString() {
-        StringBuilder weighStr = new StringBuilder();
-        for (int i = 0; i < weight.length; i++) {
-            weighStr.append(String.format("\t%d : %d%n", i, weight[i]));
-        }
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            StringBuilder weighStr = new StringBuilder();
+            for (int i = 0; i < weight.length; i++) {
+                weighStr.append(String.format("\t%d : %d%n", i, weight[i]));
+            }
 
-        StringBuilder neighStr = new StringBuilder();
-        for (int i = 0; i < neighbors.length; i++) {
-            neighStr.append(String.format("\t%d : %s%n", i, neighbors[i]));
-        }
+            StringBuilder neighStr = new StringBuilder();
+            for (int i = 0; i < neighbors.length; i++) {
+                neighStr.append(String.format("\t%d : %s%n", i, neighbors[i]));
+            }
 
-        return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
-                weighStr, neighStr);
+            return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
+                    weighStr, neighStr);
+        }
     }
 
     @Override

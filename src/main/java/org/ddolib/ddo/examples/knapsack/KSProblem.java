@@ -61,5 +61,7 @@ public class KSProblem implements Problem<Integer> {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return profit[decision.var()] * decision.val();
     }
+    @Override
+    public String toString() {return "(" + capa + "," + Arrays.toString(profit) + "," + Arrays.toString(weight) + ")";}
 }
 

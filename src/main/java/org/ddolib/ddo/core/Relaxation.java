@@ -45,6 +45,6 @@ public interface Relaxation<T> {
      * @param variables the set of unassigned variables
      */
     default double fastUpperBound(final T state, final Set<Integer> variables) {
-        return Integer.MAX_VALUE;
+        return Double.MAX_VALUE;
     };
 }

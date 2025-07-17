@@ -86,7 +86,7 @@ public class TSRelax implements Relaxation<TSState> {
         for (RatioAndActor ra : ratios) {
             if (presentActors.get(ra.actor)) {
                 int a = ra.actor;
-                sumE += ratios[a].ratio * problem.costs[a];
+                sumE += ra.ratio * problem.costs[a];
                 lb += problem.costs[a] * sumE;
             }
         }

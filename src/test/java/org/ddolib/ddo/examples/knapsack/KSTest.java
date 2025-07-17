@@ -8,6 +8,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -17,6 +18,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
+import static org.ddolib.ddo.implem.solver.Solvers.exactSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +41,27 @@ public class KSTest {
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
+
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Solver solver = sequentialSolver(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier);
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackSmallWidth(KSProblem problem) {
+        final KSRelax relax = new KSRelax(problem);
+        final KSRanking ranking = new KSRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(2);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
@@ -79,12 +102,36 @@ public class KSTest {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
-                problem.nbVars());
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
 
 
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
+        final Solver solver = new SequentialSolver(
+                problem,
+                relax,
+                varh,
+                ranking,
+                width,
+                frontier,
+                dominance
+        );
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackWithDominanceSmallWidth(KSProblem problem) {
+        final KSRelax relax = new KSRelax(problem);
+        final KSRanking ranking = new KSRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(2);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
+
+
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver(
                 problem,
                 relax,
                 varh,

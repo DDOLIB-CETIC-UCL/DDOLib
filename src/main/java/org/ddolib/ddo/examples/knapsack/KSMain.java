@@ -29,15 +29,14 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_1";
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
-                problem.nbVars());
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
         final Solver solver = sequentialSolver(
                 problem,
@@ -51,7 +50,7 @@ public class KSMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.maximize(0, true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);

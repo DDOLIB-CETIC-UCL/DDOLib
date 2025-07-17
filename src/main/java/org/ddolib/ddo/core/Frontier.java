@@ -47,4 +47,8 @@ public interface Frontier<T> {
         return size() == 0;
     }
 
+    /**
+     * @return the best ub currently in the frontier; crashes if the frontier is empty
+     */
+    double bestInFrontier();
 }
