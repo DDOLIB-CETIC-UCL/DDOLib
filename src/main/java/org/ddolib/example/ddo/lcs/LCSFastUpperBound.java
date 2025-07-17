@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.lcs;
+package org.ddolib.example.ddo.lcs;
 
 import org.ddolib.modeling.FastUpperBound;
 
