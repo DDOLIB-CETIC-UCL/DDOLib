@@ -1,5 +1,6 @@
 package org.ddolib.factory;
 
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -334,5 +335,24 @@ public class Solvers {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
         return new ExactSolver<>(problem, relax, varh, ranking, defaultFub, defaultDominance);
+    }
+
+
+    /**
+     * Instantiates an A* solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param ub        A suitable admissible upper-bound for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of the states.
+     * @param <K>       The type of the dominance keys.
+     * @return An A* solver for the input problem using the given configuration.
+     */
+    public static <T, K> AStarSolver<T, K> astarSolver(Problem<T> problem,
+                                                       VariableHeuristic<T> varh,
+                                                       FastUpperBound<T> ub,
+                                                       DominanceChecker<T, K> dominance) {
+        return new AStarSolver(problem, varh, ub, dominance);
     }
 }
