@@ -17,7 +17,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

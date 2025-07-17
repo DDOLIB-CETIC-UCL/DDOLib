@@ -17,14 +17,14 @@ public class SMICRelax implements Relaxation<SMICState> {
 //        Set<Integer> intersectionJobs = new HashSet<>(s.getRemainingJobs());
         Set<Integer> intersectionJobs = new HashSet<>();
         int minCurrentTime = Integer.MAX_VALUE;
-        int minCurrentInventory = Integer.MAX_VALUE;
-        int maxCurrentInventory = Integer.MIN_VALUE;
+        int minCurrentInventory = Integer.MIN_VALUE;
+        int maxCurrentInventory = Integer.MAX_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
             intersectionJobs.addAll(state.getRemainingJobs());
             minCurrentTime = Math.min(minCurrentTime, state.getCurrentTime());
-            minCurrentInventory = Math.min(minCurrentInventory, state.getMinCurrentInventory());
-            maxCurrentInventory = Math.max(maxCurrentInventory, state.getMaxCurrentInventory());
+            minCurrentInventory = Math.max(minCurrentInventory, state.getMinCurrentInventory());
+            maxCurrentInventory = Math.min(maxCurrentInventory, state.getMaxCurrentInventory());
         }
         return new SMICState(intersectionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
     }

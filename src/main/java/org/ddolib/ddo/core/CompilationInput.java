@@ -4,7 +4,6 @@ import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-
 /**
  * The set of parameters used to tweak the compilation of an MDD
  *
