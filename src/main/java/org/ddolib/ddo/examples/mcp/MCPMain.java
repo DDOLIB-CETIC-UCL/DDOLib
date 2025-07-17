@@ -27,12 +27,13 @@ public final class MCPMain {
 
         final MCPRelax relax = new MCPRelax(problem);
         final MCPRanking ranking = new MCPRanking();
+        final MCPFastUpperBound fub = new MCPFastUpperBound(problem);
 
         final FixedWidth<MCPState> width = new FixedWidth<>(w);
         final VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
         final SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier);
+        final Solver solver = sequentialSolver(problem, relax, varh, ranking, width, frontier, fub);
 
         long start = System.currentTimeMillis();
         solver.maximize();

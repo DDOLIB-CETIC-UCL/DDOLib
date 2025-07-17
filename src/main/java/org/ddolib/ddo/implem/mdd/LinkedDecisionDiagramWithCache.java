@@ -6,7 +6,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -16,10 +15,11 @@ import static javax.swing.UIManager.put;
 
 /**
  * This class implements the decision diagram as a linked structure.
+ *
  * @param <T> the type of state
  * @param <K> the type of key
  */
-public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagramWithCache<T,K> {
+public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagramWithCache<T, K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -45,7 +45,9 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
      * A flag to keep track of the fact that LEL might be empty albeit not set
      */
 
-    /** A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped) */
+    /**
+     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
+     */
     private boolean exact = true;
 
     /**
@@ -111,8 +113,6 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         private boolean isAboveExactCutSet;
 
 
-
-
         /**
          * Creates a new node
          */
@@ -129,6 +129,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
 
         /**
          * set the type of the node when different to exact type
+         *
          * @param nodeType
          */
         public void setNodeType(final NodeType nodeType) {
@@ -137,9 +138,12 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
 
         /**
          * get the type of the node
+         *
          * @return NodeType
          */
-        public NodeType getNodeType() {return this.type;}
+        public NodeType getNodeType() {
+            return this.type;
+        }
 
         @Override
         public String toString() {
@@ -257,7 +261,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
     }
 
     @Override
-    public void compile(CompilationInputWithCache<T,K> input) {
+    public void compile(CompilationInputWithCache<T, K> input) {
         // make sure we don't have any stale data left
         this.clear();
 
@@ -311,7 +315,8 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                 if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
                     continue;
                 } else {
-                    double rub = saturatedAdd(node.value, input.relaxation().fastUpperBound(state, variables));
+                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state,
+                            variables));
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -444,7 +449,6 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
         }
 
 
-
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.compilationType() == CompilationType.Relaxed) {
 
@@ -527,7 +531,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
     }
 
     // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInputWithCache<T,K> input) {
+    private Set<Integer> varSet(final CompilationInputWithCache<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {
             set.add(i);
@@ -742,7 +746,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
      * perform the bottom up traversal of the mdd to compute and update the cache
      */
     private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
-        for (int j = listDepth.size()-1; j >= 0; j--) {
+        for (int j = listDepth.size() - 1; j >= 0; j--) {
             int depth = listDepth.get(j);
             for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
                 NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
@@ -750,8 +754,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                         sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
                     double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
                     currentCache.get(j).get(i).setValue(value);
-                }
-                else {
+                } else {
                     if (sub.ub <= lb) {
                         double rub = saturatedDiff(sub.ub, sub.node.value);
                         double value = saturatedDiff(lb, rub);
@@ -778,18 +781,19 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
                 for (Edge e : sub.node.edges) {
                     Node origin = e.origin;
                     int index = -1;
-                    for (int k = 0; k < nodePerLayer.get(j-1).size(); k++) {
-                        if (nodePerLayer.get(j-1).get(k).node.equals(origin)) {
+                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
+                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
                             index = k;
                             break;
                         }
                     }
-                    double value = Math.min(currentCache.get(j-1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
-                    currentCache.get(j-1).get(index).setValue(value);
+                    double value = Math.min(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j - 1).get(index).setValue(value);
                 }
             }
         }
     }
+
     /**
      * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
      *
@@ -858,7 +862,7 @@ public final class LinkedDecisionDiagramWithCache<T,K> implements DecisionDiagra
      * Performs a saturated difference (no underflow)
      */
     private static final double saturatedDiff(double a, double b) {
-        double diff =  a - b;
+        double diff = a - b;
         if (Double.isInfinite(diff)) {
             return diff < 0 ? -Double.MAX_VALUE : Double.MAX_VALUE;
         }

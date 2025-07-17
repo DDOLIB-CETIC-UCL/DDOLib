@@ -5,14 +5,10 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
 
 import java.util.Iterator;
-import java.util.Set;
 
 public class BKSRelax implements Relaxation<Integer> {
 
-    private final BKSProblem problem;
-
-    public BKSRelax(BKSProblem problem) {
-        this.problem = problem;
+    public BKSRelax() {
     }
 
     @Override
@@ -30,13 +26,5 @@ public class BKSRelax implements Relaxation<Integer> {
         return cost;
     }
 
-    @Override
-    public double fastUpperBound(Integer state, Set<Integer> variables) {
-        int rub = 0;
-        for (int v : variables) {
-            rub += this.problem.quantity[v] * this.problem.values[v];
-        }
-        return rub;
-    }
 }
 

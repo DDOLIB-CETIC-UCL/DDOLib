@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core;
 
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
@@ -13,6 +14,7 @@ import org.ddolib.ddo.implem.dominance.DominanceChecker;
  * @param stateRanking      The state ranking heuristic to choose the nodes to keep and those to discard.
  * @param residual          The subproblem whose state space must be explored.
  * @param maxWidth          The maximum width of the mdd.
+ * @param fub               The heuristic defining a very rough estimation (upper bound) of the optimal value.
  * @param dominance         The dominance checker used to prune the search space.
  * @param bestLB            The best known lower bound at the time when the dd is being compiled.
  * @param cutSetType        The type of cut set used in the compilation.
@@ -27,6 +29,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      StateRanking<T> stateRanking,
                                      SubProblem<T> residual,
                                      int maxWidth,
+                                     FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,

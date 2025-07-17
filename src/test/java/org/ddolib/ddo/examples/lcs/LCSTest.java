@@ -42,14 +42,14 @@ public class LCSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastUpperBound(LCSProblem problem) {
-        final LCSRelax relax = new LCSRelax(problem);
+        final LCSFastUpperBound fub = new LCSFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.getOptimal().get(),
                 String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",

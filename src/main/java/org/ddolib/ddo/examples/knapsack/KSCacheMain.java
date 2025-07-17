@@ -33,13 +33,14 @@ public class KSCacheMain {
 
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
         final KSProblem problem = readInstance(instance);
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
+        final KSFastUpperBound fub = new KSFastUpperBound(problem);
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(250);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-        final SimpleCache<Integer> cache = new SimpleCache();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final SimpleCache<Integer> cache = new SimpleCache<>();
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
         final Solver solver = new SequentialSolverWithCache(
                 problem,
@@ -48,6 +49,7 @@ public class KSCacheMain {
                 ranking,
                 width,
                 frontier,
+                fub,
                 dominance,
                 cache);
 
@@ -56,7 +58,7 @@ public class KSCacheMain {
         SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        System.out.println("Search statistics:"+stats);
+        System.out.println("Search statistics:" + stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {
