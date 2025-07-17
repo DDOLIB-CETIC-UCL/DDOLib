@@ -22,17 +22,17 @@ import java.util.Set;
  */
 public class CSMain {
     public static void main(String[] args) throws IOException {
-        CSProblem problem = readInstance("data/CarSeq/medium.txt");
+        CSProblem problem = readInstance("data/CarSeq/medium2.txt");
         for (int i = 0; i < problem.nOptions(); i++) { // Prevent sizes larger than 64 (to be able to use a single long instead of a BitSet)
             if (problem.blockSize[i] > 64) throw new IllegalArgumentException("Option block size must be less than 64");
         }
 
         CSRelax relax = new CSRelax(problem);
-        CSRanking ranking = new CSRanking();
+        CSRanking ranking = new CSRanking(problem);
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
         Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        //SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(), problem.nbVars());
+        SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(problem), problem.nbVars());
         Solver solver = Solvers.sequentialSolver(
                 problem,
                 relax,
@@ -42,7 +42,7 @@ public class CSMain {
                 frontier
         );
 
-        SearchStatistics stats = solver.maximize(2, false);
+        SearchStatistics stats = solver.maximize(0, false);
         System.out.println(stats);
         Optional<Set<Decision>> solution = solver.bestSolution();
         if (solution.isPresent()) {

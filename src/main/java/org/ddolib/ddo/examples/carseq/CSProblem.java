@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+
 public class CSProblem implements Problem<CSState> {
     public final int nCars; // Number of cars
     public final int[] classSize; // Number of cars in each class
@@ -45,50 +46,56 @@ public class CSProblem implements Problem<CSState> {
         return nCars;
     }
 
+
     @Override
     public CSState initialState() {
-        return new CSState(classSize, new long[nOptions()]);
+        return new CSState(this, classSize, new long[nOptions()]);
     }
+
 
     @Override
     public double initialValue() {
         return 0;
     }
 
+
     @Override
     public Iterator<Integer> domain(CSState state, int var) {
         ArrayList<Integer> next = new ArrayList<>();
         for (int i = 0; i < nClasses() + 1; i++) {
-            if (state.carsToBuild()[i] > 0) { // Build car from class i for next state
+            if (state.carsToBuild[i] > 0) { // Build car from class i for next state
                 next.add(i);
             }
         }
         return next.iterator();
     }
 
+
     @Override
     public CSState transition(CSState state, Decision decision) {
-        int[] nextCarsToBuild = Arrays.copyOf(state.carsToBuild(), nClasses() + 1);
+        int[] nextCarsToBuild = Arrays.copyOf(state.carsToBuild, nClasses() + 1);
         nextCarsToBuild[decision.val()]--; // Built a car in class [decision.val()]
         long[] nextPreviousBlocks = new long[nOptions()];
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            nextPreviousBlocks[i] = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1);
+            nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << blockSize[i]) - 1);
             if (carOptions[decision.val()][i]) nextPreviousBlocks[i] |= 1;
         }
-        return new CSState(nextCarsToBuild, nextPreviousBlocks);
+        return new CSState(this, nextCarsToBuild, nextPreviousBlocks);
     }
+
 
     @Override
     public double transitionCost(CSState state, Decision decision) {
         double cost = 0;
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
             if (carOptions[decision.val()][i]) {
-                long previous = state.previousBlocks()[i] & ((1L << (blockSize[i] - 1)) - 1);
+                long previous = state.previousBlocks[i] & ((1L << (blockSize[i] - 1)) - 1);
                 if (Long.bitCount(previous) >= blockMax[i]) cost--; // Too many cars with that option recently
             }
         }
         return cost;
     }
+
 
     @Override
     public String toString() {
@@ -111,6 +118,7 @@ public class CSProblem implements Problem<CSState> {
         s.append("]");
         return s.toString();
     }
+
 
     public String solutionToString(int[] cars, int bestValue) {
         StringBuilder s = new StringBuilder(String.format(
