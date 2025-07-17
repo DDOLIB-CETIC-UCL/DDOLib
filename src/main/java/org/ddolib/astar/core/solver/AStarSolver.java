@@ -1,12 +1,15 @@
-package org.ddolib.astar;
+package org.ddolib.astar.core.solver;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.FastUpperBound;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.Problem;
+
 
 import java.util.*;
-import org.ddolib.ddo.heuristics.StateRanking;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -57,12 +60,12 @@ public final class AStarSolver<T, K> implements Solver {
      */
     public AStarSolver(
             final Problem<T> problem,
-            final FastUpperBound<T> ub,
             final VariableHeuristic<T> varh,
+            final FastUpperBound<T> ub,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
-        this.ub = ub;
         this.varh = varh;
+        this.ub = ub;
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
