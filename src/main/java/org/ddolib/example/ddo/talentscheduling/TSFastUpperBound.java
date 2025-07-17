@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.talentscheduling;
+package org.ddolib.example.ddo.talentscheduling;
 
 import org.ddolib.modeling.FastUpperBound;
 

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsp;
+package org.ddolib.example.ddo.tsp;
 
 import org.ddolib.modeling.FastUpperBound;
 

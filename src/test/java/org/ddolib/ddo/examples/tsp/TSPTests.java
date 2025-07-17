@@ -1,5 +1,8 @@
 package org.ddolib.ddo.examples.tsp;
 
+import org.ddolib.example.ddo.tsp.TSPInstance;
+import org.ddolib.example.ddo.tsp.TSPMain;
+import org.ddolib.example.ddo.tsp.TSPProblem;
 import org.ddolib.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
