@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pdp;
+package org.ddolib.example.ddo.pdp;
 
 import org.ddolib.modeling.StateRanking;
 

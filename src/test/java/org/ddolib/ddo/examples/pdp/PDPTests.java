@@ -1,5 +1,9 @@
 package org.ddolib.ddo.examples.pdp;
 
+import org.ddolib.example.ddo.pdp.PDPInstance;
+import org.ddolib.example.ddo.pdp.PDPMain;
+import org.ddolib.example.ddo.pdp.PDPProblem;
+import org.ddolib.example.ddo.pdp.PDPSolution;
 import org.ddolib.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
