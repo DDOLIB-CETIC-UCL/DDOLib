@@ -1,16 +1,18 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
+import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
+import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
 
 import java.io.File;
 import java.util.Arrays;
@@ -39,7 +41,7 @@ public class MSCTCacheMain {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(100);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
+        final DefaultDominanceChecker<MSCTState> dominance = new DefaultDominanceChecker<>();
         final SimpleCache<MSCTState> cache = new SimpleCache<>();
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolverWithCache<>(
@@ -49,7 +51,7 @@ public class MSCTCacheMain {
                 ranking,
                 width,
                 frontier,
-                new DefaultFastUpperBound<MSCTState>(),
+                new DefaultFastUpperBound<>(),
                 dominance,
                 cache);
 

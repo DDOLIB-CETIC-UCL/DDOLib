@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.lcs;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.modeling.Relaxation;
 
 import java.util.Arrays;
 import java.util.Iterator;

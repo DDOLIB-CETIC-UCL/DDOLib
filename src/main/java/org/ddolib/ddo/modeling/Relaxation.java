@@ -1,4 +1,6 @@
-package org.ddolib.ddo.core;
+package org.ddolib.ddo.modeling;
+
+import org.ddolib.ddo.core.Decision;
 
 import java.util.Iterator;
 

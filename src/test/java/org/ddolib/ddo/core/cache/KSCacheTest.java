@@ -1,20 +1,19 @@
-package implem.solver;
+package org.ddolib.ddo.core.cache;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.examples.knapsack.KSFastUpperBound;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
+import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
+import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolver;
+import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

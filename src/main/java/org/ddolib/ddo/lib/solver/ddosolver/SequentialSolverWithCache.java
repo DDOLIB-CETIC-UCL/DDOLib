@@ -1,13 +1,22 @@
-package org.ddolib.ddo.implem.solver;
+package org.ddolib.ddo.lib.solver.ddosolver;
 
-import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.compilation.CompilationInputWithCache;
+import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.dominance.DominanceChecker;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.WidthHeuristic;
+import org.ddolib.ddo.core.mdd.DecisionDiagramWithCache;
+import org.ddolib.ddo.core.mdd.LinkedDecisionDiagramWithCache;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.heuristics.FastUpperBound;
-import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramWithCache;
+import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.ddo.modeling.Relaxation;
+import org.ddolib.ddo.modeling.StateRanking;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -165,7 +174,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
         this.dominance = dominance;
         this.cache = cache;
         this.frontier = frontier;
-        this.mdd = new LinkedDecisionDiagramWithCache<>();
+        this.mdd = new LinkedDecisionDiagramWithCache<T, K>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
