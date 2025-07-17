@@ -76,17 +76,11 @@ public class CSRelax implements Relaxation<CSState> {
             int withoutOption = n - withOption;
 
             // Compute bound
-            int maxViolations = (l - k) * (n - l + 1); // Number of violations if [withOption] = [n]
-            int nReduce = (n - l) / l * (l - k) +
+            int nReduce = n / l * (l - k) +
                 Math.max((n - l) % l - k, 0); // Number of cars without the option that can reduce the number of violations
-            int nReduceByL = ((n - l - l + 1) / l + 1) * (l - k) -
-                Math.max(l - k - 1 - (n - l - l + 1) % l, 0); // Number of cars without the option that can each reduce the number of violations by [l]
-            double optionBound;
-            if (withoutOption <= nReduceByL) {
-                optionBound = maxViolations - withoutOption * l;
+            if (withoutOption < nReduce) {
+                bound -= nReduce - withoutOption;
             }
-            else optionBound = 0;
-            bound -= optionBound;
         }
         return bound;
     }

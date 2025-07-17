@@ -72,7 +72,8 @@ public class CSProblem implements Problem<CSState> {
         nextCarsToBuild[decision.val()]--; // Built a car in class [decision.val()]
         long[] nextPreviousBlocks = new long[nOptions()];
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            nextPreviousBlocks[i] = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
+            nextPreviousBlocks[i] = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1);
+            if (carOptions[decision.val()][i]) nextPreviousBlocks[i] |= 1;
         }
         return new CSState(nextCarsToBuild, nextPreviousBlocks);
     }
@@ -81,9 +82,10 @@ public class CSProblem implements Problem<CSState> {
     public double transitionCost(CSState state, Decision decision) {
         double cost = 0;
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            long nextBlock = (state.previousBlocks()[i] << 1) & ((1L << blockSize[i]) - 1) | (carOptions[decision.val()][i] ? 1 : 0);
-            int additional = Long.bitCount(nextBlock) - blockMax[i];
-            if (additional > 0) cost -= additional; // Too many cars with that option recently
+            if (carOptions[decision.val()][i]) {
+                long previous = state.previousBlocks()[i] & ((1L << (blockSize[i] - 1)) - 1);
+                if (Long.bitCount(previous) >= blockMax[i]) cost--; // Too many cars with that option recently
+            }
         }
         return cost;
     }

@@ -23,7 +23,7 @@ public class CSMain {
         CSProblem problem = readInstance("data/CarSeq/medium.txt");
         CSRelax relax = new CSRelax(problem);
         CSRanking ranking = new CSRanking();
-        FixedWidth<CSState> width = new FixedWidth<>(250);
+        FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
         Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         Solver solver = Solvers.sequentialSolver(
