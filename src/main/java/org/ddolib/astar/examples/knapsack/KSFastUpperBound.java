@@ -2,30 +2,17 @@ package org.ddolib.astar.examples.knapsack;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
-public class KSRelax implements Relaxation<Integer>  {
+public class KSFastUpperBound implements FastUpperBound<Integer> {
     private final KSProblem problem;
-    public KSRelax(KSProblem problem) {this.problem = problem;}
 
-    @Override
-    public Integer mergeStates(final Iterator<Integer> states) {
-        int capa = 0;
-        while (states.hasNext()) {
-            final Integer state = states.next();
-            capa = Math.max(capa, state);
-        }
-        return capa;
-    }
-
-    @Override
-    public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
-        return cost;
-    }
+    public KSFastUpperBound(KSProblem problem) {this.problem = problem;}
 
     @Override
     public double fastUpperBound(Integer state, Set<Integer> variables) {
@@ -44,7 +31,6 @@ public class KSRelax implements Relaxation<Integer>  {
 
         Integer[] sorted = variables.toArray(new Integer[0]);
         Arrays.sort(sorted, new RatioComparator().reversed());
-//        System.out.println(Arrays.toString(sorted));
         int maxProfit = 0;
         Iterator<Integer> itemIterator = Arrays.stream(sorted).iterator();
         while (capacity > 0 && itemIterator.hasNext()) {
@@ -58,7 +44,6 @@ public class KSRelax implements Relaxation<Integer>  {
                 capacity = 0;
             }
         }
-
         return maxProfit;
     }
 

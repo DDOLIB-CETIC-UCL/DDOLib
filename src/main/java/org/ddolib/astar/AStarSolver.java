@@ -1,6 +1,7 @@
 package org.ddolib.astar;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
@@ -19,9 +20,9 @@ public final class AStarSolver<T, K> implements Solver {
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable ub for the problem we want to maximize
      */
-    private final Relaxation<T> relax;
+    private final FastUpperBound<T> ub;
     /**
      * A heuristic to choose the next variable to branch on when developing a DD
      */
@@ -50,17 +51,17 @@ public final class AStarSolver<T, K> implements Solver {
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param ub        A suitable upper-bound for the problem we want to maximize
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public AStarSolver(
             final Problem<T> problem,
-            final Relaxation<T> relax,
+            final FastUpperBound<T> ub,
             final VariableHeuristic<T> varh,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
-        this.relax = relax;
+        this.ub = ub;
         this.varh = varh;
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
@@ -151,7 +152,7 @@ public final class AStarSolver<T, K> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastUpperBound = relax.fastUpperBound(newState, varSet(path));
+            double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState,path.size(),value)) {
                 frontier.add(new SubProblem<>(newState, value, fastUpperBound,path));
