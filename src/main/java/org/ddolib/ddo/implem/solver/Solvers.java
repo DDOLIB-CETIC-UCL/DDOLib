@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.Relaxation;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
@@ -13,6 +14,153 @@ import org.ddolib.ddo.implem.dominance.DominanceChecker;
  * Factory of solvers.
  */
 public class Solvers {
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param cache    The cache used to prune the search space.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
+     * @param timeLimit the budget of time provide to solve the problem.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
+                                                                                  final Relaxation<T> relax,
+                                                                                  final VariableHeuristic<T> varh,
+                                                                                  final StateRanking<T> ranking,
+                                                                                  final WidthHeuristic<T> width,
+                                                                                  final Frontier<T> frontier,
+                                                                                  final DominanceChecker<T, K> dominance,
+                                                                                  final SimpleCache<T> cache,
+                                                                                  final long timeLimit) {
+        return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, dominance, cache, timeLimit);
+    }
+
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param cache    The cache used to prune the search space.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
+                                                                                  final Relaxation<T> relax,
+                                                                                  final VariableHeuristic<T> varh,
+                                                                                  final StateRanking<T> ranking,
+                                                                                  final WidthHeuristic<T> width,
+                                                                                  final Frontier<T> frontier,
+                                                                                  final DominanceChecker<T, K> dominance,
+                                                                                  final SimpleCache<T> cache) {
+        return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, dominance, cache, Long.MAX_VALUE);
+    }
+
+
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param cache    The cache used to prune the search space.
+     * @param <T>       The type of states.
+     * @param timeLimit the budget of time provide to solve the problem.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T> SequentialSolverWithCache<Integer, T> sequentialSolverWithCache(final Problem<T> problem,
+                                                                                  final Relaxation<T> relax,
+                                                                                  final VariableHeuristic<T> varh,
+                                                                                  final StateRanking<T> ranking,
+                                                                                  final WidthHeuristic<T> width,
+                                                                                  final Frontier<T> frontier,
+                                                                                  final SimpleCache<T> cache,
+                                                                                  final long timeLimit) {
+        DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
+        return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, defaultDominance, cache, timeLimit);
+    }
+
+
+
+
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
+     * @param timeLimit the budget of time provide to solve the problem.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+                                                                 final Relaxation<T> relax,
+                                                                 final VariableHeuristic<T> varh,
+                                                                 final StateRanking<T> ranking,
+                                                                 final WidthHeuristic<T> width,
+                                                                 final Frontier<T> frontier,
+                                                                 final DominanceChecker<T, K> dominance,
+                                                                 final long timeLimit) {
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, timeLimit);
+    }
+
+
 
     /**
      * Instantiates a sequential solver for a given problem.
@@ -44,7 +192,40 @@ public class Solvers {
                                                                  final WidthHeuristic<T> width,
                                                                  final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance) {
-        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance);
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, Long.MAX_VALUE);
+    }
+
+    /**
+     * Instantiates a sequential solver for a given problem. The instance do not use the dominance mechanism.
+     *
+     * @param problem  The problem we want to maximize.
+     * @param relax    A suitable relaxation for the problem we want to maximize
+     * @param varh     A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking  A heuristic to identify the most promising nodes.
+     * @param width    A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier The set of nodes that must still be explored before
+     *                 the problem can be considered 'solved'.
+     *                 <p>
+     *                 # Note:
+     *                 This fringe orders the nodes by upper bound (so the highest ub is going
+     *                 to pop first). So, it is guaranteed that the upper bound of the first
+     *                 node being popped is an upper bound on the value reachable by exploring
+     *                 any of the nodes remaining on the fringe. As a consequence, the
+     *                 exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                 lower bound is popped.
+     * @param <T>      The type of states.
+     * @param timeLimit the budget of time provide to solve the problem.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
+                                                                    final Relaxation<T> relax,
+                                                                    final VariableHeuristic<T> varh,
+                                                                    final StateRanking<T> ranking,
+                                                                    final WidthHeuristic<T> width,
+                                                                    final Frontier<T> frontier,
+                                                                    final long timeLimit) {
+        DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance, timeLimit);
     }
 
     /**
@@ -75,7 +256,7 @@ public class Solvers {
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance);
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance, Long.MAX_VALUE);
     }
 
     /**

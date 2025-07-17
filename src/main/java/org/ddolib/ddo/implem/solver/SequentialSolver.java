@@ -110,6 +110,11 @@ public final class SequentialSolver<T, K> implements Solver {
     private boolean firstRelaxed = true;
 
     /**
+     * Add a time limit for the search, by default it is set to infinity
+     */
+    private long timeLimit = Long.MAX_VALUE;
+
+    /**
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
@@ -129,6 +134,30 @@ public final class SequentialSolver<T, K> implements Solver {
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      */
+
+    public SequentialSolver(
+            final Problem<T> problem,
+            final Relaxation<T> relax,
+            final VariableHeuristic<T> varh,
+            final StateRanking<T> ranking,
+            final WidthHeuristic<T> width,
+            final Frontier<T> frontier,
+            final DominanceChecker<T, K> dominance,
+            long timeLimit) {
+        this.problem = problem;
+        this.relax = relax;
+        this.varh = varh;
+        this.ranking = ranking;
+        this.width = width;
+        this.dominance = dominance;
+        this.frontier = frontier;
+        this.mdd = new LinkedDecisionDiagram<>();
+        this.bestLB = -Double.MAX_VALUE;
+        this.bestSol = Optional.empty();
+        this.timeLimit = timeLimit;
+    }
+
+
     public SequentialSolver(
             final Problem<T> problem,
             final Relaxation<T> relax,
@@ -183,6 +212,13 @@ public final class SequentialSolver<T, K> implements Solver {
             SubProblem<T> sub = frontier.pop();
             double nodeUB = sub.getUpperBound();
 
+            long end = System.currentTimeMillis();
+            if (end - start > timeLimit) {
+                return new SearchStatistics(nbIter, queueMaxSize, end-start, currentSearchStatus());
+            }
+
+
+
             if (verbosityLevel >= 3){
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
                 if(verbosityLevel >= 4) {
@@ -192,9 +228,11 @@ public final class SequentialSolver<T, K> implements Solver {
 
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                long end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end-start);
+                end = System.currentTimeMillis();
+                return new SearchStatistics(nbIter, queueMaxSize, end-start, currentSearchStatus());
             }
+
+
 
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationInput<T, K> compilation = new CompilationInput<>(
@@ -256,7 +294,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start);
+        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL);
     }
 
     @Override
@@ -321,4 +359,17 @@ public final class SequentialSolver<T, K> implements Solver {
             throw new RuntimeException(e);
         }
     }
+
+    private SearchStatistics.SearchStatus currentSearchStatus() {
+        if (bestSol.isEmpty()) {
+            if (bestLB == -Double.MAX_VALUE) {
+                return SearchStatistics.SearchStatus.UNKNOWN;
+            } else {
+                return SearchStatistics.SearchStatus.UNSAT;
+            }
+        } else {
+            return SearchStatistics.SearchStatus.SAT;
+        }
+    }
+
 }

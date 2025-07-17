@@ -26,7 +26,7 @@ import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 public class PSMain {
 
     public static void main(final String[] args) throws IOException {
-        PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");
+        PSInstance instance = new PSInstance("data/PSP/instancesWith5items/1");
         ;
         PSProblem problem = new PSProblem(instance);
         final PSRelax relax = new PSRelax(instance);
@@ -40,7 +40,9 @@ public class PSMain {
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier,
+        10L
+        );
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

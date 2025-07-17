@@ -82,7 +82,8 @@ public class KSCacheTest {
                 width,
                 frontier,
                 dominance,
-                cache);
+                cache,
+                Long.MAX_VALUE);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();

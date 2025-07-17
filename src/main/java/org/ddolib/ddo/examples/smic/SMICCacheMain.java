@@ -42,7 +42,8 @@ public class SMICCacheMain {
                 width,
                 frontier,
                 dominance,
-                cache);
+                cache,
+                Long.MAX_VALUE);
 
 
         long start = System.currentTimeMillis();
