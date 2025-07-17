@@ -1,5 +1,6 @@
 package org.ddolib.examples.ddo.talentscheduling;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -9,7 +10,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.solver.Solver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

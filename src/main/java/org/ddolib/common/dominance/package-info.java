@@ -1,4 +1,4 @@
 /**
  * This package contains the classes implementing dominance checkers.
  */
-package org.ddolib.dominance;
+package org.ddolib.common.dominance;

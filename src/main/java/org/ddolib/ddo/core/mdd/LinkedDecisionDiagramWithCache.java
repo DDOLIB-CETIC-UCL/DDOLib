@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core.mdd;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -8,7 +9,6 @@ import org.ddolib.ddo.core.compilation.CompilationInputWithCache;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.dominance.DominanceChecker;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;

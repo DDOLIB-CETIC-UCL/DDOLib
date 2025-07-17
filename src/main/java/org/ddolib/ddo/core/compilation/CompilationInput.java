@@ -1,9 +1,9 @@
 package org.ddolib.ddo.core.compilation;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.dominance.DominanceChecker;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;

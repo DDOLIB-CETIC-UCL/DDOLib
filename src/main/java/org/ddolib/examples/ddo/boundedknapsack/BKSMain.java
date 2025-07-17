@@ -1,5 +1,7 @@
 package org.ddolib.examples.ddo.boundedknapsack;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -10,8 +12,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.dominance.DefaultDominanceChecker;
-import org.ddolib.solver.Solver;
 
 import java.util.Arrays;
 

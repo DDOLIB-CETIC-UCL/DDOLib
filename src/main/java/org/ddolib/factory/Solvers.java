@@ -1,13 +1,13 @@
 package org.ddolib.factory;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.ParallelSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.dominance.DefaultDominanceChecker;
-import org.ddolib.dominance.DominanceChecker;
 import org.ddolib.modeling.*;
 
 /**

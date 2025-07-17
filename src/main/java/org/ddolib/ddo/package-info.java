@@ -8,29 +8,10 @@
  * <ul>
  *
  *  <li>
- *      The {@code modeling} package contains interfaces and abstract classes to extend for
- *      implementing your optimization problem.
- *  </li>
- *
- *  <li>
  *      The {@code core} package comprises all the necessary abstractions (interfaces,
  *      data types,...) that you will want to manipulate when solving a problem
  *      with BaB + MDD.
- * <p>
- *      You should really think of the content of the core package as the base
- *      vocabulary you need to master to explain someone else the BaB+DD lib.
- *  </li>
- *
- *  <li>
- *      The {@code lib} package provides purely algorithmic components, including various solver and
- *      heuristics that can customize the MDD behavior.
- *  </li>
- *
- *  <li>
- *      The {@code api} package provides a user-friendly api, e.g. factory for solvers with
- *      default values.
- *  </li>
- *
+ *   </li>
  * </ul>
  */
 package org.ddolib.ddo;

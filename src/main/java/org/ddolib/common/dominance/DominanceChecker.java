@@ -1,4 +1,4 @@
-package org.ddolib.dominance;
+package org.ddolib.common.dominance;
 
 import org.ddolib.modeling.Dominance;
 

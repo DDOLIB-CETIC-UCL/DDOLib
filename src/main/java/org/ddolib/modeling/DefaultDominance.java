@@ -1,6 +1,6 @@
 package org.ddolib.modeling;
 
-import org.ddolib.dominance.DefaultDominanceChecker;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 
 /**
  * Default implementation of dominance, where no states are dominated.

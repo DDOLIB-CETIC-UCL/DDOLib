@@ -1,5 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -11,12 +13,10 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagramWithCache;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagramWithCache;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.dominance.DominanceChecker;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
-import org.ddolib.solver.Solver;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
