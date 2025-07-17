@@ -4,7 +4,7 @@ import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 /**
  * The set of parameters used to tweak the compilation of an MDD
@@ -33,7 +33,7 @@ public record CompilationInputWithCache<T, K>(CompilationType compilationType,
                                               SubProblem<T> residual,
                                               int maxWidth,
                                               FastUpperBound<T> fub,
-                                              SimpleDominanceChecker<T, K> dominance,
+                                              DominanceChecker<T, K> dominance,
                                               SimpleCache<T> cache,
                                               double bestLB,
                                               CutSetType cutSetType,

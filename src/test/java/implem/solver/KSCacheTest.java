@@ -78,16 +78,15 @@ public class KSCacheTest {
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final KSFastUpperBound fub = new KSFastUpperBound(problem);
 
-        final SimpleCache<Integer> cache = new SimpleCache();
+        final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final Solver solverWithCaching = new SequentialSolverWithCache(
+        final Solver solverWithCaching = new SequentialSolverWithCache<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                cache,
                 frontier,
                 fub,
                 dominance,

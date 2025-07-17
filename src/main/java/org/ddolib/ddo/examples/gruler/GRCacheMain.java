@@ -45,9 +45,8 @@ public class GRCacheMain {
                 varh,
                 ranking,
                 width,
-                new DefaultFastUpperBound<GRState>(),
-                cache,
                 frontier,
+                new DefaultFastUpperBound<GRState>(),
                 dominance,
                 cache);
 

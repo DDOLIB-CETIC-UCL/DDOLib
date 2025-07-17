@@ -6,7 +6,6 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.cache.Threshold;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -280,7 +279,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
         final Relaxation<T> relax = input.relaxation();
         final VariableHeuristic<T> var = input.variableHeuristic();
         final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.stateRanking());
-        final SimpleDominanceChecker<T, K> dominance = input.dominance();
+        final DominanceChecker<T, K> dominance = input.dominance();
         final SimpleCache<T> cache = input.cache();
         double bestLb = input.bestLB();
 
@@ -398,7 +397,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                     }
                 }
                 // Compute cutset: exact parent nodes of relaxed nodes of the current nodes are put in the cutset
-                if (input.compilationType() == CompilationType.Relaxed && !exact && depth >= 2 && input.cutSetType() == CutSetType.Frontier) {
+                if (input.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2 && input.cutSetType() == CutSetType.Frontier) {
                     if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
@@ -417,7 +416,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             // Initialize the list of thresholds per layer to their default values
 
             if (input.compilationType() == CompilationType.Relaxed) {
-                listDepths.add(depthOfCache);
+                listDepths.add(depthGlobalDD);
                 nodeSubProblemPerLayer.add(new ArrayList<>());
                 layersThresholds.add(new ArrayList<>());
                 for (NodeSubProblem<T> n : this.currentLayer) {
@@ -448,7 +447,6 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 dotStr.append(generateDotStr(subProblem, true));
             }
         }
-
 
 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
