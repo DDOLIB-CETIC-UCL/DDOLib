@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.smic;
+package org.ddolib.example.ddo.smic;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -30,18 +30,19 @@ public class SMICState {
         return minCurrentInventory;
     }
 
-    public int getMaxCurrentInventory() {return maxCurrentInventory;}
-
+    public int getMaxCurrentInventory() {
+        return maxCurrentInventory;
+    }
 
 
     @Override
     public String toString() {
-        return "RemainingJobs " + Arrays.toString(remainingJobs.toArray()) + " ----> currentTime " + currentTime + " ---> minCurrentInventory"+ minCurrentInventory + " ---> maxCurrentInventory"+ maxCurrentInventory;
+        return "RemainingJobs " + Arrays.toString(remainingJobs.toArray()) + " ----> currentTime " + currentTime + " ---> minCurrentInventory" + minCurrentInventory + " ---> maxCurrentInventory" + maxCurrentInventory;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(remainingJobs.hashCode(),currentTime,minCurrentInventory,maxCurrentInventory);
+        return Objects.hash(remainingJobs.hashCode(), currentTime, minCurrentInventory, maxCurrentInventory);
     }
 }
 

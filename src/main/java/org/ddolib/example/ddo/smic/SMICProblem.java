@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.smic;
+package org.ddolib.example.ddo.smic;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class SMICProblem implements Problem<SMICState> {
-    final String name;
+    public final String name;
     final int nbJob;
     final int initInventory;
     final int capaInventory;

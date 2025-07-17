@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.smic;
+package org.ddolib.example.ddo.smic;
 
 import org.ddolib.modeling.Dominance;
 
