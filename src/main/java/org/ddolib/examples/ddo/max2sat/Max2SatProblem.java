@@ -56,11 +56,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     @Override
     public String toString() {
-        if (name.isPresent()) {
-            return name.get();
-        } else {
-            return weights.toString();
-        }
+        return name.orElseGet(weights::toString);
     }
 
     @Override
