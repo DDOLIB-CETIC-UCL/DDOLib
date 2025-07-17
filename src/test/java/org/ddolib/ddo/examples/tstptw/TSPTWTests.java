@@ -46,13 +46,13 @@ public class TSPTWTests {
     @MethodSource("dataProvider")
     public void testFastUpperBoundAtRoot(TSPTWInstance instance) {
         final TSPTWProblem problem = new TSPTWProblem(instance);
-        final TSPTWRelax relax = new TSPTWRelax(problem);
+        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= instance.optimal.get(),
                 String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
@@ -65,6 +65,7 @@ public class TSPTWTests {
     public void testTSPTW(TSPTWInstance instance) {
         final TSPTWProblem problem = new TSPTWProblem(instance);
         final TSPTWRelax relax = new TSPTWRelax(problem);
+        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(50);
@@ -78,7 +79,8 @@ public class TSPTWTests {
                 varh,
                 ranking,
                 width,
-                frontier
+                frontier,
+                fub
         );
         solver.maximize();
 
@@ -90,6 +92,7 @@ public class TSPTWTests {
     public void testTSPTWWithRelax(TSPTWInstance instance) {
         final TSPTWProblem problem = new TSPTWProblem(instance);
         final TSPTWRelax relax = new TSPTWRelax(problem);
+        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
         final TSPTWRanking ranking = new TSPTWRanking();
 
         final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
@@ -103,7 +106,7 @@ public class TSPTWTests {
                 varh,
                 ranking,
                 width,
-                frontier
+                frontier, fub
         );
         solver.maximize();
 

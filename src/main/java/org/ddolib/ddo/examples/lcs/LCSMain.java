@@ -112,6 +112,7 @@ public final class LCSMain {
         LCSProblem problem = extractFile(file);
         LCSRelax relax = new LCSRelax(problem);
         LCSRanking ranking = new LCSRanking();
+        LCSFastUpperBound fub = new LCSFastUpperBound(problem);
 
         final FixedWidth<LCSState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<LCSState> varH = new DefaultVariableHeuristic<>();
@@ -124,7 +125,8 @@ public final class LCSMain {
                 varH,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                fub);
 
         long start = System.currentTimeMillis();
         solver.maximize(1, false);
@@ -146,7 +148,7 @@ public final class LCSMain {
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.MIN_VALUE));
+        System.out.printf("Objective: %f%n", solver.bestValue().orElse(-Double.MAX_VALUE));
         System.out.printf("Upper Bnd : %s%n", solver.upperBound());
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());

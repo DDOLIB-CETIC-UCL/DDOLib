@@ -1,20 +1,12 @@
-package org.ddolib.ddo.lib.solver.ddosolver;
+package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
-import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.dominance.DominanceChecker;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.WidthHeuristic;
-import org.ddolib.ddo.core.mdd.DecisionDiagram;
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.modeling.Problem;
-import org.ddolib.ddo.modeling.Relaxation;
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
+import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -69,6 +61,7 @@ public final class ParallelSolver<T, K> implements Solver {
      *                  any of the nodes remaining on the fringe. As a consequence, the
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public ParallelSolver(
@@ -78,8 +71,10 @@ public final class ParallelSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final Frontier<T> frontier, final DominanceChecker<T, K> dominance) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance);
+            final Frontier<T> frontier,
+            final FastUpperBound<T> fub,
+            final DominanceChecker<T, K> dominance) {
+        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance);
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -204,7 +199,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * This method processes one node from the solver frontier.
      * <p>
      * This is typically the method you are searching for if you are searching after an implementation
-     * of the branch and bound with mdd lib.
+     * of the branch and bound with mdd algo.
      */
     private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION
@@ -224,6 +219,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.ranking,
                 sub,
                 width,
+                shared.fub,
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
@@ -246,6 +242,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.ranking,
                 sub,
                 width,
+                shared.fub,
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
@@ -429,6 +426,11 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final WidthHeuristic<T> width;
 
+        /**
+         * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+         */
+        private final FastUpperBound<T> fub;
+
         private final DominanceChecker<T, K> dominance;
         /**
          * A heuristic to choose the next variable to branch on when developing a DD
@@ -442,10 +444,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
+                FastUpperBound<T> fub,
                 final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
+            this.fub = fub;
             this.varh = varh;
             this.ranking = ranking;
             this.width = width;
@@ -515,8 +519,8 @@ public final class ParallelSolver<T, K> implements Solver {
             this.frontier = frontier;
             this.ongoing = 0;
             this.explored = 0;
-            this.bestLB = Integer.MIN_VALUE;
-            this.bestUB = Integer.MAX_VALUE;
+            this.bestLB = -Double.MAX_VALUE;
+            this.bestUB = Double.MAX_VALUE;
             this.upperBounds = new double[nbThreads];
             this.bestSol = Optional.empty();
             for (int i = 0; i < nbThreads; i++) {

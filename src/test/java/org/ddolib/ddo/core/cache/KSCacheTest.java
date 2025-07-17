@@ -1,18 +1,20 @@
-package org.ddolib.ddo.core.cache;
+package implem.solver;
 
-import org.ddolib.ddo.core.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.solver.Solver;
+import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.examples.knapsack.KSFastUpperBound;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolver;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -47,19 +49,21 @@ public class KSCacheTest {
     }
 
     private static double optimalSolutionNoCaching(KSProblem problem) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
+        final KSFastUpperBound fub = new KSFastUpperBound(problem);
         final FixedWidth<Integer> width = new FixedWidth<>(10000);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<Integer>();
-        final Solver solver1 = new SequentialSolver(
+        final Solver solver1 = new SequentialSolver<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
+                fub,
                 dominance);
 
         solver1.maximize();
@@ -68,21 +72,25 @@ public class KSCacheTest {
 
 
     private double optimalSolutionWithCache(KSProblem problem, int w, CutSetType cutSetType) {
-        final KSRelax relax = new KSRelax(problem);
+        final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(w);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleCache<Integer> cache = new SimpleCache();
+        final KSFastUpperBound fub = new KSFastUpperBound(problem);
+
+        final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
-        final Solver solverWithCaching = new SequentialSolverWithCache(
+        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        final Solver solverWithCaching = new SequentialSolverWithCache<>(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                cache,
                 frontier,
-                false);
+                fub,
+                dominance,
+                cache);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();

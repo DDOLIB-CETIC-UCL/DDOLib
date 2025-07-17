@@ -1,16 +1,14 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,15 +38,17 @@ public class GRCacheMain {
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final SimpleCache<GRState> cache = new SimpleCache<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        DefaultDominanceChecker<GRState> dominance = new DefaultDominanceChecker<>();
         final Solver solver = new SequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
-                cache,
                 frontier,
-                false);
+                new DefaultFastUpperBound<GRState>(),
+                dominance,
+                cache);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

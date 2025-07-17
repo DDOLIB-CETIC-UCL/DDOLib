@@ -1,15 +1,15 @@
 package org.ddolib.ddo.examples.smic;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolver;
+import org.ddolib.ddo.core.Frontier;
+import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,9 +32,11 @@ public class SMICMain {
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new SMICDominance(), problem.nbVars());
+        final SimpleDominanceChecker<SMICState, Integer> dominance =
+                new SimpleDominanceChecker<>(new SMICDominance(),
+                        problem.nbVars());
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(
+        final Solver solver = Solvers.sequentialSolver(
                 problem,
                 relax,
                 varh,

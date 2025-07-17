@@ -70,14 +70,14 @@ public class TalenSchedTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastUpperBound(TSProblem problem) {
-        final TSRelax relax = new TSRelax(problem);
+        final TSFastUpperBound fub = new TSFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
         assertTrue(rub >= problem.optimal.get(),
                 String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
                         rub,

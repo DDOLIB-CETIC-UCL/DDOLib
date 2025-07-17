@@ -86,6 +86,7 @@ public final class PDPMain {
 
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
+        final PDPFastUpperBound fub = new PDPFastUpperBound(problem);
         final FixedWidth<PDPState> width = new FixedWidth<>(3000);
         final DefaultVariableHeuristic<PDPState> varh = new DefaultVariableHeuristic<>();
 
@@ -96,7 +97,8 @@ public final class PDPMain {
                 varh,
                 ranking,
                 width,
-                frontier);
+                frontier,
+                fub);
 
         SearchStatistics statistics = solver.maximize(0, false);
 

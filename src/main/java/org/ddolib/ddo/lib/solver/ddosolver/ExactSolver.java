@@ -1,19 +1,11 @@
-package org.ddolib.ddo.lib.solver.ddosolver;
+package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
-import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.dominance.DominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.mdd.DecisionDiagram;
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.modeling.Problem;
-import org.ddolib.ddo.modeling.Relaxation;
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
+import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -68,6 +60,11 @@ public final class ExactSolver<T, K> implements Solver {
     private final DecisionDiagram<T, K> mdd;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBound<T> fub;
+
+    /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
@@ -84,17 +81,20 @@ public final class ExactSolver<T, K> implements Solver {
      * @param relax     A suitable relaxation for the problem we want to maximize
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public ExactSolver(final Problem<T> problem,
                        final Relaxation<T> relax,
                        final VariableHeuristic<T> varh,
                        final StateRanking<T> ranking,
+                       final FastUpperBound<T> fub,
                        final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.ranking = ranking;
         this.varh = varh;
+        this.fub = fub;
         this.dominance = dominance;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
@@ -106,7 +106,7 @@ public final class ExactSolver<T, K> implements Solver {
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.MAX_VALUE,
                 Collections.emptySet());
 
         CompilationInput<T, K> compilation = new CompilationInput<>(
@@ -117,8 +117,9 @@ public final class ExactSolver<T, K> implements Solver {
                 ranking,
                 root,
                 Integer.MAX_VALUE,
+                fub,
                 dominance,
-                Double.MIN_VALUE,
+                -Double.MAX_VALUE,
                 CutSetType.LastExactLayer,
                 exportAsDot
         );

@@ -3,7 +3,7 @@ package org.ddolib.ddo.examples.pdp;
 import java.util.BitSet;
 import java.util.Objects;
 
-class PDPState {
+public class PDPState {
 
     //the nodes that we can visit, including
     // all non-visited pick-up nodes

@@ -1,16 +1,13 @@
 package org.ddolib.ddo.examples.boundedknapsack;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.cache.SimpleCache;
+import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
+import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.util.Arrays;
 
@@ -27,11 +24,12 @@ public class BKSMain {
                 new int[]{2, 3, 6, 6, 1}, // values
                 new int[]{4, 6, 4, 2, 5},  // weights
                 new int[]{1, 1, 2, 2, 1}); // number of items
-        final BKSRelax relax = new BKSRelax(problem);
+        final BKSRelax relax = new BKSRelax();
+        final BKSFastUpperBound fub = new BKSFastUpperBound(problem);
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-//        final SimpleDominanceChecker dominance = new SimpleDominanceChecker(new BKPDominance(), problem.nbVars());
+        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
@@ -41,10 +39,10 @@ public class BKSMain {
                 varh,
                 ranking,
                 width,
-//                dominance,
-                cache,
                 frontier,
-                false);
+                fub,
+                dominance,
+                cache);
 
 
         long start = System.currentTimeMillis();

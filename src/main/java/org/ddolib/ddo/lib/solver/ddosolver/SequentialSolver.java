@@ -1,20 +1,12 @@
-package org.ddolib.ddo.lib.solver.ddosolver;
+package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
-import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.dominance.DominanceChecker;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.WidthHeuristic;
-import org.ddolib.ddo.core.mdd.DecisionDiagram;
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.modeling.Problem;
-import org.ddolib.ddo.modeling.Relaxation;
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
+import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.heuristics.WidthHeuristic;
+import org.ddolib.ddo.implem.dominance.*;
+import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -39,7 +31,7 @@ import java.util.Set;
  * *VERY* well, we provide you with a parallel implementation of the algorithm
  * (@see ParallelSolver). Digging into that code, understanding it, and stripping
  * away all the parallel-related concerns should finalize to give you a thorough
- * understanding of the sequential lib.
+ * understanding of the sequential algo.
  * <p>
  * # Note
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
@@ -105,6 +97,11 @@ public final class SequentialSolver<T, K> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBound<T> fub;
+
+    /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
@@ -117,6 +114,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * Only the first relaxed mdd can be exported to a .dot file
      */
     private boolean firstRelaxed = true;
+
 
     /**
      * Creates a fully qualified instance
@@ -136,6 +134,7 @@ public final class SequentialSolver<T, K> implements Solver {
      *                  any of the nodes remaining on the fringe. As a consequence, the
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public SequentialSolver(
@@ -145,16 +144,18 @@ public final class SequentialSolver<T, K> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
+            final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
         this.ranking = ranking;
         this.width = width;
+        this.fub = fub;
         this.dominance = dominance;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagram<>();
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = -Double.MAX_VALUE;
         this.bestSol = Optional.empty();
     }
 
@@ -214,6 +215,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
@@ -243,12 +245,16 @@ public final class SequentialSolver<T, K> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
                     exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact() && frontier.cutSetType() == CutSetType.Frontier) {
+                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+            }
             if (exportAsDot && firstRelaxed) {
                 if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
                 exportDot(mdd.exportAsDot(),
@@ -286,7 +292,7 @@ public final class SequentialSolver<T, K> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.MAX_VALUE,
                 Collections.emptySet());
     }
 
