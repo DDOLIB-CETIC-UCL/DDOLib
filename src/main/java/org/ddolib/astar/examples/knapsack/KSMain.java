@@ -3,9 +3,7 @@ package org.ddolib.astar.examples.knapsack;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,14 +29,14 @@ public class KSMain {
 
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
-        final KSRelax relax = new KSRelax(problem);
+        final KSFastUpperBound ub = new KSFastUpperBound(problem);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
 
         final Solver solver = astarSolver(
                 problem,
-                relax,
+                ub,
                 varh,
                 dominance
         );
