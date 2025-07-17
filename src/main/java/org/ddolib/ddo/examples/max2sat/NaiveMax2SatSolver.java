@@ -64,6 +64,4 @@ public class NaiveMax2SatSolver {
         }
         return toReturn;
     }
-
-
 }

@@ -57,7 +57,6 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
-
         return toReturn;
     }
 
@@ -69,13 +68,12 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
                 approx += toReturn[i + 1];
             }
             toReturn[i] = approx;
-
         }
         return toReturn;
     }
 
     /**
-     * Some part of the upper bound depend only on the remaining variable, not the state. This part can be precomputed.
+     * Some part of the upper bound depends only on the remaining variable, not the state. This part can be precomputed.
      * <br>
      * <p>
      * We compute here an over approximation of the optimal solution of the sub-problem composed of the remaining

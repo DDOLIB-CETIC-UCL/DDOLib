@@ -67,7 +67,6 @@ public class Max2SatIO {
         int n = 0;
         HashMap<BinaryClause, Integer> weights = new HashMap<>();
         Optional<Integer> opti = Optional.empty();
-
     }
 
     public static void generateInstance(int numVar, String fileName, long seed) throws IOException {

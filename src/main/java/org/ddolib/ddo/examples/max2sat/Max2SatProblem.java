@@ -119,7 +119,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
                 // We gain the weight of the clauses (xk || xl) and (xk || !xl)
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
                 int s_k_l = state.netBenefit().get(l);
-                // According to the decision on l, we can gain (!xk || xl) or (!xk || xl)
+                // According to the decision on l, we can gain (!xk || xl) or (!xk || !xl)
                 toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
                         positiveOrNull(-s_k_l) + weight(f(k), f(l)));
             }

@@ -63,7 +63,7 @@ public class BinaryClause implements Comparable<BinaryClause> {
     }
 
     /**
-     * Used to compare binary clauses. It is used to sort them when generate Max2Sat instances.
+     * Used to compare binary clauses. It is used to sort them when generating Max2Sat instances.
      * <br>
      * The induced order is the following:
      * <ol>

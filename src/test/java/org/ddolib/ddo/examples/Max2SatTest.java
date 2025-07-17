@@ -57,7 +57,7 @@ public class Max2SatTest {
         int rub = relax.fastUpperBound(problem.initialState(), vars);
 
         assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %d is not bigger or equal to the expected optimal solution %d",
                         rub,
                         problem.optimal.get()));
     }
