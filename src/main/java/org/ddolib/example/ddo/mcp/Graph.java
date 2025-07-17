@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

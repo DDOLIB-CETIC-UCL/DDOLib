@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 import org.ddolib.modeling.StateRanking;
 

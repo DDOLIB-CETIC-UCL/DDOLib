@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 import org.ddolib.modeling.FastUpperBound;
 
@@ -14,7 +14,7 @@ public class MCPFastUpperBound implements FastUpperBound<MCPState> {
     private final int[] estimation;
     private final int[] partialSum;
 
-    MCPFastUpperBound(MCPProblem problem) {
+    public MCPFastUpperBound(MCPProblem problem) {
         this.problem = problem;
         initVal = problem.initialValue();
         estimation = precomputeAllEstimate();

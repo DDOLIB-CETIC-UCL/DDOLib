@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;

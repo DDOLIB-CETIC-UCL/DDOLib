@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 import java.util.ArrayList;
 
@@ -15,8 +15,9 @@ import java.util.ArrayList;
  *     <li>for each {@code k < depth}, {@code 0}, modeling that these variable has been assigned in
  *     previous layer and cannot influence the objective anymore.</li>
  * </ul>.
+ *
  * @param netBenefit the list of cumulative net benefits
- * @param depth the current depth of the search
+ * @param depth      the current depth of the search
  */
 public record MCPState(ArrayList<Integer> netBenefit, int depth) {
 

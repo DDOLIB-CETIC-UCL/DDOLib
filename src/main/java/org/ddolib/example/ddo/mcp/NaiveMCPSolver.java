@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.mcp;
+package org.ddolib.example.ddo.mcp;
 
 /**
  * Naive MCP solver which enumerates all the solution to find the best one. Used for tests.
