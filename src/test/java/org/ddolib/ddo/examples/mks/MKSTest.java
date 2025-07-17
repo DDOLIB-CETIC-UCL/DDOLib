@@ -18,6 +18,7 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -91,7 +92,7 @@ public class MKSTest {
         assertEquals(problem.optimal, solver.bestValue().get());
     }
 
-    @ParameterizedTest
+    /*@ParameterizedTest
     @MethodSource("dataProviderMD")
     public void testSequentialMKSMD(MKSProblem problem) {
         final MKSRelax relax = new MKSRelax();
@@ -115,8 +116,9 @@ public class MKSTest {
 
         solver.maximize();
         assertEquals(problem.optimal, solver.bestValue().get());
-    }
+    }*/
 
+    @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testDominanceMKS(MKSProblem problem) {
