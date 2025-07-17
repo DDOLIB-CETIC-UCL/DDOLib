@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.msct;
+package org.ddolib.example.ddo.msct;
 
 
 import org.ddolib.ddo.core.Decision;
@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-class MSCTRelax implements Relaxation<MSCTState> {
+public class MSCTRelax implements Relaxation<MSCTState> {
     final MSCTProblem problem;
 
     public MSCTRelax(MSCTProblem problem) {

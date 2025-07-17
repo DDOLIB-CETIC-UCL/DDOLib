@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.msct;
+package org.ddolib.example.ddo.msct;
 
 import org.ddolib.modeling.Dominance;
 

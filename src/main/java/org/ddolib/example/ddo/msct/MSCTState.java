@@ -1,11 +1,10 @@
-package org.ddolib.ddo.examples.msct;
+package org.ddolib.example.ddo.msct;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-class MSCTState {
+public class MSCTState {
 
     protected Set<Integer> remainingJobs;
     protected int currentTime;
@@ -30,6 +29,6 @@ class MSCTState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(remainingJobs.hashCode(),currentTime);
+        return Objects.hash(remainingJobs.hashCode(), currentTime);
     }
 }

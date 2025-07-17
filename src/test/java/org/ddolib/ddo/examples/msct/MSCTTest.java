@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.dominance.SimpleDominanceChecker;
+import org.ddolib.example.ddo.msct.*;
 import org.ddolib.solver.Solver;
 import org.junit.jupiter.api.Test;
 

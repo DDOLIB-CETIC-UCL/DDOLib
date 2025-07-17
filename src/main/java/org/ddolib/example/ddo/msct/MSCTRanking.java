@@ -1,8 +1,8 @@
-package org.ddolib.ddo.examples.msct;
+package org.ddolib.example.ddo.msct;
 
 import org.ddolib.modeling.StateRanking;
 
-class MSCTRanking implements StateRanking<MSCTState> {
+public class MSCTRanking implements StateRanking<MSCTState> {
     @Override
     public int compare(MSCTState s1, MSCTState s2) {
         return Integer.compare(s1.getCurrentTime(), s2.getCurrentTime());

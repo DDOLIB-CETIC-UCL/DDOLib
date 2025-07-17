@@ -1,7 +1,6 @@
-package org.ddolib.ddo.examples.msct;
+package org.ddolib.example.ddo.msct;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -9,15 +8,15 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.dominance.DefaultDominanceChecker;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.dominance.SimpleDominanceChecker;
 import org.ddolib.solver.Solver;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+
+import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
  * The problem is to sequence n jobs such that:
@@ -28,7 +27,7 @@ import java.util.Scanner;
  * - the set of remaining jobs
  * - the current time (the end time of last sequenced job)
  */
-public class MSCTCacheMain {
+public class MSCTMain {
 
     public static void main(final String[] args) throws Exception {
 //        final String instance = "data/MSCT/msct1.txt";
@@ -41,19 +40,18 @@ public class MSCTCacheMain {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(100);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final DefaultDominanceChecker<MSCTState> dominance = new DefaultDominanceChecker<>();
-        final SimpleCache<MSCTState> cache = new SimpleCache<>();
+        final SimpleDominanceChecker<MSCTState, Integer> dominance =
+                new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverWithCache<>(
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                new DefaultFastUpperBound<>(),
-                dominance,
-                cache);
+                dominance
+        );
 
 
         long start = System.currentTimeMillis();
@@ -70,7 +68,7 @@ public class MSCTCacheMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
