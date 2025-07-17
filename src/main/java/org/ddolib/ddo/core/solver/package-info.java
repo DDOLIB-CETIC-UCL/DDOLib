@@ -1,4 +1,4 @@
 /**
- * This package contains interfaces that must be extended to implements solvers.
+ * This package contains solvers using DDO algorithm.
  */
 package org.ddolib.ddo.core.solver;

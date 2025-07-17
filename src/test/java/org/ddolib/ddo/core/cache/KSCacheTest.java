@@ -8,12 +8,12 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.ddo.core.solver.Solver;
 import org.ddolib.ddo.examples.knapsack.KSFastUpperBound;
 import org.ddolib.ddo.examples.knapsack.KSProblem;
 import org.ddolib.ddo.examples.knapsack.KSRanking;
 import org.ddolib.ddo.examples.knapsack.KSRelax;
 import org.ddolib.dominance.DefaultDominanceChecker;
+import org.ddolib.solver.Solver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
