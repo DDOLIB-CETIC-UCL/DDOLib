@@ -3,7 +3,7 @@ package org.ddolib.modeling;
 import java.util.Set;
 
 /**
- * Default implementation of the fast upper bound that always returns {@code Double.MAX_VALUE}.
+ * Default implementation of the fast upper bound that always returns {@code Double.POSITIVE_INFINITY}.
  *
  * @param <T> The type of the states.
  */

@@ -250,7 +250,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 e = e.origin == null ? null : e.origin.best;
             }
 
-            double locb = -Double.MAX_VALUE;
+            double locb = Double.NEGATIVE_INFINITY;
             if (node.suffix != null) {
                 locb = saturatedAdd(node.value, node.suffix);
             }
@@ -606,9 +606,9 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
 
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(-Double.MAX_VALUE);
+            Node newNode = new Node(Double.NEGATIVE_INFINITY);
             newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, -Double.MAX_VALUE, newNode);
+            node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
         }
 
         // redirect and relax all arcs entering the merged node
@@ -859,7 +859,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     private static final double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
-            return sum > 0 ? Double.MAX_VALUE : -Double.MAX_VALUE;
+            return sum > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
         }
         return sum;
     }
@@ -870,7 +870,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     private static final double saturatedDiff(double a, double b) {
         double diff = a - b;
         if (Double.isInfinite(diff)) {
-            return diff < 0 ? -Double.MAX_VALUE : Double.MAX_VALUE;
+            return diff < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         }
         return diff;
     }

@@ -16,7 +16,7 @@ public class TSPFastUpperBound implements FastUpperBound<TSPState> {
     public TSPFastUpperBound(TSPProblem problem) {
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
-            double min = Double.MAX_VALUE;
+            double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
                     min = Math.min(min, problem.distanceMatrix[i][j]);

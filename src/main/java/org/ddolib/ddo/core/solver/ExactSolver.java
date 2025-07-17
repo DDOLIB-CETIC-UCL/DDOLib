@@ -115,7 +115,7 @@ public final class ExactSolver<T, K> implements Solver {
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Double.MAX_VALUE,
+                Double.POSITIVE_INFINITY,
                 Collections.emptySet());
 
         CompilationInput<T, K> compilation = new CompilationInput<>(
@@ -128,7 +128,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Integer.MAX_VALUE,
                 fub,
                 dominance,
-                -Double.MAX_VALUE,
+                Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
                 exportAsDot
         );

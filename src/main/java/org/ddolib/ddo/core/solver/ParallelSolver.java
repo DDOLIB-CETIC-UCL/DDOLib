@@ -191,7 +191,7 @@ public final class ParallelSolver<T, K> implements Solver {
         return new SubProblem<>(
                 shared.problem.initialState(),
                 shared.problem.initialValue(),
-                Double.MAX_VALUE,
+                Double.POSITIVE_INFINITY,
                 Collections.emptySet());
     }
 
@@ -528,12 +528,12 @@ public final class ParallelSolver<T, K> implements Solver {
             this.frontier = frontier;
             this.ongoing = 0;
             this.explored = 0;
-            this.bestLB = -Double.MAX_VALUE;
-            this.bestUB = Double.MAX_VALUE;
+            this.bestLB = Double.NEGATIVE_INFINITY;
+            this.bestUB = Double.POSITIVE_INFINITY;
             this.upperBounds = new double[nbThreads];
             this.bestSol = Optional.empty();
             for (int i = 0; i < nbThreads; i++) {
-                upperBounds[i] = Integer.MAX_VALUE;
+                upperBounds[i] = Double.POSITIVE_INFINITY;
             }
         }
     }
