@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
 /**
  * A naive Max2Sat solver which enumerate all the solution to find the best one. Used for tests

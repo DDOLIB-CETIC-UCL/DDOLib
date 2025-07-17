@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
 import java.util.ArrayList;
 import java.util.Objects;

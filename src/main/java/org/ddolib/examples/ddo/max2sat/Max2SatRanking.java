@@ -1,8 +1,7 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
-import org.ddolib.ddo.heuristics.StateRanking;
 
-import java.util.ArrayList;
+import org.ddolib.modeling.StateRanking;
 
 /**
  * Class used to compare two states for the Max2Sat problem.

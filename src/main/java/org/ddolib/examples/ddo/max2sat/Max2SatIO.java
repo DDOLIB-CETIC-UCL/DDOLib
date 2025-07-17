@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
 import java.io.*;
 import java.util.*;
@@ -44,7 +44,7 @@ public class Max2SatIO {
                     String[] tokens = line.split("\\s");
                     context.n = Integer.parseInt(tokens[0]);
                     if (tokens.length == 2) {
-                        context.opti = Optional.of(Integer.parseInt(tokens[1]));
+                        context.opti = Optional.of(Double.parseDouble(tokens[1]));
                     }
                 } else {
                     String[] tokens = line.split("\\s");
@@ -70,7 +70,7 @@ public class Max2SatIO {
         boolean firstLine = true;
         int n = 0;
         HashMap<BinaryClause, Integer> weights = new HashMap<>();
-        Optional<Integer> opti = Optional.empty();
+        Optional<Double> opti = Optional.empty();
     }
 
     public static void generateInstance(int numVar, String fileName, long seed) throws IOException {

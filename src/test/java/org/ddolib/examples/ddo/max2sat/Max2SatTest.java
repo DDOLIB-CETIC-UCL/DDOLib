@@ -1,24 +1,22 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.examples.ddo.max2sat;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.examples.max2sat.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
+import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,17 +45,18 @@ public class Max2SatTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastUpperBound(Max2SatProblem problem) {
-        final Max2SatRelax relax = new Max2SatRelax(problem);
+        final Max2SatFastUpperBound fub = new Max2SatFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
 
         assertTrue(rub >= problem.optimal.get(),
-                String.format("Upper bound %d is not bigger or equal to the expected optimal solution %d",
+                String.format("Upper bound %f is not bigger or equal to the expected optimal " +
+                                "solution %f",
                         rub,
                         problem.optimal.get()));
     }
@@ -71,9 +70,9 @@ public class Max2SatTest {
         final FixedWidth<Max2SatState> width = new FixedWidth<>(500);
         final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
+        Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -83,7 +82,7 @@ public class Max2SatTest {
         );
 
         solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.optimal.get());
+        assertEquals(solver.bestValue().get(), problem.optimal.get(), 1e-10);
     }
 
     @ParameterizedTest
@@ -95,9 +94,9 @@ public class Max2SatTest {
         final FixedWidth<Max2SatState> width = new FixedWidth<>(2);
         final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
 
-        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<Max2SatState> solver = new SequentialSolver<>(
+        Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -107,7 +106,7 @@ public class Max2SatTest {
         );
 
         solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.optimal.get());
+        assertEquals(solver.bestValue().get(), problem.optimal.get(), 1e-10);
     }
 
 }

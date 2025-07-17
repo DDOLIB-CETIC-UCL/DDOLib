@@ -1,63 +1,27 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.modeling.FastUpperBound;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 
 import static java.lang.Integer.max;
-import static java.lang.Integer.min;
-import static java.lang.Integer.signum;
-import static java.lang.Math.abs;
 
-
-public class Max2SatRelax implements Relaxation<Max2SatState> {
-
+public class Max2SatFastUpperBound implements FastUpperBound<Max2SatState> {
     private final Max2SatProblem problem;
     private final int[] overApprox;
 
     private final int[] precomputationForUnary;
 
-    public Max2SatRelax(Max2SatProblem problem) {
+    public Max2SatFastUpperBound(Max2SatProblem problem) {
         this.problem = problem;
         overApprox = precomputeOverApproximation();
         precomputationForUnary = precomputeUnary();
     }
 
-    @Override
-    public Max2SatState mergeStates(Iterator<Max2SatState> states) {
-        ArrayList<Integer> merged = new ArrayList<>(Collections.nCopies(problem.nbVars(), 0));
-        int depth = problem.nbVars();
-        while (states.hasNext()) {
-            Max2SatState current = states.next();
-            depth = current.depth();
-            for (int i = 0; i < current.netBenefit().size(); i++) {
-                Integer mergedI = merged.get(i);
-                Integer currentI = current.netBenefit().get(i);
-                // If all the net benefits have the same sign, we keep the smallest one in absolute value.
-                if (signum(mergedI) == 1 && signum(currentI) == 1) {
-                    merged.set(i, min(mergedI, currentI));
-                } else if (signum(mergedI) == -1 && signum(currentI) == 1) {
-                    merged.set(i, max(mergedI, currentI));
-                } else {
-                    // Otherwise, we set the benefit to 0
-                    merged.set(i, 0);
-                }
-            }
-        }
-        return new Max2SatState(merged, depth);
-    }
 
     @Override
-    public int relaxEdge(Max2SatState from, Max2SatState to, Max2SatState merged, Decision d, int cost) {
-        int toReturn = cost;
-        for (int i = d.var() + 1; i < problem.nbVars(); i++) {
-            toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
-        }
-        return toReturn;
+    public double fastUpperBound(Max2SatState state, Set<Integer> variables) {
+        return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
     }
 
     private int[] precomputeUnary() {
@@ -123,8 +87,5 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         return toReturn;
     }
 
-    @Override
-    public int fastUpperBound(Max2SatState state, Set<Integer> variables) {
-        return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
-    }
+
 }

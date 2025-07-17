@@ -1,7 +1,7 @@
-package org.ddolib.ddo.examples.max2sat;
+package org.ddolib.examples.ddo.max2sat;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
@@ -19,7 +19,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     final Max2SatState root;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
-    public final Optional<Integer> optimal;
+    public final Optional<Double> optimal;
     private Optional<String> name = Optional.empty();
 
     /**
@@ -29,7 +29,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      * @param weights A map from each binary clause of the problem to their weight.
      * @param optimal If known, the objective value of the optimal solution.
      */
-    public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights, Optional<Integer> optimal) {
+    public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights,
+                          Optional<Double> optimal) {
         this.numVar = numVar;
         this.weights = weights;
         this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
@@ -73,7 +74,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         int toReturn = 0;
         for (int i = 0; i < nbVars(); i++) {
             toReturn += weight(t(i), f(i));
@@ -108,7 +109,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     @Override
-    public int transitionCost(Max2SatState state, Decision decision) {
+    public double transitionCost(Max2SatState state, Decision decision) {
 
         int k = decision.var();
         int toReturn;
