@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.example.ddo.tsptw;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

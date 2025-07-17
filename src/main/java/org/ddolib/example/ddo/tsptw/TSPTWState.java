@@ -1,7 +1,6 @@
-package org.ddolib.ddo.examples.tsptw;
+package org.ddolib.example.ddo.tsptw;
 
 import java.util.BitSet;
-import java.util.Objects;
 
 /**
  * State of ta DP-model for the TSPTW
@@ -14,7 +13,8 @@ import java.util.Objects;
  * @param possiblyVisit From merged node, contains the nodes that might be visited previously or not.
  * @param depth         The depth of the layer containing the state.
  */
-public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet possiblyVisit, int depth) {
+public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet possiblyVisit,
+                         int depth) {
 
     @Override
     public String toString() {
