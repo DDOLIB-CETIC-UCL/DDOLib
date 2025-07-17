@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<travellingSalesmanProblemInstance>
+    <objective>302</objective>
+    <graph>
+        <vertex>
+            <edge cost="32.0">1</edge>
+            <edge cost="58.0">2</edge>
+            <edge cost="16.0">3</edge>
+            <edge cost="25.0">4</edge>
+            <edge cost="56.0">5</edge>
+            <edge cost="63.0">6</edge>
+            <edge cost="72.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="32.0">0</edge>
+            <edge cost="81.0">2</edge>
+            <edge cost="43.0">3</edge>
+            <edge cost="53.0">4</edge>
+            <edge cost="75.0">5</edge>
+            <edge cost="95.0">6</edge>
+            <edge cost="103.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="58.0">0</edge>
+            <edge cost="81.0">1</edge>
+            <edge cost="65.0">3</edge>
+            <edge cost="67.0">4</edge>
+            <edge cost="98.0">5</edge>
+            <edge cost="50.0">6</edge>
+            <edge cost="53.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="16.0">0</edge>
+            <edge cost="43.0">1</edge>
+            <edge cost="65.0">2</edge>
+            <edge cost="10.0">4</edge>
+            <edge cost="40.0">5</edge>
+            <edge cost="57.0">6</edge>
+            <edge cost="66.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="25.0">0</edge>
+            <edge cost="53.0">1</edge>
+            <edge cost="67.0">2</edge>
+            <edge cost="10.0">3</edge>
+            <edge cost="33.0">5</edge>
+            <edge cost="50.0">6</edge>
+            <edge cost="59.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="56.0">0</edge>
+            <edge cost="75.0">1</edge>
+            <edge cost="98.0">2</edge>
+            <edge cost="40.0">3</edge>
+            <edge cost="33.0">4</edge>
+            <edge cost="68.0">6</edge>
+            <edge cost="76.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="63.0">0</edge>
+            <edge cost="95.0">1</edge>
+            <edge cost="50.0">2</edge>
+            <edge cost="57.0">3</edge>
+            <edge cost="50.0">4</edge>
+            <edge cost="68.0">5</edge>
+            <edge cost="9.0">7</edge>
+        </vertex>
+        <vertex>
+            <edge cost="72.0">0</edge>
+            <edge cost="103.0">1</edge>
+            <edge cost="53.0">2</edge>
+            <edge cost="66.0">3</edge>
+            <edge cost="59.0">4</edge>
+            <edge cost="76.0">5</edge>
+            <edge cost="9.0">6</edge>
+        </vertex>
+    </graph>
+</travellingSalesmanProblemInstance>
