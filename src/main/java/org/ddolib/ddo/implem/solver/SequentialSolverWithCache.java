@@ -1,20 +1,22 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramWithCache;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -39,7 +41,7 @@ import java.util.*;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolverWithCache<K,T> implements Solver {
+public final class SequentialSolverWithCache<K, T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -84,7 +86,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagramWithCache<T,K> mdd;
+    private final DecisionDiagramWithCache<T, K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -96,9 +98,14 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBound<T> fub;
+
+    /**
      * This is the dominance object that will be used to prune the search space.
      */
-    private DominanceChecker<T,K> dominance;
+    private DominanceChecker<T, K> dominance;
 
     /**
      * Only the first restricted mdd can be exported to a .dot file
@@ -146,13 +153,15 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
-            final DominanceChecker<T,K> dominance,
+            FastUpperBound<T> fub,
+            final DominanceChecker<T, K> dominance,
             final SimpleCache<T> cache) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
         this.ranking = ranking;
         this.width = width;
+        this.fub = fub;
         this.dominance = dominance;
         this.cache = cache;
         this.frontier = frontier;
@@ -177,11 +186,11 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         cache.initialize(problem);
         while (!frontier.isEmpty()) {
             nbIter++;
-            if(verbosityLevel >= 2){
+            if (verbosityLevel >= 2) {
                 long now = System.currentTimeMillis();
-                if(now >= nextPrint) {
+                if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100*(bestInFrontier - bestLB)/bestLB;
+                    double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
                             nbIter, frontier.size(), bestLB, bestInFrontier, gap);
@@ -196,16 +205,16 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
 
             double nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 3){
+            if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
-                if(verbosityLevel >= 4) {
+                if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
                 }
             }
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 long end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end-start);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start);
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -215,7 +224,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInputWithCache<T,K> compilation = new CompilationInputWithCache<>(
+            CompilationInputWithCache<T, K> compilation = new CompilationInputWithCache<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -223,6 +232,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     cache,
                     bestLB,
@@ -243,7 +253,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInputWithCache<T,K>(
+            compilation = new CompilationInputWithCache<T, K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -251,6 +261,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     cache,
                     bestLB,
@@ -258,8 +269,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     exportAsDot && firstRestricted
             );
             mdd.compile(compilation);
-            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()  && frontier.cutSetType() == CutSetType.Frontier) {
-                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
+                maybeUpdateBest(verbosityLevel, false);
             }
             if (exportAsDot && firstRelaxed) {
                 if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
@@ -276,7 +287,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
 
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start);
     }
 
     @Override

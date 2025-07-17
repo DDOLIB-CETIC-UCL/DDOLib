@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
@@ -16,14 +17,14 @@ import java.util.Arrays;
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
  * For more information on this problem, see
  * <a href="https://en.wikipedia.org/wiki/Golomb_ruler">Golomb Ruler - Wikipedia</a>.
- *
+ * <p>
  * This model was introduced by Willem-Jan van Hoeve.
  * In this model:
  * - Each variable/layer represents the position of the next mark to be placed.
  * - The domain of each variable is the set of all possible positions for the next mark.
  * - A mark can only be added if the distance between the new mark and all previous marks
- *   is not already present in the set of distances between marks.
- *
+ * is not already present in the set of distances between marks.
+ * <p>
  * The cost of a transition is defined as the distance between the new mark and the
  * previous last mark. Consequently, the cost of a solution is the position of the last mark.
  */
@@ -45,6 +46,7 @@ public class GRCacheMain {
                 ranking,
                 width,
                 frontier,
+                new DefaultFastUpperBound<GRState>(),
                 dominance,
                 cache);
 
@@ -55,10 +57,10 @@ public class GRCacheMain {
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
-                    int[] values = new int[problem.nbVars()+1];
+                    int[] values = new int[problem.nbVars() + 1];
                     values[0] = 0;
                     for (Decision d : decisions) {
-                        values[d.var()+1] = d.val();
+                        values[d.var() + 1] = d.val();
                     }
                     return values;
                 })
