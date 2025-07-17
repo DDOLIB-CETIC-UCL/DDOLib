@@ -1,6 +1,5 @@
 package org.ddolib.ddo.examples.max2sat;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 import static java.lang.Math.abs;
@@ -16,7 +15,8 @@ public class BinaryClause implements Comparable<BinaryClause> {
     public final int j;
 
     public BinaryClause(int i, int j) {
-        if (i == 0 || j == 0) throw new IllegalArgumentException("Id of variable in Binary clauses must be != 0");
+        if (i == 0 || j == 0)
+            throw new IllegalArgumentException("Id of variable in Binary clauses must be != 0");
         this.i = i;
         this.j = j;
     }
@@ -53,10 +53,10 @@ public class BinaryClause implements Comparable<BinaryClause> {
         return String.format("%sx_%d || %sx_%d", notX, abs(i), notY, abs(j));
     }
 
-    private int internalCompare(int a, int b) {
-        int compared = Integer.compare(abs(a), abs(b));
+    private int internalCompare(int x, int y) {
+        int compared = Integer.compare(abs(x), abs(y));
         if (compared == 0) {
-            return -Integer.compare(a, b);
+            return -Integer.compare(x, y);
         } else {
             return compared;
         }
