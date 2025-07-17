@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.misp;
+package org.ddolib.example.ddo.misp;
 
 import org.ddolib.modeling.StateRanking;
 
