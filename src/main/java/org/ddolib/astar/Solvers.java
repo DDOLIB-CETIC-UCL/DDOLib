@@ -14,8 +14,7 @@ public class Solvers {
     public static <T, K> AStarSolver<T, K> astarSolver(Problem<T> problem,
                                                        Relaxation<T> relax,
                                                        VariableHeuristic<T> varh,
-                                                       StateRanking<T> ranking,
                                                        DominanceChecker<T, K> dominance) {
-        return new AStarSolver(problem, relax, varh, ranking, dominance);
+        return new AStarSolver(problem, relax, varh, dominance);
     }
 }

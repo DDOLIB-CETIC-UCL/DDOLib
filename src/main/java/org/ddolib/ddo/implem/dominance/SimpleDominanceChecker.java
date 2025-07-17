@@ -45,8 +45,8 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
     public SimpleDominanceChecker(Dominance<T, K> dominance, int nVars) {
         super(dominance);
-        this.fronts = new ArrayList<>(nVars);
-        for (int i = 0; i < nVars; i++) {
+        this.fronts = new ArrayList<>(nVars+1);
+        for (int i = 0; i <= nVars; i++) {
             fronts.add(new HashMap<>());
         }
     }
