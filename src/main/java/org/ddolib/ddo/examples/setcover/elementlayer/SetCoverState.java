@@ -13,7 +13,7 @@ public class SetCoverState {
     }
 
     @Override
-    protected SetCoverState clone() {
+    public SetCoverState clone() {
         return new SetCoverState(new HashSet<>(uncoveredElements));
     }
 
