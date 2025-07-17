@@ -109,6 +109,10 @@ public class Max2SatIO {
 
     public static void generateInstance(int numVar, String fileName) throws IOException {
         Random random = new Random();
+        long seed = random.nextLong();
+        random.setSeed(seed);
+
+        System.out.printf("Used seed: %d%n", seed);
         generateInstance(numVar, fileName, random.nextLong());
     }
 
