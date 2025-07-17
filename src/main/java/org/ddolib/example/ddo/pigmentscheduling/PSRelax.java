@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pigmentscheduling;
+package org.ddolib.example.ddo.pigmentscheduling;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.ddolib.ddo.examples.pigmentscheduling.PSProblem.IDLE;
+import static org.ddolib.example.ddo.pigmentscheduling.PSProblem.IDLE;
 
 public class PSRelax implements Relaxation<PSState> {
 

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pigmentscheduling;
+package org.ddolib.example.ddo.pigmentscheduling;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pigmentscheduling;
+package org.ddolib.example.ddo.pigmentscheduling;
 
 import org.ddolib.util.io.InputReader;
 
@@ -22,7 +22,7 @@ public class PSInstance {
 
     public int optimal; // optimal objective value
 
-    PSInstance(String path) {
+    public PSInstance(String path) {
 
         InputReader reader = new InputReader(path);
         horizon = reader.getInt();

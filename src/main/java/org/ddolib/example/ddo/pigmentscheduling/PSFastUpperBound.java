@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.pigmentscheduling;
+package org.ddolib.example.ddo.pigmentscheduling;
 
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.TSPLowerBound;
