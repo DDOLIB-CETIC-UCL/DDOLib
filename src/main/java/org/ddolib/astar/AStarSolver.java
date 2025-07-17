@@ -69,11 +69,12 @@ public final class AStarSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0);
+        return maximize(0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+        long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.add(root());
@@ -105,11 +106,11 @@ public final class AStarSolver<T, K> implements Solver {
             }
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize);
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0);
             }
             addChildren(sub);
         }
-        return new SearchStatistics(nbIter, queueMaxSize);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0);
     }
 
     @Override
@@ -152,7 +153,7 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = relax.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(state,path.size(),value)) {
+            if (!dominance.updateDominance(newState,path.size(),value)) {
                 frontier.add(new SubProblem<>(newState, value, fastUpperBound,path));
             }
         }
