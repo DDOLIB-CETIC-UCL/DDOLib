@@ -23,7 +23,8 @@ public class BKSMain {
                 new int[]{2, 3, 6, 6, 1}, // values
                 new int[]{4, 6, 4, 2, 5},  // weights
                 new int[]{1, 1, 2, 2, 1}); // number of items
-        final BKSRelax relax = new BKSRelax(problem);
+        final BKSRelax relax = new BKSRelax();
+        final BKSFastUpperBound fub = new BKSFastUpperBound(problem);
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
@@ -37,6 +38,7 @@ public class BKSMain {
                 varh,
                 ranking,
                 width,
+                fub,
 //                dominance,
                 cache,
                 frontier,

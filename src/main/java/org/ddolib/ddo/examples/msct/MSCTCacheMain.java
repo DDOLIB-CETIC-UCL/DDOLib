@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
@@ -45,6 +46,7 @@ public class MSCTCacheMain {
                 varh,
                 ranking,
                 width,
+                new DefaultFastUpperBound<MSCTState>(),
                 dominance,
                 cache,
                 frontier,

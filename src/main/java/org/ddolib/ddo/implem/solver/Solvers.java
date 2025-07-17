@@ -303,6 +303,7 @@ public class Solvers {
      * @param relax     A suitable relaxation for the problem we want to maximize
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of states.
      * @param <K>       The type of dominance keys.
@@ -312,8 +313,9 @@ public class Solvers {
                                                        final Relaxation<T> relax,
                                                        final VariableHeuristic<T> varh,
                                                        final StateRanking<T> ranking,
+                                                       final FastUpperBound<T> fub,
                                                        final DominanceChecker<T, K> dominance) {
-        return new ExactSolver<>(problem, relax, varh, ranking, dominance);
+        return new ExactSolver<>(problem, relax, varh, ranking, fub, dominance);
     }
 
     /**
@@ -331,6 +333,7 @@ public class Solvers {
                                                           final VariableHeuristic<T> varh,
                                                           final StateRanking<T> ranking) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        return new ExactSolver<>(problem, relax, varh, ranking, defaultDominance);
+        DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
+        return new ExactSolver<>(problem, relax, varh, ranking, defaultFub, defaultDominance);
     }
 }

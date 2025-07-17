@@ -1,6 +1,7 @@
 package org.ddolib.ddo.implem.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.FastUpperBound;
 import org.ddolib.ddo.heuristics.StateRanking;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.heuristics.WidthHeuristic;
@@ -9,7 +10,10 @@ import org.ddolib.ddo.implem.dominance.Dominance;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagramWithCache;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -34,7 +38,7 @@ import java.util.*;
  * @param <K> the type of key
  * @param <T> the type of state
  */
-public final class SequentialSolverWithCache<K,T> implements Solver {
+public final class SequentialSolverWithCache<K, T> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -79,7 +83,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagramWithCache<T,K> mdd;
+    private final DecisionDiagramWithCache<T, K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -91,9 +95,14 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBound<T> fub;
+
+    /**
      * This is the dominance object that will be used to prune the search space.
      */
-    private SimpleDominanceChecker<T,K> dominance;
+    private SimpleDominanceChecker<T, K> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -114,7 +123,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final SimpleDominanceChecker<T,K> dominance,
+            FastUpperBound<T> fub,
+            final SimpleDominanceChecker<T, K> dominance,
             final SimpleCache<T> cache,
             final Frontier<T> frontier,
             final boolean exportAsDot) {
@@ -126,6 +136,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         this.dominance = dominance;
         this.cache = cache;
         this.frontier = frontier;
+        this.fub = fub;
         this.mdd = new LinkedDecisionDiagramWithCache<>();
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
@@ -138,6 +149,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
+            final FastUpperBound<T> fub,
             final SimpleCache<T> cache,
             final Frontier<T> frontier,
             final boolean exportAsDot) {
@@ -147,11 +159,13 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                 varh,
                 ranking,
                 width,
+                fub,
                 new SimpleDominanceChecker(new Dominance<T, Integer>() {
                     @Override
                     public Integer getKey(T t) {
                         return 0;
                     }
+
                     @Override
                     public boolean isDominatedOrEqual(T state1, T state2) {
                         return false;
@@ -177,8 +191,9 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         frontier.push(root());
         cache.initialize(problem);
         while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
-                    "bestObj:" + bestLB);
+            if (verbosityLevel >= 1)
+                System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " +
+                        "bestObj:" + bestLB);
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -192,7 +207,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             if (nodeUB <= bestLB) {
                 frontier.clear();
                 long end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end-start);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start);
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -201,7 +216,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                 }
             }
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInputWithCache<T,K> compilation = new CompilationInputWithCache<>(
+            CompilationInputWithCache<T, K> compilation = new CompilationInputWithCache<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -209,6 +224,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     cache,
                     bestLB,
@@ -222,7 +238,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInputWithCache<T,K>(
+            compilation = new CompilationInputWithCache<T, K>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -230,6 +246,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     ranking,
                     sub,
                     maxWidth,
+                    fub,
                     dominance,
                     cache,
                     bestLB,
@@ -237,7 +254,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                     exportAsDot
             );
             mdd.compile(compilation);
-            if (compilation.getCompilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
+            if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {
                 maybeUpdateBest(verbosityLevel);
             }
             if (mdd.isExact()) {
@@ -248,7 +265,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
 
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start);
     }
 
     @Override

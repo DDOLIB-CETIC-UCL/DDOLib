@@ -12,6 +12,6 @@ import java.util.Set;
 public class DefaultFastUpperBound<T> implements FastUpperBound<T> {
     @Override
     public double fastUpperBound(T state, Set<Integer> variables) {
-        return Double.MAX_VALUE;
+        return Double.POSITIVE_INFINITY;
     }
 }

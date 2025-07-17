@@ -5,6 +5,7 @@ import org.ddolib.ddo.heuristics.VariableHeuristic;
 import org.ddolib.ddo.implem.cache.SimpleCache;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
+import org.ddolib.ddo.implem.heuristics.DefaultFastUpperBound;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
@@ -39,6 +40,7 @@ public class SMICCacheMain {
                 varh,
                 ranking,
                 width,
+                new DefaultFastUpperBound<>(),
                 dominance,
                 cache,
                 frontier,
@@ -52,7 +54,7 @@ public class SMICCacheMain {
 
         int[] solution = solver.bestSolution().map(decisions -> {
             int[] values = new int[problem.nbVars()];
-            for (Decision d: decisions) {
+            for (Decision d : decisions) {
                 values[d.var()] = d.val();
             }
             return values;
@@ -66,7 +68,9 @@ public class SMICCacheMain {
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
         String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        while (!s.hasNextLine()) {s.nextLine();}
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
         int nbJob = s.nextInt();
         int initInventory = s.nextInt();
         int capaInventory = s.nextInt();
