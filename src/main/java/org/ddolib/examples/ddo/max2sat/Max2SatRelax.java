@@ -32,7 +32,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
                 // If all the net benefits have the same sign, we keep the smallest one in absolute value.
                 if (signum(mergedI) == 1 && signum(currentI) == 1) {
                     merged.set(i, min(mergedI, currentI));
-                } else if (signum(mergedI) == -1 && signum(currentI) == 1) {
+                } else if (signum(mergedI) == -1 && signum(currentI) == -1) {
                     merged.set(i, max(mergedI, currentI));
                 } else {
                     // Otherwise, we set the benefit to 0
