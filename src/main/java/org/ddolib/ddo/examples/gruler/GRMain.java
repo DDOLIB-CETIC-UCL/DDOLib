@@ -1,14 +1,14 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.api.Solvers;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
-import org.ddolib.ddo.lib.solver.ddosolver.SequentialSolver;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.factory.Solvers;
 
 import java.io.IOException;
 import java.util.Arrays;

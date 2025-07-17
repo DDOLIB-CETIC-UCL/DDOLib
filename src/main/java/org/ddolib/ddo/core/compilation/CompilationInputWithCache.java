@@ -2,13 +2,13 @@ package org.ddolib.ddo.core.compilation;
 
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.FastUpperBound;
-import org.ddolib.ddo.modeling.Problem;
-import org.ddolib.ddo.modeling.Relaxation;
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.dominance.DominanceChecker;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.modeling.StateRanking;
 
 /**
  * The set of parameters used to tweak the compilation of an MDD

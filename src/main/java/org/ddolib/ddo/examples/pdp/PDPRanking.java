@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.pdp;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class PDPRanking implements StateRanking<PDPState> {
     @Override

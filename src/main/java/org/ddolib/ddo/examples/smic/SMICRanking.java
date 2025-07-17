@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.smic;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class SMICRanking implements StateRanking<SMICState> {
     @Override

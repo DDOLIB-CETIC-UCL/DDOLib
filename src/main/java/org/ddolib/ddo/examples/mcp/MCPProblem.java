@@ -1,11 +1,9 @@
 package org.ddolib.ddo.examples.mcp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.*;
-
-import java.lang.Integer;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;

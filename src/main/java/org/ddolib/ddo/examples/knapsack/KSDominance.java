@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
-import org.ddolib.ddo.modeling.Dominance;
+import org.ddolib.modeling.Dominance;
 
 class KSDominance implements Dominance<Integer, Integer> {
 

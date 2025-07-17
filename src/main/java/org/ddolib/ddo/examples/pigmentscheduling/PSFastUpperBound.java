@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.heuristics.FastUpperBound;
-import org.ddolib.ddo.util.TSPLowerBound;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.util.TSPLowerBound;
 
 import java.util.Comparator;
 import java.util.HashSet;

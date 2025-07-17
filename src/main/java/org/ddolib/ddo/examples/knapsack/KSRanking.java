@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class KSRanking implements StateRanking<Integer> {
     @Override

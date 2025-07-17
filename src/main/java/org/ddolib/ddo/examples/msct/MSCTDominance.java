@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.modeling.Dominance;
+import org.ddolib.modeling.Dominance;
 
 public class MSCTDominance implements Dominance<MSCTState, Integer> {
     @Override

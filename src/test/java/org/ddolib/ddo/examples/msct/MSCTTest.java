@@ -1,19 +1,19 @@
 package org.ddolib.ddo.examples.msct;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.Solver;
-import org.ddolib.ddo.lib.heuristics.variables.DefaultVariableHeuristic;
-import org.ddolib.ddo.lib.heuristics.width.FixedWidth;
+import org.ddolib.dominance.SimpleDominanceChecker;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.ddolib.ddo.api.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MSCTTest {

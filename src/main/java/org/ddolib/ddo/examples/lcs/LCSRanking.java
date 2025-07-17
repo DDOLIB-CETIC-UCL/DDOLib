@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class LCSRanking implements StateRanking<LCSState> {
 

@@ -2,7 +2,7 @@ package org.ddolib.ddo.core.frontier;
 
 
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;

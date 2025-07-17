@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.smic;
 
-import org.ddolib.ddo.modeling.Dominance;
+import org.ddolib.modeling.Dominance;
 
 public class SMICDominance implements Dominance<SMICState, Integer> {
     @Override

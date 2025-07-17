@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.lcs;
 
-import org.ddolib.ddo.heuristics.FastUpperBound;
+import org.ddolib.modeling.FastUpperBound;
 
 import java.util.Set;
 

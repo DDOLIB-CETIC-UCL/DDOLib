@@ -2,7 +2,7 @@ package org.ddolib.ddo.examples.msct;
 
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.modeling.Relaxation;
+import org.ddolib.modeling.Relaxation;
 
 import java.util.HashSet;
 import java.util.Iterator;

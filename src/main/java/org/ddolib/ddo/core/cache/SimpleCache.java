@@ -1,6 +1,6 @@
 package org.ddolib.ddo.core.cache;
 
-import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.tsptw;
 
-import org.ddolib.ddo.modeling.Dominance;
+import org.ddolib.modeling.Dominance;
 
 /**
  * Dominance class for the TSPTW problem.

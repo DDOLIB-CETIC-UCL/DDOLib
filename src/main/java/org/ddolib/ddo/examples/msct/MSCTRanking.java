@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.msct;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 class MSCTRanking implements StateRanking<MSCTState> {
     @Override

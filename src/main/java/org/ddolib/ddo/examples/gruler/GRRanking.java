@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.gruler;
 
-import org.ddolib.ddo.modeling.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class GRRanking implements StateRanking<GRState> {
     @Override

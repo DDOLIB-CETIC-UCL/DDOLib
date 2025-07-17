@@ -1,7 +1,7 @@
 package org.ddolib.ddo.examples.misp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.modeling.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.BitSet;
 import java.util.Iterator;

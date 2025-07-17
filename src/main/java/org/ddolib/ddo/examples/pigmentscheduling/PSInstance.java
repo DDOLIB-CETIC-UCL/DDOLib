@@ -1,6 +1,6 @@
 package org.ddolib.ddo.examples.pigmentscheduling;
 
-import org.ddolib.ddo.io.InputReader;
+import org.ddolib.util.io.InputReader;
 
 import java.util.Arrays;
 
@@ -41,7 +41,7 @@ public class PSInstance {
             stockingCost[i] = reader.getInt();
         }
 
-        int [][] demands = new int[nItems][horizon];
+        int[][] demands = new int[nItems][horizon];
         for (int i = 0; i < nItems; i++) {
             for (int j = 0; j < horizon; j++) {
                 demands[i][j] = reader.getInt();
