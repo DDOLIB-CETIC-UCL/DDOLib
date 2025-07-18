@@ -1,14 +1,14 @@
 package org.ddolib.examples.ddo.pigmentscheduling;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.util.testbench.ProblemTestBench;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -17,6 +17,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
+
 class PSTest {
 
     private static class PSPBench extends ProblemTestBench<PSState, Integer, PSProblem> {
@@ -54,12 +55,13 @@ class PSTest {
         protected SolverConfig<PSState, Integer> configSolver(PSProblem problem) {
             PSRelax relax = new PSRelax(problem.instance);
             PSRanking ranking = new PSRanking();
+            PSFastUpperBound fub = new PSFastUpperBound(problem.instance);
             FixedWidth<PSState> width = new FixedWidth<>(10);
             VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
             Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<PSState> dominanceChecker = new DefaultDominanceChecker<>();
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
         }
     }
 

@@ -1,8 +1,8 @@
-package org.ddolib.ddo.util.testbench;
+package org.ddolib.util.testbench;
 
-import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.text.DecimalFormat;
@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.exactSolver;
+import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -81,7 +82,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), config.width(), config.frontier());
+        Solver solver = exactSolver(problem, config.relax(), config.varh(), config.ranking());
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
@@ -94,14 +95,20 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFub(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), config.width(), config.frontier());
+        Solver solver = exactSolver(
+                problem,
+                config.relax(),
+                config.varh(),
+                config.ranking(),
+                config.fub(),
+                config.dominance());
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = config.relax().fastUpperBound(problem.initialState(), vars);
+        double rub = config.fub().fastUpperBound(problem.initialState(), vars);
         DecimalFormat df = new DecimalFormat("#.##########");
         assertTrue(rub >= problem.optimalValue().get(),
                 String.format("Upper bound %s is not bigger than the expected optimal solution %s",
@@ -121,8 +128,13 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         SolverConfig<T, K> config = configSolver(problem);
         for (int w = 2; w <= 20; w++) {
             System.out.println(w);
-            FixedWidth<T> width = new FixedWidth<>(2);
-            Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
+            FixedWidth<T> width = new FixedWidth<>(w);
+            Solver solver = sequentialSolver(
+                    problem,
+                    config.relax(),
+                    config.varh(),
+                    config.ranking(),
+                    width,
                     config.frontier());
 
             solver.maximize();
@@ -140,8 +152,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         SolverConfig<T, K> config = configSolver(problem);
         for (int w = 2; w <= 20; w++) {
             FixedWidth<T> width = new FixedWidth<>(2);
-            Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), width,
-                    config.frontier());
+            Solver solver = sequentialSolver(
+                    problem,
+                    config.relax(),
+                    config.varh(),
+                    config.ranking(),
+                    width,
+                    config.frontier(),
+                    config.fub());
 
             solver.maximize();
             assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);

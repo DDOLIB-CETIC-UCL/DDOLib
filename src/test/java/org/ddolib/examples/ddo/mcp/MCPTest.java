@@ -1,13 +1,13 @@
 package org.ddolib.examples.ddo.mcp;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.util.testbench.ProblemTestBench;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
+
 public class MCPTest {
 
     private static class MCPBench extends ProblemTestBench<MCPState, Integer, MCPProblem> {
@@ -51,12 +52,13 @@ public class MCPTest {
         protected SolverConfig<MCPState, Integer> configSolver(MCPProblem problem) {
             MCPRelax relax = new MCPRelax(problem);
             MCPRanking ranking = new MCPRanking();
+            MCPFastUpperBound fub = new MCPFastUpperBound(problem);
             FixedWidth<MCPState> width = new FixedWidth<>(1000);
             VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
             SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<MCPState> dominanceChecker = new DefaultDominanceChecker<>();
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
         }
     }
 

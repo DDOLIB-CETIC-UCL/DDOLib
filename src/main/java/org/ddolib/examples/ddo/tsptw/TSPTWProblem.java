@@ -3,10 +3,7 @@ package org.ddolib.examples.ddo.tsptw;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 

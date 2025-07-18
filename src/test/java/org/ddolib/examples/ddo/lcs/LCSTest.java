@@ -1,14 +1,14 @@
 package org.ddolib.examples.ddo.lcs;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.util.testbench.ProblemTestBench;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
+
 public class LCSTest {
     private static class LCSBench extends ProblemTestBench<LCSState, Integer, LCSProblem> {
         /**
@@ -57,12 +58,13 @@ public class LCSTest {
         protected SolverConfig<LCSState, Integer> configSolver(LCSProblem problem) {
             LCSRelax relax = new LCSRelax(problem);
             LCSRanking ranking = new LCSRanking();
+            LCSFastUpperBound fub = new LCSFastUpperBound(problem);
 
             FixedWidth<LCSState> width = new FixedWidth<>(1000);
             VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<>();
             Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<LCSState> dominanceChecker = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
         }
     }
 

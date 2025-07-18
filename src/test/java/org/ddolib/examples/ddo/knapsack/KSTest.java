@@ -1,13 +1,13 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
+
 public class KSTest {
     private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
 
@@ -55,7 +56,8 @@ public class KSTest {
 
         @Override
         protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            KSRelax relax = new KSRelax(problem);
+            KSRelax relax = new KSRelax();
+            KSFastUpperBound fub = new KSFastUpperBound(problem);
             KSRanking ranking = new KSRanking();
             FixedWidth<Integer> width = new FixedWidth<>(1000);
             VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
@@ -63,7 +65,7 @@ public class KSTest {
             SimpleDominanceChecker<Integer, Integer> dominanceChecker =
                     new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
         }
     }
 

@@ -3,10 +3,7 @@ package org.ddolib.examples.ddo.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class SMICProblem implements Problem<SMICState> {
     public final String name;

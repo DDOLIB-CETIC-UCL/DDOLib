@@ -1,14 +1,16 @@
-package org.ddolib.ddo.util.testbench;
+package org.ddolib.util.testbench;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.modeling.StateRanking;
 
 /**
- * Class containing the input of {@link org.ddolib.ddo.implem.solver.SequentialSolver}. It is used for testing.
+ * Class containing the input of {@link org.ddolib.ddo.core.solver.SequentialSolver}. It is used for
+ * testing.
  *
  * @param relax     A suitable relaxation for the problem we want to maximize.
  * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
@@ -34,5 +36,6 @@ public record SolverConfig<T, K>(
         StateRanking<T> ranking,
         WidthHeuristic<T> width,
         Frontier<T> frontier,
+        FastUpperBound<T> fub,
         DominanceChecker<T, K> dominance) {
 }

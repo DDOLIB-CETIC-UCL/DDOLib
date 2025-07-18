@@ -1,7 +1,6 @@
 package org.ddolib.examples.ddo.tstptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -9,8 +8,8 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.examples.ddo.tsptw.*;
-import org.ddolib.ddo.util.testbench.ProblemTestBench;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -20,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
+
 public class TSPTWTests {
 
     private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWDominanceKey, TSPTWProblem> {
@@ -60,13 +60,15 @@ public class TSPTWTests {
         protected SolverConfig<TSPTWState, TSPTWDominanceKey> configSolver(TSPTWProblem problem) {
             TSPTWRelax relax = new TSPTWRelax(problem);
             TSPTWRanking ranking = new TSPTWRanking();
+            TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
+
             FixedWidth<TSPTWState> width = new FixedWidth<>(2);
             VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
             SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
                     new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominance);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
         }
     }
 

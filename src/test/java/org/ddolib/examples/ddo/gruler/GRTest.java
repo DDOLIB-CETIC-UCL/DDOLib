@@ -1,15 +1,17 @@
 package org.ddolib.examples.ddo.gruler;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.util.testbench.ProblemTestBench;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.TestFactory;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
 public class GRTest {
 
     private static class GRBench extends ProblemTestBench<GRState, Integer, GRProblem> {
@@ -46,8 +49,9 @@ public class GRTest {
             FixedWidth<GRState> width = new FixedWidth<>(32);
             VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
             Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+            FastUpperBound<GRState> fub = new DefaultFastUpperBound<>();
             DominanceChecker<GRState, Integer> dominance = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominance);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
         }
     }
 

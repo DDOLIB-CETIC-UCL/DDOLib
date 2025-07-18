@@ -4,10 +4,7 @@ package org.ddolib.examples.ddo.msct;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class MSCTProblem implements Problem<MSCTState> {
 

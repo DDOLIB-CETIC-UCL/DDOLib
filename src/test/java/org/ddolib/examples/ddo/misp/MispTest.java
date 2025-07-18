@@ -1,13 +1,14 @@
 package org.ddolib.examples.ddo.misp;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -58,11 +59,12 @@ public class MispTest {
         protected SolverConfig<BitSet, Integer> configSolver(MispProblem problem) {
             MispRelax relax = new MispRelax(problem);
             MispRanking ranking = new MispRanking();
+            MispFastUpperBound fub = new MispFastUpperBound(problem);
             FixedWidth<BitSet> width = new FixedWidth<>(1000);
             VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
             Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<BitSet> dominanceChecker = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
         }
     }
 

@@ -88,11 +88,6 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
-    public String toString() {
-        return "(" + capa + "," + Arrays.toString(profit) + "," + Arrays.toString(weight) + ")";
-    }
-
-    @Override
     public Optional<Double> optimalValue() {
         return optimal;
     }
