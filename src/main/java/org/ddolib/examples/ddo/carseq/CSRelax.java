@@ -37,8 +37,9 @@ public class CSRelax implements Relaxation<CSState> {
         } while (states.hasNext());
 
         // Add jokers to replace removed cars
+        mergedCarsToBuild[problem.nClasses()] = state.nToBuild;
         for (int i = 0; i < problem.nClasses(); i++) {
-            mergedCarsToBuild[problem.nClasses()] += state.carsToBuild[i] - mergedCarsToBuild[i];
+            mergedCarsToBuild[problem.nClasses()] -= mergedCarsToBuild[i];
         }
 
         // Compute nWithOption
