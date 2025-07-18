@@ -39,7 +39,7 @@ public class BPPProblem implements Problem<BPPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         // Starting with one opened bin.
         return -1;
     }
@@ -73,7 +73,7 @@ public class BPPProblem implements Problem<BPPState> {
     }
 
     @Override
-    public int transitionCost(BPPState state, Decision decision) {
+    public double transitionCost(BPPState state, Decision decision) {
         int item = decision.val();
         int weight = itemWeight[item];
         // Not enough space ==> new bin ==> -1 else 0

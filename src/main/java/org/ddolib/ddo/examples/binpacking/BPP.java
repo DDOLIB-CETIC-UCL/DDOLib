@@ -1,12 +1,15 @@
 package org.ddolib.ddo.examples.binpacking;
 
+import org.ddolib.ddo.core.CutSetType;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Frontier;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
+import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 import org.ddolib.ddo.implem.solver.ParallelSolver;
+import org.ddolib.ddo.implem.solver.Solvers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,9 +61,9 @@ public class BPP {
 
         final FixedWidth<BPPState> width = new FixedWidth<>(maxWidth);
         final VariableHeuristic<BPPState> varH = new DefaultVariableHeuristic<>();
-        final Frontier<BPPState> frontier = new SimpleFrontier<>(ranking);
+        final Frontier<BPPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        ParallelSolver<BPPState> solver = new ParallelSolver<>(
+        ParallelSolver<BPPState,Integer> solver = Solvers.parallelSolver(
                 Runtime.getRuntime().availableProcessors(),
                 problem,
                 relax,
@@ -70,7 +73,7 @@ public class BPP {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1);
+        solver.maximize(1,true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         Decision[] solution = solver.bestSolution()
@@ -88,7 +91,7 @@ public class BPP {
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().orElse(Integer.MIN_VALUE));
+        System.out.printf("Objective: %3f%n", solver.bestValue().orElse(Double.MIN_VALUE));
         System.out.printf("Upper Bnd : %s%n", solver.upperBound());
         System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
         System.out.printf("Explored : %s%n", solver.explored());
@@ -97,7 +100,7 @@ public class BPP {
 
         int d = 0;
 
-        for(int bin = 0; bin < -solver.bestValue().orElse(0); bin++) {
+        for(int bin = 0; bin < -solver.bestValue().orElse(0.0); bin++) {
             int remSpace = problem.binMaxSpace;
             boolean newBin = false;
             StringBuffer sb = new StringBuffer();
