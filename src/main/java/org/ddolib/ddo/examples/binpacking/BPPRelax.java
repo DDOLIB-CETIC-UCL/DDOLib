@@ -39,12 +39,12 @@ public class BPPRelax implements Relaxation<BPPState> {
     }
 
     @Override
-    public int relaxEdge(BPPState from, BPPState to, BPPState merged, Decision d, int cost) {
+    public double relaxEdge(BPPState from, BPPState to, BPPState merged, Decision d, double cost) {
         return -(merged.usedBins-from.usedBins);
     }
 
     @Override
-    public int fastUpperBound(BPPState state, Set<Integer> variables) {
+    public double fastUpperBound(BPPState state, Set<Integer> variables) {
 
         if (variables.isEmpty()) return 0;
         int remainingTotalWeight = state.remainingItems.stream().map(i -> problem.itemWeight[i]).reduce(0,Integer::sum);
