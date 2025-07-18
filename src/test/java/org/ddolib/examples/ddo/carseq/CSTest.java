@@ -12,6 +12,7 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.factory.Solvers;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -33,9 +34,18 @@ public class CSTest {
         testSolve("data/CarSeq/medium.txt");
     }
 
+    @Test
+    public void testSolveInstances() throws IOException {
+        File dir = new File("data/CarSeq");
+        for (File file : dir.listFiles()) {
+            String path = file.getPath();
+            if (path.startsWith("data/CarSeq/instance")) testSolve(path);
+        }
+    }
+
     public static void testSolve(String inputFile) throws IOException {
         // Solve problem
-        CSProblem problem = CSMain.readInstance(inputFile);
+        CSProblem problem = CSInstance.read(inputFile);
         for (int i = 0; i < problem.nOptions(); i++) { // Prevent sizes larger than 64 (to be able to use a single long instead of a BitSet)
             if (problem.blockSize[i] > 64) throw new IllegalArgumentException("Option block size must be less than 64");
         }
