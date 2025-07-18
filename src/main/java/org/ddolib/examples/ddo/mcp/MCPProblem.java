@@ -103,6 +103,11 @@ public class MCPProblem implements Problem<MCPState> {
         else return branchOnT(state, decision.var());
     }
 
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
     private int branchOnS(MCPState state, int k) {
         // If k is set to S, we gain the net benefit if it is < 0
         int cost = positiveOrNull(-state.netBenefit().get(k));

@@ -4,10 +4,7 @@ package org.ddolib.examples.ddo.msct;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class MSCTProblem implements Problem<MSCTState> {
 
@@ -15,10 +12,30 @@ public class MSCTProblem implements Problem<MSCTState> {
     final int[] release; // release date of each job
     final int[] processing; // processing time of each job
 
+    private Optional<Double> optimal = Optional.empty();
+
     public MSCTProblem(final int[] release, final int[] processing) {
         this.release = release;
         this.processing = processing;
         this.n = release.length;
+    }
+
+    public MSCTProblem(final int[] release, final int[] processing, double optimal) {
+        this.release = release;
+        this.processing = processing;
+        this.n = release.length;
+        this.optimal = Optional.of(-optimal);
+    }
+
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("release: %s - processing: %s", Arrays.toString(release), Arrays.toString(processing));
     }
 
     @Override

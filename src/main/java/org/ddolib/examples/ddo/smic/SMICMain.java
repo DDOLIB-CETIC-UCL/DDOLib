@@ -14,6 +14,7 @@ import org.ddolib.factory.Solvers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -27,10 +28,10 @@ import java.util.Scanner;
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data100_2.txt");
+        SMICProblem problem = readProblem("data/SMIC/data10_1.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(10);
+        final FixedWidth<SMICState> width = new FixedWidth<>(2);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker<SMICState, Integer> dominance =
                 new SimpleDominanceChecker<>(new SMICDominance(),
@@ -78,6 +79,7 @@ public class SMICMain {
         int[] weight = new int[nbJob];
         int[] release = new int[nbJob];
         int[] inventory = new int[nbJob];
+        Optional<Double> opti = Optional.empty();
         for (int i = 0; i < nbJob; i++) {
             type[i] = s.nextInt();
             processing[i] = s.nextInt();
@@ -85,7 +87,15 @@ public class SMICMain {
             release[i] = s.nextInt();
             inventory[i] = s.nextInt();
         }
+        if (s.hasNextInt()) {
+            opti = Optional.of(s.nextDouble());
+        }
         s.close();
-        return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+        if (opti.isPresent()) {
+            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
+                    opti.get());
+        } else {
+            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+        }
     }
 }

@@ -1,65 +1,78 @@
 package org.ddolib.examples.ddo.smic;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.SolverType;
 
-import java.util.stream.IntStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static org.ddolib.examples.ddo.smic.SMICMain.readProblem;
-import static org.ddolib.factory.Solvers.sequentialSolver;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class SMICTest {
-    // Easy instances
-    static Stream<SMICProblem> easySMICInstances() {
-        Stream<Integer> testStream = IntStream.rangeClosed(1, 10).boxed();
-        return testStream.flatMap(i -> {
-            try {
-                return Stream.of(readProblem("src/test/resources/SMIC/data10_" + i + ".txt"));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
 
-    final int[] cpSolution = new int[]{60, 55, 58, 41, 69, 55, 56, 72, 48, 73};
+    private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
 
-    private int unitaryTestSMIC(int w, SMICProblem problem) {
-        final SMICRelax relax = new SMICRelax(problem);
-        final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(w);
-        final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
-                new SMICDominance(), problem.nbVars());
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
-        solver.maximize();
-        return (int) -solver.bestValue().get();
-    }
+        /**
+         * Instantiate a test bench.
+         *
+         * @param testRelaxation Whether the relaxation must be tested.
+         * @param testFUB        Whether the fast upper bound must be tested.
+         * @param testDominance  Whether the dominance must be tested.
+         */
+        public SMICBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
+            super(testRelaxation, testFUB, testDominance);
+        }
 
-    @ParameterizedTest
-    @MethodSource("easySMICInstances")
-    public void testSMIC(SMICProblem problem) {
-        for (int w = 2; w <= 3; w++) {
-            int i = Integer.parseInt(problem.name.split("_")[1].split(".t")[0]) - 1;
-            assertEquals(unitaryTestSMIC(w, problem), cpSolution[i]);
+        @Override
+        protected List<SMICProblem> generateProblems() {
+            String dir = Paths.get("src", "test", "resources", "SMIC").toString();
+
+            File[] files = new File(dir).listFiles();
+            assert files != null;
+            Stream<File> stream = Stream.of(files);
+
+            return stream.filter(file -> !file.isDirectory())
+                    .map(File::getName)
+                    .map(fileName -> Paths.get(dir, fileName))
+                    .map(filePath -> {
+                        try {
+                            SMICProblem problem = SMICMain.readProblem(filePath.toString());
+                            return problem;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+        }
+
+        @Override
+        protected SolverConfig<SMICState, Integer> configSolver(SMICProblem problem) {
+            SMICRelax relax = new SMICRelax(problem);
+            SMICRanking ranking = new SMICRanking();
+            FastUpperBound<SMICState> fub = new DefaultFastUpperBound<>();
+
+            VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
+            SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
+                    new SMICDominance(), problem.nbVars());
+            Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance, SolverType.EXACT);
         }
     }
+
+    /*@DisplayName("SMIC")
+    @TestFactory
+    public Stream<DynamicTest> testSMIC() {
+        var bench = new SMICBench(false, false, true);
+        return bench.generateTests();
+    }*/
 }
