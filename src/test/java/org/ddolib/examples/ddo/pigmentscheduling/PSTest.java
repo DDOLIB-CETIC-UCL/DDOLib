@@ -61,7 +61,7 @@ class PSTest {
             Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<PSState> dominanceChecker = new DefaultDominanceChecker<>();
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
         }
     }
 

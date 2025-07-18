@@ -59,7 +59,7 @@ class MSCTTest {
                     problem.nbVars());
             Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
 
         private Stream<MSCTProblem> problemWithFixedRelease() {

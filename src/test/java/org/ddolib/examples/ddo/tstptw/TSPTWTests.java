@@ -6,7 +6,6 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.examples.ddo.tsptw.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
@@ -62,13 +61,12 @@ public class TSPTWTests {
             TSPTWRanking ranking = new TSPTWRanking();
             TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
 
-            FixedWidth<TSPTWState> width = new FixedWidth<>(2);
             VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
             SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
                     new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

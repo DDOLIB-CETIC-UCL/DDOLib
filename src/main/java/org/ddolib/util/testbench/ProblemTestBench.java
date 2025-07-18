@@ -128,7 +128,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        for (int w = 2; w <= 20; w++) {
+        for (int w = config.minWidth(); w <= config.maxWidth(); w++) {
             FixedWidth<T> width = new FixedWidth<>(w);
             Solver solver = sequentialSolver(
                     problem,
@@ -151,7 +151,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFubOnRelaxedNodes(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        for (int w = 2; w <= 20; w++) {
+        for (int w = config.minWidth(); w <= config.maxWidth(); w++) {
             FixedWidth<T> width = new FixedWidth<>(2);
             Solver solver = sequentialSolver(
                     problem,

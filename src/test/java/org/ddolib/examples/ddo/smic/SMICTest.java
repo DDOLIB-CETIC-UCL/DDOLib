@@ -6,7 +6,6 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -60,13 +59,12 @@ public class SMICTest {
             SMICRanking ranking = new SMICRanking();
             FastUpperBound<SMICState> fub = new DefaultFastUpperBound<>();
 
-            FixedWidth<SMICState> width = new FixedWidth<>(2);
             VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
             SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                     new SMICDominance(), problem.nbVars());
             Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

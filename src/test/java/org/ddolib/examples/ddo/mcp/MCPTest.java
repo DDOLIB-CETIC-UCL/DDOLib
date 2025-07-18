@@ -5,7 +5,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -53,12 +52,11 @@ public class MCPTest {
             MCPRelax relax = new MCPRelax(problem);
             MCPRanking ranking = new MCPRanking();
             MCPFastUpperBound fub = new MCPFastUpperBound(problem);
-            FixedWidth<MCPState> width = new FixedWidth<>(1000);
             VariableHeuristic<MCPState> varh = new DefaultVariableHeuristic<>();
             SimpleFrontier<MCPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<MCPState> dominanceChecker = new DefaultDominanceChecker<>();
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
         }
     }
 

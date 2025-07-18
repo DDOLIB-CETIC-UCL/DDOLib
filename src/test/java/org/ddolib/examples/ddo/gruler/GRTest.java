@@ -7,7 +7,6 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -46,12 +45,11 @@ public class GRTest {
         protected SolverConfig<GRState, Integer> configSolver(GRProblem problem) {
             GRRelax relax = new GRRelax();
             GRRanking ranking = new GRRanking();
-            FixedWidth<GRState> width = new FixedWidth<>(32);
             VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
             Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             FastUpperBound<GRState> fub = new DefaultFastUpperBound<>();
             DominanceChecker<GRState, Integer> dominance = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominance);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

@@ -65,7 +65,7 @@ public class KSTest {
             SimpleDominanceChecker<Integer, Integer> dominanceChecker =
                     new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
 
-            return new SolverConfig<>(relax, varh, ranking, width, frontier, fub, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
         }
     }
 
