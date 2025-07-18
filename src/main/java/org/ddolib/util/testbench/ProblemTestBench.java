@@ -1,7 +1,9 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -101,7 +103,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
                 config.varh(),
                 config.ranking(),
                 config.fub(),
-                config.dominance());
+                new DefaultDominanceChecker<>());
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -127,7 +129,6 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         for (int w = 2; w <= 20; w++) {
-            System.out.println(w);
             FixedWidth<T> width = new FixedWidth<>(w);
             Solver solver = sequentialSolver(
                     problem,
@@ -173,8 +174,13 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = sequentialSolver(problem, config.relax(), config.varh(), config.ranking(), config.width(),
-                config.frontier(), config.dominance());
+        Solver solver = exactSolver(
+                problem,
+                config.relax(),
+                config.varh(),
+                config.ranking(),
+                new DefaultFastUpperBound<>(),
+                config.dominance());
 
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
