@@ -22,7 +22,7 @@ The first paper that introduced the concept of using decision diagrams for combi
 
 Then the technique was improved in several papers that are also implemented in this project or will eventually be:
 
-* *Coppé, V., Gillard, X., & Schaus, P. (2024). Decision diagram-based branch-and-bound with caching for dominance and suboptimality detection. INFORMS Journal on Computing.*
+* *Coppé, V., Gillard, X., & Sc[target](target)haus, P. (2024). Decision diagram-based branch-and-bound with caching for dominance and suboptimality detection. INFORMS Journal on Computing.*
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Modeling and Exploiting Dominance Rules for Discrete Optimization with Decision Diagrams. CPAIOR.*
 * *Gillard, X., & Schaus, P. (2022). Large Neighborhood Search with Decision Diagrams. In IJCAI.*
 * *Gillard, X., Coppé, V., Schaus, P., & Cire, A. A. (2021). Improving the filtering of branch-and-bound MDD solver. CPAIOR*
