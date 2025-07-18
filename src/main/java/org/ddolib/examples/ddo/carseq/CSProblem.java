@@ -49,7 +49,16 @@ public class CSProblem implements Problem<CSState> {
 
     @Override
     public CSState initialState() {
-        return new CSState(this, classSize, new long[nOptions()]);
+        int[] nWithOption = new int[nOptions()];
+        for (int classIndex = 0; classIndex < nClasses(); classIndex++) {
+            int nCars = classSize[classIndex];
+            for (int optionIndex = 0; optionIndex < nOptions(); optionIndex++) {
+                if (carOptions[classIndex][optionIndex]) {
+                    nWithOption[optionIndex] += nCars;
+                }
+            }
+        }
+        return new CSState(this, classSize, new long[nOptions()], nWithOption, nCars);
     }
 
 
@@ -76,11 +85,17 @@ public class CSProblem implements Problem<CSState> {
         int[] nextCarsToBuild = Arrays.copyOf(state.carsToBuild, nClasses() + 1);
         nextCarsToBuild[decision.val()]--; // Built a car in class [decision.val()]
         long[] nextPreviousBlocks = new long[nOptions()];
+        int[] nextNWithOption = Arrays.copyOf(state.nWithOption, nOptions());
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
+            if ((state.previousBlocks[i] & (1L << blockSize[i] - 1)) != 0) {
+                nextNWithOption[i]--;
+            }
             nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << blockSize[i]) - 1);
-            if (carOptions[decision.val()][i]) nextPreviousBlocks[i] |= 1;
+            if (carOptions[decision.val()][i]) {
+                nextPreviousBlocks[i] |= 1;
+            }
         }
-        return new CSState(this, nextCarsToBuild, nextPreviousBlocks);
+        return new CSState(this, nextCarsToBuild, nextPreviousBlocks, nextNWithOption, state.nToBuild - 1);
     }
 
 

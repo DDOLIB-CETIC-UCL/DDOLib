@@ -9,46 +9,27 @@ import java.util.stream.IntStream;
 public class CSState {
     public final int[] carsToBuild; // Number of cars of each class that must be built
     public final long[] previousBlocks; // For each option and each car in the block, true if the option was used previously for that car
-    public final int lowerBound;
 
-    public CSState(CSProblem problem, int[] carsToBuild, long[] previousBlocks) {
+    public final int[] nWithOption; // For each option, number of cars with that option in previousBlocks or carsToBuild
+    public final int nToBuild; // Total number of cars to build
+    public final double utilizationRate; // sum(withOption / max)
+    private final int hash; // Pre-computed hash code
+
+    public CSState(CSProblem problem, int[] carsToBuild, long[] previousBlocks, int[] nWithOption, int nToBuild) {
         this.carsToBuild = carsToBuild;
         this.previousBlocks = previousBlocks;
-        lowerBound = computeLowerBound(problem);
-    }
+        this.nWithOption = nWithOption;
+        this.nToBuild = nToBuild;
+        hash = Objects.hash(Arrays.hashCode(carsToBuild), Arrays.hashCode(previousBlocks));
 
-
-    public int computeLowerBound(CSProblem problem) {
-        // Count remaining number of cars
-        int nToBuild = carsToBuild[problem.nClasses()];
-        int[] nWithOption = new int[problem.nOptions()];
-        for (int i = 0; i < problem.nClasses(); i++) {
-            int nCars = carsToBuild[i];
-            nToBuild += nCars;
-            for (int j = 0; j < problem.nOptions(); j++) {
-                if (problem.carOptions[i][j]) {
-                    nWithOption[j] += nCars;
-                }
-            }
-        }
-
-        // Bound for each option separately
-        int bound = 0;
+        // Compute utilization rate
+        double rate = 0;
         for (int i = 0; i < problem.nOptions(); i++) {
-            // Count number of cars with and without the option in the previous block and in the future
-            int k = problem.blockMax[i], l = problem.blockSize[i];
-            int n = nToBuild + l;
-            int withOption = nWithOption[i] + Long.bitCount(previousBlocks[i]);
-            int withoutOption = n - withOption;
-
-            // Compute bound
-            int nReduce = n / l * (l - k) +
-                    Math.max((n - l) % l - k, 0); // Number of cars without the option that can reduce the number of violations
-            if (withoutOption < nReduce) {
-                bound += nReduce - withoutOption;
-            }
+            int k = problem.blockMax[i], l = problem.blockSize[i], n = nToBuild + l;
+            int max = n / l * k + Math.min(k, n % l);
+            rate += (double)nWithOption[i] / max;
         }
-        return bound;
+        utilizationRate = rate;
     }
 
 
@@ -64,7 +45,7 @@ public class CSState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(carsToBuild), Arrays.hashCode(previousBlocks));
+        return hash;
     }
 
 

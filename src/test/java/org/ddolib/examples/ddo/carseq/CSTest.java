@@ -51,7 +51,7 @@ public class CSTest {
         }
 
         CSRelax relax = new CSRelax(problem);
-        CSFastUpperBound fub = new CSFastUpperBound();
+        CSFastUpperBound fub = new CSFastUpperBound(problem);
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();

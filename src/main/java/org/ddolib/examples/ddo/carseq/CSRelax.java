@@ -41,7 +41,21 @@ public class CSRelax implements Relaxation<CSState> {
             mergedCarsToBuild[problem.nClasses()] += state.carsToBuild[i] - mergedCarsToBuild[i];
         }
 
-        return new CSState(problem, mergedCarsToBuild, mergedPreviousBlocks);
+        // Compute nWithOption
+        int[] mergedNWithOption = new int[problem.nOptions()];
+        for (int i = 0; i < problem.nClasses(); i++) {
+            int nCars = mergedCarsToBuild[i];
+            for (int j = 0; j < problem.nOptions(); j++) {
+                if (problem.carOptions[i][j]) {
+                    mergedNWithOption[j] += nCars;
+                }
+            }
+        }
+        for (int i = 0; i < problem.nOptions(); i++) {
+            mergedNWithOption[i] += Long.bitCount(mergedPreviousBlocks[i]);
+        }
+
+        return new CSState(problem, mergedCarsToBuild, mergedPreviousBlocks, mergedNWithOption, state.nToBuild);
     }
 
 
