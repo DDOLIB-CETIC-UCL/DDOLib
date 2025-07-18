@@ -25,7 +25,7 @@ public class CSState {
         // Compute utilization rate
         double rate = 0;
         for (int i = 0; i < problem.nOptions(); i++) {
-            int k = problem.blockMax[i], l = problem.blockSize[i], n = nToBuild + l;
+            int k = problem.blockMax[i], l = problem.blockSize[i] - 1, n = nToBuild + l;
             int max = n / l * k + Math.min(k, n % l);
             rate += (double)nWithOption[i] / max;
         }

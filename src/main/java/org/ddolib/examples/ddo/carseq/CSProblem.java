@@ -87,10 +87,10 @@ public class CSProblem implements Problem<CSState> {
         long[] nextPreviousBlocks = new long[nOptions()];
         int[] nextNWithOption = Arrays.copyOf(state.nWithOption, nOptions());
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            if ((state.previousBlocks[i] & (1L << blockSize[i] - 1)) != 0) {
+            if ((state.previousBlocks[i] & (1L << blockSize[i] - 2)) != 0) {
                 nextNWithOption[i]--;
             }
-            nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << blockSize[i]) - 1);
+            nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << (blockSize[i] - 1)) - 1);
             if (carOptions[decision.val()][i]) {
                 nextPreviousBlocks[i] |= 1;
             }
@@ -104,8 +104,7 @@ public class CSProblem implements Problem<CSState> {
         double cost = 0;
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
             if (carOptions[decision.val()][i]) {
-                long previous = state.previousBlocks[i] & ((1L << (blockSize[i] - 1)) - 1);
-                if (Long.bitCount(previous) >= blockMax[i]) cost--; // Too many cars with that option recently
+                if (Long.bitCount(state.previousBlocks[i]) >= blockMax[i]) cost--; // Too many cars with that option recently
             }
         }
         return cost;
