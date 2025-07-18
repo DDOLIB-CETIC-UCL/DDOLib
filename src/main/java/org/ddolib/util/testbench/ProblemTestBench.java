@@ -12,8 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.ddolib.factory.Solvers.exactSolver;
-import static org.ddolib.factory.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -84,7 +83,18 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = exactSolver(problem, config.relax(), config.varh(), config.ranking());
+        Solver solver = switch (config.solverType()) {
+            case EXACT -> exactSolver(
+                    problem,
+                    config.relax(),
+                    config.varh(),
+                    config.ranking());
+            case A_STAR -> astarSolver(
+                    problem,
+                    config.varh(),
+                    new DefaultFastUpperBound<>(),
+                    new DefaultDominanceChecker<>());
+        };
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
@@ -97,13 +107,24 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFub(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = exactSolver(
-                problem,
-                config.relax(),
-                config.varh(),
-                config.ranking(),
-                config.fub(),
-                new DefaultDominanceChecker<>());
+
+        Solver solver = switch (config.solverType()) {
+            case EXACT -> exactSolver(
+                    problem,
+                    config.relax(),
+                    config.varh(),
+                    config.ranking(),
+                    config.fub(),
+                    new DefaultDominanceChecker<>()
+            );
+            case A_STAR -> astarSolver(
+                    problem,
+                    config.varh(),
+                    config.fub(),
+                    new DefaultDominanceChecker<>()
+            );
+        };
+
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -136,7 +157,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
                     config.varh(),
                     config.ranking(),
                     width,
-                    config.frontier());
+                    config.frontier()
+            );
 
             solver.maximize();
             assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
@@ -160,7 +182,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
                     config.ranking(),
                     width,
                     config.frontier(),
-                    config.fub());
+                    config.fub()
+            );
 
             solver.maximize();
             assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
@@ -174,13 +197,22 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = exactSolver(
-                problem,
-                config.relax(),
-                config.varh(),
-                config.ranking(),
-                new DefaultFastUpperBound<>(),
-                config.dominance());
+        Solver solver = switch (config.solverType()) {
+            case EXACT -> exactSolver(
+                    problem,
+                    config.relax(),
+                    config.varh(),
+                    config.ranking(),
+                    new DefaultFastUpperBound<>(),
+                    config.dominance()
+            );
+            case A_STAR -> astarSolver(
+                    problem,
+                    config.varh(),
+                    new DefaultFastUpperBound<>(),
+                    config.dominance()
+            );
+        };
 
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);

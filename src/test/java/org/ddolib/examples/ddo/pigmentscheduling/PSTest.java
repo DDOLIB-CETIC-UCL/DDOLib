@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
+import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -61,7 +62,8 @@ class PSTest {
             Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<PSState> dominanceChecker = new DefaultDominanceChecker<>();
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub,
+                    dominanceChecker, SolverType.EXACT);
         }
     }
 
