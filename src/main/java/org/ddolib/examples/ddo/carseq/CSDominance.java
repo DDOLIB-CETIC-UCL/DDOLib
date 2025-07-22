@@ -2,14 +2,18 @@ package org.ddolib.examples.ddo.carseq;
 
 import org.ddolib.modeling.Dominance;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class CSDominance implements Dominance<CSState, Integer> {
     private final CSProblem problem;
+    private int[][] reachable; // All nodes reachable from each node in the class dominance graph
+    private int[] order; // Node ordering
 
     public CSDominance(CSProblem problem) {
         this.problem = problem;
+        buildGraph();
     }
 
 
@@ -18,10 +22,10 @@ public class CSDominance implements Dominance<CSState, Integer> {
         return 0;
     }
 
-
+    static int debugCount = 0;
     @Override
     public boolean isDominatedOrEqual(CSState state1, CSState state2) {
-        return dominatedCarsToBuild(state1, state2) && dominatedPreviousBlocks(state1, state2);
+        return dominatedPreviousBlocks(state1, state2) && dominatedCarsToBuild(state1, state2);
     }
 
 
@@ -42,6 +46,63 @@ public class CSDominance implements Dominance<CSState, Integer> {
 
     // Check if state1 is easier than state2 for carsToBuild
     private boolean dominatedCarsToBuild(CSState state1, CSState state2) {
-        return Arrays.equals(state1.carsToBuild, state2.carsToBuild);
+        // Compute sources and sinks capacity
+        int[] diff = new int[problem.nClasses() + 1];
+        for (int i = 0; i < problem.nClasses() + 1; i++) {
+            diff[i] = state2.carsToBuild[i] - state1.carsToBuild[i];
+        }
+
+        // Approximate max flow
+        for (int i = 0; i < problem.nClasses() + 1; i++) {
+            int node = order[i];
+            if (diff[node] > 0) { // Found source
+                for (int child : reachable[node]) {
+                    if (diff[child] < 0) {
+                        int flow = Math.min(diff[node], -diff[child]);
+                        diff[node] -= flow;
+                        diff[child] += flow;
+                        if (diff[node] == 0) break;
+                    }
+                }
+                if (diff[node] > 0) return false;
+            }
+        }
+        return true;
+    }
+
+
+    // Build class dominance graph
+    private void buildGraph() {
+        // Find classes dominated by each class
+        ArrayList<Integer>[] dominations = new ArrayList[problem.nClasses() + 1];
+        for (int i = 0; i < problem.nClasses() + 1; i++) {
+            dominations[i] = new ArrayList<>();
+            for (int j = 0; j < problem.nClasses() + 1; j++) {
+                if (i == j) continue;
+
+                // Check if carOptions[i] is a superset of carOptions[j]
+                boolean dominates = true;
+                for (int k = 0; k < problem.nOptions(); k++) {
+                    if (problem.carOptions[j][k] && !problem.carOptions[i][k]) {
+                        dominates = false;
+                        break;
+                    }
+                }
+                if (dominates) dominations[i].add(j);
+            }
+        }
+
+        // Create reachable arrays and sort by number of children
+        reachable = new int[problem.nClasses() + 1][];
+        for (int i = 0; i < problem.nClasses() + 1; i++) {
+            reachable[i] = dominations[i].stream()
+                    .sorted(Comparator.comparingInt(j -> -dominations[j].size()))
+                    .mapToInt(Integer::valueOf).toArray();
+        }
+
+        // Order nodes by number of children
+        order = IntStream.range(0, problem.nClasses() + 1).boxed()
+                .sorted(Comparator.comparingInt(i -> dominations[i].size()))
+                .mapToInt(Integer::valueOf).toArray();
     }
 }
