@@ -64,7 +64,8 @@ public class CSTest {
                 ranking,
                 width,
                 frontier,
-                fub
+                fub,
+                dominance
         );
         solver.maximize();
 

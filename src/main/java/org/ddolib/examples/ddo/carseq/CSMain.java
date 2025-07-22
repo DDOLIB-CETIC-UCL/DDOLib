@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class CSMain {
     public static void main(String[] args) throws IOException {
-        CSProblem problem = CSInstance.read("data/CarSeq/instance_40_5_0.txt");
+        CSProblem problem = CSInstance.read("data/CarSeq/big.txt");
         for (int i = 0; i < problem.nOptions(); i++) { // Prevent sizes larger than 64 (to be able to use a single long instead of a BitSet)
             if (problem.blockSize[i] > 64) throw new IllegalArgumentException("Option block size must be less than 64");
         }
