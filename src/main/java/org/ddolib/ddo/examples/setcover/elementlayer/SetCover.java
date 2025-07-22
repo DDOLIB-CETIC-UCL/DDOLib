@@ -46,6 +46,7 @@ public class SetCover {
                 width,
                 frontier,
                 RelaxationStrat.GHP,
+                RestrictionStrat.Cost,
                 distance,
                 coord,
                 54684);

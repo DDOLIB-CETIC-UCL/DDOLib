@@ -1,9 +1,6 @@
 package org.ddolib.ddo.examples.knapsack;
 
-import org.ddolib.ddo.core.CutSetType;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.RelaxationStrat;
-import org.ddolib.ddo.core.Solver;
+import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -22,15 +19,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.ddolib.ddo.examples.knapsack.KSMain.readInstance;
-import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
-import static org.ddolib.ddo.implem.solver.Solvers.exactSolver;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -167,6 +161,7 @@ public class KSTest {
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
 
         for (RelaxationStrat relaxStrat : RelaxationStrat.values()) {
             final Solver solver = sequentialSolver(
@@ -178,6 +173,7 @@ public class KSTest {
                     frontier,
                     dominance,
                     relaxStrat,
+                    restrictionStrat,
                     distance,
                     coord,
                     6546488);
@@ -185,6 +181,40 @@ public class KSTest {
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRestrictionssCompleteSearch(KSProblem problem) {
+        final KSRelax relax = new KSRelax(problem);
+        final KSRanking ranking = new KSRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(25);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final StateDistance<Integer> distance = new KSDistance();
+        final StateCoordinates<Integer> coord = new KSCoordinates();
+        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        final RelaxationStrat relaxStrat = RelaxationStrat.Cost;
+
+        for (RestrictionStrat restrictionStrat : RestrictionStrat.values()) {
+            final Solver solver = sequentialSolver(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier,
+                    dominance,
+                    relaxStrat,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    6546488);
+
+
+            solver.maximize();
+            assertEquals(solver.bestValue().get(), problem.optimal);
         }
     }
 
@@ -201,7 +231,6 @@ public class KSTest {
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
 
         for (RelaxationStrat relaxStrat : RelaxationStrat.values()) {
-            if (relaxStrat != RelaxationStrat.MinDist) {
                 final Solver solver = relaxationSolver(
                         problem,
                         relax,
@@ -219,6 +248,39 @@ public class KSTest {
                 solver.maximize();
                 assertTrue(solver.bestValue().get() >= problem.optimal);
             }
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRestriction(KSProblem problem) {
+        final KSRelax relax = new KSRelax(problem);
+        final KSRanking ranking = new KSRanking();
+        final FixedWidth<Integer> width = new FixedWidth<>(25);
+        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
+        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final StateDistance<Integer> distance = new KSDistance();
+        final StateCoordinates<Integer> coord = new KSCoordinates();
+        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+
+        for (RestrictionStrat restrictionStrat : RestrictionStrat.values()) {
+            final Solver solver = restrictionSolver(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier,
+                    dominance,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    6546488);
+
+
+            solver.maximize();
+            System.out.println(solver.bestValue().get());
+            System.out.println(problem.optimal);
+            assertTrue(solver.bestValue().get() <= problem.optimal);
         }
     }
 }

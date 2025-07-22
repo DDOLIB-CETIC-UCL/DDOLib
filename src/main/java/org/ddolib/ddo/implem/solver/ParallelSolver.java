@@ -66,10 +66,11 @@ public final class ParallelSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier, final DominanceChecker<T, K> dominance,
             final RelaxationStrat relaxStrat,
+            final RestrictionStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance, relaxStrat, distance, coord, new Random(seed));
+        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, dominance, relaxStrat, restrictionStrat, distance, coord, new Random(seed));
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -219,6 +220,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 critical.frontier.cutSetType(),
                 false,
                 shared.relaxStrat,
+                shared.restrictionStrat,
                 shared.distance,
                 shared.coord,
                 shared.rnd
@@ -245,6 +247,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 critical.frontier.cutSetType(),
                 false,
                 shared.relaxStrat,
+                shared.restrictionStrat,
                 shared.distance,
                 shared.coord,
                 shared.rnd
@@ -434,6 +437,7 @@ public final class ParallelSolver<T, K> implements Solver {
         private final VariableHeuristic<T> varh;
 
         private final RelaxationStrat relaxStrat;
+        private final RestrictionStrat restrictionStrat;
         private final StateDistance<T> distance;
         private final StateCoordinates<T> coord;
         private final Random rnd;
@@ -447,6 +451,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 final WidthHeuristic<T> width,
                 final DominanceChecker<T, K> dominance,
                 final RelaxationStrat relaxStrat,
+                final RestrictionStrat restrictionStrat,
                 final StateDistance<T> distance,
                 final StateCoordinates<T> coord,
                 final Random rnd) {
@@ -458,6 +463,7 @@ public final class ParallelSolver<T, K> implements Solver {
             this.width = width;
             this.dominance = dominance;
             this.relaxStrat = relaxStrat;
+            this.restrictionStrat = restrictionStrat;
             this.distance = distance;
             this.coord = coord;
             this.rnd = rnd;

@@ -20,8 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.*;
 import java.util.stream.Stream;
 import static java.lang.Math.max;
-import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.*;
 
 public class SetCoverTest {
 
@@ -120,6 +119,50 @@ public class SetCoverTest {
     }
 
     @Test
+    public void testSmallRestriction() {
+        int nElem = 6;
+        int nSets = 6;
+        List<Set<Integer>> constraints = new ArrayList<>();
+        constraints.add(Set.of(0,2,4));
+        constraints.add(Set.of(0,2,3,4));
+        constraints.add(Set.of(0));
+        constraints.add(Set.of(1,3,4));
+        constraints.add(Set.of(1,4));
+        constraints.add(Set.of(1,5));
+
+        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
+        final SetCoverRelax relax = new SetCoverRelax();
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
+        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+
+        for (RestrictionStrat restrictionStrat: RestrictionStrat.values()) {
+            System.out.println(restrictionStrat);
+            final Solver solver = restrictionSolver(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier,
+                    dominance,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    54658646);
+
+            solver.maximize();
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertTrue(solver.bestValue().get() <= -2);
+        }
+    }
+
+
+    @Test
     public void testSmallRelaxation() {
         int nElem = 6;
         int nSets = 6;
@@ -157,7 +200,7 @@ public class SetCoverTest {
 
             solver.maximize();
             Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertTrue(solver.bestValue().get() <= 1);
+            Assertions.assertTrue(-solver.bestValue().get() <= 2);
         }
     }
 
@@ -181,6 +224,8 @@ public class SetCoverTest {
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+
         for (RelaxationStrat relaxType: RelaxationStrat.values()) {
             final Solver solver = new SequentialSolver<>(
                     problem,
@@ -191,6 +236,57 @@ public class SetCoverTest {
                     frontier,
                     dominance,
                     relaxType,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    54658646);
+
+            solver.maximize();
+
+            // Retrieve solution
+            Set<Integer> solution = solver.bestSolution().map(decisions -> {
+                Set<Integer> values = new HashSet<>();
+                for (Decision d : decisions) {
+                    if (d.val() != -1) {
+                        values.add(d.val());
+                    }
+                }
+                return values;
+            }).get();
+
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertTrue(testValidity(problem, solution));
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
+    @Disabled
+    public void testClusterRestriction(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+
+        final SetCoverRanking ranking = new SetCoverRanking();
+        final SetCoverRelax relax = new SetCoverRelax();
+        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
+        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
+        final StateDistance<SetCoverState> distance = new SetCoverDistance();
+        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final RelaxationStrat relaxType = RelaxationStrat.Cost;
+
+        for (RestrictionStrat restrictionStrat: RestrictionStrat.values()) {
+            final Solver solver = new SequentialSolver<>(
+                    problem,
+                    relax,
+                    varh,
+                    ranking,
+                    width,
+                    frontier,
+                    dominance,
+                    relaxType,
+                    restrictionStrat,
                     distance,
                     coord,
                     54658646);
@@ -233,6 +329,7 @@ public class SetCoverTest {
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
 
         for (RelaxationStrat relaxType: RelaxationStrat.values()) {
             final Solver solver = sequentialSolver(
@@ -244,6 +341,7 @@ public class SetCoverTest {
                     frontier,
                     dominance,
                     relaxType,
+                    restrictionStrat,
                     distance,
                     coord,
                     54658646);

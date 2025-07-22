@@ -55,6 +55,7 @@ public class KSMeasureRelaxation {
             final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             final StateDistance<Integer> distance = new KSDistance();
             final StateCoordinates<Integer> coordinates = new KSCoordinates();
+            final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
             final int[] seeds = {546645}; //, 684565, 68464};
 
             StringBuilder csvString;

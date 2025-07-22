@@ -115,6 +115,7 @@ public final class ExactSolver<T, K> implements Solver {
                 null,
                 null,
                 null,
+                null,
                 null
         );
         mdd.compile(compilation);

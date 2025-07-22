@@ -41,6 +41,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      CutSetType cutSetType,
                                      boolean exportAsDot,
                                      RelaxationStrat relaxStrat,
+                                     RestrictionStrat restricStrat,
                                      StateDistance<T> distance,
                                      StateCoordinates<T> coord,
                                      Random rnd) {

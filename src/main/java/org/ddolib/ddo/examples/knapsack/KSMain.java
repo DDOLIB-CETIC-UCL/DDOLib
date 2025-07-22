@@ -41,6 +41,7 @@ public class KSMain {
                 problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final RelaxationStrat relaxStrat = RelaxationStrat.Cost;
+        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coordinates = new KSCoordinates();
         final int seed = 546645;
@@ -54,6 +55,7 @@ public class KSMain {
                 frontier,
                 dominance,
                 relaxStrat,
+                restrictionStrat,
                 distance,
                 coordinates,
                 seed

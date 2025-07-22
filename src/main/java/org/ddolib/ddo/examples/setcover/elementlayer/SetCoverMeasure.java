@@ -41,7 +41,7 @@ public class SetCoverMeasure {
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coordinates = new DefaultStateCoordinates<>();
-
+        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
         FileWriter writer = new FileWriter(output);
 
         StringBuilder csvString;
@@ -60,6 +60,7 @@ public class SetCoverMeasure {
                             width,
                             frontier,
                             relaxStrat,
+                            restrictionStrat,
                             distance,
                             coordinates,
                             seed);

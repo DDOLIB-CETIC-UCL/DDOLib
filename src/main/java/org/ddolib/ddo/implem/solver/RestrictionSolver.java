@@ -5,12 +5,15 @@ import org.ddolib.ddo.heuristics.*;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
 /**
 Solver that solve only a relaxed MDD from the root node
  */
-public final class RelaxationSolver<T, K> implements Solver {
+public final class RestrictionSolver<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -29,7 +32,7 @@ public final class RelaxationSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-    private final RelaxationStrat relaxStrat;
+    private final RestrictionStrat restrictionStrat;
 
     /**
      * Set of nodes that must still be explored before
@@ -78,17 +81,8 @@ public final class RelaxationSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
-    /**
-     * Only the first restricted mdd can be exported to a .dot file
-     */
-    private boolean firstRestricted = true;
-    /**
-     * Only the first relaxed mdd can be exported to a .dot file
-     */
-    private boolean firstRelaxed = true;
-
     /** Creates a fully qualified instance */
-    public RelaxationSolver(
+    public RestrictionSolver(
             final Problem<T> problem,
             final Relaxation<T> relax,
             final VariableHeuristic<T> varh,
@@ -96,12 +90,12 @@ public final class RelaxationSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final DominanceChecker<T, K> dominance,
-            final RelaxationStrat relaxStrat,
+            final RestrictionStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed)
     {
-        this.relaxStrat = relaxStrat;
+        this.restrictionStrat = restrictionStrat;
         this.problem = problem;
         this.relax   = relax;
         this.varh    = varh;
@@ -129,7 +123,7 @@ public final class RelaxationSolver<T, K> implements Solver {
         int maxWidth = width.maximumWidth(sub.getState());
 
         CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Relaxed,
+                CompilationType.Restricted,
                 problem,
                 relax,
                 varh,
@@ -140,8 +134,8 @@ public final class RelaxationSolver<T, K> implements Solver {
                 bestLB,
                 frontier.cutSetType(),
                 exportAsDot,
-                relaxStrat,
                 null,
+                restrictionStrat,
                 distance,
                 coord,
                 rnd

@@ -65,6 +65,7 @@ public final class SequentialSolver<T, K> implements Solver {
      */
     private final VariableHeuristic<T> varh;
     private final RelaxationStrat relaxStrat;
+    private final RestrictionStrat restrictionStrat;
 
     /**
      * Set of nodes that must still be explored before
@@ -151,10 +152,12 @@ public final class SequentialSolver<T, K> implements Solver {
             final Frontier<T> frontier,
             final DominanceChecker<T, K> dominance,
             final RelaxationStrat relaxStrat,
+            final RestrictionStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed) {
         this.relaxStrat = relaxStrat;
+        this.restrictionStrat = restrictionStrat;
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -232,6 +235,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     frontier.cutSetType(),
                     exportAsDot && firstRestricted,
                     relaxStrat,
+                    restrictionStrat,
                     distance,
                     coord,
                     rnd
@@ -265,6 +269,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     frontier.cutSetType(),
                     exportAsDot && firstRelaxed,
                     relaxStrat,
+                    restrictionStrat,
                     distance,
                     coord,
                     rnd

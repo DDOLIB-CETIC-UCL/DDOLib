@@ -16,26 +16,27 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static org.ddolib.ddo.implem.solver.Solvers.relaxationSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 
 public class MKSMain {
 
     public static void main(String[] args) throws IOException {
-        final String instance = "data/MKS/MKP_1.txt";
+        final String instance = "data/MKS/MKP_10.txt";
         final MKSProblem problem = readInstance(instance);
         final MKSRelax relax = new MKSRelax();
         final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(250);
+        final FixedWidth<MKSState> width = new FixedWidth<>(1000);
         final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<MKSState>();
         final SimpleDominanceChecker<MKSState, Integer> dominance = new SimpleDominanceChecker<>(new MKSDominance(),
                 problem.nbVars());
         final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final RelaxationStrat relaxStrat = RelaxationStrat.Cost;
+        final RelaxationStrat relaxStrat = RelaxationStrat.GHP;
         final StateDistance<MKSState> distance = new MKSDistance();
         final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
-        final int seed = 546645;
+        final int seed = 657685;
 
-        final Solver solver = sequentialSolver(
+        final Solver solver = relaxationSolver(
                 problem,
                 relax,
                 varh,
