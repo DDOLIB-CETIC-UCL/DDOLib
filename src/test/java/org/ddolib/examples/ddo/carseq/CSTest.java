@@ -41,8 +41,6 @@ public class CSTest {
             String path = file.getPath();
             if (path.startsWith("data/CarSeq/instance")) testSolve(path);
         }
-        System.out.println(CSDominance.count);
-        System.out.println(CSState.count);
     }
 
     public static void testSolve(String inputFile) throws IOException {
@@ -66,8 +64,7 @@ public class CSTest {
                 ranking,
                 width,
                 frontier,
-                fub,
-                dominance
+                fub
         );
         solver.maximize();
 

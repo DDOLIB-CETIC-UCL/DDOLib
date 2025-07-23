@@ -11,8 +11,6 @@ public class CSDominance implements Dominance<CSState, Integer> {
     private int[][] reachable; // All nodes reachable from each node in the class dominance graph
     private int[] order; // Node ordering
 
-    static int count = 0;
-
     public CSDominance(CSProblem problem) {
         this.problem = problem;
         buildGraph();
@@ -27,8 +25,7 @@ public class CSDominance implements Dominance<CSState, Integer> {
 
     @Override
     public boolean isDominatedOrEqual(CSState state1, CSState state2) {
-        if (dominatedPreviousBlocks(state1, state2) && dominatedCarsToBuild(state1, state2)) count++;
-        return false;
+        return dominatedPreviousBlocks(state1, state2) && dominatedCarsToBuild(state1, state2);
     }
 
 
