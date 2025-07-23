@@ -44,8 +44,8 @@ public class Solvers {
                                                                  final WidthHeuristic<T> width,
                                                                  final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance,
-                                                                 final RelaxationStrat relaxStrat,
-                                                                 final RestrictionStrat restrictionStrat,
+                                                                 final ClusterStrat relaxStrat,
+                                                                 final ClusterStrat restrictionStrat,
                                                                  final StateDistance<T> distance,
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {
@@ -81,8 +81,8 @@ public class Solvers {
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier,
                                                                     final DominanceChecker<T, K> dominance) {
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -118,8 +118,8 @@ public class Solvers {
                                                                     final StateRanking<T> ranking,
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier,
-                                                                    final RelaxationStrat relaxStrat,
-                                                                    final RestrictionStrat restrictionStrat,
+                                                                    final ClusterStrat relaxStrat,
+                                                                    final ClusterStrat restrictionStrat,
                                                                     final StateDistance<T> distance,
                                                                     final StateCoordinates<T> coord,
                                                                     final int seed) {
@@ -155,8 +155,8 @@ public class Solvers {
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -197,8 +197,8 @@ public class Solvers {
                                                              final WidthHeuristic<T> width,
                                                              final Frontier<T> frontier,
                                                              final DominanceChecker<T, K> dominance,
-                                                             final RelaxationStrat relaxStrat,
-                                                             final RestrictionStrat restrictionStrat,
+                                                             final ClusterStrat relaxStrat,
+                                                             final ClusterStrat restrictionStrat,
                                                              final StateDistance<T> distance,
                                                              final StateCoordinates<T> coord,
                                                              final int seed) {
@@ -235,8 +235,8 @@ public class Solvers {
                                                                final WidthHeuristic<T> width,
                                                                final Frontier<T> frontier,
                                                                final DominanceChecker<T, K> dominance) {
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -273,8 +273,8 @@ public class Solvers {
                                                                   final StateRanking<T> ranking,
                                                                   final WidthHeuristic<T> width,
                                                                   final Frontier<T> frontier,
-                                                                  final RelaxationStrat relaxStrat,
-                                                                  final RestrictionStrat restrictionStrat,
+                                                                  final ClusterStrat relaxStrat,
+                                                                  final ClusterStrat restrictionStrat,
                                                                   final StateDistance<T> distance,
                                                                   final StateCoordinates<T> coord,
                                                                   final int seed) {
@@ -312,8 +312,8 @@ public class Solvers {
                                                                 final WidthHeuristic<T> width,
                                                                 final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -352,7 +352,7 @@ public class Solvers {
                                                                  final WidthHeuristic<T> width,
                                                                  final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance,
-                                                                 final RelaxationStrat relaxStrat,
+                                                                 final ClusterStrat relaxStrat,
                                                                  final StateDistance<T> distance,
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {
@@ -388,8 +388,8 @@ public class Solvers {
                                                              final WidthHeuristic<T> width,
                                                              final Frontier<T> frontier,
                                                              final DominanceChecker<T, K> dominance) {
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -425,7 +425,7 @@ public class Solvers {
                                                                     final StateRanking<T> ranking,
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier,
-                                                                    final RelaxationStrat relaxStrat,
+                                                                    final ClusterStrat relaxStrat,
                                                                     final StateDistance<T> distance,
                                                                     final StateCoordinates<T> coord,
                                                                     final int seed) {
@@ -461,8 +461,8 @@ public class Solvers {
                                                                     final WidthHeuristic<T> width,
                                                                     final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        ClusterStrat relaxStrat = ClusterStrat.Cost;
+        ClusterStrat restrictionStrat = ClusterStrat.Cost;
         DefaultStateDistance<T> distance = new DefaultStateDistance<>();
         DefaultStateCoordinates<T> coord = new DefaultStateCoordinates<>();
         // TODO change where random is init or maybe remove it
@@ -539,7 +539,7 @@ public class Solvers {
                                                                  final WidthHeuristic<T> width,
                                                                  final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance,
-                                                                 final RestrictionStrat restrictionStrat,
+                                                                 final ClusterStrat restrictionStrat,
                                                                  final StateDistance<T> distance,
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {

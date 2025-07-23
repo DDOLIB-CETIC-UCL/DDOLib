@@ -7,7 +7,6 @@ import org.ddolib.ddo.heuristics.WidthHeuristic;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.dominance.*;
 import org.ddolib.ddo.implem.mdd.LinkedDecisionDiagram;
 
 import java.io.BufferedWriter;
@@ -64,8 +63,8 @@ public final class SequentialSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-    private final RelaxationStrat relaxStrat;
-    private final RestrictionStrat restrictionStrat;
+    private final ClusterStrat relaxStrat;
+    private final ClusterStrat restrictionStrat;
 
     /**
      * Set of nodes that must still be explored before
@@ -151,8 +150,8 @@ public final class SequentialSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final DominanceChecker<T, K> dominance,
-            final RelaxationStrat relaxStrat,
-            final RestrictionStrat restrictionStrat,
+            final ClusterStrat relaxStrat,
+            final ClusterStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed) {

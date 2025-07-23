@@ -1,7 +1,6 @@
 package org.ddolib.ddo.examples.mks;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.knapsack.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
@@ -31,7 +30,7 @@ public class MKSMain {
         final SimpleDominanceChecker<MKSState, Integer> dominance = new SimpleDominanceChecker<>(new MKSDominance(),
                 problem.nbVars());
         final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final RelaxationStrat relaxStrat = RelaxationStrat.GHP;
+        final ClusterStrat relaxStrat = ClusterStrat.GHP;
         final StateDistance<MKSState> distance = new MKSDistance();
         final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
         final int seed = 657685;

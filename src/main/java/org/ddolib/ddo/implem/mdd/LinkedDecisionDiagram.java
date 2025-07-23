@@ -341,11 +341,20 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             case Cost:
                                 restrict(maxWidth, ranking);
                                 break;
+                            case GHPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, true);
+                                break;
+                            case GHPMDP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, false);
+                                break;
+                            case GHPMDPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
+                                break;
                             case Kmeans:
                                 clusters = clusterKMeans(maxWidth, input.coord(), input.rnd());
                                 break;
                             case GHP:
-                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd());
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
                                 break;
                             default:
                                 System.err.println("Unsupported restriction type: " + input.restricStrat());
@@ -366,7 +375,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 clusters = relax(maxWidth, ranking, relax);
                                 break;
                             case GHP:
-                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd());
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
+                                break;
+                            case GHPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, true);
+                                break;
+                            case GHPMDP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, false);
+                                break;
+                            case GHPMDPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
                                 break;
                             case Kmeans:
                                 clusters = clusterKMeans(maxWidth, input.coord(), input.rnd());
@@ -545,7 +563,17 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
 
-    private List<NodeSubProblem<T>>[] clusterGHP(final int maxWidth, final StateDistance<T> distance, final Random rnd) {
+    /**
+     * Constitutes clusters of nodes on the current layer using generalised hyperplan partitioning
+     * and empty the current layer.
+     * One cluster will be defined for each desired node in the layer.
+     * @param maxWidth the maximal width of the layer
+     * @param distance a function returning the distance
+     * @param rnd
+     * @return an array of maxWidth clusters.
+     **/
+    private List<NodeSubProblem<T>>[] clusterGHP(final int maxWidth, final StateDistance<T> distance, final Random rnd,
+                                                 final boolean mostDistantPivot, final boolean breakWithMaxDistance) {
         class ClusterNode {
             final double avgDistance;
             final List<NodeSubProblem<T>> cluster;
@@ -567,10 +595,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
-            NodeSubProblem<T> pivotB = selectFarthest(pivotA, current, distance); ;
-            for (int i = 0; i < 5; i++) {
-                pivotB = selectFarthest(pivotB, current, distance);
-                pivotA = selectFarthest(pivotA, current, distance);
+            NodeSubProblem<T> pivotB;
+            if (!mostDistantPivot) {
+                pivotB = current.get(1);
+            } else {
+                pivotB = selectFarthest(pivotA, current, distance);
+                for (int i = 0; i < 5; i++) {
+                    pivotB = selectFarthest(pivotB, current, distance);
+                    pivotA = selectFarthest(pivotA, current, distance);
+                }
             }
 
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
@@ -600,8 +633,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
-            pqClusters.add(new ClusterNode(avgDistA, newClusterA));
-            pqClusters.add(new ClusterNode(avgDistB, newClusterB));
+            if (breakWithMaxDistance) {
+                pqClusters.add(new ClusterNode(maxDistA, newClusterA));
+                pqClusters.add(new ClusterNode(maxDistB, newClusterB));
+            } else {
+                pqClusters.add(new ClusterNode(avgDistA, newClusterA));
+                pqClusters.add(new ClusterNode(avgDistB, newClusterB));
+            }
         }
 
         Set<T> states = new HashSet<>();
@@ -619,6 +657,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return clusters;
     }
 
+    /**
+     * Constitutes clusters of nodes on the current layer using kmeans
+     * and empty the current layer.
+     * One cluster will be defined for each desired node in the layer.
+     * @param maxWidth the maximal width of the layer
+     * @param coordinates a function returning the coordinates of each state
+     * @param rnd
+     * @return an array of maxWidth clusters.
+     */
     private List<NodeSubProblem<T>>[] clusterKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Random rnd) {
         int maxIter = 50;
         int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;

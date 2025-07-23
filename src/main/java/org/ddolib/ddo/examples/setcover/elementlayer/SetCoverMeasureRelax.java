@@ -24,10 +24,10 @@ public class SetCoverMeasureRelax {
         final String instance = args[0];
         final String output = args[1];
 
-        Map<RelaxationStrat, String> stratNameMap = new HashMap<>();
-        stratNameMap.put(RelaxationStrat.Cost, "Cost");
-        stratNameMap.put(RelaxationStrat.GHP, "GHP");
-        // stratNameMap.put(RelaxationStrat.Kmeans, "Kmeans");
+        Map<ClusterStrat, String> stratNameMap = new HashMap<>();
+        stratNameMap.put(ClusterStrat.Cost, "Cost");
+        stratNameMap.put(ClusterStrat.GHP, "GHP");
+        // stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
 
         final SetCoverProblem problem = readInstance(instance);
         final SetCoverRelax relax = new SetCoverRelax();
@@ -41,7 +41,7 @@ public class SetCoverMeasureRelax {
         FileWriter writer = new FileWriter(output);
 
         StringBuilder csvString;
-        for (RelaxationStrat relaxStrat : stratNameMap.keySet()) {
+        for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
             for (int maxWidth = 2; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.5))) {
                 for (int seed: List.of(1323438797, 132343, 54646)) {
                     varh = new SetCoverHeuristics.MinCentrality(problem);

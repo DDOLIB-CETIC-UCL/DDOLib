@@ -32,7 +32,7 @@ public final class RestrictionSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-    private final RestrictionStrat restrictionStrat;
+    private final ClusterStrat restrictionStrat;
 
     /**
      * Set of nodes that must still be explored before
@@ -90,7 +90,7 @@ public final class RestrictionSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final DominanceChecker<T, K> dominance,
-            final RestrictionStrat restrictionStrat,
+            final ClusterStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed)

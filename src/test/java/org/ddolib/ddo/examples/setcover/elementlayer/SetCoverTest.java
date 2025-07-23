@@ -140,7 +140,7 @@ public class SetCoverTest {
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
 
-        for (RestrictionStrat restrictionStrat: RestrictionStrat.values()) {
+        for (ClusterStrat restrictionStrat: ClusterStrat.values()) {
             System.out.println(restrictionStrat);
             final Solver solver = restrictionSolver(
                     problem,
@@ -184,7 +184,7 @@ public class SetCoverTest {
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
 
-        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
+        for (ClusterStrat relaxType: ClusterStrat.values()) {
             final Solver solver = relaxationSolver(
                     problem,
                     relax,
@@ -224,9 +224,9 @@ public class SetCoverTest {
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
 
-        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
+        for (ClusterStrat relaxType: ClusterStrat.values()) {
             final Solver solver = new SequentialSolver<>(
                     problem,
                     relax,
@@ -274,9 +274,9 @@ public class SetCoverTest {
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final RelaxationStrat relaxType = RelaxationStrat.Cost;
+        final ClusterStrat relaxType = ClusterStrat.Cost;
 
-        for (RestrictionStrat restrictionStrat: RestrictionStrat.values()) {
+        for (ClusterStrat restrictionStrat: ClusterStrat.values()) {
             final Solver solver = new SequentialSolver<>(
                     problem,
                     relax,
@@ -329,9 +329,9 @@ public class SetCoverTest {
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
         final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
 
-        for (RelaxationStrat relaxType: RelaxationStrat.values()) {
+        for (ClusterStrat relaxType: ClusterStrat.values()) {
             final Solver solver = sequentialSolver(
                     problem,
                     relax,

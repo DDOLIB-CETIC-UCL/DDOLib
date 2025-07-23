@@ -40,8 +40,8 @@ public class KSMain {
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final RelaxationStrat relaxStrat = RelaxationStrat.Cost;
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat relaxStrat = ClusterStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coordinates = new KSCoordinates();
         final int seed = 546645;

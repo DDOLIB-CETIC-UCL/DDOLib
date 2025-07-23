@@ -3,14 +3,9 @@ package org.ddolib.ddo.examples.mks;
 
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.knapsack.KSProblem;
-import org.ddolib.ddo.examples.knapsack.KSRanking;
-import org.ddolib.ddo.examples.knapsack.KSRelax;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.Dominance;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
@@ -24,7 +19,6 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.ddo.examples.mks.MKSMain.readInstance;
 import static org.ddolib.ddo.implem.solver.Solvers.exactSolver;
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -107,7 +101,7 @@ public class MKSTest {
                 ranking,
                 width,
                 frontier,
-                RelaxationStrat.GHP,
+                ClusterStrat.GHP,
                 distance,
                 coordinates,
                 64865);
@@ -153,9 +147,9 @@ public class MKSTest {
                 problem.nbVars());
         final StateDistance<MKSState> distance = new MKSDistance();
         final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
 
-        for (RelaxationStrat relaxStrat : RelaxationStrat.values()) {
+        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
             final Solver solver = sequentialSolver(
                     problem,
                     relax,

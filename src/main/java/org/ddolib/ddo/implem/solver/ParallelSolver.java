@@ -65,8 +65,8 @@ public final class ParallelSolver<T, K> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier, final DominanceChecker<T, K> dominance,
-            final RelaxationStrat relaxStrat,
-            final RestrictionStrat restrictionStrat,
+            final ClusterStrat relaxStrat,
+            final ClusterStrat restrictionStrat,
             final StateDistance<T> distance,
             final StateCoordinates<T> coord,
             final int seed) {
@@ -436,8 +436,8 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
-        private final RelaxationStrat relaxStrat;
-        private final RestrictionStrat restrictionStrat;
+        private final ClusterStrat relaxStrat;
+        private final ClusterStrat restrictionStrat;
         private final StateDistance<T> distance;
         private final StateCoordinates<T> coord;
         private final Random rnd;
@@ -450,8 +450,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
                 final DominanceChecker<T, K> dominance,
-                final RelaxationStrat relaxStrat,
-                final RestrictionStrat restrictionStrat,
+                final ClusterStrat relaxStrat,
+                final ClusterStrat restrictionStrat,
                 final StateDistance<T> distance,
                 final StateCoordinates<T> coord,
                 final Random rnd) {

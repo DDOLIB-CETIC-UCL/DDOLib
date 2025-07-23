@@ -9,17 +9,11 @@ import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.ddolib.ddo.implem.solver.RelaxationSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -161,9 +155,9 @@ public class KSTest {
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
 
-        for (RelaxationStrat relaxStrat : RelaxationStrat.values()) {
+        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
             final Solver solver = sequentialSolver(
                     problem,
                     relax,
@@ -195,9 +189,9 @@ public class KSTest {
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final RelaxationStrat relaxStrat = RelaxationStrat.Cost;
+        final ClusterStrat relaxStrat = ClusterStrat.Cost;
 
-        for (RestrictionStrat restrictionStrat : RestrictionStrat.values()) {
+        for (ClusterStrat restrictionStrat : ClusterStrat.values()) {
             final Solver solver = sequentialSolver(
                     problem,
                     relax,
@@ -230,7 +224,7 @@ public class KSTest {
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
 
-        for (RelaxationStrat relaxStrat : RelaxationStrat.values()) {
+        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
                 final Solver solver = relaxationSolver(
                         problem,
                         relax,
@@ -262,7 +256,7 @@ public class KSTest {
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
 
-        for (RestrictionStrat restrictionStrat : RestrictionStrat.values()) {
+        for (ClusterStrat restrictionStrat : ClusterStrat.values()) {
             final Solver solver = restrictionSolver(
                     problem,
                     relax,

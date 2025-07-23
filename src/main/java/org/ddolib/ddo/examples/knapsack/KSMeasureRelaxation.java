@@ -38,10 +38,10 @@ public class KSMeasureRelaxation {
         // final String instance = args[0];
         // final String output = args[1];
 
-        Map<RelaxationStrat, String> stratNameMap = new HashMap<>();
-        stratNameMap.put(RelaxationStrat.Cost, "Cost");
-        stratNameMap.put(RelaxationStrat.GHP, "GHP");
-        stratNameMap.put(RelaxationStrat.Kmeans, "Kmeans");
+        Map<ClusterStrat, String> stratNameMap = new HashMap<>();
+        stratNameMap.put(ClusterStrat.Cost, "Cost");
+        stratNameMap.put(ClusterStrat.GHP, "GHP");
+        stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
 
 
         for (File file: instances) {
@@ -55,7 +55,7 @@ public class KSMeasureRelaxation {
             final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             final StateDistance<Integer> distance = new KSDistance();
             final StateCoordinates<Integer> coordinates = new KSCoordinates();
-            final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+            final ClusterStrat restrictionStrat = ClusterStrat.Cost;
             final int[] seeds = {546645}; //, 684565, 68464};
 
             StringBuilder csvString;
@@ -66,7 +66,7 @@ public class KSMeasureRelaxation {
             }
             double fub = relax.fastUpperBound(problem.initialState(), varSet);
 
-            for (RelaxationStrat relaxStrat : stratNameMap.keySet()) {
+            for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
                 for (int maxWidth = 2; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.1))) {
                     for (int seed : seeds) {
                         dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());

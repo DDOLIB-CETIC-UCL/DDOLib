@@ -1,15 +1,11 @@
 package org.ddolib.ddo.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.examples.setcover.elementlayer.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
 
 import java.io.FileWriter;
@@ -28,10 +24,10 @@ public class SetCoverMeasure {
         final String instance = args[0];
         final String output = args[1];
 
-        Map<RelaxationStrat, String> stratNameMap = new HashMap<>();
-        stratNameMap.put(RelaxationStrat.Cost, "Cost");
-        stratNameMap.put(RelaxationStrat.GHP, "GHP");
-        // stratNameMap.put(RelaxationStrat.Kmeans, "Kmeans");
+        Map<ClusterStrat, String> stratNameMap = new HashMap<>();
+        stratNameMap.put(ClusterStrat.Cost, "Cost");
+        stratNameMap.put(ClusterStrat.GHP, "GHP");
+        // stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
 
         final SetCoverProblem problem = readInstance(instance);
         final SetCoverRelax relax = new SetCoverRelax();
@@ -41,11 +37,11 @@ public class SetCoverMeasure {
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coordinates = new DefaultStateCoordinates<>();
-        final RestrictionStrat restrictionStrat = RestrictionStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
         FileWriter writer = new FileWriter(output);
 
         StringBuilder csvString;
-        for (RelaxationStrat relaxStrat : stratNameMap.keySet()) {
+        for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
             for (int maxWidth = 2; maxWidth < 500; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.5))) {
                 for (int seed: List.of(1323438797, 132343, 54646)) {
                     varh = new SetCoverHeuristics.MinCentrality(problem);

@@ -4,13 +4,10 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DefaultDominance;
 import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
 import org.ddolib.ddo.implem.frontier.SimpleFrontier;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.RelaxationSolver;
 import org.ddolib.ddo.examples.setcover.setlayer.SetCoverHeuristics.FocusClosingElements;
 
 import java.io.BufferedReader;
@@ -45,7 +42,7 @@ public class SetCover {
                 width,
                 frontier,
                 dominance,
-                RelaxationStrat.GHP,
+                ClusterStrat.GHP,
                 distance,
                 coord,
                 54658646);
