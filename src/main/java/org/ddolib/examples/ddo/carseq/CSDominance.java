@@ -11,6 +11,8 @@ public class CSDominance implements Dominance<CSState, Integer> {
     private int[][] reachable; // All nodes reachable from each node in the class dominance graph
     private int[] order; // Node ordering
 
+    static int count = 0;
+
     public CSDominance(CSProblem problem) {
         this.problem = problem;
         buildGraph();
@@ -22,10 +24,11 @@ public class CSDominance implements Dominance<CSState, Integer> {
         return 0;
     }
 
-    static int debugCount = 0;
+
     @Override
     public boolean isDominatedOrEqual(CSState state1, CSState state2) {
-        return dominatedPreviousBlocks(state1, state2) && dominatedCarsToBuild(state1, state2);
+        if (dominatedPreviousBlocks(state1, state2) && dominatedCarsToBuild(state1, state2)) count++;
+        return false;
     }
 
 
@@ -74,9 +77,11 @@ public class CSDominance implements Dominance<CSState, Integer> {
     // Build class dominance graph
     private void buildGraph() {
         // Find classes dominated by each class
-        ArrayList<Integer>[] dominations = new ArrayList[problem.nClasses() + 1];
+        HashSet<Integer>[] children = new HashSet[problem.nClasses() + 1];
+        ArrayList<Integer>[] allReachable = new ArrayList[problem.nClasses() + 1];
         for (int i = 0; i < problem.nClasses() + 1; i++) {
-            dominations[i] = new ArrayList<>();
+            children[i] = new HashSet<>();
+            allReachable[i] = new ArrayList<>();
             for (int j = 0; j < problem.nClasses() + 1; j++) {
                 if (i == j) continue;
 
@@ -88,21 +93,61 @@ public class CSDominance implements Dominance<CSState, Integer> {
                         break;
                     }
                 }
-                if (dominates) dominations[i].add(j);
+                if (dominates && Arrays.equals(problem.carOptions[i], problem.carOptions[j])) { // Tie breaker
+                    dominates = i < j;
+                }
+                if (dominates) {
+                    children[i].add(j);
+                    allReachable[i].add(j);
+                }
             }
         }
 
-        // Create reachable arrays and sort by number of children
-        reachable = new int[problem.nClasses() + 1][];
+        // Order nodes by number of reachable nodes
+        order = IntStream.range(0, problem.nClasses() + 1).boxed()
+                .sorted(Comparator.comparingInt(i -> allReachable[i].size()))
+                .mapToInt(Integer::valueOf).toArray();
+
+        // Remove shortcuts to build graph
         for (int i = 0; i < problem.nClasses() + 1; i++) {
-            reachable[i] = dominations[i].stream()
-                    .sorted(Comparator.comparingInt(j -> -dominations[j].size()))
-                    .mapToInt(Integer::valueOf).toArray();
+            // DFS from children to find shortcuts
+            boolean[] visited = new boolean[problem.nClasses() + 1];
+            visited[i] = true;
+            Stack<Integer> stack = new Stack<>();
+            for (int child : children[i]) {
+                visited[child] = true;
+                stack.push(child);
+            }
+            while (!stack.empty()) {
+                int node = stack.pop();
+                for (int child : children[node]) {
+                    children[i].remove(child); // Remove shortcut from i to child if there is one
+                    if (!visited[child]) {
+                        visited[child] = true;
+                        stack.push(child);
+                    }
+                }
+            }
         }
 
-        // Order nodes by number of children
-        order = IntStream.range(0, problem.nClasses() + 1).boxed()
-                .sorted(Comparator.comparingInt(i -> dominations[i].size()))
-                .mapToInt(Integer::valueOf).toArray();
+        // Order reachable nodes by their layer in the graph
+        reachable = new int[problem.nClasses() + 1][];
+        for (int i = 0; i < problem.nClasses() + 1; i++) {
+            // BFS to order reachable nodes
+            reachable[i] = new int[allReachable[i].size()];
+            int j = 0;
+            boolean[] visited = new boolean[problem.nClasses() + 1];
+            ArrayDeque<Integer> queue = new ArrayDeque<>();
+            queue.add(i);
+            do {
+                int node = queue.pop();
+                for (int child : children[node]) {
+                    if (visited[child]) continue;
+                    visited[child] = true;
+                    reachable[i][j++] = child;
+                    queue.add(child);
+                }
+            } while (!queue.isEmpty());
+        }
     }
 }

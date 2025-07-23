@@ -14,6 +14,7 @@ public class CSState {
     public final int nToBuild; // Total number of cars to build
     public final double utilizationRate; // sum(withOption / max)
     private final int hash; // Pre-computed hash code
+    public static int count = 0;
 
     public CSState(CSProblem problem, int[] carsToBuild, long[] previousBlocks, int[] nWithOption, int nToBuild) {
         this.carsToBuild = carsToBuild;
@@ -30,6 +31,8 @@ public class CSState {
             rate += (double)nWithOption[i] / max;
         }
         utilizationRate = rate;
+
+        count++;
     }
 
 
