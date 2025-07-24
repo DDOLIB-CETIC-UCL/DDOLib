@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 
 import smile.clustering.CentroidClustering;
 import smile.clustering.KMeans;
-import smile.math.distance.EuclideanDistance;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -345,7 +344,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
                                 break;
                             case Kmeans:
-                                clusters = clusterKMeans(maxWidth, input.coord(), input.rnd());
+                                clusters = clusterKMeans(maxWidth, input.coord());
                                 break;
                             case GHP:
                                 clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
@@ -381,7 +380,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
                                 break;
                             case Kmeans:
-                                clusters = clusterKMeans(maxWidth, input.coord(), input.rnd());
+                                clusters = clusterKMeans(maxWidth, input.coord());
                                 break;
                             default:
                                 System.err.println("Unsupported relax type: " + input.relaxStrat());
@@ -658,10 +657,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * One cluster will be defined for each desired node in the layer.
      * @param maxWidth the maximal width of the layer
      * @param coordinates a function returning the coordinates of each state
-     * @param rnd
      * @return an array of maxWidth clusters.
      */
-    private List<NodeSubProblem<T>>[] clusterKMeans(final int maxWidth, final StateCoordinates<T> coordinates, final Random rnd) {
+    private List<NodeSubProblem<T>>[] clusterKMeans(final int maxWidth, final StateCoordinates<T> coordinates) {
         int maxIter = 50;
         int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
         double[][] data = new double[currentLayer.size()][dimensions];
