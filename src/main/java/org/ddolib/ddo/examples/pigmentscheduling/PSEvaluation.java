@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileWriter;
 
 import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
 
 public class PSEvaluation {
     public static class PSWithOutDominance {
@@ -26,6 +27,7 @@ public class PSEvaluation {
         int[] solution;
         int numberIterations;
         int queueMaxSize;
+        SearchStatistics.SearchStatus searchStatus;
         public PSWithOutDominance(String filename, int w, CutSetType cutsetType) throws Exception{
             this.filename = filename;
             this.w = w;
@@ -43,13 +45,14 @@ public class PSEvaluation {
                     varh,
                     ranking,
                     width,
-                    frontier);
+                    frontier,
+                    100);
             SearchStatistics stats = solver.maximize();
             elapsedTime = stats.runTimeMS() / 1000.0;
             optimalSolution = solver.bestValue().get();
             queueMaxSize = stats.queueMaxSize();
             numberIterations = stats.nbIterations();
-
+            searchStatus = stats.SearchStatus();
             solution = solver.bestSolution()
                     .map(decisions -> {
                         int[] values = new int[problem.nbVars()];
@@ -60,7 +63,7 @@ public class PSEvaluation {
                         return values;
                     })
                     .get();
-            System.out.println(filename + " | " + w + " | " + cutsetType + " | " + optimalSolution + " | " + elapsedTime + " | " + numberIterations + " | " + queueMaxSize + " | " + "dominance + cache");
+            System.out.println(filename + " | " + w + " | " + cutsetType + " | " + optimalSolution + " | " + elapsedTime + " | " + searchStatus + " | " + numberIterations + " | " + queueMaxSize + " | " + "no dominance");
         }
     }
 
@@ -74,6 +77,7 @@ public class PSEvaluation {
         int[] solution;
         int numberIterations;
         int queueMaxSize;
+        SearchStatistics.SearchStatus searchStatus;
         public PSWithCache(String filename, int w, CutSetType cutsetType) throws Exception{
             this.filename = filename;
             this.w = w;
@@ -85,24 +89,22 @@ public class PSEvaluation {
             final FixedWidth<PSState> width = new FixedWidth<>(w);
             final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
             final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, cutsetType);
-            final DominanceChecker dominance = new DefaultDominanceChecker();
             final SimpleCache<PSState> cache = new SimpleCache<>();
-            final Solver solver = new SequentialSolverWithCache(
+            final Solver solver = sequentialSolverWithCache(
                     problem,
                     relax,
                     varh,
                     ranking,
                     width,
                     frontier,
-                    dominance,
                     cache,
-                    Long.MAX_VALUE);
+                    100);
             SearchStatistics stats = solver.maximize();
             elapsedTime = stats.runTimeMS() / 1000.0;
             optimalSolution = solver.bestValue().get();
             queueMaxSize = stats.queueMaxSize();
             numberIterations = stats.nbIterations();
-
+            searchStatus = stats.SearchStatus();
             solution = solver.bestSolution()
                     .map(decisions -> {
                         int[] values = new int[problem.nbVars()];
@@ -113,7 +115,7 @@ public class PSEvaluation {
                         return values;
                     })
                     .get();
-            System.out.println(filename + " | " + w + " | " + cutsetType + " | " + optimalSolution + " | " + elapsedTime + " | " + numberIterations + " | " + queueMaxSize + " | " + "dominance + cache");
+            System.out.println(filename + " | " + w + " | " + cutsetType + " | " + optimalSolution + " | " + elapsedTime + " | " + searchStatus + " | " + numberIterations + " | " + queueMaxSize + " | " + "no dominance + cache");
         }
     }
 
@@ -121,7 +123,7 @@ public class PSEvaluation {
     public static void main(String[] args) throws Exception {
         File folder = new File("data/PSP/instancesWith2items");
         File[] listOfFiles = folder.listFiles();
-        int[] Width = new int[]{100,250};
+        int[] Width = new int[]{10,25};
         CutSetType[] CSType = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int w : Width) {
             for (CutSetType cs : CSType) {
@@ -138,6 +140,7 @@ public class PSEvaluation {
                             writer.write(filename + " | " + w + " | " + psCache.cutsetType + " | " + psCache.optimalSolution + " | " + psCache.elapsedTime + " | " + psCache.numberIterations + " | " + psCache.queueMaxSize + " | " + "no dominance + cache"+ "\n");
                         }
                     }
+                    writer.close();
                 }
             }
         }

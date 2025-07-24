@@ -12,6 +12,8 @@ import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+
 /**
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
  * For more information on this problem, see
@@ -37,17 +39,14 @@ public class GRCacheMain {
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final SimpleCache<GRState> cache = new SimpleCache<>();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        DefaultDominanceChecker<GRState> dominance = new DefaultDominanceChecker<>();
-        final Solver solver = new SequentialSolverWithCache(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                dominance,
-                cache,
-                Long.MAX_VALUE);
+                cache);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

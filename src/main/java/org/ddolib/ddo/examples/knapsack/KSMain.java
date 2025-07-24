@@ -45,7 +45,8 @@ public class KSMain {
                 ranking,
                 width,
                 frontier,
-                dominance
+                dominance,
+                20
         );
 
 

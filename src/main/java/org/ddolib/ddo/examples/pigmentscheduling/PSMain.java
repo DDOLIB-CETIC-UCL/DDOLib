@@ -41,7 +41,7 @@ public class PSMain {
                 ranking,
                 width,
                 frontier,
-        10L
+        10
         );
 
         long start = System.currentTimeMillis();

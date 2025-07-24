@@ -11,6 +11,8 @@ import org.ddolib.ddo.implem.solver.SequentialSolverWithCache;
 
 import java.util.Arrays;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+
 /**
  * Bounded Knapsack Problem (BKS)
  * A bounded knapsack problem is a variation of the classic knapsack problem
@@ -28,20 +30,17 @@ public class BKSMain {
         final BKSRanking ranking = new BKSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(3);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolverWithCache(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                dominance,
-                cache,
-                Long.MAX_VALUE);
+                cache);
 
 
         long start = System.currentTimeMillis();

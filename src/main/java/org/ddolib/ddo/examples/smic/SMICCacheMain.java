@@ -15,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+
 /**
  * Given a set J of n jobs, partitioned into a set J1
  * of n1 loading jobs and set J2 of n2 unloading jobs. Each job j ∈ J has a
@@ -31,19 +33,16 @@ public class SMICCacheMain {
         final SMICRanking ranking = new SMICRanking();
         final FixedWidth<SMICState> width = new FixedWidth<>(10);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
         final SimpleCache<SMICState> cache = new SimpleCache<SMICState>();
         final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverWithCache<>(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
                 ranking,
                 width,
                 frontier,
-                dominance,
-                cache,
-                Long.MAX_VALUE);
+                cache);
 
 
         long start = System.currentTimeMillis();

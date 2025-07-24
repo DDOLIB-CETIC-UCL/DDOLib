@@ -121,7 +121,12 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
     /**
      * Add a time limit for the search, by default it is set to infinity
      */
-    private long timeLimit = Long.MAX_VALUE;
+    private int timeLimit = Integer.MAX_VALUE;
+
+    /**
+     * Add a gap limit for the search, by default it is set to zero
+     */
+    private double gapLimit = 0.0;
 
     /**
      * Creates a fully qualified instance
@@ -142,6 +147,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
+     * @param timeLimit The budget of time give to the solver to solve the problem.
+     * @param gapLimit  The stop the search when the gat of the search reach the limit.
      */
     public SequentialSolverWithCache(
             final Problem<T> problem,
@@ -152,7 +159,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             final Frontier<T> frontier,
             final DominanceChecker<T,K> dominance,
             final SimpleCache<T> cache,
-            long timeLimit) {
+            final int timeLimit,
+            final double gapLimit) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -165,6 +173,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
         this.timeLimit = timeLimit;
+        this.gapLimit = gapLimit;
     }
 
     @Override
@@ -187,10 +196,8 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                 long now = System.currentTimeMillis();
                 if(now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100*(bestInFrontier - bestLB)/bestLB;
-
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
-                            nbIter, frontier.size(), bestLB, bestInFrontier, gap);
+                            nbIter, frontier.size(), bestLB, bestInFrontier, gap());
 
                     nextPrint = now + printInterval;
                 }
@@ -199,12 +206,16 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
+            double nodeUB = sub.getUpperBound();
+
             long end = System.currentTimeMillis();
-            if (end - start > timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end-start, currentSearchStatus());
+            if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+            }
+            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
             }
 
-            double nodeUB = sub.getUpperBound();
 
             if (verbosityLevel >= 3){
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
@@ -213,9 +224,10 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                 }
             }
             if (nodeUB <= bestLB) {
+                double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end-start, currentSearchStatus());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap);
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -283,10 +295,9 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
             } else {
                 enqueueCutset();
             }
-
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL);
+        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override
@@ -352,7 +363,7 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
         }
     }
 
-    private SearchStatistics.SearchStatus currentSearchStatus() {
+    private SearchStatistics.SearchStatus currentSearchStatus(double gap) {
         if (bestSol.isEmpty()) {
             if (bestLB == -Double.MAX_VALUE) {
                 return SearchStatistics.SearchStatus.UNKNOWN;
@@ -360,7 +371,19 @@ public final class SequentialSolverWithCache<K,T> implements Solver {
                 return SearchStatistics.SearchStatus.UNSAT;
             }
         } else {
-            return SearchStatistics.SearchStatus.SAT;
+            if (gap > 0.0)
+                return SearchStatistics.SearchStatus.SAT;
+            else
+                return SearchStatistics.SearchStatus.OPTIMAL;
+        }
+    }
+
+    private double gap() {
+        if (frontier.isEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = frontier.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
         }
     }
 }
