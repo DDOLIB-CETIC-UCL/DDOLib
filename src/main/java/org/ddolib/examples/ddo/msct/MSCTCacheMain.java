@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
+
 /**
  * The problem is to sequence n jobs such that:
  * - each job is scheduled after its release time
@@ -44,7 +46,7 @@ public class MSCTCacheMain {
         final DefaultDominanceChecker<MSCTState> dominance = new DefaultDominanceChecker<>();
         final SimpleCache<MSCTState> cache = new SimpleCache<>();
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverWithCache<>(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,

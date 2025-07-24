@@ -16,6 +16,8 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import static org.ddolib.factory.Solvers.sequentialSolver;
+
 
 /**
  * Given a set J of n jobs, partitioned into a set J1

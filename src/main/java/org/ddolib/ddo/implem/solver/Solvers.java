@@ -1,14 +1,18 @@
 package org.ddolib.ddo.implem.solver;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Problem;
-import org.ddolib.ddo.core.Relaxation;
-import org.ddolib.ddo.heuristics.StateRanking;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.cache.SimpleCache;
-import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
+//import org.ddolib.ddo.core.Frontier;
+//import org.ddolib.ddo.core.Problem;
+//import org.ddolib.ddo.core.Relaxation;
+//import org.ddolib.ddo.core.solver.ExactSolver;
+//import org.ddolib.ddo.core.solver.ParallelSolver;
+//import org.ddolib.ddo.core.solver.SequentialSolver;
+//import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
+//import org.ddolib.ddo.heuristics.StateRanking;
+//import org.ddolib.ddo.heuristics.VariableHeuristic;
+//import org.ddolib.ddo.heuristics.WidthHeuristic;
+//import org.ddolib.ddo.implem.cache.SimpleCache;
+//import org.ddolib.ddo.implem.dominance.DefaultDominanceChecker;
+//import org.ddolib.ddo.implem.dominance.DominanceChecker;
 
 /**
  * Factory of solvers.
@@ -40,7 +44,7 @@ public class Solvers {
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
+    /*public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
                                                                                    final Relaxation<T> relax,
                                                                                    final VariableHeuristic<T> varh,
                                                                                    final StateRanking<T> ranking,
@@ -51,7 +55,7 @@ public class Solvers {
                                                                                    final int timeLimit,
                                                                                    final double gapLimit) {
         return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, dominance, cache, timeLimit, gapLimit);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem.
@@ -78,7 +82,7 @@ public class Solvers {
      * @param timeLimit the budget of time provide to solve the problem.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
+    /*public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
                                                                                    final Relaxation<T> relax,
                                                                                    final VariableHeuristic<T> varh,
                                                                                    final StateRanking<T> ranking,
@@ -88,7 +92,7 @@ public class Solvers {
                                                                                    final SimpleCache<T> cache,
                                                                                    final int timeLimit) {
         return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, dominance, cache, timeLimit, 0.0);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem.
@@ -114,7 +118,7 @@ public class Solvers {
      * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
+    /*public static <T, K> SequentialSolverWithCache<K, T> sequentialSolverWithCache(final Problem<T> problem,
                                                                                   final Relaxation<T> relax,
                                                                                   final VariableHeuristic<T> varh,
                                                                                   final StateRanking<T> ranking,
@@ -123,7 +127,7 @@ public class Solvers {
                                                                                   final DominanceChecker<T, K> dominance,
                                                                                   final SimpleCache<T> cache) {
         return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, dominance, cache, Integer.MAX_VALUE, 0.0);
-    }
+    }*/
 
 
     /**
@@ -149,7 +153,7 @@ public class Solvers {
      * @param timeLimit the budget of time provide to solve the problem.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> SequentialSolverWithCache<Integer, T> sequentialSolverWithCache(final Problem<T> problem,
+    /*public static <T> SequentialSolverWithCache<Integer, T> sequentialSolverWithCache(final Problem<T> problem,
                                                                                   final Relaxation<T> relax,
                                                                                   final VariableHeuristic<T> varh,
                                                                                   final StateRanking<T> ranking,
@@ -159,7 +163,7 @@ public class Solvers {
                                                                                   final int timeLimit) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, defaultDominance, cache, timeLimit, 0.0);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem.
@@ -183,7 +187,7 @@ public class Solvers {
      * @param <T>       The type of states.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> SequentialSolverWithCache<Integer, T> sequentialSolverWithCache(final Problem<T> problem,
+    /*public static <T> SequentialSolverWithCache<Integer, T> sequentialSolverWithCache(final Problem<T> problem,
                                                                                       final Relaxation<T> relax,
                                                                                       final VariableHeuristic<T> varh,
                                                                                       final StateRanking<T> ranking,
@@ -192,7 +196,7 @@ public class Solvers {
                                                                                       final SimpleCache<T> cache) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new SequentialSolverWithCache<>(problem, relax, varh, ranking, width, frontier, defaultDominance, cache, Integer.MAX_VALUE, 0.0);
-    }
+    }*/
 
 
     /**
@@ -220,7 +224,7 @@ public class Solvers {
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+    /*public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
                                                                  final Relaxation<T> relax,
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
@@ -230,7 +234,7 @@ public class Solvers {
                                                                  final int timeLimit,
                                                                  final double gapLimit) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, timeLimit, gapLimit);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem.
@@ -256,7 +260,7 @@ public class Solvers {
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+    /*public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
                                                                  final Relaxation<T> relax,
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
@@ -265,7 +269,7 @@ public class Solvers {
                                                                  final DominanceChecker<T, K> dominance,
                                                                  final double gapLimit) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, Integer.MAX_VALUE, gapLimit);
-    }
+    }*/
 
 
 
@@ -293,7 +297,7 @@ public class Solvers {
      * @param timeLimit the budget of time provide to solve the problem.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+    /*public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
                                                                  final Relaxation<T> relax,
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
@@ -302,7 +306,7 @@ public class Solvers {
                                                                  final DominanceChecker<T, K> dominance,
                                                                  final int timeLimit) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, timeLimit, 0.0);
-    }
+    }*/
 
 
 
@@ -329,7 +333,7 @@ public class Solvers {
      * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+    /*public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
                                                                  final Relaxation<T> relax,
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
@@ -337,7 +341,7 @@ public class Solvers {
                                                                  final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, dominance, Integer.MAX_VALUE, 0.0);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem. The instance do not use the dominance mechanism.
@@ -361,7 +365,7 @@ public class Solvers {
      * @param timeLimit the budget of time provide to solve the problem.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
+    /*public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
                                                                     final Relaxation<T> relax,
                                                                     final VariableHeuristic<T> varh,
                                                                     final StateRanking<T> ranking,
@@ -370,7 +374,7 @@ public class Solvers {
                                                                     final int timeLimit) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance, timeLimit, 0.0);
-    }
+    }*/
 
     /**
      * Instantiates a sequential solver for a given problem. The instance do not use the dominance mechanism.
@@ -393,7 +397,7 @@ public class Solvers {
      * @param <T>      The type of states.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
+    /*public static <T> SequentialSolver<T, Integer> sequentialSolver(final Problem<T> problem,
                                                                     final Relaxation<T> relax,
                                                                     final VariableHeuristic<T> varh,
                                                                     final StateRanking<T> ranking,
@@ -401,7 +405,7 @@ public class Solvers {
                                                                     final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, defaultDominance, Integer.MAX_VALUE, 0.0);
-    }
+    }*/
 
     /**
      * Instantiates a parallel solver for a given problem.
@@ -427,7 +431,7 @@ public class Solvers {
      * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> ParallelSolver<T, K> parallelSolver(final int nbThreads,
+    /*public static <T, K> ParallelSolver<T, K> parallelSolver(final int nbThreads,
                                                              final Problem<T> problem,
                                                              final Relaxation<T> relax,
                                                              final VariableHeuristic<T> varh,
@@ -436,7 +440,7 @@ public class Solvers {
                                                              final Frontier<T> frontier,
                                                              final DominanceChecker<T, K> dominance) {
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, dominance);
-    }
+    }*/
 
     /**
      * Instantiates a parallel solver for a given problem. The instance does not use the dominance mechanism.
@@ -460,7 +464,7 @@ public class Solvers {
      * @param <T>       The type of the states.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> ParallelSolver<T, Integer> parallelSolver(final int nbThreads,
+    /*public static <T> ParallelSolver<T, Integer> parallelSolver(final int nbThreads,
                                                                 final Problem<T> problem,
                                                                 final Relaxation<T> relax,
                                                                 final VariableHeuristic<T> varh,
@@ -469,7 +473,7 @@ public class Solvers {
                                                                 final Frontier<T> frontier) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new ParallelSolver<>(nbThreads, problem, relax, varh, ranking, width, frontier, defaultDominance);
-    }
+    }*/
 
     /**
      * Instantiates a solver using only exact mdd.
@@ -483,13 +487,13 @@ public class Solvers {
      * @param <K>       The type of dominance keys.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T, K> ExactSolver<T, K> exactSolver(final Problem<T> problem,
+    /*public static <T, K> ExactSolver<T, K> exactSolver(final Problem<T> problem,
                                                        final Relaxation<T> relax,
                                                        final VariableHeuristic<T> varh,
                                                        final StateRanking<T> ranking,
                                                        final DominanceChecker<T, K> dominance) {
         return new ExactSolver<>(problem, relax, varh, ranking, dominance);
-    }
+    }*/
 
     /**
      * Instantiates a solver using only exact mdd. The instance does not use dominance.
@@ -501,11 +505,11 @@ public class Solvers {
      * @param <T>     The type of states.
      * @return A solver for the input problem using the given configuration.
      */
-    public static <T> ExactSolver<T, Integer> exactSolver(final Problem<T> problem,
+    /*public static <T> ExactSolver<T, Integer> exactSolver(final Problem<T> problem,
                                                           final Relaxation<T> relax,
                                                           final VariableHeuristic<T> varh,
                                                           final StateRanking<T> ranking) {
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         return new ExactSolver<>(problem, relax, varh, ranking, defaultDominance);
-    }
+    }*/
 }

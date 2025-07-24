@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 
 //import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
 //import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+import static org.ddolib.factory.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 

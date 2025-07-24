@@ -19,7 +19,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
+
+//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
 
 /**
  * The Knapsack problem is a classic optimization problem

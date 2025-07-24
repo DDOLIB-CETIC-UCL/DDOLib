@@ -110,11 +110,11 @@ public final class AStarSolver<T, K> implements Solver {
             }
             if (nodeUB <= bestLB) {
                 frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0);
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
             }
             addChildren(sub);
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override

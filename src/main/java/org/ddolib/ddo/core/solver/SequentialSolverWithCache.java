@@ -163,6 +163,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
+     * @param cache    The cache used to prune the search space.
      * @param timeLimit The budget of time give to the solver to solve the problem.
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      */
@@ -173,11 +174,11 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
+            FastUpperBound<T> fub,
             final DominanceChecker<T,K> dominance,
             final SimpleCache<T> cache,
             final int timeLimit,
-            final double gapLimit,
-            FastUpperBound<T> fub) {
+            final double gapLimit) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -188,7 +189,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
         this.cache = cache;
         this.frontier = frontier;
         this.mdd = new LinkedDecisionDiagramWithCache<T, K>();
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.timeLimit = timeLimit;
         this.gapLimit = gapLimit;

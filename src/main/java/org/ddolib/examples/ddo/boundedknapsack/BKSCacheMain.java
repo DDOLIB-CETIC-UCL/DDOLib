@@ -16,6 +16,8 @@ import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.util.Arrays;
 
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
+
 /**
  * Bounded Knapsack Problem (BKS)
  * A bounded knapsack problem is a variation of the classic knapsack problem
