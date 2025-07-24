@@ -87,12 +87,10 @@ public class CSProblem implements Problem<CSState> {
         long[] nextPreviousBlocks = new long[nOptions()];
         int[] nextNWithOption = Arrays.copyOf(state.nWithOption, nOptions());
         for (int i = 0; i < nOptions(); i++) { // Shift blocks and add new car to them
-            if ((state.previousBlocks[i] & (1L << blockSize[i] - 2)) != 0) {
-                nextNWithOption[i]--;
-            }
             nextPreviousBlocks[i] = (state.previousBlocks[i] << 1) & ((1L << (blockSize[i] - 1)) - 1);
             if (carOptions[decision.val()][i]) {
                 nextPreviousBlocks[i] |= 1;
+                nextNWithOption[i]--;
             }
         }
         return new CSState(this, nextCarsToBuild, nextPreviousBlocks, nextNWithOption, state.nToBuild - 1);

@@ -12,7 +12,7 @@ public class CSDominanceTest {
     public void testDominancePreviousBlocks() throws IOException {
         CSProblem problem = CSInstance.read("data/CarSeq/example.txt");
         CSDominance dominance = new CSDominance(problem);
-        int[] carsToBuild = new int[problem.nClasses()];
+        int[] carsToBuild = new int[problem.nClasses() + 1];
         int[] nWithOption = new int[problem.nOptions()];
         int nToBuild = 0;
         long[][] previousBlocks1 = {

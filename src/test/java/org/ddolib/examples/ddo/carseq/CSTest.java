@@ -35,6 +35,11 @@ public class CSTest {
     }
 
     @Test
+    public void testSolveBig() throws IOException {
+        testSolve("data/CarSeq/big.txt");
+    }
+
+    @Test
     public void testSolveInstances() throws IOException {
         File dir = new File("data/CarSeq");
         for (File file : dir.listFiles()) {
