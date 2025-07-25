@@ -16,6 +16,8 @@ import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.util.Arrays;
 
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
+
 /**
  * Bounded Knapsack Problem (BKS)
  * A bounded knapsack problem is a variation of the classic knapsack problem
@@ -40,7 +42,7 @@ public class BKSCacheMain {
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
 
-        final Solver solver = new SequentialSolverWithCache<>(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
