@@ -1,5 +1,6 @@
 package org.ddolib.examples.ddo.carseq;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
@@ -35,16 +36,17 @@ public class CSMain {
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
-        Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(problem), problem.nbVars());
-        Solver solver = Solvers.sequentialSolver(
+        CSAggregate aggregate = new CSAggregate(problem);
+        Solver solver = new CSAggregateSolver(
                 problem,
+                aggregate,
                 relax,
                 varh,
                 ranking,
                 width,
-                frontier,
-                fub
+                CutSetType.LastExactLayer,
+                fub,
+                new DefaultDominanceChecker<>()
         );
 
         SearchStatistics stats = solver.maximize(2, false);
