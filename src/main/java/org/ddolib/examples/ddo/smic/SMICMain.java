@@ -30,10 +30,10 @@ import static org.ddolib.factory.Solvers.sequentialSolver;
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data100_2.txt");
+        SMICProblem problem = readProblem("data/SMIC/data10_1.txt");
         final SMICRelax relax = new SMICRelax(problem);
         final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(10);
+        final FixedWidth<SMICState> width = new FixedWidth<>(200);
         final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
         final SimpleDominanceChecker<SMICState, Integer> dominance =
                 new SimpleDominanceChecker<>(new SMICDominance(),
@@ -64,7 +64,7 @@ public class SMICMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
