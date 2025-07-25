@@ -37,7 +37,7 @@ public class CSMain {
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
         CSAggregate aggregate = new CSAggregate(problem);
-        Solver solver = new CSAggregateSolver(
+        CSAggregateSolver solver = new CSAggregateSolver(
                 problem,
                 aggregate,
                 relax,
@@ -61,5 +61,8 @@ public class CSMain {
             System.out.println(problem.solutionToString(cars, (int)solver.bestValue().get().doubleValue()));
         }
         else System.out.println("No solution");
+
+        System.out.println("States used : " + solver.testAskedStates.size() + " / " + solver.testPreComputed);
+        System.out.println("Bounds improved : " + solver.testBetterFub + " / " + solver.testAskedFub);
     }
 }

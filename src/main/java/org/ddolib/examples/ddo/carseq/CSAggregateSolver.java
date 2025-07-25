@@ -23,6 +23,11 @@ public class CSAggregateSolver implements Solver {
     private final SequentialSolver<AggregateState, Integer> solver;
     private final HashMap<CSState, Double> preComputed = new HashMap<>(); // Pre-computed best solution for each aggregated state
 
+    // Test
+    public int testAskedFub = 0;
+    public int testBetterFub = 0;
+    public HashSet<CSState> testAskedStates = new HashSet<>();
+    public int testPreComputed;
 
     /**
      * Wrapper that contains the initial and the aggregated states
@@ -191,6 +196,8 @@ public class CSAggregateSolver implements Solver {
             new AggregateDominanceChecker()
         );
         preCompute(aggregate.getProblem().initialState(), 0);
+
+        testPreComputed = preComputed.size();
     }
 
 
@@ -221,8 +228,13 @@ public class CSAggregateSolver implements Solver {
     private class AggregateFastUpperBound implements FastUpperBound<AggregateState> {
         @Override
         public double fastUpperBound(AggregateState state, Set<Integer> variables) {
-            Double aggregateSol = preComputed.getOrDefault(state.aggregated, Double.POSITIVE_INFINITY);
             double initialBound = fub.fastUpperBound(state.state, variables);
+            Double aggregateSol = preComputed.getOrDefault(state.aggregated, Double.POSITIVE_INFINITY);
+
+            testAskedStates.add(state.aggregated);
+            testAskedFub++;
+            if (aggregateSol < initialBound) testBetterFub++;
+
             return Math.min(initialBound, aggregateSol);
         }
     }
