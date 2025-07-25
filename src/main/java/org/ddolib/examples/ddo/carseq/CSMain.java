@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.AggregateSolver;
 import org.ddolib.factory.Solvers;
 
 import java.io.BufferedReader;
@@ -37,7 +38,7 @@ public class CSMain {
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
         CSAggregate aggregate = new CSAggregate(problem);
-        CSAggregateSolver solver = new CSAggregateSolver(
+        AggregateSolver<CSState, CSState, Integer> solver = new AggregateSolver<>(
                 problem,
                 aggregate,
                 relax,

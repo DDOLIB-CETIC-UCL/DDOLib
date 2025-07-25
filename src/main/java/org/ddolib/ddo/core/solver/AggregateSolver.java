@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.carseq;
+package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
@@ -8,34 +8,41 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.examples.ddo.carseq.*;
 import org.ddolib.modeling.*;
 
 import java.util.*;
 
-
-public class CSAggregateSolver implements Solver {
-    private final CSProblem problem;
-    private final CSAggregate aggregate;
-    private final CSRelax relax;
-    private final CSFastUpperBound fub;
-    private final DominanceChecker<CSState, Integer> checker;
+public class AggregateSolver<T, TAgg, K> implements Solver {
+    private final Problem<T> problem;
+    private final Aggregate<TAgg> aggregate;
+    private final Relaxation<T> relax;
+    private final FastUpperBound<T> fub;
+    private final DominanceChecker<T, K> checker;
     private final SequentialSolver<AggregateState, Integer> solver;
-    private final HashMap<CSState, Double> preComputed = new HashMap<>(); // Pre-computed best solution for each aggregated state
+    private final HashMap<TAgg, Double> preComputed = new HashMap<>(); // Pre-computed best solution for each aggregated state
 
     // Test
     public int testAskedFub = 0;
     public int testBetterFub = 0;
-    public HashSet<CSState> testAskedStates = new HashSet<>();
+    public HashSet<TAgg> testAskedStates = new HashSet<>();
     public int testPreComputed;
 
     /**
      * Wrapper that contains the initial and the aggregated states
      */
-    private record AggregateState(CSState state, CSState aggregated) {
+    private class AggregateState {
+        private final T state;
+        private final TAgg aggregated;
+
+        public AggregateState(T state, TAgg aggregated) {
+            this.state = state;
+            this.aggregated = aggregated;
+        }
+
         @Override
         public boolean equals(Object o) {
-            if (o instanceof AggregateState s)
+            if (o instanceof AggregateSolver.AggregateState s)
                 return state.equals(s.state);
             return false;
         }
@@ -50,14 +57,20 @@ public class CSAggregateSolver implements Solver {
     /**
      * Converts an iterator of AggregateState to an iterator of its initial states
      */
-    private record StateIterator(Iterator<AggregateState> iterator) implements Iterator<CSState> {
+    private class StateIterator implements Iterator<T> {
+        private final Iterator<AggregateState> iterator;
+
+        public StateIterator(Iterator<AggregateState> iterator) {
+            this.iterator = iterator;
+        }
+
         @Override
         public boolean hasNext() {
             return iterator.hasNext();
         }
 
         @Override
-        public CSState next() {
+        public T next() {
             return iterator.next().state;
         }
     }
@@ -66,14 +79,19 @@ public class CSAggregateSolver implements Solver {
     /**
      * Converts an iterator of AggregateState to an iterator of its aggregated states
      */
-    private record AggregatedIterator(Iterator<AggregateState> iterator) implements Iterator<CSState> {
+    private class AggregatedIterator implements Iterator<TAgg> {
+        private final Iterator<AggregateState> iterator;
+
+        public AggregatedIterator(Iterator<AggregateState> iterator) {
+            this.iterator = iterator;
+        }
         @Override
         public boolean hasNext() {
             return iterator.hasNext();
         }
 
         @Override
-        public CSState next() {
+        public TAgg next() {
             return iterator.next().aggregated;
         }
     }
@@ -168,16 +186,16 @@ public class CSAggregateSolver implements Solver {
      * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
      */
-    public CSAggregateSolver(
-        CSProblem problem,
-        CSAggregate aggregate,
-        CSRelax relax,
-        VariableHeuristic<CSState> varh,
-        CSRanking ranking,
-        WidthHeuristic<CSState> width,
+    public AggregateSolver(
+        Problem<T> problem,
+        Aggregate<TAgg> aggregate,
+        Relaxation<T> relax,
+        VariableHeuristic<T> varh,
+        StateRanking<T> ranking,
+        WidthHeuristic<T> width,
         CutSetType frontier,
-        CSFastUpperBound fub,
-        DominanceChecker<CSState, Integer> dominance
+        FastUpperBound<T> fub,
+        DominanceChecker<T, K> dominance
     ) {
         this.problem = problem;
         this.aggregate = aggregate;
@@ -246,7 +264,7 @@ public class CSAggregateSolver implements Solver {
      * @param var Index of the variable to assign
      * @return Best solution found from this node
      */
-    private double preCompute(CSState state, int var) {
+    private double preCompute(TAgg state, int var) {
         if (var == aggregate.getProblem().nbVars()) return 0;
 
         // Check if already visited
@@ -259,7 +277,7 @@ public class CSAggregateSolver implements Solver {
         while (values.hasNext()) {
             int val = values.next();
             Decision decision = new Decision(var, val);
-            CSState child = aggregate.getProblem().transition(state, decision);
+            TAgg child = aggregate.getProblem().transition(state, decision);
             double costToChild = aggregate.getProblem().transitionCost(state, decision);
             double childSol = preCompute(child, var + 1);
             if (childSol + costToChild > bestSol) {

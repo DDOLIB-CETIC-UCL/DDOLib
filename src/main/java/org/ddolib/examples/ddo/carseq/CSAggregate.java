@@ -1,16 +1,12 @@
 package org.ddolib.examples.ddo.carseq;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Aggregate;
 
 import java.util.Arrays;
 
 
-/**
- * Mapping between an initial problem and an aggregated problem.
- * Allows mapping a decision in the initial problem to a decision in the aggregated problem.
- * It also provides the required classes for solving the aggregated problem (problem, relaxation, fast upper bound, ...)
- */
-public class CSAggregate {
+public class CSAggregate implements Aggregate<CSState> {
     private final CSProblem problem;
     private CSProblem aggregated;
     private CSRelax relax;
@@ -24,25 +20,17 @@ public class CSAggregate {
     }
 
 
-    /**
-     * Get the aggregated problem
-     */
+    @Override
     public CSProblem getProblem() {
         return aggregated;
     }
 
-    /**
-     * Get the relaxation operator for the aggregated problem
-     */
+    @Override
     public CSRelax getRelax() {
         return relax;
     }
 
-    /**
-     * Map a decision
-     * @param decision Decision in the initial problem
-     * @return Decision in the aggregated problem
-     */
+    @Override
     public Decision mapDecision(Decision decision) {
         return new Decision(decision.var(), map[decision.val()]);
     }
