@@ -32,5 +32,9 @@ public class SMICDistance implements StateDistance<SMICState> {
     @Override
     public double distance(SMICState a, SMICState b) {
         return distOnRemainingJobs(a, b) + distOnCurrentTime(a, b) + distOnMinCurrentInventory(a, b) + distOnMaxCurrentInventory(a, b);
+        // return distOnRemainingJobs(a, b);
+        // return distOnCurrentTime(a, b);
+        // return distOnMinCurrentInventory(a, b);
+        //return distOnMaxCurrentInventory(a, b);
     }
 }
