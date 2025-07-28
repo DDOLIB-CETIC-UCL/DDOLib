@@ -22,7 +22,10 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
+//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
 import static org.ddolib.factory.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -81,7 +84,7 @@ public class KSCacheTest {
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final Solver solverWithCaching = new SequentialSolverWithCache<>(
+        final Solver solverWithCaching = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,

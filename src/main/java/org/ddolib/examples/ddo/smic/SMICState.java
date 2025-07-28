@@ -49,8 +49,9 @@ public class SMICState {
     public boolean equals(Object obj) {
         assert obj instanceof SMICState;
         SMICState other = (SMICState) obj;
-        return remainingJobs.equals(other.remainingJobs)  && currentTime == other.currentTime
-                && minCurrentInventory == other.minCurrentInventory && maxCurrentInventory == other.maxCurrentInventory;
+        return this.currentTime == other.currentTime &&
+                this.minCurrentInventory == other.minCurrentInventory &&
+                this.maxCurrentInventory == other.maxCurrentInventory;
     }
 }
 

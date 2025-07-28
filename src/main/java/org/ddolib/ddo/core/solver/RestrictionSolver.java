@@ -168,7 +168,7 @@ public final class RestrictionSolver<T, K> implements Solver {
         mdd.compile(compilation);
         maybeUpdateBest(verbosityLevel, exportAsDot);
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 0, end-start);
+        return new SearchStatistics(1, 0,end-start, SearchStatistics.SearchStatus.UNKNOWN, 0.0);
     }
 
     public boolean isExact() {
