@@ -1,24 +1,17 @@
 package org.ddolib.modeling;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.examples.ddo.carseq.CSProblem;
-import org.ddolib.examples.ddo.carseq.CSRelax;
 
 /**
  * Mapping between an initial problem and an aggregated problem.
  * Allows mapping a decision in the initial problem to a decision in the aggregated problem.
  * It also provides the required classes for solving the aggregated problem (problem, relaxation, fast upper bound, ...)
  */
-public interface Aggregate<T> {
+public interface Aggregate<T, K> {
     /**
-     * Get the aggregated problem
+     * Get the aggregated problem with all required classes (relaxation, fast upper bound, ...)
      */
-    Problem<T> getProblem();
-
-    /**
-     * Get the relaxation operator for the aggregated problem
-     */
-    Relaxation<T> getRelax();
+    SolverInput<T, K> getProblem();
 
     /**
      * Map a decision

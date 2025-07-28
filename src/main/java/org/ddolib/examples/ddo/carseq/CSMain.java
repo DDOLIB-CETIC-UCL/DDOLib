@@ -38,7 +38,7 @@ public class CSMain {
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
         CSAggregate aggregate = new CSAggregate(problem);
-        AggregateSolver<CSState, CSState, Integer> solver = new AggregateSolver<>(
+        AggregateSolver<CSState, Integer, CSState, Integer> solver = new AggregateSolver<>(
                 problem,
                 aggregate,
                 relax,

@@ -1,15 +1,16 @@
 package org.ddolib.examples.ddo.carseq;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Aggregate;
+import org.ddolib.modeling.SolverInput;
 
 import java.util.Arrays;
 
 
-public class CSAggregate implements Aggregate<CSState> {
+public class CSAggregate implements Aggregate<CSState, Integer> {
     private final CSProblem problem;
-    private CSProblem aggregated;
-    private CSRelax relax;
+    private SolverInput<CSState, Integer> input;
     private int[] map; // Class in the initial problem -> class in the aggregated problem
 
     private final int N_CLASSES = 3;
@@ -21,13 +22,8 @@ public class CSAggregate implements Aggregate<CSState> {
 
 
     @Override
-    public CSProblem getProblem() {
-        return aggregated;
-    }
-
-    @Override
-    public CSRelax getRelax() {
-        return relax;
+    public SolverInput<CSState, Integer> getProblem() {
+        return input;
     }
 
     @Override
@@ -103,7 +99,7 @@ public class CSAggregate implements Aggregate<CSState> {
             }
         }
 
-        aggregated = new CSProblem(aggregatedNCars, problem.blockSize, problem.blockMax, aggregatedOptions);
-        relax = new CSRelax(aggregated);
+        CSProblem aggregatedProblem = new CSProblem(aggregatedNCars, problem.blockSize, problem.blockMax, aggregatedOptions);
+        input = SolverInput.defaultInput(aggregatedProblem, new CSRelax(aggregatedProblem));
     }
 }

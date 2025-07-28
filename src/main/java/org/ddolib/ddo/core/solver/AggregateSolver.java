@@ -8,14 +8,14 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.examples.ddo.carseq.*;
 import org.ddolib.modeling.*;
 
 import java.util.*;
 
-public class AggregateSolver<T, TAgg, K> implements Solver {
+public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private final Problem<T> problem;
-    private final Aggregate<TAgg> aggregate;
+    private final SolverInput<TAgg, KAgg> aggregated;
+    private final Aggregate<TAgg, KAgg> mapping;
     private final Relaxation<T> relax;
     private final FastUpperBound<T> fub;
     private final DominanceChecker<T, K> checker;
@@ -108,7 +108,7 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
 
         @Override
         public AggregateState initialState() {
-            return new AggregateState(problem.initialState(), aggregate.getProblem().initialState());
+            return new AggregateState(problem.initialState(), aggregated.problem.initialState());
         }
 
         @Override
@@ -125,7 +125,7 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
         public AggregateState transition(AggregateState state, Decision decision) {
             return new AggregateState(
                 problem.transition(state.state, decision),
-                aggregate.getProblem().transition(state.aggregated, aggregate.mapDecision(decision))
+                aggregated.problem.transition(state.aggregated, mapping.mapDecision(decision))
             );
         }
 
@@ -146,7 +146,7 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
             while (states.hasNext()) statesList.add(states.next());
             return new AggregateState(
                 relax.mergeStates(new StateIterator(statesList.iterator())),
-                aggregate.getRelax().mergeStates(new AggregatedIterator(statesList.iterator()))
+                    aggregated.relax.mergeStates(new AggregatedIterator(statesList.iterator()))
             );
         }
 
@@ -188,7 +188,7 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
      */
     public AggregateSolver(
         Problem<T> problem,
-        Aggregate<TAgg> aggregate,
+        Aggregate<TAgg, KAgg> aggregate,
         Relaxation<T> relax,
         VariableHeuristic<T> varh,
         StateRanking<T> ranking,
@@ -198,7 +198,8 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
         DominanceChecker<T, K> dominance
     ) {
         this.problem = problem;
-        this.aggregate = aggregate;
+        this.aggregated = aggregate.getProblem();
+        this.mapping = aggregate;
         this.relax = relax;
         this.fub = fub;
         this.checker = dominance;
@@ -213,7 +214,7 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
             new AggregateFastUpperBound(),
             new AggregateDominanceChecker()
         );
-        preCompute(aggregate.getProblem().initialState(), 0);
+        preCompute(aggregated.problem.initialState(), 0);
 
         testPreComputed = preComputed.size();
     }
@@ -259,13 +260,13 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
 
 
     /**
-     * Pre-compute the cost of the best solution for each node in the aggregated problem
+     * Pre-compute the cost of the best solution for some nodes in the aggregated problem
      * @param state State to explore
      * @param var Index of the variable to assign
      * @return Best solution found from this node
      */
     private double preCompute(TAgg state, int var) {
-        if (var == aggregate.getProblem().nbVars()) return 0;
+        if (var == aggregated.problem.nbVars()) return 0;
 
         // Check if already visited
         Double sol = preComputed.get(state);
@@ -273,12 +274,12 @@ public class AggregateSolver<T, TAgg, K> implements Solver {
 
         // Explore children
         double bestSol = Double.NEGATIVE_INFINITY;
-        Iterator<Integer> values = aggregate.getProblem().domain(state, var);
+        Iterator<Integer> values = aggregated.problem.domain(state, var);
         while (values.hasNext()) {
             int val = values.next();
             Decision decision = new Decision(var, val);
-            TAgg child = aggregate.getProblem().transition(state, decision);
-            double costToChild = aggregate.getProblem().transitionCost(state, decision);
+            TAgg child = aggregated.problem.transition(state, decision);
+            double costToChild = aggregated.problem.transitionCost(state, decision);
             double childSol = preCompute(child, var + 1);
             if (childSol + costToChild > bestSol) {
                 bestSol = childSol + costToChild;
