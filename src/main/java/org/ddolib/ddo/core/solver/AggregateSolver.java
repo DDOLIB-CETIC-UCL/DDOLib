@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private final Problem<T> problem;
@@ -146,7 +147,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             while (states.hasNext()) statesList.add(states.next());
             return new AggregateState(
                 relax.mergeStates(new StateIterator(statesList.iterator())),
-                    aggregated.relax.mergeStates(new AggregatedIterator(statesList.iterator()))
+                aggregated.relax.mergeStates(new AggregatedIterator(statesList.iterator()))
             );
         }
 
@@ -214,9 +215,6 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             new AggregateFastUpperBound(),
             new AggregateDominanceChecker()
         );
-        preCompute(aggregated.problem.initialState(), 0);
-
-        testPreComputed = preComputed.size();
     }
 
 
@@ -248,11 +246,15 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         @Override
         public double fastUpperBound(AggregateState state, Set<Integer> variables) {
             double initialBound = fub.fastUpperBound(state.state, variables);
-            Double aggregateSol = preComputed.getOrDefault(state.aggregated, Double.POSITIVE_INFINITY);
+            if (!preComputed.containsKey(state.aggregated)) {
+                preCompute(state.aggregated, variables);
+            }
+            double aggregateSol = preComputed.get(state.aggregated);
 
             testAskedStates.add(state.aggregated);
             testAskedFub++;
             if (aggregateSol < initialBound) testBetterFub++;
+            testPreComputed = preComputed.size();
 
             return Math.min(initialBound, aggregateSol);
         }
@@ -262,32 +264,67 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     /**
      * Pre-compute the cost of the best solution for some nodes in the aggregated problem
      * @param state State to explore
-     * @param var Index of the variable to assign
+     * @param variables The set of unassigned variables
      * @return Best solution found from this node
      */
-    private double preCompute(TAgg state, int var) {
-        if (var == aggregated.problem.nbVars()) return 0;
+    private double preCompute(TAgg state, Set<Integer> variables) {
+        if (variables.isEmpty()) return 0;
+        int var = variables.iterator().next();
+        variables.remove(var);
 
-        // Check if already visited
-        Double sol = preComputed.get(state);
-        if (sol != null) return sol;
-
-        // Explore children
+        // Find children
         double bestSol = Double.NEGATIVE_INFINITY;
+        ArrayList<AggregateNode> nodes = new ArrayList<>();
         Iterator<Integer> values = aggregated.problem.domain(state, var);
         while (values.hasNext()) {
             int val = values.next();
             Decision decision = new Decision(var, val);
             TAgg child = aggregated.problem.transition(state, decision);
-            double costToChild = aggregated.problem.transitionCost(state, decision);
-            double childSol = preCompute(child, var + 1);
-            if (childSol + costToChild > bestSol) {
-                bestSol = childSol + costToChild;
+            double cost = aggregated.problem.transitionCost(state, decision);
+
+            Double sol = preComputed.get(child);
+            if (sol != null) { // Already visited
+                if (sol + cost > bestSol) {
+                    bestSol = sol + cost;
+                }
+            }
+            else { // Add to explore
+                double fub = aggregated.fub.fastUpperBound(child, variables);
+                if (cost + fub > bestSol) {
+                    nodes.add(new AggregateNode(child, cost, fub));
+                }
+            }
+        }
+        nodes.sort(
+            Comparator.comparingDouble((AggregateNode n) -> -n.cost)
+            .thenComparing((n1, n2) -> aggregated.ranking.compare(n1.state, n2.state))
+        );
+
+        // Explore children
+        for (AggregateNode node : nodes) {
+            if (node.cost + node.fub > bestSol) {
+                double sol = preCompute(node.state, variables);
+                if (node.cost + sol > bestSol) {
+                    bestSol = sol + node.cost;
+                }
             }
         }
 
         // Return best result
         preComputed.put(state, bestSol);
+        variables.add(var);
         return bestSol;
+    }
+
+    private class AggregateNode {
+        public final TAgg state;
+        public final double cost;
+        public final double fub;
+
+        public AggregateNode(TAgg state, double cost, double fub) {
+            this.state = state;
+            this.cost = cost;
+            this.fub = fub;
+        }
     }
 }

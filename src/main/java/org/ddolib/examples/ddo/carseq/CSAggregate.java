@@ -1,11 +1,12 @@
 package org.ddolib.examples.ddo.carseq;
 
-import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Aggregate;
+import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.SolverInput;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 
 public class CSAggregate implements Aggregate<CSState, Integer> {
@@ -100,6 +101,31 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
         }
 
         CSProblem aggregatedProblem = new CSProblem(aggregatedNCars, problem.blockSize, problem.blockMax, aggregatedOptions);
-        input = SolverInput.defaultInput(aggregatedProblem, new CSRelax(aggregatedProblem));
+        input = SolverInput.defaultInput(aggregatedProblem, new NoRelaxation(aggregatedProblem));
+        input.fub = new CSFastUpperBound(aggregatedProblem);
+        input.ranking = new CSRanking();
+    }
+
+
+    // Aggregated nodes should not be relaxed because they could be less relaxed than the initial node
+    private static class NoRelaxation implements Relaxation<CSState> {
+        private final CSProblem problem;
+
+        public NoRelaxation(CSProblem problem) {
+            this.problem = problem;
+        }
+
+        @Override
+        public CSState mergeStates(Iterator<CSState> states) {
+            int nToBuild = states.next().nToBuild;
+            int[] carsToBuild = new int[problem.nClasses() + 1];
+            carsToBuild[problem.nClasses()] = nToBuild;
+            return new CSState(problem, carsToBuild, new long[problem.nOptions()], new int[problem.nOptions()], nToBuild);
+        }
+
+        @Override
+        public double relaxEdge(CSState from, CSState to, CSState merged, Decision d, double cost) {
+            return cost;
+        }
     }
 }
