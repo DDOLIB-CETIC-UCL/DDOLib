@@ -1,6 +1,7 @@
 package org.ddolib.examples.ddo.tsp;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 public class TSPState {
 
@@ -29,5 +30,18 @@ public class TSPState {
         } else {
             return "TSPState(current:" + current.nextSetBit(0) + " toVisit:" + toVisit + ")";
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof TSPState oState) {
+            return toVisit.equals(oState.toVisit) && current.equals(oState.current);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(toVisit, current);
     }
 }

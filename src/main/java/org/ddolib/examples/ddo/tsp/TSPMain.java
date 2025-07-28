@@ -1,5 +1,8 @@
 package org.ddolib.examples.ddo.tsp;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -8,6 +11,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.AggregateSolver;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -53,7 +57,26 @@ public class TSPMain {
         final TSPFastUpperBound fub = new TSPFastUpperBound(problem);
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
+        final DominanceChecker<TSPState, Integer> dominance = new DefaultDominanceChecker<>();
+        final TSPAggregate aggregate = new TSPAggregate(problem);
+        final AggregateSolver<TSPState, Integer, TSPState, Integer> solver = new AggregateSolver<>(
+                problem,
+                aggregate,
+                relax,
+                varh,
+                ranking,
+                width,
+                CutSetType.LastExactLayer,
+                fub,
+                dominance
+        );
 
+        /*final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
+        final TSPRelax relax = new TSPRelax(problem);
+        final TSPRanking ranking = new TSPRanking();
+        final TSPFastUpperBound fub = new TSPFastUpperBound(problem);
+        final FixedWidth<TSPState> width = new FixedWidth<>(500);
+        final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolver(
 //                Runtime.getRuntime().availableProcessors() / 2,
@@ -63,10 +86,12 @@ public class TSPMain {
                 ranking,
                 width,
                 frontier,
-                fub);
+                fub);*/
 
         SearchStatistics stats = solver.maximize(2, false);
         System.out.println(stats);
+        System.out.println("States used : " + solver.testAskedStates.size() + " / " + solver.testPreComputed);
+        System.out.println("Bounds improved : " + solver.testBetterFub + " / " + solver.testAskedFub);
 
         return solver;
     }

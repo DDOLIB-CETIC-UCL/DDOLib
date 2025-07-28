@@ -27,12 +27,12 @@ public class TSPTests {
     }
 
     static Stream<TSPInstance> dataProvider2() throws IOException {
-        return IntStream.range(0, 100).boxed().map(i ->
-                new TSPInstance(3 + i % 10, i, 1000));
+        return IntStream.range(0, 10).boxed().map(i ->
+                new TSPInstance(22, i, 1000));
     }
 
     @ParameterizedTest
-    @MethodSource("dataProvider")
+    @MethodSource("dataProvider2")
     public void testTSP(TSPInstance instance) {
 
         Solver s = TSPMain.solveTSP(instance);

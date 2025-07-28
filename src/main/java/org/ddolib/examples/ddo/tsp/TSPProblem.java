@@ -4,10 +4,7 @@ package org.ddolib.examples.ddo.tsp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class TSPProblem implements Problem<TSPState> {
 
@@ -65,6 +62,7 @@ public class TSPProblem implements Problem<TSPState> {
             return singleton(0).stream().iterator();
         } else {
             ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
+            if (domain.isEmpty()) return Collections.singleton(0).iterator();
             return domain.iterator();
         }
     }
@@ -86,6 +84,6 @@ public class TSPProblem implements Problem<TSPState> {
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .getAsDouble();
+                .orElse(0);
     }
 }
