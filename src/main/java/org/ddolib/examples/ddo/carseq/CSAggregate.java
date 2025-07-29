@@ -102,6 +102,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
         CSProblem aggregatedProblem = new CSProblem(aggregatedNCars, problem.blockSize, problem.blockMax, aggregatedOptions);
         input = SolverInput.defaultInput(aggregatedProblem, new NoRelaxation(aggregatedProblem));
         input.fub = new CSFastUpperBound(aggregatedProblem);
+        input.varh = new CSVariableHeuristic(aggregatedProblem);
         input.ranking = new CSRanking();
     }
 

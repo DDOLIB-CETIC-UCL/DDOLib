@@ -66,7 +66,7 @@ public class CSTest {
         CSFastUpperBound fub = new CSFastUpperBound(problem);
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
-        VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
+        VariableHeuristic<CSState> varh = new CSVariableHeuristic(problem);
         CSAggregate aggregate = new CSAggregate(problem);
         AggregateSolver<CSState, Integer, CSState, Integer> solver = new AggregateSolver<>(
                 problem,
@@ -77,7 +77,9 @@ public class CSTest {
                 width,
                 CutSetType.LastExactLayer,
                 fub,
-                new DefaultDominanceChecker<>()
+                new DefaultDominanceChecker<>(),
+                Integer.MAX_VALUE,
+                0
         );
         solver.maximize();
 

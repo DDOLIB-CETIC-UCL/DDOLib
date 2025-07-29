@@ -196,7 +196,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         WidthHeuristic<T> width,
         CutSetType frontier,
         FastUpperBound<T> fub,
-        DominanceChecker<T, K> dominance
+        DominanceChecker<T, K> dominance,
+        int timeLimit,
+        double gapLimit
     ) {
         this.problem = problem;
         this.aggregated = aggregate.getProblem();
@@ -213,7 +215,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             (state) -> width.maximumWidth(state.state),
             new SimpleFrontier<>(aggregateRanking, frontier),
             new AggregateFastUpperBound(),
-            new AggregateDominanceChecker()
+            new AggregateDominanceChecker(),
+            timeLimit,
+            gapLimit
         );
     }
 
@@ -271,7 +275,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         if (variables.isEmpty()) return 0;
 
         // Select next variable (we don't have the states in the next layer but some problems may require a specific order for variables)
-        int var = aggregated.varh.nextVariable(variables, Collections.emptyIterator());
+        int var = aggregated.varh.nextVariable(variables, Collections.singleton(state).iterator());
         variables.remove(var);
 
         // Find children

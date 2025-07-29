@@ -68,7 +68,9 @@ public class TSPMain {
                 width,
                 CutSetType.LastExactLayer,
                 fub,
-                dominance
+                dominance,
+                Integer.MAX_VALUE,
+                0
         );
 
         /*final TSPProblem problem = new TSPProblem(instance.distanceMatrix);

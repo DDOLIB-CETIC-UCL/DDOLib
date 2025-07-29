@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
+import static org.ddolib.factory.Solvers.astarSolver;
 import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
@@ -33,18 +35,18 @@ import static org.ddolib.factory.Solvers.sequentialSolver;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
 
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
+        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
+        final FixedWidth<Integer> width = new FixedWidth<>(10);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final KSFastUpperBound fub = new KSFastUpperBound(problem);
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(
+        final Solver solverDDO = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -55,25 +57,46 @@ public class KSMain {
                 dominance
         );
 
+        final Solver solverAstar = astarSolver(
+                problem,
+                varh,
+                fub,
+                dominance
+        );
 
-        long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(0, true);
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        System.out.println("Search statistics:" + stats);
 
 
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        Map.of("ddo",solverDDO, "astar", solverAstar).forEach((name, solver) -> {;
+            System.out.println("Solving with " + name + "...");
 
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+            long start = System.currentTimeMillis();
+            SearchStatistics stats = solver.maximize(0, true);
+            double duration = (System.currentTimeMillis() - start) / 1000.0;
+
+            System.out.println("Search statistics using ddo:" + stats);
+
+
+            int[] solution = solver.bestSolution().map(decisions -> {
+                int[] values = new int[problem.nbVars()];
+                for (Decision d : decisions) {
+                    values[d.var()] = d.val();
+                }
+                return values;
+            }).get();
+
+            System.out.printf("Duration : %.3f seconds%n", duration);
+            System.out.printf("Objective: %f%n", solver.bestValue().get());
+            System.out.printf("Solution : %s%n", Arrays.toString(solution));
+
+
+        });
+
+
+
+    }
+
+    public static void solveWithDDO() {
+
     }
 
     public static KSProblem readInstance(final String fname) throws IOException {
