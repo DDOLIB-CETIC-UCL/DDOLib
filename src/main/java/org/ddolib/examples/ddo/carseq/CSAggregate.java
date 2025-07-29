@@ -43,7 +43,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
         Arrays.fill(merged, -1);
         int currentNClasses = problem.nClasses();
 
-        // Merge classes together until
+        // Merge classes together until required number of classes
         while (currentNClasses > N_CLASSES) {
             // Find 2 classes as close as possible to merge
             int minCost = Integer.MAX_VALUE;
@@ -85,8 +85,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
             if (merged[j] == -1) {
                 aggregatedOptions[i] = options[j];
                 aggregatedNCars[i] = nCars[j];
-                map[j] = i;
-                i++;
+                map[j] = i++;
             }
         }
         for (int j = 0; j < problem.nClasses(); j++) {

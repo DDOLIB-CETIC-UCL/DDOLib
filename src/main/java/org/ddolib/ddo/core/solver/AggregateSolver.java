@@ -269,7 +269,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      */
     private double preCompute(TAgg state, Set<Integer> variables) {
         if (variables.isEmpty()) return 0;
-        int var = variables.iterator().next();
+
+        // Select next variable (we don't have the states in the next layer but some problems may require a specific order for variables)
+        int var = aggregated.varh.nextVariable(variables, Collections.emptyIterator());
         variables.remove(var);
 
         // Find children
