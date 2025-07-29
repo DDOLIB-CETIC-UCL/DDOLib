@@ -65,6 +65,7 @@ public class TSPMain {
                 relax,
                 varh,
                 ranking,
+                AggregateSolver.RankingStrategy.AGGREGATE_ONLY,
                 width,
                 CutSetType.LastExactLayer,
                 fub,

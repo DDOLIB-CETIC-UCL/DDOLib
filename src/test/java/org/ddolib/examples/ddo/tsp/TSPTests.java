@@ -28,7 +28,7 @@ public class TSPTests {
 
     static Stream<TSPInstance> dataProvider2() throws IOException {
         return IntStream.range(0, 10).boxed().map(i ->
-                new TSPInstance(22, i, 1000));
+                new TSPInstance(18, i, 1000));
     }
 
     @ParameterizedTest

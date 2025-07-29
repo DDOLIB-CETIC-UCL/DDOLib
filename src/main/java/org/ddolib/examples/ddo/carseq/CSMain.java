@@ -44,6 +44,7 @@ public class CSMain {
                 relax,
                 varh,
                 ranking,
+                AggregateSolver.RankingStrategy.SPECIFIED_ONLY,
                 width,
                 CutSetType.LastExactLayer,
                 fub,

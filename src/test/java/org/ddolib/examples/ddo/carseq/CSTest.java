@@ -74,6 +74,7 @@ public class CSTest {
                 relax,
                 varh,
                 ranking,
+                AggregateSolver.RankingStrategy.SPECIFIED_ONLY,
                 width,
                 CutSetType.LastExactLayer,
                 fub,

@@ -191,6 +191,17 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
 
     /**
+     * Ranking to use to solve the initial problem
+     */
+    public enum RankingStrategy {
+        SPECIFIED_ONLY, // Use only the specified ranking
+        AGGREGATE_ONLY, // Use only the aggregated problem
+        AGGREGATE_THEN_SPECIFIED, // Use the aggregated problem, then the specified ranking as tie-breaker
+        SPECIFIED_THEN_AGGREGATE // Use the specified ranking, then the aggregated problem as a tie-breaker
+    }
+
+
+    /**
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
@@ -198,6 +209,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      * @param relax     A suitable relaxation for the problem we want to maximize
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
+     * @param strategy  How to combine the specified ranking with the ranking based on the aggregated problem
      * @param width     A heuristic to choose the maximum width of the DD you compile.
      * @param frontier  The set of nodes that must still be explored before
      *                  the problem can be considered 'solved'.
@@ -210,6 +222,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         Relaxation<T> relax,
         VariableHeuristic<T> varh,
         StateRanking<T> ranking,
+        RankingStrategy strategy,
         WidthHeuristic<T> width,
         CutSetType frontier,
         FastUpperBound<T> fub,
@@ -223,14 +236,14 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         this.relax = relax;
         this.fub = fub;
         this.checker = dominance;
-        StateRanking<AggregateState> aggregateRanking = (state1, state2) -> ranking.compare(state1.state, state2.state);
+        StateRanking<AggregateState> combinedRanking = combineRanking(ranking, strategy);
         solver = new SequentialSolver<>(
             new AggregateProblem(),
             new AggregateRelax(),
             (variables, states) -> varh.nextVariable(variables, new StateIterator(states)),
-            aggregateRanking,
+            combinedRanking,
             (state) -> width.maximumWidth(state.state),
-            new SimpleFrontier<>(aggregateRanking, frontier),
+            new SimpleFrontier<>(combinedRanking, frontier),
             new AggregateFastUpperBound(),
             new AggregateDominanceChecker(),
             timeLimit,
@@ -261,18 +274,42 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
 
     /**
+     * Combine the specified ranking and the ranking based on the aggregated problem using the specified strategy
+     */
+    private StateRanking<AggregateState> combineRanking(StateRanking<T> ranking, RankingStrategy strategy) {
+        Comparator<AggregateState> specifiedRanking = (state1, state2) -> ranking.compare(state1.state, state2.state);
+        Comparator<AggregateState> aggregateRanking = Comparator.comparingDouble(this::aggregateUpperBound).reversed();
+        return switch (strategy) {
+            case SPECIFIED_ONLY -> specifiedRanking::compare;
+            case AGGREGATE_ONLY -> aggregateRanking::compare;
+            case AGGREGATE_THEN_SPECIFIED -> aggregateRanking.thenComparing(specifiedRanking)::compare;
+            case SPECIFIED_THEN_AGGREGATE -> specifiedRanking.thenComparing(aggregateRanking)::compare;
+        };
+    }
+
+
+    /**
+     * Get an upper bound for a state using the aggregated problem
+     */
+    private double aggregateUpperBound(AggregateState state) {
+        HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.size(), k -> new HashMap<>());
+        if (!layer.containsKey(state.aggregated)) {
+            double sol = preCompute(state.aggregated, state.unassigned);
+            layer.put(state.aggregated, sol);
+            return sol;
+        }
+        return layer.get(state.aggregated);
+    }
+
+
+    /**
      * Fast upper bound for the initial problem combining a given fast upper bound and the aggregated problem
      */
     private class AggregateFastUpperBound implements FastUpperBound<AggregateState> {
         @Override
         public double fastUpperBound(AggregateState state, Set<Integer> variables) {
             double initialBound = fub.fastUpperBound(state.state, variables);
-            HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.size(), k -> new HashMap<>());
-            if (!layer.containsKey(state.aggregated)) {
-                double sol = preCompute(state.aggregated, state.unassigned);
-                layer.put(state.aggregated, sol);
-            }
-            double aggregateSol = layer.get(state.aggregated);
+            double aggregateSol = aggregateUpperBound(state);
 
             testAskedStates.add(state.aggregated);
             testAskedFub++;
