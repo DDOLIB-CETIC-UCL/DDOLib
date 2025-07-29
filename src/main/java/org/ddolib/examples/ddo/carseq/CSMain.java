@@ -34,7 +34,7 @@ public class CSMain {
         CSFastUpperBound fub = new CSFastUpperBound(problem);
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
-        VariableHeuristic<CSState> varh = new DefaultVariableHeuristic<>();
+        VariableHeuristic<CSState> varh = new CSVariableHeuristic(problem);
         Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(problem), problem.nbVars());
         Solver solver = Solvers.sequentialSolver(
