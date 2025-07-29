@@ -414,8 +414,9 @@ public final class SequentialSolver<T, K> implements Solver {
                 return SearchStatistics.SearchStatus.UNSAT;
             }
         } else {
-            if (gap > 0.0)
+            if (Math.abs(gap) > 0.0) {
                 return SearchStatistics.SearchStatus.SAT;
+            }
             else return SearchStatistics.SearchStatus.OPTIMAL;
         }
     }
@@ -425,7 +426,7 @@ public final class SequentialSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return 100 * (bestInFrontier - bestLB) / bestLB;
+            return 100.0 * (bestInFrontier - bestLB) / bestLB;
         }
     }
 }
