@@ -116,4 +116,9 @@ public class BitsetSet implements Set<Integer> {
     public void clear() {
         set.clear();
     }
+
+    @Override
+    public Object clone() {
+        return new BitsetSet((BitSet)set.clone());
+    }
 }

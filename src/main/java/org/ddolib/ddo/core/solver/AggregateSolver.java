@@ -42,9 +42,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private class AggregateState {
         private final T state;
         private final TAgg aggregated;
-        private final BitSet unassigned; // Set of unassigned variables for the aggregated problem
+        private final BitsetSet unassigned; // Set of unassigned variables for the aggregated problem
 
-        public AggregateState(T state, TAgg aggregated, BitSet unassigned) {
+        public AggregateState(T state, TAgg aggregated, BitsetSet unassigned) {
             this.state = state;
             this.aggregated = aggregated;
             this.unassigned = unassigned;
@@ -120,7 +120,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         public AggregateState initialState() {
             BitSet unassigned = new BitSet();
             unassigned.set(0, aggregated.problem.nbVars());
-            return new AggregateState(problem.initialState(), aggregated.problem.initialState(), unassigned);
+            return new AggregateState(problem.initialState(), aggregated.problem.initialState(), new BitsetSet(unassigned));
         }
 
         @Override
@@ -135,12 +135,13 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
         @Override
         public AggregateState transition(AggregateState state, Decision decision) {
-            Decision mapped = mapping.mapDecision(decision);
-            BitSet unassigned = (BitSet)state.unassigned.clone();
-            unassigned.clear(mapped.var());
+            TAgg nextAgg = mapping.aggregateTransition(state.aggregated, decision, state.unassigned);
+            int varAgg = mapping.assignedVariable(state.aggregated, decision, state.unassigned);
+            BitsetSet unassigned = (BitsetSet)state.unassigned.clone();
+            if (varAgg != -1) unassigned.remove(varAgg);
             return new AggregateState(
                 problem.transition(state.state, decision),
-                aggregated.problem.transition(state.aggregated, mapped),
+                nextAgg,
                 unassigned
             );
         }
@@ -266,9 +267,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         @Override
         public double fastUpperBound(AggregateState state, Set<Integer> variables) {
             double initialBound = fub.fastUpperBound(state.state, variables);
-            HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.cardinality(), k -> new HashMap<>());
+            HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.size(), k -> new HashMap<>());
             if (!layer.containsKey(state.aggregated)) {
-                double sol = preCompute(state.aggregated, new BitsetSet(state.unassigned));
+                double sol = preCompute(state.aggregated, state.unassigned);
                 layer.put(state.aggregated, sol);
             }
             double aggregateSol = layer.get(state.aggregated);

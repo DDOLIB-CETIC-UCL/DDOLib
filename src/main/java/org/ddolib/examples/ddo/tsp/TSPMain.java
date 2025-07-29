@@ -59,7 +59,7 @@ public class TSPMain {
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
         final DominanceChecker<TSPState, Integer> dominance = new DefaultDominanceChecker<>();
         final TSPAggregate aggregate = new TSPAggregate(problem);
-        final AggregateSolver<TSPState, Integer, TSPState, Integer> solver = new AggregateSolver<>(
+        final AggregateSolver<TSPState, Integer, TSPAggregateState, Integer> solver = new AggregateSolver<>(
                 problem,
                 aggregate,
                 relax,

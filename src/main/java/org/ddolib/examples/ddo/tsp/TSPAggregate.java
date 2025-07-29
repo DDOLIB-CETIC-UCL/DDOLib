@@ -2,15 +2,21 @@ package org.ddolib.examples.ddo.tsp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Aggregate;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.SolverInput;
 
-import java.util.Arrays;
+import java.util.*;
 
 
-public class TSPAggregate implements Aggregate<TSPState, Integer> {
+public class TSPAggregate implements Aggregate<TSPAggregateState, Integer> {
     private final TSPProblem problem;
-    private SolverInput<TSPState, Integer> input;
+    private SolverInput<TSPAggregateState, Integer> input;
+    private TSPProblem aggregatedProblem;
+    private TSPRelax aggregatedRelax;
+    private TSPFastUpperBound aggregatedFub;
     private int[] map; // Node in the initial problem -> node in the aggregated problem
+    private int[] nToVisit; // Number of nodes in the initial problem corresponding to each node in the aggregated problem
 
     private final int N = 12;
 
@@ -21,13 +27,28 @@ public class TSPAggregate implements Aggregate<TSPState, Integer> {
 
 
     @Override
-    public SolverInput<TSPState, Integer> getProblem() {
+    public SolverInput<TSPAggregateState, Integer> getProblem() {
         return input;
     }
 
+
     @Override
-    public Decision mapDecision(Decision decision) {
-        return new Decision(decision.var(), map[decision.val()]);
+    public TSPAggregateState aggregateTransition(TSPAggregateState state, Decision decision, Set<Integer> variables) {
+        int[] nToVisit = Arrays.copyOf(state.nToVisit, N);
+        int aggregatedVal = map[decision.val()];
+        nToVisit[aggregatedVal]--;
+        BitSet toVisit = (BitSet)state.state.toVisit.clone();
+        if (nToVisit[aggregatedVal] == 0) {
+            toVisit.clear(aggregatedVal);
+        }
+        return new TSPAggregateState(new TSPState(state.state.singleton(aggregatedVal), toVisit), nToVisit);
+    }
+
+
+    @Override
+    public int assignedVariable(TSPAggregateState state, Decision decision, Set<Integer> variables) {
+        if (state.nToVisit[map[decision.val()]] == 1) return N - variables.size();
+        return -1;
     }
 
 
@@ -75,6 +96,7 @@ public class TSPAggregate implements Aggregate<TSPState, Integer> {
         // Create new problem
         double[][] aggregatedDistances = new double[N][N];
         map = new int[problem.n];
+        nToVisit = new int[N];
         int i = 0;
         for (int j = 0; j < problem.n; j++) {
             if (merged[j] != -1) continue;
@@ -82,20 +104,82 @@ public class TSPAggregate implements Aggregate<TSPState, Integer> {
                 if (merged[k] != -1) continue;
                 aggregatedDistances[i][map[k]] = aggregatedDistances[map[k]][i] = distances[j][k];
             }
+            nToVisit[i] = 1;
             map[j] = i++;
         }
         for (int j = 0; j < problem.n; j++) {
-            if (merged[j] != -1) continue;
+            if (merged[j] == -1) continue;
             int index = j, parent = merged[j];
             while (parent != -1) {
                 index = parent;
                 parent = merged[parent];
             }
+            nToVisit[map[index]]++;
             map[j] = map[index];
         }
 
-        TSPProblem problem = new TSPProblem(aggregatedDistances);
-        input = SolverInput.defaultInput(problem, new TSPRelax(problem));
-        input.fub = new TSPFastUpperBound(problem);
+        aggregatedProblem = new TSPProblem(aggregatedDistances);
+        aggregatedRelax = new TSPRelax(aggregatedProblem);
+        aggregatedFub = new TSPFastUpperBound(aggregatedProblem);
+        input = SolverInput.defaultInput(new TSPAggregateProblem(), new TSPAggregateRelax());
+        input.fub = (s, v) -> aggregatedFub.fastUpperBound(s.state, v);
+    }
+
+
+    private class TSPAggregateProblem implements Problem<TSPAggregateState> {
+        @Override
+        public int nbVars() {
+            return N;
+        }
+
+        @Override
+        public TSPAggregateState initialState() {
+            return new TSPAggregateState(aggregatedProblem.initialState(), nToVisit);
+        }
+
+        @Override
+        public double initialValue() {
+            return 0;
+        }
+
+        @Override
+        public Iterator<Integer> domain(TSPAggregateState state, int var) {
+            return aggregatedProblem.domain(state.state, var);
+        }
+
+        @Override
+        public TSPAggregateState transition(TSPAggregateState state, Decision decision) {
+            return new TSPAggregateState(aggregatedProblem.transition(state.state, decision), state.nToVisit);
+        }
+
+        @Override
+        public double transitionCost(TSPAggregateState state, Decision decision) {
+            return -state.state.current.stream()
+                    .mapToDouble(possibleCurrentNode -> aggregatedProblem.distanceMatrix[possibleCurrentNode][decision.val()])
+                    .min()
+                    .getAsDouble();
+        }
+    }
+
+
+    private class TSPAggregateRelax implements Relaxation<TSPAggregateState> {
+        @Override
+        public TSPAggregateState mergeStates(Iterator<TSPAggregateState> states) {
+            ArrayList<TSPAggregateState> statesList = new ArrayList<>();
+            while (states.hasNext()) statesList.add(states.next());
+            int[] nToVisit = new int[N];
+            for (TSPAggregateState state : statesList) {
+                for (int i = 0; i < N; i++) {
+                    if (state.nToVisit[i] > nToVisit[i]) nToVisit[i] = state.nToVisit[i];
+                }
+            }
+            TSPState state = aggregatedRelax.mergeStates(statesList.stream().map(s ->s.state).iterator());
+            return new TSPAggregateState(state, nToVisit);
+        }
+
+        @Override
+        public double relaxEdge(TSPAggregateState from, TSPAggregateState to, TSPAggregateState merged, Decision d, double cost) {
+            return cost;
+        }
     }
 }

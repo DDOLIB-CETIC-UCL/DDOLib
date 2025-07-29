@@ -84,6 +84,6 @@ public class TSPProblem implements Problem<TSPState> {
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .orElse(0);
+                .getAsDouble();
     }
 }

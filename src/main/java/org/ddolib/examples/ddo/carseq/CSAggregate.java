@@ -7,6 +7,7 @@ import org.ddolib.modeling.SolverInput;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Set;
 
 
 public class CSAggregate implements Aggregate<CSState, Integer> {
@@ -28,8 +29,13 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
     }
 
     @Override
-    public Decision mapDecision(Decision decision) {
-        return new Decision(decision.var(), map[decision.val()]);
+    public CSState aggregateTransition(CSState state, Decision decision, Set<Integer> variables) {
+        return input.problem.transition(state, new Decision(decision.var(), map[decision.val()]));
+    }
+
+    @Override
+    public int assignedVariable(CSState state, Decision decision, Set<Integer> variables) {
+        return decision.var();
     }
 
 
