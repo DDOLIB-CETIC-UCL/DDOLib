@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.*;
+import org.ddolib.util.BitsetSet;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -21,7 +22,13 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private final FastUpperBound<T> fub;
     private final DominanceChecker<T, K> checker;
     private final SequentialSolver<AggregateState, Integer> solver;
-    private final HashMap<TAgg, Double> preComputed = new HashMap<>(); // Pre-computed best solution for each aggregated state
+
+    /**
+     * Pre-computed best solution for states in the aggregated problem.
+     * The states are organised by layer, the key of a layer is the number of unassigned variables in this layer.
+     * It assumes variables for the aggregated problem are assigned in the same order when exploring the initial and the aggregated diagram.
+     */
+    private final HashMap<Integer, HashMap<TAgg, Double>> preComputed = new HashMap<>();
 
     // Test
     public int testAskedFub = 0;
@@ -35,10 +42,12 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private class AggregateState {
         private final T state;
         private final TAgg aggregated;
+        private final BitSet unassigned; // Set of unassigned variables for the aggregated problem
 
-        public AggregateState(T state, TAgg aggregated) {
+        public AggregateState(T state, TAgg aggregated, BitSet unassigned) {
             this.state = state;
             this.aggregated = aggregated;
+            this.unassigned = unassigned;
         }
 
         @Override
@@ -109,7 +118,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
         @Override
         public AggregateState initialState() {
-            return new AggregateState(problem.initialState(), aggregated.problem.initialState());
+            BitSet unassigned = new BitSet();
+            unassigned.set(0, aggregated.problem.nbVars());
+            return new AggregateState(problem.initialState(), aggregated.problem.initialState(), unassigned);
         }
 
         @Override
@@ -124,9 +135,13 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
         @Override
         public AggregateState transition(AggregateState state, Decision decision) {
+            Decision mapped = mapping.mapDecision(decision);
+            BitSet unassigned = (BitSet)state.unassigned.clone();
+            unassigned.clear(mapped.var());
             return new AggregateState(
                 problem.transition(state.state, decision),
-                aggregated.problem.transition(state.aggregated, mapping.mapDecision(decision))
+                aggregated.problem.transition(state.aggregated, mapped),
+                unassigned
             );
         }
 
@@ -147,7 +162,8 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             while (states.hasNext()) statesList.add(states.next());
             return new AggregateState(
                 relax.mergeStates(new StateIterator(statesList.iterator())),
-                aggregated.relax.mergeStates(new AggregatedIterator(statesList.iterator()))
+                aggregated.relax.mergeStates(new AggregatedIterator(statesList.iterator())),
+                statesList.getFirst().unassigned
             );
         }
 
@@ -250,15 +266,17 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         @Override
         public double fastUpperBound(AggregateState state, Set<Integer> variables) {
             double initialBound = fub.fastUpperBound(state.state, variables);
-            if (!preComputed.containsKey(state.aggregated)) {
-                preCompute(state.aggregated, variables);
+            HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.cardinality(), k -> new HashMap<>());
+            if (!layer.containsKey(state.aggregated)) {
+                double sol = preCompute(state.aggregated, new BitsetSet(state.unassigned));
+                layer.put(state.aggregated, sol);
             }
-            double aggregateSol = preComputed.get(state.aggregated);
+            double aggregateSol = layer.get(state.aggregated);
 
             testAskedStates.add(state.aggregated);
             testAskedFub++;
             if (aggregateSol < initialBound) testBetterFub++;
-            testPreComputed = preComputed.size();
+            testPreComputed = preComputed.values().stream().mapToInt(HashMap::size).sum();
 
             return Math.min(initialBound, aggregateSol);
         }
@@ -271,12 +289,13 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      * @param variables The set of unassigned variables
      * @return Best solution found from this node
      */
-    private double preCompute(TAgg state, Set<Integer> variables) {
+    private double preCompute(TAgg state, BitsetSet variables) {
         if (variables.isEmpty()) return 0;
 
         // Select next variable (we don't have the states in the next layer but some problems may require a specific order for variables)
         int var = aggregated.varh.nextVariable(variables, Collections.singleton(state).iterator());
         variables.remove(var);
+        HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(variables.size(), k -> new HashMap<>());
 
         // Find children
         double bestSol = Double.NEGATIVE_INFINITY;
@@ -288,7 +307,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             TAgg child = aggregated.problem.transition(state, decision);
             double cost = aggregated.problem.transitionCost(state, decision);
 
-            Double sol = preComputed.get(child);
+            Double sol = layer.get(child);
             if (sol != null) { // Already visited
                 if (sol + cost > bestSol) {
                     bestSol = sol + cost;
@@ -310,6 +329,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         for (AggregateNode node : nodes) {
             if (node.cost + node.fub > bestSol) {
                 double sol = preCompute(node.state, variables);
+                layer.put(node.state, sol);
                 if (node.cost + sol > bestSol) {
                     bestSol = sol + node.cost;
                 }
@@ -317,7 +337,6 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         }
 
         // Return best result
-        preComputed.put(state, bestSol);
         variables.add(var);
         return bestSol;
     }
