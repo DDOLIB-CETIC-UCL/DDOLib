@@ -30,7 +30,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
     }
 
     @Override
-    public CSState aggregateTransition(CSState state, Decision decision, Set<Integer> variables) {
+    public CSState aggregateTransition(CSState state, Decision decision) {
         return input.problem.transition(state, new Decision(decision.var(), map[decision.val()]));
     }
 

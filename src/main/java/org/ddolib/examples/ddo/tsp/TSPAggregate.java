@@ -33,7 +33,7 @@ public class TSPAggregate implements Aggregate<TSPAggregateState, Integer> {
 
 
     @Override
-    public TSPAggregateState aggregateTransition(TSPAggregateState state, Decision decision, Set<Integer> variables) {
+    public TSPAggregateState aggregateTransition(TSPAggregateState state, Decision decision) {
         int[] nToVisit = Arrays.copyOf(state.nToVisit, N);
         int aggregatedVal = map[decision.val()];
         nToVisit[aggregatedVal]--;

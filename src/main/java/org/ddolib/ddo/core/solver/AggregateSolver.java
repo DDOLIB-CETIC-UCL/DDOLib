@@ -135,7 +135,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
 
         @Override
         public AggregateState transition(AggregateState state, Decision decision) {
-            TAgg nextAgg = mapping.aggregateTransition(state.aggregated, decision, state.unassigned);
+            TAgg nextAgg = mapping.aggregateTransition(state.aggregated, decision);
             int varAgg = mapping.assignedVariable(state.aggregated, decision, state.unassigned);
             BitsetSet unassigned = (BitsetSet)state.unassigned.clone();
             if (varAgg != -1) unassigned.remove(varAgg);

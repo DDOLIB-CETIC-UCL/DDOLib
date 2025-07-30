@@ -19,10 +19,9 @@ public interface Aggregate<T, K> {
      * Applies a transition in the aggregated problem corresponding to a decision in the initial problem.
      * @param state Current aggregated state
      * @param decision Decision in the initial problem
-     * @param variables The set of unassigned variables
      * @return Next aggregated state
      */
-    T aggregateTransition(T state, Decision decision, Set<Integer> variables);
+    T aggregateTransition(T state, Decision decision);
 
     /**
      * Returns the variable that is assigned in the aggregated problem when
@@ -36,7 +35,7 @@ public interface Aggregate<T, K> {
      * it with the associated initial problem (using this method).
      * @param state Current aggregated state
      * @param decision Decision in the initial problem
-     * @param variables The set of unassigned variables
+     * @param variables The set of unassigned variables in the aggregated problem
      * @return Index of the assigned variable, or -1 if no variable was assigned
      */
     int assignedVariable(T state, Decision decision, Set<Integer> variables);
