@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.OrderedVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
@@ -34,7 +35,7 @@ public class CSMain {
         CSFastUpperBound fub = new CSFastUpperBound(problem);
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
-        VariableHeuristic<CSState> varh = new CSVariableHeuristic(problem);
+        VariableHeuristic<CSState> varh = new OrderedVariableHeuristic<>(problem);
         Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(problem), problem.nbVars());
         Solver solver = Solvers.sequentialSolver(
