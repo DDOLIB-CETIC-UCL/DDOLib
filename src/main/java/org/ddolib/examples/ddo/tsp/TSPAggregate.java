@@ -167,13 +167,11 @@ public class TSPAggregate implements Aggregate<TSPAggregateState, Integer> {
         public TSPAggregateState mergeStates(Iterator<TSPAggregateState> states) {
             ArrayList<TSPAggregateState> statesList = new ArrayList<>();
             while (states.hasNext()) statesList.add(states.next());
+            TSPState state = aggregatedRelax.mergeStates(statesList.stream().map(s -> s.state).iterator());
             int[] nToVisit = new int[N];
-            for (TSPAggregateState state : statesList) {
-                for (int i = 0; i < N; i++) {
-                    if (state.nToVisit[i] > nToVisit[i]) nToVisit[i] = state.nToVisit[i];
-                }
+            for (int i = 0; i < problem.n; i++) {
+                if (state.toVisit.get(i)) nToVisit[map[i]]++;
             }
-            TSPState state = aggregatedRelax.mergeStates(statesList.stream().map(s ->s.state).iterator());
             return new TSPAggregateState(state, nToVisit);
         }
 
