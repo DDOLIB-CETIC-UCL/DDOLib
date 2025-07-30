@@ -568,17 +568,29 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      **/
     private List<NodeSubProblem<T>>[] clusterGHP(final int maxWidth, final StateDistance<T> distance, final Random rnd,
                                                  final boolean mostDistantPivot, final boolean breakWithMaxDistance) {
-        class ClusterNode {
-            final double avgDistance;
+        class ClusterNode implements Comparable<ClusterNode> {
+            final double distance;
             final List<NodeSubProblem<T>> cluster;
 
             public ClusterNode(double avgDistance, List<NodeSubProblem<T>> cluster) {
-                this.avgDistance = avgDistance;
+                this.distance = avgDistance;
                 this.cluster = cluster;
+            }
+
+            @Override
+            public int compareTo(ClusterNode o) {
+                //return Double.compare(this.distance, o.distance);
+                if (this.distance == o.distance) {
+                    return Integer.compare(this.cluster.size(), o.cluster.size());
+                } else {
+                    return Double.compare(this.distance, o.distance);
+                }
             }
         }
 
-        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>((a, b) -> Double.compare(b.avgDistance, a.avgDistance));
+
+
+        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
         pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(currentLayer)));
 
         while (pqClusters.size() < maxWidth) {
