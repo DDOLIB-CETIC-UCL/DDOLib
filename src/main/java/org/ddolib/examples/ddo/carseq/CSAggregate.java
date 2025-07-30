@@ -1,6 +1,7 @@
 package org.ddolib.examples.ddo.carseq;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.heuristics.variable.OrderedVariableHeuristic;
 import org.ddolib.modeling.Aggregate;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.SolverInput;
@@ -108,7 +109,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
         CSProblem aggregatedProblem = new CSProblem(aggregatedNCars, problem.blockSize, problem.blockMax, aggregatedOptions);
         input = SolverInput.defaultInput(aggregatedProblem, new NoRelaxation(aggregatedProblem));
         input.fub = new CSFastUpperBound(aggregatedProblem);
-        input.varh = new CSVariableHeuristic(aggregatedProblem);
+        input.varh = new OrderedVariableHeuristic<>(aggregatedProblem);
         input.ranking = new CSRanking();
     }
 
