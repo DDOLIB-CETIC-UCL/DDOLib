@@ -2,6 +2,7 @@ package org.ddolib.examples.ddo.carseq;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -10,6 +11,8 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.factory.Solvers;
 
 import java.io.BufferedReader;
@@ -37,6 +40,7 @@ public class CSMain {
         VariableHeuristic<CSState> varh = new CSVariableHeuristic(problem);
         Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         SimpleDominanceChecker<CSState, Integer> dominance = new SimpleDominanceChecker<>(new CSDominance(problem), problem.nbVars());
+        StateDistance<CSState> distance = new CSDistance();
         Solver solver = Solvers.sequentialSolver(
                 problem,
                 relax,
@@ -44,7 +48,12 @@ public class CSMain {
                 ranking,
                 width,
                 frontier,
-                fub
+                fub,
+                ClusterStrat.GHP,
+                ClusterStrat.GHP,
+                distance,
+                new DefaultStateCoordinates<>(),
+                314
         );
 
         SearchStatistics stats = solver.maximize(2, false);
