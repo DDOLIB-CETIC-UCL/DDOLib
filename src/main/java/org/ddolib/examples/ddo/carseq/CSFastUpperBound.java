@@ -17,7 +17,7 @@ public class CSFastUpperBound implements FastUpperBound<CSState> {
         for (int i = 0; i < problem.nOptions(); i++) {
             int k = problem.blockMax[i], l = problem.blockSize[i], n = state.nToBuild;
             int max = n / l * k +
-                Math.max(0, Math.min(n % l, problem.blockMax[i] - Long.bitCount(state.previousBlocks[i] & (((1L << (l - 1)) - 1) >> (n % l - 1)))));
+                Math.max(0, Math.min(n % l, problem.blockMax[i] - Long.bitCount(state.previousBlocks[i] & ((1L << (l - n % l)) - 1))));
             if (state.nWithOption[i] > max) {
                 bound -= state.nWithOption[i] - max;
             }
