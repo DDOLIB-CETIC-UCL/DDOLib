@@ -26,9 +26,9 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     /**
      * Pre-computed best solution for states in the aggregated problem.
      * The states are organised by layer, the key of a layer is the number of unassigned variables in this layer.
-     * It assumes variables for the aggregated problem are assigned in the same order when exploring the initial and the aggregated diagram.
+     * It is assumed that variables for the aggregated problem are assigned in the same order when exploring the initial and the aggregated diagram.
      */
-    private final HashMap<Integer, HashMap<TAgg, Double>> preComputed = new HashMap<>();
+    private final HashMap<TAgg, Double>[] preComputed;
 
     // Test
     public int testAskedFub = 0;
@@ -249,6 +249,8 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             timeLimit,
             gapLimit
         );
+        preComputed = new HashMap[aggregated.problem.nbVars() + 1];
+        for (int i = 0; i < aggregated.problem.nbVars() + 1; i++) preComputed[i] = new HashMap<>();
     }
 
 
@@ -292,7 +294,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      * Get an upper bound for a state using the aggregated problem
      */
     private double aggregateUpperBound(AggregateState state) {
-        HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(state.unassigned.size(), k -> new HashMap<>());
+        HashMap<TAgg, Double> layer = preComputed[state.unassigned.size()];
         if (!layer.containsKey(state.aggregated)) {
             double sol = preCompute(state.aggregated, state.unassigned);
             layer.put(state.aggregated, sol);
@@ -314,7 +316,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             testAskedStates.add(state.aggregated);
             testAskedFub++;
             if (aggregateSol < initialBound) testBetterFub++;
-            testPreComputed = preComputed.values().stream().mapToInt(HashMap::size).sum();
+            testPreComputed = Arrays.stream(preComputed).mapToInt(HashMap::size).sum();
 
             return Math.min(initialBound, aggregateSol);
         }
@@ -333,7 +335,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         // Select next variable (we don't have the states in the next layer but some problems may require a specific order for variables)
         int var = aggregated.varh.nextVariable(variables, Collections.singleton(state).iterator());
         variables.remove(var);
-        HashMap<TAgg, Double> layer = preComputed.computeIfAbsent(variables.size(), k -> new HashMap<>());
+        HashMap<TAgg, Double> layer = preComputed[variables.size()];
 
         // Find children
         double bestSol = Double.NEGATIVE_INFINITY;
