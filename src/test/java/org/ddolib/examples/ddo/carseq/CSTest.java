@@ -41,7 +41,10 @@ public class CSTest {
         File dir = new File("data/CarSeq");
         for (File file : dir.listFiles()) {
             String path = file.getPath();
-            if (path.startsWith("data/CarSeq/instance")) testSolve(path);
+            if (path.startsWith("data/CarSeq/instance")) {
+                System.out.println("Solving " + path);
+                testSolve(path);
+            }
         }
     }
 
@@ -66,7 +69,8 @@ public class CSTest {
                 ranking,
                 width,
                 frontier,
-                fub
+                fub,
+                dominance
         );
         solver.maximize();
 

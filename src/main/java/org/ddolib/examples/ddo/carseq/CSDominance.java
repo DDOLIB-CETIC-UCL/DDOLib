@@ -29,27 +29,27 @@ public class CSDominance implements Dominance<CSState, Integer> {
     }
 
 
-    // Check if state1 is easier than state2 for previousBlocks
+    // Check if state1 is harder than state2 for previousBlocks
     private boolean dominatedPreviousBlocks(CSState state1, CSState state2) {
         for (int i = 0; i < problem.nOptions(); i++) { // Check for each option
             long previous1 = state1.previousBlocks[i], previous2 = state2.previousBlocks[i];
             int nPrevious1 = 0, nPrevious2 = 0;
-            for (int j = 0; j < problem.blockSize[i] - 1; j++) { // Easier if previous1[0:j] <= previous2[0:j] for all j
+            for (int j = 0; j < problem.blockSize[i] - 1; j++) { // Harder if previous1[0:j] >= previous2[0:j] for all j
                 if ((previous1 & (1L << j)) != 0) nPrevious1++;
                 if ((previous2 & (1L << j)) != 0) nPrevious2++;
-                if (nPrevious1 > nPrevious2) return false;
+                if (nPrevious1 < nPrevious2) return false;
             }
         }
         return true;
     }
 
 
-    // Check if state1 is easier than state2 for carsToBuild
+    // Check if state1 is harder than state2 for carsToBuild
     private boolean dominatedCarsToBuild(CSState state1, CSState state2) {
         // Compute sources and sinks capacity
         int[] diff = new int[problem.nClasses() + 1];
         for (int i = 0; i < problem.nClasses() + 1; i++) {
-            diff[i] = state2.carsToBuild[i] - state1.carsToBuild[i];
+            diff[i] = state1.carsToBuild[i] - state2.carsToBuild[i];
         }
 
         // Approximate max flow

@@ -45,7 +45,8 @@ public class CSMain {
                 ranking,
                 width,
                 frontier,
-                fub
+                fub,
+                dominance
         );
 
         SearchStatistics stats = solver.maximize(2, false);
