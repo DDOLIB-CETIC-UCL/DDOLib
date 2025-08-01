@@ -399,6 +399,51 @@ public class Solvers {
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
      * @param <K>       The type of the dominance keys.
+     * @param timeLimit the budget of time provide to solve the problem.
+     * @param gapLimit  The stop the search when the gat of the search reach the limit.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+                                                                 final Relaxation<T> relax,
+                                                                 final VariableHeuristic<T> varh,
+                                                                 final StateRanking<T> ranking,
+                                                                 final WidthHeuristic<T> width,
+                                                                 final Frontier<T> frontier,
+                                                                 final FastUpperBound<T> fub,
+                                                                 final DominanceChecker<T, K> dominance,
+                                                                 final int timeLimit,
+                                                                 final double gapLimit,
+                                                                 final ClusterStrat relaxStrat,
+                                                                 final ClusterStrat restrictionStrat,
+                                                                 final StateDistance<T> distance,
+                                                                 final StateCoordinates<T> coord,
+                                                                 int seed) {
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, timeLimit, gapLimit, relaxStrat, restrictionStrat, distance, coord, seed);
+    }
+
+
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of the states.
+     * @param <K>       The type of the dominance keys.
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      * @return A solver for the input problem using the given configuration.
      */
@@ -502,6 +547,65 @@ public class Solvers {
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {
         return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, Integer.MAX_VALUE, 0.0, relaxStrat, restrictionStrat, distance, coord, seed);
+    }
+
+
+    /**
+     * Instantiates a sequential solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param relax     A suitable relaxation for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param ranking   A heuristic to identify the most promising nodes.
+     * @param width     A heuristic to choose the maximum width of the DD you compile.
+     * @param frontier  The set of nodes that must still be explored before
+     *                  the problem can be considered 'solved'.
+     *                  <p>
+     *                  # Note:
+     *                  This fringe orders the nodes by upper bound (so the highest ub is going
+     *                  to pop first). So, it is guaranteed that the upper bound of the first
+     *                  node being popped is an upper bound on the value reachable by exploring
+     *                  any of the nodes remaining on the fringe. As a consequence, the
+     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
+     *                  lower bound is popped.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of states.
+     * @param <K>       The type of dominance keys.
+     * @return A solver for the input problem using the given configuration.
+     */
+    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+                                                                 final Relaxation<T> relax,
+                                                                 final VariableHeuristic<T> varh,
+                                                                 final StateRanking<T> ranking,
+                                                                 final WidthHeuristic<T> width,
+                                                                 final Frontier<T> frontier,
+                                                                 final DominanceChecker<T, K> dominance,
+                                                                 int timeLimit,
+                                                                 double gapLimit,
+                                                                 final ClusterStrat relaxStrat,
+                                                                 final ClusterStrat restrictionStrat,
+                                                                 final StateDistance<T> distance,
+                                                                 final StateCoordinates<T> coord,
+                                                                 final int seed) {
+        DefaultFastUpperBound<T> fub = new DefaultFastUpperBound<>();
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, timeLimit, gapLimit, relaxStrat, restrictionStrat, distance, coord, seed);
+    }
+
+    public static <T, K> SequentialSolver<T, K> sequentialSolver(final Problem<T> problem,
+                                                                 final Relaxation<T> relax,
+                                                                 final VariableHeuristic<T> varh,
+                                                                 final StateRanking<T> ranking,
+                                                                 final WidthHeuristic<T> width,
+                                                                 final Frontier<T> frontier,
+                                                                 final DominanceChecker<T, K> dominance,
+                                                                 int timeLimit,
+                                                                 final ClusterStrat relaxStrat,
+                                                                 final ClusterStrat restrictionStrat,
+                                                                 final StateDistance<T> distance,
+                                                                 final StateCoordinates<T> coord,
+                                                                 final int seed) {
+        DefaultFastUpperBound<T> fub = new DefaultFastUpperBound<>();
+        return new SequentialSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, timeLimit, 0.0, relaxStrat, restrictionStrat, distance, coord, seed);
     }
 
     /**
