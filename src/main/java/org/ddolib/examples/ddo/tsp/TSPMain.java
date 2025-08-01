@@ -93,8 +93,6 @@ public class TSPMain {
 
         SearchStatistics stats = solver.maximize(2, false);
         System.out.println(stats);
-        System.out.println("States used : " + solver.testAskedStates.size() + " / " + solver.testPreComputed);
-        System.out.println("Bounds improved : " + solver.testBetterFub + " / " + solver.testAskedFub);
 
         return solver;
     }

@@ -1,23 +1,16 @@
 package org.ddolib.examples.ddo.carseq;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.OrderedVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.AggregateSolver;
 import org.ddolib.factory.Solvers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
@@ -38,20 +31,15 @@ public class CSMain {
         CSRanking ranking = new CSRanking();
         FixedWidth<CSState> width = new FixedWidth<>(500);
         VariableHeuristic<CSState> varh = new OrderedVariableHeuristic<>(problem);
-        CSAggregate aggregate = new CSAggregate(problem);
-        AggregateSolver<CSState, Integer, CSState, Integer> solver = new AggregateSolver<>(
+        Frontier<CSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        Solver solver = Solvers.sequentialSolver(
                 problem,
-                aggregate,
                 relax,
                 varh,
                 ranking,
-                AggregateSolver.RankingStrategy.SPECIFIED_ONLY,
                 width,
-                CutSetType.LastExactLayer,
-                fub,
-                new DefaultDominanceChecker<>(),
-                Integer.MAX_VALUE,
-                0
+                frontier,
+                fub
         );
 
         SearchStatistics stats = solver.maximize(2, false);
@@ -66,8 +54,5 @@ public class CSMain {
             System.out.println(problem.solutionToString(cars, (int)solver.bestValue().get().doubleValue()));
         }
         else System.out.println("No solution");
-
-        System.out.println("States used : " + solver.testAskedStates.size() + " / " + solver.testPreComputed);
-        System.out.println("Bounds improved : " + solver.testBetterFub + " / " + solver.testAskedFub);
     }
 }

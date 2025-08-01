@@ -12,14 +12,12 @@ import org.ddolib.modeling.*;
 import org.ddolib.util.BitsetSet;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private final Problem<T> problem;
     private final SolverInput<TAgg, KAgg> aggregated;
     private final Aggregate<TAgg, KAgg> mapping;
     private final Relaxation<T> relax;
-    private final FastUpperBound<T> fub;
     private final DominanceChecker<T, K> checker;
     private final SequentialSolver<AggregateState, Integer> solver;
 
@@ -29,12 +27,6 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      * It is assumed that variables for the aggregated problem are assigned in the same order when exploring the initial and the aggregated diagram.
      */
     private final HashMap<TAgg, Double>[] preComputed;
-
-    // Test
-    public int testAskedFub = 0;
-    public int testBetterFub = 0;
-    public HashSet<TAgg> testAskedStates = new HashSet<>();
-    public int testPreComputed;
 
     /**
      * Wrapper that contains the initial and the aggregated states
@@ -234,7 +226,6 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
         this.aggregated = aggregate.getProblem();
         this.mapping = aggregate;
         this.relax = relax;
-        this.fub = fub;
         this.checker = dominance;
         StateRanking<AggregateState> combinedRanking = combineRanking(ranking, strategy);
         solver = new SequentialSolver<>(
@@ -244,7 +235,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             combinedRanking,
             (state) -> width.maximumWidth(state.state),
             new SimpleFrontier<>(combinedRanking, frontier),
-            new AggregateFastUpperBound(),
+            (state, variables) -> Math.min(fub.fastUpperBound(state.state, variables), aggregateUpperBound(state)),
             new AggregateDominanceChecker(),
             timeLimit,
             gapLimit
@@ -301,25 +292,6 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
             return sol;
         }
         return layer.get(state.aggregated);
-    }
-
-
-    /**
-     * Fast upper bound for the initial problem combining a given fast upper bound and the aggregated problem
-     */
-    private class AggregateFastUpperBound implements FastUpperBound<AggregateState> {
-        @Override
-        public double fastUpperBound(AggregateState state, Set<Integer> variables) {
-            double initialBound = fub.fastUpperBound(state.state, variables);
-            double aggregateSol = aggregateUpperBound(state);
-
-            testAskedStates.add(state.aggregated);
-            testAskedFub++;
-            if (aggregateSol < initialBound) testBetterFub++;
-            testPreComputed = Arrays.stream(preComputed).mapToInt(HashMap::size).sum();
-
-            return Math.min(initialBound, aggregateSol);
-        }
     }
 
 
