@@ -5,7 +5,6 @@ import org.ddolib.modeling.Relaxation;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Set;
 
 
 public class CSRelax implements Relaxation<CSState> {

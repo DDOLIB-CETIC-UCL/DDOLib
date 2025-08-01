@@ -55,16 +55,16 @@ public class CSDominance implements Dominance<CSState, Integer> {
         // Approximate max flow
         for (int i = 0; i < problem.nClasses() + 1; i++) {
             int node = order[i];
-            if (diff[node] > 0) { // Found source
+            if (diff[node] > 0) { // Found source -> try to assign its flow to reachable sources
                 for (int child : reachable[node]) {
-                    if (diff[child] < 0) {
+                    if (diff[child] < 0) { // Found sink -> add flow from source to sink
                         int flow = Math.min(diff[node], -diff[child]);
                         diff[node] -= flow;
                         diff[child] += flow;
-                        if (diff[node] == 0) break;
+                        if (diff[node] == 0) break; // Source is saturated
                     }
                 }
-                if (diff[node] > 0) return false;
+                if (diff[node] > 0) return false; // Source couldn't be saturated
             }
         }
         return true;
@@ -90,7 +90,7 @@ public class CSDominance implements Dominance<CSState, Integer> {
                         break;
                     }
                 }
-                if (dominates && Arrays.equals(problem.carOptions[i], problem.carOptions[j])) { // Tie breaker
+                if (dominates && Arrays.equals(problem.carOptions[i], problem.carOptions[j])) { // Tie-breaker
                     dominates = i < j;
                 }
                 if (dominates) {

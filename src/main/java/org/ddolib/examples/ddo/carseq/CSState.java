@@ -7,13 +7,17 @@ import java.util.stream.IntStream;
 
 
 public class CSState {
+    // State information
     public final int[] carsToBuild; // Number of cars of each class that must be built
     public final long[] previousBlocks; // For each option and each car in the block, true if the option was used previously for that car
 
+    // Incrementally computed
     public final int[] nWithOption; // For each option, number of cars with that option in previousBlocks or carsToBuild
     public final int nToBuild; // Total number of cars to build
+
+    // Pre-computed
     public final double utilizationRate; // sum(withOption / max)
-    private final int hash; // Pre-computed hash code
+    private final int hash; // Hash code
 
 
     public CSState(CSProblem problem, int[] carsToBuild, long[] previousBlocks, int[] nWithOption, int nToBuild) {

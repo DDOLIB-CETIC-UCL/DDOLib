@@ -3,10 +3,10 @@ package org.ddolib.examples.ddo.carseq;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 public class CSProblem implements Problem<CSState> {
@@ -28,14 +28,14 @@ public class CSProblem implements Problem<CSState> {
     }
 
     /**
-     * @brief Number of classes of cars
+     * Number of car classes
      */
     public int nClasses() {
         return carOptions.length - 1;
     }
 
     /**
-     * @brief Number of options
+     * Number of options
      */
     public int nOptions() {
         return blockSize.length;
@@ -49,6 +49,7 @@ public class CSProblem implements Problem<CSState> {
 
     @Override
     public CSState initialState() {
+        // Compute nWithOption
         int[] nWithOption = new int[nOptions()];
         for (int classIndex = 0; classIndex < nClasses(); classIndex++) {
             int nCars = classSize[classIndex];
@@ -70,13 +71,7 @@ public class CSProblem implements Problem<CSState> {
 
     @Override
     public Iterator<Integer> domain(CSState state, int var) {
-        ArrayList<Integer> next = new ArrayList<>();
-        for (int i = 0; i < nClasses() + 1; i++) {
-            if (state.carsToBuild[i] > 0) { // Build car from class i for next state
-                next.add(i);
-            }
-        }
-        return next.iterator();
+        return IntStream.range(0, nClasses() + 1).filter(i -> state.carsToBuild[i] > 0).iterator();
     }
 
 

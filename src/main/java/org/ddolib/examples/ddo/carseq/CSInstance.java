@@ -48,7 +48,7 @@ public class CSInstance {
 
 
     /**
-     * @brief Generate a problem with given options and number of cars
+     * Generate a problem with given options and number of cars
      * @param nCars Total number of cars to build
      * @param blockSize Size of the block for each option
      * @param blockMax For each option, max number of cars with the option in its block
@@ -101,7 +101,7 @@ public class CSInstance {
 
 
     /**
-     * @brief Write a problem to a file
+     * Write a problem to a file
      * @param problem The problem
      * @param filePath Path to the file
      */
@@ -128,7 +128,7 @@ public class CSInstance {
 
 
     /**
-     * @brief Read a problem from a file
+     * Read a problem from a file
      * @param filePath Path to the file
      * @return The problem
      */
