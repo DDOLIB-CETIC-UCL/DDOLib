@@ -19,6 +19,11 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
     private final Aggregate<TAgg, KAgg> mapping;
     private final Relaxation<T> relax;
     private final DominanceChecker<T, K> checker;
+
+    /**
+     * AggregateSolver uses a SequentialSolver with wrappers of the input classes that use
+     * the aggregated problem to improve the upper bound and the ranking
+     */
     private final SequentialSolver<AggregateState, Integer> solver;
 
     /**
@@ -27,6 +32,7 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      * It is assumed that variables for the aggregated problem are assigned in the same order when exploring the initial and the aggregated diagram.
      */
     private final HashMap<TAgg, Double>[] preComputed;
+
 
     /**
      * Wrapper that contains the initial and the aggregated states
@@ -286,12 +292,13 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
      */
     private double aggregateUpperBound(AggregateState state) {
         HashMap<TAgg, Double> layer = preComputed[state.unassigned.size()];
-        if (!layer.containsKey(state.aggregated)) {
+        Double storedSol = layer.get(state.aggregated);
+        if (storedSol == null) { // Not yet pre-computed -> pre-compute starting from this node
             double sol = preCompute(state.aggregated, state.unassigned);
             layer.put(state.aggregated, sol);
             return sol;
         }
-        return layer.get(state.aggregated);
+        return storedSol;
     }
 
 
@@ -332,14 +339,14 @@ public class AggregateSolver<T, K, TAgg, KAgg> implements Solver {
                 }
             }
         }
-        nodes.sort(
+        nodes.sort( // Explore most promising children first
             Comparator.comparingDouble((AggregateNode n) -> -n.cost)
             .thenComparing((n1, n2) -> aggregated.ranking.compare(n1.state, n2.state))
         );
 
         // Explore children
         for (AggregateNode node : nodes) {
-            if (node.cost + node.fub > bestSol) {
+            if (node.cost + node.fub > bestSol) { // Child can't be pruned
                 double sol = preCompute(node.state, variables);
                 layer.put(node.state, sol);
                 if (node.cost + sol > bestSol) {

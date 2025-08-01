@@ -126,7 +126,7 @@ public class CSAggregate implements Aggregate<CSState, Integer> {
         public CSState mergeStates(Iterator<CSState> states) {
             int nToBuild = states.next().nToBuild;
             int[] carsToBuild = new int[problem.nClasses() + 1];
-            carsToBuild[problem.nClasses()] = nToBuild;
+            carsToBuild[problem.nClasses()] = nToBuild; // Replace all cars by jokers
             return new CSState(problem, carsToBuild, new long[problem.nOptions()], new int[problem.nOptions()], nToBuild);
         }
 

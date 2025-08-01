@@ -3,8 +3,7 @@ package org.ddolib.util;
 import java.util.*;
 
 /**
- * Set of integer implemented using a BitSet.
- * Can be used to convert a BitSet to a set of integer for example.
+ * Set of integer implemented using a BitSet
  */
 public class BitsetSet implements Set<Integer> {
     public BitSet set;
@@ -87,6 +86,12 @@ public class BitsetSet implements Set<Integer> {
         for (Integer e : c) {
             if (add(e)) changed = true;
         }
+        return changed;
+    }
+
+    public boolean addAll(int from, int to) {
+        boolean changed = set.get(from, to).cardinality() < to - from;
+        set.set(from, to);
         return changed;
     }
 

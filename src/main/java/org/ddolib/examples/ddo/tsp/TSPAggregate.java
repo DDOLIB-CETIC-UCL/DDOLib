@@ -38,7 +38,7 @@ public class TSPAggregate implements Aggregate<TSPAggregateState, Integer> {
         int aggregatedVal = map[decision.val()];
         nToVisit[aggregatedVal]--;
         BitSet toVisit = (BitSet)state.state.toVisit.clone();
-        if (nToVisit[aggregatedVal] == 0) {
+        if (nToVisit[aggregatedVal] == 0) { // Aggregated node doesn't need to be visited anymore
             toVisit.clear(aggregatedVal);
         }
         return new TSPAggregateState(new TSPState(state.state.singleton(aggregatedVal), toVisit), nToVisit);
@@ -169,7 +169,7 @@ public class TSPAggregate implements Aggregate<TSPAggregateState, Integer> {
             while (states.hasNext()) statesList.add(states.next());
             TSPState state = aggregatedRelax.mergeStates(statesList.stream().map(s -> s.state).iterator());
             int[] nToVisit = new int[N];
-            for (int i = 0; i < problem.n; i++) {
+            for (int i = 0; i < problem.n; i++) { // Rebuild nToVisit
                 if (state.toVisit.get(i)) nToVisit[map[i]]++;
             }
             return new TSPAggregateState(state, nToVisit);
