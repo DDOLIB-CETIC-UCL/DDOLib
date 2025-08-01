@@ -6,16 +6,12 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.OrderedVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.factory.Solvers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
@@ -45,8 +41,7 @@ public class CSMain {
                 ranking,
                 width,
                 frontier,
-                fub,
-                dominance
+                fub
         );
 
         SearchStatistics stats = solver.maximize(2, false);

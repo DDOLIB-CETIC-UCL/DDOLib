@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 public class CSInstance {
     public static void main(String[] args) throws IOException {
         // Generate instances
-        int nCars = 100;
+        int nCars = 80;
         int[][] blockSize = {
             { 2, 3, 3, 5, 5 },
             { 4, 2, 4, 5, 3 },

@@ -6,12 +6,10 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.OrderedVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.factory.Solvers;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -42,7 +40,6 @@ public class CSTest {
         for (File file : dir.listFiles()) {
             String path = file.getPath();
             if (path.startsWith("data/CarSeq/instance")) {
-                System.out.println("Solving " + path);
                 testSolve(path);
             }
         }
@@ -69,8 +66,7 @@ public class CSTest {
                 ranking,
                 width,
                 frontier,
-                fub,
-                dominance
+                fub
         );
         solver.maximize();
 
