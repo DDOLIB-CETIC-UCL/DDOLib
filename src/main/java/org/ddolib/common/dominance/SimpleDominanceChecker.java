@@ -21,6 +21,10 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
         double value;
         T state;
 
+        // Deterministic unique IDs used as a tie-breaker in compareTo
+        static long nextId = Long.MIN_VALUE;
+        final long id = nextId++;
+
         /**
          * Instantiate a new ValueState
          *
@@ -34,7 +38,9 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
         @Override
         public int compareTo(ValueState o) {
-            return Double.compare(value, o.value);
+            int cmp = Double.compare(o.value, value);
+            if (cmp == 0) return Long.compare(o.id, id);
+            return cmp;
         }
 
         @Override
