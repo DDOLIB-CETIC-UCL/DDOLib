@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
@@ -12,15 +13,14 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -82,8 +82,13 @@ public final class ParallelSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final FastUpperBound<T> fub,
-            final DominanceChecker<T, K> dominance) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance);
+            final DominanceChecker<T, K> dominance,
+            final ClusterStrat relaxStrat,
+            final ClusterStrat restrictionStrat,
+            final StateDistance<T> distance,
+            final StateCoordinates<T> coord,
+            final int seed) {
+        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance, relaxStrat, restrictionStrat, distance, coord, new Random(seed));
         this.critical = new Critical<>(nbThreads, frontier);
     }
 
@@ -232,7 +237,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                shared.relaxStrat,
+                shared.restrictionStrat,
+                shared.distance,
+                shared.coord,
+                shared.rnd
         );
 
         mdd.compile(compilation);
@@ -255,7 +265,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                shared.relaxStrat,
+                shared.restrictionStrat,
+                shared.distance,
+                shared.coord,
+                shared.rnd
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {
@@ -446,6 +461,12 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
+        private final ClusterStrat relaxStrat;
+        private final ClusterStrat restrictionStrat;
+        private final StateDistance<T> distance;
+        private final StateCoordinates<T> coord;
+        private final Random rnd;
+
         public Shared(
                 final int nbThreads,
                 final Problem<T> problem,
@@ -454,7 +475,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
                 FastUpperBound<T> fub,
-                final DominanceChecker<T, K> dominance) {
+                final DominanceChecker<T, K> dominance,
+                final ClusterStrat relaxStrat,
+                final ClusterStrat restrictionStrat,
+                final StateDistance<T> distance,
+                final StateCoordinates<T> coord,
+                final Random rnd) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
@@ -463,6 +489,11 @@ public final class ParallelSolver<T, K> implements Solver {
             this.ranking = ranking;
             this.width = width;
             this.dominance = dominance;
+            this.relaxStrat = relaxStrat;
+            this.restrictionStrat = restrictionStrat;
+            this.distance = distance;
+            this.coord = coord;
+            this.rnd = rnd;
         }
     }
 

@@ -1,5 +1,8 @@
 package org.ddolib.ddo.core.solver;
 
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
@@ -26,6 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Random;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -71,6 +75,8 @@ public final class SequentialSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
+    private final ClusterStrat relaxStrat;
+    private final ClusterStrat restrictionStrat;
 
     /**
      * Set of nodes that must still be explored before
@@ -96,6 +102,14 @@ public final class SequentialSolver<T, K> implements Solver {
      * object, then you can simply ignore this field (and remove it altogether).
      */
     private final DecisionDiagram<T, K> mdd;
+
+    private final StateDistance<T> distance;
+    private final StateCoordinates<T> coord;
+
+    private int bestUB;
+    private long startTime;
+    public double timeForBest;
+    private final Random rnd;
 
     /**
      * Value of the best known lower bound.
@@ -170,7 +184,14 @@ public final class SequentialSolver<T, K> implements Solver {
             final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance,
             int timeLimit,
-            double gapLimit) {
+            double gapLimit,
+            final ClusterStrat relaxStrat,
+            final ClusterStrat restrictionStrat,
+            final StateDistance<T> distance,
+            final StateCoordinates<T> coord,
+            final int seed) {
+        this.relaxStrat = relaxStrat;
+        this.restrictionStrat = restrictionStrat;
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -184,6 +205,10 @@ public final class SequentialSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.timeLimit = timeLimit;
         this.gapLimit = gapLimit;
+        this.distance = distance;
+        this.coord = coord;
+        this.bestUB = Integer.MAX_VALUE;
+        this.rnd = new Random(seed);
     }
 
 
@@ -255,7 +280,12 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    relaxStrat,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    rnd
             );
 
             mdd.compile(compilation);
@@ -285,7 +315,12 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRelaxed
+                    exportAsDot && firstRelaxed,
+                    relaxStrat,
+                    restrictionStrat,
+                    distance,
+                    coord,
+                    rnd
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()
@@ -379,8 +414,9 @@ public final class SequentialSolver<T, K> implements Solver {
                 return SearchStatistics.SearchStatus.UNSAT;
             }
         } else {
-            if (gap > 0.0)
+            if (Math.abs(gap) > 0.0) {
                 return SearchStatistics.SearchStatus.SAT;
+            }
             else return SearchStatistics.SearchStatus.OPTIMAL;
         }
     }
@@ -390,7 +426,7 @@ public final class SequentialSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return 100 * (bestInFrontier - bestLB) / bestLB;
+            return 100.0 * (bestInFrontier - bestLB) / bestLB;
         }
     }
 }

@@ -47,13 +47,11 @@ public class SMICState {
 
     @Override
     public boolean equals(Object obj) {
+        assert obj instanceof SMICState;
         SMICState other = (SMICState) obj;
-        if (this.currentTime == other.currentTime &&
-            this.minCurrentInventory == other.minCurrentInventory &&
-            this.maxCurrentInventory == other.maxCurrentInventory) {
-            return true;
-        }
-        return false;
+        return this.currentTime == other.currentTime &&
+                this.minCurrentInventory == other.minCurrentInventory &&
+                this.maxCurrentInventory == other.maxCurrentInventory;
     }
 }
 

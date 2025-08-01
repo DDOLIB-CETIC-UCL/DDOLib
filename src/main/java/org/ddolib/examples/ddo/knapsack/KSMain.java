@@ -1,5 +1,8 @@
 package org.ddolib.examples.ddo.knapsack;
 
+import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
@@ -45,6 +48,11 @@ public class KSMain {
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
                 problem.nbVars());
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        final ClusterStrat relaxStrat = ClusterStrat.Cost;
+        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
+        final StateDistance<Integer> distance = new KSDistance();
+        final StateCoordinates<Integer> coordinates = new KSCoordinates();
+        final int seed = 546645;
 
         final Solver solverDDO = sequentialSolver(
                 problem,
@@ -54,7 +62,12 @@ public class KSMain {
                 width,
                 frontier,
                 fub,
-                dominance
+                dominance,
+                relaxStrat,
+                restrictionStrat,
+                distance,
+                coordinates,
+                seed
         );
 
         final Solver solverAstar = astarSolver(

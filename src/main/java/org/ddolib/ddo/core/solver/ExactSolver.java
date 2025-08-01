@@ -130,7 +130,12 @@ public final class ExactSolver<T, K> implements Solver {
                 dominance,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
-                exportAsDot
+                exportAsDot,
+                null,
+                null,
+                null,
+                null,
+                null
         );
         mdd.compile(compilation);
         extractBest(verbosityLevel);

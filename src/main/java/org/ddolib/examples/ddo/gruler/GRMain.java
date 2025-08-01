@@ -34,7 +34,7 @@ public class GRMain {
         GRProblem problem = new GRProblem(9);
         final GRRelax relax = new GRRelax();
         final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(10);
+        final FixedWidth<GRState> width = new FixedWidth<>(100);
         final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
         final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final SequentialSolver<GRState, Integer> solver = Solvers.sequentialSolver(
@@ -46,7 +46,7 @@ public class GRMain {
                 frontier);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        System.out.println(solver.maximize());
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

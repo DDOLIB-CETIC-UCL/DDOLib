@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.compilation;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -8,6 +9,11 @@ import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
+
+import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
+
+import java.util.Random;
 
 /**
  * The set of parameters used to tweak the compilation of an MDD
@@ -24,6 +30,10 @@ import org.ddolib.modeling.StateRanking;
  * @param bestLB            The best known lower bound at the time when the dd is being compiled.
  * @param cutSetType        The type of cut set used in the compilation.
  * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
+ * @param relaxStrat         Which relaxation method is used
+ * @param distance          The function that returns the distance between two states
+ * @param coord             The function that returns the coordinates of a state
+ * @param rnd               The random generator that will be used when needed
  * @param <T>               The type used to model the state of your problem.
  * @param <K>               The type of the dominance key.
  */
@@ -38,7 +48,12 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,
-                                     boolean exportAsDot) {
+                                     boolean exportAsDot,
+                                     ClusterStrat relaxStrat,
+                                     ClusterStrat restricStrat,
+                                     StateDistance<T> distance,
+                                     StateCoordinates<T> coord,
+                                     Random rnd) {
 
     /**
      * Returns a string representation of this record class.

@@ -1,5 +1,7 @@
 package org.ddolib.ddo.core.mdd;
 
+import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -14,6 +16,9 @@ import org.ddolib.modeling.StateRanking;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
+
+import smile.clustering.CentroidClustering;
+import smile.clustering.KMeans;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -321,10 +326,34 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
+                List<NodeSubProblem<T>>[] clusters = new List[0];
                 switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking);
+                        switch(input.restricStrat()) {
+                            case Cost:
+                                restrict(maxWidth, ranking);
+                                break;
+                            case GHPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, true);
+                                break;
+                            case GHPMDP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, false);
+                                break;
+                            case GHPMDPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
+                                break;
+                            case Kmeans:
+                                clusters = clusterKMeans(maxWidth, input.coord());
+                                break;
+                            case GHP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
+                                break;
+                            default:
+                                System.err.println("Unsupported restriction type: " + input.restricStrat());
+                                System.exit(1);
+                        }
+                        restrictCluster(clusters, ranking);
                         break;
                     case Relaxed:
                         if (exact) {
@@ -333,7 +362,31 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 cutset.addAll(prevLayer.values());
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+
+                        switch (input.relaxStrat()) {
+                            case Cost:
+                                clusters = relax(maxWidth, ranking, relax);
+                                break;
+                            case GHP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
+                                break;
+                            case GHPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, true);
+                                break;
+                            case GHPMDP:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, false);
+                                break;
+                            case GHPMDPMD:
+                                clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), true, true);
+                                break;
+                            case Kmeans:
+                                clusters = clusterKMeans(maxWidth, input.coord());
+                                break;
+                            default:
+                                System.err.println("Unsupported relax type: " + input.relaxStrat());
+                                System.exit(1);
+                        }
+                        mergeClusters(clusters, input.relaxation());
                         break;
                     case Exact:
                         /* nothing to do */
@@ -505,6 +558,218 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
+     * Constitutes clusters of nodes on the current layer using generalised hyperplan partitioning
+     * and empty the current layer.
+     * One cluster will be defined for each desired node in the layer.
+     * @param maxWidth the maximal width of the layer
+     * @param distance a function returning the distance
+     * @param rnd
+     * @return an array of maxWidth clusters.
+     **/
+    private List<NodeSubProblem<T>>[] clusterGHP(final int maxWidth, final StateDistance<T> distance, final Random rnd,
+                                                 final boolean mostDistantPivot, final boolean breakWithMaxDistance) {
+        class ClusterNode implements Comparable<ClusterNode> {
+            final double distance;
+            final List<NodeSubProblem<T>> cluster;
+
+            public ClusterNode(double avgDistance, List<NodeSubProblem<T>> cluster) {
+                this.distance = avgDistance;
+                this.cluster = cluster;
+            }
+
+            @Override
+            public int compareTo(ClusterNode o) {
+                //return Double.compare(this.distance, o.distance);
+                if (this.distance == o.distance) {
+                    return Integer.compare(this.cluster.size(), o.cluster.size());
+                } else {
+                    return Double.compare(this.distance, o.distance);
+                }
+            }
+        }
+
+
+
+        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
+        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(currentLayer)));
+
+        while (pqClusters.size() < maxWidth) {
+            ClusterNode nodeCurrent = pqClusters.poll();
+            assert nodeCurrent != null;
+            List<NodeSubProblem<T>> current = nodeCurrent.cluster;
+            assert current != null;
+
+            Collections.shuffle(current, rnd);
+            NodeSubProblem<T> pivotA = current.getFirst();
+            NodeSubProblem<T> pivotB;
+            if (!mostDistantPivot) {
+                pivotB = current.get(1);
+            } else {
+                pivotB = selectFarthest(pivotA, current, distance);
+                for (int i = 0; i < 5; i++) {
+                    pivotB = selectFarthest(pivotB, current, distance);
+                    pivotA = selectFarthest(pivotA, current, distance);
+                }
+            }
+
+            List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
+            List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
+
+            double avgDistA = 0;
+            double avgDistB = 0;
+            double maxDistA = 0;
+            double maxDistB = 0;
+
+            for (NodeSubProblem<T> node : current) {
+                double distWithA = distance.distance(node.state, pivotA.state);
+                double distWithB = distance.distance(node.state, pivotB.state);
+
+                if (distWithA < distWithB) {
+                    avgDistA *= newClusterA.size();
+                    avgDistA += distWithA;
+                    avgDistA = avgDistA / (newClusterA.size() + 1);
+                    maxDistA = Math.max(distWithA, maxDistA);
+                    newClusterA.add(node);
+                } else {
+                    avgDistB *= newClusterB.size();
+                    avgDistB += distWithB;
+                    avgDistB = avgDistB / (newClusterB.size() + 1);
+                    maxDistB = Math.max(distWithB, maxDistB);
+                    newClusterB.add(node);
+                }
+            }
+
+            if (breakWithMaxDistance) {
+                pqClusters.add(new ClusterNode(maxDistA, newClusterA));
+                pqClusters.add(new ClusterNode(maxDistB, newClusterB));
+            } else {
+                pqClusters.add(new ClusterNode(avgDistA, newClusterA));
+                pqClusters.add(new ClusterNode(avgDistB, newClusterB));
+            }
+        }
+
+        Set<T> states = new HashSet<>();
+
+        List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
+        int index = 0;
+        for (ClusterNode cluster : pqClusters) {
+            clusters[index] = cluster.cluster;
+            index++;
+            for (NodeSubProblem<T> node : cluster.cluster) {
+                states.add(node.state);
+            }
+        }
+        currentLayer.clear();
+        return clusters;
+    }
+
+    /**
+     * Constitutes clusters of nodes on the current layer using kmeans
+     * and empty the current layer.
+     * One cluster will be defined for each desired node in the layer.
+     * @param maxWidth the maximal width of the layer
+     * @param coordinates a function returning the coordinates of each state
+     * @return an array of maxWidth clusters.
+     */
+    private List<NodeSubProblem<T>>[] clusterKMeans(final int maxWidth, final StateCoordinates<T> coordinates) {
+        int maxIter = 50;
+        int dimensions = coordinates.getCoordinates(currentLayer.getFirst().state).length;
+        double[][] data = new double[currentLayer.size()][dimensions];
+        for (int node = 0; node < currentLayer.size(); node++) {
+            data[node] = coordinates.getCoordinates(currentLayer.get(node).state).clone();
+        }
+        CentroidClustering<double[], double[]> clustering = KMeans.fit(data, maxWidth, maxIter, 1.0E-4);
+
+        List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
+        for (int i = 0; i < clusters.length; i++) {
+            clusters[i] = new ArrayList<>();
+        }
+        for (NodeSubProblem<T> node : currentLayer) {
+            double[] coords = coordinates.getCoordinates(node.state);
+            int clusterIndex = clustering.predict(coords);
+            clusters[clusterIndex].add(node);
+        }
+        currentLayer.clear();
+        return clusters;
+    }
+
+    /**
+     * Merge the given clusters and add the newly created nodes to the current layer
+     * @param clusters an array containing the clusters
+     * @param relax the relaxation operators which we will use to merge nodes
+     */
+    private void mergeClusters(final List<NodeSubProblem<T>>[] clusters, final Relaxation<T> relax) {
+        for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
+            }
+
+            if (cluster.isEmpty()) {
+                continue;
+            }
+
+            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            // System.out.println(merged);
+            NodeSubProblem<T> node = null;
+            for (NodeSubProblem<T> n: currentLayer) {
+                if (n.state.equals(merged)) {
+                    node = n;
+                    node.node.setNodeType(NodeType.RELAXED);
+                    break;
+                }
+            }
+
+            if (node == null) {
+                Node newNode = new Node(Double.NEGATIVE_INFINITY);
+                newNode.setNodeType(NodeType.RELAXED);
+                node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
+                currentLayer.add(node);
+            }
+
+            for (NodeSubProblem<T> drop: cluster) {
+                node.ub = Math.max(node.ub, drop.ub);
+
+                for (Edge e : drop.node.edges) {
+                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+
+                    double value = saturatedAdd(e.origin.value, rcost);
+                    e.weight  = rcost;
+
+                    node.node.edges.add(e);
+                    if (value > node.node.value) {
+                        node.node.value = value;
+                        node.node.best  = e;
+                    }
+                }
+            }
+        }
+    }
+
+    private void restrictCluster(final List<NodeSubProblem<T>>[] clusters, final NodeSubroblemComparator<T> ranking) {
+        for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.isEmpty()) continue;
+
+            cluster.sort(ranking.reversed());
+            currentLayer.add(cluster.getFirst());
+            cluster.clear();
+        }
+    }
+
+    private NodeSubProblem<T> selectFarthest(NodeSubProblem<T> ref, List<NodeSubProblem<T>> nodes, final StateDistance<T> distance) {
+        double maxDistance = -1;
+        NodeSubProblem<T> farthest = null;
+        for (NodeSubProblem<T> node : nodes) {
+            double currentDistance = distance.distance(node.state, ref.state);
+            if (currentDistance > maxDistance) {
+                maxDistance = currentDistance;
+                farthest = node;
+            }
+        }
+        return farthest;
+    }
+
+    /**
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
@@ -512,58 +777,17 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+    private List<NodeSubProblem<T>>[] relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
 
-        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
-        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
-        // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> node = null;
-        boolean fresh = true;
-        for (NodeSubProblem<T> n : keep) {
-            if (n.state.equals(merged)) {
-                node = n;
-                fresh = false;
-                break;
-            }
-        }
-        // when the merged node is new, set its type to relaxed
-        if (node == null) {
-            Node newNode = new Node(Double.NEGATIVE_INFINITY);
-            newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
-        }
-
-        // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : merge) {
-            node.ub = Math.max(node.ub, drop.ub);
-
-            for (Edge e : drop.node.edges) {
-                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
-
-                double value = saturatedAdd(e.origin.value, rcost);
-                e.weight = rcost;
-                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.getNodeType() == NodeType.RELAXED) {
-                    node.node.setNodeType(NodeType.RELAXED);
-                }
-                node.node.edges.add(e);
-                if (value > node.node.value) {
-                    node.node.value = value;
-                    node.node.best = e;
-                }
-            }
-        }
-
+        List<NodeSubProblem<T>>[] clusters = new List[1];
+        clusters[0] = new ArrayList<>(merge);
 
         // delete the nodes that have been merged
         merge.clear();
-        // append the newly merged node if needed
-        if (fresh) {
-            currentLayer.add(node);
-        }
+        return clusters;
     }
 
     /**
