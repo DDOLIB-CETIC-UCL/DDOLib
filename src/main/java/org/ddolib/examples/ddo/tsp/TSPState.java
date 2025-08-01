@@ -1,9 +1,9 @@
 package org.ddolib.examples.ddo.tsp;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 public class TSPState {
-
     //every node that has not been visited yet
     BitSet toVisit;
 
@@ -14,6 +14,18 @@ public class TSPState {
     public TSPState(BitSet current, BitSet toVisit) {
         this.toVisit = toVisit;
         this.current = current;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(toVisit, current);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        TSPState that = (TSPState) obj;
+        return (this.current.equals(that.current))
+                && this.toVisit.equals(that.toVisit);
     }
 
     public BitSet singleton(int singletonValue) {
