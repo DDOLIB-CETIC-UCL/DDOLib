@@ -37,6 +37,16 @@ public final class AStarSolver<T, K> implements Solver {
     private double bestLB;
 
     /**
+     * HashMap with all explored nodes
+     */
+    private HashMap<T, Double> closed;
+
+    /**
+     * HashMap with state in the Pirority Queue
+     */
+    private HashMap<T, Double>  present;
+
+    /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
@@ -48,7 +58,7 @@ public final class AStarSolver<T, K> implements Solver {
 
 
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
-            Comparator.comparingDouble(SubProblem<T>::g).reversed());
+            Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
     /**
      * Creates a fully qualified instance
@@ -69,6 +79,8 @@ public final class AStarSolver<T, K> implements Solver {
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
+        this.present = new HashMap<>();
+        this.closed = new HashMap<>();
     }
 
     @Override
@@ -81,8 +93,9 @@ public final class AStarSolver<T, K> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        frontier.add(root());
-
+        SubProblem<T> root = root();
+        frontier.add(root);
+        present.put(root.getState(), root.f());
         while (!frontier.isEmpty()) {
             if (verbosityLevel >= 1) {
                 System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
@@ -92,7 +105,10 @@ public final class AStarSolver<T, K> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
 
             SubProblem<T> sub = frontier.poll();
-
+            present.remove(sub.getState());
+            if (closed.containsKey(sub.getState())){
+                continue;
+            }
             if (sub.getPath().size() == problem.nbVars()) {
                 // optimal solution found
                 bestSol = Optional.of(sub.getPath());
@@ -107,10 +123,6 @@ public final class AStarSolver<T, K> implements Solver {
             }
             if (verbosityLevel >= 1) {
                 System.out.println("\n");
-            }
-            if (nodeUB <= bestLB) {
-                frontier.clear();
-                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
             }
             addChildren(sub);
         }
@@ -158,7 +170,23 @@ public final class AStarSolver<T, K> implements Solver {
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState,path.size(),value)) {
-                frontier.add(new SubProblem<>(newState, value, fastUpperBound,path));
+                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound,path);
+                if (present.containsKey(newState)) {
+                    if (present.get(newState) < newSub.f()) {
+                        frontier.add(newSub);
+                    }
+                }else if (closed.containsKey(newState)) {
+                    if (closed.get(newState) < newSub.f()) {
+                        frontier.add(newSub);
+                        closed.remove(newState);
+                        present.put(newState,newSub.f());
+
+                    }
+                }else {
+                    frontier.add(newSub);
+                    present.put(newState,newSub.f());
+                }
+
             }
         }
     }

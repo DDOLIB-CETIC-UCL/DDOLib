@@ -1,5 +1,6 @@
 package org.ddolib.factory;
 
+import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
@@ -1029,5 +1030,25 @@ public class Solvers {
                                                        FastUpperBound<T> ub,
                                                        DominanceChecker<T, K> dominance) {
         return new AStarSolver(problem, varh, ub, dominance);
+    }
+
+    /**
+     * Instantiates an ACS solver for a given problem.
+     *
+     * @param problem   The problem we want to maximize.
+     * @param ub        A suitable admissible upper-bound for the problem we want to maximize
+     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
+     * @param dominance The dominance object that will be used to prune the search space.
+     * @param <T>       The type of the states.
+     * @param <K>       The type of the dominance keys.
+     * @param K         The width of explored node
+     * @return An ACS solver for the input problem using the given configuration.
+     */
+    public static <T, K> ACSSolver<T, K> acsSolver(Problem<T> problem,
+                                                       VariableHeuristic<T> varh,
+                                                       FastUpperBound<T> ub,
+                                                       DominanceChecker<T, K> dominance,
+                                                       int K) {
+        return new ACSSolver<>(problem, varh, ub, dominance, K);
     }
 }

@@ -11,6 +11,8 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+import static java.lang.Math.min;
+
 public final class ACSSolver<T, K> implements Solver {
 
     /**
@@ -41,8 +43,16 @@ public final class ACSSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
+    private  HashSet<T>[] closed;
 
-    private final ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
+    private  HashSet<T>[] present;
+
+    private HashMap<T, Double> g;
+
+    private final int K;
+
+
+    private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
     /**
      * Creates a fully qualified instance
@@ -56,16 +66,23 @@ public final class ACSSolver<T, K> implements Solver {
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
+            final DominanceChecker<T, K> dominance,
+            final int K) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
+        this.closed = new HashSet[problem.nbVars()+1];
+        this.present = new HashSet[problem.nbVars()+1];
+        this.g = new HashMap<>();
+        this.K = K;
 
-        for (int i = 0; i < problem.nbVars(); i++) {
-            open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::g).reversed()));
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
+            present[i] = new HashSet<>();
+            closed[i] = new HashSet<>();
         }
 
     }
@@ -90,24 +107,38 @@ public final class ACSSolver<T, K> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         open.get(0).add(root());
-
-
-
+        present[0].add(root().getState());
+        g.put(root().getState(), 0.0);
+        ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            if (verbosityLevel >= 1) {
-            }
-
-            for (int i = 0; i < problem.nbVars(); i++) {
-                int K = 10;
-                for (int k = 0; k < K && !open.get(i).isEmpty(); k++) {
+            for (int i = 0; i < problem.nbVars()+1; i++) {
+                int l = min(K, open.get(i).size());
+                for (int j = 0; j < l; j++) {
+                    SubProblem<T> s =  open.get(i).poll();
+                    present[i].remove(s.getState());
+                    if (s.f()> bestLB) {
+                        candidates.add(s);
+                    }
+                }
+                for (int k = 0; k < candidates.size(); k++) {
                     if (verbosityLevel >= 1) {
-                        System.out.println("it " + nbIter + "\t frontier:" + open.get(i).size() + "\t " + "bestObj:" + bestLB);
+                        System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
                     }
                     nbIter++;
 
-                    SubProblem<T> sub = open.get(i).poll();
+                    SubProblem<T> sub = candidates.get(k);
+                    this.closed[i].add(sub.getState());
+                    if (sub.getPath().size() == problem.nbVars()) {
+                        // optimal solution found
+                        if (bestLB<sub.getValue()) {
+                            bestSol = Optional.of(sub.getPath());
+                            bestLB = sub.getValue();
+                        }
+                        continue;
+                    }
                     addChildren(sub, i+1);
                 }
+                candidates.clear();
 
 
             }
@@ -154,12 +185,21 @@ public final class ACSSolver<T, K> implements Solver {
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             double value = subProblem.getValue() + cost;
+
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState,path.size(),value)) {
-                open.get(varIndex).add(new SubProblem<>(newState, value, fastUpperBound,path));
+                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound,path);
+                if(((present[varIndex].contains(newState) || closed[varIndex].contains(newState))&&g.getOrDefault(newState,Double.MAX_VALUE)>value)||newSubProblem.f()<=bestLB){
+                   continue;
+                }
+                g.put(newState,value);
+                open.get(varIndex).add(newSubProblem);
+                if (closed[varIndex].contains(newState)) {
+                    closed[varIndex].remove(newState);
+                }
             }
         }
     }
