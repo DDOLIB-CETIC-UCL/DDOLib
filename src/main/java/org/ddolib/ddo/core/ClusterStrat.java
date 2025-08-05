@@ -6,6 +6,7 @@ package org.ddolib.ddo.core;
 public enum ClusterStrat {
     /** Select the worst nodes on the layer and merge them together*/
     Cost,
+    CostFUB,
     /** Clusters the nodes following their similarities and merge the nodes of a same cluster*/
     GHP, // General Hyperplan Partition
     GHPMDP, // GHP with most distant pivot

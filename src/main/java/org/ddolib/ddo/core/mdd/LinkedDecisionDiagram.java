@@ -557,6 +557,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
 
+    private void restrictCostFUB(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
+
+    }
+
     /**
      * Constitutes clusters of nodes on the current layer using generalised hyperplan partitioning
      * and empty the current layer.
@@ -588,8 +592,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-
-
         PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
         pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(currentLayer)));
 
@@ -601,12 +603,18 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
+            assert pivotA != null;
             NodeSubProblem<T> pivotB;
             if (!mostDistantPivot) {
                 pivotB = current.get(1);
             } else {
                 pivotB = selectFarthest(pivotA, current, distance);
+                if (pivotA == null || pivotB == null)
+                    System.out.println("strong fuck");
+                assert pivotB != null;
                 for (int i = 0; i < 5; i++) {
+                    if (pivotA == null || pivotB == null)
+                        System.out.println("fuck");
                     pivotB = selectFarthest(pivotB, current, distance);
                     pivotA = selectFarthest(pivotA, current, distance);
                 }
@@ -615,12 +623,19 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
+            newClusterA.add(pivotA);
+            newClusterB.add(pivotB);
+
             double avgDistA = 0;
             double avgDistB = 0;
             double maxDistA = 0;
             double maxDistB = 0;
 
             for (NodeSubProblem<T> node : current) {
+                if (node.state.equals(pivotA.state) || node.state.equals(pivotB.state)) {
+                    continue;
+                }
+
                 double distWithA = distance.distance(node.state, pivotA.state);
                 double distWithB = distance.distance(node.state, pivotB.state);
 
@@ -638,6 +653,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     newClusterB.add(node);
                 }
             }
+
+            assert !newClusterA.isEmpty();
+            assert !newClusterB.isEmpty();
 
             if (breakWithMaxDistance) {
                 pqClusters.add(new ClusterNode(maxDistA, newClusterA));
@@ -761,7 +779,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         NodeSubProblem<T> farthest = null;
         for (NodeSubProblem<T> node : nodes) {
             double currentDistance = distance.distance(node.state, ref.state);
-            if (currentDistance > maxDistance) {
+            if (currentDistance > maxDistance && !node.state.equals(ref.state)) {
                 maxDistance = currentDistance;
                 farthest = node;
             }
@@ -989,6 +1007,32 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         @Override
         public T next() {
             return it.next().state;
+        }
+    }
+
+    private static final class NodeSubProblemComparatorFUB<T> implements Comparator<NodeSubProblem<T>> {
+        /**
+         * This is the decorated ranking
+         */
+        private final StateRanking<T> delegate;
+
+        /**
+         * Creates a new instance
+         *
+         * @param delegate the decorated ranking
+         */
+        public NodeSubProblemComparatorFUB(final StateRanking<T> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
+            double cmp = o1.ub - o2.ub;
+            if (cmp == 0) {
+                return delegate.compare(o1.state, o2.state);
+            } else {
+                return Double.compare(o1.node.value, o2.node.value);
+            }
         }
     }
 
