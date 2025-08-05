@@ -75,11 +75,29 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         problems = generateProblems();
     }
 
+    /**
+     * Instantiate a solver used for tests not based on the relaxation. By default, it
+     * returns an {@link ExactSolver}.
+     *
+     * @param config  The configuration of the solver.
+     * @param problem The problem to solve
+     * @param <U>     The type of the dominance key
+     * @return A solver using the given config to solve the input problem.
+     */
     protected <U> Solver solverForTests(SolverConfig<T, U> config, P problem) {
         return new ExactSolver<>(problem, config.relax(), config.varh(),
                 config.ranking(), config.fub(), config.dominance());
     }
 
+    /**
+     * Instantiates a solver used for tests based on the relaxation. By default, it returns a
+     * {@link SequentialSolver}.
+     *
+     * @param config  The configuration of the solver.
+     * @param problem The problem to solve
+     * @param <U>     The type of the dominance key
+     * @return A solver using the given config to solve the input problem.
+     */
     protected <U> Solver solverForRelaxation(SolverConfig<T, U> config, P problem) {
         FixedWidth<T> width = new FixedWidth<>(config.maxWidth());
         return new SequentialSolver<>(problem, config.relax(), config.varh(),
@@ -88,6 +106,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
+     * <p>
+     * <b>Note:</b> By default the tests here disable the fast upper bound. If one of the two
+     * mechanism  is needed (e.g. for A* solver), be sure to configure by overriding the
+     * {@link #solverForTests(SolverConfig, Problem)} method.
      *
      * @param problem The instance to test.
      */
