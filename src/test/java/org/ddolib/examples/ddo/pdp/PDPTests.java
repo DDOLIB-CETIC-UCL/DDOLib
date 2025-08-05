@@ -1,9 +1,12 @@
 package org.ddolib.examples.ddo.pdp;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -11,6 +14,24 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PDPTests {
+
+    private static class PDPBench extends ProblemTestBench<PDPState, Integer, PDPProblem> {
+
+        public PDPBench() {
+            super(true, true, false);
+        }
+
+        @Override
+        protected List<PDPProblem> generateProblems() {
+            return List.of();
+        }
+
+        @Override
+        protected SolverConfig<PDPState, Integer> configSolver(PDPProblem problem) {
+            return null;
+        }
+    }
+
 
     static Stream<PDPInstance> dataProvider2() {
         return IntStream.range(0, 10).boxed().map(i ->
