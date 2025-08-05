@@ -1,8 +1,10 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -39,4 +41,44 @@ public record SolverConfig<T, K>(
         Frontier<T> frontier,
         FastUpperBound<T> fub,
         DominanceChecker<T, K> dominance) {
+
+
+    public SolverConfig<T, K> withWidth(int width) {
+        return new SolverConfig<>(
+                relax,
+                varh,
+                ranking,
+                width,
+                width,
+                frontier,
+                fub,
+                dominance
+        );
+    }
+
+    public SolverConfig<T, K> withDefaultFUB() {
+        return new SolverConfig<>(
+                relax,
+                varh,
+                ranking,
+                minWidth,
+                maxWidth,
+                frontier,
+                new DefaultFastUpperBound<>(),
+                dominance
+        );
+    }
+
+    public SolverConfig<T, Integer> withDefaultDominance() {
+        return new SolverConfig<>(
+                relax,
+                varh,
+                ranking,
+                minWidth,
+                maxWidth,
+                frontier,
+                fub,
+                new DefaultDominanceChecker<>()
+        );
+    }
 }
