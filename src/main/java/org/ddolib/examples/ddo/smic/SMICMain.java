@@ -66,7 +66,6 @@ public class SMICMain {
     }
 
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
-        String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
         while (!s.hasNextLine()) {
             s.nextLine();
@@ -92,10 +91,10 @@ public class SMICMain {
         }
         s.close();
         if (opti.isPresent()) {
-            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
+            return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
                     opti.get());
         } else {
-            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
         }
     }
 }
