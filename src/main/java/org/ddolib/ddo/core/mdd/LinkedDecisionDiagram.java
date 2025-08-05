@@ -379,6 +379,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             case Cost:
                                 clusters = relax(maxWidth, ranking, relax);
                                 break;
+                            case CostFUB:
+                                clusters = relax(maxWidth, new NodeSubroblemComparator<>(input.stateRanking(), true), relax);
+                                break;
                             case GHP:
                                 clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, false);
                                 break;
