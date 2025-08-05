@@ -1,15 +1,21 @@
 package org.ddolib.examples.ddo.smic;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,19 +64,27 @@ public class SMICTest {
             SMICRanking ranking = new SMICRanking();
             FastUpperBound<SMICState> fub = new DefaultFastUpperBound<>();
 
-            VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
+            VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<>();
             SimpleDominanceChecker<SMICState, Integer> dominance = new SimpleDominanceChecker<>(
                     new SMICDominance(), problem.nbVars());
             Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
+            return new SolverConfig<>(relax, varh, ranking, 2, 5, frontier, fub, dominance);
+        }
+
+        @Override
+        protected <U> Solver solverForTests(SolverConfig<SMICState, U> config, SMICProblem problem) {
+            FixedWidth<SMICState> width = new FixedWidth<>(100);
+            return new SequentialSolver<>(problem, config.relax(), config.varh(),
+                    config.ranking(), width, config.frontier(), config.fub(), config.dominance());
         }
     }
 
-    /*@DisplayName("SMIC")
+
+    @DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench(false, false, true);
         return bench.generateTests();
-    }*/
+    }
 }
