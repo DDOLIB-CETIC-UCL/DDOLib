@@ -139,6 +139,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
+
+        // Deterministic hash
+        private static int nextHash = 0;
+        private final int hash = nextHash++;
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 
     /**
@@ -609,12 +618,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 pivotB = current.get(1);
             } else {
                 pivotB = selectFarthest(pivotA, current, distance);
-                if (pivotA == null || pivotB == null)
-                    System.out.println("strong fuck");
                 assert pivotB != null;
                 for (int i = 0; i < 5; i++) {
-                    if (pivotA == null || pivotB == null)
-                        System.out.println("fuck");
                     pivotB = selectFarthest(pivotB, current, distance);
                     pivotA = selectFarthest(pivotA, current, distance);
                 }

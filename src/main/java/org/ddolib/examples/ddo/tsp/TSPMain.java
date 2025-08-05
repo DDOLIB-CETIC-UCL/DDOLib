@@ -2,6 +2,7 @@ package org.ddolib.examples.ddo.tsp;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -12,16 +13,25 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 public class TSPMain {
 
     public static void main(final String[] args) throws IOException {
 
         //TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
-        TSPInstance instance = new TSPInstance("data/TSP/instance_8_0.xml");
+        TSPInstance instance = new TSPInstance("data/TSP/instance_18_0.xml");
+
+        //data/TSP/instance_18_0.xml
+        //sans cache
+        //SearchStatistics{nbIterations=35118, queueMaxSize=34377, runTimeMS=36805, SearchStatus=OPTIMAL, Gap=-0.0}
+        //avec cache
+        //SearchStatistics{nbIterations=35278, queueMaxSize=34807, runTimeMS=46383, SearchStatus=OPTIMAL, Gap=-0.0}
+        //après correction de la hash
+        //SearchStatistics{nbIterations=8338, queueMaxSize=7680, runTimeMS=13543, SearchStatus=OPTIMAL, Gap=-0.0, cacheStats=stats(nbHits: 94100, nbTests: 12887939, size:9638)}
 
         Solver solver = solveTSP(instance);
+
 
         TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         int[] solution = extractSolution(problem, solver);
@@ -53,9 +63,9 @@ public class TSPMain {
         final TSPFastUpperBound fub = new TSPFastUpperBound(problem);
         final FixedWidth<TSPState> width = new FixedWidth<>(500);
         final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
-
+        final SimpleCache<TSPState> cache = new SimpleCache<>();
         final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
+        final Solver solver = sequentialSolverWithCache(
 //                Runtime.getRuntime().availableProcessors() / 2,
                 problem,
                 relax,
@@ -63,11 +73,11 @@ public class TSPMain {
                 ranking,
                 width,
                 frontier,
-                fub);
+                fub,
+                cache);
 
         SearchStatistics stats = solver.maximize(2, false);
         System.out.println(stats);
-
         return solver;
     }
 }

@@ -76,10 +76,10 @@ public final class SubProblem<T> {
     }
 
     /**
-     * @return the g-value of this subproblem, i.e., the value of the longest path to this
+     * @return the f-value of this subproblem, i.e., the value of the longest path to this
      * subproblem plus the upper bound on the objective reachable in this subproblem
      */
-    public double g() {
+    public double f() {
         return this.value + this.ub;
     }
 

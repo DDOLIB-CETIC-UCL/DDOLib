@@ -56,11 +56,24 @@ public class SimpleCache<T> implements Cache<T> {
         return thresholdsByLayer.get(depth);
     }
 
+    public String stats() {
+         int nbTests = 0;
+         int nbHits = 0;
+         int size = 0;
+        for (Layer l : thresholdsByLayer){
+            nbHits  +=  l.nbHits;
+            nbTests  += l.nbTests;
+            size += l.map.size();
+        }
+        return "stats(nbHits: " + nbHits + ", nbTests: " + nbTests + ", size:" + size + ")";
+    }
 
     // Inner class to represent a synchronized layer with a read-write lock
     public static class Layer<T> {
         private final Map<T, Threshold> map = new HashMap<>();
         private final ReadWriteLock lock = new ReentrantReadWriteLock();
+        public int nbTests = 0;
+        public int nbHits = 0;
 
         public Optional<Threshold> get(T state) {
             lock.readLock().lock();
@@ -85,8 +98,10 @@ public class SimpleCache<T> implements Cache<T> {
 
         public boolean containsKey(T state) {
             lock.writeLock().lock();
+            nbTests += 1;
             try {
                 if (map.containsKey(state)) {
+                    nbHits+= 1;
                     return true;
                 }
             } finally {
