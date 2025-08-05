@@ -343,6 +343,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             case Cost:
                                 restrict(maxWidth, ranking);
                                 break;
+                            case CostFUB:
+                                restrict(maxWidth, new NodeSubroblemComparator<>(input.stateRanking(), true));
+                                break;
                             case GHPMD:
                                 clusters = clusterGHP(maxWidth, input.distance(), input.rnd(), false, true);
                                 break;
@@ -564,10 +567,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
-    }
-
-    private void restrictCostFUB(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
-
     }
 
     /**
@@ -1015,32 +1014,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
-    private static final class NodeSubProblemComparatorFUB<T> implements Comparator<NodeSubProblem<T>> {
-        /**
-         * This is the decorated ranking
-         */
-        private final StateRanking<T> delegate;
-
-        /**
-         * Creates a new instance
-         *
-         * @param delegate the decorated ranking
-         */
-        public NodeSubProblemComparatorFUB(final StateRanking<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.ub - o2.ub;
-            if (cmp == 0) {
-                return delegate.compare(o1.state, o2.state);
-            } else {
-                return Double.compare(o1.node.value, o2.node.value);
-            }
-        }
-    }
-
     /**
      * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
      */
@@ -1050,18 +1023,28 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          */
         private final StateRanking<T> delegate;
 
+        private boolean useFub;
+
+
+        public NodeSubroblemComparator(final StateRanking<T> delegate, boolean useFub) {
+            this.delegate = delegate;
+            this.useFub = useFub;
+        }
+
         /**
          * Creates a new instance
          *
          * @param delegate the decorated ranking
          */
         public NodeSubroblemComparator(final StateRanking<T> delegate) {
-            this.delegate = delegate;
+            this(delegate, false);
         }
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.node.value - o2.node.value;
+            double cmp;
+            if (useFub) cmp = o1.ub - o2.ub;
+            else cmp = o1.node.value - o2.node.value;
             if (cmp == 0) {
                 return delegate.compare(o1.state, o2.state);
             } else {
