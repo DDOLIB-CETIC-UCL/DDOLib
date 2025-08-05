@@ -620,8 +620,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 pivotB = selectFarthest(pivotA, current, distance);
                 assert pivotB != null;
                 for (int i = 0; i < 5; i++) {
-                    pivotB = selectFarthest(pivotB, current, distance);
-                    pivotA = selectFarthest(pivotA, current, distance);
+                    pivotA = selectFarthest(pivotB, current, distance);
+                    pivotB = selectFarthest(pivotA, current, distance);
                 }
             }
 
