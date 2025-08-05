@@ -10,7 +10,6 @@ import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +64,7 @@ public class SMICTest {
                     new SMICDominance(), problem.nbVars());
             Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

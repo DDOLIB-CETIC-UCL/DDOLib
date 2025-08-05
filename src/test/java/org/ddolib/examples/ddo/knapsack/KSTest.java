@@ -8,7 +8,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -66,8 +65,7 @@ public class KSTest {
             SimpleDominanceChecker<Integer, Integer> dominanceChecker =
                     new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub,
-                    dominanceChecker, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
         }
     }
 

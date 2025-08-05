@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.examples.ddo.tsptw.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -67,7 +66,7 @@ public class TSPTWTests {
                     new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

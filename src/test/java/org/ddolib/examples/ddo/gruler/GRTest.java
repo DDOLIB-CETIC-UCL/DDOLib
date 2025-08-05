@@ -11,7 +11,6 @@ import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -50,7 +49,7 @@ public class GRTest {
             Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             FastUpperBound<GRState> fub = new DefaultFastUpperBound<>();
             DominanceChecker<GRState, Integer> dominance = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
     }
 

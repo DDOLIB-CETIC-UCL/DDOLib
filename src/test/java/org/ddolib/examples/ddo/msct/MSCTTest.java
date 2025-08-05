@@ -11,7 +11,6 @@ import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -60,7 +59,7 @@ class MSCTTest {
                     problem.nbVars());
             Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
         }
 
         private Stream<MSCTProblem> problemWithFixedRelease() {

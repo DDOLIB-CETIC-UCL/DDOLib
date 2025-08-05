@@ -8,7 +8,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
-import org.ddolib.util.testbench.SolverType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -63,8 +62,7 @@ public class LCSTest {
             VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<>();
             Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             DefaultDominanceChecker<LCSState> dominanceChecker = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub,
-                    dominanceChecker, SolverType.EXACT);
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
         }
     }
 
