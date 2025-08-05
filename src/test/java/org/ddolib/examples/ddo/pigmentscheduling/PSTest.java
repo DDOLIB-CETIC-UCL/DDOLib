@@ -22,15 +22,8 @@ class PSTest {
 
     private static class PSPBench extends ProblemTestBench<PSState, Integer, PSProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public PSPBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public PSPBench() {
+            super(true, true, false);
         }
 
         @Override
@@ -68,7 +61,7 @@ class PSTest {
     @DisplayName("PSP")
     @TestFactory
     public Stream<DynamicTest> testPSP() {
-        var bench = new PSPBench(true, true, false);
+        var bench = new PSPBench();
         return bench.generateTests();
     }
 }

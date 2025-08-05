@@ -27,15 +27,8 @@ public class SMICTest {
 
     private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public SMICBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public SMICBench() {
+            super(false, false, true);
         }
 
         @Override
@@ -84,7 +77,7 @@ public class SMICTest {
     @DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
-        var bench = new SMICBench(false, false, true);
+        var bench = new SMICBench();
         return bench.generateTests();
     }
 }

@@ -20,15 +20,8 @@ import java.util.stream.Stream;
 public class KSTest {
     private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public KSBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public KSBench() {
+            super(true, true, true);
         }
 
         @Override
@@ -70,7 +63,7 @@ public class KSTest {
     @DisplayName("Knapsack")
     @TestFactory
     public Stream<DynamicTest> testKS() {
-        var bench = new KSBench(true, true, true);
+        var bench = new KSBench();
         return bench.generateTests();
     }
 }

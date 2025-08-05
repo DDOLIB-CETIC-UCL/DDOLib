@@ -21,15 +21,9 @@ import java.util.stream.Stream;
 public class TalenSchedTest {
 
     private static class TSBench extends ProblemTestBench<TSState, Integer, TSProblem> {
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public TSBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+
+        public TSBench() {
+            super(true, true, false);
         }
 
         @Override
@@ -70,7 +64,7 @@ public class TalenSchedTest {
     @DisplayName("Talent Scheduling")
     @TestFactory
     public Stream<DynamicTest> testMCP() {
-        var bench = new TSBench(true, true, false);
+        var bench = new TSBench();
         return bench.generateTests();
     }
 

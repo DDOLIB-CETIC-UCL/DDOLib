@@ -23,15 +23,8 @@ public class GRTest {
 
     private static class GRBench extends ProblemTestBench<GRState, Integer, GRProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public GRBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public GRBench() {
+            super(true, false, false);
         }
 
         @Override
@@ -56,7 +49,7 @@ public class GRTest {
     @DisplayName("Golomb ruler")
     @TestFactory
     public Stream<DynamicTest> testGR() {
-        var bench = new GRBench(true, false, false);
+        var bench = new GRBench();
         return bench.generateTests();
     }
 }

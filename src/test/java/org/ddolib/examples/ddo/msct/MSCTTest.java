@@ -6,7 +6,6 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -30,15 +29,8 @@ class MSCTTest {
 
     private static class MSCTBench extends ProblemTestBench<MSCTState, Integer, MSCTProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public MSCTBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public MSCTBench() {
+            super(true, true, true);
 
         }
 
@@ -53,7 +45,6 @@ class MSCTTest {
             MSCTRanking ranking = new MSCTRanking();
             FastUpperBound<MSCTState> fub = new DefaultFastUpperBound<>();
 
-            FixedWidth<MSCTState> width = new FixedWidth<>(1000);
             VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<>();
             SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker<>(new MSCTDominance(),
                     problem.nbVars());
@@ -146,7 +137,7 @@ class MSCTTest {
     @DisplayName("MSCT")
     @TestFactory
     public Stream<DynamicTest> testMSCT() {
-        var bench = new MSCTBench(true, true, true);
+        var bench = new MSCTBench();
         return bench.generateTests();
     }
 }

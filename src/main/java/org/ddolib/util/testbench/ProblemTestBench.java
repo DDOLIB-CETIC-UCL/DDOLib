@@ -68,7 +68,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param testFUB        Whether the fast upper bound must be tested.
      * @param testDominance  Whether the dominance must be tested.
      */
-    public ProblemTestBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
+    protected ProblemTestBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
         this.testRelaxation = testRelaxation;
         this.testFUB = testFUB;
         this.testDominance = testDominance;

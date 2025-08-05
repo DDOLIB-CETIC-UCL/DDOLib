@@ -20,15 +20,9 @@ import java.util.stream.Stream;
 
 public class LCSTest {
     private static class LCSBench extends ProblemTestBench<LCSState, Integer, LCSProblem> {
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public LCSBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+
+        public LCSBench() {
+            super(true, true, false);
         }
 
         @Override
@@ -69,7 +63,7 @@ public class LCSTest {
     @DisplayName("LCS")
     @TestFactory
     public Stream<DynamicTest> testLCS() {
-        var bench = new LCSBench(true, true, false);
+        var bench = new LCSBench();
         return bench.generateTests();
     }
 

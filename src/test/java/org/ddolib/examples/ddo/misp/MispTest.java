@@ -23,15 +23,9 @@ public class MispTest {
 
     private static class MispBench extends ProblemTestBench<BitSet, Integer, MispProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public MispBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+
+        public MispBench() {
+            super(true, true, false);
         }
 
         @Override
@@ -69,7 +63,7 @@ public class MispTest {
     @DisplayName("MISP")
     @TestFactory
     public Stream<DynamicTest> testMISP() {
-        var bench = new MispBench(true, true, false);
+        var bench = new MispBench();
         return bench.generateTests();
     }
 

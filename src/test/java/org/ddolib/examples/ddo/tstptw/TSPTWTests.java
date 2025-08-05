@@ -23,15 +23,8 @@ public class TSPTWTests {
 
     private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWDominanceKey, TSPTWProblem> {
 
-        /**
-         * Instantiate a test bench.
-         *
-         * @param testRelaxation Whether the relaxation must be tested.
-         * @param testFUB        Whether the fast upper bound must be tested.
-         * @param testDominance  Whether the dominance must be tested.
-         */
-        public TSPTWBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-            super(testRelaxation, testFUB, testDominance);
+        public TSPTWBench() {
+            super(true, true, true);
         }
 
         @Override
@@ -73,7 +66,7 @@ public class TSPTWTests {
     @DisplayName("TSPTW")
     @TestFactory
     public Stream<DynamicTest> testTSPTW() {
-        var bench = new TSPTWBench(true, true, true);
+        var bench = new TSPTWBench();
         return bench.generateTests();
     }
 }
