@@ -45,8 +45,7 @@ public class SMICTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            SMICProblem problem = SMICMain.readProblem(filePath.toString());
-                            return problem;
+                            return SMICMain.readProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

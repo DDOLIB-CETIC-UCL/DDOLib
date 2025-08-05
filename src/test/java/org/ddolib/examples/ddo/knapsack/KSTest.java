@@ -5,7 +5,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -59,7 +58,6 @@ public class KSTest {
             KSRelax relax = new KSRelax();
             KSFastUpperBound fub = new KSFastUpperBound(problem);
             KSRanking ranking = new KSRanking();
-            FixedWidth<Integer> width = new FixedWidth<>(1000);
             VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
             SimpleFrontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
             SimpleDominanceChecker<Integer, Integer> dominanceChecker =
