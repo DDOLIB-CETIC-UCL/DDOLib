@@ -19,6 +19,7 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
     
     @Override
     public double fastUpperBound(JSState state, Set<Integer> variables) {
+        boolean exact = true;
         BitSet[][] profil = new BitSet[this.problem.data.getnMachines()][ this.problem.data.getHorizon()];
         int[] profilTime = new int[ this.problem.data.getnMachines()];
         int[][] starts = new int[ this.problem.data.getnJobs()][ this.problem.data.getnMachines()];
@@ -63,6 +64,18 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
                     profil[machine][k].set(i *  this.problem.data.getnMachines() + j);
                 }
                 profilTime[machine] = max(profilTime[machine], startIdx +  this.problem.data.getDuration()[i][j]);
+                if (exact) {
+                    for (int k = j + 1; k < this.problem.data.getnMachines(); k++) {
+                        if (starts[i][j] >= starts[i][k] && starts[i][j]- starts[i][k]< this.problem.data.getDuration()[i][j]) {
+                            exact = false;
+                            break;
+                        }
+                        if (starts[i][j] < starts[i][k] && starts[i][k]- starts[i][j]< this.problem.data.getDuration()[i][k]) {
+                            exact = false;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -73,6 +86,7 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
                 int s = profil[i][j].cardinality();
                 if (s > 1) {
                     count += (s - 1);
+                    exact = false;
                 } else if (s == 0) {
                     count--;
                     count = max(count, 0);
@@ -81,6 +95,9 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
             profilTime[i] += count;
 
             bound = max(bound, profilTime[i]);
+        }
+        if (exact) {
+            System.out.println("Exact");
         }
 
         return - (bound - this.problem.getMakespan(state));

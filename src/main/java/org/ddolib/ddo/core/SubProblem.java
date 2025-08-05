@@ -82,6 +82,9 @@ public final class SubProblem<T> {
     public double f() {
         return this.value + this.ub;
     }
+    public double fam() {
+        return this.value + 3*this.ub;
+    }
 
     /**
      * @return the path (partial assignment) which led to this very node

@@ -1,7 +1,9 @@
 package org.ddolib.factory;
 
 import org.ddolib.astar.core.solver.ACSSolver;
+import org.ddolib.astar.core.solver.ACSwLNSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.astar.core.solver.LNSSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -1051,4 +1053,14 @@ public class Solvers {
                                                        int K) {
         return new ACSSolver<>(problem, varh, ub, dominance, K);
     }
+
+    public static <T, K> ACSwLNSSolver<T, K> acswLNSSolver(Problem<T> problem,
+                                                       VariableHeuristic<T> varh,
+                                                       FastUpperBound<T> ub,
+                                                       DominanceChecker<T, K> dominance,
+                                                       int K, LNSSolver<T,K> lns) {
+        return new ACSwLNSSolver<>(problem, varh, ub, dominance, K, lns);
+    }
+
+
 }

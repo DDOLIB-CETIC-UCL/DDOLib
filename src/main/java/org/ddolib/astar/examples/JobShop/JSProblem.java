@@ -125,6 +125,14 @@ public class JSProblem implements Problem<JSState> {
             this.succ.get(p.i).add(p.j);
         }
     }
+    public void addPrecedencesConstraint2(ArrayList<Precedence> precedences) {
+        for (int i = 0; i < precedences.size(); i++) {
+            Precedence p = precedences.get(i);
+            this.pred.get(p.j).add(p.i);
+            this.succ.get(p.i).add(p.j);
+            System.out.println("problem.addPrecedenceConstraint(new Precedence( "+p.i+","+ p.j+"))");
+        }
+    }
     public void addPrecedenceConstraint(Precedence precedence) {
         Precedence p = precedence;
         this.pred.get(p.j).add(p.i);
@@ -250,12 +258,13 @@ public class JSProblem implements Problem<JSState> {
             dist = distances[data.getnJobs()* data.getnMachines()+1];
             path = reconstructPath(data.getnJobs()* data.getnMachines()+1, parent);
         }
-        int toRemove = (int) ceil(precs.size()*0.2);
+        int toRemove = (int) ceil(precs.size()*0.15);
+        System.out.println("Remove : "+ toRemove);
         for(int i=0; i<toRemove; i++){
             int rand = (int) ((Math.random() * (precs.size()-1 - 0)) + 0);
             precs.remove(precs.get(rand));
         }
-        this.addPrecedencesConstraint(precs);
+        this.addPrecedencesConstraint2(precs);
         return true;
 
     }
