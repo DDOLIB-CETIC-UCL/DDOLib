@@ -33,7 +33,7 @@ public class PDPProblem implements Problem<PDPState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPState(singleton(0), openToVisit, allToVisit);
+        return new PDPState(singleton(0), openToVisit, allToVisit,0,0);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -53,8 +53,18 @@ public class PDPProblem implements Problem<PDPState> {
             //the final decision is to come back to node zero
             return singleton(0).stream().iterator();
         } else {
-            ArrayList<Integer> domain = new ArrayList<>(state.openToVisit.stream().boxed().toList());
-            return domain.iterator();
+
+            boolean canIncludePickups = state.minContent < instance.maxCapa;
+            boolean canIncludeDeliveries = state.maxContent !=0;
+
+            return state
+                    .openToVisit
+                    .stream()
+                    .filter(point ->
+                            ((canIncludePickups | !instance.pickupToAssociatedDelivery.containsKey(point))
+                                    && (canIncludeDeliveries | ! instance.deliveryToAssociatedPickup.containsKey(point))))
+                    .boxed()
+                    .iterator();
         }
     }
 
@@ -66,9 +76,12 @@ public class PDPProblem implements Problem<PDPState> {
 
         BitSet newAllToVisit = (BitSet) state.allToVisit.clone();
         newAllToVisit.clear(node);
-
+        int newMinContent = state.minContent;
+        int newMaxContent = state.maxContent;
         if (instance.pickupToAssociatedDelivery.containsKey(node)) {
             newOpenToVisit.set(instance.pickupToAssociatedDelivery.get(node));
+            newMinContent += 1;
+            newMaxContent += 1;
         }
 
         if (instance.deliveryToAssociatedPickup.containsKey(node)) {
@@ -76,12 +89,16 @@ public class PDPProblem implements Problem<PDPState> {
             if (newOpenToVisit.get(p)) {
                 newOpenToVisit.clear(p);
             }
+            newMinContent -= 1;
+            newMaxContent -= 1;
         }
 
         return new PDPState(
                 state.singleton(node),
                 newOpenToVisit,
-                newAllToVisit);
+                newAllToVisit,
+                newMinContent,
+                newMaxContent);
     }
 
     @Override
