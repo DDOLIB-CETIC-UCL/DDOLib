@@ -1,7 +1,5 @@
 package org.ddolib.examples.ddo.pdp;
 
-import org.ddolib.util.Permutations;
-
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -92,8 +90,6 @@ public class PDPInstance {
                             Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();
                     matrix[node] = row;
                 } else { // read pick-up and delivery pairs
-                    System.out.println(linesCount);
-                    System.out.println(skip);
                     String[] tokens = line.split(" -> ");
                     pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
                 }
@@ -119,50 +115,12 @@ public class PDPInstance {
         }
     }
 
-    /**
-     * Generate all the permutation (without symmetry) and find the optimal value.
-     * <p>
-     * <b>Note:</b> Must be used only for test and small instances.
-     *
-     * @return The optimal value
-     */
-    public double solveNaively() {
-        TSPSolution best = new TSPSolution();
-        Permutations.generateAllPermutations(0, n, permutation -> {
-            System.out.println("best: " + best);
-            double newVal = eval(permutation);
-            System.out.printf("current %s - value: %f\n", permutation, newVal);
-            if (newVal < best.value) {
-                best.value = newVal;
-                best.solution = permutation;
-            }
-        });
 
-        System.out.println("\nfinal best: " + best);
-        System.out.println("eval best: " + eval(best.solution));
-        return best.value;
-    }
-
-    static class TSPSolution {
-        List<Integer> solution = new ArrayList<>();
-        double value = Double.POSITIVE_INFINITY;
-
-        @Override
-        public String toString() {
-            return solution.toString() + " - value: " + value;
-        }
-    }
-
-    public void writeInstance(String fileName, boolean solve) throws IOException {
-        double opti = solve ? solveNaively() : 0.0;
+    public void writeInstance(String fileName) throws IOException {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
-            if (solve) {
-                bw.write(String.format("Nodes: %d Opti: %s%n%n", n, df.format(opti)));
-            } else {
-                bw.write(String.format("Nodes: %d%n%n", n));
-            }
+            bw.write(String.format("Nodes: %d%n%n", n));
 
             String matrixStr = Arrays.stream(distanceMatrix).map(row -> Arrays.stream(row)
                             .mapToObj(x -> String.format("%3s", x))
@@ -175,13 +133,5 @@ public class PDPInstance {
                 bw.write(String.format("%d -> %d%n", entry.getKey(), entry.getValue()));
             }
         }
-    }
-
-
-    public static void main(String[] args) throws IOException {
-        PDPInstance instance = new PDPInstance("data/PDP/6_nodes.txt");
-        //System.out.println(instance);
-        System.out.println(instance.optimal);
-        System.out.println(instance.solveNaively());
     }
 }
