@@ -93,6 +93,8 @@ public class PDPProblem implements Problem<PDPState> {
             newMaxContent -= 1;
         }
 
+        if(newMinContent <0) newMinContent = 0;
+        if(newMaxContent > instance.maxCapa) newMaxContent = instance.maxCapa;
         return new PDPState(
                 state.singleton(node),
                 newOpenToVisit,
