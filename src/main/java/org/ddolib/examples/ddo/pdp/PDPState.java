@@ -20,6 +20,9 @@ public class PDPState {
     int minContent;
     int maxContent ;
 
+    public int uncertaintyOnContent() {
+        return maxContent - minContent;
+    }
     private int hash;
     public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent) {
         this.openToVisit = openToVisit;
