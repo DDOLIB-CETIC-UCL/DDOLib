@@ -68,7 +68,7 @@ public final class PDPMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPInstance instance = genInstance(10, 1, 3,new Random(1));
+        final PDPInstance instance = genInstance(18, 1, 3,new Random(1));
         final PDPProblem problem = new PDPProblem(instance);
 
         System.out.println("problem:" + problem);

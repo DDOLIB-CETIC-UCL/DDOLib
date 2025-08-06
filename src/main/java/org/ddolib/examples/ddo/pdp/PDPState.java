@@ -20,16 +20,18 @@ public class PDPState {
     int minContent;
     int maxContent ;
 
+    private int hash;
     public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
         this.minContent = minContent;
         this.maxContent = maxContent;
+        this.hash = Objects.hash(openToVisit, allToVisit, current,minContent,maxContent);
     }
 
     public int hashCode() {
-        return Objects.hash(openToVisit, allToVisit, current);
+        return hash;
     }
 
     @Override
