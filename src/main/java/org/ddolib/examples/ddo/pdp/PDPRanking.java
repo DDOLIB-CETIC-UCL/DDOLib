@@ -1,6 +1,5 @@
 package org.ddolib.examples.ddo.pdp;
 
-import org.ddolib.examples.ddo.tsptw.TSPTWState;
 import org.ddolib.modeling.StateRanking;
 
 public class PDPRanking implements StateRanking<PDPState> {
