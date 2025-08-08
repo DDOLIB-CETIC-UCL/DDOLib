@@ -14,7 +14,11 @@ public class PDPTWSolution {
     @Override
     public String toString() {
 
-        StringBuilder toReturn = new StringBuilder("0\tcontent:" + 0);
+
+        StringBuilder toReturn = new StringBuilder();
+        toReturn.append("eval from scratch: " + problem.instance.eval(solution) + "\n");
+        toReturn.append("0\tcontent:" + 0);
+
         int currentNode = 0;
         int currentContent = 0;
         for (int i = 1; i < solution.length; i++) {

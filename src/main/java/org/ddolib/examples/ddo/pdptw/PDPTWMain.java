@@ -55,8 +55,8 @@ public final class PDPTWMain {
         }
         TimeWindow[] timeWindows = new TimeWindow[n];
         for (int i = 0; i < n; i++) {
-            int earlyLine = random.nextInt(100);
-            int deadline = earlyLine + random.nextInt(100);
+            int earlyLine = random.nextInt(200);
+            int deadline = earlyLine + 500;
             timeWindows[i] = new TimeWindow(earlyLine, deadline);
         }
         HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
@@ -103,12 +103,12 @@ public final class PDPTWMain {
         final FixedWidth<PDPTWState> width = new FixedWidth<>(3000);
         final DefaultVariableHeuristic<PDPTWState> varh = new DefaultVariableHeuristic<>();
         final Frontier<PDPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SimpleCache<PDPState> cache = new SimpleCache<>(); //cache does not work on this problem dunno why
+        final SimpleCache<PDPTWState> cache = new SimpleCache<>(); //cache does not work on this problem dunno why
 
         final SimpleDominanceChecker<PDPTWState, PDPTWDominanceKey> dominance =
                 new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
 
-        final Solver solver = sequentialSolverWithCache<PDPTWDominanceKey,PDPTWState>(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
@@ -116,11 +116,11 @@ public final class PDPTWMain {
                 width,
                 frontier,
                 fub,
-                cache,
-                dominance);
+                dominance,
+                cache);
 
         SearchStatistics statistics = solver.maximize(2, false);
-
+        System.out.println(statistics);
         return solver;
     }
 
