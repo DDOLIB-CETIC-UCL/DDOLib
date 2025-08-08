@@ -68,7 +68,7 @@ public final class PDPMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPInstance instance = genInstance(17, 2, 4,new Random(1));
+        final PDPInstance instance = genInstance(18, 2, 3,new Random(1));
         final PDPProblem problem = new PDPProblem(instance);
 
         System.out.println("problem:" + problem);
@@ -79,7 +79,7 @@ public final class PDPMain {
 
         System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.println("Eval from scratch: " + instance.eval(solution.solution));
-        System.out.printf("Solution : %s%n", solution);
+        System.out.printf("Solution : %n%s%n", solution);
         System.out.println("Problem:" + problem);
 
         System.out.println("end");
@@ -90,7 +90,7 @@ public final class PDPMain {
         final PDPRelax relax = new PDPRelax(problem);
         final PDPRanking ranking = new PDPRanking();
         final PDPFastUpperBound fub = new PDPFastUpperBound(problem);
-        final FixedWidth<PDPState> width = new FixedWidth<>(3000);
+        final FixedWidth<PDPState> width = new FixedWidth<>(1000);
         final DefaultVariableHeuristic<PDPState> varh = new DefaultVariableHeuristic<>();
         final SimpleCache<PDPState> cache = new SimpleCache<>(); //cache does not work on this problem dunno why
         final Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
