@@ -17,19 +17,31 @@ public class PDPState {
     // However, most of the time, it is a singleton
     BitSet current;
 
-    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit) {
+    int minContent;
+    int maxContent ;
+
+    public int uncertaintyOnContent() {
+        return maxContent - minContent;
+    }
+    private int hash;
+    public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
+        this.minContent = minContent;
+        this.maxContent = maxContent;
+        this.hash = Objects.hash(openToVisit, allToVisit, current,minContent,maxContent);
     }
 
     public int hashCode() {
-        return Objects.hash(openToVisit, allToVisit, current);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
         PDPState that = (PDPState) obj;
+        if(this.minContent != that.minContent) return false;
+        if(this.maxContent != that.maxContent) return false;
         if (!that.current.equals(this.current)) return false;
         if (!that.openToVisit.equals(this.openToVisit)) return false;
         return (that.allToVisit.equals(this.allToVisit));

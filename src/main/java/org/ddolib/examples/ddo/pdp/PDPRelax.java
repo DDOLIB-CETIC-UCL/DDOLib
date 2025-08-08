@@ -19,6 +19,8 @@ class PDPRelax implements Relaxation<PDPState> {
         BitSet openToVisit = new BitSet(problem.n);
         BitSet current = new BitSet(problem.n);
         BitSet allToVisit = new BitSet(problem.n);
+        int minContent = Integer.MAX_VALUE;
+        int maxContent = Integer.MIN_VALUE;
 
         while (states.hasNext()) {
             PDPState state = states.next();
@@ -26,9 +28,11 @@ class PDPRelax implements Relaxation<PDPState> {
             openToVisit.or(state.openToVisit);
             allToVisit.or(state.allToVisit);
             current.or(state.current);
+            minContent = Math.min(minContent, state.minContent);
+            maxContent = Math.max(maxContent, state.maxContent);
         }
         //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
-        return new PDPState(current, openToVisit, allToVisit);
+        return new PDPState(current, openToVisit, allToVisit,minContent,maxContent);
     }
 
     @Override

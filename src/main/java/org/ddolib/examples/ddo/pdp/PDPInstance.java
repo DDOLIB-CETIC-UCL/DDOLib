@@ -11,6 +11,8 @@ public class PDPInstance {
     final int n;
     final double[][] distanceMatrix;
 
+    final int maxCapa;
+
     HashMap<Integer, Integer> pickupToAssociatedDelivery;
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
@@ -25,17 +27,30 @@ public class PDPInstance {
     }
 
     public double eval(int[] solution) {
+        int vehicleContent = 0;
         double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
+            if(pickupToAssociatedDelivery.containsKey(solution[i])) {
+                vehicleContent += 1;
+            }else if (deliveryToAssociatedPickup.containsKey(solution[i])){
+                vehicleContent -= 1;
+            }
+            if(vehicleContent > maxCapa) {
+                return -1;
+            }
         }
         toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
+        if(vehicleContent !=0){
+            return -1;
+        }
         return toReturn;
     }
 
-    public PDPInstance(final double[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery) {
+    public PDPInstance(final double[][] distanceMatrix, HashMap<Integer, Integer> pickupToAssociatedDelivery, int maxCapa) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
+        this.maxCapa = maxCapa;
 
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
         this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
