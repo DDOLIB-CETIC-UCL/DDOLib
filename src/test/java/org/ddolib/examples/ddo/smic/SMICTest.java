@@ -69,7 +69,7 @@ public class SMICTest {
         protected <U> Solver solverForTests(SolverConfig<SMICState, U> config, SMICProblem problem) {
             FixedWidth<SMICState> width = new FixedWidth<>(100);
             return new SequentialSolver<>(problem, config.relax(), config.varh(),
-                    config.ranking(), width, config.frontier(), config.fub(), config.dominance());
+                    config.ranking(), width, config.frontier(), config.fub(), config.dominance(), Integer.MAX_VALUE, 0.0);
         }
     }
 

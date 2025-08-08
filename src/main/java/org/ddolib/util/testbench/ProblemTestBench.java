@@ -101,7 +101,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected <U> Solver solverForRelaxation(SolverConfig<T, U> config, P problem) {
         FixedWidth<T> width = new FixedWidth<>(config.maxWidth());
         return new SequentialSolver<>(problem, config.relax(), config.varh(),
-                config.ranking(), width, config.frontier(), config.fub(), config.dominance());
+                config.ranking(), width, config.frontier(), config.fub(), config.dominance(), Integer.MAX_VALUE, 0.0);
     }
 
     /**

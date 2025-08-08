@@ -9,11 +9,11 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.factory.Solvers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
 
 import static org.ddolib.factory.Solvers.sequentialSolver;
@@ -71,7 +71,9 @@ public class SMICMain {
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
         String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        while (!s.hasNextLine()) {s.nextLine();}
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
         if (filename.contains(".txt")) {
             int nbJob = s.nextInt();
             int initInventory = s.nextInt();
@@ -81,6 +83,7 @@ public class SMICMain {
             int[] weight = new int[nbJob];
             int[] release = new int[nbJob];
             int[] inventory = new int[nbJob];
+            Optional<Double> opti = Optional.empty();
             for (int i = 0; i < nbJob; i++) {
                 type[i] = s.nextInt();
                 processing[i] = s.nextInt();
@@ -88,7 +91,16 @@ public class SMICMain {
                 release[i] = s.nextInt();
                 inventory[i] = s.nextInt();
             }
-            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            if (s.hasNextInt()) {
+                opti = Optional.of(s.nextDouble());
+            }
+
+            if (opti.isPresent()) {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
+                        opti.get());
+            } else {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            }
         } else {
             int nbJob = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
             int initInventory = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
@@ -109,10 +121,12 @@ public class SMICMain {
                 weight[i] = Integer.parseInt(w[i]);
                 release[i] = Integer.parseInt(r[i]);
                 inventory[i] = Integer.parseInt(in[i]);
-            }s.close();
+            }
+            s.close();
             return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
         }
     }
+
     private static String[] extractArrayValue(String line) {
         String[] v = null;
         if (line.contains("=") && line.contains("[")) {
