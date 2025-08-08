@@ -188,7 +188,8 @@ public class TSPInstance {
 
     /**
      * Save TSP Instance to xml format
-     * See http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf
+     * See <a href="http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf">
+     * "http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf"</a>
      *
      * @param path      to the xml file
      * @param objective of the best known solution
@@ -230,11 +231,7 @@ public class TSPInstance {
             FileOutputStream output = new FileOutputStream(path);
             writeXml(doc, output);
 
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | TransformerException | IOException e) {
             throw new RuntimeException(e);
         }
     }

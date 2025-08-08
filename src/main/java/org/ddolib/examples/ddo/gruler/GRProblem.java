@@ -6,18 +6,36 @@ import org.ddolib.modeling.Problem;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class GRProblem implements Problem<GRState> {
     final int n;
 
+    private Optional<Double> optimal = Optional.empty();
+
     public GRProblem(int n) {
         this.n = n;
     }
 
+    public GRProblem(int n, double optimal) {
+        this.n = n;
+        this.optimal = Optional.of(-optimal);
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("GRuler: %d", n);
+    }
+
     @Override
     public int nbVars() {
-        return n - 1;
+        return n-1;
     }
 
     @Override
@@ -43,7 +61,6 @@ public class GRProblem implements Problem<GRState> {
                         .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
                         .boxed()
                         .toList());
-//        System.out.println(state + " --> " +  Arrays.toString(domain.toArray()));
         return domain.iterator();
     }
 

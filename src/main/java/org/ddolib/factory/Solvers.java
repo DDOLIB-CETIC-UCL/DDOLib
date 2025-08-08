@@ -1029,7 +1029,7 @@ public class Solvers {
                                                        VariableHeuristic<T> varh,
                                                        FastUpperBound<T> ub,
                                                        DominanceChecker<T, K> dominance) {
-        return new AStarSolver(problem, varh, ub, dominance);
+        return new AStarSolver<>(problem, varh, ub, dominance);
     }
 
     /**

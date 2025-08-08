@@ -1,101 +1,71 @@
 package org.ddolib.examples.ddo.lcs;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.testbench.SolverConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class LCSTest {
+    private static class LCSBench extends ProblemTestBench<LCSState, Integer, LCSProblem> {
 
-    static Stream<LCSProblem> dataProvider() throws IOException {
-        String dir = "src/test/resources/LCS/";
-
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> dir + fileName)
-                .map(fileName -> {
-                    try {
-                        return LCSMain.extractFile(fileName);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-    }
-
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testFastUpperBound(LCSProblem problem) {
-        final LCSFastUpperBound fub = new LCSFastUpperBound(problem);
-
-        HashSet<Integer> vars = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            vars.add(i);
+        public LCSBench() {
+            super(true, true, false);
         }
 
-        double rub = fub.fastUpperBound(problem.initialState(), vars);
-        // Checks if the upper bound at the root is bigger than the optimal solution
-        assertTrue(rub >= problem.getOptimal().get(),
-                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
-                        rub,
-                        problem.getOptimal().get()));
+        @Override
+        protected List<LCSProblem> generateProblems() {
+            String dir = Paths.get("src", "test", "resources", "LCS").toString();
+
+            File[] files = new File(dir).listFiles();
+            assert files != null;
+            Stream<File> stream = Stream.of(files);
+
+            return stream.filter(file -> !file.isDirectory())
+                    .map(File::getName)
+                    .map(fileName -> Paths.get(dir, fileName))
+                    .map(filePath -> {
+                        try {
+                            LCSProblem problem = LCSMain.extractFile(filePath.toString());
+                            problem.setName(filePath.getFileName().toString());
+                            return problem;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+        }
+
+        @Override
+        protected SolverConfig<LCSState, Integer> configSolver(LCSProblem problem) {
+            LCSRelax relax = new LCSRelax(problem);
+            LCSRanking ranking = new LCSRanking();
+            LCSFastUpperBound fub = new LCSFastUpperBound(problem);
+
+            VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<>();
+            Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+            DefaultDominanceChecker<LCSState> dominanceChecker = new DefaultDominanceChecker<>();
+            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testLCS(LCSProblem problem) {
-        final LCSRelax relax = new LCSRelax(problem);
-        final LCSRanking ranking = new LCSRanking();
-        final FixedWidth<LCSState> width = new FixedWidth<>(250);
-        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
-
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.getOptimal().get());
+    @DisplayName("LCS")
+    @TestFactory
+    public Stream<DynamicTest> testLCS() {
+        var bench = new LCSBench();
+        return bench.generateTests();
     }
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testLCSWithRelax(LCSProblem problem) {
-        final LCSRelax relax = new LCSRelax(problem);
-        final LCSRanking ranking = new LCSRanking();
-        final FixedWidth<LCSState> width = new FixedWidth<>(2);
-        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-        solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.getOptimal().get());
-    }
 }
