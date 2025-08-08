@@ -13,11 +13,13 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
-
-import static javax.swing.UIManager.put;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -118,6 +120,8 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
          */
         private boolean isAboveExactCutSet;
 
+        private double ub = Double.POSITIVE_INFINITY;
+
 
         /**
          * Creates a new node
@@ -149,6 +153,10 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
          */
         public NodeType getNodeType() {
             return this.type;
+        }
+
+        public void setUb(final double ub) {
+            this.ub = ub;
         }
 
         @Override
@@ -332,6 +340,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 } else {
                     double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state,
                             variables));
+                    node.setUb(rub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -397,7 +406,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 }
             }
             for (NodeSubProblem<T> n : this.currentLayer) {
-                if (input.exportAsDot()) {
+                if (input.exportAsDot() || input.debugLevel() > 0) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -454,7 +463,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             }
         }
 
-        if (input.exportAsDot()) {
+        if (input.exportAsDot() || input.debugLevel() > 0) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -480,6 +489,10 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 // update the cache to improve the next computation of the BB
                 computeAndUpdateThreshold(cache, listDepths, nodeSubProblemPerLayer, layersThresholds, bestLb, input.cutSetType());
             }
+        }
+
+        if (input.debugLevel() > 0 && input.compilationType() != CompilationType.Relaxed) {
+            checkFub();
         }
     }
 
@@ -844,7 +857,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
                     " [label=" + df.format(e.weight) +
                     ", tooltip=\"" + e.decision.toString() + "\"";
-            put(e.hashCode(), edgeStr);
+            edgesDotStr.put(e.hashCode(), edgeStr);
         }
         return sb;
     }
@@ -859,6 +872,38 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
         if (edgeStr != null) {
             edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
             edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
+
+    private void checkFub() {
+        DecimalFormat df = new DecimalFormat("#.##########");
+        for (Node last : nextLayer.values()) {
+            double lastValue = last.value;
+            //For each node we save the longest path to last
+            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
+            parent.put(last, 0.0);
+            while (!parent.isEmpty()) {
+                Entry<Node, Double> current = parent.pollFirstEntry();
+                double longest = current.getKey().value + current.getValue();
+                if (current.getKey().ub < longest) {
+                    String dot = exportAsDot();
+                    try (BufferedWriter bw =
+                                 new BufferedWriter(new FileWriter(Paths.get("output",
+                                         "failed.dot").toString()))) {
+                        bw.write(dot);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
+                            "its longest path (%s)", df.format(current.getKey().ub), df.format(lastValue));
+                    throw new RuntimeException(failureMsg);
+                }
+
+                for (Edge edge : current.getKey().edges) {
+                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
+                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                }
+            }
         }
     }
 

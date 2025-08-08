@@ -233,7 +233,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
-            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
+            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
 
@@ -271,7 +271,8 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
             mdd.compile(compilation);
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
@@ -300,7 +301,8 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {

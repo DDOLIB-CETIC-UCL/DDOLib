@@ -406,7 +406,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot()) {
+        if (input.exportAsDot() || input.debugLevel() > 0) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
