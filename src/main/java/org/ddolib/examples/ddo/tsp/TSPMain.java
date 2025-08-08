@@ -76,7 +76,7 @@ public class TSPMain {
                 fub,
                 cache);
 
-        SearchStatistics stats = solver.maximize(2, false);
+        SearchStatistics stats = solver.maximize(2, 0, false);
         System.out.println(stats);
         return solver;
     }

@@ -43,9 +43,9 @@ public final class ACSSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
-    private  HashSet<T>[] closed;
+    private HashSet<T>[] closed;
 
-    private  HashSet<T>[] present;
+    private HashSet<T>[] present;
 
     private HashMap<T, Double> g;
 
@@ -74,12 +74,12 @@ public final class ACSSolver<T, K> implements Solver {
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-        this.closed = new HashSet[problem.nbVars()+1];
-        this.present = new HashSet[problem.nbVars()+1];
+        this.closed = new HashSet[problem.nbVars() + 1];
+        this.present = new HashSet[problem.nbVars() + 1];
         this.g = new HashMap<>();
         this.K = K;
 
-        for (int i = 0; i < problem.nbVars()+1; i++) {
+        for (int i = 0; i < problem.nbVars() + 1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
             present[i] = new HashSet<>();
             closed[i] = new HashSet<>();
@@ -98,11 +98,11 @@ public final class ACSSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
+        return maximize(0, 0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -111,12 +111,12 @@ public final class ACSSolver<T, K> implements Solver {
         g.put(root().getState(), 0.0);
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            for (int i = 0; i < problem.nbVars()+1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) {
                 int l = min(K, open.get(i).size());
                 for (int j = 0; j < l; j++) {
-                    SubProblem<T> s =  open.get(i).poll();
+                    SubProblem<T> s = open.get(i).poll();
                     present[i].remove(s.getState());
-                    if (s.f()> bestLB) {
+                    if (s.f() > bestLB) {
                         candidates.add(s);
                     }
                 }
@@ -130,13 +130,13 @@ public final class ACSSolver<T, K> implements Solver {
                     this.closed[i].add(sub.getState());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // optimal solution found
-                        if (bestLB<sub.getValue()) {
+                        if (bestLB < sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestLB = sub.getValue();
                         }
                         continue;
                     }
-                    addChildren(sub, i+1);
+                    addChildren(sub, i + 1);
                 }
                 candidates.clear();
 
@@ -177,7 +177,7 @@ public final class ACSSolver<T, K> implements Solver {
 
     private void addChildren(SubProblem<T> subProblem, int varIndex) {
         T state = subProblem.getState();
-        int var = varIndex-1;
+        int var = varIndex - 1;
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
@@ -190,12 +190,12 @@ public final class ACSSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState,path.size(),value)) {
-                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound,path);
-                if(((present[varIndex].contains(newState) || closed[varIndex].contains(newState))&&g.getOrDefault(newState,Double.MAX_VALUE)>value)||newSubProblem.f()<=bestLB){
-                   continue;
+            if (!dominance.updateDominance(newState, path.size(), value)) {
+                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound, path);
+                if (((present[varIndex].contains(newState) || closed[varIndex].contains(newState)) && g.getOrDefault(newState, Double.MAX_VALUE) > value) || newSubProblem.f() <= bestLB) {
+                    continue;
                 }
-                g.put(newState,value);
+                g.put(newState, value);
                 open.get(varIndex).add(newSubProblem);
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);

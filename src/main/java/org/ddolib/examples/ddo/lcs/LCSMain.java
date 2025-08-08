@@ -129,7 +129,7 @@ public final class LCSMain {
                 fub);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1, false);
+        solver.maximize(1, 0, false);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

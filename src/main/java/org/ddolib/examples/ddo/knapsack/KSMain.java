@@ -65,12 +65,12 @@ public class KSMain {
         );
 
 
-
-        Map.of("ddo",solverDDO, "astar", solverAstar).forEach((name, solver) -> {;
+        Map.of("ddo", solverDDO, "astar", solverAstar).forEach((name, solver) -> {
+            ;
             System.out.println("Solving with " + name + "...");
 
             long start = System.currentTimeMillis();
-            SearchStatistics stats = solver.maximize(0, true);
+            SearchStatistics stats = solver.maximize();
             double duration = (System.currentTimeMillis() - start) / 1000.0;
 
             System.out.println("Search statistics using ddo:" + stats);
@@ -90,7 +90,6 @@ public class KSMain {
 
 
         });
-
 
 
     }

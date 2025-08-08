@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-import static org.ddolib.factory.Solvers.parallelSolver;
+import static org.ddolib.factory.Solvers.sequentialSolver;
 
 public final class MispMain {
 
@@ -85,20 +85,19 @@ public final class MispMain {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/MISP/weighted.dot" : args[0];
+        final String file = args.length == 0 ? "data/MISP/G_3_3.dot" : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         final MispProblem problem = readFile(file);
         final MispRelax relax = new MispRelax(problem);
         final MispRanking ranking = new MispRanking();
         final MispFastUpperBound fub = new MispFastUpperBound(problem);
-        final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
+        final FixedWidth<BitSet> width = new FixedWidth<>(2);
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
 
         final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = parallelSolver(
-                Runtime.getRuntime().availableProcessors(),
+        final Solver solver = sequentialSolver(
                 problem,
                 relax,
                 varh,
@@ -108,7 +107,7 @@ public final class MispMain {
                 fub);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.maximize(0, 1, true);
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 

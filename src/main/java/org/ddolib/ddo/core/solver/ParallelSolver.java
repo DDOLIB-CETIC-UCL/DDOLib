@@ -89,11 +89,11 @@ public final class ParallelSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
+        return maximize(0, 0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         final AtomicInteger nbIter = new AtomicInteger(0);
         final AtomicInteger queueMaxSize = new AtomicInteger(0);
@@ -119,7 +119,7 @@ public final class ParallelSolver<T, K> implements Solver {
                                 queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 if (verbosityLevel >= 2)
                                     System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
-                                processOneNode(wl.subProblem, mdd, verbosityLevel, exportAsDot);
+                                processOneNode(wl.subProblem, mdd, verbosityLevel, exportAsDot, debugLevel);
                                 notifyNodeFinished(threadId);
                                 break;
                         }
@@ -136,7 +136,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override
@@ -210,7 +210,8 @@ public final class ParallelSolver<T, K> implements Solver {
      * This is typically the method you are searching for if you are searching after an implementation
      * of the branch and bound with mdd algo.
      */
-    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
+    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd,
+                                int verbosityLevel, boolean exportAsDot, int debugLevel) {
         // 1. RESTRICTION
         double nodeUB = sub.getUpperBound();
         double bestLB = bestLB();
@@ -232,7 +233,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                debugLevel
         );
 
         mdd.compile(compilation);
@@ -255,7 +257,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                debugLevel
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {

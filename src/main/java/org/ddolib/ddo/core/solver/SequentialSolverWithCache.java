@@ -163,7 +163,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
      *                  exploration can be stopped as soon as a node with an ub &#8804; current best
      *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
-     * @param cache    The cache used to prune the search space.
+     * @param cache     The cache used to prune the search space.
      * @param timeLimit The budget of time give to the solver to solve the problem.
      * @param gapLimit  The stop the search when the gat of the search reach the limit.
      */
@@ -175,7 +175,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             FastUpperBound<T> fub,
-            final DominanceChecker<T,K> dominance,
+            final DominanceChecker<T, K> dominance,
             final SimpleCache<T> cache,
             final int timeLimit,
             final double gapLimit) {
@@ -197,11 +197,11 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
+        return maximize(0, 0, false);
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;
@@ -231,16 +231,16 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
 
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(),cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(),cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
 
 
-            if (verbosityLevel >= 3){
+            if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
-                if(verbosityLevel >= 4) {
+                if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
                 }
             }
@@ -248,7 +248,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap,cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, cache.stats());
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -320,7 +320,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, cache.stats());
+        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, cache.stats());
     }
 
     @Override

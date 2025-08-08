@@ -110,7 +110,7 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -130,7 +130,8 @@ public final class ExactSolver<T, K> implements Solver {
                 dominance,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
-                exportAsDot
+                exportAsDot,
+                debugLevel
         );
         mdd.compile(compilation);
         extractBest(verbosityLevel);
@@ -146,7 +147,7 @@ public final class ExactSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
+        return maximize(0, 0, false);
     }
 
     @Override

@@ -38,7 +38,8 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,
-                                     boolean exportAsDot) {
+                                     boolean exportAsDot,
+                                     int debugLevel) {
 
     /**
      * Returns a string representation of this record class.

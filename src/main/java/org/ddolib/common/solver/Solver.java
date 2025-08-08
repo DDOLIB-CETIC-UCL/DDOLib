@@ -23,7 +23,7 @@ public interface Solver {
      *                       Tooltips are configured to give additional information on nodes and edges.
      * @return statistics about the search
      */
-    SearchStatistics maximize(int verbosityLevel, boolean exportAsDot);
+    SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot);
 
     /**
      * Tries to maximize the objective value of the problem which is being solved. The verbosity is set to 0 and the

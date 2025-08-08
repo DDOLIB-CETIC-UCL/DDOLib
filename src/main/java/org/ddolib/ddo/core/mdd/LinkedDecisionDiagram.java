@@ -420,7 +420,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (input.compilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
         }
-        if (input.compilationType() != CompilationType.Relaxed) {
+        if (input.debugLevel() > 0 && input.compilationType() != CompilationType.Relaxed) {
             checkFub();
         }
     }
