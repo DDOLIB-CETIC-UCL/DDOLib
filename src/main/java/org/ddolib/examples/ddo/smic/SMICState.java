@@ -44,6 +44,17 @@ public class SMICState {
     public int hashCode() {
         return Objects.hash(remainingJobs.hashCode(), currentTime, minCurrentInventory, maxCurrentInventory);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        SMICState other = (SMICState) obj;
+        if (this.currentTime == other.currentTime &&
+            this.minCurrentInventory == other.minCurrentInventory &&
+            this.maxCurrentInventory == other.maxCurrentInventory) {
+            return true;
+        }
+        return false;
+    }
 }
 
 

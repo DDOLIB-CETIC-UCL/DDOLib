@@ -127,6 +127,16 @@ public final class SequentialSolver<T, K> implements Solver {
 
 
     /**
+     * Add a time limit for the search, by default it is set to infinity
+     */
+    private int timeLimit = Integer.MAX_VALUE;
+
+    /**
+     * Add a gap limit for the search, by default it is set to zero
+     */
+    private double gapLimit = 0.0;
+
+    /**
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
@@ -146,7 +156,10 @@ public final class SequentialSolver<T, K> implements Solver {
      *                  lower bound is popped.
      * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
      * @param dominance The dominance object that will be used to prune the search space.
+     * @param timeLimit The budget of time give to the solver to solve the problem.
+     * @param gapLimit  The stop the search when the gat of the search reach the limit.
      */
+
     public SequentialSolver(
             final Problem<T> problem,
             final Relaxation<T> relax,
@@ -155,7 +168,9 @@ public final class SequentialSolver<T, K> implements Solver {
             final WidthHeuristic<T> width,
             final Frontier<T> frontier,
             final FastUpperBound<T> fub,
-            final DominanceChecker<T, K> dominance) {
+            final DominanceChecker<T, K> dominance,
+            int timeLimit,
+            double gapLimit) {
         this.problem = problem;
         this.relax = relax;
         this.varh = varh;
@@ -167,6 +182,8 @@ public final class SequentialSolver<T, K> implements Solver {
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
+        this.timeLimit = timeLimit;
+        this.gapLimit = gapLimit;
     }
 
 
@@ -192,7 +209,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
-                            nbIter, frontier.size(), bestLB, bestInFrontier, gap);
+                            nbIter, frontier.size(), bestLB, bestInFrontier, gap());
 
                     nextPrint = now + printInterval;
                 }
@@ -203,7 +220,15 @@ public final class SequentialSolver<T, K> implements Solver {
             SubProblem<T> sub = frontier.pop();
             double nodeUB = sub.getUpperBound();
 
-            if (verbosityLevel >= 3) {
+            long end = System.currentTimeMillis();
+            if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+            }
+            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+            }
+
+            if (verbosityLevel >= 3){
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
                 if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
@@ -211,9 +236,10 @@ public final class SequentialSolver<T, K> implements Solver {
             }
 
             if (nodeUB <= bestLB) {
+                double gap = gap();
                 frontier.clear();
-                long end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start);
+                end = System.currentTimeMillis();
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -279,7 +305,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize, end - start);
+        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override
@@ -342,6 +368,29 @@ public final class SequentialSolver<T, K> implements Solver {
             bw.write(dot);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private SearchStatistics.SearchStatus currentSearchStatus(double gap) {
+        if (bestSol.isEmpty()) {
+            if (bestLB == -Double.MAX_VALUE) {
+                return SearchStatistics.SearchStatus.UNKNOWN;
+            } else {
+                return SearchStatistics.SearchStatus.UNSAT;
+            }
+        } else {
+            if (gap > 0.0)
+                return SearchStatistics.SearchStatus.SAT;
+            else return SearchStatistics.SearchStatus.OPTIMAL;
+        }
+    }
+
+    private double gap() {
+        if (frontier.isEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = frontier.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
         }
     }
 }

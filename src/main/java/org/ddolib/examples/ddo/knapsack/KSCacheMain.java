@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
+
+//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
+
 /**
  * The Knapsack problem is a classic optimization problem
  * where the goal is to maximize the total value of items
@@ -45,7 +49,7 @@ public class KSCacheMain {
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolverWithCache(
+        final Solver solver = sequentialSolverWithCache(
                 problem,
                 relax,
                 varh,
@@ -54,7 +58,8 @@ public class KSCacheMain {
                 frontier,
                 fub,
                 dominance,
-                cache);
+                cache,
+                100);
 
 
         long start = System.currentTimeMillis();

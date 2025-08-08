@@ -2,21 +2,18 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 
-
 import java.util.*;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import static java.lang.Math.min;
 
-public final class AStarSolver<T, K> implements Solver {
+public final class ACSSolver<T, K> implements Solver {
 
     /**
      * The problem we want to maximize
@@ -37,16 +34,6 @@ public final class AStarSolver<T, K> implements Solver {
     private double bestLB;
 
     /**
-     * HashMap with all explored nodes
-     */
-    private HashMap<T, Double> closed;
-
-    /**
-     * HashMap with state in the Pirority Queue
-     */
-    private HashMap<T, Double>  present;
-
-    /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
@@ -56,9 +43,16 @@ public final class AStarSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
+    private  HashSet<T>[] closed;
 
-    private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
-            Comparator.comparingDouble(SubProblem<T>::f).reversed());
+    private  HashSet<T>[] present;
+
+    private HashMap<T, Double> g;
+
+    private final int K;
+
+
+    private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
     /**
      * Creates a fully qualified instance
@@ -68,19 +62,38 @@ public final class AStarSolver<T, K> implements Solver {
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param dominance The dominance object that will be used to prune the search space.
      */
-    public AStarSolver(
+    public ACSSolver(
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
+            final DominanceChecker<T, K> dominance,
+            final int K) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
         this.dominance = dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-        this.present = new HashMap<>();
-        this.closed = new HashMap<>();
+        this.closed = new HashSet[problem.nbVars()+1];
+        this.present = new HashSet[problem.nbVars()+1];
+        this.g = new HashMap<>();
+        this.K = K;
+
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
+            present[i] = new HashSet<>();
+            closed[i] = new HashSet<>();
+        }
+
+    }
+
+    private boolean allEmpty() {
+        for (PriorityQueue<SubProblem<T>> q : open) {
+            if (!q.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -93,38 +106,45 @@ public final class AStarSolver<T, K> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        SubProblem<T> root = root();
-        frontier.add(root);
-        present.put(root.getState(), root.f());
-        while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) {
-                System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
+        open.get(0).add(root());
+        present[0].add(root().getState());
+        g.put(root().getState(), 0.0);
+        ArrayList<SubProblem<T>> candidates = new ArrayList<>();
+        while (!allEmpty()) {
+            for (int i = 0; i < problem.nbVars()+1; i++) {
+                int l = min(K, open.get(i).size());
+                for (int j = 0; j < l; j++) {
+                    SubProblem<T> s =  open.get(i).poll();
+                    present[i].remove(s.getState());
+                    if (s.f()> bestLB) {
+                        candidates.add(s);
+                    }
+                }
+                for (int k = 0; k < candidates.size(); k++) {
+                    if (verbosityLevel >= 1) {
+                        System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
+                    }
+                    nbIter++;
+
+                    SubProblem<T> sub = candidates.get(k);
+                    this.closed[i].add(sub.getState());
+                    if (sub.getPath().size() == problem.nbVars()) {
+                        // optimal solution found
+                        if (bestLB<sub.getValue()) {
+                            bestSol = Optional.of(sub.getPath());
+                            bestLB = sub.getValue();
+                        }
+                        continue;
+                    }
+                    addChildren(sub, i+1);
+                }
+                candidates.clear();
+
+
             }
 
             nbIter++;
-            queueMaxSize = Math.max(queueMaxSize, frontier.size());
-
-            SubProblem<T> sub = frontier.poll();
-            present.remove(sub.getState());
-            if (closed.containsKey(sub.getState())){
-                continue;
-            }
-            if (sub.getPath().size() == problem.nbVars()) {
-                // optimal solution found
-                bestSol = Optional.of(sub.getPath());
-                bestLB = sub.getValue();
-                break;
-            }
-
-            double nodeUB = sub.getUpperBound();
-
-            if (verbosityLevel >= 2) {
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            }
-            if (verbosityLevel >= 1) {
-                System.out.println("\n");
-            }
-            addChildren(sub);
+            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
@@ -155,9 +175,9 @@ public final class AStarSolver<T, K> implements Solver {
     }
 
 
-    private void addChildren(SubProblem<T> subProblem) {
+    private void addChildren(SubProblem<T> subProblem, int varIndex) {
         T state = subProblem.getState();
-        int var = subProblem.getPath().size();
+        int var = varIndex-1;
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
@@ -165,28 +185,21 @@ public final class AStarSolver<T, K> implements Solver {
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             double value = subProblem.getValue() + cost;
+
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState,path.size(),value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound,path);
-                if (present.containsKey(newState)) {
-                    if (present.get(newState) < newSub.f()) {
-                        frontier.add(newSub);
-                    }
-                }else if (closed.containsKey(newState)) {
-                    if (closed.get(newState) < newSub.f()) {
-                        frontier.add(newSub);
-                        closed.remove(newState);
-                        present.put(newState,newSub.f());
-
-                    }
-                }else {
-                    frontier.add(newSub);
-                    present.put(newState,newSub.f());
+                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound,path);
+                if(((present[varIndex].contains(newState) || closed[varIndex].contains(newState))&&g.getOrDefault(newState,Double.MAX_VALUE)>value)||newSubProblem.f()<=bestLB){
+                   continue;
                 }
-
+                g.put(newState,value);
+                open.get(varIndex).add(newSubProblem);
+                if (closed[varIndex].contains(newState)) {
+                    closed[varIndex].remove(newState);
+                }
             }
         }
     }

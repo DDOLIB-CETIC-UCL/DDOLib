@@ -156,6 +156,15 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             return String.format("Node: value:%s - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
         }
+
+        // Deterministic hash
+        private static int nextHash = 0;
+        private final int hash = nextHash++;
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
     }
 
     /**
