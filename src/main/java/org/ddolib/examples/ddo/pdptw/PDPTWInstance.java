@@ -23,6 +23,7 @@ public class PDPTWInstance {
         return "PDPTWInstance(\n\tn:" + n + "\n" +
                 "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
                 "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
+                "\ttimeWindows" + Arrays.stream(timeWindows).map(l -> "\n\t " + l).toList() + "\n" +
                 "\t" + Arrays.stream(timeAndDistanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
     }
 
@@ -43,7 +44,7 @@ public class PDPTWInstance {
             TimeWindow window = timeWindows[solution[i]];
             currentTime += timeAndDistanceMatrix[solution[i - 1]][solution[i]];
             if(currentTime > window.end()){
-                return -1;
+                return -2;
             }
             if(currentTime <= window.start()) {
                 currentTime = window.start();
@@ -51,11 +52,11 @@ public class PDPTWInstance {
         }
         currentTime += timeAndDistanceMatrix[solution[solution.length - 1]][0];
         if(currentTime > timeWindows[0].end()) {
-            return -1;
+            return -3;
         }
         distance = distance + timeAndDistanceMatrix[solution[solution.length - 1]][0]; //final come back
         if(vehicleContent !=0){
-            return -1;
+            return -4;
         }
         return distance;
     }

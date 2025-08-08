@@ -5,6 +5,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class PDPTWProblem implements Problem<PDPTWState> {
@@ -57,6 +58,16 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             boolean canIncludePickups = state.minContent < instance.maxCapa;
             boolean canIncludeDeliveries = state.maxContent !=0;
+
+            //how many we need to visit from now on?
+            int howManyToVisit = n - 1 - var;
+            //check that among the ones we must visit, we can visit at least that number (otherwise, there are no successors)
+
+            long nbStillReachablePoints = state.allToVisit.stream().filter(point ->
+                    (state.currentTime + state.current.stream().map(from -> instance.timeAndDistanceMatrix[from][point]).min().getAsInt()) <= instance.timeWindows[point].end()
+                    ).count();
+
+            if(nbStillReachablePoints < howManyToVisit) return Collections.emptyIterator();
 
             return state
                     .openToVisit
