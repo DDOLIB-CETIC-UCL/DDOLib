@@ -362,7 +362,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.exportAsDot()) {
+                if (input.exportAsDot() || input.debugLevel() >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -406,7 +406,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot() || input.debugLevel() > 0) {
+        if (input.exportAsDot() || input.debugLevel() >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -420,8 +420,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (input.compilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
         }
-        if (input.debugLevel() > 0 && input.compilationType() != CompilationType.Relaxed) {
-            checkFub();
+        if (input.debugLevel() >= 1 && input.compilationType() != CompilationType.Relaxed) {
+            checkFub(input.debugLevel());
         }
     }
 
@@ -487,7 +487,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
-    private void checkFub() {
+    private void checkFub(int debugLevel) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
             double lastValue = last.value;
@@ -498,13 +498,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Entry<Node, Double> current = parent.pollFirstEntry();
                 double longest = current.getKey().value + current.getValue();
                 if (current.getKey().ub < longest) {
-                    String dot = exportAsDot();
-                    try (BufferedWriter bw =
-                                 new BufferedWriter(new FileWriter(Paths.get("output",
-                                         "failed.dot").toString()))) {
-                        bw.write(dot);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    if (debugLevel >= 2) {
+                        String dot = exportAsDot();
+                        try (BufferedWriter bw =
+                                     new BufferedWriter(new FileWriter(Paths.get("output",
+                                             "failed.dot").toString()))) {
+                            bw.write(dot);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     String failureMsg = String.format("Found node with upper bound (%s) lower than " +
                             "its longest path (%s)", df.format(current.getKey().ub), df.format(lastValue));
