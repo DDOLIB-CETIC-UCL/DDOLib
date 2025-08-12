@@ -10,6 +10,8 @@ import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class AStarSolver<T, K> implements Solver {
 
@@ -34,12 +36,12 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * HashMap with all explored nodes
      */
-    private HashMap<T, Double> closed;
+    private final HashMap<AstarKey<T>, Double> closed;
 
     /**
-     * HashMap with state in the Pirority Queue
+     * HashMap with state in the Priority Queue
      */
-    private HashMap<T, Double> present;
+    private final HashMap<AstarKey<T>, Double> present;
 
     /**
      * If set, this keeps the info about the best solution so far.
@@ -90,8 +92,9 @@ public final class AStarSolver<T, K> implements Solver {
         int queueMaxSize = 0;
         SubProblem<T> root = root();
         frontier.add(root);
-        present.put(root.getState(), root.f());
+        present.put(new AstarKey<>(root().getState(), 0), root.f());
         while (!frontier.isEmpty()) {
+            System.out.println("Frontier: " + frontier);
             if (verbosityLevel >= 1) {
                 System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
             }
@@ -100,8 +103,14 @@ public final class AStarSolver<T, K> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
 
             SubProblem<T> sub = frontier.poll();
-            present.remove(sub.getState());
-            if (closed.containsKey(sub.getState())) {
+            AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+            System.out.println("sub: " + sub);
+            System.out.println("closed: " + closed);
+            System.out.println("present: " + present);
+            System.out.println("\n");
+
+            present.remove(subKey);
+            if (closed.containsKey(subKey)) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
@@ -120,6 +129,7 @@ public final class AStarSolver<T, K> implements Solver {
                 System.out.println("\n");
             }
             addChildren(sub);
+            closed.put(subKey, sub.f());
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
@@ -142,10 +152,11 @@ public final class AStarSolver<T, K> implements Solver {
      * @return the root subproblem
      */
     private SubProblem<T> root() {
+        Set<Integer> vars = IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                ub.fastUpperBound(problem.initialState(), vars),
                 Collections.emptySet());
     }
 
@@ -166,20 +177,21 @@ public final class AStarSolver<T, K> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
-                if (present.containsKey(newState)) {
-                    if (present.get(newState) < newSub.f()) {
-                        frontier.add(newSub);
-                    }
-                } else if (closed.containsKey(newState)) {
-                    if (closed.get(newState) < newSub.f()) {
-                        frontier.add(newSub);
-                        closed.remove(newState);
-                        present.put(newState, newSub.f());
-
-                    }
-                } else {
+                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                Double presentValue = present.get(newKey);
+                if (presentValue != null && presentValue < newSub.f()) {
                     frontier.add(newSub);
-                    present.put(newState, newSub.f());
+                    present.put(newKey, newSub.f());
+                } else {
+                    Double closedValue = closed.get(newKey);
+                    if (closedValue != null && closedValue < newSub.f()) {
+                        frontier.add(newSub);
+                        closed.remove(newKey);
+                        present.put(newKey, newSub.f());
+                    } else {
+                        frontier.add(newSub);
+                        present.put(newKey, newSub.f());
+                    }
                 }
 
             }
@@ -195,5 +207,8 @@ public final class AStarSolver<T, K> implements Solver {
             set.remove(d.var());
         }
         return set;
+    }
+
+    private record AstarKey<T>(T state, int depth) {
     }
 }
