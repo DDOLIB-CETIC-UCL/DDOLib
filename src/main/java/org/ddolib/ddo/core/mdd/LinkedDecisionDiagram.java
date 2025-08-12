@@ -496,7 +496,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             parent.put(last, 0.0);
             while (!parent.isEmpty()) {
                 Entry<Node, Double> current = parent.pollFirstEntry();
-                if (current.getKey().fub < current.getValue()) {
+                if (current.getKey().fub + 1e-10 < current.getValue()) {
                     if (debugLevel >= 2) {
                         String dot = exportAsDot();
                         try (BufferedWriter bw =
@@ -520,7 +520,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
-    // --- UTILITY METHODS -----------------------------------------------
+    // ILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {
@@ -534,6 +534,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
+     * --- UT
      * Reset the state of this MDD. This way it can easily be reused
      */
     private void clear() {
