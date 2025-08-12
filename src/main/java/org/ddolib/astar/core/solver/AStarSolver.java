@@ -9,7 +9,9 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,6 +59,8 @@ public final class AStarSolver<T, K> implements Solver {
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
+    private final SubProblem<T> root;
+
     /**
      * Creates a fully qualified instance
      *
@@ -78,6 +82,25 @@ public final class AStarSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
+        this.root = root(problem.initialState(), problem.initialValue(), 0);
+    }
+
+    private AStarSolver(
+            final Problem<T> problem,
+            final VariableHeuristic<T> varh,
+            final FastUpperBound<T> ub,
+            final DominanceChecker<T, K> dominance,
+            final AstarKey<T> key
+    ) {
+        this.problem = problem;
+        this.varh = varh;
+        this.ub = ub;
+        this.dominance = dominance;
+        this.bestLB = Integer.MIN_VALUE;
+        this.bestSol = Optional.empty();
+        this.present = new HashMap<>();
+        this.closed = new HashMap<>();
+        this.root = root(key.state, 0, key.depth());
     }
 
     @Override
@@ -90,11 +113,10 @@ public final class AStarSolver<T, K> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        SubProblem<T> root = root();
         frontier.add(root);
-        present.put(new AstarKey<>(root().getState(), 0), root.f());
+        present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!frontier.isEmpty()) {
-            System.out.println("Frontier: " + frontier);
+            //System.out.println("Frontier: " + frontier);
             if (verbosityLevel >= 1) {
                 System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
             }
@@ -104,10 +126,11 @@ public final class AStarSolver<T, K> implements Solver {
 
             SubProblem<T> sub = frontier.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
-            System.out.println("sub: " + sub);
-            System.out.println("closed: " + closed);
+           /* System.out.println("sub: " + sub);
             System.out.println("present: " + present);
-            System.out.println("\n");
+            System.out.println("closed: " + closed);
+            System.out.println("\n\n");
+*/
 
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
@@ -115,6 +138,9 @@ public final class AStarSolver<T, K> implements Solver {
             }
             if (sub.getPath().size() == problem.nbVars()) {
                 // optimal solution found
+                if (debugLevel >= 1) {
+                    checkFUBAdmissibility();
+                }
                 bestSol = Optional.of(sub.getPath());
                 bestLB = sub.getValue();
                 break;
@@ -128,7 +154,7 @@ public final class AStarSolver<T, K> implements Solver {
             if (verbosityLevel >= 1) {
                 System.out.println("\n");
             }
-            addChildren(sub);
+            addChildren(sub, debugLevel);
             closed.put(subKey, sub.f());
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
@@ -151,17 +177,18 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * @return the root subproblem
      */
-    private SubProblem<T> root() {
-        Set<Integer> vars = IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());
+    private SubProblem<T> root(T state, double value, int depth) {
+        Set<Integer> vars =
+                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
         return new SubProblem<>(
-                problem.initialState(),
-                problem.initialValue(),
+                state,
+                value,
                 ub.fastUpperBound(problem.initialState(), vars),
                 Collections.emptySet());
     }
 
 
-    private void addChildren(SubProblem<T> subProblem) {
+    private void addChildren(SubProblem<T> subProblem, int debugLevel) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
@@ -174,9 +201,14 @@ public final class AStarSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+
+
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
+                if (debugLevel >= 1) {
+                    checkFUBConsistency(subProblem, newSub, cost);
+                }
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue < newSub.f()) {
@@ -207,6 +239,36 @@ public final class AStarSolver<T, K> implements Solver {
             set.remove(d.var());
         }
         return set;
+    }
+
+    private void checkFUBAdmissibility() {
+
+        for (Map.Entry<AstarKey<T>, Double> entry : closed.entrySet()) {
+            AstarKey<T> key = entry.getKey();
+            if (entry.getValue() + 1e-10 < bestLB) {
+                DecimalFormat df = new DecimalFormat("#.#########");
+                String failureMsg = "Your upper bound is not admissible.\n" +
+                        "State: " + key.state.toString() + "\n" +
+                        "Depth: " + key.depth + "\n" +
+                        "Path estimation: " + df.format(entry.getValue()) + "\n" +
+                        "Longest path to end: " + df.format(bestLB) + "\n";
+
+                throw new RuntimeException(failureMsg);
+            }
+        }
+    }
+
+    private void checkFUBConsistency(SubProblem<T> current, SubProblem<T> next,
+                                     double transitionCost) {
+        Logger logger = Logger.getLogger(AStarSolver.class.getName());
+        if (current.f() + 1e-10 < problem.initialValue() + current.getValue() + transitionCost + next.getUpperBound()) {
+            String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
+                    "Current state " + current + "\n" +
+                    "Next state: " + next + "\n" +
+                    "Transition cost: " + transitionCost + "\n";
+            logger.warning(warningMsg);
+        }
+
     }
 
     private record AstarKey<T>(T state, int depth) {
