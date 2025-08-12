@@ -103,7 +103,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          */
         private boolean isMarked;
 
-        private double ub = Double.POSITIVE_INFINITY;
+        private double fub = Double.POSITIVE_INFINITY;
 
         /**
          * Creates a new node
@@ -126,8 +126,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             this.type = nodeType;
         }
 
-        public void setUb(final double ub) {
-            this.ub = ub;
+        public void setFub(final double fub) {
+            this.fub = fub;
         }
 
         /**
@@ -305,11 +305,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
-                    continue;
-                } else {
-                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
-                    node.setUb(rub);
+                if (node.getNodeType() != NodeType.EXACT || !dominance.updateDominance(state,
+                        depthGlobalDD, node.value)) {
+                    double fub = input.fub().fastUpperBound(state, variables);
+                    double rub = saturatedAdd(node.value, fub);
+                    node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -496,8 +496,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             parent.put(last, 0.0);
             while (!parent.isEmpty()) {
                 Entry<Node, Double> current = parent.pollFirstEntry();
-                double longest = current.getKey().value + current.getValue();
-                if (current.getKey().ub < longest) {
+                if (current.getKey().fub < current.getValue()) {
                     if (debugLevel >= 2) {
                         String dot = exportAsDot();
                         try (BufferedWriter bw =
@@ -509,7 +508,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         }
                     }
                     String failureMsg = String.format("Found node with upper bound (%s) lower than " +
-                            "its longest path (%s)", df.format(current.getKey().ub), df.format(lastValue));
+                            "its longest path (%s)", df.format(current.getKey().fub), df.format(lastValue));
                     throw new RuntimeException(failureMsg);
                 }
 
