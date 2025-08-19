@@ -31,12 +31,11 @@ public class MispMeasureLastExactLayer {
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
         final String output = args[1];
+        final int maxWidth = Integer.parseInt(args[2]);
+        final int timelimit = Integer.parseInt(args[3]);
 
         Map<ClusterStrat, String> stratNameMap = new HashMap<>();
         stratNameMap.put(ClusterStrat.Cost, "Cost");
-        stratNameMap.put(ClusterStrat.GHP, "GHP");
-        stratNameMap.put(ClusterStrat.GHPMD, "GHPMD");
-        stratNameMap.put(ClusterStrat.GHPMDP, "GHPMDP");
         stratNameMap.put(ClusterStrat.GHPMDPMD, "GHPMDPMD");
 
         final MispProblem problem = MispMain.readFile(instance);
@@ -55,7 +54,6 @@ public class MispMeasureLastExactLayer {
 
         StringBuilder csvString;
         for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
-            for (int maxWidth = 100; maxWidth <= 100; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.5))) {
                 List<Integer> seeds;
                 if (relaxStrat == ClusterStrat.Cost || relaxStrat == ClusterStrat.Kmeans) {
                     seeds = List.of(684651);
@@ -65,7 +63,7 @@ public class MispMeasureLastExactLayer {
                 for (int seed: seeds) {
                     dominance = new DefaultDominanceChecker<>();
                     varh = new DefaultVariableHeuristic<>();
-		    frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+		            frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
                     csvString = new StringBuilder();
                     width = new FixedWidth<>(maxWidth);
                     Solver solver = sequentialSolver(
@@ -77,7 +75,7 @@ public class MispMeasureLastExactLayer {
                             frontier,
                             fub,
                             dominance,
-                            900,
+                            timelimit,
                             0.0,
                             relaxStrat,
                             relaxStrat,
@@ -106,14 +104,13 @@ public class MispMeasureLastExactLayer {
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append(timelimit).append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(true).append("\n");
                     writer.write(csvString.toString());
-		    writer.flush();
-		    System.gc();
+		            writer.flush();
                 }
 
-            }
         }
         writer.close();
     }

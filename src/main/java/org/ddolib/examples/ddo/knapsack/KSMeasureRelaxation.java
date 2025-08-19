@@ -30,9 +30,6 @@ public class KSMeasureRelaxation {
         Map<ClusterStrat, String> stratNameMap = new HashMap<>();
         stratNameMap.put(ClusterStrat.Cost, "Cost");
         stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
-        // stratNameMap.put(ClusterStrat.GHP, "GHP");
-        // stratNameMap.put(ClusterStrat.GHPMD, "GHPMD");
-        // stratNameMap.put(ClusterStrat.GHPMDP, "GHPMDP");
         stratNameMap.put(ClusterStrat.GHPMDPMD, "GHPMDPMD");
 
         final KSProblem problem = KSMain.readInstance(instance);
@@ -104,9 +101,11 @@ public class KSMeasureRelaxation {
                     csvString.append(fastLB).append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("").append(";");
+                    csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(true).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
 
             }

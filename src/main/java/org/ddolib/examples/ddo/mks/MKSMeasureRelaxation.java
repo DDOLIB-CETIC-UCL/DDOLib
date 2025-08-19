@@ -101,9 +101,11 @@ public class MKSMeasureRelaxation {
                     csvString.append(problem.optimal).append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
 
             }

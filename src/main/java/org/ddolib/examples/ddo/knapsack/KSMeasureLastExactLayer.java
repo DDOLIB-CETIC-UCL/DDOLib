@@ -28,12 +28,11 @@ public class KSMeasureLastExactLayer {
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
         final String output = args[1];
+        final int maxWidth = Integer.parseInt(args[2]);
+        final int timelimit = Integer.parseInt(args[3]);
 
         Map<ClusterStrat, String> stratNameMap = new HashMap<>();
         stratNameMap.put(ClusterStrat.Cost, "Cost");
-        // stratNameMap.put(ClusterStrat.GHP, "GHP");
-        // stratNameMap.put(ClusterStrat.GHPMD, "GHPMD");
-        // stratNameMap.put(ClusterStrat.GHPMDP, "GHPMDP");
         stratNameMap.put(ClusterStrat.GHPMDPMD, "GHPMDPMD");
         stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
 
@@ -52,7 +51,6 @@ public class KSMeasureLastExactLayer {
 
         StringBuilder csvString;
         for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
-            for (int maxWidth = 300; maxWidth <= 300; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.5))) {
                 List<Integer> seeds;
                 if (relaxStrat == ClusterStrat.Cost || relaxStrat == ClusterStrat.Kmeans) {
                     seeds = List.of(684651);
@@ -75,7 +73,7 @@ public class KSMeasureLastExactLayer {
                             frontier,
                             fub,
                             dominance,
-                            100,
+                            timelimit,
                             0.0,
                             relaxStrat,
                             relaxStrat,
@@ -104,12 +102,13 @@ public class KSMeasureLastExactLayer {
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append(timelimit).append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(true).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
 
-            }
         }
         writer.close();
     }

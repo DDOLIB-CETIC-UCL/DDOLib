@@ -30,14 +30,13 @@ public class MKSMeasureLastExactLayer {
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
         final String output = args[1];
+        final int maxWidth = Integer.parseInt(args[2]);
+        final int timelimit = Integer.parseInt(args[3]);
 
         Map<ClusterStrat, String> stratNameMap = new HashMap<>();
-        // stratNameMap.put(ClusterStrat.Cost, "Cost");
+        stratNameMap.put(ClusterStrat.Cost, "Cost");
         stratNameMap.put(ClusterStrat.Kmeans, "Kmeans");
-        // stratNameMap.put(ClusterStrat.GHP, "GHP");
-        // stratNameMap.put(ClusterStrat.GHPMD, "GHPMD");
-        // stratNameMap.put(ClusterStrat.GHPMDP, "GHPMDP");
-        // stratNameMap.put(ClusterStrat.GHPMDPMD, "GHPMDPMD");
+        stratNameMap.put(ClusterStrat.GHPMDPMD, "GHPMDPMD");
 
         final MKSProblem problem = MKSMain.readInstance(instance);
         final MKSRelax relax = new MKSRelax();
@@ -45,7 +44,7 @@ public class MKSMeasureLastExactLayer {
         FixedWidth<MKSState> width;
         VariableHeuristic<MKSState> varh;
         SimpleDominanceChecker<MKSState, Integer> dominance;
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        Frontier<MKSState> frontier;
         final StateDistance<MKSState> distance = new MKSDistance();
         final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
 
@@ -53,7 +52,6 @@ public class MKSMeasureLastExactLayer {
 
         StringBuilder csvString;
         for (ClusterStrat relaxStrat : stratNameMap.keySet()) {
-            for (int maxWidth = 300; maxWidth <= 300; maxWidth = maxWidth + Math.max(1, (int) (maxWidth * 0.5))) {
                 List<Integer> seeds;
                 if (relaxStrat == ClusterStrat.Cost || relaxStrat == ClusterStrat.Kmeans) {
                     seeds = List.of(684651);
@@ -66,6 +64,7 @@ public class MKSMeasureLastExactLayer {
                     csvString = new StringBuilder();
                     // System.out.print(maxWidth + ", ");
                     width = new FixedWidth<>(maxWidth);
+                    frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
                     Solver solver = sequentialSolver(
                             problem,
                             relax,
@@ -74,7 +73,7 @@ public class MKSMeasureLastExactLayer {
                             width,
                             frontier,
                             dominance,
-                            1800,
+                            timelimit,
                             0.0,
                             relaxStrat,
                             relaxStrat,
@@ -102,12 +101,12 @@ public class MKSMeasureLastExactLayer {
                     csvString.append(problem.optimal).append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append(timelimit).append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
-
-            }
         }
         writer.close();
     }

@@ -64,7 +64,6 @@ public class SetCoverMeasureRelaxation {
                     dominance = new DefaultDominanceChecker<>();
                     varh = new SetCoverHeuristics.MinCentrality(problem);
                     csvString = new StringBuilder();
-                    // System.out.print(maxWidth + ", ");
                     width = new FixedWidth<>(maxWidth);
                     Solver solver = relaxationSolver(
                             problem,
@@ -98,9 +97,11 @@ public class SetCoverMeasureRelaxation {
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
 
             }

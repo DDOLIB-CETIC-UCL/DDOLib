@@ -106,9 +106,11 @@ public class MispMeasureRelaxation {
                     csvString.append(fastLB).append(";");
                     csvString.append(stats.nbIterations()).append(";");
 		            csvString.append("lastExactLayer").append(";");
+                    csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(true).append("\n");
                     writer.write(csvString.toString());
+                    writer.flush();
                 }
 
             }
