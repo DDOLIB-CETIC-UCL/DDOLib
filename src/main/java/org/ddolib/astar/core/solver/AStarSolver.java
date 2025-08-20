@@ -97,9 +97,6 @@ public final class AStarSolver<T, K> implements Solver {
         frontier.add(root);
         present.put(root.getState(), root.f());
         while (!frontier.isEmpty()) {
-            if (verbosityLevel >= 1) {
-                System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
-            }
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -109,21 +106,17 @@ public final class AStarSolver<T, K> implements Solver {
             if (closed.containsKey(sub.getState())){
                 continue;
             }
+//            System.out.println("Explored state : "+sub.getState() + "c : "+sub.getValue() + " h : "+ sub.getUpperBound() + " c+h : "+ sub.f());
             if (sub.getPath().size() == problem.nbVars()) {
                 // optimal solution found
                 bestSol = Optional.of(sub.getPath());
                 bestLB = sub.getValue();
+                if (verbosityLevel >= 2) {
+                    System.out.println("subProblem(ub:" + sub.getUpperBound() + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (sub.getUpperBound() - sub.getValue()) + "):" + sub.getState());
+                }
                 break;
             }
 
-            double nodeUB = sub.getUpperBound();
-
-            if (verbosityLevel >= 2) {
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            }
-            if (verbosityLevel >= 1) {
-                System.out.println("\n");
-            }
             addChildren(sub);
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);

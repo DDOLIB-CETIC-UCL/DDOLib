@@ -5,14 +5,18 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
-import static java.lang.Math.ceil;
-import static java.lang.Math.max;
+import static java.lang.Math.*;
 
 public class JSProblem implements Problem<JSState> {
 
     final JSInstance data;
-    HashMap<Integer, ArrayList<Integer>> pred;
-    HashMap<Integer, ArrayList<Integer>> succ;
+    public  HashMap<Integer, ArrayList<Integer>> pred;
+    public HashMap<Integer, ArrayList<Integer>> succ;
+    private double percentage;
+    public HashMap<String, Integer> fullExplored;
+    private final Random rdPath;
+    private final Random rdRemove;
+    private HashMap<Integer, Integer> starts;
 
     public JSProblem(JSInstance data) {
         this.data = data;
@@ -22,6 +26,11 @@ public class JSProblem implements Problem<JSState> {
             pred.put(i, new ArrayList<>());
             succ.put(i, new ArrayList<>());
         }
+        this.percentage = 0.15;
+        this.fullExplored = new HashMap<String, Integer>();
+        this.rdPath =  new Random(42);
+        this.rdRemove = new Random(42);
+        this.starts = new HashMap<>();
     }
 
     @Override
@@ -34,7 +43,7 @@ public class JSProblem implements Problem<JSState> {
         int[][] est = new int[data.getnJobs()][data.getnMachines()];
         for (int i = 0; i < data.getnJobs(); i++) {
             for (int j = 0; j < data.getnMachines(); j++) {
-                est[i][j] = 0;
+                est[i][j] = starts.getOrDefault(i*data.getnMachines()+j, 0);
             }
         }
         for (int k: pred.keySet()) {
@@ -96,7 +105,7 @@ public class JSProblem implements Problem<JSState> {
                 newState.est[job][op] = max(newState.est[job][op], newState.est[jobId][opId] + data.getDuration()[jobId][opId]);
                 for (int succ: succ.get(j)){
                     if (!newState.done.get(succ)) {
-                        newState.est[succ / data.getnMachines()][succ % data.getnMachines()] = max(newState.est[succ / data.getnMachines()][succ % data.getnMachines()], newState.est[job][op] + data.getDuration()[job][op]);
+                        updateTime(succ, j, newState);
                     }
                 }
             }
@@ -110,12 +119,55 @@ public class JSProblem implements Problem<JSState> {
         return newState;
     }
 
+    public void updateTime(int succ, int pred, JSState newState){
+        newState.est[succ / data.getnMachines()][succ % data.getnMachines()] = max(newState.est[succ / data.getnMachines()][succ % data.getnMachines()], newState.est[pred/ data.getnMachines()][pred % data.getnMachines()] + data.getDuration()[pred / data.getnMachines()][pred % data.getnMachines()]);
+        for (int s: this.succ.get(succ)){
+            if (!newState.done.get(succ)) {
+                updateTime(s, succ, newState);
+            }
+        }
+
+    }
+
     @Override
     public double transitionCost(JSState state, Decision decision) {
         int makespan = getMakespan(state);
         int jobId = decision.val() / data.getnMachines();
         int opId = decision.val() % data.getnMachines();
         return -(max(makespan, state.est[jobId][opId]+data.getDuration()[jobId][opId]) - makespan);
+    }
+
+    public void fixStartTime(int start1, int task1){
+       this.starts.put(task1, start1);
+    }
+
+    public void addInFullExplored(JSState state, int nChildren){
+        this.fullExplored.put(Arrays.toString(state.order),nChildren);
+    }
+    public void childrenFullExplored(JSState state){
+        int c = this.fullExplored.getOrDefault(Arrays.toString(state.order),1);
+        c = c-1;
+        this.fullExplored.put(Arrays.toString(state.order),c);
+        int[] s = state.order.clone();
+        int l = state.done.cardinality()-1;
+        while(c==0&&l>0){
+            s[l]=0;
+            c = this.fullExplored.get(Arrays.toString(s));
+            c = c-1;
+            this.fullExplored.put(Arrays.toString(s),c);
+            l-=1;
+        }
+    }
+    public boolean fullExplored(JSState state){
+        return this.fullExplored.getOrDefault(Arrays.toString(state.order),1)==0;
+    }
+
+    public void increasePercentage(){
+        this.percentage+=0.05;
+        this.percentage = min(this.percentage,0.35);
+    }
+    public void resetPercentage(){
+        this.percentage=0.25;
     }
 
     public void addPrecedencesConstraint(ArrayList<Precedence> precedences) {
@@ -130,7 +182,7 @@ public class JSProblem implements Problem<JSState> {
             Precedence p = precedences.get(i);
             this.pred.get(p.j).add(p.i);
             this.succ.get(p.i).add(p.j);
-            System.out.println("problem.addPrecedenceConstraint(new Precedence( "+p.i+","+ p.j+"))");
+//            System.out.println("problem.addPrecedenceConstraint(new Precedence( "+p.i+","+ p.j+"))");
         }
     }
     public void addPrecedenceConstraint(Precedence precedence) {
@@ -226,7 +278,7 @@ public class JSProblem implements Problem<JSState> {
         for(int i = 0; i < data.getnJobs(); i++){
             graph.get(data.getnJobs()* data.getnMachines()).add(new Edge(i* data.getnMachines(),0));
             graph.get(i* data.getnMachines()+ data.getnMachines() - 1).add(new Edge(data.getnJobs()* data.getnMachines()+1,data.getDuration()[i][data.getnMachines()-1]));
-            for (int j = 0; j < data.getnJobs()-1; j++) {
+            for (int j = 0; j < data.getnMachines()-1; j++) {
                 graph.get(i* data.getnMachines()+j).add(new Edge(i* data.getnMachines()+j+1, data.getDuration()[i][j]));
             }
         }
@@ -246,23 +298,55 @@ public class JSProblem implements Problem<JSState> {
         int distMax = distances[data.getnJobs()* data.getnMachines()+1];
         List<Integer> path = reconstructPath(data.getnJobs()* data.getnMachines()+1, parent);
         int dist = distMax;
-        while(dist>= distMax) {
+        int toRemove = (int) ceil(precs.size()*percentage);
+        System.out.println("Remove : "+ toRemove);
+        int removed = 0;
+
+        while(distMax-dist<10) {
             if (precs.isEmpty()){
                 return false;
             }
-            int rand = (int) ((Math.random() * (path.size() - 2 - 1)) + 1);
+            int rand = rdPath.nextInt(path.size() - 3) +1;
             int elem = path.get(rand);
-            graph.get(elem).remove(new Edge(path.get(rand+1), data.getDuration()[elem/ data.getnMachines()][elem%data.getnMachines()]));
+            if (path.get(rand+1)/ data.getnMachines() == elem / data.getnMachines()){
+                continue;
+            }
+            graph.get(elem).remove(new Edge(path.get(rand+1), data.getDuration()[elem/data.getnMachines()][elem%data.getnMachines()]));
             precs.remove(new Precedence(elem, path.get(rand+1)));
+            System.out.println("Remove : Precedence "+  elem + " - > " + path.get(rand+1));
+            List<Edge> p = graph.get(path.get(rand+1));
+//            for (Edge edge : p) {
+//                if (edge.to/ data.getnMachines() != path.get(rand+1)/ data.getnMachines()) {
+//                    precs.remove(new Precedence(path.get(rand+1), edge.to));
+//                    p.remove(edge);
+//                    System.out.println("Remove : Precedence "+ path.get(rand+1) + " - > " + edge.to);
+//                    break;
+//                }
+//            }
             distances = findLongestPaths(graph, data.getnJobs()* data.getnMachines()+2, data.getnJobs()* data.getnMachines(), parent);
             dist = distances[data.getnJobs()* data.getnMachines()+1];
             path = reconstructPath(data.getnJobs()* data.getnMachines()+1, parent);
+            removed+=1;
         }
-        int toRemove = (int) ceil(precs.size()*0.15);
-        System.out.println("Remove : "+ toRemove);
+
+        toRemove-= removed;
+        System.out.println("dist : "+ dist+ " Remove2 : "+ toRemove);
         for(int i=0; i<toRemove; i++){
-            int rand = (int) ((Math.random() * (precs.size()-1 - 0)) + 0);
-            precs.remove(precs.get(rand));
+            int rand = rdRemove.nextInt(precs.size()) ;
+            Precedence p = precs.get(rand);
+            List<Edge> pr = graph.get(p.j);
+//            for (Edge edge : pr) {
+//                if (edge.to/ data.getnMachines() != p.j/ data.getnMachines()) {
+//                    precs.remove(new Precedence(p.j, edge.to));
+//                    System.out.println("Remove : Precedence "+ p.j + " - > " + edge.to);
+//                    pr.remove(edge);
+//                    break;
+//                }
+//            }
+            precs.remove(p);
+            graph.get(p.i).remove(new Edge(p.j, data.getDuration()[p.i/ data.getnMachines()][p.i%data.getnMachines()]));
+            System.out.println("Remove : Precedence "+ p.i + " - > " + p.j);
+
         }
         this.addPrecedencesConstraint2(precs);
         return true;

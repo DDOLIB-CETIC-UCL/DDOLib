@@ -1,9 +1,8 @@
 package org.ddolib.factory;
 
-import org.ddolib.astar.core.solver.ACSSolver;
-import org.ddolib.astar.core.solver.ACSwLNSSolver;
-import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.astar.core.solver.LNSSolver;
+import org.ddolib.astar.core.solver.*;
+import org.ddolib.astar.examples.JobShop.JSProblem;
+import org.ddolib.common.dominance.AstarDominanceChecker;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -1054,12 +1053,20 @@ public class Solvers {
         return new ACSSolver<>(problem, varh, ub, dominance, K);
     }
 
-    public static <T, K> ACSwLNSSolver<T, K> acswLNSSolver(Problem<T> problem,
-                                                       VariableHeuristic<T> varh,
-                                                       FastUpperBound<T> ub,
-                                                       DominanceChecker<T, K> dominance,
-                                                       int K, LNSSolver<T,K> lns) {
+    public static <T, K> ACSwLNSSolver<T, K> acswLNSSolver(JSProblem problem,
+                                                           VariableHeuristic<T> varh,
+                                                           FastUpperBound<T> ub,
+                                                           AstarDominanceChecker<T, K> dominance,
+                                                           int K, LNSSolver<T,K> lns) {
         return new ACSwLNSSolver<>(problem, varh, ub, dominance, K, lns);
+    }
+
+    public static <T, K> ACSwLNSSolver2<T, K> acswLNS2Solver(JSProblem problem,
+                                                           VariableHeuristic<T> varh,
+                                                           FastUpperBound<T> ub,
+                                                           AstarDominanceChecker<T, K> dominance,
+                                                           int K, LNSSolver2<T,K> lns) {
+        return new ACSwLNSSolver2<>(problem, varh, ub, dominance, K, lns);
     }
 
 

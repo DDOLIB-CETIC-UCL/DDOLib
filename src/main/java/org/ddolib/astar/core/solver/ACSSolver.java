@@ -106,9 +106,10 @@ public final class ACSSolver<T, K> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        open.get(0).add(root());
-        present[0].add(root().getState());
-        g.put(root().getState(), 0.0);
+        SubProblem<T> root = root();
+        open.get(0).add(root);
+        present[0].add(root.getState());
+        g.put(root.getState(), 0.0);
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars()+1; i++) {
@@ -123,8 +124,9 @@ public final class ACSSolver<T, K> implements Solver {
                 for (int k = 0; k < candidates.size(); k++) {
 
                     nbIter++;
-
                     SubProblem<T> sub = candidates.get(k);
+//                    System.out.println("Explored state : "+sub.getState() + "c : "+sub.getValue() + " h : "+ sub.getUpperBound() + " c+h : "+ sub.f());
+
                     this.closed[i].add(sub.getState());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // optimal solution found
@@ -143,9 +145,10 @@ public final class ACSSolver<T, K> implements Solver {
 
 
             }
-
-            nbIter++;
-            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
+//            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
+//            if (verbosityLevel >= 1) {
+//                System.out.println("it " + nbIter + "\t queueMaxSize:" + queueMaxSize + "\t " + "bestObj:" + bestLB);
+//            }
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
@@ -168,10 +171,14 @@ public final class ACSSolver<T, K> implements Solver {
      * @return the root subproblem
      */
     private SubProblem<T> root() {
+        Set<Integer> todo = new HashSet<>();
+        for(int i=0;i<problem.nbVars();i++) {
+            todo.add(i);
+        }
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                ub.fastUpperBound(problem.initialState(),todo),
                 Collections.emptySet());
     }
 

@@ -2,6 +2,7 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.astar.examples.JobShop.JSProblem;
 import org.ddolib.astar.examples.JobShop.JSState;
+import org.ddolib.common.dominance.AstarDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
@@ -20,7 +21,7 @@ public class ACSwLNSSolver <T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
-    private final Problem<T> problem;
+    private final JSProblem problem;
     /**
      * A suitable ub for the problem we want to maximize
      */
@@ -45,7 +46,7 @@ public class ACSwLNSSolver <T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final AstarDominanceChecker<T, K> dominance;
 
     private  HashSet<T>[] closed;
 
@@ -69,10 +70,10 @@ public class ACSwLNSSolver <T, K> implements Solver {
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public ACSwLNSSolver(
-            final Problem<T> problem,
+            final JSProblem problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance,
+            final AstarDominanceChecker<T, K> dominance,
             final int K, final LNSSolver LNSSolver) {
         this.problem = problem;
         this.varh = varh;
@@ -120,15 +121,21 @@ public class ACSwLNSSolver <T, K> implements Solver {
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars()+1; i++) {
-                if (!open.get(i).isEmpty()) {
-                    int l = min(K, open.get(i).size());
-                    for (int j = 0; j < l; j++) {
-                        SubProblem<T> s = open.get(i).poll();
-                        present[i].remove(s.getState());
-                        if (s.f() > bestLB) {
-                            candidates.add(s);
-                        }
+                int l = min(K, open.get(i).size());
+                while (candidates.size() < l) {
+                    SubProblem<T> s = open.get(i).poll();
+                    if (s==null){
+                        break;
                     }
+                    present[i].remove(s.getState());
+                    if (s.f() > bestLB || !this.dominance.dominated(s.getState(),s.getValue(),i)) {
+                        candidates.add(s);
+                    }else{
+                        this.LNSSolver.problem.childrenFullExplored((JSState) s.getState());
+                    }
+                }
+                if (!candidates.isEmpty()) {
+
                     for (int k = 0; k < candidates.size(); k++) {
 
                         nbIter++;
@@ -137,12 +144,14 @@ public class ACSwLNSSolver <T, K> implements Solver {
                         this.closed[i].add(sub.getState());
                         if (sub.getPath().size() == problem.nbVars()) {
                             // optimal solution found
+                            this.LNSSolver.problem.childrenFullExplored((JSState) sub.getState());
                             if (bestLB < sub.getValue()) {
                                 bestSol = Optional.of(sub.getPath());
                                 bestLB = sub.getValue();
                                 bestState = sub.getState();
+                                this.LNSSolver.resetPercentage();
                                 if (verbosityLevel >= 1) {
-                                    System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
+                                    System.out.println("it " + nbIter + "\t sol:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
                                 }
                             }
                             continue;
@@ -153,12 +162,17 @@ public class ACSwLNSSolver <T, K> implements Solver {
                 }else if (i==problem.nbVars()){
                     nbFailed+=1;
                     if (nbFailed%5==0 ){
-                        if (!this.LNSSolver.relaxation(bestState, bestLB)){
-                            return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
-                        };
                         if (verbosityLevel >= 1) {
                             System.out.println("----LNSSolver relaxation----");
                         }
+                        if (!this.LNSSolver.relaxation(bestState, bestLB)){
+                            if (verbosityLevel >= 1) {
+                                System.out.println("---- END LNSSolver relaxation----");
+                            }
+
+                            return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+                        };
+
                         long start = System.currentTimeMillis();
                         this.LNSSolver.maximize(4, false);
                         double duration = (System.currentTimeMillis() - start) / 1000.0;
@@ -168,6 +182,13 @@ public class ACSwLNSSolver <T, K> implements Solver {
                         if (sol.isPresent()){
                             bestSol = this.LNSSolver.bestSolution();
                             bestLB = this.LNSSolver.bestValue().get();
+                            bestState = sol.get();
+                            this.LNSSolver.resetPercentage();
+                            if (verbosityLevel >= 1) {
+                                System.out.println("it " + nbIter + "\t sol:" + bestState + "\t " + "bestObj:" + bestLB);
+                            }
+                        }else{
+                            this.LNSSolver.increasePercentage();
                         }
                         this.LNSSolver.reset();
                         if (verbosityLevel >= 1) {
@@ -204,7 +225,7 @@ public class ACSwLNSSolver <T, K> implements Solver {
      * @return the root subproblem
      */
     private SubProblem<T> root() {
-        return new SubProblem<>(
+        return (SubProblem<T>) new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
                 Integer.MAX_VALUE,
@@ -215,12 +236,13 @@ public class ACSwLNSSolver <T, K> implements Solver {
     private void addChildren(SubProblem<T> subProblem, int varIndex) {
         T state = subProblem.getState();
         int var = varIndex-1;
-        final Iterator<Integer> domain = problem.domain(state, var);
+        final Iterator<Integer> domain = problem.domain((JSState) state, var);
+        int children = 0;
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            T newState = problem.transition(state, decision);
-            double cost = problem.transitionCost(state, decision);
+            T newState = (T) problem.transition((JSState) state, decision);
+            double cost = problem.transitionCost((JSState) state, decision);
             double value = subProblem.getValue() + cost;
 
             Set<Decision> path = new HashSet<>(subProblem.getPath());
@@ -234,11 +256,13 @@ public class ACSwLNSSolver <T, K> implements Solver {
                 }
                 g.put(newState,value);
                 open.get(varIndex).add(newSubProblem);
+                children++;
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);
                 }
             }
         }
+        this.LNSSolver.problem.addInFullExplored((JSState) state,children);
     }
 
     private Set<Integer> varSet(Set<Decision> path) {

@@ -3,21 +3,18 @@ package org.ddolib.astar.core.solver;
 import org.ddolib.astar.examples.JobShop.JSProblem;
 import org.ddolib.astar.examples.JobShop.JSState;
 import org.ddolib.common.dominance.AstarDominanceChecker;
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
-import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
 import static java.lang.Math.min;
 
-public class LNSSolver <T, K> implements Solver {
+public class LNSSolver2<T, K> implements Solver {
 
     /**
      * The problem we want to maximize
@@ -44,12 +41,17 @@ public class LNSSolver <T, K> implements Solver {
 
     private T bestState;
 
+    private final long t0;
+
     /**
      * The dominance object that will be used to prune the search space.
      */
     private final AstarDominanceChecker<T, K> dominance;
 
+    private int nRestart;
 
+    private final int nMaxRestart;
+    private int nMaxFail;
 
     private HashMap<T, Double> g;
 
@@ -59,7 +61,7 @@ public class LNSSolver <T, K> implements Solver {
 
 
 
-    public LNSSolver(
+    public LNSSolver2(
             final JSProblem problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
@@ -73,6 +75,10 @@ public class LNSSolver <T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.g = new HashMap<>();
         this.K = K;
+        this.nRestart = 0;
+        this.t0 = System.currentTimeMillis();
+        this.nMaxRestart = 100;
+        this.nMaxFail = 1000;
 
         for (int i = 0; i < problem.nbVars()+1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::fam).reversed()));
@@ -94,43 +100,48 @@ public class LNSSolver <T, K> implements Solver {
 
     public boolean relaxation(T solution, double lb){
         this.bestLB = lb;
+        this.bestState = solution;
         return this.problem.getRelaxation((JSState) solution);
     }
     public void reset(){
-        this.bestLB = Integer.MIN_VALUE;
-        this.bestSol = Optional.empty();
-        this.bestState = null;
         this.problem.removePrecedenceConstraint();
         this.dominance.reset();
         this.g.clear();
     }
+    public void reset2(){
+        this.bestSol = Optional.empty();
+        this.bestLB = Integer.MIN_VALUE;
+        this.bestState = null;
+    }
 
     @Override
     public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
-        long t0 = System.currentTimeMillis();
+
+//        System.out.println("bestLB : "+ this.bestLB);
+//        System.out.println("bestState : "+this.bestState);
+//        System.out.println("bestSol : "+ this.bestSol);
         int nbIter = 0;
         int queueMaxSize = 0;
         open.get(0).add(root());
         g.put(root().getState(), 0.0);
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
+        int nFails = 0;
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars()+1; i++) {
-                if (!open.get(i).isEmpty()) {
-                    int l = min(K, open.get(i).size());
-                    while (candidates.size() < l) {
-                        SubProblem<T> s = open.get(i).poll();
-                        if (s==null){
-                            break;
-                        }
-                        if (s.f() > bestLB || !this.dominance.dominated(s.getState(),s.getValue(),i)) {
-                            if(!this.problem.fullExplored((JSState) s.getState())){
-                                candidates.add(s);
-                            }else{
-                                System.out.println("Coucou");
-                            }
-
-                        }
+                int l = min(K, open.get(i).size());
+                while (candidates.size() < l) {
+                    SubProblem<T> s = open.get(i).poll();
+                    if (s==null){
+                        break;
                     }
+                    if (s.f() > bestLB || !this.dominance.dominated(s.getState(),s.getValue(),i)) {
+                        if(!this.problem.fullExplored((JSState) s.getState())){
+                            candidates.add(s);
+                        }
+
+                    }
+                }
+                if (!candidates.isEmpty()) {
                     for (int k = 0; k < candidates.size(); k++) {
                         nbIter++;
 
@@ -141,8 +152,9 @@ public class LNSSolver <T, K> implements Solver {
                                 bestSol = Optional.of(sub.getPath());
                                 bestLB = sub.getValue();
                                 bestState = sub.getState();
+                                this.problem.resetPercentage();
                                 if (verbosityLevel >= 1) {
-                                    System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
+                                    System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB + "\t " + "time:" + (System.currentTimeMillis() - t0));
                                 }
                             }
                             continue;
@@ -150,14 +162,33 @@ public class LNSSolver <T, K> implements Solver {
                         addChildren(sub, i + 1);
                     }
                     candidates.clear();
+                }else if (i==problem.nbVars()){
+                    nFails+=1;
+                    if(nRestart==this.nMaxRestart){
+                        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+                    }
+                    if (nFails==this.nMaxFail){
+                        System.out.println("------Restart LNS-------");
+                        this.reset();
+                        this.problem.getRelaxation((JSState) bestState);
+                        this.nRestart+=1;
+                        return maximize(verbosityLevel, exportAsDot);
+                    }
+                    if (nRestart>0 && nRestart%5==0){
+                        this.problem.increasePercentage();
+                        this.nMaxFail -= (int) (this.nMaxFail*0.2);
+                    }
                 }
             }
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
         }
+        this.reset();
+        this.problem.getRelaxation((JSState) bestState);
+        this.nRestart+=1;
+        return maximize(verbosityLevel, exportAsDot);
 
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override
@@ -189,7 +220,7 @@ public class LNSSolver <T, K> implements Solver {
     }
 
     public Optional<T> bestState() {
-        if (bestState!= null) {
+        if (bestSol.isPresent()) {
             return Optional.of(bestState);
         }else{
             return Optional.empty();
