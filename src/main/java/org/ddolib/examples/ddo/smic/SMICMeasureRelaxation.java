@@ -43,7 +43,6 @@ public class SMICMeasureRelaxation {
         final SMICRanking ranking = new SMICRanking();
         FixedWidth<SMICState> width;
         VariableHeuristic<SMICState> varh;
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<SMICState> distance = new SMICDistance();
         final StateCoordinates<SMICState> coordinates = new DefaultStateCoordinates<>();
         DominanceChecker<SMICState, Integer> dominance;
@@ -71,7 +70,6 @@ public class SMICMeasureRelaxation {
                             varh,
                             ranking,
                             width,
-                            frontier,
                             dominance,
                             relaxStrat,
                             distance,
@@ -95,7 +93,7 @@ public class SMICMeasureRelaxation {
                     csvString.append(solver.bestValue().get()).append(";");
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
-		            csvString.append("lastExactLayer").append(";");
+		            csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");
                     writer.write(csvString.toString());

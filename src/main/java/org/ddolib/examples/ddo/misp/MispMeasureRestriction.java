@@ -41,7 +41,6 @@ public class MispMeasureRestriction {
         FixedWidth<BitSet> width;
         VariableHeuristic<BitSet> varh;
         DefaultDominanceChecker<BitSet> dominance;
-        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final StateDistance<BitSet> distance = new MispDistance();
         final StateCoordinates<BitSet> coordinates = new DefaultStateCoordinates<>();
         final FastUpperBound<BitSet> fub = new MispFastUpperBound(problem);
@@ -71,7 +70,6 @@ public class MispMeasureRestriction {
                             varh,
                             ranking,
                             width,
-                            frontier,
                             fub,
                             dominance,
                             relaxStrat,
@@ -99,7 +97,7 @@ public class MispMeasureRestriction {
                     csvString.append(optimal).append(";");
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
-                    csvString.append("lastExactLayer").append(";");
+                    csvString.append("").append(";");
                     csvString.append("").append(";");
                     csvString.append(true).append(";");
                     csvString.append(true).append("\n");

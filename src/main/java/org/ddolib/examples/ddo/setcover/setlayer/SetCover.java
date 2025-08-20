@@ -43,7 +43,6 @@ public class SetCover {
                 varh,
                 ranking,
                 width,
-                frontier,
                 dominance,
                 ClusterStrat.GHP,
                 distance,

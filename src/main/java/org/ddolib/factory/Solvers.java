@@ -1514,16 +1514,6 @@ public class Solvers {
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
      * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
      * @param <K>       The type of the dominance keys.
@@ -1534,14 +1524,13 @@ public class Solvers {
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
                                                                  final WidthHeuristic<T> width,
-                                                                 final Frontier<T> frontier,
                                                                  final FastUpperBound<T> fub,
                                                                  final DominanceChecker<T, K> dominance,
                                                                  final ClusterStrat relaxStrat,
                                                                  final StateDistance<T> distance,
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {
-        return new RelaxationSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, relaxStrat, distance, coord, seed);
+        return new RelaxationSolver<>(problem, relax, varh, ranking, width, fub, dominance, relaxStrat, distance, coord, seed);
     }
 
     /**
@@ -1552,16 +1541,6 @@ public class Solvers {
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
      * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
      * @param <K>       The type of the dominance keys.
@@ -1572,14 +1551,13 @@ public class Solvers {
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
                                                                  final WidthHeuristic<T> width,
-                                                                 final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance,
                                                                  final ClusterStrat relaxStrat,
                                                                  final StateDistance<T> distance,
                                                                  final StateCoordinates<T> coord,
                                                                  final int seed) {
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
-        return new RelaxationSolver<>(problem, relax, varh, ranking, width, frontier, defaultFub, dominance, relaxStrat, distance, coord, seed);
+        return new RelaxationSolver<>(problem, relax, varh, ranking, width, defaultFub, dominance, relaxStrat, distance, coord, seed);
     }
 
     /**
@@ -1590,16 +1568,6 @@ public class Solvers {
      * @param varh     A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking  A heuristic to identify the most promising nodes.
      * @param width    A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier The set of nodes that must still be explored before
-     *                 the problem can be considered 'solved'.
-     *                 <p>
-     *                 # Note:
-     *                 This fringe orders the nodes by upper bound (so the highest ub is going
-     *                 to pop first). So, it is guaranteed that the upper bound of the first
-     *                 node being popped is an upper bound on the value reachable by exploring
-     *                 any of the nodes remaining on the fringe. As a consequence, the
-     *                 exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                 lower bound is popped.
      * @param <T>      The type of the states.
      * @param <K>       The type of the dominance keys.
      * @return A solver for the input problem using the given configuration.
@@ -1609,7 +1577,6 @@ public class Solvers {
                                                                  final VariableHeuristic<T> varh,
                                                                  final StateRanking<T> ranking,
                                                                  final WidthHeuristic<T> width,
-                                                                 final Frontier<T> frontier,
                                                                  final DominanceChecker<T, K> dominance) {
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
         ClusterStrat relaxStrat = ClusterStrat.Cost;
@@ -1619,7 +1586,7 @@ public class Solvers {
         // TODO change where random is init or maybe remove it
         Random random = new Random();
         int seed = random.nextInt();
-        return new RelaxationSolver<>(problem, relax, varh, ranking, width, frontier, defaultFub, dominance, relaxStrat, distance, coord, seed);
+        return new RelaxationSolver<>(problem, relax, varh, ranking, width, defaultFub, dominance, relaxStrat, distance, coord, seed);
     }
 
     /**
@@ -1630,16 +1597,6 @@ public class Solvers {
      * @param varh     A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking  A heuristic to identify the most promising nodes.
      * @param width    A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier The set of nodes that must still be explored before
-     *                 the problem can be considered 'solved'.
-     *                 <p>
-     *                 # Note:
-     *                 This fringe orders the nodes by upper bound (so the highest ub is going
-     *                 to pop first). So, it is guaranteed that the upper bound of the first
-     *                 node being popped is an upper bound on the value reachable by exploring
-     *                 any of the nodes remaining on the fringe. As a consequence, the
-     *                 exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                 lower bound is popped.
      * @param <T>      The type of the states.
      * @return A solver for the input problem using the given configuration.
      */
@@ -1648,14 +1605,13 @@ public class Solvers {
                                                                     final VariableHeuristic<T> varh,
                                                                     final StateRanking<T> ranking,
                                                                     final WidthHeuristic<T> width,
-                                                                    final Frontier<T> frontier,
                                                                     final ClusterStrat relaxStrat,
                                                                     final StateDistance<T> distance,
                                                                     final StateCoordinates<T> coord,
                                                                     final int seed) {
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
-        return new RelaxationSolver<>(problem, relax, varh, ranking, width, frontier, defaultFub, defaultDominance, relaxStrat, distance, coord, seed);
+        return new RelaxationSolver<>(problem, relax, varh, ranking, width, defaultFub, defaultDominance, relaxStrat, distance, coord, seed);
     }
 
     /**
@@ -1666,16 +1622,6 @@ public class Solvers {
      * @param varh     A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking  A heuristic to identify the most promising nodes.
      * @param width    A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier The set of nodes that must still be explored before
-     *                 the problem can be considered 'solved'.
-     *                 <p>
-     *                 # Note:
-     *                 This fringe orders the nodes by upper bound (so the highest ub is going
-     *                 to pop first). So, it is guaranteed that the upper bound of the first
-     *                 node being popped is an upper bound on the value reachable by exploring
-     *                 any of the nodes remaining on the fringe. As a consequence, the
-     *                 exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                 lower bound is popped.
      * @param <T>      The type of the states.
      * @return A solver for the input problem using the given configuration.
      */
@@ -1683,8 +1629,7 @@ public class Solvers {
                                                                     final Relaxation<T> relax,
                                                                     final VariableHeuristic<T> varh,
                                                                     final StateRanking<T> ranking,
-                                                                    final WidthHeuristic<T> width,
-                                                                    final Frontier<T> frontier) {
+                                                                    final WidthHeuristic<T> width) {
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
         DefaultDominanceChecker<T> defaultDominance = new DefaultDominanceChecker<>();
         ClusterStrat relaxStrat = ClusterStrat.Cost;
@@ -1694,7 +1639,7 @@ public class Solvers {
         // TODO change where random is init or maybe remove it
         Random random = new Random();
         int seed = random.nextInt();
-        return new RelaxationSolver<>(problem, relax, varh, ranking, width, frontier, defaultFub, defaultDominance, relaxStrat, distance, coord, seed);
+        return new RelaxationSolver<>(problem, relax, varh, ranking, width, defaultFub, defaultDominance, relaxStrat, distance, coord, seed);
     }
 
     /**
@@ -1705,16 +1650,6 @@ public class Solvers {
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
      * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
      * @param <K>       The type of the dominance keys.
@@ -1725,14 +1660,13 @@ public class Solvers {
                                                                    final VariableHeuristic<T> varh,
                                                                    final StateRanking<T> ranking,
                                                                    final WidthHeuristic<T> width,
-                                                                   final Frontier<T> frontier,
                                                                    final FastUpperBound<T> fub,
                                                                    final DominanceChecker<T, K> dominance,
                                                                    final ClusterStrat restrictionStrat,
                                                                    final StateDistance<T> distance,
                                                                    final StateCoordinates<T> coord,
                                                                    final int seed) {
-        return new RestrictionSolver<>(problem, relax, varh, ranking, width, frontier, fub, dominance, restrictionStrat, distance, coord, seed);
+        return new RestrictionSolver<>(problem, relax, varh, ranking, width, fub, dominance, restrictionStrat, distance, coord, seed);
     }
 
     /**
@@ -1743,16 +1677,6 @@ public class Solvers {
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param ranking   A heuristic to identify the most promising nodes.
      * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
      * @param dominance The dominance object that will be used to prune the search space.
      * @param <T>       The type of the states.
      * @param <K>       The type of the dominance keys.
@@ -1763,14 +1687,13 @@ public class Solvers {
                                                                    final VariableHeuristic<T> varh,
                                                                    final StateRanking<T> ranking,
                                                                    final WidthHeuristic<T> width,
-                                                                   final Frontier<T> frontier,
                                                                    final DominanceChecker<T, K> dominance,
                                                                    final ClusterStrat restrictionStrat,
                                                                    final StateDistance<T> distance,
                                                                    final StateCoordinates<T> coord,
                                                                    final int seed) {
         DefaultFastUpperBound<T> defaultFub = new DefaultFastUpperBound<>();
-        return new RestrictionSolver<>(problem, relax, varh, ranking, width, frontier, defaultFub, dominance, restrictionStrat, distance, coord, seed);
+        return new RestrictionSolver<>(problem, relax, varh, ranking, width, defaultFub, dominance, restrictionStrat, distance, coord, seed);
     }
 
     /**

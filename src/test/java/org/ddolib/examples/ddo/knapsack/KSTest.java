@@ -204,7 +204,6 @@ public class KSTest {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(25);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
@@ -216,7 +215,6 @@ public class KSTest {
                         varh,
                         ranking,
                         width,
-                        frontier,
                         dominance,
                         relaxStrat,
                         distance,
@@ -236,7 +234,6 @@ public class KSTest {
         final KSRanking ranking = new KSRanking();
         final FixedWidth<Integer> width = new FixedWidth<>(25);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coord = new KSCoordinates();
         final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
@@ -248,7 +245,6 @@ public class KSTest {
                     varh,
                     ranking,
                     width,
-                    frontier,
                     dominance,
                     restrictionStrat,
                     distance,

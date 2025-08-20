@@ -45,7 +45,6 @@ public class MKSMain {
                 varh,
                 ranking,
                 width,
-                frontier,
                 dominance,
                 relaxStrat,
                 distance,

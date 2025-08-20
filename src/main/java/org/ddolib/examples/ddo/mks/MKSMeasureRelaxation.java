@@ -47,7 +47,6 @@ public class MKSMeasureRelaxation {
         FixedWidth<MKSState> width;
         VariableHeuristic<MKSState> varh;
         SimpleDominanceChecker<MKSState, Integer> dominance;
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final StateDistance<MKSState> distance = new MKSDistance();
         final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
 
@@ -74,7 +73,6 @@ public class MKSMeasureRelaxation {
                             varh,
                             ranking,
                             width,
-                            frontier,
                             dominance,
                             relaxStrat,
                             distance,
@@ -100,7 +98,7 @@ public class MKSMeasureRelaxation {
                     csvString.append(solver.bestValue().get()).append(";");
                     csvString.append(problem.optimal).append(";");
                     csvString.append(stats.nbIterations()).append(";");
-		            csvString.append("lastExactLayer").append(";");
+		            csvString.append("").append(";");
                     csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");

@@ -43,7 +43,6 @@ public class SetCoverMeasureRestriction {
         FixedWidth<SetCoverState> width;
         VariableHeuristic<SetCoverState> varh;
         DominanceChecker<SetCoverState, Integer> dominance;
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
         final StateCoordinates<SetCoverState> coordinates = new DefaultStateCoordinates<>();
 
@@ -70,7 +69,6 @@ public class SetCoverMeasureRestriction {
                             varh,
                             ranking,
                             width,
-                            frontier,
                             dominance,
                             restrictionStrat,
                             distance,
@@ -95,7 +93,7 @@ public class SetCoverMeasureRestriction {
                     csvString.append(solver.bestValue().get()).append(";");
                     csvString.append("").append(";");
                     csvString.append(stats.nbIterations()).append(";");
-		            csvString.append("lastExactLayer").append(";");
+		            csvString.append("").append(";");
                     csvString.append("").append(";");
 		            csvString.append(true).append(";");
 		            csvString.append(false).append("\n");

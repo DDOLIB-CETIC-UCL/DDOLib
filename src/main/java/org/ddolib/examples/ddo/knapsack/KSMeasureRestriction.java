@@ -43,7 +43,6 @@ public class KSMeasureRestriction {
         FixedWidth<Integer> width;
         VariableHeuristic<Integer> varh;
         SimpleDominanceChecker<Integer, Integer> dominance;
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
         final StateDistance<Integer> distance = new KSDistance();
         final StateCoordinates<Integer> coordinates = new KSCoordinates();
         final FastUpperBound<Integer> fub = new KSFastUpperBound(problem);
@@ -71,7 +70,6 @@ public class KSMeasureRestriction {
                             varh,
                             ranking,
                             width,
-                            frontier,
                             fub,
                             dominance,
                             relaxStrat,

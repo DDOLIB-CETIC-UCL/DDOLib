@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.common.dominance.DominanceChecker;
@@ -57,19 +58,6 @@ public final class RestrictionSolver<T, K> implements Solver {
     private final ClusterStrat restrictionStrat;
 
     /**
-     * Set of nodes that must still be explored before
-     * the problem can be considered 'solved'.
-     * <p>
-     * # Note:
-     * This fringe orders the nodes by upper bound (so the highest ub is going
-     * to pop first). So, it is guaranteed that the upper bound of the first
-     * node being popped is an upper bound on the value reachable by exploring
-     * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an ub &#8804; current best
-     * lower bound is popped.
-     */
-    private final Frontier<T> frontier;
-    /**
      * Your implementation (just like the parallel version) will reuse the same
      * data structure to compile all mdds.
      * <p>
@@ -110,7 +98,6 @@ public final class RestrictionSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final StateRanking<T> ranking,
             final WidthHeuristic<T> width,
-            final Frontier<T> frontier,
             final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance,
             final ClusterStrat restrictionStrat,
@@ -126,7 +113,6 @@ public final class RestrictionSolver<T, K> implements Solver {
         this.distance = distance;
         this.coord = coord;
         this.width   = width;
-        this.frontier= frontier;
         this.mdd     = new LinkedDecisionDiagram<>();
         this.bestLB  = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
@@ -157,7 +143,7 @@ public final class RestrictionSolver<T, K> implements Solver {
                 fub,
                 dominance,
                 bestLB,
-                frontier.cutSetType(),
+                CutSetType.None,
                 exportAsDot,
                 null,
                 restrictionStrat,
