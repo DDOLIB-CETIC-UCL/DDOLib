@@ -9,6 +9,8 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.examples.ddo.knapsack.KSLoader;
+import org.ddolib.examples.ddo.mks.MKSLoader;
+import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverLoader;
 
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -139,6 +141,9 @@ public class LaunchInterface {
         ProblemLoader loader = null ;
         switch (problemType) {
             case KS -> loader = KSLoader.loadProblem(instancePath, widthFactor);
+            case SC -> loader = SetCoverLoader.loadProblem(instancePath, widthFactor);
+            case MKS -> loader = MKSLoader.loadProblem(instancePath, widthFactor);
+            case MISP -> loader = MKSLoader.loadProblem(instancePath, widthFactor);
         }
 
         assert loader != null;

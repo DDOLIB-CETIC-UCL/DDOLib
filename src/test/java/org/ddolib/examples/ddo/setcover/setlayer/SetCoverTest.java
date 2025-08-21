@@ -56,8 +56,7 @@ public class SetCoverTest {
                 relax,
                 varh,
                 ranking,
-                width,
-                frontier);
+                width);
 
         long start = System.currentTimeMillis();
         solver.maximize();

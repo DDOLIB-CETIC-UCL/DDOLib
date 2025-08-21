@@ -1,22 +1,15 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.ClusterStrat;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.examples.ddo.LaunchInterface.SolverType;
 import org.ddolib.examples.ddo.ProblemLoader;
 
 import java.io.IOException;
 
-import static org.ddolib.factory.Solvers.*;
 import static org.ddolib.examples.ddo.knapsack.KSMain.readInstance;
 
 public class KSLoader {

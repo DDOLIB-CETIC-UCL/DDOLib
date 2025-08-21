@@ -1,5 +1,6 @@
 package org.ddolib.examples.ddo;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -30,6 +31,6 @@ public record ProblemLoader<T, K> (Problem<T> problem,
                                    FixedWidth<T> width,
                                    VariableHeuristic<T> varh,
                                    FastUpperBound<T> fub,
-                                   SimpleDominanceChecker<T, K> dominance,
+                                   DominanceChecker<T, K> dominance,
                                    StateDistance<T> distance,
                                    StateCoordinates<T> coordinates) {}
