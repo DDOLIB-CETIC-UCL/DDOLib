@@ -1,6 +1,6 @@
 package org.ddolib.common.dominance;
 
-import org.ddolib.modeling.DefaultDominance;
+import org.ddolib.modeling.Dominance;
 
 /**
  * A default implementation of dominance checker that checks nothing. It is used when we don't want to activate the
@@ -8,7 +8,7 @@ import org.ddolib.modeling.DefaultDominance;
  *
  * @param <T> The type of states.
  */
-public class DefaultDominanceChecker<T> extends DominanceChecker<T, Integer> {
+public class DefaultDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
     public DefaultDominanceChecker() {
         super(new DefaultDominance<>());
@@ -17,5 +17,19 @@ public class DefaultDominanceChecker<T> extends DominanceChecker<T, Integer> {
     @Override
     public boolean updateDominance(T state, int depth, double objValue) {
         return false;
+    }
+
+
+    private static class DefaultDominance<T, K> implements Dominance<T, K> {
+
+        @Override
+        public K getKey(T state) {
+            return null;
+        }
+
+        @Override
+        public boolean isDominatedOrEqual(T state1, T state2) {
+            return false;
+        }
     }
 }

@@ -11,7 +11,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 import org.ddolib.modeling.DefaultFastUpperBound;
 
 import java.io.File;
@@ -43,7 +42,7 @@ public class MSCTCacheMain {
         final MSCTRanking ranking = new MSCTRanking();
         final FixedWidth<MSCTState> width = new FixedWidth<>(100);
         final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final DefaultDominanceChecker<MSCTState> dominance = new DefaultDominanceChecker<>();
+        final DefaultDominanceChecker<MSCTState, Integer> dominance = new DefaultDominanceChecker<>();
         final SimpleCache<MSCTState> cache = new SimpleCache<>();
         final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
         final Solver solver = sequentialSolverWithCache(

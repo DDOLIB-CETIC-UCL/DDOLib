@@ -8,8 +8,6 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
 import org.ddolib.examples.ddo.knapsack.KSProblem;
 import org.ddolib.examples.ddo.knapsack.KSRanking;
@@ -22,8 +20,6 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolver;
-//import static org.ddolib.ddo.implem.solver.Solvers.sequentialSolverWithCache;
 import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,7 +54,8 @@ public class KSCacheTest {
         final FixedWidth<Integer> width = new FixedWidth<>(10000);
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<Integer>();
+        final DefaultDominanceChecker<Integer, Integer> dominance =
+                new DefaultDominanceChecker<>();
         final Solver solver1 = sequentialSolver(
                 problem,
                 relax,
@@ -83,7 +80,7 @@ public class KSCacheTest {
 
         final SimpleCache<Integer> cache = new SimpleCache<>();
         final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        final DefaultDominanceChecker<Integer, Integer> dominance = new DefaultDominanceChecker<>();
         final Solver solverWithCaching = sequentialSolverWithCache(
                 problem,
                 relax,
