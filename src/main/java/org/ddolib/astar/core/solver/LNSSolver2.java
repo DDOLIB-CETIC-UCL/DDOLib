@@ -12,6 +12,7 @@ import org.ddolib.modeling.FastUpperBound;
 
 import java.util.*;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class LNSSolver2<T, K> implements Solver {
@@ -57,6 +58,8 @@ public class LNSSolver2<T, K> implements Solver {
 
     private final int K;
 
+    private final int timeLimit;
+
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
 
@@ -66,7 +69,8 @@ public class LNSSolver2<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
             final AstarDominanceChecker<T, K> dominance,
-            final int K) {
+            final int K,
+            final int timeLimit) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
@@ -79,6 +83,7 @@ public class LNSSolver2<T, K> implements Solver {
         this.t0 = System.currentTimeMillis();
         this.nMaxRestart = 100;
         this.nMaxFail = 1000;
+        this.timeLimit = timeLimit;
 
         for (int i = 0; i < problem.nbVars()+1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::fam).reversed()));
@@ -138,7 +143,6 @@ public class LNSSolver2<T, K> implements Solver {
                         if(!this.problem.fullExplored((JSState) s.getState())){
                             candidates.add(s);
                         }
-
                     }
                 }
                 if (!candidates.isEmpty()) {
@@ -164,11 +168,10 @@ public class LNSSolver2<T, K> implements Solver {
                     candidates.clear();
                 }else if (i==problem.nbVars()){
                     nFails+=1;
-                    if(nRestart==this.nMaxRestart){
-                        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
-                    }
+//                    if(nRestart==this.nMaxRestart){
+//                        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, gap(), bestLB);
+//                    }
                     if (nFails==this.nMaxFail){
-                        System.out.println("------Restart LNS-------");
                         this.reset();
                         this.problem.getRelaxation((JSState) bestState);
                         this.nRestart+=1;
@@ -180,6 +183,9 @@ public class LNSSolver2<T, K> implements Solver {
                     }
                 }
             }
+            if (System.currentTimeMillis() - t0 > 1000 * timeLimit){
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap(), bestLB);
+            }
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
@@ -189,6 +195,24 @@ public class LNSSolver2<T, K> implements Solver {
         this.nRestart+=1;
         return maximize(verbosityLevel, exportAsDot);
 
+    }
+
+    private double gap() {
+        if (this.allEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = this.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestValue = Integer.MIN_VALUE;
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            if (!open.get(i).isEmpty()) {
+                bestValue = max(bestValue, open.get(i).peek().f());
+            }
+        }
+        return bestValue;
     }
 
     @Override

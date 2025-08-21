@@ -61,7 +61,8 @@ public class KSMain {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance,
+                Integer.MAX_VALUE
         );
 
 

@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.lang.Math.max;
+
 public final class AStarSolver<T, K> implements Solver {
 
     /**
@@ -60,6 +62,8 @@ public final class AStarSolver<T, K> implements Solver {
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
+    private final int timeLimit;
+
     /**
      * Creates a fully qualified instance
      *
@@ -72,7 +76,8 @@ public final class AStarSolver<T, K> implements Solver {
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
+            final DominanceChecker<T, K> dominance,
+            final int timeLimit) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
@@ -81,6 +86,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
+        this.timeLimit = timeLimit;
     }
 
     @Override
@@ -116,10 +122,25 @@ public final class AStarSolver<T, K> implements Solver {
                 }
                 break;
             }
-
             addChildren(sub);
+            if (nbIter%100==0 && System.currentTimeMillis() - t0 > 1000 * timeLimit){
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap(), bestLB);
+            }
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, gap(), bestLB);
+    }
+
+    private double gap() {
+        if (frontier.isEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = this.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestValue = frontier.peek().f();
+        return bestValue;
     }
 
     @Override

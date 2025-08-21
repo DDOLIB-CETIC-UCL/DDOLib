@@ -11,6 +11,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public final class ACSSolver<T, K> implements Solver {
@@ -51,6 +52,8 @@ public final class ACSSolver<T, K> implements Solver {
 
     private final int K;
 
+    private final int timeLimit;
+
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
@@ -67,7 +70,8 @@ public final class ACSSolver<T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
             final DominanceChecker<T, K> dominance,
-            final int K) {
+            final int K,
+            final int timeLimit) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
@@ -78,6 +82,7 @@ public final class ACSSolver<T, K> implements Solver {
         this.present = new HashSet[problem.nbVars()+1];
         this.g = new HashMap<>();
         this.K = K;
+        this.timeLimit = timeLimit;
 
         for (int i = 0; i < problem.nbVars()+1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
@@ -103,6 +108,7 @@ public final class ACSSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -122,11 +128,8 @@ public final class ACSSolver<T, K> implements Solver {
                     }
                 }
                 for (int k = 0; k < candidates.size(); k++) {
-
                     nbIter++;
                     SubProblem<T> sub = candidates.get(k);
-//                    System.out.println("Explored state : "+sub.getState() + "c : "+sub.getValue() + " h : "+ sub.getUpperBound() + " c+h : "+ sub.f());
-
                     this.closed[i].add(sub.getState());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // optimal solution found
@@ -142,15 +145,16 @@ public final class ACSSolver<T, K> implements Solver {
                     addChildren(sub, i+1);
                 }
                 candidates.clear();
-
-
             }
-//            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
-//            if (verbosityLevel >= 1) {
-//                System.out.println("it " + nbIter + "\t queueMaxSize:" + queueMaxSize + "\t " + "bestObj:" + bestLB);
-//            }
+            if (System.currentTimeMillis() - t0 > 1000 * timeLimit){
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap(), bestLB);
+            }
+            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
+            if (verbosityLevel >= 1) {
+                System.out.println("it " + nbIter + "\t queueMaxSize:" + queueMaxSize + "\t " + "bestObj:" + bestLB);
+            }
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, gap(), bestLB);
     }
 
     @Override
@@ -165,6 +169,24 @@ public final class ACSSolver<T, K> implements Solver {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
+    }
+
+    private double gap() {
+        if (this.allEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = this.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestValue = Integer.MIN_VALUE;
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            if (!open.get(i).isEmpty()) {
+                bestValue = max(bestValue, open.get(i).peek().f());
+            }
+        }
+        return bestValue;
     }
 
     /**
@@ -201,7 +223,7 @@ public final class ACSSolver<T, K> implements Solver {
             if (!dominance.updateDominance(newState,path.size(),value)) {
                 SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound,path);
                 if(((present[varIndex].contains(newState) || closed[varIndex].contains(newState))&&g.getOrDefault(newState,Double.MAX_VALUE)>value)||newSubProblem.f()<=bestLB){
-                   continue;
+                    continue;
                 }
                 g.put(newState,value);
                 open.get(varIndex).add(newSubProblem);

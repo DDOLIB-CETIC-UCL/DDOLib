@@ -1,6 +1,6 @@
 package org.ddolib.astar.examples.JobShop;
 
-import org.ddolib.astar.core.solver.ACSSolver2;
+import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.common.dominance.AstarDominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -79,61 +79,61 @@ public class JSFastUpperBound2 implements FastUpperBound<JSState> {
 
         }
 
-//        for (int j = 0; j < this.problem.data.getnMachines()-1; j++) {
-//            for (int i = 0; i < this.problem.data.getnJobs(); i++) {
-//                if (!state.done.get(i*this.problem.data.getnMachines()+j) && !improved.get(i*this.problem.data.getnMachines()+j)){
-//                    for (int k : this.problem.data.getTasks()[ this.problem.data.getMachine()[i][j]]) {
-//                        if (i*this.problem.data.getnMachines()+j !=k && j == k%this.problem.data.getnMachines() && !improved.get(k) ){
-//                            int startk = starts[k/this.problem.data.getnMachines()][k%this.problem.data.getnMachines()];
-//                            int endk = startk + this.problem.data.getDuration()[k/this.problem.data.getnMachines()][k%this.problem.data.getnMachines()];
-//                            int start = starts[i][j];
-//                            int end = start + this.problem.data.getDuration()[i][j];
-//                            if ((start<=startk && startk< end) || (startk<=start && endk> start)){
-//                                if (subProblem.containsKey(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk))){
-//                                    bound = max(bound,subProblem.get(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk)));
-//
-//                                }else {
-//                                    JSInstance data = new JSInstance(i * this.problem.data.getnMachines() + j, k, this.problem.data, start, startk);
-//                                    data.setHorizon(this.problem.data.getHorizon());
-//                                    JSProblem problem2 = new JSProblem(data);
-//                                    ArrayList<Precedence> preds = new ArrayList<>();
-//
-//                                    for(int l = (i * this.problem.data.getnMachines() + j)%data.getnMachines(); l < data.getnMachines(); l++){
-//                                        problem2.fixStartTime(starts[i][l],l- ((i * this.problem.data.getnMachines() + j)%data.getnMachines()));
-//                                    }
-//                                    for(int l = k%data.getnMachines(); l < data.getnMachines(); l++){
-//                                        problem2.fixStartTime(starts[k/data.getnMachines()][l],data.getnMachines()+ l- (k%data.getnMachines()));
-//                                    }
-//                                    for (int l = 0; l < data.getnJobs(); l++) {
-//                                        for (int m = 0; m < data.getnMachines() - 1; m++) {
-//                                            preds.add(new Precedence(l * this.problem.data.getnMachines() + m, l * this.problem.data.getnMachines() + m + 1));
-//                                        }
-//                                    }
-//                                    problem2.addPrecedencesConstraint(preds);
-//                                    final VariableHeuristic<JSState> varh = new DefaultVariableHeuristic<JSState>();
-//                                    final JSFastUpperBound fub = new JSFastUpperBound(problem2);
-//
-//                                    final AstarDominanceChecker<JSState, BitSet> dominance = new AstarDominanceChecker<>(new JSDominance(problem2), problem2.nbVars());
-//                                    ACSSolver2<JSState, BitSet> solver = new ACSSolver2<>(problem2, varh, fub, dominance, 10);
-//                                    solver.maximize(0, false);
-//                                    int[] solution = solver.bestSolution().map(decisions -> {
-//                                        int[] values = new int[problem.nbVars()];
-//                                        for (Decision d : decisions) {
-//                                            values[d.var()] = d.val();
-//                                        }
-//                                        return values;
-//                                    }).get();
-//                                    double obj = (-1)*solver.bestValue().get();
-//                                    bound = (int) max(bound,obj);
-//                                    subProblem.put(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk), (int) ((-1)*obj));
-//                                }
-//                            }
-//
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        for (int j = 0; j < this.problem.data.getnMachines()-1; j++) {
+            for (int i = 0; i < this.problem.data.getnJobs(); i++) {
+                if (!state.done.get(i*this.problem.data.getnMachines()+j) && !improved.get(i*this.problem.data.getnMachines()+j)){
+                    for (int k : this.problem.data.getTasks()[ this.problem.data.getMachine()[i][j]]) {
+                        if (i*this.problem.data.getnMachines()+j !=k && j == k%this.problem.data.getnMachines() && !improved.get(k) ){
+                            int startk = starts[k/this.problem.data.getnMachines()][k%this.problem.data.getnMachines()];
+                            int endk = startk + this.problem.data.getDuration()[k/this.problem.data.getnMachines()][k%this.problem.data.getnMachines()];
+                            int start = starts[i][j];
+                            int end = start + this.problem.data.getDuration()[i][j];
+                            if ((start<=startk && startk< end) || (startk<=start && endk> start)){
+                                if (subProblem.containsKey(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk))){
+                                    bound = max(bound,subProblem.get(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk)));
+
+                                }else {
+                                    JSInstance data = new JSInstance(i * this.problem.data.getnMachines() + j, k, this.problem.data, start, startk);
+                                    data.setHorizon(this.problem.data.getHorizon());
+                                    JSProblem problem2 = new JSProblem(data);
+                                    ArrayList<Precedence> preds = new ArrayList<>();
+
+                                    for(int l = (i * this.problem.data.getnMachines() + j)%data.getnMachines(); l < data.getnMachines(); l++){
+                                        problem2.fixStartTime(starts[i][l],l- ((i * this.problem.data.getnMachines() + j)%data.getnMachines()));
+                                    }
+                                    for(int l = k%data.getnMachines(); l < data.getnMachines(); l++){
+                                        problem2.fixStartTime(starts[k/data.getnMachines()][l],data.getnMachines()+ l- (k%data.getnMachines()));
+                                    }
+                                    for (int l = 0; l < data.getnJobs(); l++) {
+                                        for (int m = 0; m < data.getnMachines() - 1; m++) {
+                                            preds.add(new Precedence(l * this.problem.data.getnMachines() + m, l * this.problem.data.getnMachines() + m + 1));
+                                        }
+                                    }
+                                    problem2.addPrecedencesConstraint(preds);
+                                    final VariableHeuristic<JSState> varh = new DefaultVariableHeuristic<JSState>();
+                                    final JSFastUpperBound fub = new JSFastUpperBound(problem2);
+
+                                    final AstarDominanceChecker<JSState, BitSet> dominance = new AstarDominanceChecker<>(new JSDominance(problem2), problem2.nbVars());
+                                    ACSSolver<JSState, BitSet> solver = new ACSSolver<>(problem2, varh, fub, dominance, 10, 60);
+                                    solver.maximize(0, false);
+                                    int[] solution = solver.bestSolution().map(decisions -> {
+                                        int[] values = new int[problem.nbVars()];
+                                        for (Decision d : decisions) {
+                                            values[d.var()] = d.val();
+                                        }
+                                        return values;
+                                    }).get();
+                                    double obj = (-1)*solver.bestValue().get();
+                                    bound = (int) max(bound,obj);
+                                    subProblem.put(new Pair(i*this.problem.data.getnMachines()+j,k, start, startk), (int) ((-1)*obj));
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
 
         for (int i = 0; i <  this.problem.data.getnJobs(); i++) {
             for (int j = 0; j <  this.problem.data.getnMachines(); j++) {

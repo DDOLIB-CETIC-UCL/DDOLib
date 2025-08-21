@@ -29,14 +29,16 @@ public class JSTSPMain {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance,
+                Integer.MAX_VALUE
         );
         final Solver solverACS = acsSolver(
                 problem,
                 varh,
                 fub,
                 dominance,
-                10
+                10,
+                Integer.MAX_VALUE
         );
         System.out.println("Solving with ACS");
 

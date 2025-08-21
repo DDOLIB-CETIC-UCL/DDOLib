@@ -15,6 +15,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class LNSSolver <T, K> implements Solver {
@@ -157,7 +158,25 @@ public class LNSSolver <T, K> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
         }
 
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, gap(), bestLB);
+    }
+
+    private double gap() {
+        if (this.allEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = this.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestValue = Integer.MIN_VALUE;
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            if (!open.get(i).isEmpty()) {
+                bestValue = max(bestValue, open.get(i).peek().f());
+            }
+        }
+        return bestValue;
     }
 
     @Override

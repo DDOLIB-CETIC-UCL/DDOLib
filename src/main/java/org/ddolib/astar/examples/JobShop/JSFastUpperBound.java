@@ -8,16 +8,16 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class JSFastUpperBound implements FastUpperBound<JSState> {
-    
+
     JSProblem problem;
-    
+
     public JSFastUpperBound(JSProblem problem) {
         this.problem = problem;
     }
-    
+
     @Override
     public double fastUpperBound(JSState state, Set<Integer> variables) {
-        boolean exact = true;
+        int bound = 0;
         int makespan = this.problem.getMakespan(state);
         BitSet[][] profil = new BitSet[this.problem.data.getnMachines()][ this.problem.data.getHorizon()];
         int[] profilTime = new int[ this.problem.data.getnMachines()];
@@ -34,11 +34,9 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
         }
 
         List<Integer> order = topologicalSort(this.problem.data.getnJobs()* this.problem.data.getnMachines(), state);
-
         if (order==null){
             return -Integer.MAX_VALUE;
         }
-
         for (int o : order) {
             int i = o/this.problem.data.getnMachines();
             int j = o%this.problem.data.getnMachines();
@@ -55,7 +53,6 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
                         int op = k %  this.problem.data.getnMachines();
                         if (starts[job][op] +  this.problem.data.getDuration()[job][op] >= makespan) {
                             s = min(s, starts[job][op] +  this.problem.data.getDuration()[job][op]);
-
                         }
                     }
                 }
@@ -72,35 +69,20 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
                 int machine =  this.problem.data.getMachine()[i][j];
                 int startIdx = starts[i][j];
                 for (int k = startIdx; k < startIdx +  this.problem.data.getDuration()[i][j]; k++) {
-                    if (k==this.problem.data.getHorizon()){
-                        System.out.println("Probleme2");
-                    }
                     profil[machine][k].set(i *  this.problem.data.getnMachines() + j);
                 }
                 profilTime[machine] = max(profilTime[machine], startIdx +  this.problem.data.getDuration()[i][j]);
-                if (exact) {
-                    for (int k = j + 1; k < this.problem.data.getnMachines(); k++) {
-                        if (starts[i][j] >= starts[i][k] && starts[i][j]- starts[i][k]< this.problem.data.getDuration()[i][j]) {
-                            exact = false;
-                            break;
-                        }
-                        if (starts[i][j] < starts[i][k] && starts[i][k]- starts[i][j]< this.problem.data.getDuration()[i][k]) {
-                            exact = false;
-                            break;
-                        }
-                    }
-                }
+
             }
         }
 
-        int bound = 0;
+
         for (int i = 0; i <  this.problem.data.getnMachines(); i++) {
             int count = 0;
             for (int j = 0; j < profilTime[i]; j++) {
                 int s = profil[i][j].cardinality();
                 if (s > 1) {
                     count += (s - 1);
-                    exact = false;
                 } else if (s == 0) {
                     count--;
                     count = max(count, 0);
@@ -110,13 +92,11 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
 
             bound = max(bound, profilTime[i]);
         }
-//        if (exact) {
-//            System.out.println("Exact");
-//        }
 
         return - (bound - this.problem.getMakespan(state));
         //return 0;
     }
+
 
     private List<Integer> topologicalSort(int V, JSState state) {
         List<List<Edge>> graph = new ArrayList<>();
@@ -199,4 +179,5 @@ public class JSFastUpperBound implements FastUpperBound<JSState> {
 
         return topoOrder;
     }
+
 }

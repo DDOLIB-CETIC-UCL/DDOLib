@@ -1029,8 +1029,9 @@ public class Solvers {
     public static <T, K> AStarSolver<T, K> astarSolver(Problem<T> problem,
                                                        VariableHeuristic<T> varh,
                                                        FastUpperBound<T> ub,
-                                                       DominanceChecker<T, K> dominance) {
-        return new AStarSolver(problem, varh, ub, dominance);
+                                                       DominanceChecker<T, K> dominance,
+                                                       int timeLimit) {
+        return new AStarSolver(problem, varh, ub, dominance, timeLimit);
     }
 
     /**
@@ -1049,24 +1050,27 @@ public class Solvers {
                                                        VariableHeuristic<T> varh,
                                                        FastUpperBound<T> ub,
                                                        DominanceChecker<T, K> dominance,
-                                                       int K) {
-        return new ACSSolver<>(problem, varh, ub, dominance, K);
+                                                       int K,
+                                                       int timeLimit) {
+        return new ACSSolver<>(problem, varh, ub, dominance, K, timeLimit);
     }
 
     public static <T, K> ACSwLNSSolver<T, K> acswLNSSolver(JSProblem problem,
                                                            VariableHeuristic<T> varh,
                                                            FastUpperBound<T> ub,
                                                            AstarDominanceChecker<T, K> dominance,
-                                                           int K, LNSSolver<T,K> lns) {
-        return new ACSwLNSSolver<>(problem, varh, ub, dominance, K, lns);
+                                                           int K, LNSSolver<T,K> lns,
+                                                           int timeLimit) {
+        return new ACSwLNSSolver<>(problem, varh, ub, dominance, K, lns, timeLimit);
     }
 
     public static <T, K> ACSwLNSSolver2<T, K> acswLNS2Solver(JSProblem problem,
                                                            VariableHeuristic<T> varh,
                                                            FastUpperBound<T> ub,
                                                            AstarDominanceChecker<T, K> dominance,
-                                                           int K, LNSSolver2<T,K> lns) {
-        return new ACSwLNSSolver2<>(problem, varh, ub, dominance, K, lns);
+                                                           int K, LNSSolver2<T,K> lns,
+                                                           int timeLimit) {
+        return new ACSwLNSSolver2<>(problem, varh, ub, dominance, K, lns, timeLimit);
     }
 
 

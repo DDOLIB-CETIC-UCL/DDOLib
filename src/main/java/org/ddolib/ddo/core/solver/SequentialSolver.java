@@ -222,10 +222,10 @@ public final class SequentialSolver<T, K> implements Solver {
 
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), bestValue().get());
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), bestValue().get());
             }
 
             if (verbosityLevel >= 3){
@@ -239,7 +239,7 @@ public final class SequentialSolver<T, K> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, bestValue().get());
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -305,7 +305,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, bestValue().get());
     }
 
     @Override

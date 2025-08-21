@@ -299,7 +299,6 @@ public class JSProblem implements Problem<JSState> {
         List<Integer> path = reconstructPath(data.getnJobs()* data.getnMachines()+1, parent);
         int dist = distMax;
         int toRemove = (int) ceil(precs.size()*percentage);
-        System.out.println("Remove : "+ toRemove);
         int removed = 0;
 
         while(distMax-dist<10) {
@@ -313,7 +312,6 @@ public class JSProblem implements Problem<JSState> {
             }
             graph.get(elem).remove(new Edge(path.get(rand+1), data.getDuration()[elem/data.getnMachines()][elem%data.getnMachines()]));
             precs.remove(new Precedence(elem, path.get(rand+1)));
-            System.out.println("Remove : Precedence "+  elem + " - > " + path.get(rand+1));
             List<Edge> p = graph.get(path.get(rand+1));
 //            for (Edge edge : p) {
 //                if (edge.to/ data.getnMachines() != path.get(rand+1)/ data.getnMachines()) {
@@ -330,7 +328,6 @@ public class JSProblem implements Problem<JSState> {
         }
 
         toRemove-= removed;
-        System.out.println("dist : "+ dist+ " Remove2 : "+ toRemove);
         for(int i=0; i<toRemove; i++){
             int rand = rdRemove.nextInt(precs.size()) ;
             Precedence p = precs.get(rand);
@@ -345,7 +342,6 @@ public class JSProblem implements Problem<JSState> {
 //            }
             precs.remove(p);
             graph.get(p.i).remove(new Edge(p.j, data.getDuration()[p.i/ data.getnMachines()][p.i%data.getnMachines()]));
-            System.out.println("Remove : Precedence "+ p.i + " - > " + p.j);
 
         }
         this.addPrecedencesConstraint2(precs);

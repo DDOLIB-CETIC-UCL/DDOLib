@@ -14,6 +14,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class ACSwLNSSolver <T, K> implements Solver {
@@ -58,6 +59,8 @@ public class ACSwLNSSolver <T, K> implements Solver {
 
     private LNSSolver<T,K> LNSSolver;
 
+    private final int timeLimit;
+
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
@@ -74,7 +77,8 @@ public class ACSwLNSSolver <T, K> implements Solver {
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
             final AstarDominanceChecker<T, K> dominance,
-            final int K, final LNSSolver LNSSolver) {
+            final int K, final LNSSolver LNSSolver,
+            final int timeLimit) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
@@ -86,6 +90,7 @@ public class ACSwLNSSolver <T, K> implements Solver {
         this.g = new HashMap<>();
         this.K = K;
         this.LNSSolver = LNSSolver;
+        this.timeLimit = timeLimit;
 
         for (int i = 0; i < problem.nbVars()+1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
@@ -170,13 +175,10 @@ public class ACSwLNSSolver <T, K> implements Solver {
                                 System.out.println("---- END LNSSolver relaxation----");
                             }
 
-                            return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+                            return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, bestLB);
                         };
 
-                        long start = System.currentTimeMillis();
-                        this.LNSSolver.maximize(4, false);
-                        double duration = (System.currentTimeMillis() - start) / 1000.0;
-                        System.out.printf("Duration : %.3f seconds%n", duration);
+                        this.LNSSolver.maximize(0, false);
                         Optional<T> sol = this.LNSSolver.bestState();
 
                         if (sol.isPresent()){
@@ -197,14 +199,15 @@ public class ACSwLNSSolver <T, K> implements Solver {
                         nbFailed=0;
                     }
                 }
-
-
+            }
+            if (System.currentTimeMillis() - t0 > 1000 * timeLimit){
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap(), bestLB);
             }
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, bestLB);
     }
 
     @Override
@@ -219,6 +222,24 @@ public class ACSwLNSSolver <T, K> implements Solver {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
+    }
+
+    private double gap() {
+        if (this.allEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = this.bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestValue = Integer.MIN_VALUE;
+        for (int i = 0; i < problem.nbVars()+1; i++) {
+            if (!open.get(i).isEmpty()) {
+                bestValue = max(bestValue, open.get(i).peek().f());
+            }
+        }
+        return bestValue;
     }
 
     /**
