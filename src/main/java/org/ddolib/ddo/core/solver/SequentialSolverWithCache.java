@@ -48,10 +48,10 @@ import java.util.Set;
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  *
- * @param <K> the type of key
  * @param <T> the type of state
+ * @param <K> the type of key
  */
-public final class SequentialSolverWithCache<K, T> implements Solver {
+public final class SequentialSolverWithCache<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
