@@ -13,6 +13,7 @@ import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -84,7 +85,8 @@ public final class MispMain {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/MISP/weighted.dot" : args[0];
+        final String file = args.length == 0 ? Paths.get("data", "MISP", "weighted.dot").toString() :
+                args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         SolverConfig<BitSet, NullType> config = new SolverConfig<>();
