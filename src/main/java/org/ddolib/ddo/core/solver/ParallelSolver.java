@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
@@ -52,39 +53,14 @@ public final class ParallelSolver<T, K> implements Solver {
     private final Critical<T> critical;
 
     /**
-     * Creates a fully qualified instance
+     * Creates a new instance.
      *
-     * @param nbThreads The number of threads that can be used in parallel.
-     * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking   A heuristic to identify the most promising nodes.
-     * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
-     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * @param config All the parameters needed to configure the solver.
      */
-    public ParallelSolver(
-            final int nbThreads,
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier,
-            final FastUpperBound<T> fub,
-            final DominanceChecker<T, K> dominance) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance);
-        this.critical = new Critical<>(nbThreads, frontier);
+    public ParallelSolver(SolverConfig<T, K> config) {
+        this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
+                config.dominance);
+        this.critical = new Critical<>(config.nbThreads, config.frontier);
     }
 
     @Override
@@ -136,7 +112,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override

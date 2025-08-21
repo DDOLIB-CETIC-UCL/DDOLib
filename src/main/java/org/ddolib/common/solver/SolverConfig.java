@@ -2,7 +2,7 @@ package org.ddolib.common.solver;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.ddo.core.cache.Cache;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -32,7 +32,7 @@ public class SolverConfig<T, K> {
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
-    public FastUpperBound<T> ub = new DefaultFastUpperBound<>();
+    public FastUpperBound<T> fub = new DefaultFastUpperBound<>();
 
     /**
      * The dominance object that will be used to prune the search space.
@@ -93,6 +93,6 @@ public class SolverConfig<T, K> {
     /**
      * The cache used to prune the search space.
      */
-    public Cache<T> cache = null;
+    public SimpleCache<T> cache = null;
 
 }

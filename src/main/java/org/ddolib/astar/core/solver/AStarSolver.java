@@ -2,19 +2,15 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.*;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 
-
 import java.util.*;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
 
 public final class AStarSolver<T, K> implements Solver {
 
@@ -44,7 +40,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * HashMap with state in the Pirority Queue
      */
-    private HashMap<T, Double>  present;
+    private HashMap<T, Double> present;
 
     /**
      * If set, this keeps the info about the best solution so far.
@@ -61,22 +57,16 @@ public final class AStarSolver<T, K> implements Solver {
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
     /**
-     * Creates a fully qualified instance
+     * Creates a new instance.
      *
-     * @param problem   The problem we want to maximize.
-     * @param ub        A suitable upper-bound for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * @param config All the parameters needed to configure the solver.
      */
     public AStarSolver(
-            final Problem<T> problem,
-            final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
-        this.problem = problem;
-        this.varh = varh;
-        this.ub = ub;
-        this.dominance = dominance;
+            SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
@@ -106,7 +96,7 @@ public final class AStarSolver<T, K> implements Solver {
 
             SubProblem<T> sub = frontier.poll();
             present.remove(sub.getState());
-            if (closed.containsKey(sub.getState())){
+            if (closed.containsKey(sub.getState())) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
@@ -169,22 +159,22 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState,path.size(),value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound,path);
+            if (!dominance.updateDominance(newState, path.size(), value)) {
+                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
                 if (present.containsKey(newState)) {
                     if (present.get(newState) < newSub.f()) {
                         frontier.add(newSub);
                     }
-                }else if (closed.containsKey(newState)) {
+                } else if (closed.containsKey(newState)) {
                     if (closed.get(newState) < newSub.f()) {
                         frontier.add(newSub);
                         closed.remove(newState);
-                        present.put(newState,newSub.f());
+                        present.put(newState, newSub.f());
 
                     }
-                }else {
+                } else {
                     frontier.add(newSub);
-                    present.put(newState,newSub.f());
+                    present.put(newState, newSub.f());
                 }
 
             }

@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
@@ -86,25 +87,15 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Creates a new instance.
      *
-     * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking   A heuristic to identify the most promising nodes.
-     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * @param config All the parameters needed to configure the solver.
      */
-    public ExactSolver(final Problem<T> problem,
-                       final Relaxation<T> relax,
-                       final VariableHeuristic<T> varh,
-                       final StateRanking<T> ranking,
-                       final FastUpperBound<T> fub,
-                       final DominanceChecker<T, K> dominance) {
-        this.problem = problem;
-        this.relax = relax;
-        this.ranking = ranking;
-        this.varh = varh;
-        this.fub = fub;
-        this.dominance = dominance;
+    public ExactSolver(SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.relax = config.relax;
+        this.ranking = config.ranking;
+        this.varh = config.varh;
+        this.fub = config.fub;
+        this.dominance = config.dominance;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
     }
