@@ -84,6 +84,27 @@ public final class ExactSolver<T, K> implements Solver {
      */
     private Optional<Set<Decision>> bestSol;
 
+
+    /**
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
     /**
      * Creates a new instance.
      *
@@ -98,10 +119,12 @@ public final class ExactSolver<T, K> implements Solver {
         this.dominance = config.dominance;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -124,7 +147,7 @@ public final class ExactSolver<T, K> implements Solver {
                 exportAsDot
         );
         mdd.compile(compilation);
-        extractBest(verbosityLevel);
+        extractBest();
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(mdd.exportAsDot(),
@@ -135,10 +158,6 @@ public final class ExactSolver<T, K> implements Solver {
         return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
-    @Override
-    public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
 
     @Override
     public Optional<Double> bestValue() {
@@ -153,7 +172,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest(int verbosityLevel) {
+    private void extractBest() {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();

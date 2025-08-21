@@ -137,6 +137,27 @@ public final class SequentialSolver<T, K> implements Solver {
      */
     private final double gapLimit;
 
+
+    /**
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
     /**
      * Creates a fully qualified instance.
      *
@@ -156,16 +177,13 @@ public final class SequentialSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.timeLimit = config.timeLimit;
         this.gapLimit = config.gapLimit;
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;
@@ -232,7 +250,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
             mdd.compile(compilation);
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
-            maybeUpdateBest(verbosityLevel, exportAsDot && firstRestricted);
+            maybeUpdateBest(exportAsDot && firstRestricted);
             if (exportAsDot && firstRestricted) {
                 exportDot(mdd.exportAsDot(),
                         Paths.get("output", problemName + "_restricted.dot").toString());
@@ -262,7 +280,7 @@ public final class SequentialSolver<T, K> implements Solver {
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
-                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+                maybeUpdateBest(exportAsDot && firstRelaxed);
             }
             if (exportAsDot && firstRelaxed) {
                 if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
@@ -271,7 +289,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
             firstRelaxed = false;
             if (mdd.isExact()) {
-                maybeUpdateBest(verbosityLevel, exportAsDot && firstRelaxed);
+                maybeUpdateBest(exportAsDot && firstRelaxed);
             } else {
                 enqueueCutset();
             }
@@ -310,13 +328,13 @@ public final class SequentialSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(int verbosityLevel, boolean exportAsDot) {
+    private void maybeUpdateBest(boolean exportDot) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
             if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
-        } else if (exportAsDot) {
+        } else if (exportDot) {
             mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }

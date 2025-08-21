@@ -68,9 +68,11 @@ public class TSPMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+        config.verbosityLevel = 2;
         final Solver solver = new SequentialSolverWithCache<>(config);
 
-        SearchStatistics stats = solver.maximize(2, false);
+        SearchStatistics stats = solver.maximize();
         System.out.println(stats);
         return solver;
     }

@@ -94,9 +94,12 @@ public final class PDPMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+
+        config.verbosityLevel = 2;
+        config.exportAsDot = true;
         final Solver solver = new SequentialSolverWithCache<>(config);
 
-        SearchStatistics statistics = solver.maximize(2, true);
+        SearchStatistics statistics = solver.maximize();
         System.out.println(statistics);
 
         return solver;

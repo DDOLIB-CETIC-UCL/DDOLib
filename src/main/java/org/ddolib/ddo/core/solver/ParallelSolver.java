@@ -52,6 +52,28 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final Critical<T> critical;
 
+
+    /**
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+
     /**
      * Creates a new instance.
      *
@@ -61,15 +83,13 @@ public final class ParallelSolver<T, K> implements Solver {
         this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
                 config.dominance);
         this.critical = new Critical<>(config.nbThreads, config.frontier);
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
+
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         final AtomicInteger nbIter = new AtomicInteger(0);
         final AtomicInteger queueMaxSize = new AtomicInteger(0);

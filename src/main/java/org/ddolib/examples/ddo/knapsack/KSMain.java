@@ -53,7 +53,7 @@ public class KSMain {
             System.out.println("Solving with " + name + "...");
 
             long start = System.currentTimeMillis();
-            SearchStatistics stats = solver.maximize(0, true);
+            SearchStatistics stats = solver.maximize();
             double duration = (System.currentTimeMillis() - start) / 1000.0;
 
             System.out.println("Search statistics using ddo:" + stats);

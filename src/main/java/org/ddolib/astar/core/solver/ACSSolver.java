@@ -55,6 +55,27 @@ public final class ACSSolver<T, K> implements Solver {
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
+
+    /**
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
     /**
      * Creates a new instance.
      *
@@ -80,6 +101,9 @@ public final class ACSSolver<T, K> implements Solver {
             closed[i] = new HashSet<>();
         }
 
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
+
     }
 
     private boolean allEmpty() {
@@ -93,11 +117,6 @@ public final class ACSSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;

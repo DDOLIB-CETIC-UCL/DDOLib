@@ -132,10 +132,6 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
     private SimpleCache<T> cache;
 
     /**
-     * Draw the first DD if activate this boolean
-     */
-    private boolean exportAsDot;
-    /**
      * Add a time limit for the search, by default it is set to infinity
      */
     private final int timeLimit;
@@ -144,6 +140,27 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
      * Add a gap limit for the search, by default it is set to zero
      */
     private final double gapLimit;
+
+
+    /**
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
 
     /**
      * Creates a new instance.
@@ -165,15 +182,12 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
         this.bestSol = Optional.empty();
         this.timeLimit = config.timeLimit;
         this.gapLimit = config.gapLimit;
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;

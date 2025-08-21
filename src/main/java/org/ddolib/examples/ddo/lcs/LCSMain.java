@@ -118,10 +118,12 @@ public final class LCSMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
+        config.verbosityLevel = 1;
+
         final ParallelSolver<LCSState, NullType> solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1, false);
+        solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()
