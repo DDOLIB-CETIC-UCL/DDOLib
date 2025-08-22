@@ -910,7 +910,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static final double saturatedAdd(double a, double b) {
+    private static double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
             return sum > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
@@ -921,7 +921,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     /**
      * Performs a saturated difference (no underflow)
      */
-    private static final double saturatedDiff(double a, double b) {
+    private static double saturatedDiff(double a, double b) {
         double diff = a - b;
         if (Double.isInfinite(diff)) {
             return diff < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
