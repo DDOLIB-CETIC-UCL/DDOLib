@@ -14,35 +14,6 @@ import java.util.*;
 
 public final class AStarSolver<T, K> implements Solver {
 
-    class OpenSet {
-        private final PriorityQueue<SubProblem<T>> queue;
-        private
-
-        OpenSet() {
-            this.queue = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed());
-        }
-
-        void add(SubProblem<T> subProblem) {
-            queue.add(subProblem);
-        }
-
-        SubProblem<T> poll() {
-            return queue.poll();
-        }
-
-        boolean isEmpty() {
-            return queue.isEmpty();
-        }
-
-        int size() {
-            return queue.size();
-        }
-
-        void clear() {
-            queue.clear();
-        }
-    }
-
     /**
      * The problem we want to maximize
      */
@@ -55,33 +26,30 @@ public final class AStarSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-
     /**
      * Value of the best known lower bound.
      */
     private double bestLB;
-
     /**
      * HashMap with all explored nodes
      */
     private HashMap<T, Double> closed;
-
     /**
-     * HashMap with state in the Pirority Queue
+     * HashMap with states in the Priority Queue and their f value
      */
     private HashMap<T, Double> present;
-
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-
     /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
-
-
+    /**
+     * The priority queue containing the subproblems to be explored,
+     * ordered by decreasing f = value + fastUpperBound
+     */
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
@@ -92,18 +60,18 @@ public final class AStarSolver<T, K> implements Solver {
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
      *     <li>2: 1 + statistics about the front every half a second (or so)</li>
-     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>3: 2 + every developed subproblem</li>
      *     <li>4: 3 + details about the developed state</li>
      * </ul>
      * <p>
      * <p>
-     * 3: 2 + every developed sub-problem
+     * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
     private final int verbosityLevel;
 
     /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
+     * Whether to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
 
