@@ -163,6 +163,15 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
      *
@@ -206,6 +215,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
         this.gapLimit = config.gapLimit;
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
     }
 
     @Override
@@ -279,7 +289,8 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
             mdd.compile(compilation);
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
@@ -295,7 +306,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInputWithCache<T, K>(
+            compilation = new CompilationInputWithCache<>(
                     CompilationType.Relaxed,
                     problem,
                     relax,
@@ -308,7 +319,8 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
                     cache,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()) {

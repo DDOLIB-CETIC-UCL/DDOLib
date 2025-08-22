@@ -11,6 +11,10 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -99,6 +103,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          */
         private boolean isMarked;
 
+        private double fub = Double.POSITIVE_INFINITY;
+
         /**
          * Creates a new node
          */
@@ -118,6 +124,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          */
         public void setNodeType(final NodeType nodeType) {
             this.type = nodeType;
+        }
+
+        public void setFub(final double fub) {
+            this.fub = fub;
         }
 
         /**
@@ -295,10 +305,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
-                    continue;
-                } else {
-                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
+                if (node.getNodeType() != NodeType.EXACT || !dominance.updateDominance(state,
+                        depthGlobalDD, node.value)) {
+                    double fub = input.fub().fastUpperBound(state, variables);
+                    double rub = saturatedAdd(node.value, fub);
+                    node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -351,7 +362,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.exportAsDot()) {
+                if (input.exportAsDot() || input.debugLevel() >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -395,7 +406,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot()) {
+        if (input.exportAsDot() || input.debugLevel() >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -408,6 +419,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.compilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+        }
+        if (input.debugLevel() >= 1 && input.compilationType() != CompilationType.Relaxed) {
+            checkFub(input.debugLevel());
         }
     }
 
@@ -473,7 +487,41 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
-    // --- UTILITY METHODS -----------------------------------------------
+    private void checkFub(int debugLevel) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+        for (Node last : nextLayer.values()) {
+            double lastValue = 0.0;
+            //For each node we save the longest path to last
+            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
+            parent.put(last, 0.0);
+            while (!parent.isEmpty()) {
+                Entry<Node, Double> current = parent.pollFirstEntry();
+                if (current.getKey().fub + 1e-10 < current.getValue()) {
+                    if (debugLevel >= 2) {
+                        String dot = exportAsDot();
+                        try (BufferedWriter bw =
+                                     new BufferedWriter(new FileWriter(Paths.get("output",
+                                             "failed.dot").toString()))) {
+                            bw.write(dot);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
+                                    "its longest path (%s)", df.format(current.getKey().fub),
+                            df.format(current.getValue()));
+                    throw new RuntimeException(failureMsg);
+                }
+
+                for (Edge edge : current.getKey().edges) {
+                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
+                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                }
+            }
+        }
+    }
+
+    // ILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {
@@ -487,6 +535,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
+     * --- UT
      * Reset the state of this MDD. This way it can easily be reused
      */
     private void clear() {
@@ -660,9 +709,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         DecimalFormat df = new DecimalFormat("#.##########");
 
         String nodeStr = String.format(
-                "\"%s\nub: %s - value: %s\"",
+                "\"%s\nfub: %s - value: %s\"",
                 node.state,
-                df.format(node.ub),
+                df.format(node.ub - node.node.value),
                 df.format(node.node.value)
         );
 

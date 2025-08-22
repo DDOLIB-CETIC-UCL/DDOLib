@@ -41,7 +41,8 @@ public record CompilationInputWithCache<T, K>(CompilationType compilationType,
                                               SimpleCache<T> cache,
                                               double bestLB,
                                               CutSetType cutSetType,
-                                              boolean exportAsDot) {
+                                              boolean exportAsDot,
+                                              int debugLevel) {
 
     @Override
     public String toString() {
