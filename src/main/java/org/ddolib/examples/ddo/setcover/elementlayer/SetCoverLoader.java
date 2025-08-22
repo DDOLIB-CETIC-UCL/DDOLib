@@ -33,7 +33,7 @@ public class SetCoverLoader {
 
         final Relaxation<SetCoverState> relax = new SetCoverRelax();
         final StateRanking<SetCoverState> ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>((int) widthFactor*problem.nbVars());
+        final FixedWidth<SetCoverState> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
         final FastUpperBound<SetCoverState> fub = new DefaultFastUpperBound<>();
         final DominanceChecker<SetCoverState, Integer> dominance = new DefaultDominanceChecker<>();

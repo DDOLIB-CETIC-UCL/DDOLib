@@ -30,7 +30,7 @@ public class MispLoader {
 
         final Relaxation<BitSet> relax = new MispRelax(problem);
         final StateRanking<BitSet> ranking = new MispRanking();
-        final FixedWidth<BitSet> width = new FixedWidth<>((int) widthFactor*problem.nbVars());
+        final FixedWidth<BitSet> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
         final FastUpperBound<BitSet> fub = new MispFastUpperBound(problem);
         final DominanceChecker<BitSet, Integer> dominance = new DefaultDominanceChecker<>();

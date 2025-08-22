@@ -25,7 +25,7 @@ public class KSLoader {
 
         final KSRelax relax = new KSRelax();
         final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>((int) widthFactor*problem.nbVars());
+        final FixedWidth<Integer> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
         final KSFastUpperBound fub = new KSFastUpperBound(problem);
         final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),

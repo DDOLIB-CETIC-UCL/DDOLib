@@ -29,7 +29,7 @@ public class MKSLoader {
 
         final MKSRelax relax = new MKSRelax();
         final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>((int) widthFactor*problem.nbVars());
+        final FixedWidth<MKSState> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
         final FastUpperBound<MKSState> fub = new DefaultFastUpperBound<>();
         final DefaultDominanceChecker<MKSState> dominance = new DefaultDominanceChecker<>();

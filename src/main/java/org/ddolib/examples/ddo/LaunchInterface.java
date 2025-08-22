@@ -10,6 +10,8 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.examples.ddo.knapsack.KSLoader;
+import org.ddolib.examples.ddo.misp.MispLoader;
+import org.ddolib.examples.ddo.misp.MispProblem;
 import org.ddolib.examples.ddo.mks.MKSLoader;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverLoader;
 import org.ddolib.modeling.DefaultDominance;
@@ -156,7 +158,7 @@ public class LaunchInterface {
             case KS -> loader = KSLoader.loadProblem(instancePath, widthFactor);
             case SC -> loader = SetCoverLoader.loadProblem(instancePath, widthFactor);
             case MKS -> loader = MKSLoader.loadProblem(instancePath, widthFactor);
-            case MISP -> loader = MKSLoader.loadProblem(instancePath, widthFactor);
+            case MISP -> loader = MispLoader.loadProblem(instancePath, widthFactor);
         }
 
         assert loader != null;
