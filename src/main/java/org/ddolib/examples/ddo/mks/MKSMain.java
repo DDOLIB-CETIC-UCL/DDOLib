@@ -1,10 +1,13 @@
 package org.ddolib.examples.ddo.mks;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -19,49 +22,36 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.factory.Solvers.relaxationSolver;
-
 
 public class MKSMain {
 
     public static void main(String[] args) throws IOException {
         final String instance = "data/MKS/MKP_10.txt";
-        final MKSProblem problem = readInstance(instance);
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<MKSState>();
-        final SimpleDominanceChecker<MKSState, Integer> dominance = new SimpleDominanceChecker<>(new MKSDominance(),
-                problem.nbVars());
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final ClusterStrat relaxStrat = ClusterStrat.GHP;
-        final StateDistance<MKSState> distance = new MKSDistance();
-        final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
-        final int seed = 657685;
+        final SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = readInstance(instance);
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(1000);
+        config.varh = new DefaultVariableHeuristic<MKSState>();
+        config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), config.problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrat = ClusterStrat.GHP;
+        config.distance = new MKSDistance();
+        config.coordinates = new MKSCoordinates();
+        config.seed = 657685;
 
-        final Solver solver = relaxationSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                dominance,
-                relaxStrat,
-                distance,
-                coordinates,
-                seed
-        );
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize(0, true);
+        SearchStatistics stats = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);
 
 
         int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
+            int[] values = new int[config.problem.nbVars()];
             for (Decision d : decisions) {
                 values[d.var()] = d.val();
             }

@@ -1,12 +1,11 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.examples.ddo.ProblemLoader;
 
 import java.io.IOException;
 
@@ -14,7 +13,7 @@ import static org.ddolib.examples.ddo.knapsack.KSMain.readInstance;
 
 public class KSLoader {
 
-    public static ProblemLoader<Integer, Integer> loadProblem(String fileName, double widthFactor) {
+    public static SolverConfig<Integer, Integer> loadProblem(String fileName, double widthFactor) {
         KSProblem problem = null;
         try {
             problem = readInstance(fileName);
@@ -23,24 +22,17 @@ public class KSLoader {
             System.exit(-1);
         }
 
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
-                problem.nbVars());
-        final StateDistance<Integer> distance = new KSDistance();
-        final StateCoordinates<Integer> coordinates = new KSCoordinates();
+        final SolverConfig <Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
+        config.varh = new DefaultVariableHeuristic<Integer>();
+        config.fub = new KSFastUpperBound(problem);
+        config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+        config.distance = new KSDistance();
+        config.coordinates = new KSCoordinates();
 
-        return new ProblemLoader<>(problem,
-                relax,
-                ranking,
-                width,
-                varh,
-                fub,
-                dominance,
-                distance,
-                coordinates);
+        return config;
     }
 }

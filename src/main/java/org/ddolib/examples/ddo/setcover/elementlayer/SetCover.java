@@ -2,14 +2,12 @@ package org.ddolib.examples.ddo.setcover.elementlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 
 import java.io.BufferedReader;
@@ -18,8 +16,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
-
 public class SetCover {
 
     public static void main(String[] args) throws IOException {
@@ -27,27 +23,17 @@ public class SetCover {
         final int w = Integer.parseInt(args[1]);
 
         final SetCoverProblem problem = readInstance(instance);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
-        final VariableHeuristic<SetCoverState> varh = new SetCoverHeuristics.MinCentrality(problem);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                ClusterStrat.GHP,
-                ClusterStrat.Cost,
-                distance,
-                coord,
-                54684);
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.ranking = new SetCoverRanking();
+        config.relax = new SetCoverRelax();
+        config.width = new FixedWidth<>(w);
+        config.varh = new SetCoverHeuristics.MinCentrality(problem);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+        config.dominance = new DefaultDominanceChecker<>();
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();

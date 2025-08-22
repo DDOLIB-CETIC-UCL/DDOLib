@@ -1,22 +1,18 @@
 package org.ddolib.examples.ddo.boundedknapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.util.Arrays;
-
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 /**
  * Bounded Knapsack Problem (BKS)
@@ -26,31 +22,24 @@ import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 public class BKSCacheMain {
 
     public static void main(String[] args) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
         // Example from the paper "Decision Diagram-Based Branch and Bound with Caching"
         final BKSProblem problem = new BKSProblem(15, // capacity
                 new int[]{2, 3, 6, 6, 1}, // values
                 new int[]{4, 6, 4, 2, 5},  // weights
-                new int[]{1, 1, 2, 2, 1}); // number of items
-        final BKSRelax relax = new BKSRelax();
-        final BKSFastUpperBound fub = new BKSFastUpperBound(problem);
-        final BKSRanking ranking = new BKSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(3);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final DominanceChecker<Integer, Integer> dominance =
-                new SimpleDominanceChecker<>(new BKSDominance(),
-                        problem.nbVars());
-        final SimpleCache<Integer> cache = new SimpleCache<>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
+                new int[]{1, 1, 2, 2, 1});// number of items
+        config.problem = problem;
 
-        final Solver solver = sequentialSolverWithCache(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width, frontier,
-                fub,
-                dominance,
-                cache);
+        config.relax = new BKSRelax();
+        config.fub = new BKSFastUpperBound(problem);
+        config.ranking = new BKSRanking();
+        config.width = new FixedWidth<>(3);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new SimpleDominanceChecker<>(new BKSDominance(), problem.nbVars());
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
 
         long start = System.currentTimeMillis();

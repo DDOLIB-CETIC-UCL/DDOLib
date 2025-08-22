@@ -1,14 +1,12 @@
 package org.ddolib.examples.ddo.gruler;
 
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.factory.Solvers;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,19 +29,14 @@ import java.util.Arrays;
 public class GRMain {
 
     public static void main(final String[] args) throws IOException {
+        SolverConfig<GRState, Integer> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(9);
-        final GRRelax relax = new GRRelax();
-        final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(100);
-        final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SequentialSolver<GRState, Integer> solver = Solvers.sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        config.relax = new GRRelax();
+        config.ranking = new GRRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final SequentialSolver<GRState, Integer> solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         System.out.println(solver.maximize());
@@ -60,8 +53,8 @@ public class GRMain {
                 })
                 .get();
 
-        System.out.println(String.format("Duration : %.3f", duration));
-        System.out.println(String.format("Objective: %s", solver.bestValue().get()));
-        System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
+        System.out.printf("Duration : %.3f%n", duration);
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 }

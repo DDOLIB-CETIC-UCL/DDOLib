@@ -2,12 +2,15 @@ package org.ddolib.examples.ddo.setcover.elementlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.RestrictionSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.ddo.setcover.elementlayer.*;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverHeuristics.*;
@@ -23,8 +26,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.*;
 import java.util.stream.Stream;
-
-import static org.ddolib.factory.Solvers.*;
 
 public class SetCoverTest {
 
@@ -43,18 +44,14 @@ public class SetCoverTest {
         final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
         final int optimalCost = bruteForce(problem);
 
-        final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(Integer.MAX_VALUE);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.varh = new MinCentralityDynamic(problem);
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(Integer.MAX_VALUE);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
@@ -134,29 +131,22 @@ public class SetCoverTest {
         constraints.add(Set.of(1,4));
         constraints.add(Set.of(1,5));
 
+
         final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
-        final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.varh = new MinCentralityDynamic(problem);
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
         for (ClusterStrat restrictionStrat: ClusterStrat.values()) {
-            System.out.println(restrictionStrat);
-            final Solver solver = restrictionSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    dominance,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    54658646);
+            config.restrictStrat  = restrictionStrat;
+            config.varh = new MinCentralityDynamic(problem);
+            final Solver solver = new RestrictionSolver<>(config);
 
             solver.maximize();
             Assertions.assertTrue(solver.bestValue().isPresent());
@@ -178,27 +168,20 @@ public class SetCoverTest {
         constraints.add(Set.of(1,5));
 
         final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
-        final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.varh = new MinCentralityDynamic(problem);
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
         for (ClusterStrat relaxType: ClusterStrat.values()) {
-            final Solver solver = relaxationSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    dominance,
-                    relaxType,
-                    distance,
-                    coord,
-                    54658646);
+            config.relaxStrat  = relaxType;
+            config.varh = new MinCentralityDynamic(problem);
+            final Solver solver = new RelaxationSolver<>(config);
 
             solver.maximize();
             Assertions.assertTrue(solver.bestValue().isPresent());
@@ -218,30 +201,21 @@ public class SetCoverTest {
     public void testClusterRelaxation(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.dominance = new DefaultDominanceChecker<>();
+
 
         for (ClusterStrat relaxType: ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxType,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    54658646);
+            config.relaxStrat  = relaxType;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.varh = new MinCentralityDynamic(problem);
+            final Solver solver = new SequentialSolver<>(config);
 
             solver.maximize();
 
@@ -268,30 +242,21 @@ public class SetCoverTest {
     public void testClusterRestriction(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(2);
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final ClusterStrat relaxType = ClusterStrat.Cost;
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
-        for (ClusterStrat restrictionStrat: ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxType,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    54658646);
+
+        for (ClusterStrat restrictType: ClusterStrat.values()) {
+            config.restrictStrat  = restrictType;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.varh = new MinCentralityDynamic(problem);
+            final Solver solver = new SequentialSolver<>(config);
 
             solver.maximize();
 
@@ -323,30 +288,21 @@ public class SetCoverTest {
     public void testCompleteness(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new MinCentralityDynamic(problem);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.Frontier);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
-        for (ClusterStrat relaxType: ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxType,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    54658646);
+
+        for (ClusterStrat restrictType: ClusterStrat.values()) {
+            config.restrictStrat  = restrictType;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.varh = new MinCentralityDynamic(problem);
+            final Solver solver = new SequentialSolver<>(config);
 
             solver.maximize();
 

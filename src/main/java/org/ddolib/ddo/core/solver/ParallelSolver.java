@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -51,54 +52,65 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final Critical<T> critical;
 
+
     /**
-     * Creates a fully qualified instance
-     *
-     * @param nbThreads The number of threads that can be used in parallel.
-     * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking   A heuristic to identify the most promising nodes.
-     * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
-     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
      */
-    public ParallelSolver(
-            final int nbThreads,
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier,
-            final FastUpperBound<T> fub,
-            final DominanceChecker<T, K> dominance,
-            final ClusterStrat relaxStrat,
-            final ClusterStrat restrictionStrat,
-            final StateDistance<T> distance,
-            final StateCoordinates<T> coord,
-            final int seed) {
-        this.shared = new Shared<>(nbThreads, problem, relax, varh, ranking, width, fub, dominance, relaxStrat, restrictionStrat, distance, coord, new Random(seed));
-        this.critical = new Critical<>(nbThreads, frontier);
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *     <li>An implementation of {@link Relaxation}</li>
+     *     <li>An implementation of {@link StateRanking}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     *     <li>An implementation of {@link WidthHeuristic}</li>
+     *     <li>An implementation of {@link Frontier}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>The number of threads that can be used in parallel (all available processors by default).</li>
+     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A time limit</li>
+     *     <li>A gap limit</li>
+     *     <li>A verbosity level</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
+     */
+    public ParallelSolver(SolverConfig<T, K> config) {
+        this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
+                config.dominance, config.relaxStrat, config.restrictStrat, config.distance, config.coordinates, new Random(config.seed));
+        this.critical = new Critical<>(config.nbThreads, config.frontier);
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
+
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         final AtomicInteger nbIter = new AtomicInteger(0);
         final AtomicInteger queueMaxSize = new AtomicInteger(0);
@@ -141,7 +153,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
     @Override
@@ -461,11 +473,11 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
-        private final ClusterStrat relaxStrat;
-        private final ClusterStrat restrictionStrat;
         private final StateDistance<T> distance;
         private final StateCoordinates<T> coord;
         private final Random rnd;
+        private final ClusterStrat relaxStrat;
+        private final ClusterStrat restrictionStrat;
 
         public Shared(
                 final int nbThreads,
@@ -479,7 +491,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 final ClusterStrat relaxStrat,
                 final ClusterStrat restrictionStrat,
                 final StateDistance<T> distance,
-                final StateCoordinates<T> coord,
+                final StateCoordinates<T> coordinates,
                 final Random rnd) {
             this.nbThreads = nbThreads;
             this.problem = problem;
@@ -489,11 +501,11 @@ public final class ParallelSolver<T, K> implements Solver {
             this.ranking = ranking;
             this.width = width;
             this.dominance = dominance;
-            this.relaxStrat = relaxStrat;
             this.restrictionStrat = restrictionStrat;
             this.distance = distance;
-            this.coord = coord;
+            this.coord = coordinates;
             this.rnd = rnd;
+            this.relaxStrat = relaxStrat;
         }
     }
 

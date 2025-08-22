@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core.solver;
 
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.heuristics.StateDistance;
@@ -90,51 +91,47 @@ public final class RelaxationSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
-     * Only the first restricted mdd can be exported to a .dot file
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
      */
-    private boolean firstRestricted = true;
+    private final int verbosityLevel;
+
     /**
-     * Only the first relaxed mdd can be exported to a .dot file
+     * Whether we want to export the first explored restricted and relaxed mdd.
      */
-    private boolean firstRelaxed = true;
+    private final boolean exportAsDot;
 
     /** Creates a fully qualified instance */
-    public RelaxationSolver(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final FastUpperBound<T> fub,
-            final DominanceChecker<T, K> dominance,
-            final ClusterStrat relaxStrat,
-            final StateDistance<T> distance,
-            final StateCoordinates<T> coord,
-            final int seed)
-    {
-        this.relaxStrat = relaxStrat;
-        this.problem = problem;
-        this.relax   = relax;
-        this.varh    = varh;
-        this.ranking = ranking;
-        this.distance = distance;
-        this.fub = fub;
-        this.coord = coord;
-        this.width   = width;
-        this.mdd     = new LinkedDecisionDiagram<>();
-        this.bestLB  = Integer.MIN_VALUE;
+    public RelaxationSolver(SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.relax = config.relax;
+        this.varh = config.varh;
+        this.ranking = config.ranking;
+        this.width = config.width;
+        this.fub = config.fub;
+        this.dominance = config.dominance;
+        this.mdd = new LinkedDecisionDiagram<>();
+        this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
-        this.dominance = dominance;
-        rnd = new Random(seed);
+        this.relaxStrat = config.relaxStrat;
+        this.distance = config.distance;
+        this.coord = config.coordinates;
+        this.rnd = new Random(config.seed);
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());

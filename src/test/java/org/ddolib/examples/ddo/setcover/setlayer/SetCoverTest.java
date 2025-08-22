@@ -1,6 +1,7 @@
 package org.ddolib.examples.ddo.setcover.setlayer;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -9,6 +10,8 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.ddo.setcover.setlayer.SetCoverProblem;
 import org.ddolib.examples.ddo.setcover.setlayer.SetCoverRanking;
 import org.ddolib.examples.ddo.setcover.setlayer.SetCoverRelax;
@@ -20,9 +23,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.*;
 import java.util.stream.Stream;
-
-import static org.ddolib.factory.Solvers.relaxationSolver;
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 public class SetCoverTest {
 
@@ -45,18 +45,14 @@ public class SetCoverTest {
         sets.add(Set.of(0,1));
         sets.add(Set.of(0,1,2));*/
 
-        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, sets);
-        final SetCoverRelax relax = new SetCoverRelax();
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1);
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = relaxationSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width);
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = new SetCoverProblem(nElem, nSets, sets);
+        config.relax = new SetCoverRelax();
+        config.varh = new DefaultVariableHeuristic<>();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(1);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
@@ -76,18 +72,15 @@ public class SetCoverTest {
     @MethodSource("smallGeneratedInstances")
     public void testCompleteness(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(1000);
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.ranking = new SetCoverRanking();
+        config.relax = new SetCoverRelax();
+        config.width = new FixedWidth<>(1000);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
 

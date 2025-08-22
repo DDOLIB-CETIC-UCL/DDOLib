@@ -1,23 +1,23 @@
 package org.ddolib.examples.ddo.misp;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
+import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
-
-import static org.ddolib.factory.Solvers.parallelSolver;
 
 public final class MispMain {
 
@@ -85,27 +85,23 @@ public final class MispMain {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "data/MISP/weighted.dot" : args[0];
+        final String file = args.length == 0 ? Paths.get("data", "MISP", "weighted.dot").toString() :
+                args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
-        final MispProblem problem = readFile(file);
-        final MispRelax relax = new MispRelax(problem);
-        final MispRanking ranking = new MispRanking();
-        final MispFastUpperBound fub = new MispFastUpperBound(problem);
-        final FixedWidth<BitSet> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
+        SolverConfig<BitSet, NullType> config = new SolverConfig<>();
 
-        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        MispProblem problem = readFile(file);
+        config.problem = problem;
+        config.relax = new MispRelax(problem);
+        config.ranking = new MispRanking();
+        config.fub = new MispFastUpperBound(problem);
+        config.width = new FixedWidth<>(maxWidth);
+        config.varh = new DefaultVariableHeuristic<>();
 
-        final Solver solver = parallelSolver(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();

@@ -2,15 +2,12 @@ package org.ddolib.examples.ddo.setcover.elementlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.examples.ddo.ProblemLoader;
-import org.ddolib.examples.ddo.knapsack.*;
 import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Relaxation;
@@ -22,7 +19,7 @@ import static org.ddolib.examples.ddo.setcover.elementlayer.SetCover.readInstanc
 
 public class SetCoverLoader {
 
-    public static ProblemLoader<SetCoverState, Integer> loadProblem(String fileName, double widthFactor) {
+    public static SolverConfig<SetCoverState, Integer> loadProblem(String fileName, double widthFactor) {
         SetCoverProblem problem = null;
         try {
             problem = readInstance(fileName);
@@ -31,23 +28,17 @@ public class SetCoverLoader {
             System.exit(-1);
         }
 
-        final Relaxation<SetCoverState> relax = new SetCoverRelax();
-        final StateRanking<SetCoverState> ranking = new SetCoverRanking();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
-        final VariableHeuristic<SetCoverState> varh = new DefaultVariableHeuristic<>();
-        final FastUpperBound<SetCoverState> fub = new DefaultFastUpperBound<>();
-        final DominanceChecker<SetCoverState, Integer> dominance = new DefaultDominanceChecker<>();
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coordinates = new SetCoverCoordinates(problem);
+        final SolverConfig <SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new DefaultFastUpperBound<>();
+        config.dominance = new DefaultDominanceChecker<>();
+        config.distance = new SetCoverDistance();
+        config.coordinates = new SetCoverCoordinates(problem);
 
-        return new ProblemLoader<>(problem,
-                relax,
-                ranking,
-                width,
-                varh,
-                fub,
-                dominance,
-                distance,
-                coordinates);
+        return config;
     }
 }

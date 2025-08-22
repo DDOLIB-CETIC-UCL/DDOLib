@@ -2,6 +2,7 @@ package org.ddolib.examples.ddo.mks;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -9,6 +10,8 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.junit.jupiter.api.Disabled;
@@ -19,9 +22,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static org.ddolib.factory.Solvers.exactSolver;
-import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MKSTest {
@@ -50,15 +50,13 @@ public class MKSTest {
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testExactMKS(MKSProblem problem) {
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.varh = new DefaultVariableHeuristic<>();
 
-        final Solver solver = exactSolver(
-                problem,
-                relax,
-                varh,
-                ranking);
+        final Solver solver = new ExactSolver<>(config);
 
         solver.maximize();
         assertEquals(problem.optimal, solver.bestValue().get());
@@ -67,70 +65,35 @@ public class MKSTest {
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testSequentialMKS(MKSProblem problem) {
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(50);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(50);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         assertEquals(problem.optimal, solver.bestValue().get());
     }
 
-    /*@ParameterizedTest
-    @MethodSource("dataProviderMD")
-    public void testSequentialMKSMD(MKSProblem problem) {
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(50);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final StateDistance<MKSState> distance = new MKSDistance();
-        final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                ClusterStrat.GHP,
-                distance,
-                coordinates,
-                64865);
-
-        solver.maximize();
-        assertEquals(problem.optimal, solver.bestValue().get());
-    }*/
-
     @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testDominanceMKS(MKSProblem problem) {
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(50);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SimpleDominanceChecker<MKSState, Integer> dominance = new SimpleDominanceChecker<>(new MKSDominance(),
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(50);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new MKSDominance(),
                 problem.nbVars())
 ;
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         assertEquals(problem.optimal, solver.bestValue().get());
@@ -139,31 +102,21 @@ public class MKSTest {
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testRelaxationsMKS(MKSProblem problem) {
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(50);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SimpleDominanceChecker<MKSState, Integer> dominance = new SimpleDominanceChecker<>(new MKSDominance(),
-                problem.nbVars());
-        final StateDistance<MKSState> distance = new MKSDistance();
-        final StateCoordinates<MKSState> coordinates = new MKSCoordinates();
-        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(50);
+        config.distance = new MKSDistance();
+        config.coordinates = new MKSCoordinates();
+        config.restrictStrat = ClusterStrat.Cost;
 
         for (ClusterStrat relaxStrat : ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxStrat,
-                    restrictionStrat,
-                    distance,
-                    coordinates,
-                    864646);
+            config.relaxStrat = relaxStrat;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
+            config.varh = new DefaultVariableHeuristic<>();
+            final Solver solver = new  SequentialSolver<>(config);
 
             solver.maximize();
             assertEquals(problem.optimal, solver.bestValue().get());
@@ -175,19 +128,15 @@ public class MKSTest {
     public void testSequentialMKSRandom(MKSProblem problem) {
         final double optimal = bruteForce(problem);
 
-        final MKSRelax relax = new MKSRelax();
-        final MKSRanking ranking = new MKSRanking();
-        final FixedWidth<MKSState> width = new FixedWidth<>(50);
-        final VariableHeuristic<MKSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<MKSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(50);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         System.out.println(String.format("optimal :%f, solution: %f", optimal, solver.bestValue().get()));

@@ -2,16 +2,21 @@ package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.ddo.core.*;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.RestrictionSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -21,7 +26,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.ddolib.examples.ddo.knapsack.KSMain.readInstance;
-import static org.ddolib.factory.Solvers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,21 +44,16 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsack(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
@@ -81,25 +80,16 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testKnapsackWithDominance(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
-
-
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance
-        );
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
@@ -109,21 +99,13 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testAstar(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker(new KSDominance(), problem.nbVars());
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
 
-
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = astarSolver(
-                problem,
-                varh,
-                fub,
-                dominance
-        );
+        final Solver solver = new AStarSolver<>(config);
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
@@ -132,30 +114,21 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testRelaxationsCompleteSearch(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(25);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final StateDistance<Integer> distance = new KSDistance();
-        final StateCoordinates<Integer> coord = new KSCoordinates();
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final ClusterStrat restrictionStrat = ClusterStrat.Cost;
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(25);
+        config.distance = new KSDistance();
+        config.coordinates = new KSCoordinates();
+        config.dominance = new DefaultDominanceChecker<>();
+        config.restrictStrat = ClusterStrat.Cost;
 
         for (ClusterStrat relaxStrat : ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxStrat,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    6546488);
+            config.varh = new DefaultVariableHeuristic<Integer>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.relaxStrat = relaxStrat;
+            final Solver solver = new SequentialSolver(config);
 
 
         solver.maximize();
@@ -165,31 +138,22 @@ public class KSTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void testRestrictionssCompleteSearch(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(25);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final StateDistance<Integer> distance = new KSDistance();
-        final StateCoordinates<Integer> coord = new KSCoordinates();
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final ClusterStrat relaxStrat = ClusterStrat.Cost;
+    public void testRestrictionsCompleteSearch(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(25);
+        config.distance = new KSDistance();
+        config.coordinates = new KSCoordinates();
+        config.dominance = new DefaultDominanceChecker<>();
+        config.relaxStrat = ClusterStrat.Cost;
 
-        for (ClusterStrat restrictionStrat : ClusterStrat.values()) {
-            final Solver solver = sequentialSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    frontier,
-                    dominance,
-                    relaxStrat,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    6546488);
+        for (ClusterStrat restrictStrat : ClusterStrat.values()) {
+            config.varh = new DefaultVariableHeuristic<Integer>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.restrictStrat = restrictStrat;
+            final Solver solver = new SequentialSolver(config);
 
 
             solver.maximize();
@@ -200,61 +164,45 @@ public class KSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testRelaxation(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(25);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final StateDistance<Integer> distance = new KSDistance();
-        final StateCoordinates<Integer> coord = new KSCoordinates();
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(25);
+        config.distance = new KSDistance();
+        config.coordinates = new KSCoordinates();
+        config.dominance = new DefaultDominanceChecker<>();
 
         for (ClusterStrat relaxStrat : ClusterStrat.values()) {
-                final Solver solver = relaxationSolver(
-                        problem,
-                        relax,
-                        varh,
-                        ranking,
-                        width,
-                        dominance,
-                        relaxStrat,
-                        distance,
-                        coord,
-                        6546488);
+            config.varh = new DefaultVariableHeuristic<Integer>();
+            config.relaxStrat = relaxStrat;
+            final Solver solver = new RelaxationSolver(config);
 
 
-                solver.maximize();
-                assertTrue(solver.bestValue().get() >= problem.optimal);
-            }
+            solver.maximize();
+            assertTrue(solver.bestValue().get() >= problem.optimal);
+        }
     }
 
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testRestriction(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(25);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final StateDistance<Integer> distance = new KSDistance();
-        final StateCoordinates<Integer> coord = new KSCoordinates();
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(25);
+        config.distance = new KSDistance();
+        config.coordinates = new KSCoordinates();
+        config.dominance = new DefaultDominanceChecker<>();
 
-        for (ClusterStrat restrictionStrat : ClusterStrat.values()) {
-            final Solver solver = restrictionSolver(
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    width,
-                    dominance,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    6546488);
+        for (ClusterStrat restrictStrat : ClusterStrat.values()) {
+            config.varh = new DefaultVariableHeuristic<Integer>();
+            config.restrictStrat = restrictStrat;
+            final Solver solver = new RestrictionSolver<>(config);
 
 
             solver.maximize();
-            System.out.println(solver.bestValue().get());
-            System.out.println(problem.optimal);
             assertTrue(solver.bestValue().get() <= problem.optimal);
         }
     }

@@ -2,16 +2,19 @@ package org.ddolib.examples.ddo.setcover.setlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.examples.ddo.setcover.setlayer.SetCoverHeuristics.FocusClosingElements;
+import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,35 +22,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ddolib.factory.Solvers.relaxationSolver;
-
 public class SetCover {
 
     public static void main(String[] args) throws IOException {
         final String instance = args[0];
         final int w = Integer.parseInt(args[1]);
 
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
         final SetCoverProblem problem = readInstance(instance);
-        final SetCoverRanking ranking = new SetCoverRanking();
-        final SetCoverRelax relax = new SetCoverRelax();
-        final FixedWidth<SetCoverState> width = new FixedWidth<>(w);
-        final VariableHeuristic<SetCoverState> varh = new FocusClosingElements(problem);
-        final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coord = new DefaultStateCoordinates<>();
+        config.problem = problem;
+        config.ranking = new SetCoverRanking();
+        config.relax = new SetCoverRelax();
+        config.width = new FixedWidth<>(w);
+        config.varh = new FocusClosingElements(problem);
+        config.distance = new SetCoverDistance();
+        config.coordinates = new DefaultStateCoordinates<>();
         // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
-        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final DefaultDominanceChecker<SetCoverState> dominance = new DefaultDominanceChecker<>();
-        final Solver solver = relaxationSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                dominance,
-                ClusterStrat.GHP,
-                distance,
-                coord,
-                54658646);
+        final Frontier<SetCoverState> frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new DefaultDominanceChecker<>();
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();

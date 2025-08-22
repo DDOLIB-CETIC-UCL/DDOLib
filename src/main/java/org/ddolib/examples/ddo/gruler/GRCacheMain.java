@@ -1,23 +1,20 @@
 package org.ddolib.examples.ddo.gruler;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.modeling.DefaultFastUpperBound;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 /**
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
@@ -37,23 +34,15 @@ import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 public class GRCacheMain {
 
     public static void main(final String[] args) throws IOException {
+        SolverConfig<GRState, NullType> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(8);
-        final GRRelax relax = new GRRelax();
-        final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(10);
-        final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
-        final SimpleCache<GRState> cache = new SimpleCache<>();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolverWithCache(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                new DefaultFastUpperBound<>(),
-                new DefaultDominanceChecker<>(),
-                cache);
+        config.relax = new GRRelax();
+        config.ranking = new GRRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

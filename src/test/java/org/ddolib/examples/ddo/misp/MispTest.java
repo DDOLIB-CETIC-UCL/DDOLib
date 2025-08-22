@@ -1,15 +1,16 @@
 package org.ddolib.examples.ddo.misp;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -17,7 +18,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -65,20 +65,19 @@ public class MispTest {
     @MethodSource("dataProvider")
     public void testMISP(MispProblem problem) {
 
-        final MispRelax relax = new MispRelax(problem);
-        final MispRanking ranking = new MispRanking();
-        final FixedWidth<BitSet> width = new FixedWidth<>(250);
-        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<BitSet>();
+        SolverConfig<BitSet, NullType> config = new SolverConfig<>();
 
-        final Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.problem = problem;
+        config.relax = new MispRelax(problem);
+        config.ranking = new MispRanking();
+        config.fub = new MispFastUpperBound(problem);
+        config.width = new FixedWidth<>(250);
+        config.varh = new DefaultVariableHeuristic<>();
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+
+        final Solver solver = new SequentialSolver<>(config);
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal.get());
     }

@@ -2,12 +2,12 @@ package org.ddolib.examples.ddo.tstptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.ddo.tsptw.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,25 +62,19 @@ public class TSPTWTests {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testTSPTW(TSPTWInstance instance) {
+        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(instance);
-        final TSPTWRelax relax = new TSPTWRelax(problem);
-        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
-        final TSPTWRanking ranking = new TSPTWRanking();
+        config.problem = problem;
+        config.relax = new TSPTWRelax(problem);
+        config.ranking = new TSPTWRanking();
+        config.fub = new TSPTWFastUpperBound(problem);
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(50);
-        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.width = new FixedWidth<>(50);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub
-        );
+        final Solver solver = new SequentialSolver<>(config);
         solver.maximize();
 
         assertEquals(solver.bestValue().get(), instance.optimal.get());
@@ -90,24 +83,19 @@ public class TSPTWTests {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testTSPTWWithRelax(TSPTWInstance instance) {
+        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(instance);
-        final TSPTWRelax relax = new TSPTWRelax(problem);
-        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
-        final TSPTWRanking ranking = new TSPTWRanking();
+        config.problem = problem;
+        config.relax = new TSPTWRelax(problem);
+        config.ranking = new TSPTWRanking();
+        config.fub = new TSPTWFastUpperBound(problem);
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
-        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.width = new FixedWidth<>(2);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier, fub
-        );
+        final Solver solver = new SequentialSolver<>(config);
         solver.maximize();
 
         assertEquals(solver.bestValue().get(), instance.optimal.get());
@@ -116,26 +104,20 @@ public class TSPTWTests {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testTSPTWWithDominance(TSPTWInstance instance) {
+        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(instance);
-        final TSPTWRelax relax = new TSPTWRelax(problem);
-        final TSPTWRanking ranking = new TSPTWRanking();
+        config.problem = problem;
+        config.relax = new TSPTWRelax(problem);
+        config.ranking = new TSPTWRanking();
 
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(2);
-        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
-                new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.width = new FixedWidth<>(50);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
+        final Solver solver = new SequentialSolver<>(config);
+        solver.maximize();
         solver.maximize();
 
         assertEquals(solver.bestValue().get(), instance.optimal.get());

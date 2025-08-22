@@ -3,26 +3,25 @@ package org.ddolib.examples.ddo;
 import org.apache.commons.cli.*;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.RestrictionSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.ddo.knapsack.KSLoader;
 import org.ddolib.examples.ddo.misp.MispLoader;
-import org.ddolib.examples.ddo.misp.MispProblem;
 import org.ddolib.examples.ddo.mks.MKSLoader;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverLoader;
-import org.ddolib.modeling.DefaultDominance;
 import org.ddolib.modeling.DefaultFastUpperBound;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-
-import static org.ddolib.factory.Solvers.*;
 
 public class LaunchInterface {
 
@@ -149,65 +148,32 @@ public class LaunchInterface {
 
         SolverType solverType = solverMap.get(solverStr);
         ProblemType problemType = problemMap.get(problemStr);
-        CutSetType cutSetType = cutSetMap.get(cutSetStr);
         ClusterStrat relaxStrat = clusteringRelaxMap.get(relaxStratStr);
         ClusterStrat restrictionStrat = clusteringRestrictMap.get(restrictStratStr);
 
-        ProblemLoader loader = null ;
+        SolverConfig config = null ;
         switch (problemType) {
-            case KS -> loader = KSLoader.loadProblem(instancePath, widthFactor);
-            case SC -> loader = SetCoverLoader.loadProblem(instancePath, widthFactor);
-            case MKS -> loader = MKSLoader.loadProblem(instancePath, widthFactor);
-            case MISP -> loader = MispLoader.loadProblem(instancePath, widthFactor);
+            case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
+            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor);
+            case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
+            case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
         }
+        assert config != null;
 
-        assert loader != null;
+        config.frontier = new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
+        config.timeLimit = timeLimit;
+        config.gapLimit = 0.0; // TODO add it to the interface
+        config.relaxStrat = clusteringRelaxMap.get(relaxStratStr);
+        config.restrictStrat = clusteringRestrictMap.get(restrictStratStr);
+        config.seed = seed;
+
         Solver solver = null;
 
         switch (solverType) {
-            case EXACT -> solver = exactSolver(loader.problem(),
-                    loader.relax(),
-                    loader.varh(),
-                    loader.ranking(),
-                    loader.fub(),
-                    loader.dominance());
-            case SEQ -> solver = sequentialSolver(loader.problem(),
-                    loader.relax(),
-                    loader.varh(),
-                    loader.ranking(),
-                    loader.width(),
-                    new SimpleFrontier<>(loader.ranking(), cutSetType),
-                    loader.fub(),
-                    loader.dominance(),
-                    timeLimit,
-                    0.0,
-                    relaxStrat,
-                    restrictionStrat,
-                    loader.distance(),
-                    loader.coordinates(),
-                    seed);
-            case RELAX -> solver = relaxationSolver(loader.problem(),
-                    loader.relax(),
-                    loader.varh(),
-                    loader.ranking(),
-                    loader.width(),
-                    loader.fub(),
-                    loader.dominance(),
-                    relaxStrat,
-                    loader.distance(),
-                    loader.coordinates(),
-                    seed);
-            case RESTRI -> solver = relaxationSolver(loader.problem(),
-                    loader.relax(),
-                    loader.varh(),
-                    loader.ranking(),
-                    loader.width(),
-                    loader.fub(),
-                    loader.dominance(),
-                    restrictionStrat,
-                    loader.distance(),
-                    loader.coordinates(),
-                    seed);
+            case EXACT -> solver = new ExactSolver<>(config);
+            case SEQ -> solver = new SequentialSolver<>(config);
+            case RELAX -> solver = new RelaxationSolver<>(config);
+            case RESTRI -> solver = new RestrictionSolver<>(config);
         }
 
         SearchStatistics stats = solver.maximize();
@@ -223,9 +189,9 @@ public class LaunchInterface {
             statsString.append(timeLimit).append(";"); // timelimit
             statsString.append(widthFactor).append(";"); // widthFactor
 
-            boolean useFUB = !(loader.fub() instanceof DefaultFastUpperBound);
+            boolean useFUB = !(config.fub instanceof DefaultFastUpperBound);
             statsString.append(useFUB).append(";");
-            boolean useDominance = !(loader.dominance() instanceof DefaultDominanceChecker);
+            boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
             statsString.append(useDominance).append(";");
 
             statsString.append(stats.runTimeMS()).append(";"); // runtime

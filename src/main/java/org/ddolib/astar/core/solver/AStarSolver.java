@@ -2,19 +2,15 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.*;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 
-
 import java.util.*;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
 
 public final class AStarSolver<T, K> implements Solver {
 
@@ -44,7 +40,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * HashMap with state in the Pirority Queue
      */
-    private HashMap<T, Double>  present;
+    private HashMap<T, Double> present;
 
     /**
      * If set, this keeps the info about the best solution so far.
@@ -60,36 +56,63 @@ public final class AStarSolver<T, K> implements Solver {
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
+
     /**
-     * Creates a fully qualified instance
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
      *
-     * @param problem   The problem we want to maximize.
-     * @param ub        A suitable upper-bound for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *         <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A verbosity level</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
      */
     public AStarSolver(
-            final Problem<T> problem,
-            final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
-        this.problem = problem;
-        this.varh = varh;
-        this.ub = ub;
-        this.dominance = dominance;
+            SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
+
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -106,7 +129,7 @@ public final class AStarSolver<T, K> implements Solver {
 
             SubProblem<T> sub = frontier.poll();
             present.remove(sub.getState());
-            if (closed.containsKey(sub.getState())){
+            if (closed.containsKey(sub.getState())) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
@@ -169,22 +192,22 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState,path.size(),value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound,path);
+            if (!dominance.updateDominance(newState, path.size(), value)) {
+                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
                 if (present.containsKey(newState)) {
                     if (present.get(newState) < newSub.f()) {
                         frontier.add(newSub);
                     }
-                }else if (closed.containsKey(newState)) {
+                } else if (closed.containsKey(newState)) {
                     if (closed.get(newState) < newSub.f()) {
                         frontier.add(newSub);
                         closed.remove(newState);
-                        present.put(newState,newSub.f());
+                        present.put(newState, newSub.f());
 
                     }
-                }else {
+                } else {
                     frontier.add(newSub);
-                    present.put(newState,newSub.f());
+                    present.put(newState, newSub.f());
                 }
 
             }
