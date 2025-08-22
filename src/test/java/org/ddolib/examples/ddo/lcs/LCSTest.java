@@ -1,21 +1,21 @@
 package org.ddolib.examples.ddo.lcs;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,20 +60,16 @@ public class LCSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testLCS(LCSProblem problem) {
-        final LCSRelax relax = new LCSRelax(problem);
-        final LCSRanking ranking = new LCSRanking();
-        final FixedWidth<LCSState> width = new FixedWidth<>(250);
-        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
+        SolverConfig<LCSState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new LCSRelax(problem);
+        config.ranking = new LCSRanking();
+        config.fub = new LCSFastUpperBound(problem);
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        config.width = new FixedWidth<>(250);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.getOptimal().get());
     }
@@ -81,20 +77,16 @@ public class LCSTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testLCSWithRelax(LCSProblem problem) {
-        final LCSRelax relax = new LCSRelax(problem);
-        final LCSRanking ranking = new LCSRanking();
-        final FixedWidth<LCSState> width = new FixedWidth<>(2);
-        final VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<LCSState>();
+        SolverConfig<LCSState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new LCSRelax(problem);
+        config.ranking = new LCSRanking();
+        config.fub = new LCSFastUpperBound(problem);
 
-        final Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        config.width = new FixedWidth<>(2);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.getOptimal().get());
     }

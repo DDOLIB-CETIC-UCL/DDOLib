@@ -2,21 +2,18 @@ package org.ddolib.examples.ddo.smic;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.factory.Solvers;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
-
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 
 /**
@@ -31,23 +28,17 @@ import static org.ddolib.factory.Solvers.sequentialSolver;
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
         SMICProblem problem = readProblem("data/SMIC/data10_1.txt");
-        final SMICRelax relax = new SMICRelax(problem);
-        final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(200);
-        final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker<SMICState, Integer> dominance =
+        SolverConfig<SMICState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SMICRelax(problem);
+        config.ranking = new SMICRanking();
+        config.width = new FixedWidth<>(200);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance =
                 new SimpleDominanceChecker<>(new SMICDominance(),
                         problem.nbVars());
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();
@@ -71,7 +62,9 @@ public class SMICMain {
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {
         String name = filename;
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        while (!s.hasNextLine()) {s.nextLine();}
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
         if (filename.contains(".txt")) {
             int nbJob = s.nextInt();
             int initInventory = s.nextInt();
@@ -109,10 +102,12 @@ public class SMICMain {
                 weight[i] = Integer.parseInt(w[i]);
                 release[i] = Integer.parseInt(r[i]);
                 inventory[i] = Integer.parseInt(in[i]);
-            }s.close();
+            }
+            s.close();
             return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
         }
     }
+
     private static String[] extractArrayValue(String line) {
         String[] v = null;
         if (line.contains("=") && line.contains("[")) {

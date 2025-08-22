@@ -1,16 +1,16 @@
 package org.ddolib.examples.ddo.talentscheduling;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
+import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,8 +18,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
-
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 public class TSMain {
 
@@ -90,24 +88,18 @@ public class TSMain {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
+        SolverConfig<TSState, NullType> config = new SolverConfig<>();
         final TSProblem problem = readFile(file);
-        final TSRelax relax = new TSRelax(problem);
-        final TSRanking ranking = new TSRanking();
-        final TSFastUpperBound fub = new TSFastUpperBound(problem);
+        config.problem = problem;
+        config.relax = new TSRelax(problem);
+        config.ranking = new TSRanking();
+        config.fub = new TSFastUpperBound(problem);
 
-        final WidthHeuristic<TSState> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.width = new FixedWidth<>(maxWidth);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub
-        );
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();

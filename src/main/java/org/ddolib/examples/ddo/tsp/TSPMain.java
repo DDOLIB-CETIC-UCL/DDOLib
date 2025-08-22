@@ -1,19 +1,19 @@
 package org.ddolib.examples.ddo.tsp;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
-
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 public class TSPMain {
 
@@ -57,26 +57,22 @@ public class TSPMain {
     }
 
     public static Solver solveTSP(TSPInstance instance) {
-        final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
-        final TSPRelax relax = new TSPRelax(problem);
-        final TSPRanking ranking = new TSPRanking();
-        final TSPFastUpperBound fub = new TSPFastUpperBound(problem);
-        final FixedWidth<TSPState> width = new FixedWidth<>(500);
-        final DefaultVariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleCache<TSPState> cache = new SimpleCache<>();
-        final Frontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolverWithCache(
-//                Runtime.getRuntime().availableProcessors() / 2,
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                cache);
+        SolverConfig<TSPState, NullType> config = new SolverConfig<>();
 
-        SearchStatistics stats = solver.maximize(2, false);
+        final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
+        config.problem = problem;
+        config.relax = new TSPRelax(problem);
+        config.ranking = new TSPRanking();
+        config.fub = new TSPFastUpperBound(problem);
+        config.width = new FixedWidth<>(500);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+        config.verbosityLevel = 2;
+        final Solver solver = new SequentialSolverWithCache<>(config);
+
+        SearchStatistics stats = solver.maximize();
         System.out.println(stats);
         return solver;
     }
