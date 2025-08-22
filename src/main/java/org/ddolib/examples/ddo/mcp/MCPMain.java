@@ -2,7 +2,6 @@ package org.ddolib.examples.ddo.mcp;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -13,8 +12,6 @@ import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 public final class MCPMain {
 
@@ -40,15 +37,7 @@ public final class MCPMain {
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        Optional<Set<Decision>> bestSol = solver.bestSolution();
-
-        int[] solution = bestSol.map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        int[] solution = solver.constructBestSolution(problem.nbVars());
 
         HashSet<Integer> s = new HashSet<>();
         HashSet<Integer> t = new HashSet<>();
