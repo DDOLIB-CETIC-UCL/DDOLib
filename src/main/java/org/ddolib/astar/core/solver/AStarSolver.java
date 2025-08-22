@@ -82,15 +82,16 @@ public final class AStarSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.root = root(problem.initialState(), problem.initialValue(), 0);
+        this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
     }
 
-    private AStarSolver(
+    public AStarSolver(
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
             final DominanceChecker<T, K> dominance,
-            final AstarKey<T> key
+            T state,
+            int depth
     ) {
         this.problem = problem;
         this.varh = varh;
@@ -100,7 +101,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.root = root(key.state, 0, key.depth());
+        this.root = constructRoot(state, 0, depth);
     }
 
     @Override
@@ -129,14 +130,14 @@ public final class AStarSolver<T, K> implements Solver {
            /* System.out.println("sub: " + sub);
             System.out.println("present: " + present);
             System.out.println("closed: " + closed);
-            System.out.println("\n\n");
-*/
+            System.out.println("\n\n");*/
 
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
+                //System.out.println("opti: " + sub.getPath());
                 // optimal solution found
                 if (debugLevel >= 1) {
                     checkFUBAdmissibility();
@@ -177,14 +178,18 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * @return the root subproblem
      */
-    private SubProblem<T> root(T state, double value, int depth) {
+    private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+        Set<Decision> nullDecisions = new HashSet<>();
+        for (int i = 0; i < depth; i++) {
+            nullDecisions.add(new Decision(i, 0));
+        }
         return new SubProblem<>(
                 state,
                 value,
-                ub.fastUpperBound(problem.initialState(), vars),
-                Collections.emptySet());
+                ub.fastUpperBound(state, vars),
+                nullDecisions);
     }
 
 
@@ -243,15 +248,23 @@ public final class AStarSolver<T, K> implements Solver {
 
     private void checkFUBAdmissibility() {
 
-        for (Map.Entry<AstarKey<T>, Double> entry : closed.entrySet()) {
-            AstarKey<T> key = entry.getKey();
-            if (entry.getValue() + 1e-10 < bestLB) {
+        HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        for (AstarKey<T> current : toCheck) {
+            AStarSolver<T, K> internalSolver = new AStarSolver<>(problem, varh, ub, dominance, current.state, current.depth);
+            Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+            double currentFUB = ub.fastUpperBound(current.state, vars);
+
+            internalSolver.maximize();
+            Optional<Double> longestFromCurrent = internalSolver.bestValue();
+            if (longestFromCurrent.isPresent() && currentFUB + 1e-10 < longestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your upper bound is not admissible.\n" +
-                        "State: " + key.state.toString() + "\n" +
-                        "Depth: " + key.depth + "\n" +
-                        "Path estimation: " + df.format(entry.getValue()) + "\n" +
-                        "Longest path to end: " + df.format(bestLB) + "\n";
+                        "State: " + current.state.toString() + "\n" +
+                        "Depth: " + current.depth + "\n" +
+                        "Path estimation: " + df.format(currentFUB) + "\n" +
+                        "Longest path to end: " + df.format(longestFromCurrent.get()) + "\n";
 
                 throw new RuntimeException(failureMsg);
             }
