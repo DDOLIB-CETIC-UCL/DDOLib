@@ -274,7 +274,7 @@ public final class AStarSolver<T, K> implements Solver {
     private void checkFUBConsistency(SubProblem<T> current, SubProblem<T> next,
                                      double transitionCost) {
         Logger logger = Logger.getLogger(AStarSolver.class.getName());
-        if (current.f() + 1e-10 < problem.initialValue() + current.getValue() + transitionCost + next.getUpperBound()) {
+        if (current.getUpperBound() + 1e-10 < next.getUpperBound() + transitionCost) {
             String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
                     "Current state " + current + "\n" +
                     "Next state: " + next + "\n" +
