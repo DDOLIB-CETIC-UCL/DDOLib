@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
@@ -83,34 +84,66 @@ public final class ExactSolver<T, K> implements Solver {
      */
     private Optional<Set<Decision>> bestSol;
 
+
     /**
-     * Creates a new instance.
-     *
-     * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking   A heuristic to identify the most promising nodes.
-     * @param fub       The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
      */
-    public ExactSolver(final Problem<T> problem,
-                       final Relaxation<T> relax,
-                       final VariableHeuristic<T> varh,
-                       final StateRanking<T> ranking,
-                       final FastUpperBound<T> fub,
-                       final DominanceChecker<T, K> dominance) {
-        this.problem = problem;
-        this.relax = relax;
-        this.ranking = ranking;
-        this.varh = varh;
-        this.fub = fub;
-        this.dominance = dominance;
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *     <li>An implementation of {@link Relaxation}</li>
+     *     <li>An implementation of {@link StateRanking}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A time limit</li>
+     *     <li>A gap limit</li>
+     *     <li>A verbosity level</li>
+     *     <li>A boolean to export some mdd as .dot file</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
+     */
+    public ExactSolver(SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.relax = config.relax;
+        this.ranking = config.ranking;
+        this.varh = config.varh;
+        this.fub = config.fub;
+        this.dominance = config.dominance;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
     @Override
-    public SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot) {
+    public SearchStatistics maximize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -130,11 +163,10 @@ public final class ExactSolver<T, K> implements Solver {
                 dominance,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
-                exportAsDot,
-                debugLevel
+                exportAsDot
         );
         mdd.compile(compilation);
-        extractBest(verbosityLevel);
+        extractBest();
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(mdd.exportAsDot(),
@@ -145,10 +177,6 @@ public final class ExactSolver<T, K> implements Solver {
         return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
 
-    @Override
-    public SearchStatistics maximize() {
-        return maximize(0, 0, false);
-    }
 
     @Override
     public Optional<Double> bestValue() {
@@ -163,7 +191,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest(int verbosityLevel) {
+    private void extractBest() {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();

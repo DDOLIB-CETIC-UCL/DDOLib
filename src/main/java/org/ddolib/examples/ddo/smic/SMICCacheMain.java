@@ -1,25 +1,21 @@
 package org.ddolib.examples.ddo.smic;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.modeling.DefaultFastUpperBound;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
-
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 
 /**
@@ -33,24 +29,16 @@ import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
  */
 public class SMICCacheMain {
     public static void main(String[] args) throws FileNotFoundException {
+        SolverConfig<SMICState, NullType> config = new SolverConfig<>();
         SMICProblem problem = readProblem("data/SMIC/data10_5.txt");
-        final SMICRelax relax = new SMICRelax(problem);
-        final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(10);
-        final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final DefaultDominanceChecker dominance = new DefaultDominanceChecker();
-        final SimpleCache<SMICState> cache = new SimpleCache<SMICState>();
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolverWithCache(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                new DefaultFastUpperBound<>(),
-                dominance,
-                cache);
+        config.problem = problem;
+        config.relax = new SMICRelax(problem);
+        config.ranking = new SMICRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
 
         long start = System.currentTimeMillis();

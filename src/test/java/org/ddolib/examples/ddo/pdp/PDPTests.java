@@ -14,7 +14,7 @@ public class PDPTests {
 
     static Stream<PDPInstance> dataProvider2() {
         return IntStream.range(0, 10).boxed().map(i ->
-                PDPMain.genInstance(5 + i % 14, i % 3, new Random(i)));
+                PDPMain.genInstance(6 + i % 14, i % 3, 1, new Random(i)));
     }
 
     @ParameterizedTest

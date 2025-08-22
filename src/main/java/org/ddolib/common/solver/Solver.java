@@ -12,22 +12,9 @@ import java.util.Set;
  */
 public interface Solver {
     /**
-     * Tries to maximize the objective value of the problem which is being solved
+     * Tries to maximize the objective value of the problem which is being solved.
      *
-     * @param verbosityLevel 0: no verbosity
-     *                       1: display newBest whenever there is a newBest
-     *                       2: 1 + statistics about the front every half a second (or so)
-     *                       3: 2 + every developed sub-problem
-     *                       4: 3 + details about the developed state
-     * @param exportAsDot    whether we want to export the first explored restricted and relaxed mdd.
-     *                       Tooltips are configured to give additional information on nodes and edges.
      * @return statistics about the search
-     */
-    SearchStatistics maximize(int verbosityLevel, int debugLevel, boolean exportAsDot);
-
-    /**
-     * Tries to maximize the objective value of the problem which is being solved. The verbosity is set to 0 and the
-     * export to .dot file is disabled.
      */
     SearchStatistics maximize();
 

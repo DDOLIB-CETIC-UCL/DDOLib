@@ -1,32 +1,28 @@
 package org.ddolib.examples.ddo.gruler;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
+import javax.lang.model.type.NullType;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GRTest {
     public int[] solve(int n) {
+        SolverConfig<GRState, NullType> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(n);
-        final GRRelax relax = new GRRelax();
-        final GRRanking ranking = new GRRanking();
-        final FixedWidth<GRState> width = new FixedWidth<>(32);
-        final VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        config.problem = problem;
+        config.relax = new GRRelax();
+        config.ranking = new GRRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final SequentialSolver<GRState, NullType> solver = new SequentialSolver<>(config);
         long start = System.currentTimeMillis();
         solver.maximize();
         int[] solution = solver.bestSolution()

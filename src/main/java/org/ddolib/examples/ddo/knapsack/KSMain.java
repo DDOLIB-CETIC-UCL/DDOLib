@@ -1,15 +1,16 @@
 package org.ddolib.examples.ddo.knapsack;
 
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,9 +18,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-
-import static org.ddolib.factory.Solvers.astarSolver;
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
  * The Knapsack problem is a classic optimization problem
@@ -34,35 +32,20 @@ import static org.ddolib.factory.Solvers.sequentialSolver;
  */
 public class KSMain {
     public static void main(final String[] args) throws IOException {
-
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
         final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(10);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
-                problem.nbVars());
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solverDDO = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance
-        );
-
-        final Solver solverAstar = astarSolver(
-                problem,
-                varh,
-                fub,
-                dominance
-        );
+        final Solver solverDDO = new SequentialSolver<>(config);
+        final Solver solverAstar = new AStarSolver<>(config);
 
 
         Map.of("ddo", solverDDO, "astar", solverAstar).forEach((name, solver) -> {
@@ -94,9 +77,6 @@ public class KSMain {
 
     }
 
-    public static void solveWithDDO() {
-
-    }
 
     public static KSProblem readInstance(final String fname) throws IOException {
         final File f = new File(fname);
