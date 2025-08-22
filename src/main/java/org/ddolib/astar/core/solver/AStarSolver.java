@@ -2,6 +2,7 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -83,6 +84,15 @@ public final class AStarSolver<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
      *
@@ -97,6 +107,7 @@ public final class AStarSolver<T, K> implements Solver {
      * <ul>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A verbosity level</li>
+     *     <li>A debug level</li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -113,25 +124,26 @@ public final class AStarSolver<T, K> implements Solver {
         this.closed = new HashMap<>();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
     }
 
     private AStarSolver(
-            final Problem<T> problem,
-            final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance,
+            SolverConfig<T, K> config,
             AstarKey<T> rootKey
     ) {
-        this.problem = problem;
-        this.varh = varh;
-        this.ub = ub;
-        this.dominance = dominance;
-        this.bestLB = Double.NEGATIVE_INFINITY;
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
+        this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
 
@@ -269,9 +281,14 @@ public final class AStarSolver<T, K> implements Solver {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
+        SolverConfig<T, K> config = new SolverConfig<>();
+        config.problem = this.problem;
+        config.varh = this.varh;
+        config.fub = this.ub;
+        config.dominance = this.dominance;
 
         for (AstarKey<T> current : toCheck) {
-            AStarSolver<T, K> internalSolver = new AStarSolver<>(problem, varh, ub, dominance, current);
+            AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFUB = ub.fastUpperBound(current.state, vars);
 

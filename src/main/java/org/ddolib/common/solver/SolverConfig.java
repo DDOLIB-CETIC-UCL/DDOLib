@@ -122,4 +122,14 @@ public class SolverConfig<T, K> {
      */
     public Boolean exportAsDot = false;
 
+
+    /**
+     * <ul>
+     *     <li>0: no additional tests (default)</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    public Integer debugLevel = 0;
+
 }

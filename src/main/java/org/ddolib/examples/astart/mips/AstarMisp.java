@@ -1,14 +1,15 @@
 package org.ddolib.examples.astart.mips;
 
 import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.examples.ddo.misp.MispFastUpperBound;
 import org.ddolib.examples.ddo.misp.MispMain;
 import org.ddolib.examples.ddo.misp.MispProblem;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -17,9 +18,10 @@ public class AstarMisp {
 
     public static void main(String[] args) throws IOException {
         final MispProblem problem = MispMain.readFile("data/MISP/weighted.dot");
-        final VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
-        final MispFastUpperBound fub = new MispFastUpperBound(problem);
-        DefaultDominanceChecker<BitSet> dominance = new DefaultDominanceChecker<>();
+        SolverConfig<BitSet, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new MispFastUpperBound(problem);
 
         BitSet root = new BitSet();
         root.set(2);
@@ -28,10 +30,10 @@ public class AstarMisp {
         int depth = 2;
         System.out.printf("root: %s - depth: %d\n", root, depth);
 
-        AStarSolver<BitSet, Integer> solver = new AStarSolver<>(problem, varh, fub, dominance);
+        final Solver solver = new AStarSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize(0, 0, false);
+        solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

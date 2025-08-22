@@ -1,10 +1,10 @@
 package org.ddolib.examples.astart.knapsack;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
 import org.ddolib.examples.ddo.knapsack.KSMain;
 import org.ddolib.examples.ddo.knapsack.KSProblem;
@@ -12,16 +12,17 @@ import org.ddolib.examples.ddo.knapsack.KSProblem;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.ddolib.factory.Solvers.astarSolver;
 
 public class AstarKS {
 
     public static void main(String[] args) throws IOException {
         KSProblem problem = KSMain.readInstance("data/Knapsack/simple.txt");
-        KSFastUpperBound fub = new KSFastUpperBound(problem);
-        VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.fub = new KSFastUpperBound(problem);
+        config.varh = new DefaultVariableHeuristic<>();
 
-        Solver solver = astarSolver(problem, varh, fub, new DefaultDominanceChecker<>());
+        Solver solver = new AStarSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();

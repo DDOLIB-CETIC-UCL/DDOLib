@@ -3,14 +3,11 @@ package org.ddolib.examples.astart.tsptw;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.examples.ddo.tsptw.TSPTWFastUpperBound;
-import org.ddolib.examples.ddo.tsptw.TSPTWInstance;
-import org.ddolib.examples.ddo.tsptw.TSPTWProblem;
-import org.ddolib.examples.ddo.tsptw.TSPTWState;
+import org.ddolib.examples.ddo.tsptw.*;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -24,15 +21,17 @@ public class AstarTSPTW {
     public static void main(String[] args) throws IOException {
         String file = Paths.get("data", "TSPTW", "nbNodes_4_1.txt").toString();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
-        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
-        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final DefaultDominanceChecker<TSPTWState> dominance = new DefaultDominanceChecker<>();
+        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
+        config.problem = problem;
+        config.fub = new TSPTWFastUpperBound(problem);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
-        Solver solver = new AStarSolver<>(problem, varh, fub, dominance);
+        Solver solver = new AStarSolver<>(config);
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize(0, 1, false);
+        SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 

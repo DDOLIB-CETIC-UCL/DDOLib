@@ -73,6 +73,15 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
+    /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -96,6 +105,7 @@ public final class ParallelSolver<T, K> implements Solver {
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
+     *     <li>A debug level</li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -106,6 +116,7 @@ public final class ParallelSolver<T, K> implements Solver {
         this.critical = new Critical<>(config.nbThreads, config.frontier);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
     }
 
 
@@ -249,7 +260,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                debugLevel
         );
 
         mdd.compile(compilation);
@@ -272,7 +284,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false
+                false,
+                debugLevel
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {
