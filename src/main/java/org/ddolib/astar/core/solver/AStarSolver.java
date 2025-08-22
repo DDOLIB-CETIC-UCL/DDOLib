@@ -78,7 +78,21 @@ public final class AStarSolver<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
-     * Creates a new instance.
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *         <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A verbosity level</li>
+     * </ul>
      *
      * @param config All the parameters needed to configure the solver.
      */

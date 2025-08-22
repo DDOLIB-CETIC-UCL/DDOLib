@@ -75,7 +75,28 @@ public final class ParallelSolver<T, K> implements Solver {
 
 
     /**
-     * Creates a new instance.
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *     <li>An implementation of {@link Relaxation}</li>
+     *     <li>An implementation of {@link StateRanking}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     *     <li>An implementation of {@link WidthHeuristic}</li>
+     *     <li>An implementation of {@link Frontier}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>The number of threads that can be used in parallel (all available processors by default).</li>
+     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A time limit</li>
+     *     <li>A gap limit</li>
+     *     <li>A verbosity level</li>
+     * </ul>
      *
      * @param config All the parameters needed to configure the solver.
      */
