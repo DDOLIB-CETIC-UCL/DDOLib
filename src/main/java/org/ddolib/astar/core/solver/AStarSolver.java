@@ -78,30 +78,29 @@ public final class AStarSolver<T, K> implements Solver {
         this.varh = varh;
         this.ub = ub;
         this.dominance = dominance;
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
     }
 
-    public AStarSolver(
+    private AStarSolver(
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
             final FastUpperBound<T> ub,
             final DominanceChecker<T, K> dominance,
-            T state,
-            int depth
+            AstarKey<T> rootKey
     ) {
         this.problem = problem;
         this.varh = varh;
         this.ub = ub;
         this.dominance = dominance;
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.root = constructRoot(state, 0, depth);
+        this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
 
     @Override
@@ -117,7 +116,6 @@ public final class AStarSolver<T, K> implements Solver {
         frontier.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!frontier.isEmpty()) {
-            //System.out.println("Frontier: " + frontier);
             if (verbosityLevel >= 1) {
                 System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
             }
@@ -127,17 +125,11 @@ public final class AStarSolver<T, K> implements Solver {
 
             SubProblem<T> sub = frontier.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
-           /* System.out.println("sub: " + sub);
-            System.out.println("present: " + present);
-            System.out.println("closed: " + closed);
-            System.out.println("\n\n");*/
-
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
-                //System.out.println("opti: " + sub.getPath());
                 // optimal solution found
                 if (debugLevel >= 1) {
                     checkFUBAdmissibility();
@@ -252,7 +244,7 @@ public final class AStarSolver<T, K> implements Solver {
         toCheck.addAll(present.keySet());
 
         for (AstarKey<T> current : toCheck) {
-            AStarSolver<T, K> internalSolver = new AStarSolver<>(problem, varh, ub, dominance, current.state, current.depth);
+            AStarSolver<T, K> internalSolver = new AStarSolver<>(problem, varh, ub, dominance, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFUB = ub.fastUpperBound(current.state, vars);
 
@@ -271,8 +263,11 @@ public final class AStarSolver<T, K> implements Solver {
         }
     }
 
-    private void checkFUBConsistency(SubProblem<T> current, SubProblem<T> next,
-                                     double transitionCost) {
+    private void checkFUBConsistency(
+            SubProblem<T> current,
+            SubProblem<T> next,
+            double transitionCost
+    ) {
         Logger logger = Logger.getLogger(AStarSolver.class.getName());
         if (current.getUpperBound() + 1e-10 < next.getUpperBound() + transitionCost) {
             String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
