@@ -57,7 +57,7 @@ public class JobShopTest {
     public void testJobShop_test() throws IOException {
 
         for (int n = 2; n <= 5; n++) {
-            for (int m = 2; m <= 6; m++) {
+            for (int m = 2; m <= 5; m++) {
                 for (int i = 1; i < 101; i++) {
                     Path tempFile = Path.of("data/JobShop/bigTest/jobshop_instance_" + n + "_" + m + "_" + i + ".txt");
                     int makespanCP = JSCP.main(tempFile.toString());

@@ -150,7 +150,7 @@ public final class ACSSolver<T, K> implements Solver {
                 return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap(), bestLB);
             }
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
-            if (verbosityLevel >= 1) {
+            if (verbosityLevel >= 4) {
                 System.out.println("it " + nbIter + "\t queueMaxSize:" + queueMaxSize + "\t " + "bestObj:" + bestLB);
             }
         }

@@ -28,14 +28,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance,Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
                 problem,
                 varh,
                 fub,
                 dominance,
-                10
+                10,
+                Integer.MAX_VALUE/1000
         );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
@@ -58,14 +59,14 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
                 );
                 final Solver solverACS = acsSolver(
                         problem,
                         varh,
                         fub,
                         dominance,
-                        10
+                        10, Integer.MAX_VALUE/1000
                 );
                 solverAstar.maximize(0, false);
                 assertEquals(-1*solverAstar.bestValue().get(), sol[idx]);
@@ -88,14 +89,14 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
                 );
                 final Solver solverACS = acsSolver(
                         problem,
                         varh,
                         fub,
                         dominance,
-                        10
+                        10, Integer.MAX_VALUE/1000
                 );
                 solverAstar.maximize(0, false);
                 assertEquals(-1*solverAstar.bestValue().get(), sol[idx]);
@@ -118,15 +119,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 14);
         solverACS.maximize(0, false);
@@ -145,15 +146,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -172,15 +173,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 12);
         solverACS.maximize(0, false);
@@ -199,15 +200,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 13);
         solverACS.maximize(0, false);
@@ -226,15 +227,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 13);
         solverACS.maximize(0, false);
@@ -253,15 +254,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 14);
         solverACS.maximize(0, false);
@@ -280,15 +281,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 12);
         solverACS.maximize(0, false);
@@ -307,15 +308,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -334,15 +335,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 13);
         solverACS.maximize(0, false);
@@ -361,15 +362,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 12);
         solverACS.maximize(0, false);
@@ -389,15 +390,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -416,15 +417,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -443,15 +444,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -470,15 +471,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -498,15 +499,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -525,15 +526,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 12);
         solverACS.maximize(0, false);
@@ -552,15 +553,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -579,15 +580,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -606,15 +607,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -633,15 +634,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -662,15 +663,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -689,15 +690,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -716,15 +717,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -743,15 +744,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -770,15 +771,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -797,15 +798,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 11);
         solverACS.maximize(0, false);
@@ -824,15 +825,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -851,15 +852,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -878,15 +879,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -905,15 +906,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -934,15 +935,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -961,15 +962,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -988,15 +989,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1015,15 +1016,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1042,15 +1043,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1069,15 +1070,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1096,15 +1097,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1123,15 +1124,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1150,15 +1151,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);
@@ -1177,15 +1178,15 @@ public class JSTSPTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance, Integer.MAX_VALUE/1000
         );
         final Solver solverACS = acsSolver(
-                problem,
-                varh,
-                fub,
-                dominance,
-                10
-        );
+                        problem,
+                        varh,
+                        fub,
+                        dominance,
+                        10, Integer.MAX_VALUE/1000
+                );
         solverAstar.maximize(0, false);
         assertEquals(-1*solverAstar.bestValue().get(), 10);
         solverACS.maximize(0, false);

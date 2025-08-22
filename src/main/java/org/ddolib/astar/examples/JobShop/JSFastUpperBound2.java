@@ -202,13 +202,19 @@ public class JSFastUpperBound2 implements FastUpperBound<JSState> {
                 int job = i / this.problem.data.getnMachines();
                 int op = i % this.problem.data.getnMachines();
                 int m = this.problem.data.getMachine()[job][op];
-                for (int j : this.problem.data.getTasks()[m]) {
-                    if (!state.done.get(j)){
-                        if(state.est[job][op]+this.problem.data.getDuration()[job][op] < makespan ){
-                            if (state.est[j/this.problem.data.getnMachines()][j%this.problem.data.getnMachines()]+this.problem.data.getDuration()[j/this.problem.data.getnMachines()][j%this.problem.data.getnMachines()] >= makespan){
-                                graph.get(j).add(new Edge(i,this.problem.data.getDuration()[j/this.problem.data.getnMachines()][j%this.problem.data.getnMachines()]));
+                if(state.est[job][op]+this.problem.data.getDuration()[job][op] < makespan ){
+                    int minNode = -1;
+                    for (int j : this.problem.data.getTasks()[m]) {
+                        if (!state.done.get(j)) {
+                            if (state.est[j / this.problem.data.getnMachines()][j % this.problem.data.getnMachines()] + this.problem.data.getDuration()[j / this.problem.data.getnMachines()][j % this.problem.data.getnMachines()] >= makespan) {
+                                if (minNode==-1 || state.est[j / this.problem.data.getnMachines()][j % this.problem.data.getnMachines()] < state.est[minNode / this.problem.data.getnMachines()][minNode % this.problem.data.getnMachines()]){
+                                    minNode = j;
+                                }
                             }
                         }
+                    }
+                    if (minNode != -1) {
+                        graph.get(minNode).add(new Edge(i, this.problem.data.getDuration()[minNode / this.problem.data.getnMachines()][minNode % this.problem.data.getnMachines()]));
                     }
                 }
 

@@ -119,7 +119,8 @@ public class KSTest {
                 problem,
                 varh,
                 fub,
-                dominance
+                dominance,
+                Integer.MAX_VALUE/1000
         );
 
         solver.maximize();
