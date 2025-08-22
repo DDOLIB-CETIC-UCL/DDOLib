@@ -1,25 +1,21 @@
 package org.ddolib.examples.ddo.msct;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.modeling.DefaultFastUpperBound;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
-
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 /**
  * The problem is to sequence n jobs such that:
@@ -36,27 +32,18 @@ public class MSCTCacheMain {
 //        final String instance = "data/MSCT/msct1.txt";
 //        final MSCTProblem problem = readInstance(instance);
         int n = 11;
+        SolverConfig<MSCTState, NullType> config = new SolverConfig<>();
         MSCTProblem problem = instanceGenerator(n);
+        config.problem = problem;
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
-        final MSCTRelax relax = new MSCTRelax(problem);
-        final MSCTRanking ranking = new MSCTRanking();
-        final FixedWidth<MSCTState> width = new FixedWidth<>(100);
-        final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final DefaultDominanceChecker<MSCTState> dominance = new DefaultDominanceChecker<>();
-        final SimpleCache<MSCTState> cache = new SimpleCache<>();
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolverWithCache(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                new DefaultFastUpperBound<>(),
-                dominance,
-                cache);
-
+        config.relax = new MSCTRelax(problem);
+        config.ranking = new MSCTRanking();
+        config.width = new FixedWidth<>(100);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

@@ -1,19 +1,18 @@
 package org.ddolib.examples.ddo.pigmentscheduling;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
-
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
  * The Pigment Sequencing Problem (PSP) is a single-machine production planning problem
@@ -32,21 +31,16 @@ public class PSMain {
     public static void main(final String[] args) throws IOException {
         PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");
 
+        SolverConfig<PSState, NullType> config = new SolverConfig<>();
         PSProblem problem = new PSProblem(instance);
-        final PSRelax relax = new PSRelax(instance);
-        final PSRanking ranking = new PSRanking();
-        final PSFastUpperBound fub = new PSFastUpperBound(instance);
-        final FixedWidth<PSState> width = new FixedWidth<>(10);
-        final VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub);
+        config.problem = problem;
+        config.relax = new PSRelax(instance);
+        config.ranking = new PSRanking();
+        config.fub = new PSFastUpperBound(instance);
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stats = solver.maximize();

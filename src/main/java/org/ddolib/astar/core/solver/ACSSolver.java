@@ -2,6 +2,7 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -43,9 +44,9 @@ public final class ACSSolver<T, K> implements Solver {
      */
     private final DominanceChecker<T, K> dominance;
 
-    private  HashSet<T>[] closed;
+    private HashSet<T>[] closed;
 
-    private  HashSet<T>[] present;
+    private HashSet<T>[] present;
 
     private HashMap<T, Double> g;
 
@@ -54,36 +55,68 @@ public final class ACSSolver<T, K> implements Solver {
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
+
     /**
-     * Creates a fully qualified instance
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
+     */
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
      *
-     * @param problem   The problem we want to maximize.
-     * @param ub        A suitable upper-bound for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *         <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A verbosity level</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
      */
     public ACSSolver(
-            final Problem<T> problem,
-            final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance,
+            SolverConfig<T, K> config,
             final int K) {
-        this.problem = problem;
-        this.varh = varh;
-        this.ub = ub;
-        this.dominance = dominance;
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
-        this.closed = new HashSet[problem.nbVars()+1];
-        this.present = new HashSet[problem.nbVars()+1];
+        this.closed = new HashSet[problem.nbVars() + 1];
+        this.present = new HashSet[problem.nbVars() + 1];
         this.g = new HashMap<>();
         this.K = K;
 
-        for (int i = 0; i < problem.nbVars()+1; i++) {
+        for (int i = 0; i < problem.nbVars() + 1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
             present[i] = new HashSet<>();
             closed[i] = new HashSet<>();
         }
+
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
 
     }
 
@@ -98,11 +131,6 @@ public final class ACSSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -111,12 +139,12 @@ public final class ACSSolver<T, K> implements Solver {
         g.put(root().getState(), 0.0);
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            for (int i = 0; i < problem.nbVars()+1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) {
                 int l = min(K, open.get(i).size());
                 for (int j = 0; j < l; j++) {
-                    SubProblem<T> s =  open.get(i).poll();
+                    SubProblem<T> s = open.get(i).poll();
                     present[i].remove(s.getState());
-                    if (s.f()> bestLB) {
+                    if (s.f() > bestLB) {
                         candidates.add(s);
                     }
                 }
@@ -130,13 +158,13 @@ public final class ACSSolver<T, K> implements Solver {
                     this.closed[i].add(sub.getState());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // optimal solution found
-                        if (bestLB<sub.getValue()) {
+                        if (bestLB < sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestLB = sub.getValue();
                         }
                         continue;
                     }
-                    addChildren(sub, i+1);
+                    addChildren(sub, i + 1);
                 }
                 candidates.clear();
 
@@ -177,7 +205,7 @@ public final class ACSSolver<T, K> implements Solver {
 
     private void addChildren(SubProblem<T> subProblem, int varIndex) {
         T state = subProblem.getState();
-        int var = varIndex-1;
+        int var = varIndex - 1;
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
@@ -190,12 +218,12 @@ public final class ACSSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState,path.size(),value)) {
-                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound,path);
-                if(((present[varIndex].contains(newState) || closed[varIndex].contains(newState))&&g.getOrDefault(newState,Double.MAX_VALUE)>value)||newSubProblem.f()<=bestLB){
-                   continue;
+            if (!dominance.updateDominance(newState, path.size(), value)) {
+                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound, path);
+                if (((present[varIndex].contains(newState) || closed[varIndex].contains(newState)) && g.getOrDefault(newState, Double.MAX_VALUE) > value) || newSubProblem.f() <= bestLB) {
+                    continue;
                 }
-                g.put(newState,value);
+                g.put(newState, value);
                 open.get(varIndex).add(newSubProblem);
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);
