@@ -1,6 +1,7 @@
 package org.ddolib.examples.ddo;
 
 import org.apache.commons.cli.*;
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -11,7 +12,11 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.examples.ddo.knapsack.KSLoader;
 import org.ddolib.examples.ddo.mks.MKSLoader;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverLoader;
+import org.ddolib.modeling.DefaultDominance;
+import org.ddolib.modeling.DefaultFastUpperBound;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -22,6 +27,9 @@ public class LaunchInterface {
     static final int DEFAULT_SEED = 6354864;
     static final int DEFAULT_TIME_LIMIT = 1800;
     static final double DEFAULT_WIDTH_FACTOR = 1.0;
+    static final String DEFAULT_SOLVER = "sequential";
+    static final String DEFAULT_CUTSET = "layer";
+    static final String DEFAULT_CLUSTER = "Cost";
 
     public static void main(String[] args) {
         String quotedValidProblem = problemMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
@@ -47,7 +55,7 @@ public class LaunchInterface {
         options.addOption(Option.builder("i").longOpt("input").argName("INSTANCE_FILE").hasArg().required()
                 .desc("Input instance file.").build());
 
-        options.addOption(Option.builder("s").longOpt("solver").argName("SOLVER")
+        options.addOption(Option.builder("s").longOpt("solver").argName("SOLVER").hasArg()
                 .desc("used solver.\nValid solvers are: " + quotedValidSolver).build());
 
         options.addOption(Option.builder().longOpt("cutset").argName("CUTSETTYPE").hasArg()
@@ -68,6 +76,9 @@ public class LaunchInterface {
         options.addOption(Option.builder().longOpt("seed").argName("SEED").hasArg()
                 .desc("Seed").build());
 
+        options.addOption(Option.builder().longOpt("csv").argName("CSVFILE").hasArg()
+                .desc("Csv file to store stats").build());
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
@@ -78,50 +89,46 @@ public class LaunchInterface {
             System.exit(1);
         }
 
-        SolverType solverType = null;
-        ProblemType problemType = null;
-        CutSetType cutSetType = null;
-        ClusterStrat relaxStrat = null;
-        ClusterStrat restrictionStrat = null;
         String instancePath = null;
         int timeLimit = DEFAULT_TIME_LIMIT;
         double widthFactor = DEFAULT_WIDTH_FACTOR;
         int seed = DEFAULT_SEED;
+        String solverStr = DEFAULT_SOLVER;
+        String cutSetStr = DEFAULT_CUTSET;
+        String relaxStratStr = DEFAULT_CLUSTER;
+        String restrictStratStr = DEFAULT_CLUSTER;
+        String problemStr = null;
+
         try {
             instancePath = cmd.getOptionValue("input");
 
-            String problemStr = cmd.getOptionValue("problem");
+            problemStr = cmd.getOptionValue("problem");
             if(!problemMap.containsKey(problemStr))
                 throw new IllegalArgumentException("Unknown problem: " + problemStr + "\nValid problems are: " + quotedValidProblem);
-            problemType = problemMap.get(problemStr);
 
             if (cmd.hasOption("solver")) {
-                String solverStr = cmd.getOptionValue("solver");
+                solverStr = cmd.getOptionValue("solver");
                 if (!solverMap.containsKey(solverStr))
                     throw new IllegalArgumentException("Unknown solver: " + solverStr + "\nValid solvers are: " + quotedValidSolver);
-                solverType = solverMap.get(solverStr);
-            } else solverType = SolverType.SEQ;
+            }
 
             if (cmd.hasOption("cutset")) {
-                String cutSetStr = cmd.getOptionValue("cutset");
+                cutSetStr = cmd.getOptionValue("cutset");
                 if (!cutSetMap.containsKey(cutSetStr))
                     throw new IllegalArgumentException("Unknown cutset: " + cutSetStr + "\nValid cutsets are:" + quotedValidCutSet);
-                cutSetType = cutSetMap.get(cutSetStr);
-            } else cutSetType = CutSetType.LastExactLayer;
+            }
 
             if (cmd.hasOption("relax")) {
-                String relaxStratStr = cmd.getOptionValue("relax");
+               relaxStratStr = cmd.getOptionValue("relax");
                 if (!clusteringRelaxMap.containsKey(relaxStratStr))
                     throw new IllegalArgumentException("Unknown relax strat: " + relaxStratStr + "\nValid relax strats are:" + quotedValidClusterRelax);
-                relaxStrat = clusteringRelaxMap.get(relaxStratStr);
-            } else  relaxStrat = ClusterStrat.Cost;
+            }
 
             if (cmd.hasOption("restrict")) {
-                String restrictStratStr = cmd.getOptionValue("restrict");
+                restrictStratStr = cmd.getOptionValue("restrict");
                 if (!clusteringRestrictMap.containsKey(restrictStratStr))
                     throw new IllegalArgumentException("Unknown restrict strat: " + restrictStratStr + "\nValid restrict strats are:" + quotedValidClusterRestrict);
-                restrictionStrat = clusteringRestrictMap.get(restrictStratStr);
-            } else restrictionStrat = ClusterStrat.Cost;
+            }
 
             if (cmd.hasOption("time-limit")) {
                 timeLimit = Integer.parseInt(cmd.getOptionValue("time-limit"));
@@ -137,6 +144,12 @@ public class LaunchInterface {
             formatter.printHelp("CommandLineApp", options);
             System.exit(-1);
         }
+
+        SolverType solverType = solverMap.get(solverStr);
+        ProblemType problemType = problemMap.get(problemStr);
+        CutSetType cutSetType = cutSetMap.get(cutSetStr);
+        ClusterStrat relaxStrat = clusteringRelaxMap.get(relaxStratStr);
+        ClusterStrat restrictionStrat = clusteringRestrictMap.get(restrictStratStr);
 
         ProblemLoader loader = null ;
         switch (problemType) {
@@ -196,6 +209,38 @@ public class LaunchInterface {
         }
 
         SearchStatistics stats = solver.maximize();
+
+        if (cmd.hasOption("csv")) {
+            StringBuilder statsString = new StringBuilder();
+            statsString.append(instancePath).append(";"); // Name
+            statsString.append(problemStr).append(";"); // Problem
+            statsString.append(solverStr).append(";"); // Solver
+            statsString.append(cutSetStr).append(";"); // Cutset
+            statsString.append(relaxStratStr).append(";"); // RelaxStrat
+            statsString.append(restrictionStrat).append(";"); // RestrictionStrat
+            statsString.append(timeLimit).append(";"); // timelimit
+            statsString.append(widthFactor).append(";"); // widthFactor
+
+            boolean useFUB = !(loader.fub() instanceof DefaultFastUpperBound);
+            statsString.append(useFUB).append(";");
+            boolean useDominance = !(loader.dominance() instanceof DefaultDominanceChecker);
+            statsString.append(useDominance).append(";");
+
+            statsString.append(stats.runTimeMS()).append(";"); // runtime
+            statsString.append(stats.Gap()).append(";"); // Gap
+            statsString.append(stats.nbIterations()).append(";"); // nbIterations
+            statsString.append(stats.SearchStatus()).append("\n"); // searchStatus
+
+            try {
+                FileWriter statsFile = new FileWriter(cmd.getOptionValue("csv"), true);
+                statsFile.write(statsString.toString());
+                statsFile.close();
+
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(-1);
+            }
+        }
     }
 
     private static enum ProblemType {
@@ -223,16 +268,16 @@ public class LaunchInterface {
 
     private final static HashMap<String, SolverType> solverMap = new HashMap() {
         {
-            put("seq", SolverType.SEQ);
-            put("relax", SolverType.RELAX);
-            put("restri", SolverType.RESTRI);
+            put("sequential", SolverType.SEQ);
+            put("relaxed", SolverType.RELAX);
+            put("restricted", SolverType.RESTRI);
             put("exact", SolverType.EXACT);
         }
     };
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
         {
-            put("cost", ClusterStrat.Cost);
+            put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHPMD);
             put("GHPMDP", ClusterStrat.GHPMDPMD);
@@ -241,7 +286,7 @@ public class LaunchInterface {
 
     private final static HashMap<String, ClusterStrat> clusteringRestrictMap = new HashMap() {
         {
-            put("cost", ClusterStrat.Cost);
+            put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHPMD);
             put("GHPMDP", ClusterStrat.GHPMDPMD);

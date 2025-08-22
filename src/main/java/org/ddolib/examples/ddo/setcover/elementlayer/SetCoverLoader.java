@@ -38,7 +38,7 @@ public class SetCoverLoader {
         final FastUpperBound<SetCoverState> fub = new DefaultFastUpperBound<>();
         final DominanceChecker<SetCoverState, Integer> dominance = new DefaultDominanceChecker<>();
         final StateDistance<SetCoverState> distance = new SetCoverDistance();
-        final StateCoordinates<SetCoverState> coordinates = new DefaultStateCoordinates<>();
+        final StateCoordinates<SetCoverState> coordinates = new SetCoverCoordinates(problem);
 
         return new ProblemLoader<>(problem,
                 relax,
