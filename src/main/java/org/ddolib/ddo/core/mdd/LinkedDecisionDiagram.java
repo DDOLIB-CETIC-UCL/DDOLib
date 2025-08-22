@@ -309,8 +309,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         depthGlobalDD, node.value)) {
                     double fub = input.fub().fastUpperBound(state, variables);
                     double rub = saturatedAdd(node.value, fub);
-                    System.out.printf("state: %s - node value: %.0f - fub: %.0f - rub: %.0f\n",
-                            state, node.value, fub, rub);
                     node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
