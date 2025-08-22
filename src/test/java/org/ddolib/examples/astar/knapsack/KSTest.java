@@ -24,7 +24,7 @@ public class KSTest {
     private static class KSAStartBench extends ProblemTestBench<Integer, Integer, KSProblem> {
 
         public KSAStartBench() {
-            super(false, false, true);
+            super();
         }
 
         @Override
@@ -73,6 +73,9 @@ public class KSTest {
     @TestFactory
     public Stream<DynamicTest> testKSWithAStar() {
         var bench = new KSAStartBench();
+        bench.testRelaxation = false; //Not need for A*
+        bench.testFUB = false; // Already tested in the model
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }

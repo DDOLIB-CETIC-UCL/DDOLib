@@ -23,7 +23,7 @@ public class PDPTests {
     private static class PDPBench extends ProblemTestBench<PDPState, Integer, PDPProblem> {
 
         public PDPBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -66,6 +66,8 @@ public class PDPTests {
     @TestFactory
     public Stream<DynamicTest> testPDP() {
         var bench = new PDPBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 }

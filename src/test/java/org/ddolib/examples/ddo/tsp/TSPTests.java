@@ -21,7 +21,7 @@ public class TSPTests {
     private static class TSPBench extends ProblemTestBench<TSPState, Integer, TSPProblem> {
 
         public TSPBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -59,6 +59,8 @@ public class TSPTests {
     @TestFactory
     public Stream<DynamicTest> testTSP() {
         var bench = new TSPBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 }

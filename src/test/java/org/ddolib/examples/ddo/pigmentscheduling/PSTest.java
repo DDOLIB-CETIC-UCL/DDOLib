@@ -23,7 +23,7 @@ class PSTest {
     private static class PSPBench extends ProblemTestBench<PSState, Integer, PSProblem> {
 
         public PSPBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -62,6 +62,8 @@ class PSTest {
     @TestFactory
     public Stream<DynamicTest> testPSP() {
         var bench = new PSPBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 }

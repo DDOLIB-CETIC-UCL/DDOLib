@@ -25,7 +25,7 @@ public class MispTest {
 
 
         public MispBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -64,6 +64,8 @@ public class MispTest {
     @TestFactory
     public Stream<DynamicTest> testMISP() {
         var bench = new MispBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 

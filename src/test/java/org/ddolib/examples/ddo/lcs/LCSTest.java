@@ -22,7 +22,7 @@ public class LCSTest {
     private static class LCSBench extends ProblemTestBench<LCSState, Integer, LCSProblem> {
 
         public LCSBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -64,6 +64,8 @@ public class LCSTest {
     @TestFactory
     public Stream<DynamicTest> testLCS() {
         var bench = new LCSBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 

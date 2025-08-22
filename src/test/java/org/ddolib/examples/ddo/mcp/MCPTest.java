@@ -22,7 +22,7 @@ public class MCPTest {
     private static class MCPBench extends ProblemTestBench<MCPState, Integer, MCPProblem> {
 
         public MCPBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -64,6 +64,8 @@ public class MCPTest {
     @TestFactory
     public Stream<DynamicTest> testMCP() {
         var bench = new MCPBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 }

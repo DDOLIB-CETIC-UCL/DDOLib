@@ -24,7 +24,7 @@ public class GRTest {
     private static class GRBench extends ProblemTestBench<GRState, Integer, GRProblem> {
 
         public GRBench() {
-            super(true, false, false);
+            super();
         }
 
         @Override
@@ -50,6 +50,7 @@ public class GRTest {
     @TestFactory
     public Stream<DynamicTest> testGR() {
         var bench = new GRBench();
+        bench.testRelaxation = true;
         return bench.generateTests();
     }
 }

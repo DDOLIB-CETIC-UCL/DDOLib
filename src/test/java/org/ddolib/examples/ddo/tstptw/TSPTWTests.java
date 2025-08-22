@@ -24,7 +24,7 @@ public class TSPTWTests {
     private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWDominanceKey, TSPTWProblem> {
 
         public TSPTWBench() {
-            super(true, true, true);
+            super();
         }
 
         @Override
@@ -67,6 +67,9 @@ public class TSPTWTests {
     @TestFactory
     public Stream<DynamicTest> testTSPTW() {
         var bench = new TSPTWBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }

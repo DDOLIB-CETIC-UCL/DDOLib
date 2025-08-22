@@ -21,7 +21,7 @@ public class KSTest {
     private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
 
         public KSBench() {
-            super(true, true, true);
+            super();
         }
 
         @Override
@@ -64,6 +64,9 @@ public class KSTest {
     @TestFactory
     public Stream<DynamicTest> testKS() {
         var bench = new KSBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }

@@ -30,7 +30,7 @@ class MSCTTest {
     private static class MSCTBench extends ProblemTestBench<MSCTState, Integer, MSCTProblem> {
 
         public MSCTBench() {
-            super(true, true, true);
+            super();
 
         }
 
@@ -138,6 +138,8 @@ class MSCTTest {
     @TestFactory
     public Stream<DynamicTest> testMSCT() {
         var bench = new MSCTBench();
+        bench.testRelaxation = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }

@@ -28,7 +28,7 @@ public class SMICTest {
     private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
 
         public SMICBench() {
-            super(false, false, true);
+            super();
         }
 
         @Override
@@ -78,6 +78,8 @@ public class SMICTest {
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench();
+        bench.testRelaxation = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }

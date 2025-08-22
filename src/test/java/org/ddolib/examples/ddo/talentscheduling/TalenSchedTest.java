@@ -23,7 +23,7 @@ public class TalenSchedTest {
     private static class TSBench extends ProblemTestBench<TSState, Integer, TSProblem> {
 
         public TSBench() {
-            super(true, true, false);
+            super();
         }
 
         @Override
@@ -65,6 +65,8 @@ public class TalenSchedTest {
     @TestFactory
     public Stream<DynamicTest> testMCP() {
         var bench = new TSBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
         return bench.generateTests();
     }
 

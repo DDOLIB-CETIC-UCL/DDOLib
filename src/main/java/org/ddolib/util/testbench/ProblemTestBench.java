@@ -34,17 +34,17 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Whether the relaxation must be tested.
      */
-    protected final boolean testRelaxation;
+    public boolean testRelaxation = false;
 
     /**
      * Whether the fast upper bound must be tested.
      */
-    protected final boolean testFUB;
+    public boolean testFUB = false;
 
     /**
      * Whether the dominance must be tested.
      */
-    protected final boolean testDominance;
+    public boolean testDominance = false;
 
     /**
      * Generates {@link Problem} instances to test.
@@ -61,17 +61,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     abstract protected SolverConfig<T, K> configSolver(P problem);
 
+
     /**
      * Instantiate a test bench.
-     *
-     * @param testRelaxation Whether the relaxation must be tested.
-     * @param testFUB        Whether the fast upper bound must be tested.
-     * @param testDominance  Whether the dominance must be tested.
      */
-    protected ProblemTestBench(boolean testRelaxation, boolean testFUB, boolean testDominance) {
-        this.testRelaxation = testRelaxation;
-        this.testFUB = testFUB;
-        this.testDominance = testDominance;
+    protected ProblemTestBench() {
         problems = generateProblems();
     }
 
