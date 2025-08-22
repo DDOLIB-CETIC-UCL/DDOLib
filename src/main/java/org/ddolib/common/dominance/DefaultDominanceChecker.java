@@ -11,25 +11,22 @@ import org.ddolib.modeling.Dominance;
 public class DefaultDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
     public DefaultDominanceChecker() {
-        super(new DefaultDominance<>());
+        super(new Dominance<>() {
+            @Override
+            public K getKey(T state) {
+                return null;
+            }
+
+            @Override
+            public boolean isDominatedOrEqual(T state1, T state2) {
+                return false;
+            }
+        });
     }
 
     @Override
     public boolean updateDominance(T state, int depth, double objValue) {
         return false;
     }
-
-
-    private static class DefaultDominance<T, K> implements Dominance<T, K> {
-
-        @Override
-        public K getKey(T state) {
-            return null;
-        }
-
-        @Override
-        public boolean isDominatedOrEqual(T state1, T state2) {
-            return false;
-        }
-    }
+    
 }
