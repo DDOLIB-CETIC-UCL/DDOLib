@@ -43,7 +43,7 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
 
 
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
-            Comparator.comparingDouble(SubProblem<T>::g).reversed());
+            Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
     /**
      * Creates a fully qualified instance
@@ -68,11 +68,10 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
+        return maximize(0);
     }
 
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
+    public SearchStatistics maximize(int verbosityLevel) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;

@@ -19,7 +19,7 @@ public final class AStarSolver<T, K> implements Solver {
         private
 
         OpenSet() {
-            this.queue = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::g).reversed());
+            this.queue = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed());
         }
 
         void add(SubProblem<T> subProblem) {
