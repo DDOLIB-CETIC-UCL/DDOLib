@@ -1,18 +1,16 @@
 package org.ddolib.examples.ddo.pigmentscheduling;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -20,7 +18,7 @@ import java.util.stream.Stream;
 
 class PSTest {
 
-    private static class PSPBench extends ProblemTestBench<PSState, Integer, PSProblem> {
+    private static class PSPBench extends ProblemTestBench<PSState, NullType, PSProblem> {
 
         public PSPBench() {
             super();
@@ -45,16 +43,17 @@ class PSTest {
         }
 
         @Override
-        protected SolverConfig<PSState, Integer> configSolver(PSProblem problem) {
-            PSRelax relax = new PSRelax(problem.instance);
-            PSRanking ranking = new PSRanking();
-            PSFastUpperBound fub = new PSFastUpperBound(problem.instance);
-            FixedWidth<PSState> width = new FixedWidth<>(10);
-            VariableHeuristic<PSState> varh = new DefaultVariableHeuristic<>();
-            Frontier<PSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<PSState> dominanceChecker = new DefaultDominanceChecker<>();
+        protected SolverConfig<PSState, NullType> configSolver(PSProblem problem) {
+            SolverConfig<PSState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new PSRelax(problem.instance);
+            config.ranking = new PSRanking();
+            config.fub = new PSFastUpperBound(problem.instance);
+            config.width = new FixedWidth<>(maxWidth);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
     }
 

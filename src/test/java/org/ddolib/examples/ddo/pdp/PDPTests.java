@@ -1,17 +1,16 @@
 package org.ddolib.examples.ddo.pdp;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +19,7 @@ import java.util.stream.Stream;
 
 public class PDPTests {
 
-    private static class PDPBench extends ProblemTestBench<PDPState, Integer, PDPProblem> {
+    private static class PDPBench extends ProblemTestBench<PDPState, NullType, PDPProblem> {
 
         public PDPBench() {
             super();
@@ -50,15 +49,17 @@ public class PDPTests {
         }
 
         @Override
-        protected SolverConfig<PDPState, Integer> configSolver(PDPProblem problem) {
-            PDPRelax relax = new PDPRelax(problem);
-            PDPRanking ranking = new PDPRanking();
-            PDPFastUpperBound fub = new PDPFastUpperBound(problem);
-            VariableHeuristic<PDPState> varh = new DefaultVariableHeuristic<>();
-            Frontier<PDPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<PDPState> dominanceChecker = new DefaultDominanceChecker<>();
+        protected SolverConfig<PDPState, NullType> configSolver(PDPProblem problem) {
+            SolverConfig<PDPState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new PDPRelax(problem);
+            config.ranking = new PDPRanking();
+            config.fub = new PDPFastUpperBound(problem);
+            config.width = new FixedWidth<>(maxWidth);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
     }
 
@@ -68,6 +69,8 @@ public class PDPTests {
         var bench = new PDPBench();
         bench.testRelaxation = true;
         bench.testFUB = true;
+        bench.minWidth = 45;
+        bench.maxWidth = 50;
         return bench.generateTests();
     }
 }

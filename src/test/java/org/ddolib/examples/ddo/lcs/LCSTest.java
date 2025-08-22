@@ -1,17 +1,16 @@
 package org.ddolib.examples.ddo.lcs;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class LCSTest {
-    private static class LCSBench extends ProblemTestBench<LCSState, Integer, LCSProblem> {
+    private static class LCSBench extends ProblemTestBench<LCSState, NullType, LCSProblem> {
 
         public LCSBench() {
             super();
@@ -48,15 +47,17 @@ public class LCSTest {
         }
 
         @Override
-        protected SolverConfig<LCSState, Integer> configSolver(LCSProblem problem) {
-            LCSRelax relax = new LCSRelax(problem);
-            LCSRanking ranking = new LCSRanking();
-            LCSFastUpperBound fub = new LCSFastUpperBound(problem);
+        protected SolverConfig<LCSState, NullType> configSolver(LCSProblem problem) {
+            SolverConfig<LCSState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new LCSRelax(problem);
+            config.ranking = new LCSRanking();
+            config.fub = new LCSFastUpperBound(problem);
 
-            VariableHeuristic<LCSState> varh = new DefaultVariableHeuristic<>();
-            Frontier<LCSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<LCSState> dominanceChecker = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            config.width = new FixedWidth<>(maxWidth);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            return config;
         }
     }
 

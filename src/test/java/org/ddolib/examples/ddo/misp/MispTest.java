@@ -1,17 +1,16 @@
 package org.ddolib.examples.ddo.misp;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -21,7 +20,7 @@ import java.util.stream.Stream;
 
 public class MispTest {
 
-    private static class MispBench extends ProblemTestBench<BitSet, Integer, MispProblem> {
+    private static class MispBench extends ProblemTestBench<BitSet, NullType, MispProblem> {
 
 
         public MispBench() {
@@ -49,14 +48,17 @@ public class MispTest {
         }
 
         @Override
-        protected SolverConfig<BitSet, Integer> configSolver(MispProblem problem) {
-            MispRelax relax = new MispRelax(problem);
-            MispRanking ranking = new MispRanking();
-            MispFastUpperBound fub = new MispFastUpperBound(problem);
-            VariableHeuristic<BitSet> varh = new DefaultVariableHeuristic<>();
-            Frontier<BitSet> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<BitSet> dominanceChecker = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+        protected SolverConfig<BitSet, NullType> configSolver(MispProblem problem) {
+            SolverConfig<BitSet, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new MispRelax(problem);
+            config.ranking = new MispRanking();
+            config.fub = new MispFastUpperBound(problem);
+            config.width = new FixedWidth<>(maxWidth);
+            config.varh = new DefaultVariableHeuristic<>();
+
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            return config;
         }
     }
 

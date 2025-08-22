@@ -1,14 +1,13 @@
 package org.ddolib.examples.ddo.tstptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.examples.ddo.tsptw.*;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -50,16 +49,17 @@ public class TSPTWTests {
 
         @Override
         protected SolverConfig<TSPTWState, TSPTWDominanceKey> configSolver(TSPTWProblem problem) {
-            TSPTWRelax relax = new TSPTWRelax(problem);
-            TSPTWRanking ranking = new TSPTWRanking();
-            TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
+            SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new TSPTWRelax(problem);
+            config.ranking = new TSPTWRanking();
+            config.fub = new TSPTWFastUpperBound(problem);
 
-            VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-            SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
-                    new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-            Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
+            config.width = new FixedWidth<>(20);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            return config;
         }
     }
 

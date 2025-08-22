@@ -1,16 +1,17 @@
 package org.ddolib.examples.ddo.tsp;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 
 public class TSPTests {
 
-    private static class TSPBench extends ProblemTestBench<TSPState, Integer, TSPProblem> {
+    private static class TSPBench extends ProblemTestBench<TSPState, NullType, TSPProblem> {
 
         public TSPBench() {
             super();
@@ -43,15 +44,18 @@ public class TSPTests {
         }
 
         @Override
-        protected SolverConfig<TSPState, Integer> configSolver(TSPProblem problem) {
-            TSPRelax relax = new TSPRelax(problem);
-            TSPRanking ranking = new TSPRanking();
-            TSPFastUpperBound fub = new TSPFastUpperBound(problem);
-            VariableHeuristic<TSPState> varh = new DefaultVariableHeuristic<>();
-            SimpleFrontier<TSPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<TSPState> dominanceChecker = new DefaultDominanceChecker<>();
+        protected SolverConfig<TSPState, NullType> configSolver(TSPProblem problem) {
+            SolverConfig<TSPState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new TSPRelax(problem);
+            config.ranking = new TSPRanking();
+            config.fub = new TSPFastUpperBound(problem);
+            config.width = new FixedWidth<>(500);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.cache = new SimpleCache<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
     }
 

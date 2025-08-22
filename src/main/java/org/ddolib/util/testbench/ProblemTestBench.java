@@ -1,9 +1,12 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -47,6 +50,16 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     public boolean testDominance = false;
 
     /**
+     * The minimum width of mdd to test with the relaxation.
+     */
+    public int minWidth = 2;
+
+    /**
+     * The maximum width of mdd to test with the relaxation.
+     */
+    public int maxWidth = 20;
+
+    /**
      * Generates {@link Problem} instances to test.
      *
      * @return A list of problems used for tests.
@@ -73,29 +86,22 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * Instantiate a solver used for tests not based on the relaxation. By default, it
      * returns an {@link ExactSolver}.
      *
-     * @param config  The configuration of the solver.
-     * @param problem The problem to solve
-     * @param <U>     The type of the dominance key
+     * @param config The configuration of the solver.
      * @return A solver using the given config to solve the input problem.
      */
-    protected <U> Solver solverForTests(SolverConfig<T, U> config, P problem) {
-        return new ExactSolver<>(problem, config.relax(), config.varh(),
-                config.ranking(), config.fub(), config.dominance());
+    protected Solver solverForTests(SolverConfig<T, K> config) {
+        return new ExactSolver<>(config);
     }
 
     /**
      * Instantiates a solver used for tests based on the relaxation. By default, it returns a
      * {@link SequentialSolver}.
      *
-     * @param config  The configuration of the solver.
-     * @param problem The problem to solve
-     * @param <U>     The type of the dominance key
+     * @param config The configuration of the solver.
      * @return A solver using the given config to solve the input problem.
      */
-    protected <U> Solver solverForRelaxation(SolverConfig<T, U> config, P problem) {
-        FixedWidth<T> width = new FixedWidth<>(config.maxWidth());
-        return new SequentialSolver<>(problem, config.relax(), config.varh(),
-                config.ranking(), width, config.frontier(), config.fub(), config.dominance(), Integer.MAX_VALUE, 0.0);
+    protected <U> Solver solverForRelaxation(SolverConfig<T, K> config) {
+        return new SequentialSolver<>(config);
     }
 
     /**
@@ -103,14 +109,15 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * <p>
      * <b>Note:</b> By default the tests here disable the fast upper bound. If one of the two
      * mechanism  is needed (e.g. for A* solver), be sure to configure by overriding the
-     * {@link #solverForTests(SolverConfig, Problem)} method.
+     * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
+        config.fub = new DefaultFastUpperBound<>();
 
-        Solver solver = solverForTests(config.withDefaultFUB().withDefaultDominance(), problem);
+        Solver solver = solverForTests(config);
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
     }
@@ -123,14 +130,15 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFub(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = solverForTests(config.withDefaultDominance(), problem);
+        config.dominance = new DefaultDominanceChecker<>();
+        Solver solver = solverForTests(config);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        double rub = config.fub().fastUpperBound(problem.initialState(), vars);
+        double rub = config.fub.fastUpperBound(problem.initialState(), vars);
         DecimalFormat df = new DecimalFormat("#.##########");
         assertTrue(rub >= problem.optimalValue().get(),
                 String.format("Upper bound %s is not bigger than the expected optimal solution %s",
@@ -148,8 +156,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testRelaxation(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        for (int w = config.minWidth(); w <= config.maxWidth(); w++) {
-            Solver solver = solverForRelaxation(config.withWidth(w).withDefaultFUB().withDefaultDominance(), problem);
+        config.dominance = new DefaultDominanceChecker<>();
+        config.fub = new DefaultFastUpperBound<>();
+        for (int w = minWidth; w <= maxWidth; w++) {
+            config.width = new FixedWidth<>(w);
+            Solver solver = solverForRelaxation(config);
 
             solver.maximize();
             assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
@@ -164,8 +175,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFubOnRelaxedNodes(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        for (int w = config.minWidth(); w <= config.maxWidth(); w++) {
-            Solver solver = solverForRelaxation(config.withWidth(w).withDefaultDominance(), problem);
+        config.dominance = new DefaultDominanceChecker<>();
+        for (int w = minWidth; w <= maxWidth; w++) {
+            config.width = new FixedWidth<>(w);
+            Solver solver = solverForRelaxation(config);
 
             solver.maximize();
             assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
@@ -179,7 +192,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = solverForTests(config.withDefaultFUB(), problem);
+        config.fub = new DefaultFastUpperBound<>();
+        Solver solver = solverForTests(config);
 
         solver.maximize();
         assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);

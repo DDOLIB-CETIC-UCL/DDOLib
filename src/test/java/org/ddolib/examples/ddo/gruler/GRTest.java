@@ -1,27 +1,23 @@
 package org.ddolib.examples.ddo.gruler;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.DefaultFastUpperBound;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GRTest {
 
-    private static class GRBench extends ProblemTestBench<GRState, Integer, GRProblem> {
+    private static class GRBench extends ProblemTestBench<GRState, NullType, GRProblem> {
 
         public GRBench() {
             super();
@@ -35,14 +31,15 @@ public class GRTest {
         }
 
         @Override
-        protected SolverConfig<GRState, Integer> configSolver(GRProblem problem) {
-            GRRelax relax = new GRRelax();
-            GRRanking ranking = new GRRanking();
-            VariableHeuristic<GRState> varh = new DefaultVariableHeuristic<>();
-            Frontier<GRState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            FastUpperBound<GRState> fub = new DefaultFastUpperBound<>();
-            DominanceChecker<GRState, Integer> dominance = new DefaultDominanceChecker<>();
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
+        protected SolverConfig<GRState, NullType> configSolver(GRProblem problem) {
+            SolverConfig<GRState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new GRRelax();
+            config.ranking = new GRRanking();
+            config.width = new FixedWidth<>(10);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            return config;
         }
     }
 

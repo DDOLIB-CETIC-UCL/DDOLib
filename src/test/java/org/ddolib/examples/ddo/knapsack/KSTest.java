@@ -1,12 +1,12 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -48,15 +48,17 @@ public class KSTest {
 
         @Override
         protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            KSRelax relax = new KSRelax();
-            KSFastUpperBound fub = new KSFastUpperBound(problem);
-            KSRanking ranking = new KSRanking();
-            VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
-            SimpleFrontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            SimpleDominanceChecker<Integer, Integer> dominanceChecker =
-                    new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            SolverConfig<Integer, Integer> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new KSRelax();
+            config.ranking = new KSRanking();
+            config.width = new FixedWidth<>(10);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.fub = new KSFastUpperBound(problem);
+            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
     }
 

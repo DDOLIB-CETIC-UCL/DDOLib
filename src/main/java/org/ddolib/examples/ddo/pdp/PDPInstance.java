@@ -32,12 +32,12 @@ public class PDPInstance {
         double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {
             toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
-            if(pickupToAssociatedDelivery.containsKey(solution[i])) {
+            if (pickupToAssociatedDelivery.containsKey(solution[i])) {
                 vehicleContent += 1;
-            }else if (deliveryToAssociatedPickup.containsKey(solution[i])){
+            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {
                 vehicleContent -= 1;
             }
-            if(vehicleContent > maxCapa) {
+            if (vehicleContent > maxCapa) {
                 return -1;
             }
         }
@@ -70,6 +70,8 @@ public class PDPInstance {
             unrelatedNodes.remove(d);
             deliveryToAssociatedPickup.put(d, p);
         }
+
+        this.optimal = -1;
     }
 
     public PDPInstance(String fileName) throws IOException {
@@ -115,6 +117,7 @@ public class PDPInstance {
         this.optimal = opti.isPresent() ? opti.getAsDouble() : -1;
 
         this.unrelatedNodes = new HashSet<>(IntStream.range(0, n).boxed().toList());
+        this.maxCapa = Integer.MAX_VALUE;
 
         deliveryToAssociatedPickup = new HashMap<>();
         for (int p : pickupToAssociatedDelivery.keySet()) {

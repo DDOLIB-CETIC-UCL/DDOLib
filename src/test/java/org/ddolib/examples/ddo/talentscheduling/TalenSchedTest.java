@@ -1,17 +1,16 @@
 package org.ddolib.examples.ddo.talentscheduling;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +19,7 @@ import java.util.stream.Stream;
 
 public class TalenSchedTest {
 
-    private static class TSBench extends ProblemTestBench<TSState, Integer, TSProblem> {
+    private static class TSBench extends ProblemTestBench<TSState, NullType, TSProblem> {
 
         public TSBench() {
             super();
@@ -48,16 +47,18 @@ public class TalenSchedTest {
         }
 
         @Override
-        protected SolverConfig<TSState, Integer> configSolver(TSProblem problem) {
-            TSRelax relax = new TSRelax(problem);
-            TSRanking ranking = new TSRanking();
-            TSFastUpperBound fub = new TSFastUpperBound(problem);
+        protected SolverConfig<TSState, NullType> configSolver(TSProblem problem) {
+            SolverConfig<TSState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new TSRelax(problem);
+            config.ranking = new TSRanking();
+            config.fub = new TSFastUpperBound(problem);
 
-            VariableHeuristic<TSState> varh = new DefaultVariableHeuristic<>();
-            Frontier<TSState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            DefaultDominanceChecker<TSState> dominanceChecker = new DefaultDominanceChecker<>();
+            config.width = new FixedWidth<>(maxWidth);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
     }
 

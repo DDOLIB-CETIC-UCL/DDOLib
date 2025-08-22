@@ -3,13 +3,13 @@ package org.ddolib.examples.astar.knapsack;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.examples.ddo.knapsack.*;
+import org.ddolib.examples.ddo.knapsack.KSDominance;
+import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
+import org.ddolib.examples.ddo.knapsack.KSMain;
+import org.ddolib.examples.ddo.knapsack.KSProblem;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -51,21 +51,19 @@ public class KSTest {
 
         @Override
         protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            KSRelax relax = new KSRelax();
-            KSFastUpperBound fub = new KSFastUpperBound(problem);
-            KSRanking ranking = new KSRanking();
-            VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
-            SimpleFrontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-            SimpleDominanceChecker<Integer, Integer> dominanceChecker =
-                    new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            SolverConfig<Integer, Integer> config = new SolverConfig<>();
+            config.problem = problem;
+            config.fub = new KSFastUpperBound(problem);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
 
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominanceChecker);
+            return config;
         }
 
         @Override
-        protected <U> Solver solverForTests(SolverConfig<Integer, U> config, KSProblem problem) {
-            KSFastUpperBound fub = new KSFastUpperBound(problem);
-            return new AStarSolver<>(problem, config.varh(), fub, config.dominance());
+        protected Solver solverForTests(SolverConfig<Integer, Integer> config) {
+            config.fub = new KSFastUpperBound((KSProblem) config.problem);
+            return new AStarSolver<>(config);
         }
     }
 

@@ -1,15 +1,12 @@
 package org.ddolib.examples.ddo.msct;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.DefaultFastUpperBound;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.ddolib.util.testbench.SolverConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -41,16 +38,16 @@ class MSCTTest {
 
         @Override
         protected SolverConfig<MSCTState, Integer> configSolver(MSCTProblem problem) {
-            MSCTRelax relax = new MSCTRelax(problem);
-            MSCTRanking ranking = new MSCTRanking();
-            FastUpperBound<MSCTState> fub = new DefaultFastUpperBound<>();
+            SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new MSCTRelax(problem);
+            config.ranking = new MSCTRanking();
+            config.width = new FixedWidth<>(100);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
 
-            VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<>();
-            SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker<>(new MSCTDominance(),
-                    problem.nbVars());
-            Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-            return new SolverConfig<>(relax, varh, ranking, 2, 20, frontier, fub, dominance);
+            return config;
         }
 
         private Stream<MSCTProblem> problemWithFixedRelease() {
