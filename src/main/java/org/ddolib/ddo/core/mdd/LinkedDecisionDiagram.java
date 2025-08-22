@@ -309,6 +309,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         depthGlobalDD, node.value)) {
                     double fub = input.fub().fastUpperBound(state, variables);
                     double rub = saturatedAdd(node.value, fub);
+                    System.out.printf("state: %s - node value: %.0f - fub: %.0f - rub: %.0f\n",
+                            state, node.value, fub, rub);
                     node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
@@ -490,7 +492,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private void checkFub(int debugLevel) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
-            double lastValue = last.value;
+            double lastValue = 0.0;
             //For each node we save the longest path to last
             LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
             parent.put(last, 0.0);
@@ -508,7 +510,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         }
                     }
                     String failureMsg = String.format("Found node with upper bound (%s) lower than " +
-                            "its longest path (%s)", df.format(current.getKey().fub), df.format(lastValue));
+                                    "its longest path (%s)", df.format(current.getKey().fub),
+                            df.format(current.getValue()));
                     throw new RuntimeException(failureMsg);
                 }
 
@@ -708,9 +711,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         DecimalFormat df = new DecimalFormat("#.##########");
 
         String nodeStr = String.format(
-                "\"%s\nub: %s - value: %s\"",
+                "\"%s\nfub: %s - value: %s\"",
                 node.state,
-                df.format(node.ub),
+                df.format(node.ub - node.node.value),
                 df.format(node.node.value)
         );
 
