@@ -6,14 +6,22 @@ import org.ddolib.modeling.Problem;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class PDPProblem implements Problem<PDPState> {
     PDPInstance instance;
     public int n;
+    private Optional<Double> optimal;
+
+    /**
+     * A name to ease the readability of the tests.
+     */
+    private Optional<String> name = Optional.empty();
 
     public PDPProblem(PDPInstance instance) {
         this.instance = instance;
         this.n = instance.n;
+        this.optimal = instance.optimal == -1 ? Optional.empty() : Optional.of(instance.optimal);
     }
 
     @Override
@@ -112,8 +120,17 @@ public class PDPProblem implements Problem<PDPState> {
                 .getAsDouble();
     }
 
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
     @Override
     public String toString() {
-        return instance.toString();
+        return name.orElse(instance.toString());
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 }

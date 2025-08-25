@@ -4,20 +4,25 @@ package org.ddolib.examples.ddo.tsp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class TSPProblem implements Problem<TSPState> {
 
     final int n;
     final double[][] distanceMatrix;
 
+    private Optional<Double> optimal = Optional.empty();
+
+    /**
+     * A name to ease the readability of the tests.
+     */
+    private Optional<String> name = Optional.empty();
+
     @Override
     public String toString() {
-        return "TSP(n:" + n + "\n" +
+        String defaultStr = "TSP(n:" + n + "\n" +
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
+        return name.orElseGet(defaultStr::toString);
     }
 
     public double eval(int[] solution) {
@@ -32,6 +37,16 @@ public class TSPProblem implements Problem<TSPState> {
     public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
+    }
+
+    public TSPProblem(final double[][] distanceMatrix, double optimal) {
+        this.distanceMatrix = distanceMatrix;
+        this.n = distanceMatrix.length;
+        this.optimal = Optional.of(optimal);
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
     }
 
     @Override
@@ -87,5 +102,10 @@ public class TSPProblem implements Problem<TSPState> {
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
                 .getAsDouble();
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 }

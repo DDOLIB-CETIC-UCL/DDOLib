@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class TSPTWInstance {
 
     public int[][] distance;
-    public TimeWindow[] timeWindows;
+    TimeWindow[] timeWindows;
     public Optional<Double> optimal = Optional.empty();
     public String name;
 
