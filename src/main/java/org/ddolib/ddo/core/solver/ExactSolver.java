@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
@@ -84,6 +85,9 @@ public final class ExactSolver<T, K> implements Solver {
      */
     private Optional<Set<Decision>> bestSol;
 
+    private final ReduceStrategy<T> relaxStrategy;
+    private final ReduceStrategy<T> restrictStrategy;
+
 
     /**
      * <ul>
@@ -140,6 +144,8 @@ public final class ExactSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.restrictStrategy = config.restrictStrategy;
+        this.relaxStrategy = config.relaxStrategy;
     }
 
     @Override
@@ -163,6 +169,7 @@ public final class ExactSolver<T, K> implements Solver {
                 dominance,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
+                this.restrictStrategy,
                 exportAsDot
         );
         mdd.compile(compilation);

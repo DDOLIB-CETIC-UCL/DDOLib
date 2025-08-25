@@ -4,6 +4,8 @@ import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -121,5 +123,8 @@ public class SolverConfig<T, K> {
      * Tooltips are configured to give additional information on nodes and edges.
      */
     public Boolean exportAsDot = false;
+
+    public ReduceStrategy<T> relaxStrategy = new CostBased<>(null);
+    public ReduceStrategy<T> restrictStrategy = new CostBased<>(null);
 
 }

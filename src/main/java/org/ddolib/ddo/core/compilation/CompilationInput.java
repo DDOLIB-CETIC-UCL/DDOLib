@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.compilation;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
@@ -38,6 +39,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,
+                                     ReduceStrategy<T> reduceStrategy,
                                      boolean exportAsDot) {
 
     /**

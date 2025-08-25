@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -201,11 +202,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * - turn an MDD node from the exact cutset into a subproblem which is used
      * by the API.
      */
-    private static final class NodeSubProblem<T> {
+    public static final class NodeSubProblem<T> {
         /**
          * The state associated to this node
          */
-        private final T state;
+        public final T state;
         /**
          * The actual node from the graph of decision diagrams
          */
@@ -222,6 +223,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             this.state = state;
             this.ub = ub;
             this.node = node;
+        }
+
+        public double getValue() {
+            return node.value;
         }
 
         /**
@@ -333,7 +338,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking);
+                        restrict(maxWidth, ranking, input.reduceStrategy());
                         break;
                     case Relaxed:
                         if (exact) {
@@ -342,7 +347,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 cutset.addAll(prevLayer.values());
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+                        relax(maxWidth, relax, input.reduceStrategy());
                         break;
                     case Exact:
                         /* nothing to do */
@@ -505,73 +510,73 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
+
      */
-    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
-        this.currentLayer.sort(ranking.reversed());
-        this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
+    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking, final ReduceStrategy<T> restrictStrategy) {
+        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+
+        for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.isEmpty()) continue;
+
+            cluster.sort(ranking.reversed());
+            currentLayer.add(cluster.getFirst());
+            cluster.clear();
+        }
     }
 
     /**
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
-        this.currentLayer.sort(ranking.reversed());
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReduceStrategy<T> relaxStrategy) {
+        List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
 
-        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
-        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
-
-        // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> node = null;
-        boolean fresh = true;
-        for (NodeSubProblem<T> n : keep) {
-            if (n.state.equals(merged)) {
-                node = n;
-                fresh = false;
-                break;
+        for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
             }
-        }
-        // when the merged node is new, set its type to relaxed
-        if (node == null) {
-            Node newNode = new Node(Double.NEGATIVE_INFINITY);
-            newNode.setNodeType(NodeType.RELAXED);
-            node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
-        }
 
-        // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : merge) {
-            node.ub = Math.max(node.ub, drop.ub);
+            if (cluster.isEmpty()) {
+                continue;
+            }
 
-            for (Edge e : drop.node.edges) {
-                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
-
-                double value = saturatedAdd(e.origin.value, rcost);
-                e.weight = rcost;
-                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.getNodeType() == NodeType.RELAXED) {
+            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            // System.out.println(merged);
+            NodeSubProblem<T> node = null;
+            for (NodeSubProblem<T> n: currentLayer) {
+                if (n.state.equals(merged)) {
+                    node = n;
                     node.node.setNodeType(NodeType.RELAXED);
-                }
-                node.node.edges.add(e);
-                if (value > node.node.value) {
-                    node.node.value = value;
-                    node.node.best = e;
+                    break;
                 }
             }
-        }
 
+            if (node == null) {
+                Node newNode = new Node(Double.NEGATIVE_INFINITY);
+                newNode.setNodeType(NodeType.RELAXED);
+                node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
+                currentLayer.add(node);
+            }
 
-        // delete the nodes that have been merged
-        merge.clear();
-        // append the newly merged node if needed
-        if (fresh) {
-            currentLayer.add(node);
+            for (NodeSubProblem<T> drop: cluster) {
+                node.ub = Math.max(node.ub, drop.ub);
+
+                for (Edge e : drop.node.edges) {
+                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+
+                    double value = saturatedAdd(e.origin.value, rcost);
+                    e.weight  = rcost;
+
+                    node.node.edges.add(e);
+                    if (value > node.node.value) {
+                        node.node.value = value;
+                        node.node.best  = e;
+                    }
+                }
+            }
         }
     }
 
@@ -797,13 +802,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.node.value - o2.node.value;
+            double cmp = o1.getValue() - o2.getValue();
             if (cmp == 0) {
                 return delegate.compare(o1.state, o2.state);
             } else {
-                return Double.compare(o1.node.value, o2.node.value);
+                return Double.compare(o1.getValue(), o2.getValue());
             }
         }
     }
+
 }
 
