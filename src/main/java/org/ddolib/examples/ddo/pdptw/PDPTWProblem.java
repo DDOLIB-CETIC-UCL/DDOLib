@@ -130,7 +130,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     public double transitionCost(PDPTWState state, Decision decision) {
         return -state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .mapToDouble(possibleCurrentNode -> instance.timeAndDistanceMatrix[possibleCurrentNode][decision.val()])
+                .mapToDouble(
+                        possibleCurrentNode -> instance.timeAndDistanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
                 .getAsDouble();
     }
