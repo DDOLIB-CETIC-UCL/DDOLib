@@ -10,6 +10,8 @@ import org.ddolib.modeling.Dominance;
  */
 public abstract class DominanceChecker<T, K> {
 
+    abstract public String getStatistics();
+
     protected final Dominance<T, K> dominance;
 
     protected DominanceChecker(Dominance<T, K> dominance) {

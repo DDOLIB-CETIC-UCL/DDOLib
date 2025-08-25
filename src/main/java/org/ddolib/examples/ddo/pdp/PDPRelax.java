@@ -15,7 +15,6 @@ class PDPRelax implements Relaxation<PDPState> {
 
     @Override
     public PDPState mergeStates(final Iterator<PDPState> states) {
-        //NB: the current node is normally the same in all states
         BitSet openToVisit = new BitSet(problem.n);
         BitSet current = new BitSet(problem.n);
         BitSet allToVisit = new BitSet(problem.n);

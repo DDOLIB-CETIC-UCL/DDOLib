@@ -10,6 +10,10 @@ import org.ddolib.modeling.DefaultDominance;
  */
 public class DefaultDominanceChecker<T> extends DominanceChecker<T, Integer> {
 
+    public String getStatistics(){
+        return "dominance:NoDominance";
+    }
+
     public DefaultDominanceChecker() {
         super(new DefaultDominance<>());
     }

@@ -13,6 +13,13 @@ import java.util.*;
  */
 public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
+    int nbTests = 0;
+    int nbHits = 0;
+
+    public String getStatistics(){
+        return "dominance:SimpleDominanceChecker(nbTests:" + nbTests + " nbHits:" + nbHits + ")";
+    }
+
     /**
      * Container for a state and the value of the longest path to this state
      */
@@ -71,6 +78,8 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
      */
     @Override
     public boolean updateDominance(T state, int depth, double objValue) {
+        nbTests += 1;
+
         Map<K, TreeSet<ValueState>> front = fronts.get(depth);
         K key = dominance.getKey(state);
         boolean dominated = false;
@@ -92,6 +101,8 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
         if (!dominated) {
             TreeSet<ValueState> set = front.computeIfAbsent(key, k -> new TreeSet<>());
             set.add(new ValueState(objValue, state));
+        }else{
+            nbHits += 1;
         }
         return dominated;
     }
