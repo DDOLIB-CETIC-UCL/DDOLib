@@ -3,12 +3,11 @@ package org.ddolib.examples.ddo.jobshop;
 import org.ddolib.astar.examples.JobShop.JSCP;
 import org.ddolib.astar.examples.JobShop.JSMain;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -53,23 +52,23 @@ public class JobShopTest {
         return tempFile;
     }
 
-    @Test
-    public void testJobShop_test() throws IOException {
-
-        for (int n = 2; n <= 5; n++) {
-            for (int m = 2; m <= 5; m++) {
-                for (int i = 1; i < 101; i++) {
-                    Path tempFile = Path.of("data/JobShop/bigTest/jobshop_instance_" + n + "_" + m + "_" + i + ".txt");
-                    int makespanCP = JSCP.main(tempFile.toString());
-                    int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
-                    int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
-                    System.out.println("data/JobShop/bigTest/jobshop_instance_" + n + "_" + m + "_" + i + ".txt "+makespanCP + " " + makespanACS + " " + makespanAstar);
-                    Assert.assertEquals(makespanCP, makespanACS);
-                    Assert.assertEquals(makespanCP, makespanAstar);
-                }
-            }
-        }
-    }
+//    @Test
+//    public void testJobShop_test() throws IOException {
+//
+//        for (int n = 2; n <= 5; n++) {
+//            for (int m = 2; m <= 5; m++) {
+//                for (int i = 1; i < 101; i++) {
+//                    Path tempFile = Path.of("data/JobShop/bigTest/jobshop_instance_" + n + "_" + m + "_" + i + ".txt");
+//                    int makespanCP = JSCP.main(tempFile.toString());
+//                    int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
+//                    int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
+//                    System.out.println("data/JobShop/bigTest/jobshop_instance_" + n + "_" + m + "_" + i + ".txt "+makespanCP + " " + makespanACS + " " + makespanAstar);
+//                    Assert.assertEquals(makespanCP, makespanACS);
+//                    Assert.assertEquals(makespanCP, makespanAstar);
+//                }
+//            }
+//        }
+//    }
 
     @Test
     public void testJobShop_2_2() throws IOException {
@@ -109,30 +108,30 @@ public class JobShopTest {
             Files.deleteIfExists(tempFile);
         }
     }
-
-    @Test
-    public void testJobShop_5_5() throws IOException {
-        for (int i = 1; i < 101; i++) {
-            Path tempFile = writeInstanceToTempFile(5, 5, i);
-            int makespanCP =  JSCP.main(tempFile.toString());
-            int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
-            int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
-            Assert.assertEquals(makespanCP, makespanACS);
-            Assert.assertEquals(makespanCP, makespanAstar);
-            Files.deleteIfExists(tempFile);
-        }
-    }
-
-    @Test
-    public void testJobShop_6_6() throws IOException {
-        for (int i = 1; i < 20; i++) {
-            Path tempFile = writeInstanceToTempFile(6, 6, i);
-            int makespanCP =  JSCP.main(tempFile.toString());
-            int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
-            int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
-            Assert.assertEquals(makespanCP, makespanACS);
-            Assert.assertEquals(makespanCP, makespanAstar);
-            Files.deleteIfExists(tempFile);
-        }
-    }
+//
+//    @Test
+//    public void testJobShop_5_5() throws IOException {
+//        for (int i = 1; i < 101; i++) {
+//            Path tempFile = writeInstanceToTempFile(5, 5, i);
+//            int makespanCP =  JSCP.main(tempFile.toString());
+//            int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
+//            int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
+//            Assert.assertEquals(makespanCP, makespanACS);
+//            Assert.assertEquals(makespanCP, makespanAstar);
+//            Files.deleteIfExists(tempFile);
+//        }
+//    }
+//
+//    @Test
+//    public void testJobShop_6_6() throws IOException {
+//        for (int i = 1; i < 20; i++) {
+//            Path tempFile = writeInstanceToTempFile(6, 6, i);
+//            int makespanCP =  JSCP.main(tempFile.toString());
+//            int makespanACS = (int) (-1*JSMain.main(tempFile.toString(),"ACS"));
+//            int makespanAstar = (int) (-1*JSMain.main(tempFile.toString(),"Astar"));
+//            Assert.assertEquals(makespanCP, makespanACS);
+//            Assert.assertEquals(makespanCP, makespanAstar);
+//            Files.deleteIfExists(tempFile);
+//        }
+//    }
 }

@@ -94,7 +94,7 @@ public class JSMain {
                         dominance,
                         timeLimit
                 );
-                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
+//                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
                 System.out.print(fileName + ";"+ searchName+ ";");
                 SearchStatistics stats = solverAstar.maximize(0, false);
                 System.out.println(stats);
@@ -107,9 +107,9 @@ public class JSMain {
                     10,
                     timeLimit
                 );
-                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
+//                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
                 System.out.print(fileName + ";"+ searchName+ ";");
-                SearchStatistics stats = solverACS.maximize(1, false);
+                SearchStatistics stats = solverACS.maximize(0, false);
                 System.out.println(stats);
             }else if (Objects.equals(searchName, "LNS")) {
                 JSProblem problemLNS = new JSProblem(instance);
@@ -118,7 +118,7 @@ public class JSMain {
                 final AstarDominanceChecker<JSState, BitSet> dominanceLNS = new AstarDominanceChecker<>(new JSDominance(problem), problem.nbVars());
                 problemLNS.addPrecedencesConstraint(preds);
                 final LNSSolver2<JSState, BitSet> lnsSolver = new LNSSolver2<>(problemLNS,varhLNS,fubLNS,dominanceLNS,10, timeLimit);
-                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
+//                System.out.println("Instance; Search; nbIterations; queueMaxSize; runTimeMS; SearchStatus; Gap; Obj");
                 System.out.print(fileName + ";"+ searchName + ";");
                 final Solver solverACSwLNS = acswLNS2Solver(
                         problem,
