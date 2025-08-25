@@ -2,7 +2,6 @@ package org.ddolib.examples.ddo.msct;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -50,13 +49,7 @@ public class MSCTCacheMain {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
 
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        int[] solution = solver.constructBestSolution(problem.nbVars());
 
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %d%n", solver.bestValue().get());

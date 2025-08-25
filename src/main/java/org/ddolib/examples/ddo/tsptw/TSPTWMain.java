@@ -66,13 +66,7 @@ public class TSPTWMain {
 
         String solutionStr;
         if (bestSol.isPresent()) {
-            int[] solution = bestSol.map(decisions -> {
-                int[] values = new int[problem.nbVars()];
-                for (Decision d : decisions) {
-                    values[d.var()] = d.val();
-                }
-                return values;
-            }).get();
+            int[] solution = solver.constructBestSolution(problem.nbVars());
             solutionStr = "0 -> " + Arrays.stream(solution)
                     .mapToObj(String::valueOf)
                     .collect(Collectors.joining(" -> "));
