@@ -487,10 +487,17 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
+
+    /**
+     * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
+     * This method constructs longest path from terminal nodes and checks for each node the mdd
+     * if the associated fast upper bound if bigger than the identified path.
+     *
+     * @param debugLevel If >= 2, export the current mdd as .dot file if an error is detected.
+     */
     private void checkFub(int debugLevel) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
-            double lastValue = 0.0;
             //For each node we save the longest path to last
             LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
             parent.put(last, 0.0);
@@ -521,7 +528,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
-    // ILITY METHODS -----------------------------------------------
+    // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {

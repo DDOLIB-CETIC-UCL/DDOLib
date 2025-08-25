@@ -129,6 +129,14 @@ public final class AStarSolver<T, K> implements Solver {
 
     }
 
+    /**
+     * Internal constructor used for debug. The solver start the search from a node of the main
+     * search. For testing purpose, this constructor assumes that the path to the given node has
+     * 0 length.
+     *
+     * @param config  All parameters needed ton configure the solver
+     * @param rootKey The state and the depth from which start the search.
+     */
     private AStarSolver(
             SolverConfig<T, K> config,
             AstarKey<T> rootKey
@@ -207,6 +215,12 @@ public final class AStarSolver<T, K> implements Solver {
     }
 
     /**
+     * Construct the root of a problem given the state, the value and the depth of the root node.
+     * A non-zero depth is used for debug. For debug, the value of root is 0.
+     *
+     * @param state The states of the current root.
+     * @param value The value of the current root.
+     * @param depth Used only for debug. The depth of the subproblem root in the main search.
      * @return the root subproblem
      */
     private SubProblem<T> constructRoot(T state, double value, int depth) {
@@ -277,6 +291,9 @@ public final class AStarSolver<T, K> implements Solver {
         return set;
     }
 
+    /**
+     * Checks if the upper bound of explored nodes of the search is admissible.
+     */
     private void checkFUBAdmissibility() {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
@@ -307,6 +324,13 @@ public final class AStarSolver<T, K> implements Solver {
         }
     }
 
+    /**
+     * Given the current node and one of its successor. Checks if the upper bound is consistent.
+     *
+     * @param current        The current node.
+     * @param next           A successor of the current node.
+     * @param transitionCost The transition cost from {@code current} to {@code next}.
+     */
     private void checkFUBConsistency(
             SubProblem<T> current,
             SubProblem<T> next,
@@ -323,6 +347,13 @@ public final class AStarSolver<T, K> implements Solver {
 
     }
 
+    /**
+     * Class containing a state and its depth in the main search.
+     *
+     * @param state A state of the solved problem.
+     * @param depth The depth of the input state in the main search.
+     * @param <T>   The type of the state.
+     */
     private record AstarKey<T>(T state, int depth) {
     }
 }
