@@ -2,18 +2,16 @@ package org.ddolib.examples.ddo.msct;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.ddolib.factory.Solvers.sequentialSolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MSCTTest {
@@ -38,32 +36,19 @@ class MSCTTest {
 
     public double solve(MSCTData data, int w) {
         MSCTProblem problem = new MSCTProblem(data.release, data.processing);
-        final MSCTRelax relax = new MSCTRelax(problem);
-        final MSCTRanking ranking = new MSCTRanking();
-        final FixedWidth<MSCTState> width = new FixedWidth<>(w);
-        final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker<MSCTState, Integer> dominance = new SimpleDominanceChecker<>(new MSCTDominance(),
-                problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
+        SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        System.out.println(Arrays.toString(problem.release));
+        System.out.println(Arrays.toString(problem.processing));
+        config.relax = new MSCTRelax(problem);
+        config.ranking = new MSCTRanking();
+        config.width = new FixedWidth<>(100);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
+        final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
-
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
 
         return -solver.bestValue().get();
     }

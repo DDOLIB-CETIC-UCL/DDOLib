@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -47,10 +48,10 @@ import java.util.Set;
  * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
  * EASY TO COMPLETE.
  *
- * @param <K> the type of key
  * @param <T> the type of state
+ * @param <K> the type of key
  */
-public final class SequentialSolverWithCache<K, T> implements Solver {
+public final class SequentialSolverWithCache<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
@@ -131,77 +132,84 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
     private SimpleCache<T> cache;
 
     /**
-     * Draw the first DD if activate this boolean
-     */
-    private boolean exportAsDot;
-    /**
      * Add a time limit for the search, by default it is set to infinity
      */
-    private int timeLimit = Integer.MAX_VALUE;
+    private final int timeLimit;
 
     /**
      * Add a gap limit for the search, by default it is set to zero
      */
-    private double gapLimit = 0.0;
+    private final double gapLimit;
+
 
     /**
-     * Creates a fully qualified instance
-     *
-     * @param problem   The problem we want to maximize.
-     * @param relax     A suitable relaxation for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param ranking   A heuristic to identify the most promising nodes.
-     * @param width     A heuristic to choose the maximum width of the DD you compile.
-     * @param frontier  The set of nodes that must still be explored before
-     *                  the problem can be considered 'solved'.
-     *                  <p>
-     *                  # Note:
-     *                  This fringe orders the nodes by upper bound (so the highest ub is going
-     *                  to pop first). So, it is guaranteed that the upper bound of the first
-     *                  node being popped is an upper bound on the value reachable by exploring
-     *                  any of the nodes remaining on the fringe. As a consequence, the
-     *                  exploration can be stopped as soon as a node with an ub &#8804; current best
-     *                  lower bound is popped.
-     * @param dominance The dominance object that will be used to prune the search space.
-     * @param cache    The cache used to prune the search space.
-     * @param timeLimit The budget of time give to the solver to solve the problem.
-     * @param gapLimit  The stop the search when the gat of the search reach the limit.
+     * <ul>
+     *     <li>0: no verbosity</li>
+     *     <li>1: display newBest whenever there is a newBest</li>
+     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
+     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>4: 3 + details about the developed state</li>
+     * </ul>
+     * <p>
+     * <p>
+     * 3: 2 + every developed sub-problem
+     * 4: 3 + details about the developed state
      */
-    public SequentialSolverWithCache(
-            final Problem<T> problem,
-            final Relaxation<T> relax,
-            final VariableHeuristic<T> varh,
-            final StateRanking<T> ranking,
-            final WidthHeuristic<T> width,
-            final Frontier<T> frontier,
-            FastUpperBound<T> fub,
-            final DominanceChecker<T,K> dominance,
-            final SimpleCache<T> cache,
-            final int timeLimit,
-            final double gapLimit) {
-        this.problem = problem;
-        this.relax = relax;
-        this.varh = varh;
-        this.ranking = ranking;
-        this.width = width;
-        this.fub = fub;
-        this.dominance = dominance;
-        this.cache = cache;
-        this.frontier = frontier;
+    private final int verbosityLevel;
+
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
+    private final boolean exportAsDot;
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *     <li>An implementation of {@link Relaxation}</li>
+     *     <li>An implementation of {@link StateRanking}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     *     <li>An implementation of {@link WidthHeuristic}</li>
+     *     <li>An implementation of {@link Frontier}</li>
+     *     <li>An instance of {@link SimpleCache}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A time limit</li>
+     *     <li>A gap limit</li>
+     *     <li>A verbosity level</li>
+     *     <li>A boolean to export some mdd as .dot file</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
+     */
+    public SequentialSolverWithCache(SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.relax = config.relax;
+        this.varh = config.varh;
+        this.ranking = config.ranking;
+        this.width = config.width;
+        this.fub = config.fub;
+        this.dominance = config.dominance;
+        this.cache = config.cache;
+        this.frontier = config.frontier;
         this.mdd = new LinkedDecisionDiagramWithCache<T, K>();
         this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
-        this.timeLimit = timeLimit;
-        this.gapLimit = gapLimit;
+        this.timeLimit = config.timeLimit;
+        this.gapLimit = config.gapLimit;
+        this.verbosityLevel = config.verbosityLevel;
+        this.exportAsDot = config.exportAsDot;
     }
 
     @Override
     public SearchStatistics maximize() {
-        return maximize(0, false);
-    }
-
-    @Override
-    public SearchStatistics maximize(int verbosityLevel, boolean exportAsDot) {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;
@@ -231,16 +239,16 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
 
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(),cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(),cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
             }
 
 
-            if (verbosityLevel >= 3){
+            if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub.statistics());
-                if(verbosityLevel >= 4) {
+                if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
                 }
             }
@@ -248,7 +256,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap,cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, cache.stats());
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -320,7 +328,7 @@ public final class SequentialSolverWithCache<K, T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize,end-start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, cache.stats());
+        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, cache.stats());
     }
 
     @Override
