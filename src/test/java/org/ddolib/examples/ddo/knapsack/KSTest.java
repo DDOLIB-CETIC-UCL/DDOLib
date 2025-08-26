@@ -16,8 +16,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
-import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverDistance;
-import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverState;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

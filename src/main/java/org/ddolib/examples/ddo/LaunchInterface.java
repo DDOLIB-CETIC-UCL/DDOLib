@@ -22,6 +22,7 @@ import org.ddolib.modeling.DefaultFastUpperBound;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ public class LaunchInterface {
     static final String DEFAULT_SOLVER = "sequential";
     static final String DEFAULT_CUTSET = "layer";
     static final String DEFAULT_CLUSTER = "Cost";
+    static final int DEFAULT_KMEANS_ITER = 50;
 
     public static void main(String[] args) {
         String quotedValidProblem = problemMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
@@ -82,6 +84,9 @@ public class LaunchInterface {
         options.addOption(Option.builder().longOpt("csv").argName("CSVFILE").hasArg()
                 .desc("Csv file to store stats").build());
 
+        options.addOption(Option.builder().longOpt("kmeans-iter").argName("NBR_ITERATION").hasArg()
+                .desc("Maximal number of iterations for the kmean algorithm (default is 50)").build());
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
@@ -96,6 +101,7 @@ public class LaunchInterface {
         int timeLimit = DEFAULT_TIME_LIMIT;
         double widthFactor = DEFAULT_WIDTH_FACTOR;
         int seed = DEFAULT_SEED;
+        int kmeansIter = DEFAULT_KMEANS_ITER;
         String solverStr = DEFAULT_SOLVER;
         String cutSetStr = DEFAULT_CUTSET;
         String relaxStratStr = DEFAULT_CLUSTER;
@@ -141,6 +147,10 @@ public class LaunchInterface {
                 widthFactor = Double.parseDouble(cmd.getOptionValue("width-factor"));
             }
 
+            if (cmd.hasOption("kmeans-iter")) {
+                kmeansIter = Integer.parseInt(cmd.getOptionValue("kmeans-iter"));
+            }
+
         } catch (IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());
             HelpFormatter formatter = new HelpFormatter();
@@ -168,7 +178,11 @@ public class LaunchInterface {
 
         switch (relaxStrat) {
             case Cost -> config.relaxStrategy = new CostBased(config.ranking);
-            case Kmeans -> config.relaxStrategy = new Kmeans(config.coordinates);
+            case Kmeans -> {
+                Kmeans relaxStrategy = new Kmeans(config.coordinates);
+                relaxStrategy.setMaxIterations(kmeansIter);
+                config.relaxStrategy = relaxStrategy;
+            }
             case GHPMDP -> {
                 GHP relaxStrategy = new GHP(config.distance);
                 relaxStrategy.setMostDistantPivot(true);
@@ -185,7 +199,11 @@ public class LaunchInterface {
 
         switch (restrictionStrat) {
             case Cost -> config.restrictStrategy = new CostBased(config.ranking);
-            case Kmeans -> config.restrictStrategy = new Kmeans(config.coordinates);
+            case Kmeans -> {
+                Kmeans restrictStrategy = new Kmeans(config.coordinates);
+                restrictStrategy.setMaxIterations(kmeansIter);
+                config.restrictStrategy = restrictStrategy;
+            }
             case GHPMDP -> {
                 GHP restrictStrategy = new GHP(config.distance);
                 restrictStrategy.setMostDistantPivot(true);
@@ -210,6 +228,11 @@ public class LaunchInterface {
         }
 
         SearchStatistics stats = solver.maximize();
+
+        System.out.printf("Duration : %d%n", stats.runTimeMS());
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
+        System.out.printf("Status : %s%n", stats.SearchStatus());
+        System.out.printf("Iteration: %d%n", stats.nbIterations());
 
         if (cmd.hasOption("csv")) {
             StringBuilder statsString = new StringBuilder();
