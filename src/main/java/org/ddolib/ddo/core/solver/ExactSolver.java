@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
@@ -85,8 +85,8 @@ public final class ExactSolver<T, K> implements Solver {
      */
     private Optional<Set<Decision>> bestSol;
 
-    private final ReduceStrategy<T> relaxStrategy;
-    private final ReduceStrategy<T> restrictStrategy;
+    private final ReductionStrategy<T> relaxStrategy;
+    private final ReductionStrategy<T> restrictStrategy;
 
 
     /**

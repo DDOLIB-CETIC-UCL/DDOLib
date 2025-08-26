@@ -6,6 +6,9 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -44,6 +47,48 @@ public class KSTest {
         config.varh = new DefaultVariableHeuristic<>();
         config.fub = new KSFastUpperBound(problem);
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        config.restrictStrategy = new CostBased<>(config.ranking);
+
+        final Solver solver = new SequentialSolver<>(config);
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackGHP(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new GHP<>(new KSDistance());
+        config.restrictStrategy = config.relaxStrategy;
+
+        final Solver solver = new SequentialSolver<>(config);
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackKmeans(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new Kmeans<>(new KSCoordinates());
+        config.restrictStrategy = config.relaxStrategy;
 
         final Solver solver = new SequentialSolver<>(config);
 

@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -338,7 +338,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 switch (input.compilationType()) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking, input.reduceStrategy());
+                        restrict(maxWidth, ranking, input.reductionStrategy());
                         break;
                     case Relaxed:
                         if (exact) {
@@ -347,7 +347,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 cutset.addAll(prevLayer.values());
                             }
                         }
-                        relax(maxWidth, relax, input.reduceStrategy());
+                        relax(maxWidth, relax, input.reductionStrategy());
                         break;
                     case Exact:
                         /* nothing to do */
@@ -512,7 +512,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param maxWidth the maximum tolerated layer width
 
      */
-    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking, final ReduceStrategy<T> restrictStrategy) {
+    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
         for (List<NodeSubProblem<T>> cluster: clusters) {
@@ -530,7 +530,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param maxWidth the maximum tolerated layer width
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final Relaxation<T> relax, final ReduceStrategy<T> relaxStrategy) {
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
 
         for (List<NodeSubProblem<T>> cluster: clusters) {

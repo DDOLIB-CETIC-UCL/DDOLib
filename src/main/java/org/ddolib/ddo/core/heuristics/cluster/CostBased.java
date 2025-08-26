@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class CostBased<T> implements ReduceStrategy<T>{
+/**
+ * This strategies compose
+ * @param <T>
+ */
+public class CostBased<T> implements ReductionStrategy<T> {
 
     private NodeSubroblemComparator<T> ranking;
 

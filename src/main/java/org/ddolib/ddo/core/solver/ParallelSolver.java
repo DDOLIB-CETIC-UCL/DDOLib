@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -466,8 +466,8 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
-        private final ReduceStrategy<T> relaxStrategy;
-        private final ReduceStrategy<T> restrictStrategy;
+        private final ReductionStrategy<T> relaxStrategy;
+        private final ReductionStrategy<T> restrictStrategy;
 
         public Shared(
                 final int nbThreads,
@@ -478,8 +478,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 final WidthHeuristic<T> width,
                 FastUpperBound<T> fub,
                 final DominanceChecker<T, K> dominance,
-                final ReduceStrategy<T> relaxStrategy,
-                final ReduceStrategy<T> restrictStrategy) {
+                final ReductionStrategy<T> relaxStrategy,
+                final ReductionStrategy<T> restrictStrategy) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;

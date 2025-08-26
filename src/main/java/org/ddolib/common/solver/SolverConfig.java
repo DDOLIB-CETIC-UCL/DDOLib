@@ -5,7 +5,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.ReduceStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -124,7 +124,7 @@ public class SolverConfig<T, K> {
      */
     public Boolean exportAsDot = false;
 
-    public ReduceStrategy<T> relaxStrategy = new CostBased<>(null);
-    public ReduceStrategy<T> restrictStrategy = new CostBased<>(null);
+    public ReductionStrategy<T> relaxStrategy = new CostBased<>(this.ranking);
+    public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
 
 }
