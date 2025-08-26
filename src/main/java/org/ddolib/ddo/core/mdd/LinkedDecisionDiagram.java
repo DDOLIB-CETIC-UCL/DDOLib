@@ -103,6 +103,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
          */
         private boolean isMarked;
 
+        /**
+         * An overapproximation of the longest from this node to a terminal node
+         */
         private double fub = Double.POSITIVE_INFINITY;
 
         /**
@@ -126,6 +129,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             this.type = nodeType;
         }
 
+        /**
+         * Set the value of {@code fub}.
+         *
+         * @param fub The new value of {@code fub}.
+         */
         public void setFub(final double fub) {
             this.fub = fub;
         }
