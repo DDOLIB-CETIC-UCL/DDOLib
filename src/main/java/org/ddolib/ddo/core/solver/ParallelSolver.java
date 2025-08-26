@@ -466,7 +466,14 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
+        /**
+         * Strategy to select which nodes should be merged together on a relaxed DD.
+         */
         private final ReductionStrategy<T> relaxStrategy;
+
+        /**
+         * Strategy to select which nodes should be dropped on a restricted DD.
+         */
         private final ReductionStrategy<T> restrictStrategy;
 
         public Shared(

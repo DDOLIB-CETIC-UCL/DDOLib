@@ -515,6 +515,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
+        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
         for (List<NodeSubProblem<T>> cluster: clusters) {
             if (cluster.isEmpty()) continue;
 
@@ -533,6 +534,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
 
+        // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());

@@ -159,7 +159,14 @@ public final class SequentialSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
     private final ReductionStrategy<T> relaxStrategy;
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
     private final ReductionStrategy<T> restrictStrategy;
 
     /**

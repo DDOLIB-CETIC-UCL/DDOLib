@@ -124,7 +124,14 @@ public class SolverConfig<T, K> {
      */
     public Boolean exportAsDot = false;
 
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
     public ReductionStrategy<T> relaxStrategy = new CostBased<>(this.ranking);
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
     public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
 
 }
