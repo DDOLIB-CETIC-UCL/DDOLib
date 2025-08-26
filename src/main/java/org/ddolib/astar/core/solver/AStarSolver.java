@@ -107,7 +107,13 @@ public final class AStarSolver<T, K> implements Solver {
      * <ul>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A verbosity level</li>
-     *     <li>A debug level</li>
+     *     <li>A debug level:
+     *          <ul>
+     *              <li>0: no debug (default) </li>
+     *              <li>1: check if the upper bound is admissible.</li>
+     *              <li>2: 1 + check if the upper bound is consistent.</li>
+     *          </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -256,7 +262,7 @@ public final class AStarSolver<T, K> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
-                if (debugLevel >= 1) {
+                if (debugLevel >= 2) {
                     checkFUBConsistency(subProblem, newSub, cost);
                 }
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());

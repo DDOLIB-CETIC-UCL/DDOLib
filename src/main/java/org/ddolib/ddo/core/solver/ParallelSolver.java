@@ -105,7 +105,13 @@ public final class ParallelSolver<T, K> implements Solver {
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
-     *     <li>A debug level</li>
+     *     <li>A debug level:
+     *      <ul>
+     *           <li>0: no additional tests (default)</li>
+     *           <li>1: checks if the upper bound is well-defined</li>
+     *           <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *       </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
