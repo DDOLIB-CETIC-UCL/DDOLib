@@ -74,8 +74,7 @@ public class TSPTWMain {
             solutionStr = "No feasible solution";
         }
 
-        String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
-
+        String bestStr = solver.bestValue().map(Object::toString).orElse("No feasible solution");
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Width factor : %d%n", widthFactor);
