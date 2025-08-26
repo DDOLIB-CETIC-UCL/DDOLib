@@ -1,6 +1,6 @@
 package org.ddolib.examples.ddo.setcover.elementlayer;
 
-import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.core.heuristics.cluster.StateCoordinates;
 
 public class SetCoverCoordinates implements StateCoordinates<SetCoverState> {
     final private int nElem;

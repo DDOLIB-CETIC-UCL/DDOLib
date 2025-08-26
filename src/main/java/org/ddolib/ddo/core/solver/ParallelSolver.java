@@ -3,25 +3,26 @@ package org.ddolib.ddo.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -102,7 +103,7 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     public ParallelSolver(SolverConfig<T, K> config) {
         this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
-                config.dominance, config.relaxStrat, config.restrictStrat, config.distance, config.coordinates, new Random(config.seed));
+                config.dominance, config.relaxStrategy, config.restrictStrategy);
         this.critical = new Critical<>(config.nbThreads, config.frontier);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
@@ -249,12 +250,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false,
-                shared.relaxStrat,
-                shared.restrictionStrat,
-                shared.distance,
-                shared.coord,
-                shared.rnd
+                shared.restrictStrategy,
+                false
         );
 
         mdd.compile(compilation);
@@ -277,12 +274,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 shared.dominance,
                 bestLB,
                 critical.frontier.cutSetType(),
-                false,
-                shared.relaxStrat,
-                shared.restrictionStrat,
-                shared.distance,
-                shared.coord,
-                shared.rnd
+                shared.relaxStrategy,
+                false
         );
         mdd.compile(compilation);
         if (mdd.isExact()) {
@@ -473,11 +466,15 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
-        private final StateDistance<T> distance;
-        private final StateCoordinates<T> coord;
-        private final Random rnd;
-        private final ClusterStrat relaxStrat;
-        private final ClusterStrat restrictionStrat;
+        /**
+         * Strategy to select which nodes should be merged together on a relaxed DD.
+         */
+        private final ReductionStrategy<T> relaxStrategy;
+
+        /**
+         * Strategy to select which nodes should be dropped on a restricted DD.
+         */
+        private final ReductionStrategy<T> restrictStrategy;
 
         public Shared(
                 final int nbThreads,
@@ -488,11 +485,8 @@ public final class ParallelSolver<T, K> implements Solver {
                 final WidthHeuristic<T> width,
                 FastUpperBound<T> fub,
                 final DominanceChecker<T, K> dominance,
-                final ClusterStrat relaxStrat,
-                final ClusterStrat restrictionStrat,
-                final StateDistance<T> distance,
-                final StateCoordinates<T> coordinates,
-                final Random rnd) {
+                final ReductionStrategy<T> relaxStrategy,
+                final ReductionStrategy<T> restrictStrategy) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
@@ -501,11 +495,8 @@ public final class ParallelSolver<T, K> implements Solver {
             this.ranking = ranking;
             this.width = width;
             this.dominance = dominance;
-            this.restrictionStrat = restrictionStrat;
-            this.distance = distance;
-            this.coord = coordinates;
-            this.rnd = rnd;
-            this.relaxStrat = relaxStrat;
+            this.relaxStrategy = relaxStrategy;
+            this.restrictStrategy = restrictStrategy;
         }
     }
 

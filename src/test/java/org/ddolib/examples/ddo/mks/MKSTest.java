@@ -7,13 +7,14 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.ddolib.examples.ddo.LaunchInterface.ClusterStrat;
 
 public class MKSTest {
     static Stream<MKSProblem> dataProvider1D() {
@@ -101,7 +103,7 @@ public class MKSTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider1D")
-    public void testRelaxationsMKS(MKSProblem problem) {
+    public void testRelaxationsGHP(MKSProblem problem) {
         SolverConfig<MKSState, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new MKSRelax();
@@ -109,18 +111,38 @@ public class MKSTest {
         config.width = new FixedWidth<>(50);
         config.distance = new MKSDistance();
         config.coordinates = new MKSCoordinates();
-        config.restrictStrat = ClusterStrat.Cost;
+        config.restrictStrategy = new CostBased<>(config.ranking);
 
-        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
-            config.relaxStrat = relaxStrat;
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
-            config.varh = new DefaultVariableHeuristic<>();
-            final Solver solver = new  SequentialSolver<>(config);
+        config.relaxStrategy = new GHP<>(new MKSDistance());
 
-            solver.maximize();
-            assertEquals(problem.optimal, solver.bestValue().get());
-        }
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
+        config.varh = new DefaultVariableHeuristic<>();
+        final Solver solver = new  SequentialSolver<>(config);
+        solver.maximize();
+        assertEquals(problem.optimal, solver.bestValue().get());
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider1D")
+    public void testRelaxationsKmeans(MKSProblem problem) {
+        SolverConfig<MKSState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new MKSRelax();
+        config.ranking = new MKSRanking();
+        config.width = new FixedWidth<>(50);
+        config.distance = new MKSDistance();
+        config.coordinates = new MKSCoordinates();
+        config.restrictStrategy = new CostBased<>(config.ranking);
+
+        config.relaxStrategy = new Kmeans<>(new MKSCoordinates());
+
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
+        config.varh = new DefaultVariableHeuristic<>();
+        final Solver solver = new  SequentialSolver<>(config);
+        solver.maximize();
+        assertEquals(problem.optimal, solver.bestValue().get());
     }
 
     @ParameterizedTest

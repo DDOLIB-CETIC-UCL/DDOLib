@@ -12,11 +12,11 @@ import java.util.Set;
  */
 public final class SubProblem<T> {
     /**
-     * The root state of this sub problem
+     * The root state of this subproblem
      */
     final T state;
     /**
-     * The root value of this sub problem
+     * The root value of this subproblem
      */
     final double value;
     /**
@@ -32,10 +32,10 @@ public final class SubProblem<T> {
     /**
      * Creates a new subproblem instance
      *
-     * @param state the root state of this sub problem
+     * @param state the root state of this subproblem
      * @param value the value of the longest path to this subproblem
      * @param ub    an upper bound on the optimal value reachable when solving the global
-     *              problem through this sub problem
+     *              problem through this subproblem
      * @param path  the partial assignment leading to this subproblem from the root
      */
     public SubProblem(

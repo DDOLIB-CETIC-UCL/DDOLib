@@ -1,6 +1,5 @@
 package org.ddolib.examples.ddo.mks;
-
-import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.core.heuristics.cluster.StateCoordinates;
 
 public class MKSCoordinates implements StateCoordinates<MKSState> {
     @Override

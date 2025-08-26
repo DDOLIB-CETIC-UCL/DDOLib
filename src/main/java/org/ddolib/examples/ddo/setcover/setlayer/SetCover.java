@@ -7,14 +7,9 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.ddolib.examples.ddo.setcover.setlayer.SetCoverHeuristics.FocusClosingElements;
-import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +30,6 @@ public class SetCover {
         config.relax = new SetCoverRelax();
         config.width = new FixedWidth<>(w);
         config.varh = new FocusClosingElements(problem);
-        config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
         // final StateDistance<SetCoverState> distance = new SetCoverIntersectionDistance();
         final Frontier<SetCoverState> frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         config.dominance = new DefaultDominanceChecker<>();

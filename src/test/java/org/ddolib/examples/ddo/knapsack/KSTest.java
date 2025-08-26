@@ -1,27 +1,31 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
+import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverDistance;
+import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverState;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -52,6 +56,48 @@ public class KSTest {
         config.varh = new DefaultVariableHeuristic<>();
         config.fub = new KSFastUpperBound(problem);
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        config.restrictStrategy = new CostBased<>(config.ranking);
+
+        final Solver solver = new SequentialSolver<>(config);
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackGHP(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new GHP<>(new KSDistance());
+        config.restrictStrategy = config.relaxStrategy;
+
+        final Solver solver = new SequentialSolver<>(config);
+
+        solver.maximize();
+        assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testKnapsackKmeans(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.fub = new KSFastUpperBound(problem);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new Kmeans<>(new KSCoordinates());
+        config.restrictStrategy = config.relaxStrategy;
 
         final Solver solver = new SequentialSolver<>(config);
 
@@ -122,12 +168,16 @@ public class KSTest {
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();
         config.dominance = new DefaultDominanceChecker<>();
-        config.restrictStrat = ClusterStrat.Cost;
+        config.restrictStrategy = new CostBased<>(config.ranking);
+        List<ReductionStrategy<Integer>> strategies = new ArrayList<>();
+        strategies.add(new Kmeans<>(new KSCoordinates()));
+        strategies.add(new GHP<>(new KSDistance()));
+        strategies.add(new CostBased<>(config.ranking));
 
-        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
+        for (ReductionStrategy<Integer> relaxStrategy: strategies) {
+            config.relaxStrategy  = relaxStrategy;
             config.varh = new DefaultVariableHeuristic<Integer>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.relaxStrat = relaxStrat;
             final Solver solver = new SequentialSolver(config);
 
 
@@ -147,12 +197,16 @@ public class KSTest {
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();
         config.dominance = new DefaultDominanceChecker<>();
-        config.relaxStrat = ClusterStrat.Cost;
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        List<ReductionStrategy<Integer>> strategies = new ArrayList<>();
+        strategies.add(new Kmeans<>(new KSCoordinates()));
+        strategies.add(new GHP<>(new KSDistance()));
+        strategies.add(new CostBased<>(config.ranking));
 
-        for (ClusterStrat restrictStrat : ClusterStrat.values()) {
+        for (ReductionStrategy<Integer> restrictStrategy: strategies) {
+            config.restrictStrategy  = restrictStrategy;
             config.varh = new DefaultVariableHeuristic<Integer>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.restrictStrat = restrictStrat;
             final Solver solver = new SequentialSolver(config);
 
 
@@ -172,10 +226,14 @@ public class KSTest {
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();
         config.dominance = new DefaultDominanceChecker<>();
+        List<ReductionStrategy<Integer>> strategies = new ArrayList<>();
+        strategies.add(new Kmeans<>(new KSCoordinates()));
+        strategies.add(new GHP<>(new KSDistance()));
+        strategies.add(new CostBased<>(config.ranking));
 
-        for (ClusterStrat relaxStrat : ClusterStrat.values()) {
+        for (ReductionStrategy<Integer> relaxStrategy: strategies) {
+            config.relaxStrategy  = relaxStrategy;
             config.varh = new DefaultVariableHeuristic<Integer>();
-            config.relaxStrat = relaxStrat;
             final Solver solver = new RelaxationSolver(config);
 
 
@@ -194,11 +252,17 @@ public class KSTest {
         config.width = new FixedWidth<>(25);
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();
-        config.dominance = new DefaultDominanceChecker<>();
+        config.relaxStrategy = new CostBased<>(config.ranking);
 
-        for (ClusterStrat restrictStrat : ClusterStrat.values()) {
+        List<ReductionStrategy<Integer>> strategies = new ArrayList<>();
+        strategies.add(new Kmeans<>(new KSCoordinates()));
+        strategies.add(new GHP<>(new KSDistance()));
+        strategies.add(new CostBased<>(config.ranking));
+
+        for (ReductionStrategy<Integer> restrictStrategy: strategies) {
+            config.restrictStrategy  = restrictStrategy;
             config.varh = new DefaultVariableHeuristic<Integer>();
-            config.restrictStrat = restrictStrat;
+            config.dominance = new DefaultDominanceChecker<>();
             final Solver solver = new RestrictionSolver<>(config);
 
 

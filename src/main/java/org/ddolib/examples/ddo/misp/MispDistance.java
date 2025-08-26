@@ -1,6 +1,8 @@
 package org.ddolib.examples.ddo.misp;
 
-import org.ddolib.ddo.heuristics.StateDistance;
+
+
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 
 import java.util.BitSet;
 import static java.lang.Math.max;

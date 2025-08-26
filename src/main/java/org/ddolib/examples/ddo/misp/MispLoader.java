@@ -1,15 +1,9 @@
 package org.ddolib.examples.ddo.misp;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.modeling.*;
 
 import java.io.IOException;
 import java.util.BitSet;
@@ -35,7 +29,6 @@ public class MispLoader {
         config.fub = new MispFastUpperBound(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new MispDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
 
         return config;
     }

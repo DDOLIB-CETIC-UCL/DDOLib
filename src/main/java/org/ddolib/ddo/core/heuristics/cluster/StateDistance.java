@@ -1,4 +1,4 @@
-package org.ddolib.ddo.heuristics;
+package org.ddolib.ddo.core.heuristics.cluster;
 
 /**
  * This abstraction defines the distance function used to constitute the

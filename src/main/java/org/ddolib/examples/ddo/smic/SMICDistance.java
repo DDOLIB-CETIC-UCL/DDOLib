@@ -1,6 +1,6 @@
 package org.ddolib.examples.ddo.smic;
 
-import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 
 public class SMICDistance implements StateDistance<SMICState> {
 

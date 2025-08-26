@@ -1,7 +1,6 @@
 package org.ddolib.examples.ddo.msct;
 
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverState;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 
 public class MSCTDistance implements StateDistance<MSCTState> {
 

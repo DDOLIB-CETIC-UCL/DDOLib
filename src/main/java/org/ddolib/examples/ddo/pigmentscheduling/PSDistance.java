@@ -1,6 +1,6 @@
 package org.ddolib.examples.ddo.pigmentscheduling;
 
-import org.ddolib.ddo.heuristics.StateDistance;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 
 public class PSDistance implements StateDistance<PSState> {
     @Override

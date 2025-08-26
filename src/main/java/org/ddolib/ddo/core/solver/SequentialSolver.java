@@ -1,8 +1,5 @@
 package org.ddolib.ddo.core.solver;
 
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -12,6 +9,7 @@ import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -30,7 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Random;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -142,13 +139,6 @@ public final class SequentialSolver<T, K> implements Solver {
     private final double gapLimit;
 
 
-    private final StateDistance<T> distance;
-    private final StateCoordinates<T> coord;
-    private final Random rnd;
-    private final ClusterStrat relaxStrat;
-    private final ClusterStrat restrictionStrat;
-
-
     /**
      * <ul>
      *     <li>0: no verbosity</li>
@@ -168,6 +158,16 @@ public final class SequentialSolver<T, K> implements Solver {
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    private final ReductionStrategy<T> relaxStrategy;
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    private final ReductionStrategy<T> restrictStrategy;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -209,13 +209,10 @@ public final class SequentialSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.timeLimit = config.timeLimit;
         this.gapLimit = config.gapLimit;
-        this.relaxStrat = config.relaxStrat;
-        this.restrictionStrat = config.restrictStrat;
-        this.distance = config.distance;
-        this.coord = config.coordinates;
-        this.rnd = new Random(config.seed);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.relaxStrategy = config.relaxStrategy;
+        this.restrictStrategy = config.restrictStrategy;
     }
 
 
@@ -282,12 +279,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted,
-                    relaxStrat,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    rnd
+                    restrictStrategy,
+                    exportAsDot && firstRestricted
             );
 
             mdd.compile(compilation);
@@ -317,12 +310,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRelaxed,
-                    relaxStrat,
-                    restrictionStrat,
-                    distance,
-                    coord,
-                    rnd
+                    relaxStrategy,
+                    exportAsDot && firstRelaxed
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()

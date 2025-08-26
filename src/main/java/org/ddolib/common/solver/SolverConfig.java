@@ -2,15 +2,14 @@ package org.ddolib.common.solver;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateCoordinates;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
-import org.ddolib.ddo.implem.heuristics.DefaultStateDistance;
 import org.ddolib.modeling.*;
 
 /**
@@ -101,16 +100,6 @@ public class SolverConfig<T, K> {
      */
     public SimpleCache<T> cache = null;
 
-    public StateDistance<T> distance = new DefaultStateDistance<>();
-
-    public StateCoordinates<T> coordinates = new DefaultStateCoordinates<>();
-
-    public ClusterStrat relaxStrat = ClusterStrat.Cost;
-
-    public ClusterStrat restrictStrat = ClusterStrat.Cost;
-
-    public int seed = 17577;
-
 
     // PARAMETERS FOR DEBUG / VERBOSITY STUFF
 
@@ -136,5 +125,25 @@ public class SolverConfig<T, K> {
      * Tooltips are configured to give additional information on nodes and edges.
      */
     public Boolean exportAsDot = false;
+
+    /**
+     * Distance function to compute the distance between two states.
+     */
+    public StateDistance<T> distance = null;
+
+    /**
+     * Distance function to compute the coordinates of a state.
+     */
+    public StateCoordinates<T> coordinates = null;
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    public ReductionStrategy<T> relaxStrategy = new CostBased<>(this.ranking);
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
 
 }

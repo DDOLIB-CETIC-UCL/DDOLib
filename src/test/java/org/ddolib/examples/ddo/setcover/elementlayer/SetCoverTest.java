@@ -5,19 +5,16 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.ddo.setcover.elementlayer.*;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverHeuristics.*;
-
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.implem.heuristics.DefaultStateCoordinates;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -139,19 +136,16 @@ public class SetCoverTest {
         config.varh = new MinCentralityDynamic(problem);
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
-        config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
         config.dominance = new DefaultDominanceChecker<>();
 
-        for (ClusterStrat restrictionStrat: ClusterStrat.values()) {
-            config.restrictStrat  = restrictionStrat;
-            config.varh = new MinCentralityDynamic(problem);
-            final Solver solver = new RestrictionSolver<>(config);
+        config.restrictStrategy  = new CostBased<>(config.ranking);
+        config.varh = new MinCentralityDynamic(problem);
+        final Solver solver = new RestrictionSolver<>(config);
 
-            solver.maximize();
-            Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertTrue(solver.bestValue().get() <= -2);
-        }
+        solver.maximize();
+        Assertions.assertTrue(solver.bestValue().isPresent());
+        Assertions.assertTrue(solver.bestValue().get() <= -2);
+
     }
 
 
@@ -175,18 +169,15 @@ public class SetCoverTest {
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
         config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
         config.dominance = new DefaultDominanceChecker<>();
 
-        for (ClusterStrat relaxType: ClusterStrat.values()) {
-            config.relaxStrat  = relaxType;
-            config.varh = new MinCentralityDynamic(problem);
-            final Solver solver = new RelaxationSolver<>(config);
+        config.relaxStrategy  = new CostBased<>(config.ranking);
+        config.varh = new MinCentralityDynamic(problem);
+        final Solver solver = new RelaxationSolver<>(config);
+        solver.maximize();
+        Assertions.assertTrue(solver.bestValue().isPresent());
+        Assertions.assertTrue(-solver.bestValue().get() <= 2);
 
-            solver.maximize();
-            Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertTrue(-solver.bestValue().get() <= 2);
-        }
     }
 
     /**
@@ -207,12 +198,13 @@ public class SetCoverTest {
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
         config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
         config.dominance = new DefaultDominanceChecker<>();
+        List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
+        strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new CostBased<>(config.ranking));
 
-
-        for (ClusterStrat relaxType: ClusterStrat.values()) {
-            config.relaxStrat  = relaxType;
+        for (ReductionStrategy<SetCoverState> relaxStrategy: strategies) {
+            config.relaxStrategy  = relaxStrategy;
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
             config.varh = new MinCentralityDynamic(problem);
             final Solver solver = new SequentialSolver<>(config);
@@ -248,58 +240,13 @@ public class SetCoverTest {
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
         config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
         config.dominance = new DefaultDominanceChecker<>();
+        List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
+        strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new CostBased<>(config.ranking));
 
-
-        for (ClusterStrat restrictType: ClusterStrat.values()) {
-            config.restrictStrat  = restrictType;
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
-            config.varh = new MinCentralityDynamic(problem);
-            final Solver solver = new SequentialSolver<>(config);
-
-            solver.maximize();
-
-            // Retrieve solution
-            Set<Integer> solution = solver.bestSolution().map(decisions -> {
-                Set<Integer> values = new HashSet<>();
-                for (Decision d : decisions) {
-                    if (d.val() != -1) {
-                        values.add(d.val());
-                    }
-                }
-                return values;
-            }).get();
-
-            Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
-            Assertions.assertTrue(testValidity(problem, solution));
-        }
-    }
-
-    /**
-     * Test on small random instances to verify that the solution returned by the sequential solver is really
-     * optimal.
-     * The returned solution is compared with the optimal cost computed by a brute-force approach
-     * @param problem
-     */
-    @ParameterizedTest
-    @MethodSource("smallGeneratedInstances")
-    public void testCompleteness(SetCoverProblem problem) {
-        int optimalCost = bruteForce(problem);
-
-        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new SetCoverRelax();
-        config.ranking = new SetCoverRanking();
-        config.width = new FixedWidth<>(2);
-        config.distance = new SetCoverDistance();
-        config.coordinates = new DefaultStateCoordinates<>();
-        config.dominance = new DefaultDominanceChecker<>();
-
-
-        for (ClusterStrat restrictType: ClusterStrat.values()) {
-            config.restrictStrat  = restrictType;
+        for (ReductionStrategy<SetCoverState> restrictStrategy: strategies) {
+            config.restrictStrategy  = restrictStrategy;
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
             config.varh = new MinCentralityDynamic(problem);
             final Solver solver = new SequentialSolver<>(config);

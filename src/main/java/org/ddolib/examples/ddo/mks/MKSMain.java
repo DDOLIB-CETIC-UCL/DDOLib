@@ -4,13 +4,9 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -35,10 +31,9 @@ public class MKSMain {
         config.varh = new DefaultVariableHeuristic<MKSState>();
         config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), config.problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        config.relaxStrat = ClusterStrat.GHP;
+        config.relaxStrategy = new GHP<>(new MKSDistance());
         config.distance = new MKSDistance();
         config.coordinates = new MKSCoordinates();
-        config.seed = 657685;
 
         final Solver solver = new SequentialSolver<>(config);
 

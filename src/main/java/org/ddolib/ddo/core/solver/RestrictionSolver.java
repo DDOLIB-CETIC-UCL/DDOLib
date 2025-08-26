@@ -1,17 +1,15 @@
 package org.ddolib.ddo.core.solver;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.*;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.heuristics.StateDistance;
-import org.ddolib.ddo.heuristics.StateCoordinates;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -25,17 +23,21 @@ import org.ddolib.modeling.StateRanking;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Random;
 
 /**
-Solver that solve only a relaxed MDD from the root node
+ * Solver to only compute a restricted DD from the root
+ *
+ * @param <T> The type of states.
+ * @param <K> The type of dominance keys.
  */
 public final class RestrictionSolver<T, K> implements Solver {
     /**
      * The problem we want to maximize
      */
     private final Problem<T> problem;
-    /** A suitable relaxation for the problem we want to maximize */
+    /**
+     * A suitable relaxation for the problem we want to maximize
+     */
     private final Relaxation<T> relax;
     /**
      * A heuristic to identify the most promising nodes
@@ -48,15 +50,7 @@ public final class RestrictionSolver<T, K> implements Solver {
     /**
      * A heuristic to choose the next variable to branch on when developing a DD
      */
-
-    /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     */
-    private final FastUpperBound<T> fub;
-
-
     private final VariableHeuristic<T> varh;
-    private final ClusterStrat restrictionStrat;
 
     /**
      * Your implementation (just like the parallel version) will reuse the same
@@ -70,14 +64,6 @@ public final class RestrictionSolver<T, K> implements Solver {
      */
     private final DecisionDiagram<T, K> mdd;
 
-    private final StateDistance<T> distance;
-    private final StateCoordinates<T> coord;
-
-    private int bestUB;
-    private long startTime;
-    public double timeForBest;
-    private final Random rnd;
-
     /**
      * Value of the best known lower bound.
      */
@@ -88,9 +74,24 @@ public final class RestrictionSolver<T, K> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
     /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    private final FastUpperBound<T> fub;
+
+    /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
+
+    /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
+    private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
+    private boolean firstRelaxed = true;
+
 
     /**
      * <ul>
@@ -112,7 +113,37 @@ public final class RestrictionSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
-    /** Creates a fully qualified instance */
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    private final ReductionStrategy<T> restrictStrategy;
+
+    /**
+     * Creates a fully qualified instance. The parameters of this solver are given via a
+     * {@link SolverConfig}<br><br>
+     *
+     * <b>Mandatory parameters:</b>
+     * <ul>
+     *     <li>An implementation of {@link Problem}</li>
+     *     <li>An implementation of {@link Relaxation}</li>
+     *     <li>An implementation of {@link StateRanking}</li>
+     *     <li>An implementation of {@link VariableHeuristic}</li>
+     *     <li>An implementation of {@link WidthHeuristic}</li>
+     *     <li>An implementation of {@link Frontier}</li>
+     * </ul>
+     * <br>
+     * <b>Optional parameters: </b>
+     * <ul>
+     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link DominanceChecker}</li>
+     *     <li>A time limit</li>
+     *     <li>A gap limit</li>
+     *     <li>A verbosity level</li>
+     *     <li>A boolean to export some mdd as .dot file</li>
+     * </ul>
+     *
+     * @param config All the parameters needed to configure the solver.
+     */
     public RestrictionSolver(SolverConfig<T, K> config) {
         this.problem = config.problem;
         this.relax = config.relax;
@@ -124,47 +155,38 @@ public final class RestrictionSolver<T, K> implements Solver {
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
-        this.restrictionStrat = config.restrictStrat;
-        this.distance = config.distance;
-        this.coord = config.coordinates;
-        this.rnd = new Random(config.seed);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.restrictStrategy = config.restrictStrategy;
     }
+
 
     @Override
     public SearchStatistics maximize() {
         long start = System.currentTimeMillis();
-        SubProblem<T> sub = root();
-        int maxWidth = width.maximumWidth(sub.getState());
-
-        CompilationInput<T, K> compilation = new CompilationInput<>(
+        SubProblem<T> root = root();
+        int maxWidth = width.maximumWidth(root.getState());
+        // 2. RELAXATION
+        CompilationInput<T,K> compilation = new CompilationInput<>(
                 CompilationType.Restricted,
                 problem,
                 relax,
                 varh,
                 ranking,
-                sub,
+                root,
                 maxWidth,
                 fub,
                 dominance,
                 bestLB,
                 CutSetType.None,
-                exportAsDot,
-                null,
-                restrictionStrat,
-                distance,
-                coord,
-                rnd
+                restrictStrategy,
+                exportAsDot && firstRelaxed
         );
         mdd.compile(compilation);
-        maybeUpdateBest(verbosityLevel, exportAsDot);
+
+        maybeUpdateBest(exportAsDot);
         long end = System.currentTimeMillis();
         return new SearchStatistics(1, 0,end-start, SearchStatistics.SearchStatus.UNKNOWN, 0.0);
-    }
-
-    public boolean isExact() {
-        return mdd.isExact();
     }
 
     @Override
@@ -181,12 +203,14 @@ public final class RestrictionSolver<T, K> implements Solver {
         return bestSol;
     }
 
-    /** @return the root subproblem */
+    /**
+     * @return the root subproblem
+     */
     private SubProblem<T> root() {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Integer.MAX_VALUE,
+                Double.POSITIVE_INFINITY,
                 Collections.emptySet());
     }
 
@@ -195,14 +219,15 @@ public final class RestrictionSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(int verbosityLevel, boolean exportAsDot) {
+    private void maybeUpdateBest(boolean exportDot) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
             bestSol = mdd.bestSolution();
             if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
-        } else if (exportAsDot) {
+        } else if (exportDot) {
             mdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }
+
 }

@@ -4,9 +4,11 @@ import org.apache.commons.cli.*;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.ClusterStrat;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
@@ -163,9 +165,40 @@ public class LaunchInterface {
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
         config.timeLimit = timeLimit;
         config.gapLimit = 0.0; // TODO add it to the interface
-        config.relaxStrat = clusteringRelaxMap.get(relaxStratStr);
-        config.restrictStrat = clusteringRestrictMap.get(restrictStratStr);
-        config.seed = seed;
+
+        switch (relaxStrat) {
+            case Cost -> config.relaxStrategy = new CostBased(config.ranking);
+            case Kmeans -> config.relaxStrategy = new Kmeans(config.coordinates);
+            case GHPMDP -> {
+                GHP relaxStrategy = new GHP(config.distance);
+                relaxStrategy.setMostDistantPivot(true);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+            case GHP -> {
+                GHP relaxStrategy = new GHP(config.distance);
+                relaxStrategy.setMostDistantPivot(false);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+        }
+
+        switch (restrictionStrat) {
+            case Cost -> config.restrictStrategy = new CostBased(config.ranking);
+            case Kmeans -> config.restrictStrategy = new Kmeans(config.coordinates);
+            case GHPMDP -> {
+                GHP restrictStrategy = new GHP(config.distance);
+                restrictStrategy.setMostDistantPivot(true);
+                restrictStrategy.setSeed(seed);
+                config.relaxStrategy = restrictStrategy;
+            }
+            case GHP -> {
+                GHP restrictStrategy = new GHP(config.distance);
+                restrictStrategy.setMostDistantPivot(false);
+                restrictStrategy.setSeed(seed);
+                config.relaxStrategy = restrictStrategy;
+            }
+        }
 
         Solver solver = null;
 
@@ -211,7 +244,7 @@ public class LaunchInterface {
         }
     }
 
-    private static enum ProblemType {
+    private enum ProblemType {
         MKS, // multidimensional knapsack
         KS, // knapsack
         MISP, // minimum independent set problem,
@@ -227,7 +260,7 @@ public class LaunchInterface {
         }
     };
 
-    public static enum SolverType {
+    public enum SolverType {
         SEQ, // sequential solver
         RELAX, // relaxation solver
         RESTRI, // restriction solver
@@ -243,12 +276,19 @@ public class LaunchInterface {
         }
     };
 
+    public enum ClusterStrat {
+        Cost,
+        Kmeans,
+        GHP,
+        GHPMDP
+    }
+
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
         {
             put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
-            put("GHP", ClusterStrat.GHPMD);
-            put("GHPMDP", ClusterStrat.GHPMDPMD);
+            put("GHP", ClusterStrat.GHP);
+            put("GHPMDP", ClusterStrat.GHPMDP);
         }
     };
 
@@ -256,8 +296,8 @@ public class LaunchInterface {
         {
             put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
-            put("GHP", ClusterStrat.GHPMD);
-            put("GHPMDP", ClusterStrat.GHPMDPMD);
+            put("GHP", ClusterStrat.GHP);
+            put("GHPMDP", ClusterStrat.GHPMDP);
         }
     };
 

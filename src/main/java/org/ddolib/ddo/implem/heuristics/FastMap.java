@@ -1,7 +1,5 @@
 package org.ddolib.ddo.implem.heuristics;
-
-import org.ddolib.ddo.heuristics.StateDistance;
-
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;

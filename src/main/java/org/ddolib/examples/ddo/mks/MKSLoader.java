@@ -3,12 +3,8 @@ package org.ddolib.examples.ddo.mks;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
 import org.ddolib.modeling.DefaultFastUpperBound;
-import org.ddolib.modeling.FastUpperBound;
 
 import java.io.IOException;
 

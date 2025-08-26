@@ -1,6 +1,6 @@
 package org.ddolib.examples.ddo.knapsack;
 
-import org.ddolib.ddo.heuristics.StateCoordinates;
+import org.ddolib.ddo.core.heuristics.cluster.StateCoordinates;
 
 public class KSCoordinates implements StateCoordinates<Integer> {
 
@@ -8,4 +8,5 @@ public class KSCoordinates implements StateCoordinates<Integer> {
     public double[] getCoordinates(Integer state) {
         return new double[]{state};
     }
+
 }

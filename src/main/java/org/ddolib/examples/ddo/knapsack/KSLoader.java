@@ -4,8 +4,6 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.heuristics.StateCoordinates;
-import org.ddolib.ddo.heuristics.StateDistance;
 
 import java.io.IOException;
 
