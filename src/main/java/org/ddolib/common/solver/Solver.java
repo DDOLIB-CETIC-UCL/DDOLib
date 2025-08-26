@@ -33,18 +33,15 @@ public interface Solver {
      *
      * @param numVar The number of variable in th solved problem.
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
-     * {@code i}.
+     * {@code i}. Or empty array if the solution does not exist
      */
     default int[] constructBestSolution(int numVar) {
-        Optional<Set<Decision>> bestSolution = bestSolution();
-        if (bestSolution.isPresent()) {
+        return bestSolution().map(decisions -> {
             int[] toReturn = new int[numVar];
-            for (Decision d : bestSolution.get()) {
+            for (Decision d : decisions) {
                 toReturn[d.var()] = d.val();
             }
             return toReturn;
-        } else {
-            return new int[0];
-        }
+        }).orElse(new int[0]);
     }
 }
