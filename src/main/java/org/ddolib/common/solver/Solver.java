@@ -31,7 +31,7 @@ public interface Solver {
     /**
      * Construct an array containing the values assigned to each variable from the took decisions.
      *
-     * @param numVar The number of variable in th solved problem.
+     * @param numVar The number of variables in the solved problem.
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
      * {@code i}. Or empty array if the solution does not exist
      */
