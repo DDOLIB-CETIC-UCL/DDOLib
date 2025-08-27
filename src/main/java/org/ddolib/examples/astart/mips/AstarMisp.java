@@ -22,13 +22,7 @@ public class AstarMisp {
         config.problem = problem;
         config.varh = new DefaultVariableHeuristic<>();
         config.fub = new MispFastUpperBound(problem);
-
-        BitSet root = new BitSet();
-        root.set(2);
-        root.set(3);
-        root.set(4);
-        int depth = 2;
-        System.out.printf("root: %s - depth: %d\n", root, depth);
+        config.debugLevel = 1;
 
         final Solver solver = new AStarSolver<>(config);
 
