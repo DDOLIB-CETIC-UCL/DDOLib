@@ -2,26 +2,22 @@ package org.ddolib.examples.ddo.pdptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.examples.ddo.pdp.PDPState;
-import org.ddolib.examples.ddo.tsptw.TSPTWDominance;
-import org.ddolib.examples.ddo.tsptw.TSPTWDominanceKey;
-import org.ddolib.examples.ddo.tsptw.TSPTWState;
+import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
 import static java.lang.Math.max;
-import static org.ddolib.factory.Solvers.sequentialSolver;
-import static org.ddolib.factory.Solvers.sequentialSolverWithCache;
 
 public final class PDPTWMain {
 
@@ -97,30 +93,24 @@ public final class PDPTWMain {
 
     public static Solver solveDPD(PDPTWProblem problem) {
 
-        final PDPTWRelax relax = new PDPTWRelax(problem);
-        final PDPTWRanking ranking = new PDPTWRanking();
-        final PDPTWFastUpperBound fub = new PDPTWFastUpperBound(problem);
-        final FixedWidth<PDPTWState> width = new FixedWidth<>(3000);
-        final DefaultVariableHeuristic<PDPTWState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<PDPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final SimpleCache<PDPTWState> cache = new SimpleCache<>(); //cache does not work on this problem dunno why
+        SolverConfig<PDPTWState, PDPTWDominanceKey> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new PDPTWRelax(problem);
+        config.ranking = new PDPTWRanking();
+        config.fub = new PDPTWFastUpperBound(problem);
+        config.width = new FixedWidth<>(3000);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
 
-        final SimpleDominanceChecker<PDPTWState, PDPTWDominanceKey> dominance =
-                new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
+        config.verbosityLevel = 2;
+        config.exportAsDot = false;
+        final Solver solver = new SequentialSolver<>(config);
 
-        final Solver solver = sequentialSolverWithCache(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance,
-                cache);
-
-        SearchStatistics statistics = solver.maximize(2, false);
+        SearchStatistics statistics = solver.maximize();
         System.out.println(statistics);
+
         return solver;
     }
 
