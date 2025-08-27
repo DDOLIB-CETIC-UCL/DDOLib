@@ -229,6 +229,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             return node.value;
         }
 
+        public double getUb() {
+            return this.ub;
+        }
+
         /**
          * @return Turns this association into an actual subproblem
          */

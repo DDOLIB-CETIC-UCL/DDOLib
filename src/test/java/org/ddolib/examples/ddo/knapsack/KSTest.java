@@ -6,9 +6,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -146,5 +144,59 @@ public class KSTest {
 
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.optimal);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRelaxStrats(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.fub = new KSFastUpperBound(problem);
+        config.relax = new KSRelax();
+        ReductionStrategy[] strats = new ReductionStrategy[4];
+        strats[0] = new Kmeans(new KSCoordinates());
+        strats[1] = new CostBased(new KSRanking());
+        strats[2] = new CostUBBased(new KSRanking());
+        strats[3] = new GHP(new KSDistance());
+
+        for (ReductionStrategy strategy : strats) {
+            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.relaxStrategy = strategy;
+
+            Solver solver = new SequentialSolver<>(config);
+            solver.maximize();
+            assertEquals(solver.bestValue().get(), problem.optimal);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataProvider")
+    public void testRestrictStrats(KSProblem problem) {
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10);
+        config.fub = new KSFastUpperBound(problem);
+        config.relax = new KSRelax();
+        ReductionStrategy[] strats = new ReductionStrategy[4];
+        strats[0] = new Kmeans(new KSCoordinates());
+        strats[1] = new CostBased(new KSRanking());
+        strats[2] = new CostUBBased(new KSRanking());
+        strats[3] = new GHP(new KSDistance());
+
+        for (ReductionStrategy strategy : strats) {
+            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.restrictStrategy = strategy;
+
+            Solver solver = new SequentialSolver<>(config);
+            solver.maximize();
+            assertEquals(solver.bestValue().get(), problem.optimal);
+        }
     }
 }
