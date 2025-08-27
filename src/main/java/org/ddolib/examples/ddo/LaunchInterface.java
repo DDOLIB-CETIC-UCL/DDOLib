@@ -7,6 +7,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.CostUBBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
@@ -178,6 +179,7 @@ public class LaunchInterface {
 
         switch (relaxStrat) {
             case Cost -> config.relaxStrategy = new CostBased(config.ranking);
+            case CostUB -> config.relaxStrategy = new CostUBBased(config.ranking);
             case Kmeans -> {
                 Kmeans relaxStrategy = new Kmeans(config.coordinates);
                 relaxStrategy.setMaxIterations(kmeansIter);
@@ -199,6 +201,7 @@ public class LaunchInterface {
 
         switch (restrictionStrat) {
             case Cost -> config.restrictStrategy = new CostBased(config.ranking);
+            case CostUB -> config.restrictStrategy = new CostUBBased(config.ranking);
             case Kmeans -> {
                 Kmeans restrictStrategy = new Kmeans(config.coordinates);
                 restrictStrategy.setMaxIterations(kmeansIter);
@@ -244,12 +247,14 @@ public class LaunchInterface {
             statsString.append(restrictionStrat).append(";"); // RestrictionStrat
             statsString.append(timeLimit).append(";"); // timelimit
             statsString.append(widthFactor).append(";"); // widthFactor
+            statsString.append(kmeansIter).append(";");
 
             boolean useFUB = !(config.fub instanceof DefaultFastUpperBound);
             statsString.append(useFUB).append(";");
             boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
             statsString.append(useDominance).append(";");
 
+            statsString.append(solver.bestValue().get()).append(";"); // objective
             statsString.append(stats.runTimeMS()).append(";"); // runtime
             statsString.append(stats.Gap()).append(";"); // Gap
             statsString.append(stats.nbIterations()).append(";"); // nbIterations
@@ -301,6 +306,7 @@ public class LaunchInterface {
 
     public enum ClusterStrat {
         Cost,
+        CostUB,
         Kmeans,
         GHP,
         GHPMDP
@@ -309,6 +315,7 @@ public class LaunchInterface {
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
         {
             put("Cost", ClusterStrat.Cost);
+            put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPMDP", ClusterStrat.GHPMDP);
@@ -318,6 +325,7 @@ public class LaunchInterface {
     private final static HashMap<String, ClusterStrat> clusteringRestrictMap = new HashMap() {
         {
             put("Cost", ClusterStrat.Cost);
+            put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPMDP", ClusterStrat.GHPMDP);
