@@ -215,7 +215,11 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
         this.gapLimit = config.gapLimit;
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
-        this.debugLevel = config.debugLevel;
+        this.debugLevel = 0;
+        if (config.debugLevel != 0) {
+            throw new IllegalArgumentException("The debug mode for this solver is not available " +
+                    "for the moment.");
+        }
     }
 
     @Override
