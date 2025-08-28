@@ -508,7 +508,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * Given a node, returns the list of decisions took from the root to reach this node.
+     * Given a node, returns the list of decisions taken from the root to reach this node.
      *
      * @param node A node of the mdd
      * @return The list of decisions took from the root to reach the input node.
