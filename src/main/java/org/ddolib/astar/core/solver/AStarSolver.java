@@ -42,7 +42,7 @@ public final class AStarSolver<T, K> implements Solver {
     private final HashMap<AstarKey<T>, Double> closed;
 
     /**
-     * HashMap with state in the Priority Queue
+     * HashMap with states in the Priority Queue
      */
     private final HashMap<AstarKey<T>, Double> present;
 
@@ -55,8 +55,10 @@ public final class AStarSolver<T, K> implements Solver {
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T, K> dominance;
-
-
+    /**
+     * The priority queue containing the subproblems to be explored,
+     * ordered by decreasing f = value + fastUpperBound
+     */
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
@@ -68,18 +70,18 @@ public final class AStarSolver<T, K> implements Solver {
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
      *     <li>2: 1 + statistics about the front every half a second (or so)</li>
-     *     <li>3: 2 + every developed sub-problem</li>
+     *     <li>3: 2 + every developed subproblem</li>
      *     <li>4: 3 + details about the developed state</li>
      * </ul>
      * <p>
      * <p>
-     * 3: 2 + every developed sub-problem
+     * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
     private final int verbosityLevel;
 
     /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
+     * Whether to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
 
