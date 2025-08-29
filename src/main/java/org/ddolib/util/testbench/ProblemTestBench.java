@@ -10,14 +10,11 @@ import org.ddolib.modeling.DefaultFastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
-import java.text.DecimalFormat;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -132,21 +129,9 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testFub(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
+        config.debugLevel = 1;
         Solver solver = solverForTests(config);
 
-        HashSet<Integer> vars = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            vars.add(i);
-        }
-
-        double rub = config.fub.fastUpperBound(problem.initialState(), vars);
-        DecimalFormat df = new DecimalFormat("#.##########");
-        if (solver.bestSolution().isPresent()) {
-            assertTrue(rub >= problem.optimalValue().get(),
-                    String.format("Upper bound %s is not bigger than the expected optimal solution %s",
-                            df.format(rub),
-                            df.format(problem.optimalValue().get())));
-        }
         solver.maximize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
@@ -178,6 +163,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testFubOnRelaxedNodes(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
+        config.debugLevel = 1;
         for (int w = minWidth; w <= maxWidth; w++) {
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
