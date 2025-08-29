@@ -108,6 +108,10 @@ public final class ACSSolver<T, K> implements Solver {
         this.present = new HashSet[problem.nbVars() + 1];
         this.g = new HashMap<>();
         this.K = K;
+        if (config.debugLevel != 0) {
+            throw new IllegalArgumentException("The debug mode for this solver is not available " +
+                    "for the moment.");
+        }
 
         for (int i = 0; i < problem.nbVars() + 1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
