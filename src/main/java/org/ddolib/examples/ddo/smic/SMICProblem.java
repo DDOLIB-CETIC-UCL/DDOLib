@@ -32,6 +32,11 @@ public class SMICProblem implements Problem<SMICState> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return nbJob;
     }

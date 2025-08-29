@@ -11,6 +11,11 @@ import java.util.stream.IntStream;
 public class GRProblem implements Problem<GRState> {
     final int n;
 
+    @Override
+    public double optimal() {
+        return 0.0;
+    }
+
     public GRProblem(int n) {
         this.n = n;
     }

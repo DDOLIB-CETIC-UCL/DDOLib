@@ -22,6 +22,11 @@ public class MSCTProblem implements Problem<MSCTState> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return n;
     }

@@ -20,6 +20,11 @@ public class MKSProblem implements Problem<MKSState> {
         this.optimal = optimal;
     }
 
+    @Override
+    public double optimal() {
+        return optimal;
+    }
+
 
     @Override
     public int nbVars() {

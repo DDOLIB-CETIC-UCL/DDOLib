@@ -27,6 +27,11 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
+    public double optimal() {
+        return optimal;
+    }
+
+    @Override
     public int nbVars() {
         return profit.length;
     }

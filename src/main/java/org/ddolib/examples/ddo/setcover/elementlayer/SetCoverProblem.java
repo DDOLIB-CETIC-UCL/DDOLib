@@ -19,6 +19,11 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return nElem;
     }

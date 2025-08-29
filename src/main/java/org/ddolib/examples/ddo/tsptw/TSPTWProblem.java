@@ -17,6 +17,11 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
+    public double optimal() {
+        return instance.optimal.orElse(0.0);
+    }
+
+    @Override
     public int nbVars() {
         return instance.distance.length;
     }

@@ -51,4 +51,6 @@ public interface Problem<T> {
      * @param decision the decision which is applied to `state`.
      */
     double transitionCost(final T state, final Decision decision);
+
+    double optimal();
 }

@@ -20,6 +20,11 @@ public class TSPProblem implements Problem<TSPState> {
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
     }
 
+    @Override
+    public double optimal() {
+        return 0.0;
+    }
+
     public double eval(int[] solution) {
         double toReturn = 0;
         for (int i = 1; i < solution.length; i++) {

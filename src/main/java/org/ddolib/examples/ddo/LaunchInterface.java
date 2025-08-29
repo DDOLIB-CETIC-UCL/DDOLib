@@ -253,7 +253,7 @@ public class LaunchInterface {
             statsString.append(useFUB).append(";");
             boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
             statsString.append(useDominance).append(";");
-
+            statsString.append(config.problem.optimal()).append(";");
             statsString.append(solver.bestValue().get()).append(";"); // objective
             statsString.append(stats.runTimeMS()).append(";"); // runtime
             statsString.append(stats.Gap()).append(";"); // Gap

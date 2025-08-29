@@ -56,6 +56,11 @@ public class MispProblem implements Problem<BitSet> {
         this.weight = weight;
     }
 
+    @Override
+    public double optimal() {
+        return optimal.orElse(0.0);
+    }
+
     /**
      * Sets the name of the instance. The name will override the default toString.
      *

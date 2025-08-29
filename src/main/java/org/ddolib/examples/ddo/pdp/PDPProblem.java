@@ -17,6 +17,11 @@ public class PDPProblem implements Problem<PDPState> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return instance.n; //the last decision will be to come back to point zero
     }

@@ -18,6 +18,11 @@ public class PSProblem implements Problem<PSState> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return instance.horizon;
     }

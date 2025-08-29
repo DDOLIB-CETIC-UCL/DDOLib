@@ -38,6 +38,11 @@ public class MCPProblem implements Problem<MCPState> {
         this.optimal = Optional.of(optimal);
     }
 
+    @Override
+    public double optimal() {
+        return optimal.orElse(0.0);
+    }
+
 
     public void setName(String name) {
         this.name = Optional.of(name);

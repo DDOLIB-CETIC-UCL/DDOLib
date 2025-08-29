@@ -64,6 +64,11 @@ public class LCSProblem implements Problem<LCSState> {
     }
 
     @Override
+    public double optimal() {
+        return optimal.orElse(0.0);
+    }
+
+    @Override
     public int nbVars() {
         return minLength;
     }

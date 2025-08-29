@@ -38,6 +38,11 @@ public class TSProblem implements Problem<TSState> {
         this.optimal = optimal;
     }
 
+    @Override
+    public double optimal() {
+        return optimal.orElse(0.0);
+    }
+
     public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors) {
         this(nbScene, nbActors, costs, duration, actors, Optional.empty());
     }

@@ -21,6 +21,11 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     @Override
+    public double optimal() {
+        return 0.0;
+    }
+
+    @Override
     public int nbVars() {
         return values.length;
     }
