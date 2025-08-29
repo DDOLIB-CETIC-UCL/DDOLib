@@ -233,10 +233,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
-     * Compares two Optional<Double> with a tolerance (delta) if both are present.
+     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
      *
-     * @param expected The expected Optional<Double>.
-     * @param actual   The actual Optional<Double>.
+     * @param expected The expected {@code Optional<Double>}.
+     * @param actual   The actual {@code Optional<Double>}.
      * @param delta    The tolerance for the comparison if both optionals contain a value.
      */
     public static void assertOptionalDoubleEqual(Optional<Double> expected, Optional<Double> actual, double delta) {
