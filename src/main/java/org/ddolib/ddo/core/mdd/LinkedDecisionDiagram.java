@@ -10,6 +10,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
+import org.ddolib.util.DebugUtil;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -704,6 +705,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param problem  the problem that defines the transition and transition cost functions
      */
     private void branchOn(final NodeSubProblem<T> node, final Decision decision, final Problem<T> problem) {
+        if (debugLevel >= 1)
+            DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
+
         T state = problem.transition(node.state, decision);
         double cost = problem.transitionCost(node.state, decision);
         double value = saturatedAdd(node.node.value, cost);
