@@ -39,11 +39,13 @@ public class TSPTWMain {
      */
     public static void main(String[] args) throws IOException {
 
-        final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
+        final String file = args.length == 0 ?
+                Paths.get("data", "TSPTW", "impossible.txt").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
+        System.out.println(problem.optimalValue());
         config.problem = problem;
         config.relax = new TSPTWRelax(problem);
         config.ranking = new TSPTWRanking();

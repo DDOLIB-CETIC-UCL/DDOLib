@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DynamicTest;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -100,7 +101,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param config The configuration of the solver.
      * @return A solver using the given config to solve the input problem.
      */
-    protected <U> Solver solverForRelaxation(SolverConfig<T, K> config) {
+    protected Solver solverForRelaxation(SolverConfig<T, K> config) {
         return new SequentialSolver<>(config);
     }
 
@@ -119,7 +120,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
         Solver solver = solverForTests(config);
         solver.maximize();
-        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
     /**
@@ -140,13 +141,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
         double rub = config.fub.fastUpperBound(problem.initialState(), vars);
         DecimalFormat df = new DecimalFormat("#.##########");
-        assertTrue(rub >= problem.optimalValue().get(),
-                String.format("Upper bound %s is not bigger than the expected optimal solution %s",
-                        df.format(rub),
-                        df.format(problem.optimalValue().get())));
-
+        if (solver.bestSolution().isPresent()) {
+            assertTrue(rub >= problem.optimalValue().get(),
+                    String.format("Upper bound %s is not bigger than the expected optimal solution %s",
+                            df.format(rub),
+                            df.format(problem.optimalValue().get())));
+        }
         solver.maximize();
-        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
     /**
@@ -163,7 +165,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             Solver solver = solverForRelaxation(config);
 
             solver.maximize();
-            assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
         }
     }
 
@@ -181,7 +183,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             Solver solver = solverForRelaxation(config);
 
             solver.maximize();
-            assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
         }
     }
 
@@ -196,7 +198,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         Solver solver = solverForTests(config);
 
         solver.maximize();
-        assertEquals(problem.optimalValue().get(), solver.bestValue().get(), 1e-10);
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
     /**
@@ -242,5 +244,20 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         }
 
         return allTests;
+    }
+
+    /**
+     * Compares two Optional<Double> with a tolerance (delta) if both are present.
+     *
+     * @param expected The expected Optional<Double>.
+     * @param actual   The actual Optional<Double>.
+     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     */
+    public static void assertOptionalDoubleEqual(Optional<Double> expected, Optional<Double> actual, double delta) {
+        if (expected.isPresent() && actual.isPresent()) {
+            assertEquals(expected.get(), actual.get(), delta);
+        } else {
+            assertEquals(expected, actual);
+        }
     }
 }
