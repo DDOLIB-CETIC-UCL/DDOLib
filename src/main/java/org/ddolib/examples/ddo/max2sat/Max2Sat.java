@@ -1,20 +1,20 @@
 package org.ddolib.examples.ddo.max2sat;
 
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.ParallelSolver;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static org.ddolib.examples.ddo.max2sat.Max2SatIO.readInstance;
-import static org.ddolib.factory.Solvers.parallelSolver;
 
 public final class Max2Sat {
 
@@ -30,24 +30,15 @@ public final class Max2Sat {
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         Max2SatProblem problem = readInstance(file);
+        SolverConfig<Max2SatState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new Max2SatRelax(problem);
+        config.ranking = new Max2SatRanking();
+        config.width = new FixedWidth<>(maxWidth);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        Max2SatRelax relax = new Max2SatRelax(problem);
-        Max2SatRanking ranking = new Max2SatRanking();
-
-        final FixedWidth<Max2SatState> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<Max2SatState> varh = new DefaultVariableHeuristic<>();
-
-        final Frontier<Max2SatState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        Solver solver = parallelSolver(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier
-        );
+        Solver solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();

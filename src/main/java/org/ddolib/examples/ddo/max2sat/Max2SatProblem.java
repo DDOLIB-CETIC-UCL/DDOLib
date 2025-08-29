@@ -19,7 +19,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     final Max2SatState root;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
-    public final Optional<Double> optimal;
+    private final Optional<Double> optimal;
     private Optional<String> name = Optional.empty();
 
     /**
@@ -190,4 +190,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         return weights.getOrDefault(bc, weights.getOrDefault(bcCommuted, 0));
     }
 
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
 }
