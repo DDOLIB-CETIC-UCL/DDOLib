@@ -66,13 +66,7 @@ public class TSPTWMain {
 
         String solutionStr;
         if (bestSol.isPresent()) {
-            int[] solution = bestSol.map(decisions -> {
-                int[] values = new int[problem.nbVars()];
-                for (Decision d : decisions) {
-                    values[d.var()] = d.val();
-                }
-                return values;
-            }).get();
+            int[] solution = solver.constructBestSolution(problem.nbVars());
             solutionStr = "0 -> " + Arrays.stream(solution)
                     .mapToObj(String::valueOf)
                     .collect(Collectors.joining(" -> "));
@@ -80,8 +74,7 @@ public class TSPTWMain {
             solutionStr = "No feasible solution";
         }
 
-        String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
-
+        String bestStr = solver.bestValue().map(Object::toString).orElse("No feasible solution");
 
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Width factor : %d%n", widthFactor);
