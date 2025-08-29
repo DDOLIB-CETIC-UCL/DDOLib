@@ -7,21 +7,23 @@ import java.util.Set;
  * resolution of the original problem which had been defined.
  * <p>
  * Subproblems are instantiated from nodes in the exact custsets of relaxed decision
- * diagrams
+ * diagrams.
+ *
+ * @param <T> the type of state
  */
 public final class SubProblem<T> {
     /**
-     * The root state of this sub problem
+     * The root state of this subproblem
      */
     final T state;
     /**
-     * The root value of this sub problem
+     * The root value of this subproblem
      */
-    final int value;
+    final double value;
     /**
      * An upper bound on the objective reachable in this subproblem
      */
-    final int ub;
+    final double ub;
     /**
      * The path to traverse to reach this subproblem from the root of the original
      * problem
@@ -31,21 +33,28 @@ public final class SubProblem<T> {
     /**
      * Creates a new subproblem instance
      *
-     * @param state the root state of this sub problem
+     * @param state the root state of this subproblem
      * @param value the value of the longest path to this subproblem
      * @param ub    an upper bound on the optimal value reachable when solving the global
-     *              problem through this sub problem
+     *              problem through this subproblem
      * @param path  the partial assignment leading to this subproblem from the root
      */
     public SubProblem(
             final T state,
-            final int value,
-            final int ub,
+            final double value,
+            final double ub,
             final Set<Decision> path) {
         this.state = state;
         this.value = value;
         this.ub = ub;
         this.path = path;
+    }
+
+    /**
+     * @return the depth of the root of this subproblem
+     */
+    public int getDepth() {
+        return this.path.size();
     }
 
     /**
@@ -58,15 +67,23 @@ public final class SubProblem<T> {
     /**
      * @return the objective value at the root of this subproblem
      */
-    public int getValue() {
+    public double getValue() {
         return this.value;
     }
 
     /**
      * @return an upper bound on the global objective if solved using this subproblem
      */
-    public int getUpperBound() {
+    public double getUpperBound() {
         return this.ub;
+    }
+
+    /**
+     * @return the f-value of this subproblem, i.e., the value of the longest path to this
+     * subproblem plus the upper bound on the objective reachable in this subproblem
+     */
+    public double f() {
+        return this.value + this.ub;
     }
 
     /**
@@ -76,9 +93,14 @@ public final class SubProblem<T> {
         return this.path;
     }
 
+    public String statistics() {
+        return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value - ub), this.getPath().size());
+    }
+
     @Override
     public String toString() {
-        return String.format("Subproblem: value: %d - ub: %d - state: %s", value, ub, state);
+        return String.format("SubProblem(val: %.0f - ub: %.0f - f: %.0f - depth: %d - state: %s",
+                value, ub, f(), this.getPath().size(), state);
     }
 
     @Override
@@ -93,4 +115,5 @@ public final class SubProblem<T> {
     public int hashCode() {
         return this.state.hashCode();
     }
+
 }
