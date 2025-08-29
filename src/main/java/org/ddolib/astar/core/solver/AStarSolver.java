@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.DebugUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -112,7 +113,8 @@ public final class AStarSolver<T, K> implements Solver {
      *     <li>A debug level:
      *          <ul>
      *              <li>0: no debug (default) </li>
-     *              <li>1: check if the upper bound is admissible.</li>
+     *              <li>1: check if the upper bound is admissible and if the hash of states are
+     *              coherent.</li>
      *              <li>2: 1 + check if the upper bound is consistent.</li>
      *          </ul>
      *     </li>
@@ -253,6 +255,8 @@ public final class AStarSolver<T, K> implements Solver {
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
+            if (debugLevel >= 1)
+                DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             double value = subProblem.getValue() + cost;
