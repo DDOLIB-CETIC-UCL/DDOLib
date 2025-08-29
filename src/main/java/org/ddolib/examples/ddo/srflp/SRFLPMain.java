@@ -40,6 +40,7 @@ public final class SRFLPMain {
         SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SRFLPRelax(problem);
+        config.fub = new SRFLPFastUpperBound(problem);
         config.ranking = new SRFLPRanking();
 
         config.width = new FixedWidth<>(maxWidth);

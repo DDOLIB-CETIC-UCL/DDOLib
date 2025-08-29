@@ -19,7 +19,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * The optimal solution of this instance if known (used for tests).
      */
-    public Optional<Double> optimal;
+    private Optional<Double> optimal;
 
     private Optional<String> name = Optional.empty();
 
@@ -155,5 +155,10 @@ public class SRFLPProblem implements Problem<SRFLPState> {
             return sb.toString();
         }
 
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 }
