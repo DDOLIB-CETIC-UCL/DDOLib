@@ -105,6 +105,9 @@ public final class ExactSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
+    private final int debugLevel;
+
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
@@ -125,6 +128,13 @@ public final class ExactSolver<T, K> implements Solver {
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
      *     <li>A boolean to export some mdd as .dot file</li>
+     *     <li>A debug level:
+     *          <ul>
+     *               <li>0: no additional tests (default)</li>
+     *               <li>1: checks if the upper bound is well-defined</li>
+     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *           </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -140,6 +150,7 @@ public final class ExactSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
     }
 
     @Override
@@ -163,7 +174,8 @@ public final class ExactSolver<T, K> implements Solver {
                 dominance,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
-                exportAsDot
+                exportAsDot,
+                debugLevel
         );
         mdd.compile(compilation);
         extractBest();

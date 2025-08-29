@@ -17,8 +17,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static javax.swing.UIManager.put;
-
 /**
  * This class implements the decision diagram as a linked structure.
  *
@@ -118,6 +116,8 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
          */
         private boolean isAboveExactCutSet;
 
+        private double ub = Double.POSITIVE_INFINITY;
+
 
         /**
          * Creates a new node
@@ -149,6 +149,10 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
          */
         public NodeType getNodeType() {
             return this.type;
+        }
+
+        public void setUb(final double ub) {
+            this.ub = ub;
         }
 
         @Override
@@ -332,6 +336,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 } else {
                     double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state,
                             variables));
+                    node.setUb(rub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -397,7 +402,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                 }
             }
             for (NodeSubProblem<T> n : this.currentLayer) {
-                if (input.exportAsDot()) {
+                if (input.exportAsDot() || input.debugLevel() > 0) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -454,7 +459,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             }
         }
 
-        if (input.exportAsDot()) {
+        if (input.exportAsDot() || input.debugLevel() > 0) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -844,7 +849,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
             String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
                     " [label=" + df.format(e.weight) +
                     ", tooltip=\"" + e.decision.toString() + "\"";
-            put(e.hashCode(), edgeStr);
+            edgesDotStr.put(e.hashCode(), edgeStr);
         }
         return sb;
     }
@@ -865,7 +870,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     /**
      * Performs a saturated addition (no overflow)
      */
-    private static final double saturatedAdd(double a, double b) {
+    private static double saturatedAdd(double a, double b) {
         double sum = a + b;
         if (Double.isInfinite(sum)) {
             return sum > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
@@ -876,7 +881,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
     /**
      * Performs a saturated difference (no underflow)
      */
-    private static final double saturatedDiff(double a, double b) {
+    private static double saturatedDiff(double a, double b) {
         double diff = a - b;
         if (Double.isInfinite(diff)) {
             return diff < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;

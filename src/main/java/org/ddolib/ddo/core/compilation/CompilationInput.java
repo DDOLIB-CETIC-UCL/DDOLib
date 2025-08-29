@@ -24,6 +24,8 @@ import org.ddolib.modeling.StateRanking;
  * @param bestLB            The best known lower bound at the time when the dd is being compiled.
  * @param cutSetType        The type of cut set used in the compilation.
  * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
+ * @param debugLevel        The debug level of the compilation to add additional checks (see
+ *                          {@link org.ddolib.common.solver.SolverConfig for details}
  * @param <T>               The type used to model the state of your problem.
  * @param <K>               The type of the dominance key.
  */
@@ -38,7 +40,8 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      DominanceChecker<T, K> dominance,
                                      double bestLB,
                                      CutSetType cutSetType,
-                                     boolean exportAsDot) {
+                                     boolean exportAsDot,
+                                     int debugLevel) {
 
     /**
      * Returns a string representation of this record class.

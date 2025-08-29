@@ -8,15 +8,16 @@ import java.util.Set;
  * <p>
  * Subproblems are instantiated from nodes in the exact custsets of relaxed decision
  * diagrams.
+ *
  * @param <T> the type of state
  */
 public final class SubProblem<T> {
     /**
-     * The root state of this sub problem
+     * The root state of this subproblem
      */
     final T state;
     /**
-     * The root value of this sub problem
+     * The root value of this subproblem
      */
     final double value;
     /**
@@ -32,10 +33,10 @@ public final class SubProblem<T> {
     /**
      * Creates a new subproblem instance
      *
-     * @param state the root state of this sub problem
+     * @param state the root state of this subproblem
      * @param value the value of the longest path to this subproblem
      * @param ub    an upper bound on the optimal value reachable when solving the global
-     *              problem through this sub problem
+     *              problem through this subproblem
      * @param path  the partial assignment leading to this subproblem from the root
      */
     public SubProblem(
@@ -52,7 +53,9 @@ public final class SubProblem<T> {
     /**
      * @return the depth of the root of this subproblem
      */
-    public int getDepth() {return this.path.size();}
+    public int getDepth() {
+        return this.path.size();
+    }
 
     /**
      * @return the root state of this subproblem
@@ -91,12 +94,13 @@ public final class SubProblem<T> {
     }
 
     public String statistics() {
-            return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value-ub), this.getPath().size());
+        return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value - ub), this.getPath().size());
     }
 
     @Override
     public String toString() {
-        return String.format("SubProblem(val:%.0f - ub:%.0f - fub:%.0f - depth: %d - state:%s", value, ub, (value-ub), this.getPath().size(), state);
+        return String.format("SubProblem(val: %.0f - ub: %.0f - f: %.0f - depth: %d - state: %s",
+                value, ub, f(), this.getPath().size(), state);
     }
 
     @Override
