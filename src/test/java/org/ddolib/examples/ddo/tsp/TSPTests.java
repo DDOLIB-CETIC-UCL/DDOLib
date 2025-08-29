@@ -1,47 +1,70 @@
 package org.ddolib.examples.ddo.tsp;
 
-import org.ddolib.common.solver.Solver;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.stream.IntStream;
+import java.util.List;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TSPTests {
 
-    static Stream<TSPInstance> dataProvider() throws IOException {
-        String dir = Paths.get("src", "test", "resources", "TSP").toString();
+    private static class TSPBench extends ProblemTestBench<TSPState, NullType, TSPProblem> {
 
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> new TSPInstance(filePath.toString()));
-    }
-
-    static Stream<TSPInstance> dataProvider2() throws IOException {
-        return IntStream.range(0, 100).boxed().map(i ->
-                new TSPInstance(3 + i % 10, i, 1000));
-    }
-
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testTSP(TSPInstance instance) {
-
-        Solver s = TSPMain.solveTSP(instance);
-        TSPProblem problem = new TSPProblem(instance.distanceMatrix);
-        int[] solution = TSPMain.extractSolution(problem, s);
-        assertEquals(s.bestValue().get(), -problem.eval(solution));
-        if (instance.objective >= 0) {
-            System.out.println("comparing obj with actual best");
-            assertEquals(instance.objective, -s.bestValue().get());
+        public TSPBench() {
+            super();
         }
+
+        @Override
+        protected List<TSPProblem> generateProblems() {
+            String dir = Paths.get("src", "test", "resources", "TSP").toString();
+            File[] files = new File(dir).listFiles();
+            assert files != null;
+            Stream<File> stream = Stream.of(files);
+
+            return stream.filter(file -> !file.isDirectory())
+                    .map(File::getName)
+                    .map(fileName -> Paths.get(dir, fileName))
+                    .map(filePath -> {
+                        TSPInstance instance = new TSPInstance(filePath.toString());
+                        TSPProblem problem = new TSPProblem(instance.distanceMatrix, instance.objective);
+                        problem.setName(filePath.getFileName().toString());
+                        return problem;
+                    }).toList();
+        }
+
+        @Override
+        protected SolverConfig<TSPState, NullType> configSolver(TSPProblem problem) {
+            SolverConfig<TSPState, NullType> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new TSPRelax(problem);
+            config.ranking = new TSPRanking();
+            config.fub = new TSPFastUpperBound(problem);
+            config.width = new FixedWidth<>(500);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.cache = new SimpleCache<>();
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+            return config;
+        }
+    }
+
+    @DisplayName("TSP")
+    @TestFactory
+    public Stream<DynamicTest> testTSP() {
+        var bench = new TSPBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
+        return bench.generateTests();
     }
 }
