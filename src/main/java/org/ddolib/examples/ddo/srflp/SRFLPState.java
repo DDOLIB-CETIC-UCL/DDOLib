@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -29,7 +29,9 @@ public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof SRFLPState(BitSet otherMust, BitSet otherMaybe, int[] otherCut, int otherDepth)) {
+        if (obj instanceof SRFLPState(
+                BitSet otherMust, BitSet otherMaybe, int[] otherCut, int otherDepth
+        )) {
             return this.must.equals(otherMust)
                     && this.maybe.equals(otherMaybe)
                     && Arrays.equals(this.cut, otherCut)

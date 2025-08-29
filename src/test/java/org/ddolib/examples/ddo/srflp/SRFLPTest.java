@@ -1,12 +1,16 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -41,21 +45,16 @@ public class SRFLPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testSRFLP(SRFLPProblem problem) {
-        final SRFLPRelax relax = new SRFLPRelax(problem);
-        final SRFLPRanking ranking = new SRFLPRanking();
+        SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SRFLPRelax(problem);
+        config.ranking = new SRFLPRanking();
 
-        final FixedWidth<SRFLPState> width = new FixedWidth<>(1000);
-        final DefaultVariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
+        config.width = new FixedWidth<>(1000);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<SRFLPState> solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier
-        );
+        Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
         assertEquals(problem.optimal.get(), -solver.bestValue().get());
@@ -64,15 +63,15 @@ public class SRFLPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastLowerBoundAtRoot(SRFLPProblem problem) {
-        final SRFLPRelax relax = new SRFLPRelax(problem);
+        final SRFLPFastUpperBound fub = new SRFLPFastUpperBound(problem);
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
         assertTrue(-rub <= problem.optimal.get(),
-                String.format("Lower bound %d is not smaller than the expected optimal solution %d",
+                String.format("Lower bound %f is not smaller than the expected optimal solution %f",
                         rub,
                         problem.optimal.get()));
     }
@@ -80,21 +79,17 @@ public class SRFLPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testSRFLPWithRelaxation(SRFLPProblem problem) {
-        final SRFLPRelax relax = new SRFLPRelax(problem);
-        final SRFLPRanking ranking = new SRFLPRanking();
+        SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SRFLPRelax(problem);
+        config.ranking = new SRFLPRanking();
 
-        final FixedWidth<SRFLPState> width = new FixedWidth<>(2);
-        final DefaultVariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
-        final SimpleFrontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
+        config.width = new FixedWidth<>(1000);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<SRFLPState> solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier
-        );
+        Solver solver = new SequentialSolver<>(config);
+
 
         solver.maximize();
         assertEquals(problem.optimal.get(), -solver.bestValue().get());

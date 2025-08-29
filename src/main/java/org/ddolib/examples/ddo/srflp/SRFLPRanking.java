@@ -1,6 +1,7 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+
+import org.ddolib.modeling.StateRanking;
 
 /**
  * Class that define a ranking between two {@link SRFLPState}

@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,7 +11,7 @@ public class SRFLPIO {
     public static SRFLPProblem readInstance(String filename) throws IOException {
         int[] length = new int[0];
         int[][] flows = new int[0][0];
-        Optional<Integer> optimal = Optional.empty();
+        Optional<Double> optimal = Optional.empty();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             int lineCount = 0;
@@ -26,7 +26,7 @@ public class SRFLPIO {
                     int n = Integer.parseInt(tokens[0]);
                     length = new int[n];
                     flows = new int[n][n];
-                    if (tokens.length > 1) optimal = Optional.of(Integer.parseInt(tokens[1]));
+                    if (tokens.length > 1) optimal = Optional.of(Double.parseDouble(tokens[1]));
 
                 } else if (lineCount - skip == 1) {
                     String[] tokens = line.replace(",", " ").split("\\s+");

@@ -1,18 +1,12 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Relaxation;
+import org.ddolib.modeling.FastUpperBound;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
-import static java.lang.Integer.max;
-import static java.lang.Integer.min;
-
-/**
- * Implementation of the relaxation for the SRFLP.
- */
-public class SRFLPRelax implements Relaxation<SRFLPState> {
-
+public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
     private final SRFLPProblem problem;
 
     /**
@@ -24,12 +18,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
      */
     private final ArrayList<DepartmentAndLength> departmentsSortedByLength = new ArrayList<>();
 
-    /**
-     * Constructs a new instance of a relaxation for the SRFLP.
-     *
-     * @param problem The problem instance that must be solved.
-     */
-    public SRFLPRelax(SRFLPProblem problem) {
+    public SRFLPFastUpperBound(SRFLPProblem problem) {
         this.problem = problem;
 
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -46,42 +35,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
 
 
     @Override
-    public SRFLPState mergeStates(Iterator<SRFLPState> states) {
-        BitSet mergedMust = new BitSet(problem.nbVars());
-        mergedMust.set(0, problem.nbVars(), true);
-        BitSet mergedMaybes = new BitSet(problem.nbVars());
-        int[] mergedCut = new int[problem.nbVars()];
-        Arrays.fill(mergedCut, Integer.MAX_VALUE);
-        int mergedDepth = 0;
-
-        while (states.hasNext()) {
-            SRFLPState state = states.next();
-            mergedMust.and(state.must());
-            mergedMaybes.or(state.must());
-            mergedMaybes.or(state.maybe());
-            mergedDepth = max(mergedDepth, state.depth());
-
-            for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
-                mergedCut[i] = min(mergedCut[i], state.cut()[i]);
-            }
-
-            for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
-                mergedCut[i] = min(mergedCut[i], state.cut()[i]);
-            }
-        }
-
-        mergedMaybes.andNot(mergedMust);
-
-        return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);
-    }
-
-    @Override
-    public int relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d, int cost) {
-        return cost;
-    }
-
-    @Override
-    public int fastUpperBound(SRFLPState state, Set<Integer> variables) {
+    public double fastUpperBound(SRFLPState state, Set<Integer> variables) {
         int complete = problem.nbVars() - state.depth();
         int maxFromMaybe = complete - state.must().cardinality();
         int free = freeLB(selectLength(state, complete, maxFromMaybe), selectFlow(state, complete, maxFromMaybe),
@@ -264,7 +218,8 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
      * @param dep The id of the department.
      * @param len The length of the department.
      */
-    private record DepartmentAndLength(int dep, int len) implements Comparable<DepartmentAndLength> {
+    private record DepartmentAndLength(int dep,
+                                       int len) implements Comparable<DepartmentAndLength> {
         @Override
         public int compareTo(DepartmentAndLength o) {
             return Integer.compare(this.len, o.len);
@@ -283,5 +238,4 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
             return Double.compare((double) this.cut / this.length, (double) o.cut / o.length);
         }
     }
-
 }

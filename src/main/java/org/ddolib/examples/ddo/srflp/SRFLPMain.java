@@ -1,15 +1,15 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.SearchStatistics;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -37,24 +37,19 @@ public final class SRFLPMain {
         final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
         final SRFLPProblem problem = SRFLPIO.readInstance(filename);
-        final SRFLPRelax relax = new SRFLPRelax(problem);
-        final SRFLPRanking ranking = new SRFLPRanking();
+        SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SRFLPRelax(problem);
+        config.ranking = new SRFLPRanking();
 
-        final WidthHeuristic<SRFLPState> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<SRFLPState> varh = new DefaultVariableHeuristic<>();
-        final Frontier<SRFLPState> frontier = new SimpleFrontier<>(ranking);
+        config.width = new FixedWidth<>(maxWidth);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        SequentialSolver<SRFLPState> solver = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier
-        );
+        Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize();
+        solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

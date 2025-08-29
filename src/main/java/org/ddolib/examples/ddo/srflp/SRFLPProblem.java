@@ -1,7 +1,7 @@
-package org.ddolib.ddo.examples.srflp;
+package org.ddolib.examples.ddo.srflp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -19,7 +19,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * The optimal solution of this instance if known (used for tests).
      */
-    public Optional<Integer> optimal;
+    public Optional<Double> optimal;
 
     private Optional<String> name = Optional.empty();
 
@@ -30,7 +30,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
      * @param flows   The traffic flow between each pair of departments. It is assumed to be symmetrical.
      * @param optimal The optimal solution of this instance if known (used for tests).
      */
-    public SRFLPProblem(int[] lengths, int[][] flows, Optional<Integer> optimal) {
+    public SRFLPProblem(int[] lengths, int[][] flows, Optional<Double> optimal) {
         this.lengths = lengths;
         this.flows = flows;
         this.optimal = optimal;
@@ -69,7 +69,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -109,7 +109,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     }
 
     @Override
-    public int transitionCost(SRFLPState state, Decision decision) {
+    public double transitionCost(SRFLPState state, Decision decision) {
         int cut = 0;
 
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
