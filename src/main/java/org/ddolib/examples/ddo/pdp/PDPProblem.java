@@ -6,14 +6,22 @@ import org.ddolib.modeling.Problem;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class PDPProblem implements Problem<PDPState> {
     PDPInstance instance;
     public int n;
+    private Optional<Double> optimal;
+
+    /**
+     * A name to ease the readability of the tests.
+     */
+    private Optional<String> name = Optional.empty();
 
     public PDPProblem(PDPInstance instance) {
         this.instance = instance;
         this.n = instance.n;
+        this.optimal = instance.optimal == -1 ? Optional.empty() : Optional.of(instance.optimal);
     }
 
     @Override
@@ -33,7 +41,7 @@ public class PDPProblem implements Problem<PDPState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPState(singleton(0), openToVisit, allToVisit);
+        return new PDPState(singleton(0), openToVisit, allToVisit,0,0);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -53,8 +61,18 @@ public class PDPProblem implements Problem<PDPState> {
             //the final decision is to come back to node zero
             return singleton(0).stream().iterator();
         } else {
-            ArrayList<Integer> domain = new ArrayList<>(state.openToVisit.stream().boxed().toList());
-            return domain.iterator();
+
+            boolean canIncludePickups = state.minContent < instance.maxCapa;
+            boolean canIncludeDeliveries = state.maxContent !=0;
+
+            return state
+                    .openToVisit
+                    .stream()
+                    .filter(point ->
+                            ((canIncludePickups | !instance.pickupToAssociatedDelivery.containsKey(point))
+                                    && (canIncludeDeliveries | ! instance.deliveryToAssociatedPickup.containsKey(point))))
+                    .boxed()
+                    .iterator();
         }
     }
 
@@ -66,9 +84,12 @@ public class PDPProblem implements Problem<PDPState> {
 
         BitSet newAllToVisit = (BitSet) state.allToVisit.clone();
         newAllToVisit.clear(node);
-
+        int newMinContent = state.minContent;
+        int newMaxContent = state.maxContent;
         if (instance.pickupToAssociatedDelivery.containsKey(node)) {
             newOpenToVisit.set(instance.pickupToAssociatedDelivery.get(node));
+            newMinContent += 1;
+            newMaxContent += 1;
         }
 
         if (instance.deliveryToAssociatedPickup.containsKey(node)) {
@@ -76,12 +97,18 @@ public class PDPProblem implements Problem<PDPState> {
             if (newOpenToVisit.get(p)) {
                 newOpenToVisit.clear(p);
             }
+            newMinContent -= 1;
+            newMaxContent -= 1;
         }
 
+        if(newMinContent <0) newMinContent = 0;
+        if(newMaxContent > instance.maxCapa) newMaxContent = instance.maxCapa;
         return new PDPState(
                 state.singleton(node),
                 newOpenToVisit,
-                newAllToVisit);
+                newAllToVisit,
+                newMinContent,
+                newMaxContent);
     }
 
     @Override
@@ -93,8 +120,17 @@ public class PDPProblem implements Problem<PDPState> {
                 .getAsDouble();
     }
 
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
     @Override
     public String toString() {
-        return instance.toString();
+        return name.orElse(instance.toString());
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 }

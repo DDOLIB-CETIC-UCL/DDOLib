@@ -1,12 +1,10 @@
 package org.ddolib.ddo.core.cache;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
@@ -30,7 +28,6 @@ public class KSCacheTest {
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
         int number = 1000;
-        boolean found = false;
         int nbVars = 10;
         int cap = 10;
         Stream<Integer> testStream = IntStream.rangeClosed(0, number).boxed();
@@ -42,54 +39,39 @@ public class KSCacheTest {
                 weight[i] = 2 + rand.nextInt(cap / 2);
             }
             KSProblem pb = new KSProblem(cap, profit, weight, 0.0);
-//            System.out.println(pb);
             return Stream.of(pb);
         });
     }
 
     private static double optimalSolutionNoCaching(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-        final FixedWidth<Integer> width = new FixedWidth<>(10000);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<Integer>();
-        final Solver solver1 = new SequentialSolver<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance);
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.fub = new KSFastUpperBound(problem);
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(10000);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        solver1.maximize();
-        return solver1.bestValue().get();
+        final Solver solver = new SequentialSolver<>(config);
+
+        solver.maximize();
+        return solver.bestValue().get();
     }
 
 
     private double optimalSolutionWithCache(KSProblem problem, int w, CutSetType cutSetType) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(w);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
+        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new KSRelax();
+        config.fub = new KSFastUpperBound(problem);
+        config.ranking = new KSRanking();
+        config.width = new FixedWidth<>(w);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.cache = new SimpleCache<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
 
-        final SimpleCache<Integer> cache = new SimpleCache<>();
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, cutSetType);
-        final DefaultDominanceChecker<Integer> dominance = new DefaultDominanceChecker<>();
-        final Solver solverWithCaching = new SequentialSolverWithCache<>(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance,
-                cache);
+        final Solver solverWithCaching = new SequentialSolverWithCache<>(config);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();

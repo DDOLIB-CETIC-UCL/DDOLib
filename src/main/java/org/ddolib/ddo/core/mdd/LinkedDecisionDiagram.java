@@ -11,9 +11,14 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -65,6 +70,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
+    /**
+     * <ul>
+     *     <li>0: no debug</li>
+     *     <li>1: checks the coherence of the fub</li>
+     *     <li>2: 1 + export failing mdd as .dot</li>
+     * </ul>
+     */
+    private int debugLevel = 0;
+
     // --- UTILITY CLASSES -----------------------------------------------
 
     /**
@@ -100,6 +114,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         private boolean isMarked;
 
         /**
+         * An overapproximation of the longest from this node to a terminal node
+         */
+        private double fub = Double.POSITIVE_INFINITY;
+
+
+        /**
          * Creates a new node
          */
         public Node(final double value) {
@@ -121,6 +141,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
         /**
+         * Set the value of {@code fub}.
+         *
+         * @param fub The new value of {@code fub}.
+         */
+        public void setFub(final double fub) {
+            this.fub = fub;
+        }
+
+        /**
          * get the type of the node
          *
          * @return NodeType
@@ -133,6 +162,15 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         public String toString() {
             return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
                     value, suffix, best, edges);
+        }
+
+        // Deterministic hash
+        private static int nextHash = 0;
+        private final int hash = nextHash++;
+
+        @Override
+        public int hashCode() {
+            return hash;
         }
     }
 
@@ -255,6 +293,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
+        this.debugLevel = input.debugLevel();
 
         dotStr.append("digraph ").append(input.compilationType().toString().toLowerCase()).append("{\n");
 
@@ -286,10 +325,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
-                    continue;
-                } else {
-                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
+                if (node.getNodeType() != NodeType.EXACT || !dominance.updateDominance(state,
+                        depthGlobalDD, node.value)) {
+                    double fub = input.fub().fastUpperBound(state, variables);
+                    double rub = saturatedAdd(node.value, fub);
+                    node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -342,7 +382,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.exportAsDot()) {
+                if (input.exportAsDot() || input.debugLevel() >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.ub <= input.bestLB()) {
@@ -386,7 +426,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot()) {
+        if (input.exportAsDot() || debugLevel >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -399,6 +439,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
         if (input.compilationType() == CompilationType.Relaxed) {
             computeLocalBounds();
+        }
+        if (debugLevel >= 1 && input.compilationType() != CompilationType.Relaxed) {
+            checkFub(input.problem());
         }
     }
 
@@ -427,7 +470,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
-                updateBestEdgeColor(eb.hashCode());
+                updateBestEdgeColor(eb.hashCode(), "#6fb052");
                 eb = eb.origin == null ? null : eb.origin.best;
             }
             return Optional.of(sol);
@@ -464,7 +507,92 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
-    // --- UTILITY METHODS -----------------------------------------------
+    /**
+     * Given a node, returns the list of decisions taken from the root to reach this node.
+     *
+     * @param node A node of the mdd
+     * @return The list of decisions took from the root to reach the input node.
+     */
+    private LinkedList<Decision> constructPathFromRoot(Node node) {
+        LinkedList<Decision> path = new LinkedList<>();
+        Edge eb = node.best;
+        while (eb != null) {
+            path.addFirst(eb.decision);
+            if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            eb = eb.origin == null ? null : eb.origin.best;
+        }
+
+        return path;
+    }
+
+    /**
+     * Given a list of decisions returns of the generated states from root
+     *
+     * @param pathFromRoot A list of decision
+     * @param problem      The problem linked to this mdd
+     * @return A list of decisions returns of the generated states from root
+     */
+    private LinkedList<T> constructStateFromRoot(LinkedList<Decision> pathFromRoot, Problem<T> problem) {
+        LinkedList<T> states = new LinkedList<>();
+        T current = problem.initialState();
+        states.addLast(current);
+        for (Decision decision : pathFromRoot) {
+            current = problem.transition(current, decision);
+            states.addLast(current);
+        }
+        return states;
+    }
+
+
+    /**
+     * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
+     * This method constructs longest path from terminal nodes and checks for each node the mdd
+     * if the associated fast upper bound if bigger than the identified path.
+     *
+     */
+    private void checkFub(Problem<T> problem) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+        for (Node last : nextLayer.values()) {
+            //For each node we save the longest path to last
+            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
+            parent.put(last, 0.0);
+            while (!parent.isEmpty()) {
+                Entry<Node, Double> current = parent.pollFirstEntry();
+                if (current.getKey().fub + 1e-10 < current.getValue()) {
+                    LinkedList<Decision> path = constructPathFromRoot(current.getKey());
+                    LinkedList<T> failedState = constructStateFromRoot(path, problem);
+                    String statesStr = failedState.stream().map(Object::toString)
+                            .collect(Collectors.joining("\n\t"));
+                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
+                                    "its longest path (%s)\n", df.format(current.getKey().fub),
+                            df.format(current.getValue()));
+                    failureMsg += String.format("Path from root: %s\n", path);
+                    failureMsg += String.format("States from root: \n\t%s\n\n", statesStr);
+                    failureMsg += String.format("Failing state: %s\n", failedState.getLast());
+                    if (debugLevel >= 2) {
+                        String dot = exportAsDot();
+                        try (BufferedWriter bw =
+                                     new BufferedWriter(new FileWriter(Paths.get("output",
+                                             "failed.dot").toString()))) {
+                            bw.write(dot);
+                            failureMsg += "MDD saved in output/failed.dot\n";
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    throw new RuntimeException(failureMsg);
+                }
+
+                for (Edge edge : current.getKey().edges) {
+                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
+                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                }
+            }
+        }
+    }
+
+    // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {
@@ -478,6 +606,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
+     * --- UT
      * Reset the state of this MDD. This way it can easily be reused
      */
     private void clear() {
@@ -651,9 +780,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         DecimalFormat df = new DecimalFormat("#.##########");
 
         String nodeStr = String.format(
-                "\"%s\nub: %s - value: %s\"",
+                "\"%s\nfub: %s - value: %s\"",
                 node.state,
-                df.format(node.ub),
+                df.format(node.ub - node.node.value),
                 df.format(node.node.value)
         );
 
@@ -684,11 +813,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
      *
      * @param edgeHash The hashcode of the edge to color.
+     * @param color    HTML string for the color of the edge
      */
-    private void updateBestEdgeColor(int edgeHash) {
+    private void updateBestEdgeColor(int edgeHash, String color) {
         String edgeStr = edgesDotStr.get(edgeHash);
         if (edgeStr != null) {
-            edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
+            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
             edgesDotStr.replace(edgeHash, edgeStr);
         }
     }

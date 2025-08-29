@@ -48,6 +48,11 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
     public int nbVars() {
         return nbScene;
     }

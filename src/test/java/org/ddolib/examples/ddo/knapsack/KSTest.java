@@ -1,100 +1,74 @@
 package org.ddolib.examples.ddo.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.stream.IntStream;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static org.ddolib.examples.ddo.knapsack.KSMain.readInstance;
-import static org.ddolib.factory.Solvers.sequentialSolver;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class KSTest {
-    static Stream<KSProblem> dataProvider() {
-        Stream<Integer> testStream = IntStream.rangeClosed(0, 10).boxed();
-        return testStream.flatMap(i -> {
-            try {
-                return Stream.of(readInstance("src/test/resources/Knapsack/instance_test_" + i));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+    private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testKnapsack(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<>();
-
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
-
-        solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.optimal);
-    }
-
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void fastUpperBoundTest(KSProblem problem) throws IOException {
-        final KSFastUpperBound fub = new KSFastUpperBound(problem);
-
-        HashSet<Integer> vars = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            vars.add(i);
+        public KSBench() {
+            super();
         }
 
-        double rub = fub.fastUpperBound(problem.capa, vars);
-        // Checks if the upper bound at the root is bigger than the optimal solution
-        assertTrue(rub >= problem.optimal,
-                String.format("Upper bound %.1f is not bigger than the expected optimal solution %.1f",
-                        rub,
-                        problem.optimal));
+        @Override
+        protected List<KSProblem> generateProblems() {
+            String dir = Paths.get("src", "test", "resources", "Knapsack").toString();
+
+            File[] files = new File(dir).listFiles();
+            assert files != null;
+            Stream<File> stream = Stream.of(files);
+
+            return stream.filter(file -> !file.isDirectory())
+                    .map(File::getName)
+                    .map(fileName -> Paths.get(dir, fileName))
+                    .map(filePath -> {
+                        try {
+                            KSProblem problem = KSMain.readInstance(filePath.toString());
+                            problem.setName(filePath.getFileName().toString());
+                            return problem;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+        }
+
+        @Override
+        protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
+            SolverConfig<Integer, Integer> config = new SolverConfig<>();
+            config.problem = problem;
+            config.relax = new KSRelax();
+            config.ranking = new KSRanking();
+            config.width = new FixedWidth<>(10);
+            config.varh = new DefaultVariableHeuristic<>();
+            config.fub = new KSFastUpperBound(problem);
+            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+
+            return config;
+        }
     }
 
-    @ParameterizedTest
-    @MethodSource("dataProvider")
-    public void testKnapsackWithDominance(KSProblem problem) {
-        final KSRelax relax = new KSRelax();
-        final KSRanking ranking = new KSRanking();
-        final FixedWidth<Integer> width = new FixedWidth<>(250);
-        final VariableHeuristic<Integer> varh = new DefaultVariableHeuristic<Integer>();
-        final SimpleDominanceChecker<Integer, Integer> dominance = new SimpleDominanceChecker<>(new KSDominance(),
-                problem.nbVars());
-
-
-        final Frontier<Integer> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
-
-        solver.maximize();
-        assertEquals(solver.bestValue().get(), problem.optimal);
+    @DisplayName("Knapsack")
+    @TestFactory
+    public Stream<DynamicTest> testKS() {
+        var bench = new KSBench();
+        bench.testRelaxation = true;
+        bench.testFUB = true;
+        bench.testDominance = true;
+        return bench.generateTests();
     }
 }

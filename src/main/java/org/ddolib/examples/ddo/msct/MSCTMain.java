@@ -2,21 +2,19 @@ package org.ddolib.examples.ddo.msct;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
-
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
  * The problem is to sequence n jobs such that:
@@ -33,25 +31,18 @@ public class MSCTMain {
 //        final String instance = "data/MSCT/msct1.txt";
 //        final MSCTProblem problem = readInstance(instance);
         int n = 11;
+        SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
         MSCTProblem problem = instanceGenerator(n);
+        config.problem = problem;
         System.out.println(Arrays.toString(problem.release));
         System.out.println(Arrays.toString(problem.processing));
-        final MSCTRelax relax = new MSCTRelax(problem);
-        final MSCTRanking ranking = new MSCTRanking();
-        final FixedWidth<MSCTState> width = new FixedWidth<>(100);
-        final VariableHeuristic<MSCTState> varh = new DefaultVariableHeuristic<MSCTState>();
-        final SimpleDominanceChecker<MSCTState, Integer> dominance =
-                new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
-        final Frontier<MSCTState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                dominance
-        );
+        config.relax = new MSCTRelax(problem);
+        config.ranking = new MSCTRanking();
+        config.width = new FixedWidth<>(100);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();

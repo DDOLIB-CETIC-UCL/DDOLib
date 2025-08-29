@@ -2,14 +2,14 @@ package org.ddolib.examples.ddo.tsptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -17,8 +17,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.ddolib.factory.Solvers.sequentialSolver;
 
 /**
  * The TSPTW (TSP with Time Windows) is
@@ -43,29 +41,21 @@ public class TSPTWMain {
 
         final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+
+        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
+        config.problem = problem;
+        config.relax = new TSPTWRelax(problem);
+        config.ranking = new TSPTWRanking();
+        config.fub = new TSPTWFastUpperBound(problem);
 
-        final TSPTWRelax relax = new TSPTWRelax(problem);
-        final TSPTWRanking ranking = new TSPTWRanking();
-        final TSPTWFastUpperBound fub = new TSPTWFastUpperBound(problem);
-
-        final FixedWidth<TSPTWState> width = new FixedWidth<>(20);
-        final VariableHeuristic<TSPTWState> varh = new DefaultVariableHeuristic<>();
-        final SimpleDominanceChecker<TSPTWState, TSPTWDominanceKey> dominance =
-                new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-        final Frontier<TSPTWState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        config.width = new FixedWidth<>(20);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
 
-        final Solver solver = sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier,
-                fub,
-                dominance
-        );
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();

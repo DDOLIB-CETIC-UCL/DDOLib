@@ -2,19 +2,20 @@ package org.ddolib.examples.ddo.smic;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.factory.Solvers;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
+
 
 /**
  * Given a set J of n jobs, partitioned into a set J1
@@ -27,23 +28,16 @@ import java.util.Scanner;
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data100_2.txt");
-        final SMICRelax relax = new SMICRelax(problem);
-        final SMICRanking ranking = new SMICRanking();
-        final FixedWidth<SMICState> width = new FixedWidth<>(10);
-        final VariableHeuristic<SMICState> varh = new DefaultVariableHeuristic<SMICState>();
-        final SimpleDominanceChecker<SMICState, Integer> dominance =
-                new SimpleDominanceChecker<>(new SMICDominance(),
-                        problem.nbVars());
-        final Frontier<SMICState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-        final Solver solver = Solvers.sequentialSolver(
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier, dominance
-        );
+        SMICProblem problem = readProblem("data/SMIC/data10_1.txt");
+        SolverConfig<SMICState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SMICRelax(problem);
+        config.ranking = new SMICRanking();
+        config.width = new FixedWidth<>(200);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();
@@ -60,7 +54,7 @@ public class SMICMain {
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 
@@ -70,22 +64,69 @@ public class SMICMain {
         while (!s.hasNextLine()) {
             s.nextLine();
         }
-        int nbJob = s.nextInt();
-        int initInventory = s.nextInt();
-        int capaInventory = s.nextInt();
-        int[] type = new int[nbJob];
-        int[] processing = new int[nbJob];
-        int[] weight = new int[nbJob];
-        int[] release = new int[nbJob];
-        int[] inventory = new int[nbJob];
-        for (int i = 0; i < nbJob; i++) {
-            type[i] = s.nextInt();
-            processing[i] = s.nextInt();
-            weight[i] = s.nextInt();
-            release[i] = s.nextInt();
-            inventory[i] = s.nextInt();
+        if (filename.contains(".txt")) {
+            int nbJob = s.nextInt();
+            int initInventory = s.nextInt();
+            int capaInventory = s.nextInt();
+            int[] type = new int[nbJob];
+            int[] processing = new int[nbJob];
+            int[] weight = new int[nbJob];
+            int[] release = new int[nbJob];
+            int[] inventory = new int[nbJob];
+            Optional<Double> opti = Optional.empty();
+            for (int i = 0; i < nbJob; i++) {
+                type[i] = s.nextInt();
+                processing[i] = s.nextInt();
+                weight[i] = s.nextInt();
+                release[i] = s.nextInt();
+                inventory[i] = s.nextInt();
+            }
+            if (s.hasNextInt()) {
+                opti = Optional.of(s.nextDouble());
+            }
+
+            if (opti.isPresent()) {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
+                        opti.get());
+            } else {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            }
+        } else {
+            int nbJob = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
+            int initInventory = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
+            int capaInventory = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
+            int[] type = new int[nbJob];
+            int[] processing = new int[nbJob];
+            int[] weight = new int[nbJob];
+            int[] release = new int[nbJob];
+            int[] inventory = new int[nbJob];
+            String[] t = extractArrayValue(s.nextLine());
+            String[] p = extractArrayValue(s.nextLine());
+            String[] w = extractArrayValue(s.nextLine());
+            String[] r = extractArrayValue(s.nextLine());
+            String[] in = extractArrayValue(s.nextLine());
+            for (int i = 0; i < nbJob; i++) {
+                type[i] = Integer.parseInt(t[i]);
+                processing[i] = Integer.parseInt(p[i]);
+                weight[i] = Integer.parseInt(w[i]);
+                release[i] = Integer.parseInt(r[i]);
+                inventory[i] = Integer.parseInt(in[i]);
+            }
+            s.close();
+            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
         }
-        s.close();
-        return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+    }
+
+    private static String[] extractArrayValue(String line) {
+        String[] v = null;
+        if (line.contains("=") && line.contains("[")) {
+            int start = line.indexOf('[');
+            int end = line.indexOf(']');
+            if (start != -1 && end != -1 && end > start) {
+                String arrayStr = line.substring(start + 1, end);
+                v = arrayStr.split(", ");
+            }
+        }
+        return v;
     }
 }
