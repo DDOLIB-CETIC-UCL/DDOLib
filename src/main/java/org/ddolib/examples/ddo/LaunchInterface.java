@@ -211,13 +211,13 @@ public class LaunchInterface {
                 GHP restrictStrategy = new GHP(config.distance);
                 restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
-                config.relaxStrategy = restrictStrategy;
+                config.restrictStrategy = restrictStrategy;
             }
             case GHP -> {
                 GHP restrictStrategy = new GHP(config.distance);
                 restrictStrategy.setMostDistantPivot(false);
                 restrictStrategy.setSeed(seed);
-                config.relaxStrategy = restrictStrategy;
+                config.restrictStrategy = restrictStrategy;
             }
         }
 
