@@ -31,7 +31,7 @@ public class PDPTWInstance {
         int vehicleContent = 0;
         int distance = 0;
         int currentTime = timeWindows[0].start();
-        for (int i = 1; i < solution.length; i++) {
+        for (int i = 1; i < solution.length-1; i++) { //zero is in the solution as well
             distance = distance + timeAndDistanceMatrix[solution[i - 1]][solution[i]];
             if(pickupToAssociatedDelivery.containsKey(solution[i])) {
                 vehicleContent += 1;
@@ -44,17 +44,19 @@ public class PDPTWInstance {
             TimeWindow window = timeWindows[solution[i]];
             currentTime += timeAndDistanceMatrix[solution[i - 1]][solution[i]];
             if(currentTime > window.end()){
+                System.out.println("currentTime:" + currentTime + " node:" + solution[i] + " trw:" + window);
                 return -2;
             }
             if(currentTime <= window.start()) {
                 currentTime = window.start();
             }
         }
-        currentTime += timeAndDistanceMatrix[solution[solution.length - 1]][0];
+        currentTime += timeAndDistanceMatrix[solution[solution.length - 2]][0]; //final come back
+        distance += timeAndDistanceMatrix[solution[solution.length - 2]][0]; //final come back
         if(currentTime > timeWindows[0].end()) {
+            System.out.println("currentTime:" + currentTime + " come back ToZero trw:" + timeWindows[0]);
             return -3;
         }
-        distance = distance + timeAndDistanceMatrix[solution[solution.length - 1]][0]; //final come back
         if(vehicleContent !=0){
             return -4;
         }

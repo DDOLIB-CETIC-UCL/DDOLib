@@ -52,7 +52,7 @@ public final class PDPTWMain {
         TimeWindow[] timeWindows = new TimeWindow[n];
         for (int i = 0; i < n; i++) {
             int earlyLine = random.nextInt(200);
-            int deadline = earlyLine + 500;
+            int deadline = earlyLine + 550;
             timeWindows[i] = new TimeWindow(earlyLine, deadline);
         }
         HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
@@ -64,7 +64,6 @@ public final class PDPTWMain {
             pickupToAssociatedDelivery.put(p, d);
         }
 
-
         return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
     }
 
@@ -74,7 +73,7 @@ public final class PDPTWMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWInstance instance = genInstance(20, 2, 3, new Random(1));
+        final PDPTWInstance instance = genInstance(18, 2, 3, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
@@ -98,7 +97,7 @@ public final class PDPTWMain {
         config.relax = new PDPTWRelax(problem);
         config.ranking = new PDPTWRanking();
         config.fub = new PDPTWFastUpperBound(problem);
-        config.width = new FixedWidth<>(3000);
+        config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
