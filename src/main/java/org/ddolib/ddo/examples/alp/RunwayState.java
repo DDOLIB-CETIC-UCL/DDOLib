@@ -28,7 +28,7 @@ public class RunwayState implements Comparable<RunwayState> {
 
     @Override
     public String toString() {
-        return "PT " + prevTime + " PC : " + prevClass;
+        return "PT: " + prevTime + " PC : " + prevClass;
     }
 
     @Override
