@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.alp;
+package org.ddolib.examples.ddo.alp;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +19,7 @@ public class ALPInstance {
     public int[] aircraftDeadline;
     public int[][] classTransitionCost;
     // Optimal solution
-    public Optional<Integer> optimal;
+    public Optional<Double> optimal;
 
     /**
      * Extracts an ALP from a formatted file.
@@ -40,7 +40,7 @@ public class ALPInstance {
                     nbClasses = Integer.parseInt(splitLine[1]);
                     nbRunways = Integer.parseInt(splitLine[2]);
                     if (splitLine.length == 4) {
-                        optimal = Optional.of(Integer.parseInt(splitLine[3]));
+                        optimal = Optional.of(Double.parseDouble(splitLine[3]));
                     } else {
                         optimal = Optional.empty();
                     }
