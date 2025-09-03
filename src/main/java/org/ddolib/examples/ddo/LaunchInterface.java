@@ -6,10 +6,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.CostUBBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
@@ -197,6 +194,11 @@ public class LaunchInterface {
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
+            case MBP -> {
+                MBP relaxStrategy = new MBP(config.distance);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
         }
 
         switch (restrictionStrat) {
@@ -216,6 +218,11 @@ public class LaunchInterface {
             case GHP -> {
                 GHP restrictStrategy = new GHP(config.distance);
                 restrictStrategy.setMostDistantPivot(false);
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case MBP -> {
+                MBP restrictStrategy = new MBP(config.distance);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
@@ -309,7 +316,8 @@ public class LaunchInterface {
         CostUB,
         Kmeans,
         GHP,
-        GHPMDP
+        GHPMDP,
+        MBP
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
@@ -319,6 +327,7 @@ public class LaunchInterface {
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPMDP", ClusterStrat.GHPMDP);
+            put("MBP", ClusterStrat.MBP);
         }
     };
 
@@ -329,6 +338,7 @@ public class LaunchInterface {
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPMDP", ClusterStrat.GHPMDP);
+            put("MBP", ClusterStrat.MBP);
         }
     };
 
