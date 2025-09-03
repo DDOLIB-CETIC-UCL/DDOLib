@@ -29,11 +29,11 @@ public interface Solver {
     Optional<Set<Decision>> bestSolution();
 
     /**
-     * Construct an array containing the values assigned to each variable from the took decisions.
+     * Constructs an array containing the values assigned to each variable from the taken decisions.
      *
      * @param numVar The number of variables in the solved problem.
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
-     * {@code i}. Or empty array if the solution does not exist
+     * {@code i}. Or empty array if the solution does not exist.
      */
     default int[] constructBestSolution(int numVar) {
         return bestSolution().map(decisions -> {
