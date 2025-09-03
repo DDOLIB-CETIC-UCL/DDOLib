@@ -7,8 +7,8 @@ import static java.lang.Math.abs;
 /**
  * Class to model a Binary clause of two literals for CNF formula. <br>
  * <p>
- * To symbolize a literal <code>x_i</code>, for <code>i >0</code>, we give the value <code>i</code> as input. To
- * symbolize <code> NOT x_i</code>, we give <code>-i</code>.
+ * To symbolize a literal {@code x_i    }, for {@code i > 0}, we give the value {@code i} as
+ * input. To symbolize {@code NOT x_i}, we give {@code -i}.
  */
 public class BinaryClause implements Comparable<BinaryClause> {
     public final int i;
@@ -24,8 +24,8 @@ public class BinaryClause implements Comparable<BinaryClause> {
     /**
      * Evaluates if the clause is verified given 2 boolean values.
      *
-     * @param a The value to attribute to the variable <code>x_i</code> (0 or 1).
-     * @param b The value to attribute to the variable <code>x_j</code> (0 or 1).
+     * @param a The value to attribute to the variable {@code x_i} (0 or 1).
+     * @param b The value to attribute to the variable {@code x_j} (0 or 1).
      * @return 0 if the clause is verified. 1 else.
      */
     public int eval(int a, int b) {
@@ -73,9 +73,9 @@ public class BinaryClause implements Comparable<BinaryClause> {
      *
      * @param other The binary clause to be compared.
      * @return <ul>
-     *     <li><code>0</code> if if <code>this == other</code></li>
-     *     <li><code>1</code> if <code>this > other</code></li>
-     *     <li><code>-1</code> if <code> this < that</code></li>
+     *     <li> {@code 0} if if {@code this == other}</li>
+     *     <li><code>1</code> if {@code this > other}</li>
+     *     <li><code>-1</code> if {@code this < other}</li>
      * </ul>
      */
     @Override

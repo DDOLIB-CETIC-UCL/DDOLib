@@ -9,12 +9,12 @@ import java.util.Objects;
  * <p>
  * This list contains:
  * <ul>
- *     <li> for each <code>k >= depth</code>, the net benefits by setting the variable <code>K</code> to
- *     <code>true</code> knowing the assignment of the previous variables (a negative value is the net benefit to
- *     assign the variable to <code>false</code>);
+ *     <li> for each {@code k >= depth}, the net benefits by setting the variable {@code K} to
+ *     {@code true} knowing the assignment of the previous variables (a negative value is the net
+ *     benefit to assign the variable to <code>false</code>);
  *     </li>
- *     <li>for each <code>k < depth</code>, <code>0</code>, modeling that these variables have been assigned in
- *     previous layer and cannot influence the objective anymore.</li>
+ *     <li>for each {@code k < depth}, {@code 0}, modeling that these variables have been
+ *     assigned in previous layer and cannot influence the objective anymore.</li>
  * </ul>
  *
  * @param netBenefit
