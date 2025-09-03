@@ -69,11 +69,19 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         return root;
     }
 
+    /**
+     * Whatever the decision, the clauses {@code x_i OR NOT x_i} and {@code NOT x_i OR Nx_i} will
+     * always be true. So we add their cost directly at the start of the search easing future
+     * computation.
+     *
+     * @return The initial value of the problem.
+     */
     @Override
     public double initialValue() {
         int toReturn = 0;
         for (int i = 0; i < nbVars(); i++) {
             toReturn += weight(t(i), f(i));
+            toReturn += weight(f(i), t(i));
         }
         return toReturn;
     }
