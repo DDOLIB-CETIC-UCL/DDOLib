@@ -35,7 +35,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
                 } else if (signum(mergedI) == -1 && signum(currentI) == -1) {
                     merged.set(i, max(mergedI, currentI));
                 } else {
-                    // Otherwise, we set the benefit to 0
+                    // Otherwise, we set the benefit to 0.
                     merged.set(i, 0);
                 }
             }

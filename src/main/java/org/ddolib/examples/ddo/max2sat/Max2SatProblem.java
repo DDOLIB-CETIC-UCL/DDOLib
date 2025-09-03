@@ -137,10 +137,10 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
 
     /**
-     * Decision Variables are indexed from 0. However, BinaryClause do not allow index 0 for variable.
-     * This method shift the index
+     * Decision Variables are indexed from 0. However, BinaryClause does not allow index 0 for variable.
+     * This method shifts the index.
      *
-     * @param x The index of a variable
+     * @param x The index of a variable.
      * @return An allowed index in BinaryClause for the variable.
      */
     private int toBinaryClauseVariable(int x) {
@@ -182,7 +182,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      *
      * @param x The index of variable in BinaryClause
      * @param y Another index of variable in BinaryClause.
-     * @return The weigh of the BinaryClause.
+     * @return The weight of the BinaryClause.
      */
     public int weight(int x, int y) {
         BinaryClause bc = new BinaryClause(x, y);

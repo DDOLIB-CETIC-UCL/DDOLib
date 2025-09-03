@@ -1,7 +1,7 @@
 package org.ddolib.examples.ddo.max2sat;
 
 /**
- * A naive Max2Sat solver which enumerate all the solution to find the best one. Used for tests
+ * A naive Max2Sat solver which enumerates all the solution to find the best one. Used for tests.
  */
 public class NaiveMax2SatSolver {
 

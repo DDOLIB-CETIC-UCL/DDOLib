@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * Class to contain data for the Max2Sat sate. The state contain its depth in the associated MDD and a list of net
+ * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD and a list of net
  * benefits.<br>
  * <p>
  * This list contains:
  * <ul>
  *     <li> for each <code>k >= depth</code>, the net benefits by setting the variable <code>K</code> to
- *     <code>true</code>  knowing the assignment of the previous variables (a negative value is the net benefit to
+ *     <code>true</code> knowing the assignment of the previous variables (a negative value is the net benefit to
  *     assign the variable to <code>false</code>);
  *     </li>
- *     <li>for each <code>k < depth</code>, <code>0</code>, modeling that these variable has been assigned in
+ *     <li>for each <code>k < depth</code>, <code>0</code>, modeling that these variables have been assigned in
  *     previous layer and cannot influence the objective anymore.</li>
  * </ul>
  *
