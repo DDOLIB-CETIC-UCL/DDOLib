@@ -70,7 +70,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     /**
-     * Whatever the decision, the clauses {@code x_i OR NOT x_i} and {@code NOT x_i OR Nx_i} will
+     * Whatever the decision, the clauses {@code x_i OR NOT x_i} and {@code NOT x_i OR x_i} will
      * always be true. So we add their cost directly at the start of the search easing future
      * computation.
      *
