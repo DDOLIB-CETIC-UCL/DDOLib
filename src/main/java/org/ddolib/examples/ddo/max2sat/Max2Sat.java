@@ -2,7 +2,6 @@ package org.ddolib.examples.ddo.max2sat;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -45,13 +44,7 @@ public final class Max2Sat {
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        int[] solution = solver.constructBestSolution(problem.nbVars());
 
 
         System.out.printf("Instance : %s%n", file);
