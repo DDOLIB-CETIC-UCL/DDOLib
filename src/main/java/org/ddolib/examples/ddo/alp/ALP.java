@@ -1,16 +1,16 @@
-package org.ddolib.ddo.examples.alp;
+package org.ddolib.examples.ddo.alp;
 
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.heuristics.WidthHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.SequentialSolver;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.heuristics.variable.*;
+import org.ddolib.ddo.core.heuristics.width.*;
 
+import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -21,26 +21,23 @@ public final class ALP {
         ALPInstance instance = new ALPInstance(fileStr);
         ALPProblem problem = new ALPProblem(instance);
         ALPRelax relax = new ALPRelax(problem);
+        ALPFastUpperBound fub = new ALPFastUpperBound(problem);
         ALPRanking ranking = new ALPRanking();
 
         WidthHeuristic<ALPState> width = new FixedWidth<>(100);
         VariableHeuristic<ALPState> variableHeuristic = new DefaultVariableHeuristic<>();
-        Frontier<ALPState> frontier = new SimpleFrontier<>(ranking);
+        Frontier<ALPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        Solver parallelSolver = new ParallelSolver<>(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax, variableHeuristic,
-                ranking, width, frontier
-        );
+        SolverConfig<ALPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = relax;
+        config.fub = fub;
+        config.ranking = ranking;
+        config.width = width;
+        config.varh = variableHeuristic;
+        config.frontier = frontier;
 
-        Solver sequentialSolver = new SequentialSolver<>(
-                problem,
-                relax, variableHeuristic,
-                ranking, width, frontier
-        );
-
-        Solver solver = sequentialSolver;
+        Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
@@ -57,15 +54,15 @@ public final class ALP {
                 ALPDecision alpD = problem.fromDecision(d.val());
                 int aircraft = problem.latestToEarliestAircraftByClass.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
                 int arrivalTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
-                int cost = problem.transitionCost(curState, d);
+                double cost = problem.transitionCost(curState, d);
                 curState = problem.transition(curState, d);
-                values[d.var()] = String.format("Aircraft :%d, landing :%d, cost :%d", aircraft, arrivalTime, cost);
+                values[d.var()] = String.format("Aircraft :%d, landing :%d, cost :%,.2f", aircraft, arrivalTime, cost);
             }
             return values;
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %d%n", solver.bestValue().get());
+        System.out.printf("Objective: %,.2f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 }

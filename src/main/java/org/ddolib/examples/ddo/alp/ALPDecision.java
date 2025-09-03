@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.alp;
+package org.ddolib.examples.ddo.alp;
 
 import java.util.Objects;
 

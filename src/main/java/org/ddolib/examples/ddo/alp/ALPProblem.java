@@ -1,7 +1,7 @@
-package org.ddolib.ddo.examples.alp;
+package org.ddolib.examples.ddo.alp;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
@@ -52,7 +52,7 @@ public class ALPProblem implements Problem<ALPState> {
         }
     }
 
-    public Optional<Integer> getOptimal() {
+    public Optional<Double> getOptimal() {
         return instance.optimal;
     }
 
@@ -118,7 +118,7 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     @Override
-    public int initialValue() {
+    public double initialValue() {
         return 0;
     }
 
@@ -181,7 +181,7 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     @Override
-    public int transitionCost(ALPState state, Decision decision) {
+    public double transitionCost(ALPState state, Decision decision) {
         // The delta between the arrival time and the earliest arrival time.
         if (decision.val() == DUMMY) {
             return 0;

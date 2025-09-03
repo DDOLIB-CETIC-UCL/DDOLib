@@ -1,16 +1,17 @@
-package org.ddolib.ddo.examples;
+package org.ddolib.examples.ddo.alp;
 
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.core.Solver;
-import org.ddolib.ddo.examples.alp.*;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
+
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.ParallelSolver;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -42,17 +43,17 @@ public class ALPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testFastUpperBound(ALPProblem problem) {
-        final ALPRelax relax = new ALPRelax(problem);
+        final ALPFastUpperBound fub = new ALPFastUpperBound(problem);
 
         HashSet<Integer> vars = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
             vars.add(i);
         }
 
-        int rub = relax.fastUpperBound(problem.initialState(), vars);
+        double rub = fub.fastUpperBound(problem.initialState(), vars);
         // Checks if the upper bound at the root is bigger than the optimal solution
         assertTrue(rub >= problem.getOptimal().get(),
-                String.format("Upper bound %d is not bigger than the expected optimal solution %d",
+                String.format("Upper bound %.2f is not bigger than the expected optimal solution %.2f",
                         rub,
                         problem.getOptimal().get()));
     }
@@ -60,21 +61,16 @@ public class ALPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testALP(ALPProblem problem) {
-        final ALPRelax relax = new ALPRelax(problem);
-        final ALPRanking ranking = new ALPRanking();
-        final FixedWidth<ALPState> width = new FixedWidth<>(250);
-        final VariableHeuristic<ALPState> varh = new DefaultVariableHeuristic<ALPState>();
+        SolverConfig<ALPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new ALPRelax(problem);
+        config.fub = new ALPFastUpperBound(problem);
+        config.ranking = new ALPRanking();
+        config.width = new FixedWidth<>(250);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Frontier<ALPState> frontier = new SimpleFrontier<>(ranking);
-
-        final Solver solver = new ParallelSolver<ALPState>(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final Solver solver = new ParallelSolver<>(config);
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.getOptimal().get());
     }
@@ -82,21 +78,16 @@ public class ALPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testALPWithRelax(ALPProblem problem) {
-        final ALPRelax relax = new ALPRelax(problem);
-        final ALPRanking ranking = new ALPRanking();
-        final FixedWidth<ALPState> width = new FixedWidth<>(100);
-        final VariableHeuristic<ALPState> varh = new DefaultVariableHeuristic<ALPState>();
+        SolverConfig<ALPState, NullType> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new ALPRelax(problem);
+        config.fub = new ALPFastUpperBound(problem);
+        config.ranking = new ALPRanking();
+        config.width = new FixedWidth<>(100);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Frontier<ALPState> frontier = new SimpleFrontier<>(ranking);
-
-        final Solver solver = new ParallelSolver<ALPState>(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax,
-                varh,
-                ranking,
-                width,
-                frontier);
+        final Solver solver = new ParallelSolver<>(config);
         solver.maximize();
         assertEquals(solver.bestValue().get(), problem.getOptimal().get());
     }
