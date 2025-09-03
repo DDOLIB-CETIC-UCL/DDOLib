@@ -21,6 +21,8 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
 
     @Override
     public Max2SatState mergeStates(Iterator<Max2SatState> states) {
+        //Being to optimistic can lead to bad decision. For the merged state we keep the net
+        // benefit near to 0.
         ArrayList<Integer> merged = new ArrayList<>(Collections.nCopies(problem.nbVars(), 0));
         int depth = problem.nbVars();
         while (states.hasNext()) {
@@ -46,6 +48,9 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
     @Override
     public double relaxEdge(Max2SatState from, Max2SatState to, Max2SatState merged, Decision d,
                             double cost) {
+        // The net benefits in merged state are smaller than the net benefit in exact states.
+        // To offset the losses of benefit and guarantee an over-approximation of the optimal
+        // solution, we add the losses to the transition cost.
         double toReturn = cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
