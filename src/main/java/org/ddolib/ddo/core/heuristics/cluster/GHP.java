@@ -53,7 +53,7 @@ public class GHP<T> implements ReductionStrategy<T> {
 
         while (pqClusters.size() < maxWidth) {
 
-            // Poll the next cluster two divide
+            // Poll the next cluster to divide
             ClusterNode nodeCurrent = pqClusters.poll();
             assert nodeCurrent != null;
             List<LinkedDecisionDiagram.NodeSubProblem<T>> current = nodeCurrent.cluster;

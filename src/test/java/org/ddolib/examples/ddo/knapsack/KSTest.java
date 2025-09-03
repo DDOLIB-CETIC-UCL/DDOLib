@@ -152,14 +152,15 @@ public class KSTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(10);
+        config.width = new FixedWidth<>(5);
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
-        ReductionStrategy[] strats = new ReductionStrategy[4];
-        strats[0] = new Kmeans(new KSCoordinates());
-        strats[1] = new CostBased(new KSRanking());
-        strats[2] = new CostUBBased(new KSRanking());
-        strats[3] = new GHP(new KSDistance());
+        ReductionStrategy[] strats = new ReductionStrategy[5];
+        strats[0] = new Kmeans<>(new KSCoordinates());
+        strats[1] = new CostBased<>(new KSRanking());
+        strats[2] = new CostUBBased<>(new KSRanking());
+        strats[3] = new GHP<>(new KSDistance());
+        strats[4] = new MBP<>(new KSDistance());
 
         for (ReductionStrategy strategy : strats) {
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
@@ -179,14 +180,15 @@ public class KSTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(10);
+        config.width = new FixedWidth<>(5);
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
-        ReductionStrategy[] strats = new ReductionStrategy[4];
-        strats[0] = new Kmeans(new KSCoordinates());
-        strats[1] = new CostBased(new KSRanking());
-        strats[2] = new CostUBBased(new KSRanking());
-        strats[3] = new GHP(new KSDistance());
+        ReductionStrategy[] strats = new ReductionStrategy[5];
+        strats[0] = new Kmeans<>(new KSCoordinates());
+        strats[1] = new CostBased<>(new KSRanking());
+        strats[2] = new CostUBBased<>(new KSRanking());
+        strats[3] = new GHP<>(new KSDistance());
+        strats[4] = new MBP<>(new KSDistance());
 
         for (ReductionStrategy strategy : strats) {
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
