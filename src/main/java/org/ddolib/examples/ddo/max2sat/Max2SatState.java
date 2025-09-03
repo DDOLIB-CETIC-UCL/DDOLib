@@ -1,7 +1,6 @@
 package org.ddolib.examples.ddo.max2sat;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD and a list of net
@@ -25,19 +24,5 @@ public record Max2SatState(ArrayList<Integer> netBenefit, int depth) {
     @Override
     public String toString() {
         return netBenefit.toString();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Max2SatState(ArrayList<Integer> otherBenefit, int otherDepth)) {
-            return this.depth == otherDepth && this.netBenefit == otherBenefit;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(netBenefit, depth);
     }
 }

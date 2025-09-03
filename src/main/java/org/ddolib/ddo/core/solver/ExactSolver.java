@@ -131,7 +131,8 @@ public final class ExactSolver<T, K> implements Solver {
      *     <li>A debug level:
      *          <ul>
      *               <li>0: no additional tests (default)</li>
-     *               <li>1: checks if the upper bound is well-defined</li>
+     *               <li>1: checks if the upper bound is well-defined and if the hash code
+     *               of the states are coherent</li>
      *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
      *           </ul>
      *     </li>
