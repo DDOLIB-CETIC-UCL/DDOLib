@@ -2,7 +2,6 @@ package org.ddolib.examples.ddo.talentscheduling;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -105,22 +104,7 @@ public class TSMain {
         SearchStatistics stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        String solutionStr;
-        if (solver.bestSolution().isPresent()) {
-            int[] solution = solver.bestSolution()
-                    .map(decisions -> {
-                        int[] values = new int[problem.nbVars()];
-                        for (Decision d : decisions) {
-                            values[d.var()] = d.val();
-                        }
-                        return values;
-                    })
-                    .get();
-            solutionStr = Arrays.toString(solution);
-
-        } else {
-            solutionStr = "No feasible solution found";
-        }
+        int[] solution = solver.constructBestSolution(problem.nbVars());
 
         String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
 
@@ -128,7 +112,7 @@ public class TSMain {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
-        System.out.printf("Solution : %s%n", solutionStr);
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
         System.out.println(stat);
     }
 }
