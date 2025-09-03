@@ -19,8 +19,8 @@ public class ALPRanking implements StateRanking<ALPState> {
         int totA = Arrays.stream(a.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
         int totB = Arrays.stream(b.runwayStates).map(i -> i.prevTime).reduce(0, Integer::sum);
 
-        int remCompare = -Integer.compare(remAircraftA, remAircraftB);
-        if (remCompare == 0) return -Integer.compare(totA, totB);
+        int remCompare = Integer.compare(remAircraftA, remAircraftB);
+        if (remCompare == 0) return Integer.compare(totA, totB);
         else return remCompare;
     }
 }
