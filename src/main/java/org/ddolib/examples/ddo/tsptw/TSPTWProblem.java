@@ -3,17 +3,30 @@ package org.ddolib.examples.ddo.tsptw;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 
     TSPTWInstance instance;
 
+    private Optional<String> name = Optional.empty();
+
     public TSPTWProblem(TSPTWInstance instance) {
         this.instance = instance;
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return instance.optimal;
+    }
+
+    @Override
+    public String toString() {
+        return name.orElse(instance.toString());
     }
 
     @Override
