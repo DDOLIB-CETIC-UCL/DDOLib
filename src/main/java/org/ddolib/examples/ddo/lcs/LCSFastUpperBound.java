@@ -15,7 +15,7 @@ public class LCSFastUpperBound implements FastUpperBound<LCSState> {
     }
 
     @Override
-    public double fastUpperBound(LCSState state, Set<Integer> variables) {
+    public double fastUpperBound(LCSState state, Set<Integer> variables, double lb) {
         // For each character, gets the minimal amount left in common between all strings.
         int total = 0;
         for (int c = 0; c < problem.diffCharNb; ++c) {

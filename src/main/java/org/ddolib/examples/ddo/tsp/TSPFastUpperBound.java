@@ -27,7 +27,7 @@ public class TSPFastUpperBound implements FastUpperBound<TSPState> {
     }
 
     @Override
-    public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
+    public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables, double lb) {
         BitSet toVisit = state.toVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(unassignedVariables.size());

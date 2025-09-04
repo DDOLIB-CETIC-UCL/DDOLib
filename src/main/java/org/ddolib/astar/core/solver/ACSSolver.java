@@ -220,7 +220,7 @@ public final class ACSSolver<T, K> implements Solver {
 
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+            double fastUpperBound = ub.fastUpperBound(newState, varSet(path), bestLB);
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound, path);

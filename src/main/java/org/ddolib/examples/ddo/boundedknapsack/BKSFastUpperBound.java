@@ -12,7 +12,7 @@ public class BKSFastUpperBound implements FastUpperBound<Integer> {
     }
 
     @Override
-    public double fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastUpperBound(Integer state, Set<Integer> variables, double lb) {
         int rub = 0;
         for (int v : variables) {
             rub += this.problem.quantity[v] * this.problem.values[v];

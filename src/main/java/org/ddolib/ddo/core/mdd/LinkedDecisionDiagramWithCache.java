@@ -335,7 +335,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> implements DecisionDiagr
                     continue;
                 } else {
                     double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state,
-                            variables));
+                            variables, input.bestLB()));
                     node.setUb(rub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }

@@ -29,7 +29,7 @@ public class TSPTWFastUpperBound implements FastUpperBound<TSPTWState> {
     }
 
     @Override
-    public double fastUpperBound(TSPTWState state, Set<Integer> variables) {
+    public double fastUpperBound(TSPTWState state, Set<Integer> variables, double lb) {
         return -fastLowerBound(state);
     }
 

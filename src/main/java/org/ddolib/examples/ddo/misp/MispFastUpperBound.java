@@ -16,7 +16,7 @@ public class MispFastUpperBound implements FastUpperBound<BitSet> {
     }
 
     @Override
-    public double fastUpperBound(BitSet state, Set<Integer> variables) {
+    public double fastUpperBound(BitSet state, Set<Integer> variables, double lb) {
         // We select all the remaining nodes
         return state.stream().map(i -> problem.weight[i]).sum();
     }

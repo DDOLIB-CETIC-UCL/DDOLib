@@ -53,10 +53,11 @@ public class PSFastUpperBound implements FastUpperBound<PSState> {
      *
      * @param state     the state for which the estimate is to be computed
      * @param variables the set of unassigned variables
+     * @param lb
      * @return
      */
     @Override
-    public double fastUpperBound(PSState state, Set<Integer> variables) {
+    public double fastUpperBound(PSState state, Set<Integer> variables, double lb) {
         // Convert to bitset-like index
         int idx = members(state).stream().
                 mapToInt(Integer::intValue).

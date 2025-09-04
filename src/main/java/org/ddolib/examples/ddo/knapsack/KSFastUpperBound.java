@@ -23,7 +23,7 @@ public class KSFastUpperBound implements FastUpperBound<Integer> {
     }
 
     @Override
-    public double fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastUpperBound(Integer state, Set<Integer> variables, double lb) {
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {

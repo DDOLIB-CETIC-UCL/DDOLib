@@ -328,7 +328,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node node = e.getValue();
                 if (node.getNodeType() != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
-                    double fub = input.fub().fastUpperBound(state, variables);
+                    double fub = input.fub().fastUpperBound(state, variables, input.bestLB()  );
                     double rub = saturatedAdd(node.value, fub);
                     node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));

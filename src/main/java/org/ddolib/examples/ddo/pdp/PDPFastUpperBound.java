@@ -27,7 +27,7 @@ public class PDPFastUpperBound implements FastUpperBound<PDPState> {
     }
 
     @Override
-    public double fastUpperBound(PDPState state, Set<Integer> variables) {
+    public double fastUpperBound(PDPState state, Set<Integer> variables, double lb) {
         BitSet toVisit = state.allToVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(variables.size());

@@ -19,7 +19,7 @@ public class TSFastUpperBound implements FastUpperBound<TSState> {
     }
 
     @Override
-    public double fastUpperBound(TSState state, Set<Integer> variables) {
+    public double fastUpperBound(TSState state, Set<Integer> variables, double lb) {
         return -fastLowerBound(state);
     }
 

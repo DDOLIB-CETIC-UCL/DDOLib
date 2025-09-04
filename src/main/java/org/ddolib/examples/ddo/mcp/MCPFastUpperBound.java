@@ -22,7 +22,7 @@ public class MCPFastUpperBound implements FastUpperBound<MCPState> {
     }
 
     @Override
-    public double fastUpperBound(MCPState state, Set<Integer> variables) {
+    public double fastUpperBound(MCPState state, Set<Integer> variables, double lb) {
         int k = state.depth();
         if (k == problem.nbVars()) return 0.0;
         else return MCPRanking.rank(state) + estimation[k] + partialSum[k] - initVal;
