@@ -35,15 +35,15 @@ public class PDPFastUpperBound implements FastUpperBound<PDPState> {
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }
-        // only unassigned.size() elements are to be visited
+        // only unassigned.size() elements are to be visitedjitp
         // and there can be fewer than toVisit.size()
-        int lb = 0;
+        int bound = 0;
         if (toVisitLB.size() > variables.size()) {
             Collections.sort(toVisitLB);
         }
         for (int i = 0; i < variables.size(); i++) {
-            lb += toVisitLB.get(i);
+            bound += toVisitLB.get(i);
         }
-        return -lb;
+        return -bound;
     }
 }

@@ -37,13 +37,13 @@ public class TSPFastUpperBound implements FastUpperBound<TSPState> {
         }
         // only unassigned.size() elements are to be visited
         // and there can be fewer than toVisit.size()
-        int lb = 0;
+        int bound = 0;
         if (toVisitLB.size() > unassignedVariables.size()) {
             Collections.sort(toVisitLB);
         }
         for (int i = 0; i < unassignedVariables.size(); i++) {
-            lb += toVisitLB.get(i);
+            bound += toVisitLB.get(i);
         }
-        return -lb;
+        return -bound;
     }
 }
