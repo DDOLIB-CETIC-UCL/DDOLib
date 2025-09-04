@@ -9,7 +9,7 @@ import java.util.Set;
  */
 public class DefaultFastUpperBound<T> implements FastUpperBound<T> {
     @Override
-    public double fastUpperBound(T state, Set<Integer> variables) {
+    public double fastUpperBound(T state, Set<Integer> variables, double lb) {
         return Double.POSITIVE_INFINITY;
     }
 }

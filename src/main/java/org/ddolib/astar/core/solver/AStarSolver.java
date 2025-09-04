@@ -243,7 +243,7 @@ public final class AStarSolver<T, K> implements Solver {
         return new SubProblem<>(
                 state,
                 value,
-                ub.fastUpperBound(state, vars),
+                ub.fastUpperBound(state, vars,bestLB),
                 nullDecisions);
     }
 
@@ -262,7 +262,7 @@ public final class AStarSolver<T, K> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+            double fastUpperBound = ub.fastUpperBound(newState, varSet(path),bestLB );
 
 
             // if the new state is dominated, we skip it
@@ -319,7 +319,7 @@ public final class AStarSolver<T, K> implements Solver {
         for (AstarKey<T> current : toCheck) {
             AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-            double currentFUB = ub.fastUpperBound(current.state, vars);
+            double currentFUB = ub.fastUpperBound(current.state, vars,bestLB );
 
             internalSolver.maximize();
             Optional<Double> longestFromCurrent = internalSolver.bestValue();
