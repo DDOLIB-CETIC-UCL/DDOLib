@@ -170,6 +170,7 @@ public final class ExactSolver<T, K> implements Solver {
                 problem.initialValue(),
                 Double.POSITIVE_INFINITY,
                 Collections.emptySet());
+        cache.ifPresent(c -> c.initialize(problem));
 
         CompilationInput<T, K> compilation = new CompilationInput<>(
                 CompilationType.Exact,
