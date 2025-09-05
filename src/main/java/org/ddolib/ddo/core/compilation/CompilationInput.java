@@ -2,12 +2,15 @@ package org.ddolib.ddo.core.compilation;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
+
+import java.util.Optional;
 
 /**
  * The set of parameters used to tweak the compilation of an MDD
@@ -38,6 +41,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      int maxWidth,
                                      FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
+                                     Optional<SimpleCache<T>> cache,
                                      double bestLB,
                                      CutSetType cutSetType,
                                      boolean exportAsDot,

@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.File;
@@ -37,7 +37,7 @@ public class SMICCacheMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolverWithCache<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();
