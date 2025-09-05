@@ -150,7 +150,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             Solver solver = solverForRelaxation(config);
 
             solver.maximize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
 
@@ -169,7 +169,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             Solver solver = solverForRelaxation(config);
 
             solver.maximize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
 
@@ -238,12 +238,30 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param expected The expected {@code Optional<Double>}.
      * @param actual   The actual {@code Optional<Double>}.
      * @param delta    The tolerance for the comparison if both optionals contain a value.
+     * @param width    The maximum width of mdd used for the tests. Used to display error message.
      */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected, Optional<Double> actual, double delta) {
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta,
+                                                 int width) {
+        String failureMsg = width > 0 ? String.format("Max width of the MDD: %d", width) : "";
         if (expected.isPresent() && actual.isPresent()) {
-            assertEquals(expected.get(), actual.get(), delta);
+            assertEquals(expected.get(), actual.get(), delta, failureMsg);
         } else {
-            assertEquals(expected, actual);
+            assertEquals(expected, actual, failureMsg);
         }
+    }
+
+    /**
+     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
+     *
+     * @param expected The expected {@code Optional<Double>}.
+     * @param actual   The actual {@code Optional<Double>}.
+     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     */
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta) {
+        assertOptionalDoubleEqual(expected, actual, delta, -1);
     }
 }
