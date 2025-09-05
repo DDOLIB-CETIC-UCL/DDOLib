@@ -56,7 +56,7 @@ public final class LinkedDecisionDiagramWithCache<T, K> extends LinkedDecisionDi
         final VariableHeuristic<T> var = input.variableHeuristic();
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(input.stateRanking());
         final DominanceChecker<T, K> dominance = input.dominance();
-        final SimpleCache<T> cache = input.cache();
+        final SimpleCache<T> cache = input.cache().get();
         double bestLb = input.bestLB();
 
         final Set<Integer> variables = varSet(input);

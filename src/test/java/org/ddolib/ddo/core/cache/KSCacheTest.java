@@ -7,7 +7,6 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
 import org.ddolib.examples.ddo.knapsack.KSProblem;
 import org.ddolib.examples.ddo.knapsack.KSRanking;
@@ -71,7 +70,8 @@ public class KSCacheTest {
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
 
-        final Solver solverWithCaching = new SequentialSolverWithCache<>(config);
+
+        final Solver solverWithCaching = new SequentialSolver<>(config);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();

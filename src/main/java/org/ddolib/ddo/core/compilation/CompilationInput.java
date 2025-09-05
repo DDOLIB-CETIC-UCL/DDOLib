@@ -10,6 +10,8 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.util.Optional;
+
 /**
  * The set of parameters used to tweak the compilation of an MDD
  *
@@ -39,7 +41,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      int maxWidth,
                                      FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
-                                     SimpleCache<T> cache,
+                                     Optional<SimpleCache<T>> cache,
                                      double bestLB,
                                      CutSetType cutSetType,
                                      boolean exportAsDot,

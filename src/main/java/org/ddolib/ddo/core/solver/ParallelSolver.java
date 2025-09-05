@@ -290,7 +290,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 width,
                 shared.fub,
                 shared.dominance,
-                null,
+                Optional.empty(),
                 bestLB,
                 critical.frontier.cutSetType(),
                 false,

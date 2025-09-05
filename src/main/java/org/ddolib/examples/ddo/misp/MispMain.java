@@ -2,12 +2,11 @@ package org.ddolib.examples.ddo.misp;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -100,9 +99,8 @@ public final class MispMain {
         config.varh = new DefaultVariableHeuristic<>();
 
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        config.cache = new SimpleCache<>();
 
-        final Solver solver = new SequentialSolverWithCache<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         var stat = solver.maximize();

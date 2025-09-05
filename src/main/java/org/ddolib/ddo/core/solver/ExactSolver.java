@@ -5,6 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -80,6 +81,12 @@ public final class ExactSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * This is the cache used to prune the search tree
+     */
+    private Optional<SimpleCache<T>> cache;
+
+
+    /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
@@ -147,6 +154,7 @@ public final class ExactSolver<T, K> implements Solver {
         this.varh = config.varh;
         this.fub = config.fub;
         this.dominance = config.dominance;
+        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
@@ -173,7 +181,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Integer.MAX_VALUE,
                 fub,
                 dominance,
-                null,
+                cache,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
                 exportAsDot,
@@ -188,7 +196,9 @@ public final class ExactSolver<T, K> implements Solver {
         }
 
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(1, 1, end - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
+                cache.map(SimpleCache::stats).orElse("noCache"));
     }
 
 

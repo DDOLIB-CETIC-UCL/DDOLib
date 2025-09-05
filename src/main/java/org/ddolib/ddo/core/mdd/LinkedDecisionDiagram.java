@@ -3,6 +3,8 @@ package org.ddolib.ddo.core.mdd;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.cache.Threshold;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -21,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static org.ddolib.util.MathUtil.saturatedAdd;
+import static org.ddolib.util.MathUtil.saturatedDiff;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -62,6 +65,12 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     protected Node best = null;
 
     /**
+     * Depth of the last exact layer
+     */
+    private int depthLEL = -1;
+
+
+    /**
      * Used to build the .dot file displaying the compiled mdd.
      */
     protected StringBuilder dotStr = new StringBuilder();
@@ -101,14 +110,27 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
         final VariableHeuristic<T> var = input.variableHeuristic();
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(input.stateRanking());
         final DominanceChecker<T, K> dominance = input.dominance();
+        final Optional<SimpleCache<T>> cache = input.cache();
+        double bestLb = input.bestLB();
 
         final Set<Integer> variables = varSet(input);
 
         int depthGlobalDD = residual.getPath().size();
         int depthCurrentDD = 0;
+        int initialDepth = residual.getPath().size();
+        ;
 
 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
+
+        // list of depth for the current relax compilation of the DD
+        ArrayList<Integer> listDepths = new ArrayList<>();
+        // the list of NodeSubProblem of the corresponding depth
+        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = new ArrayList<>();
+        // the list of Threshold of the corresponding depth
+        ArrayList<ArrayList<Threshold>> layersThresholds = new ArrayList<>();
+        // list of nodes pruned
+        ArrayList<NodeSubProblem<T>> pruned = new ArrayList<>();
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -130,6 +152,20 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
                     node.setFub(fub);
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
+            }
+
+            if (cache.isPresent()) {
+                pruned.clear();
+                if (depthGlobalDD > initialDepth) {
+                    for (NodeSubProblem<T> n : this.currentLayer) {
+                        if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
+                                && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
+                                && n.node.value <= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                            pruned.add(n);
+                        }
+                    }
+                }
+                this.currentLayer.removeAll(pruned);
             }
             this.nextLayer.clear();
 
@@ -169,6 +205,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
                             exact = false;
                             if (input.cutSetType() == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
+                                depthLEL = depthCurrentDD - 1;
                             }
                         }
                         relax(maxWidth, ranking, relax);
@@ -209,6 +246,16 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
                 }
             }
 
+            if (cache.isPresent() && input.compilationType() == CompilationType.Relaxed) {
+                listDepths.add(depthGlobalDD);
+                nodeSubProblemPerLayer.add(new ArrayList<>());
+                layersThresholds.add(new ArrayList<>());
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
+                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MAX_VALUE, false));
+                }
+            }
+
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
@@ -234,10 +281,27 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
         }
 
 
-        // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
-        if (input.compilationType() == CompilationType.Relaxed) {
+        if (cache.isPresent() && input.compilationType() == CompilationType.Relaxed) {
+            if (!cutset.isEmpty()) {
+                computeLocalBounds();
+
+                for (NodeSubProblem<T> n : cutset) {
+                    if (n.node.isMarked) {
+                        n.node.isInExactCutSet = true;
+                    }
+                }
+
+                markNodesAboveExactCutSet(nodeSubProblemPerLayer, input.cutSetType());
+                // update the cache to improve the next computation of the BB
+                computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
+                        layersThresholds, bestLb, input.cutSetType());
+            }
+        } else if (input.compilationType() == CompilationType.Relaxed) {
+            // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
         }
+
+
         if (debugLevel >= 1 && input.compilationType() != CompilationType.Relaxed) {
             checkFub(input.problem());
         }
@@ -623,6 +687,89 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
         if (edgeStr != null) {
             edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
             edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
+
+    private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
+        HashSet<Node> current = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>();
+
+        if (cutSetType == CutSetType.LastExactLayer) {
+            for (NodeSubProblem<T> n : nodePerLayer.get(depthLEL)) {
+                parent.add(n.node);
+            }
+        } else {
+            parent.addAll(nextLayer.values());
+        }
+
+        while (!parent.isEmpty()) {
+            HashSet<Node> tmp = current;
+            current = parent;
+            parent = tmp;
+            parent.clear();
+
+            for (Node n : current) {
+                for (Edge e : n.edges) {
+                    // Note: we might want to do something and stop as soon as the lel has been reached
+                    Node origin = e.origin;
+                    parent.add(origin);
+                    if ((n.isInExactCutSet || n.isAboveExactCutSet) && origin.getNodeType() == NodeType.EXACT && !origin.isInExactCutSet) {
+                        origin.isAboveExactCutSet = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * perform the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
+        for (int j = listDepth.size() - 1; j >= 0; j--) {
+            int depth = listDepth.get(j);
+            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
+                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
+                if (simpleCache.getLayer(depth).containsKey(sub.state) && simpleCache.getLayer(depth).get(sub.state).isPresent() &&
+                        sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    currentCache.get(j).get(i).setValue(value);
+                } else {
+                    if (sub.ub <= lb) {
+                        double rub = saturatedDiff(sub.ub, sub.node.value);
+                        double value = saturatedDiff(lb, rub);
+                        currentCache.get(j).get(i).setValue(value);
+                    } else if (sub.node.isInExactCutSet) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
+                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
+                            currentCache.get(j).get(i).setValue(value);
+                        } else {
+                            currentCache.get(j).get(i).setValue(sub.node.value);
+                        }
+                    }
+                    if (sub.node.getNodeType() == NodeType.EXACT) {
+                        if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
+                            currentCache.get(j).get(i).setExplored(true);
+                        }
+                        if (cutSetType == CutSetType.LastExactLayer && sub.node.value < currentCache.get(j).get(i).getValue() && sub.node.isInExactCutSet)
+                            currentCache.get(j).get(i).setExplored(true);
+                        if (currentCache.get(j).get(i).isExplored()) {
+                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                        }
+                    }
+                }
+                for (Edge e : sub.node.edges) {
+                    Node origin = e.origin;
+                    int index = -1;
+                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
+                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
+                            index = k;
+                            break;
+                        }
+                    }
+                    double value = Math.min(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j - 1).get(index).setValue(value);
+                }
+            }
         }
     }
 }
