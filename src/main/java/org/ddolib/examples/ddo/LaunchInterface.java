@@ -16,6 +16,7 @@ import org.ddolib.examples.ddo.knapsack.KSLoader;
 import org.ddolib.examples.ddo.misp.MispLoader;
 import org.ddolib.examples.ddo.mks.MKSLoader;
 import org.ddolib.examples.ddo.setcover.elementlayer.SetCoverLoader;
+import org.ddolib.examples.ddo.setcover.setlayer.SetCoverLoaderAlt;
 import org.ddolib.modeling.DefaultFastUpperBound;
 
 import java.io.FileWriter;
@@ -165,6 +166,7 @@ public class LaunchInterface {
         switch (problemType) {
             case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
             case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor);
+            case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor);
             case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
             case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
         }
@@ -283,7 +285,8 @@ public class LaunchInterface {
         MKS, // multidimensional knapsack
         KS, // knapsack
         MISP, // minimum independent set problem,
-        SC // set cover problem
+        SC, // set cover problem
+        SCS // set cover with set layer model
     }
 
     private final static HashMap<String, ProblemType> problemMap = new HashMap() {
@@ -292,6 +295,7 @@ public class LaunchInterface {
             put("ks", ProblemType.KS);
             put("misp", ProblemType.MISP);
             put("sc", ProblemType.SC);
+            put("scs", ProblemType.SCS);
         }
     };
 

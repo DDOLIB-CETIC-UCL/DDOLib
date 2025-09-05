@@ -1,5 +1,6 @@
 package org.ddolib.examples.ddo.setcover.setlayer;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
@@ -7,15 +8,11 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.ddo.setcover.setlayer.SetCoverProblem;
-import org.ddolib.examples.ddo.setcover.setlayer.SetCoverRanking;
-import org.ddolib.examples.ddo.setcover.setlayer.SetCoverRelax;
-import org.ddolib.examples.ddo.setcover.setlayer.SetCoverState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
@@ -100,6 +97,49 @@ public class SetCoverTest {
         Assertions.assertTrue(testValidity(problem, solution));
     }
 
+    @Test
+    public void testDistance() {
+        final SetCoverState a = new SetCoverState(Map.of(0, 1, 1, 1));
+        final SetCoverState b = new SetCoverState(Map.of(2, 1, 3, 1));
+        final SetCoverState c = new SetCoverState(Map.of(0, 1));
+        final SetCoverState d = new SetCoverState(Map.of(0, 1));
+
+        final SetCoverDistance dist = new SetCoverDistance();
+        Assertions.assertEquals(dist.distance(a,b), 4);
+        Assertions.assertEquals(dist.distance(a,c), 1);
+        Assertions.assertEquals(dist.distance(b,c), 3);
+        Assertions.assertEquals(dist.distance(b,a), 4);
+        Assertions.assertEquals(dist.distance(c,a), 1);
+        Assertions.assertEquals(dist.distance(c,b), 3);
+        Assertions.assertEquals(dist.distance(d,c), 0);
+        Assertions.assertEquals(dist.distance(c,d), 0);
+    }
+
+    @Test
+    public void testDistanceRnd() {
+        Random rnd = new Random(684654654);
+        SetCoverDistance dist = new SetCoverDistance();
+        for (int test = 0; test < 100; test++) {
+            Map<Integer, Integer> a = new HashMap(50);
+            while (a.size() < 50) {
+                a.put(rnd.nextInt(), 1);
+            }
+
+            Map<Integer, Integer> b = new HashMap<>(a);
+            int nbrRemoved = rnd.nextInt(5, 10);
+            List<Integer> tmp = new ArrayList<>(b.keySet());
+            Collections.shuffle(tmp, rnd);
+            tmp.subList(0, nbrRemoved).forEach(b::remove);
+            int nbrAdded = rnd.nextInt(5, 10);
+            while (b.size() < a.size() - nbrRemoved + nbrAdded) {
+                b.put(rnd.nextInt(), 1);
+            }
+
+            int distRef = nbrRemoved + nbrAdded;
+            Assertions.assertEquals(distRef, dist.distance(new SetCoverState(a), new SetCoverState(b)));
+        }
+    }
+
 
     @Test
     public void testReducedProblem() {
@@ -121,6 +161,96 @@ public class SetCoverTest {
         Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
         Assertions.assertFalse(initState.uncoveredElements.containsKey(1));
         Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
+    }
+
+    /**
+     * Test on small random instances to verify that the solution returned by the sequential solver is really
+     * optimal.
+     * The returned solution is compared with the optimal cost computed by a brute-force approach
+     * @param problem
+     */
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
+    public void testClusterRelaxation(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.dominance = new DefaultDominanceChecker<>();
+        List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
+        strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new CostBased<>(config.ranking));
+
+        for (ReductionStrategy<SetCoverState> relaxStrategy: strategies) {
+            config.relaxStrategy  = relaxStrategy;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.varh = new DefaultVariableHeuristic<>();
+            final Solver solver = new SequentialSolver<>(config);
+
+            solver.maximize();
+
+            // Retrieve solution
+            Set<Integer> solution = solver.bestSolution().map(decisions -> {
+                Set<Integer> values = new HashSet<>();
+                for (Decision d : decisions) {
+                    if (d.val() != -1) {
+                        values.add(d.var());
+                    }
+                }
+                return values;
+            }).get();
+
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertTrue(testValidity(problem, solution));
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("smallGeneratedInstances")
+    public void testClusterRestriction(SetCoverProblem problem) {
+        int optimalCost = bruteForce(problem);
+
+        final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
+        config.problem = problem;
+        config.relax = new SetCoverRelax();
+        config.ranking = new SetCoverRanking();
+        config.width = new FixedWidth<>(2);
+        config.distance = new SetCoverDistance();
+        config.dominance = new DefaultDominanceChecker<>();
+        List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
+        strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new CostBased<>(config.ranking));
+        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
+
+        for (ReductionStrategy<SetCoverState> restrictStrategy: strategies) {
+            config.restrictStrategy  = restrictStrategy;
+            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.varh = new DefaultVariableHeuristic<>();
+            final Solver solver = new SequentialSolver<>(config);
+
+            solver.maximize();
+
+            // Retrieve solution
+            Set<Integer> solution = solver.bestSolution().map(decisions -> {
+                Set<Integer> values = new HashSet<>();
+                for (Decision d : decisions) {
+                    if (d.val() != -1) {
+                        values.add(d.var());
+                    }
+                }
+                return values;
+            }).get();
+
+            Assertions.assertTrue(solver.bestValue().isPresent());
+            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertTrue(testValidity(problem, solution));
+        }
     }
 
     // *************************************************************************
@@ -195,7 +325,7 @@ public class SetCoverTest {
      */
     private static Stream<SetCoverProblem> smallGeneratedInstances() {
         Random rnd = new Random(684654654);
-        int nInstances = 5; // number of instances to generate
+        int nInstances = 20; // number of instances to generate
         int nElem = 10; // number of elements in the instances
         int nSet = 20;
         int constraintSize = 2; // the number of sets that must cover each element

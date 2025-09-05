@@ -6,10 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
@@ -188,7 +185,6 @@ public class SetCoverTest {
      */
     @ParameterizedTest
     @MethodSource("smallGeneratedInstances")
-    @Disabled
     public void testClusterRelaxation(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
@@ -202,6 +198,8 @@ public class SetCoverTest {
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
         strategies.add(new GHP<>(new SetCoverDistance()));
         strategies.add(new CostBased<>(config.ranking));
+        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
 
         for (ReductionStrategy<SetCoverState> relaxStrategy: strategies) {
             config.relaxStrategy  = relaxStrategy;
@@ -230,7 +228,6 @@ public class SetCoverTest {
 
     @ParameterizedTest
     @MethodSource("smallGeneratedInstances")
-    @Disabled
     public void testClusterRestriction(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
 
@@ -243,6 +240,8 @@ public class SetCoverTest {
         config.dominance = new DefaultDominanceChecker<>();
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
         strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
         strategies.add(new CostBased<>(config.ranking));
 
         for (ReductionStrategy<SetCoverState> restrictStrategy: strategies) {
