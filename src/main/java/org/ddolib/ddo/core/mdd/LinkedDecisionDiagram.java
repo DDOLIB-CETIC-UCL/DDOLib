@@ -31,38 +31,38 @@ import static org.ddolib.util.MathUtil.saturatedDiff;
  * @param <T> the type of state
  * @param <K> the type of key
  */
-public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
+public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     /**
      * The list of decisions that have led to the root of this DD
      */
-    protected Set<Decision> pathToRoot = Collections.emptySet();
+    private Set<Decision> pathToRoot = Collections.emptySet();
     /**
      * All the nodes from the previous layer
      */
-    protected HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
+    private HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
     /**
      * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
      */
-    protected List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+    private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
     /**
      * All the nodes from the next layer
      */
-    protected HashMap<T, Node> nextLayer = new HashMap<>();
+    private HashMap<T, Node> nextLayer = new HashMap<>();
     /**
      * All the nodes from the last exact layer cutset or the frontier cutset
      */
-    protected List<NodeSubProblem<T>> cutset = new ArrayList<>();
+    private List<NodeSubProblem<T>> cutset = new ArrayList<>();
 
 
     /**
      * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
      */
-    protected boolean exact = true;
+    private boolean exact = true;
 
     /**
      * The best node in the terminal layer (if it exists at all)
      */
-    protected Node best = null;
+    private Node best = null;
 
     /**
      * Depth of the last exact layer
@@ -73,11 +73,11 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     /**
      * Used to build the .dot file displaying the compiled mdd.
      */
-    protected StringBuilder dotStr = new StringBuilder();
+    private StringBuilder dotStr = new StringBuilder();
     /**
      * Given the hashcode of an edge, save its .dot representation
      */
-    protected HashMap<Integer, String> edgesDotStr = new HashMap<>();
+    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     /**
      * <ul>
@@ -86,7 +86,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      *     <li>2: 1 + export failing mdd as .dot</li>
      * </ul>
      */
-    protected int debugLevel = 0;
+    private int debugLevel = 0;
 
 
     @Override
@@ -375,7 +375,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param node A node of the mdd
      * @return The list of decisions took from the root to reach the input node.
      */
-    protected LinkedList<Decision> constructPathFromRoot(Node node) {
+    private LinkedList<Decision> constructPathFromRoot(Node node) {
         LinkedList<Decision> path = new LinkedList<>();
         Edge eb = node.best;
         while (eb != null) {
@@ -394,8 +394,8 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param problem      The problem linked to this mdd
      * @return A list of decisions returns of the generated states from root
      */
-    protected LinkedList<T> constructStateFromRoot(LinkedList<Decision> pathFromRoot,
-                                                   Problem<T> problem) {
+    private LinkedList<T> constructStateFromRoot(LinkedList<Decision> pathFromRoot,
+                                                 Problem<T> problem) {
         LinkedList<T> states = new LinkedList<>();
         T current = problem.initialState();
         states.addLast(current);
@@ -413,7 +413,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * if the associated fast upper bound if bigger than the identified path.
      *
      */
-    protected void checkFub(Problem<T> problem) {
+    private void checkFub(Problem<T> problem) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
             //For each node we save the longest path to last
@@ -456,7 +456,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     }
 
     // UTILITY METHODS -----------------------------------------------
-    protected Set<Integer> varSet(final CompilationInput<T, K> input) {
+    private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem().nbVars(); i++) {
             set.add(i);
@@ -472,7 +472,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * --- UT
      * Reset the state of this MDD. This way it can easily be reused
      */
-    protected void clear() {
+    private void clear() {
         pathToRoot = Collections.emptySet();
         prevLayer.clear();
         currentLayer.clear();
@@ -491,7 +491,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param ranking  a ranking that orders the nodes from the most promising (greatest)
      *                 to the least promising (lowest)
      */
-    protected void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking) {
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
@@ -504,8 +504,8 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    protected void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
-                         final Relaxation<T> relax) {
+    private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
+                       final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
@@ -567,8 +567,8 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param decision the decision being made
      * @param problem  the problem that defines the transition and transition cost functions
      */
-    protected void branchOn(final NodeSubProblem<T> node, final Decision decision,
-                            final Problem<T> problem) {
+    private void branchOn(final NodeSubProblem<T> node, final Decision decision,
+                          final Problem<T> problem) {
         if (debugLevel >= 1)
             DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
 
@@ -602,7 +602,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
      */
-    protected void computeLocalBounds() {
+    private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
         HashSet<Node> parent = new HashSet<>(nextLayer.values());
 
@@ -643,7 +643,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
      * @return A .dot formatted string containing the node and the edges leading to this node.
      */
-    protected StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         String nodeStr = String.format(
@@ -682,7 +682,7 @@ public class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
      * @param edgeHash The hashcode of the edge to color.
      * @param color    HTML string for the color of the edge
      */
-    protected void updateBestEdgeColor(int edgeHash, String color) {
+    private void updateBestEdgeColor(int edgeHash, String color) {
         String edgeStr = edgesDotStr.get(edgeHash);
         if (edgeStr != null) {
             edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";

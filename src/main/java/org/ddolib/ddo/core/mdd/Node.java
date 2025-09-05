@@ -7,7 +7,7 @@ import java.util.List;
  * This is an atomic node from the decision diagram. Per-se, it does not
  * hold much interpretable information.
  */
-public final class Node {
+final class Node {
     /**
      * The length of the longest path to this node
      */

@@ -7,7 +7,7 @@ import java.util.Comparator;
 /**
  * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
  */
-public final class NodeSubProblemComparator<T> implements Comparator<NodeSubProblem<T>> {
+final class NodeSubProblemComparator<T> implements Comparator<NodeSubProblem<T>> {
     /**
      * This is the decorated ranking
      */

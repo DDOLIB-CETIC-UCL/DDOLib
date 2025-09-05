@@ -51,7 +51,6 @@ public class TSPTests {
             config.fub = new TSPFastUpperBound(problem);
             config.width = new FixedWidth<>(500);
             config.varh = new DefaultVariableHeuristic<>();
-            //config.cache = new SimpleCache<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
             return config;

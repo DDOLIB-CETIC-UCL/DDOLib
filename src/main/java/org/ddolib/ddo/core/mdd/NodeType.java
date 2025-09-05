@@ -3,6 +3,6 @@ package org.ddolib.ddo.core.mdd;
 /**
  * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
  */
-public enum NodeType {
+enum NodeType {
     EXACT, RELAXED
 }
