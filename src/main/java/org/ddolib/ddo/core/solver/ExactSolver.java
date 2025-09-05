@@ -173,6 +173,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Integer.MAX_VALUE,
                 fub,
                 dominance,
+                null,
                 Double.NEGATIVE_INFINITY,
                 CutSetType.LastExactLayer,
                 exportAsDot,

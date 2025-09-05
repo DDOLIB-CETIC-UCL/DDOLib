@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.compilation;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastUpperBound;
@@ -38,6 +39,7 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      int maxWidth,
                                      FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
+                                     SimpleCache<T> cache,
                                      double bestLB,
                                      CutSetType cutSetType,
                                      boolean exportAsDot,
