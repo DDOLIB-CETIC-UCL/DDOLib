@@ -124,13 +124,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         // list of depth for the current relax compilation of the DD
-        ArrayList<Integer> listDepths = new ArrayList<>();
+        ArrayList<Integer> listDepths = cache.isPresent() ? new ArrayList<>() : null;
         // the list of NodeSubProblem of the corresponding depth
-        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = new ArrayList<>();
+        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = cache.isPresent() ? new ArrayList<>() : null;
         // the list of Threshold of the corresponding depth
-        ArrayList<ArrayList<Threshold>> layersThresholds = new ArrayList<>();
+        ArrayList<ArrayList<Threshold>> layersThresholds = cache.isPresent() ? new ArrayList<>() : null;
         // list of nodes pruned
-        ArrayList<NodeSubProblem<T>> pruned = new ArrayList<>();
+        ArrayList<NodeSubProblem<T>> pruned = cache.isPresent() ? new ArrayList<>() : null;
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
