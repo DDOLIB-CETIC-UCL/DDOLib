@@ -153,7 +153,7 @@ public final class ACSSolver<T, K> implements Solver {
                     }
                 }
                 for (int k = 0; k < candidates.size(); k++) {
-                    if (verbosityLevel >= 1) {
+                    if (verbosityLevel >= 2) {
                         System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
                     }
                     nbIter++;
@@ -165,6 +165,9 @@ public final class ACSSolver<T, K> implements Solver {
                         if (bestLB < sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestLB = sub.getValue();
+                            if (verbosityLevel >= 1) {
+                                System.out.println("NEWOBJ:" + bestLB);
+                            }
                         }
                         continue;
                     }
