@@ -22,7 +22,7 @@ import static org.ddolib.util.MathUtil.saturatedAdd;
  * - turn an MDD node from the exact cutset into a subproblem which is used
  * by the API.
  */
-final class NodeSubProblem<T> {
+public final class NodeSubProblem<T> {
     /**
      * The state associated to this node
      */

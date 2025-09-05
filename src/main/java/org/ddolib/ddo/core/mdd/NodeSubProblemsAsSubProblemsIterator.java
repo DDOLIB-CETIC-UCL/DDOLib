@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * An iterator that transforms the inner subroblems into actual subroblems
  */
-final class NodeSubProblemsAsSubProblemsIterator<T> implements Iterator<SubProblem<T>> {
+public final class NodeSubProblemsAsSubProblemsIterator<T> implements Iterator<SubProblem<T>> {
     /**
      * The collection being iterated upon
      */
