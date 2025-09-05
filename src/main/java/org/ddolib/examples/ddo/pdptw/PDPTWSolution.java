@@ -25,6 +25,7 @@ public class PDPTWSolution {
             int prevNode = currentNode;
             currentNode = solution[i];
             currentTime = currentTime + problem.instance.timeAndDistanceMatrix[prevNode][currentNode];
+            toReturn.append("\ntravelTime:" + problem.instance.timeAndDistanceMatrix[prevNode][currentNode]);
             int earlyLine = problem.instance.timeWindows[currentNode].start();
             int waitTime = 0;
             if(currentTime < earlyLine) {

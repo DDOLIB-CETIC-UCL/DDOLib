@@ -22,6 +22,7 @@ public class PDPTWInstance {
     public String toString() {
         return "PDPTWInstance(\n\tn:" + n + "\n" +
                 "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
+                "\tmaxCapa:" + maxCapa + "\n" +
                 "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
                 "\ttimeWindows" + Arrays.stream(timeWindows).map(l -> "\n\t " + l).toList() + "\n" +
                 "\t" + Arrays.stream(timeAndDistanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();

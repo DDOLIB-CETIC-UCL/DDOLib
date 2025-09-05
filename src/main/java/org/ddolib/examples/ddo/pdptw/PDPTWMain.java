@@ -11,11 +11,10 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static java.lang.Math.max;
 
@@ -33,7 +32,7 @@ public final class PDPTWMain {
      *                  there might be one more unrelated node than specified here
      * @return a PDPTW problem
      */
-    public static PDPTWInstance genInstance(int n, int unrelated, int maxCapa, Random random) {
+    public static PDPTWInstance genRandomInstance(int n, int unrelated, int maxCapa, Random random) {
 
         int[] x = new int[n];
         int[] y = new int[n];
@@ -67,13 +66,111 @@ public final class PDPTWMain {
         return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
     }
 
+    /**
+     * Generates a PDPTW problem with a single vehicle:
+     * a TSP problem such that
+     * nodes are grouped by pair: (pickup node; delivery node)
+     * in a pair, the pickup node must be reached before the delivery node
+     * the problem can also have "unrelated nodes" that are not involved in such a pair
+     *
+     * this generator will generate an instance with a known solution although there might be a better one
+     *
+     * @param n         the number of nodes of the PDPTW problem
+     * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
+     *                  there might be one more unrelated node than specified here
+     * @return a PDPTW problem
+     */
+    public static PDPTWInstance genInstance2(int n, int unrelated, Random random) {
+
+        int[] x = new int[n];
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) {
+            x[i] = random.nextInt(100);
+            y[i] = random.nextInt(100);
+        }
+
+        int[][] distance = new int[n][];
+        for (int i = 0; i < n; i++) {
+            distance[i] = new int[n];
+            for (int j = 0; j < n; j++) {
+                distance[i][j] = dist(x[i] - x[j], y[i] - y[j]);
+            }
+        }
+
+        //generate a solution; based on random sort
+
+        List<Integer> solution = new ArrayList<>();
+        for (int i = 1; i <= n-1; i++) {
+            solution.add(i);
+        }
+        Collections.shuffle(solution, random);
+
+        HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
+        HashMap<Integer, Integer> deliveryToAssociatedPickup = new HashMap<>();
+        HashMap<Integer, Integer> nodeToAssociatedNode = new HashMap<>();
+
+        HashSet<Integer> unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
+
+        int numberOfPairs = Math.floorDiv(n - max(1, unrelated), 2);
+        int firstDelivery = numberOfPairs + 1;
+        for (int p = 1; p < firstDelivery; p++) {
+            int d = firstDelivery + p - 1;
+            nodeToAssociatedNode.put(p,d);
+            nodeToAssociatedNode.put(d,p);
+            unrelatedNodes.remove(p);
+            unrelatedNodes.remove(d);
+        }
+
+        TimeWindow[] timeWindows = new TimeWindow[n];
+        int currentTime = 0;  //startTime is  0; also earlyLine for node0
+        int currentNode = 0;
+        int totalDistance = 0;
+        int currentContent = 0;
+        int maxCapa = 0;
+        for(int nextNode : solution){
+            int arrivalTime = currentTime + distance[currentNode][nextNode];
+            totalDistance += distance[currentNode][nextNode];
+            int earlyLine = arrivalTime - 100 + random.nextInt(200);
+            currentTime  = new TimeWindow(earlyLine, 0).entryTime(arrivalTime);
+            int deadline = currentTime + random.nextInt(200);
+            timeWindows[nextNode] = new TimeWindow(earlyLine, deadline);
+            currentNode = nextNode;
+
+            if (deliveryToAssociatedPickup.containsKey(currentNode)) {
+                //it is a delivery that we defined
+                currentContent -= 1;
+            }else if (nodeToAssociatedNode.containsKey(currentNode)) {
+                //we must define the pick-up and its associated delivery
+                int d = nodeToAssociatedNode.get(currentNode);
+                deliveryToAssociatedPickup.put(d,currentNode);
+                pickupToAssociatedDelivery.put(currentNode,d);
+                nodeToAssociatedNode.remove(currentNode);
+                currentContent += 1;
+                if(currentContent > maxCapa){
+                    maxCapa = currentContent;
+                }
+            } else if(! unrelatedNodes.contains(currentNode)){
+                throw new Error("error in generator example");
+            }
+        }
+        totalDistance += distance[currentNode][0];
+        int arrivalTime = currentTime + distance[currentNode][0];
+        int deadline = arrivalTime + random.nextInt(10);
+        timeWindows[0] = new TimeWindow(0, deadline);
+
+
+        //now, we must calculate the maxCapa for the solution
+        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
+    }
+
     static int dist(int dx, int dy) {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWInstance instance = genInstance(18, 2, 3, new Random(1));
+//        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
+        final PDPTWInstance instance = genInstance2(50, 2, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
