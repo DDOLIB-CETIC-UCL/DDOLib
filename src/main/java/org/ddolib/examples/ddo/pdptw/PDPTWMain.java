@@ -155,9 +155,8 @@ public final class PDPTWMain {
         }
         totalDistance += distance[currentNode][0];
         int arrivalTime = currentTime + distance[currentNode][0];
-        int deadline = arrivalTime + random.nextInt(10);
+        int deadline = arrivalTime + random.nextInt(100);
         timeWindows[0] = new TimeWindow(0, deadline);
-
 
         //now, we must calculate the maxCapa for the solution
         return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
@@ -170,7 +169,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance2(50, 2, new Random(1));
+        final PDPTWInstance instance = genInstance2(50, 10, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);

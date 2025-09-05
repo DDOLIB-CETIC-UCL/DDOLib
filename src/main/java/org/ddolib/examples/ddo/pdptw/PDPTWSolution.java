@@ -35,11 +35,11 @@ public class PDPTWSolution {
             if (problem.instance.deliveryToAssociatedPickup.containsKey(currentNode)) {
                 //it is a delivery
                 currentContent = currentContent - 1;
-                toReturn.append("\n" + currentNode + " \tcontent:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime + "\t(delivery from " + problem.instance.deliveryToAssociatedPickup.get(currentNode) + " -" + 1 + ")");
+                toReturn.append("\n" + currentNode + " \tcontentOut:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime + "\t(delivery from " + problem.instance.deliveryToAssociatedPickup.get(currentNode) + " -" + 1 + ")");
             } else if (problem.instance.pickupToAssociatedDelivery.containsKey(currentNode)) {
                 // it is a pickup
                 currentContent = currentContent + 1;
-                toReturn.append("\n" + currentNode + "\tcontent:" + currentContent + "\ttime:" + currentTime  + "\twaitTime:" + waitTime+ "\t(pickup to " + problem.instance.pickupToAssociatedDelivery.get(currentNode) + " +" + 1 + ")");
+                toReturn.append("\n" + currentNode + "\tcontentOut:" + currentContent + "\ttime:" + currentTime  + "\twaitTime:" + waitTime+ "\t(pickup to " + problem.instance.pickupToAssociatedDelivery.get(currentNode) + " +" + 1 + ")");
             } else {
                 //an unrelated node
                 toReturn.append("\n" + currentNode + "\tcontent:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime);
