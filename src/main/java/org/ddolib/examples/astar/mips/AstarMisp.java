@@ -1,4 +1,4 @@
-package org.ddolib.examples.astart.mips;
+package org.ddolib.examples.astar.mips;
 
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.Solver;

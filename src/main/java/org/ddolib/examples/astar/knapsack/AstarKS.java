@@ -1,4 +1,4 @@
-package org.ddolib.examples.astart.knapsack;
+package org.ddolib.examples.astar.knapsack;
 
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.Solver;

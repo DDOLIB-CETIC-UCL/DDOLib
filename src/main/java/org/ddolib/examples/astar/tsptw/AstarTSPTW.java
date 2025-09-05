@@ -1,4 +1,4 @@
-package org.ddolib.examples.astart.tsptw;
+package org.ddolib.examples.astar.tsptw;
 
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
