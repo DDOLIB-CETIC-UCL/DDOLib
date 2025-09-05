@@ -36,23 +36,26 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * The list of decisions that have led to the root of this DD
      */
     private Set<Decision> pathToRoot = Collections.emptySet();
+
     /**
      * All the nodes from the previous layer
      */
-    private HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
+    private final HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
+
     /**
      * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
      */
-    private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+    private final List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+
     /**
      * All the nodes from the next layer
      */
-    private HashMap<T, Node> nextLayer = new HashMap<>();
+    private final HashMap<T, Node> nextLayer = new HashMap<>();
+
     /**
      * All the nodes from the last exact layer cutset or the frontier cutset
      */
-    private List<NodeSubProblem<T>> cutset = new ArrayList<>();
-
+    private final List<NodeSubProblem<T>> cutset = new ArrayList<>();
 
     /**
      * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
