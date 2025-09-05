@@ -162,6 +162,133 @@ public final class PDPTWMain {
         return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
     }
 
+
+    public static int biasedRandom(Random random, int[] valuesAndBias){
+        int summedBias = Arrays.stream(valuesAndBias).sum();
+        int draw = random.nextInt(summedBias);
+
+        for(int i = 0 ; i < valuesAndBias.length; i++){
+            if(draw == 0 && valuesAndBias[i] != 0){
+                return i;
+            }else{
+                draw = draw - valuesAndBias[i];
+            }
+        }
+        //if we get there, there has been a problem
+        throw new Error("error in random");
+        /*for(int i = 0 ; i < valuesAndBias.length; i++){
+            if(valuesAndBias[i] != 0){
+                return i;
+            }
+        }*/
+    }
+    /**
+     * Generates a PDPTW problem with a single vehicle:
+     * a TSP problem such that
+     * nodes are grouped by pair: (pickup node; delivery node)
+     * in a pair, the pickup node must be reached before the delivery node
+     * the problem can also have "unrelated nodes" that are not involved in such a pair
+     *
+     * this generator will generate an instance with a known solution although there might be a better one
+     *
+     * @param n         the number of nodes of the PDPTW problem
+     * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
+     *                  there might be one more unrelated node than specified here
+     * @return a PDPTW problem
+     */
+    public static PDPTWInstance genInstance3(int n, int unrelated, int maxCapa, Random random) {
+
+        int[] x = new int[n];
+        int[] y = new int[n];
+        for (int i = 0; i < n; i++) {
+            x[i] = random.nextInt(100);
+            y[i] = random.nextInt(100);
+        }
+
+        int[][] distance = new int[n][];
+        for (int i = 0; i < n; i++) {
+            distance[i] = new int[n];
+            for (int j = 0; j < n; j++) {
+                distance[i][j] = dist(x[i] - x[j], y[i] - y[j]);
+            }
+        }
+
+        //generate a solution; based on random sort
+
+        List<Integer> solution = new ArrayList<>();
+        for (int i = 1; i <= n-1; i++) {
+            solution.add(i);
+        }
+        Collections.shuffle(solution, random);
+
+        HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
+        HashMap<Integer, Integer> deliveryToAssociatedPickup = new HashMap<>();
+        HashSet<Integer> unrelatedNodes = new HashSet<Integer>();
+        unrelatedNodes.add(0);
+        HashSet<Integer> openPickups = new HashSet<Integer>();
+
+        int numberOfPairs = Math.floorDiv(n - max(1, unrelated), 2);
+        int nbUnrelated = n - 2*numberOfPairs;
+
+        TimeWindow[] timeWindows = new TimeWindow[n];
+        int currentTime = 0;  //startTime is  0; also earlyLine for node0
+        int currentNode = 0;
+        int totalDistance = 0;
+        int currentContent = 0;
+
+        int numberOfNodesToAssign = 0;
+        for(int nextNode : solution){
+            numberOfNodesToAssign -= 1;
+            int arrivalTime = currentTime + distance[currentNode][nextNode];
+            totalDistance += distance[currentNode][nextNode];
+            int earlyLine = arrivalTime - 100 + random.nextInt(200);
+            currentTime  = new TimeWindow(earlyLine, 0).entryTime(arrivalTime);
+            int deadline = currentTime + random.nextInt(200);
+            timeWindows[nextNode] = new TimeWindow(earlyLine, deadline);
+            currentNode = nextNode;
+
+            //what do we do with this node?
+            //if capa is full, it is either a delivery or an unrelated node
+            //otherwise, it is either a pickup, a delivery or an unrelated node
+            int nbNodesForUnrelated = nbUnrelated - unrelatedNodes.size();
+
+            //can it be a delivery? yes if there are openPickups
+            int nbNodesForDelivery = openPickups.size();
+            //can it be a pickup? yes if
+            int nbNodesForPickup;
+            if (currentContent == maxCapa){
+                nbNodesForPickup = 0;
+            }else {
+                nbNodesForPickup = numberOfNodesToAssign - nbNodesForUnrelated - nbNodesForDelivery;
+            }
+
+            //random draw
+            switch (biasedRandom(random,new int[]{nbNodesForUnrelated,nbNodesForPickup,nbNodesForDelivery})) {
+                case 0: //unrelated
+                    unrelatedNodes.add(nextNode);
+                case 1: //pickup
+                    openPickups.add(nextNode);
+                    currentContent += 1;
+                case 2: //delivery
+                    //get a pickup point
+                    int pickup = (int) openPickups.toArray()[random.nextInt(openPickups.size())];
+
+                    pickupToAssociatedDelivery.put(pickup,currentNode);
+                    deliveryToAssociatedPickup.put(currentNode,pickup);
+                    openPickups.remove(pickup);
+
+            }
+        }
+
+        totalDistance += distance[currentNode][0];
+        int arrivalTime = currentTime + distance[currentNode][0];
+        int deadline = arrivalTime + random.nextInt(100);
+        timeWindows[0] = new TimeWindow(0, deadline);
+
+        //now, we must calculate the maxCapa for the solution
+        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
+    }
+
     static int dist(int dx, int dy) {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
