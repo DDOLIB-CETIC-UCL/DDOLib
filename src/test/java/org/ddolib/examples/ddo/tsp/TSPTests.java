@@ -1,7 +1,6 @@
 package org.ddolib.examples.ddo.tsp;
 
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -52,7 +51,7 @@ public class TSPTests {
             config.fub = new TSPFastUpperBound(problem);
             config.width = new FixedWidth<>(500);
             config.varh = new DefaultVariableHeuristic<>();
-            config.cache = new SimpleCache<>();
+            //config.cache = new SimpleCache<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
             return config;
