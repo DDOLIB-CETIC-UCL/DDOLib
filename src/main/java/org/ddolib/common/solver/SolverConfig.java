@@ -76,6 +76,9 @@ public class SolverConfig<T, K> {
      * default).
      */
     public Integer timeLimit = Integer.MAX_VALUE;
+
+
+    public Integer lb = Integer.MIN_VALUE;
     /**
      * The stop the search when the gat of the search reach the limit ({@code 0} by default).
      */
