@@ -140,29 +140,6 @@ public class SetCoverTest {
         }
     }
 
-
-    @Test
-    public void testReducedProblem() {
-        List<Set<Integer>> sets = new ArrayList<>();
-        sets.add(Set.of(0,1));
-        sets.add(Set.of(0,2));
-        sets.add(Set.of(0,3));
-        sets.add(Set.of(0,1));
-
-        int nbrElemRemoved = 1;
-        SetCoverProblem problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
-        SetCoverState initState = problem.initialState();
-        Assertions.assertEquals(nbrElemRemoved, problem.nbrElemRemoved);
-        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
-        nbrElemRemoved = 2;
-        problem = new SetCoverProblem(4, sets.size(), sets, nbrElemRemoved);
-        initState = problem.initialState();
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(0));
-        Assertions.assertFalse(initState.uncoveredElements.containsKey(1));
-        Assertions.assertEquals(initState.uncoveredElements.size(), problem.nElem - nbrElemRemoved);
-    }
-
     /**
      * Test on small random instances to verify that the solution returned by the sequential solver is really
      * optimal.

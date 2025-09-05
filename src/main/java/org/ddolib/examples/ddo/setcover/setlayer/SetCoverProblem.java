@@ -46,53 +46,15 @@ public class SetCoverProblem implements Problem<SetCoverState> {
         return sets.size();
     }
 
-    /** Returns the `nbrElemToQuery` elements that are the most covered in the collection of sets of the problem
-     * Can be used to run a reducted version of the problem where the elements that are the easiest to cover
-     * are removed from the problem
-     * @param nbrElemToQuery the number of element that needs to be returned
-     * @return a set of size nbrElemToQuery containing the most covered elements
-     */
-    private Set<Integer> getMostCoveredElements(int nbrElemToQuery) {
-        if (nbrElemToQuery == 0) {
-            return null;
-        }
-        int[] coverage = new int[nElem];
-        for (Set<Integer> set: sets) {
-            for (Integer elem: set) {
-                coverage[elem]++;
-            }
-        }
-
-        PriorityQueue<Integer> pq = new PriorityQueue<>((o1, o2) -> Integer.compare(coverage[o2], coverage[o1]));
-        for (int elem = 0; elem < nElem; elem++) {
-            pq.add(elem);
-        }
-        Set<Integer> mostCoveredElements = new HashSet<>();
-        for (int i = 0; i < nbrElemToQuery; i++) {
-            mostCoveredElements.add(pq.poll());
-        }
-        return mostCoveredElements;
-    }
-
     @Override
     public SetCoverState initialState() {
-        Set<Integer> elementToRemove = getMostCoveredElements(this.nbrElemRemoved);
         Map<Integer, Integer> uncoveredElements = new HashMap<>();
-        countZeroOnly = 0;
-        countOneOnly = 0;
-        countZeroOne = 0;
-
         for(int i = 0; i < nElem; i++) {
-            if (elementToRemove == null || !elementToRemove.contains(i)) {
-                uncoveredElements.put(i, 0);
-            }
+            uncoveredElements.put(i, 0);
         }
         for (Set<Integer> set : sets) {
-            // System.out.println(set);
             for (Integer element : set) {
-                if (elementToRemove == null|| !elementToRemove.contains(element)) {
-                    uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
-                }
+                uncoveredElements.replace(element, uncoveredElements.get(element) + 1);
             }
         }
         return new SetCoverState(uncoveredElements);

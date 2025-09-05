@@ -81,7 +81,6 @@ public class MKSTest {
         assertEquals(problem.optimal, solver.bestValue().get());
     }
 
-    @Disabled
     @ParameterizedTest
     @MethodSource("dataProvider1D")
     public void testDominanceMKS(MKSProblem problem) {

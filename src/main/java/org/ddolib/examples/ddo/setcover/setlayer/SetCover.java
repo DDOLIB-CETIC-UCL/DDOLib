@@ -55,28 +55,6 @@ public class SetCover {
     }
 
     /**
-     * The instance file contains the definition of each set, i.e. the element that it covers.
-     * For this model we instead need, for each element, a description of the collection of
-     * sets that cover it, i.e. the description of each constraint.
-     * This method makes the required conversion.
-     * @param sets the collection of sets from the instance file
-     * @param nElem the number of element in the universe
-     * @return the collection of constraints
-     */
-    private static List<Set<Integer>> convertSetsToConstraints(List<Set<Integer>> sets, int nElem) {
-        List<Set<Integer>> constraints = new ArrayList<>(nElem);
-        for (int elem = 0; elem < nElem; elem++) {
-            constraints.add(new HashSet<>());
-            for (int set = 0; set < sets.size(); set++) {
-                if (sets.get(set).contains(elem)) {
-                    constraints.get(elem).add(set);
-                }
-            }
-        }
-        return constraints;
-    }
-
-    /**
      * Load the SetCoverProblem from a file
      * @param fname the path to the file describing the instance
      * @return a SetCoverProblem representing the instance
@@ -108,7 +86,7 @@ public class SetCover {
                 }
             });
 
-            return new SetCoverProblem(context.nElem, context.nSet, convertSetsToConstraints(context.sets, context.nElem));
+            return new SetCoverProblem(context.nElem, context.nSet, context.sets);
         }
     }
 
