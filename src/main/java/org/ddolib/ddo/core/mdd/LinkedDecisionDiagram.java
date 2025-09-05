@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
 import org.ddolib.util.DebugUtil;
 
 import java.io.BufferedWriter;
@@ -20,6 +19,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import static org.ddolib.util.MathUtil.saturatedAdd;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -43,14 +44,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * All the nodes from the next layer
      */
-    private HashMap<T, Node> nextLayer = new HashMap<T, Node>();
+    private HashMap<T, Node> nextLayer = new HashMap<>();
     /**
      * All the nodes from the last exact layer cutset or the frontier cutset
      */
     private List<NodeSubProblem<T>> cutset = new ArrayList<>();
-    /**
-     * A flag to keep track of the fact that LEL might be empty albeit not set
-     */
+
 
     /**
      * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
@@ -80,208 +79,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private int debugLevel = 0;
 
-    // --- UTILITY CLASSES -----------------------------------------------
-
-    /**
-     * This is an atomic node from the decision diagram. Per-se, it does not
-     * hold much interpretable information.
-     */
-    private static final class Node {
-        /**
-         * The length of the longest path to this node
-         */
-        private double value;
-        /**
-         * The length of the longest suffix of this node (bottom part of a local bound)
-         */
-        private Double suffix;
-        /**
-         * The edge terminating the longest path to this node
-         */
-        private Edge best;
-        /**
-         * The list of edges leading to this node
-         */
-        private List<Edge> edges;
-
-        /**
-         * The type of this node (exact, relaxed, etc...)
-         */
-        private NodeType type;
-
-        /**
-         * The falg to indicate if a node is marked
-         */
-        private boolean isMarked;
-
-        /**
-         * An overapproximation of the longest from this node to a terminal node
-         */
-        private double fub = Double.POSITIVE_INFINITY;
-
-
-        /**
-         * Creates a new node
-         */
-        public Node(final double value) {
-            this.value = value;
-            this.suffix = null;
-            this.best = null;
-            this.edges = new ArrayList<>();
-            this.type = NodeType.EXACT;
-            this.isMarked = false;
-        }
-
-        /**
-         * set the type of the node when different to exact type
-         *
-         * @param nodeType
-         */
-        public void setNodeType(final NodeType nodeType) {
-            this.type = nodeType;
-        }
-
-        /**
-         * Set the value of {@code fub}.
-         *
-         * @param fub The new value of {@code fub}.
-         */
-        public void setFub(final double fub) {
-            this.fub = fub;
-        }
-
-        /**
-         * get the type of the node
-         *
-         * @return NodeType
-         */
-        public NodeType getNodeType() {
-            return this.type;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
-                    value, suffix, best, edges);
-        }
-
-        // Deterministic hash
-        private static int nextHash = 0;
-        private final int hash = nextHash++;
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
-    }
-
-    /**
-     * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
-     */
-    public enum NodeType {
-        EXACT, RELAXED
-    }
-
-    /**
-     * This is an edge that connects two nodes from the decision diagram
-     */
-    private static final class Edge {
-        /**
-         * The source node of this arc
-         */
-        private Node origin;
-        /**
-         * The decision that was made when traversing this arc
-         */
-        private Decision decision;
-        /**
-         * The weight of the arc
-         */
-        private double weight;
-
-        /**
-         * Creates a new edge between pairs of nodes
-         *
-         * @param src the source node
-         * @param d   the decision that was made when traversing this edge
-         * @param w   the weight of the edge
-         */
-        public Edge(final Node src, final Decision d, final double w) {
-            this.origin = src;
-            this.decision = d;
-            this.weight = w;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Origin:%s\n\t Decision:%s\n\t Weight:%s ", origin, decision, weight);
-        }
-    }
-
-    /**
-     * This class encapsulates the association of a node with its state and
-     * associated rough upper bound.
-     * <p>
-     * This class essentially serves two purposes:
-     * <p>
-     * - associate a node with a state during the compilation (and allow to
-     * eagerly forget about the given state, which allows to save substantial
-     * amounts of RAM while compiling the DD).
-     * <p>
-     * - turn an MDD node from the exact cutset into a subproblem which is used
-     * by the API.
-     */
-    private static final class NodeSubProblem<T> {
-        /**
-         * The state associated to this node
-         */
-        private final T state;
-        /**
-         * The actual node from the graph of decision diagrams
-         */
-        private final Node node;
-        /**
-         * The upper bound associated with this node (if state were the root)
-         */
-        private double ub;
-
-        /**
-         * Creates a new instance
-         */
-        public NodeSubProblem(final T state, final double ub, final Node node) {
-            this.state = state;
-            this.ub = ub;
-            this.node = node;
-        }
-
-        /**
-         * @return Turns this association into an actual subproblem
-         */
-        public SubProblem<T> toSubProblem(final Set<Decision> pathToRoot) {
-            HashSet<Decision> path = new HashSet<>();
-            path.addAll(pathToRoot);
-
-            Edge e = node.best;
-            while (e != null) {
-                path.add(e.decision);
-                e = e.origin == null ? null : e.origin.best;
-            }
-
-            double locb = Double.NEGATIVE_INFINITY;
-            if (node.suffix != null) {
-                locb = saturatedAdd(node.value, node.suffix);
-            }
-            ub = Math.min(ub, locb);
-
-            return new SubProblem<>(state, node.value, ub, path);
-        }
-
-        @Override
-        public String toString() {
-            DecimalFormat df = new DecimalFormat("#.##########");
-            return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
-        }
-    }
 
     @Override
     public void compile(CompilationInput<T, K> input) {
@@ -302,7 +99,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final Problem<T> problem = input.problem();
         final Relaxation<T> relax = input.relaxation();
         final VariableHeuristic<T> var = input.variableHeuristic();
-        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.stateRanking());
+        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(input.stateRanking());
         final DominanceChecker<T, K> dominance = input.dominance();
 
         final Set<Integer> variables = varSet(input);
@@ -629,7 +426,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param ranking  a ranking that orders the nodes from the most promising (greatest)
      *                 to the least promising (lowest)
      */
-    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking) {
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking) {
         this.currentLayer.sort(ranking.reversed());
         this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
     }
@@ -642,7 +439,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final NodeSubroblemComparator<T> ranking, final Relaxation<T> relax) {
+    private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking, final Relaxation<T> relax) {
         this.currentLayer.sort(ranking.reversed());
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
@@ -740,8 +537,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent = new HashSet<>();
-        parent.addAll(nextLayer.values());
+        HashSet<Node> parent = new HashSet<>(nextLayer.values());
 
         for (Node n : parent) {
             n.suffix = 0.0;
@@ -824,110 +620,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         if (edgeStr != null) {
             edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
             edgesDotStr.replace(edgeHash, edgeStr);
-        }
-    }
-
-    /**
-     * Performs a saturated addition (no overflow)
-     */
-    private static double saturatedAdd(double a, double b) {
-        double sum = a + b;
-        if (Double.isInfinite(sum)) {
-            return sum > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-        }
-        return sum;
-    }
-
-    /**
-     * An iterator that transforms the inner subroblems into actual subroblems
-     */
-    private static final class NodeSubProblemsAsSubProblemsIterator<T> implements Iterator<SubProblem<T>> {
-        /**
-         * The collection being iterated upon
-         */
-        private final Iterator<NodeSubProblem<T>> it;
-        /**
-         * The list of decisions constitutive of the path to root
-         */
-        private final Set<Decision> ptr;
-
-        /**
-         * Creates a new instance
-         *
-         * @param it  the decorated iterator
-         * @param ptr the path to root
-         */
-        public NodeSubProblemsAsSubProblemsIterator(final Iterator<NodeSubProblem<T>> it, final Set<Decision> ptr) {
-            this.it = it;
-            this.ptr = ptr;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        @Override
-        public SubProblem<T> next() {
-            return it.next().toSubProblem(ptr);
-        }
-    }
-
-    /**
-     * An iterator that transforms the inner subroblems into their representing states
-     */
-    private static final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
-        /**
-         * The collection being iterated upon
-         */
-        private final Iterator<NodeSubProblem<T>> it;
-
-        /**
-         * Creates a new instance
-         *
-         * @param it the decorated iterator
-         */
-        public NodeSubProblemsAsStateIterator(final Iterator<NodeSubProblem<T>> it) {
-            this.it = it;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        @Override
-        public T next() {
-            return it.next().state;
-        }
-    }
-
-    /**
-     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
-     */
-    private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>> {
-        /**
-         * This is the decorated ranking
-         */
-        private final StateRanking<T> delegate;
-
-        /**
-         * Creates a new instance
-         *
-         * @param delegate the decorated ranking
-         */
-        public NodeSubroblemComparator(final StateRanking<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.node.value - o2.node.value;
-            if (cmp == 0) {
-                return delegate.compare(o1.state, o2.state);
-            } else {
-                return Double.compare(o1.node.value, o2.node.value);
-            }
         }
     }
 }
