@@ -9,7 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.IOException;
@@ -97,7 +97,7 @@ public final class PDPMain {
 
         config.verbosityLevel = 2;
         config.exportAsDot = true;
-        final Solver solver = new SequentialSolverWithCache<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         SearchStatistics statistics = solver.maximize();
         System.out.println(statistics);
