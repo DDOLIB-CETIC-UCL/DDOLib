@@ -165,13 +165,13 @@ public final class PDPTWMain {
 
     public static int biasedRandom(Random random, int[] valuesAndBias){
         int summedBias = Arrays.stream(valuesAndBias).sum();
+        System.out.println("summedBias:" + summedBias);
         int draw = random.nextInt(summedBias);
 
         for(int i = 0 ; i < valuesAndBias.length; i++){
-            if(draw == 0 && valuesAndBias[i] != 0){
+            draw = draw - valuesAndBias[i];
+            if(draw <= 0 && valuesAndBias[i] != 0){
                 return i;
-            }else{
-                draw = draw - valuesAndBias[i];
             }
         }
         //if we get there, there has been a problem
@@ -236,7 +236,7 @@ public final class PDPTWMain {
         int totalDistance = 0;
         int currentContent = 0;
 
-        int numberOfNodesToAssign = 0;
+        int numberOfNodesToAssign = n;
         for(int nextNode : solution){
             numberOfNodesToAssign -= 1;
             int arrivalTime = currentTime + distance[currentNode][nextNode];
@@ -296,7 +296,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance2(50, 10, new Random(1));
+        final PDPTWInstance instance = genInstance3(50, 10, 5,new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
