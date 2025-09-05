@@ -98,7 +98,7 @@ public final class ACSSolver<T, K> implements Solver {
         this.varh = config.varh;
         this.ub = config.fub;
         this.dominance = config.dominance;
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestLB = config.lb;
         this.bestSol = Optional.empty();
         this.closed = new HashSet[problem.nbVars() + 1];
         this.present = new HashSet[problem.nbVars() + 1];
