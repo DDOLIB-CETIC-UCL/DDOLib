@@ -137,12 +137,15 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public double transitionCost(PDPTWState state, Decision decision) {
-        return -state.current.stream()
+        int travelTime= state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .mapToDouble(
+                .map(
                         possibleCurrentNode -> instance.timeAndDistanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
-                .getAsDouble();
+                .getAsInt();
+
+        int waitTime = instance.timeWindows[decision.val()].waitTime(state.currentTime + travelTime);
+        return travelTime + waitTime;
     }
 
     @Override

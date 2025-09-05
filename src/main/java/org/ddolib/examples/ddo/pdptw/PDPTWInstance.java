@@ -61,7 +61,7 @@ public class PDPTWInstance {
         if(vehicleContent !=0){
             return -4;
         }
-        return distance;
+        return currentTime;
     }
 
     public PDPTWInstance(final int[][] distanceMatrix,
