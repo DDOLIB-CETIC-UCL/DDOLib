@@ -273,6 +273,7 @@ public final class PDPTWMain {
                     //get a pickup point
                     int pickup = (int) openPickups.toArray()[random.nextInt(openPickups.size())];
 
+                    currentContent -= 1;
                     pickupToAssociatedDelivery.put(pickup,currentNode);
                     deliveryToAssociatedPickup.put(currentNode,pickup);
                     openPickups.remove(pickup);
@@ -296,7 +297,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(50, 10, 5,new Random(1));
+        final PDPTWInstance instance = genInstance3(5, 1, 2,new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
