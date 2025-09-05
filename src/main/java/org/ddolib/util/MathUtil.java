@@ -12,4 +12,16 @@ public class MathUtil {
         }
         return sum;
     }
+
+
+    /**
+     * Performs a saturated difference (no underflow)
+     */
+    public static double saturatedDiff(double a, double b) {
+        double diff = a - b;
+        if (Double.isInfinite(diff)) {
+            return diff < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        }
+        return diff;
+    }
 }

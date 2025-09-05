@@ -40,6 +40,18 @@ public final class Node {
      */
     public double fub = Double.POSITIVE_INFINITY;
 
+    // USED IF WORKING WITH CACHE
+
+    /**
+     * The flag to indicate if a node is in exact cutset
+     */
+    public boolean isInExactCutSet = false;
+
+    /**
+     * The flag to indicate if a node is above the exact cutset
+     */
+    public boolean isAboveExactCutSet = false;
+
 
     /**
      * Creates a new node

@@ -6,12 +6,12 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.compilation.CompilationInputWithCache;
+import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.mdd.DecisionDiagramWithCache;
+import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagramWithCache;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
@@ -96,7 +96,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
      * it has been designed to be reused). Should you decide to not reuse this
      * object, then you can simply ignore this field (and remove it altogether).
      */
-    private final DecisionDiagramWithCache<T, K> mdd;
+    private final DecisionDiagram<T, K> mdd;
 
     /**
      * This is the value of the best known lower bound.
@@ -280,7 +280,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInputWithCache<T, K> compilation = new CompilationInputWithCache<>(
+            CompilationInput<T, K> compilation = new CompilationInput<>(
                     CompilationType.Restricted,
                     problem,
                     relax,
@@ -310,7 +310,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInputWithCache<>(
+            compilation = new CompilationInput<>(
                     CompilationType.Relaxed,
                     problem,
                     relax,

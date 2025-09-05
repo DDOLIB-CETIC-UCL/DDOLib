@@ -2,11 +2,12 @@ package org.ddolib.examples.ddo.misp;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -99,11 +100,12 @@ public final class MispMain {
         config.varh = new DefaultVariableHeuristic<>();
 
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.cache = new SimpleCache<>();
 
-        final Solver solver = new SequentialSolver<>(config);
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        var stat = solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());
@@ -113,6 +115,7 @@ public final class MispMain {
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.println(stat);
     }
 
 }
