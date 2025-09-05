@@ -53,7 +53,14 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     public Iterator<Integer> domain(PDPTWState state, int var) {
         if (var == n - 1) {
             //the final decision is to come back to node zero
-            return singleton(0).stream().iterator();
+            //only if we are before the deadline of node0
+            if(state.currentTime
+                    + state.current.stream().map(from -> instance.timeAndDistanceMatrix[from][0]).max().getAsInt()
+                    > instance.timeWindows[0].end()) {
+                return Collections.emptyIterator();
+            }else{
+                return singleton(0).stream().iterator();
+            }
         } else {
 
             boolean canIncludePickups = state.minContent < instance.maxCapa;
@@ -61,11 +68,13 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             //how many we need to visit from now on?
             int howManyToVisit = n - 1 - var;
-            //check that among the ones we must visit, we can visit at least that number (otherwise, there are no successors)
 
+            //check that all states that must be visited can still be visited given the currentTime,
+            // otherwise, there is no successor at all.
             long nbStillReachablePoints = state.allToVisit.stream().filter(point ->
-                    (state.currentTime + state.current.stream().map(from -> instance.timeAndDistanceMatrix[from][point]).min().getAsInt()) <= instance.timeWindows[point].end()
-                    ).count();
+                    (state.currentTime + state.current.stream().map(
+                            from -> instance.timeAndDistanceMatrix[from][point]).min().getAsInt()) <= instance.timeWindows[point].end()
+            ).count();
 
             if(nbStillReachablePoints < howManyToVisit) return Collections.emptyIterator();
 
