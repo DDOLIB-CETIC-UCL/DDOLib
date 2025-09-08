@@ -103,7 +103,7 @@ public final class MispMain {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        var stat = solver.maximize();
+        solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());
@@ -113,7 +113,6 @@ public final class MispMain {
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println(stat);
     }
 
 }

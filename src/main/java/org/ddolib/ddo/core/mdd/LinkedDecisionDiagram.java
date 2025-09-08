@@ -148,11 +148,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() != NodeType.EXACT || !dominance.updateDominance(state,
+                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
                     double fub = input.fub().fastUpperBound(state, variables);
                     double rub = saturatedAdd(node.value, fub);
-                    node.setFub(fub);
+                    node.fub = fub;
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
             }
@@ -235,13 +235,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     }
                 }
                 if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2) {
-                    if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
+                    if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
-                    if (n.node.getNodeType() == NodeType.RELAXED) {
+                    if (n.node.type == NodeType.RELAXED) {
                         for (Edge e : n.node.edges) {
                             Node origin = e.origin;
-                            if (origin.getNodeType() == NodeType.EXACT) {
+                            if (origin.type == NodeType.EXACT) {
                                 currentCutSet.add(prevLayer.get(origin));
                             }
                         }
@@ -354,7 +354,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         } else {
             Edge eb = best.best;
             while (eb != null) {
-                if (eb.origin.getNodeType() == NodeType.RELAXED)
+                if (eb.origin.type == NodeType.RELAXED)
                     return false;
                 eb = eb.origin.best;
             }
@@ -528,7 +528,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         // when the merged node is new, set its type to relaxed
         if (node == null) {
             Node newNode = new Node(Double.NEGATIVE_INFINITY);
-            newNode.setNodeType(NodeType.RELAXED);
+            newNode.type = NodeType.RELAXED;
             node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
         }
 
@@ -542,8 +542,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 double value = saturatedAdd(e.origin.value, rcost);
                 e.weight = rcost;
                 // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.getNodeType() == NodeType.RELAXED) {
-                    node.node.setNodeType(NodeType.RELAXED);
+                if (e.origin.type == NodeType.RELAXED) {
+                    node.node.type = NodeType.RELAXED;
                 }
                 node.node.edges.add(e);
                 if (value > node.node.value) {
@@ -570,7 +570,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param decision the decision being made
      * @param problem  the problem that defines the transition and transition cost functions
      */
-    private void branchOn(final NodeSubProblem<T> node, final Decision decision,
+    private void branchOn(final NodeSubProblem<T> node,
+                          final Decision decision,
                           final Problem<T> problem) {
         if (debugLevel >= 1)
             DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
@@ -583,13 +584,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
-            if (node.node.getNodeType() == NodeType.RELAXED) {
-                n.setNodeType(NodeType.RELAXED);
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
             }
             nextLayer.put(state, n);
         } else {
-            if (node.node.getNodeType() == NodeType.RELAXED) {
-                n.setNodeType(NodeType.RELAXED);
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
             }
         }
 
@@ -659,7 +660,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         StringBuilder sb = new StringBuilder();
         sb.append(node.node.hashCode());
         sb.append(" [label=").append(nodeStr);
-        if (node.node.getNodeType() == NodeType.RELAXED) {
+        if (node.node.type == NodeType.RELAXED) {
             sb.append(", shape=box, tooltip=\"Relaxed node\"");
         } else {
             sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
@@ -716,7 +717,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     // Note: we might want to do something and stop as soon as the lel has been reached
                     Node origin = e.origin;
                     parent.add(origin);
-                    if ((n.isInExactCutSet || n.isAboveExactCutSet) && origin.getNodeType() == NodeType.EXACT && !origin.isInExactCutSet) {
+                    if ((n.isInExactCutSet || n.isAboveExactCutSet)
+                            && origin.type == NodeType.EXACT
+                            && !origin.isInExactCutSet) {
                         origin.isAboveExactCutSet = true;
                     }
                 }
@@ -725,15 +728,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * perform the bottom up traversal of the mdd to compute and update the cache
+     * Performs the bottom up traversal of the mdd to compute and update the cache
      */
     private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
         for (int j = listDepth.size() - 1; j >= 0; j--) {
             int depth = listDepth.get(j);
             for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
                 NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
-                if (simpleCache.getLayer(depth).containsKey(sub.state) && simpleCache.getLayer(depth).get(sub.state).isPresent() &&
-                        sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                if (simpleCache.getLayer(depth).containsKey(sub.state)
+                        && simpleCache.getLayer(depth).get(sub.state).isPresent()
+                        && sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
                     double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
                     currentCache.get(j).get(i).setValue(value);
                 } else {
@@ -749,11 +753,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             currentCache.get(j).get(i).setValue(sub.node.value);
                         }
                     }
-                    if (sub.node.getNodeType() == NodeType.EXACT) {
+                    if (sub.node.type == NodeType.EXACT) {
                         if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
                             currentCache.get(j).get(i).setExplored(true);
                         }
-                        if (cutSetType == CutSetType.LastExactLayer && sub.node.value < currentCache.get(j).get(i).getValue() && sub.node.isInExactCutSet)
+                        if (cutSetType == CutSetType.LastExactLayer
+                                && sub.node.value < currentCache.get(j).get(i).getValue()
+                                && sub.node.isInExactCutSet)
                             currentCache.get(j).get(i).setExplored(true);
                         if (currentCache.get(j).get(i).isExplored()) {
                             simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));

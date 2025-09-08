@@ -65,32 +65,6 @@ final class Node {
         this.isMarked = false;
     }
 
-    /**
-     * set the type of the node when different to exact type
-     *
-     * @param nodeType
-     */
-    public void setNodeType(final NodeType nodeType) {
-        this.type = nodeType;
-    }
-
-    /**
-     * Set the value of {@code fub}.
-     *
-     * @param fub The new value of {@code fub}.
-     */
-    public void setFub(final double fub) {
-        this.fub = fub;
-    }
-
-    /**
-     * get the type of the node
-     *
-     * @return NodeType
-     */
-    public NodeType getNodeType() {
-        return this.type;
-    }
 
     @Override
     public String toString() {
