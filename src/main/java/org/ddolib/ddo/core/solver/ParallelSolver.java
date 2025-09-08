@@ -124,6 +124,9 @@ public final class ParallelSolver<T, K> implements Solver {
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
+        if (config.cache != null) {
+            throw new IllegalArgumentException("Caching is not available for parallel solver");
+        }
     }
 
 
@@ -265,7 +268,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 width,
                 shared.fub,
                 shared.dominance,
-                null,
+                Optional.empty(),
                 bestLB,
                 critical.frontier.cutSetType(),
                 false,
