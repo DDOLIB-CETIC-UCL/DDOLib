@@ -20,7 +20,6 @@ import java.util.Optional;
  */
 public class CompilationConfig<T, K> {
 
-
     /**
      * How is the mdd being compiled.
      */
@@ -91,7 +90,6 @@ public class CompilationConfig<T, K> {
      * {@link org.ddolib.common.solver.SolverConfig for details}
      */
     public Integer debugLevel = null;
-
 
     /**
      * Returns a string representation of this record class.
