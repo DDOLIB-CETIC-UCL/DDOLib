@@ -164,23 +164,19 @@ public final class PDPTWMain {
 
 
     public static int biasedRandom(Random random, int[] valuesAndBias){
+       // System.out.println("biasedRandom" + Arrays.toString(valuesAndBias));
         int summedBias = Arrays.stream(valuesAndBias).sum();
-        System.out.println("summedBias:" + summedBias);
         int draw = random.nextInt(summedBias);
-
+        //draw < summedBias
         for(int i = 0 ; i < valuesAndBias.length; i++){
             draw = draw - valuesAndBias[i];
             if(draw <= 0 && valuesAndBias[i] != 0){
+                //System.out.println("return " + i);
                 return i;
             }
         }
         //if we get there, there has been a problem
         throw new Error("error in random");
-        /*for(int i = 0 ; i < valuesAndBias.length; i++){
-            if(valuesAndBias[i] != 0){
-                return i;
-            }
-        }*/
     }
     /**
      * Generates a PDPTW problem with a single vehicle:
@@ -265,11 +261,16 @@ public final class PDPTWMain {
             //random draw
             switch (biasedRandom(random,new int[]{nbNodesForUnrelated,nbNodesForPickup,nbNodesForDelivery})) {
                 case 0: //unrelated
-                    unrelatedNodes.add(nextNode);
+                    if(nbNodesForUnrelated ==0) throw new Error("A");
+                    unrelatedNodes.add(currentNode);
+                    break;
                 case 1: //pickup
-                    openPickups.add(nextNode);
+                    if(nbNodesForPickup ==0) throw new Error("B");
+                    openPickups.add(currentNode);
                     currentContent += 1;
+                    break;
                 case 2: //delivery
+                    if(nbNodesForDelivery == 0) throw new Error("C");
                     //get a pickup point
                     int pickup = (int) openPickups.toArray()[random.nextInt(openPickups.size())];
 
@@ -277,6 +278,13 @@ public final class PDPTWMain {
                     pickupToAssociatedDelivery.put(pickup,currentNode);
                     deliveryToAssociatedPickup.put(currentNode,pickup);
                     openPickups.remove(pickup);
+
+                    //we delete one of the two timeWindows, to make the problem more interesting
+                    if(random.nextBoolean()){
+                        timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
+                    }else{
+                        timeWindows[currentNode] = new TimeWindow(0, Integer.MAX_VALUE);
+                    }
 
             }
         }
@@ -297,7 +305,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(5, 1, 2,new Random(1));
+        final PDPTWInstance instance = genInstance3(30, 10, 5,new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
