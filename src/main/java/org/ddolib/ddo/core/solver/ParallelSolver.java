@@ -257,22 +257,21 @@ public final class ParallelSolver<T, K> implements Solver {
         }
 
         int width = shared.width.maximumWidth(sub.getState());
-        CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Restricted,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.fub,
-                shared.dominance,
-                Optional.empty(),
-                bestLB,
-                critical.frontier.cutSetType(),
-                false,
-                debugLevel
-        );
+        CompilationInput<T, K> compilation = new CompilationInput<>();
+        compilation.compilationType = CompilationType.Restricted;
+        compilation.problem = shared.problem;
+        compilation.relaxation = shared.relax;
+        compilation.variableHeuristic = shared.varh;
+        compilation.stateRanking = shared.ranking;
+        compilation.residual = sub;
+        compilation.maxWidth = width;
+        compilation.fub = shared.fub;
+        compilation.dominance = shared.dominance;
+        compilation.cache = Optional.empty();
+        compilation.bestLB = bestLB;
+        compilation.cutSetType = critical.frontier.cutSetType();
+        compilation.exportAsDot = false;
+        compilation.debugLevel = this.debugLevel;
         DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();
         maybeUpdateBest(restrictedMdd, verbosityLevel);
@@ -282,22 +281,8 @@ public final class ParallelSolver<T, K> implements Solver {
 
         // 2. RELAXATION
         bestLB = bestLB();
-        compilation = new CompilationInput<>(
-                CompilationType.Relaxed,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.fub,
-                shared.dominance,
-                Optional.empty(),
-                bestLB,
-                critical.frontier.cutSetType(),
-                false,
-                debugLevel
-        );
+        compilation.compilationType = CompilationType.Relaxed;
+        compilation.bestLB = bestLB;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         if (relaxedMdd.isExact()) {
@@ -414,7 +399,7 @@ public final class ParallelSolver<T, K> implements Solver {
     /**
      * The status of when a workload is retrieved
      */
-    private static enum WorkloadStatus {
+    private enum WorkloadStatus {
         /**
          * When the complete state space has been explored
          */

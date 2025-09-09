@@ -13,40 +13,85 @@ import org.ddolib.modeling.StateRanking;
 import java.util.Optional;
 
 /**
- * The set of parameters used to tweak the compilation of an MDD
+ * The set of parameters used to tweak the compilation of an MDD.
  *
- * @param compilationType   How is the mdd being compiled.
- * @param problem           A reference to the original problem to solve.
- * @param relaxation        The relaxation used to merge nodes in a relaxed mdd.
- * @param variableHeuristic The variable heuristic used to decide the variable to branch on next.
- * @param stateRanking      The state ranking heuristic to choose the nodes to keep and those to discard.
- * @param residual          The subproblem whose state space must be explored.
- * @param maxWidth          The maximum width of the mdd.
- * @param fub               The heuristic defining a very rough estimation (upper bound) of the optimal value.
- * @param dominance         The dominance checker used to prune the search space.
- * @param cache             The cache used to prune the search space.
- * @param bestLB            The best known lower bound at the time when the dd is being compiled.
- * @param cutSetType        The type of cut set used in the compilation.
- * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
- * @param debugLevel        The debug level of the compilation to add additional checks (see
- *                          {@link org.ddolib.common.solver.SolverConfig for details}
- * @param <T>               The type used to model the state of your problem.
- * @param <K>               The type of the dominance key.
+ * @param <T> The type used to model the state of your problem.
+ * @param <K> The type of the dominance key.
  */
-public record CompilationInput<T, K>(CompilationType compilationType,
-                                     Problem<T> problem,
-                                     Relaxation<T> relaxation,
-                                     VariableHeuristic<T> variableHeuristic,
-                                     StateRanking<T> stateRanking,
-                                     SubProblem<T> residual,
-                                     int maxWidth,
-                                     FastUpperBound<T> fub,
-                                     DominanceChecker<T, K> dominance,
-                                     Optional<SimpleCache<T>> cache,
-                                     double bestLB,
-                                     CutSetType cutSetType,
-                                     boolean exportAsDot,
-                                     int debugLevel) {
+public class CompilationInput<T, K> {
+
+
+    /**
+     * How is the mdd being compiled.
+     */
+    public CompilationType compilationType = null;
+
+    /**
+     * A reference to the original problem to solve.
+     */
+    public Problem<T> problem = null;
+
+    /**
+     * The relaxation used to merge nodes in a relaxed mdd.
+     */
+    public Relaxation<T> relaxation = null;
+
+    /**
+     * The variable heuristic used to decide the variable to branch on next.
+     */
+    public VariableHeuristic<T> variableHeuristic = null;
+
+    /**
+     * The state ranking heuristic to choose the nodes to keep and those to discard.
+     */
+    public StateRanking<T> stateRanking = null;
+
+    /**
+     * The subproblem whose state space must be explored.
+     */
+    public SubProblem<T> residual = null;
+
+    /**
+     * The maximum width of the mdd.
+     */
+    public Integer maxWidth = null;
+
+    /**
+     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     */
+    public FastUpperBound<T> fub = null;
+
+    /**
+     * The dominance checker used to prune the search space.
+     */
+    public DominanceChecker<T, K> dominance = null;
+
+    /**
+     * The cache used to prune the search space.
+     */
+    public Optional<SimpleCache<T>> cache = Optional.empty();
+
+    /**
+     * The best known lower bound at the time when the dd is being compiled.
+     */
+    public Double bestLB = null;
+
+    /**
+     * The type of cut set used in the compilation.
+     */
+    public CutSetType cutSetType = null;
+
+    /**
+     * Whether the compiled diagram have to be exported to a dot file.
+     */
+    public Boolean exportAsDot = null;
+
+    /**
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.common.solver.SolverConfig for details}
+     */
+    public Integer debugLevel = null;
+
 
     /**
      * Returns a string representation of this record class.

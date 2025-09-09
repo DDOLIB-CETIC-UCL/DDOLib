@@ -99,11 +99,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param config The set of parameters used by the compilation.
      */
     public LinkedDecisionDiagram(CompilationInput<T, K> config) {
-        final SubProblem<T> residual = config.residual();
+        final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
-        this.debugLevel = config.debugLevel();
+        this.debugLevel = config.debugLevel;
         this.config = config;
 
     }
@@ -112,19 +112,19 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     public void compile() {
 
         // initialize the compilation
-        final int maxWidth = config.maxWidth();
-        final SubProblem<T> residual = config.residual();
+        final int maxWidth = config.maxWidth;
+        final SubProblem<T> residual = config.residual;
 
-        dotStr.append("digraph ").append(config.compilationType().toString().toLowerCase()).append("{\n");
+        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
-        final Problem<T> problem = config.problem();
-        final Relaxation<T> relax = config.relaxation();
-        final VariableHeuristic<T> var = config.variableHeuristic();
-        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking());
-        final DominanceChecker<T, K> dominance = config.dominance();
-        final Optional<SimpleCache<T>> cache = config.cache();
-        double bestLb = config.bestLB();
+        final Problem<T> problem = config.problem;
+        final Relaxation<T> relax = config.relaxation;
+        final VariableHeuristic<T> var = config.variableHeuristic;
+        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
+        final DominanceChecker<T, K> dominance = config.dominance;
+        final Optional<SimpleCache<T>> cache = config.cache;
+        double bestLb = config.bestLB;
 
         final Set<Integer> variables = varSet(config);
 
@@ -159,7 +159,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node node = e.getValue();
                 if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
-                    double fub = config.fub().fastUpperBound(state, variables);
+                    double fub = config.fub.fastUpperBound(state, variables);
                     double rub = saturatedAdd(node.value, fub);
                     node.fub = fub;
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
@@ -206,7 +206,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
-                switch (config.compilationType()) {
+                switch (config.compilationType) {
                     case Restricted:
                         exact = false;
                         restrict(maxWidth, ranking);
@@ -214,7 +214,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     case Relaxed:
                         if (exact) {
                             exact = false;
-                            if (config.cutSetType() == CutSetType.LastExactLayer) {
+                            if (config.cutSetType == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
                                 depthLEL = depthCurrentDD - 1;
                             }
@@ -228,10 +228,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (config.exportAsDot() || config.debugLevel() >= 2) {
+                if (config.exportAsDot || config.debugLevel >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.ub <= config.bestLB()) {
+                if (n.ub <= config.bestLB) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -242,7 +242,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (config.cutSetType() == CutSetType.Frontier && config.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2) {
+                if (config.cutSetType == CutSetType.Frontier
+                        && config.compilationType == CompilationType.Relaxed
+                        && !exact && depthCurrentDD >= 2) {
                     if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
@@ -257,7 +259,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
-            if (cache.isPresent() && config.compilationType() == CompilationType.Relaxed) {
+            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
                 listDepths.add(depthGlobalDD);
                 nodeSubProblemPerLayer.add(new ArrayList<>());
                 layersThresholds.add(new ArrayList<>());
@@ -270,7 +272,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
-        if (config.compilationType() == CompilationType.Relaxed && config.cutSetType() == CutSetType.Frontier) {
+        if (config.compilationType == CompilationType.Relaxed && config.cutSetType == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
 
@@ -282,7 +284,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (config.exportAsDot() || debugLevel >= 2) {
+        if (config.exportAsDot || debugLevel >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -292,7 +294,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
 
-        if (cache.isPresent() && config.compilationType() == CompilationType.Relaxed) {
+        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
             if (!cutset.isEmpty()) {
                 computeLocalBounds();
 
@@ -302,19 +304,19 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     }
                 }
 
-                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType());
+                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
                 // update the cache to improve the next computation of the BB
                 computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                        layersThresholds, bestLb, config.cutSetType());
+                        layersThresholds, bestLb, config.cutSetType);
             }
-        } else if (config.compilationType() == CompilationType.Relaxed) {
+        } else if (config.compilationType == CompilationType.Relaxed) {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
         }
 
 
-        if (debugLevel >= 1 && config.compilationType() != CompilationType.Relaxed) {
-            checkFub(config.problem());
+        if (debugLevel >= 1 && config.compilationType != CompilationType.Relaxed) {
+            checkFub(config.problem);
         }
     }
 
@@ -469,11 +471,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationInput<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.problem().nbVars(); i++) {
+        for (int i = 0; i < input.problem.nbVars(); i++) {
             set.add(i);
         }
 
-        for (Decision d : input.residual().getPath()) {
+        for (Decision d : input.residual.getPath()) {
             set.remove(d.var());
         }
         return set;

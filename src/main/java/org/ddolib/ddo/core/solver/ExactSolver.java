@@ -161,22 +161,22 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Exact,
-                problem,
-                relax,
-                varh,
-                ranking,
-                root,
-                Integer.MAX_VALUE,
-                fub,
-                dominance,
-                cache,
-                Double.NEGATIVE_INFINITY,
-                CutSetType.LastExactLayer,
-                exportAsDot,
-                debugLevel
-        );
+        CompilationInput<T, K> compilation = new CompilationInput<>();
+        compilation.compilationType = CompilationType.Exact;
+        compilation.problem = this.problem;
+        compilation.relaxation = this.relax;
+        compilation.variableHeuristic = this.varh;
+        compilation.stateRanking = this.ranking;
+        compilation.residual = root;
+        compilation.maxWidth = Integer.MAX_VALUE;
+        compilation.fub = fub;
+        compilation.dominance = this.dominance;
+        compilation.cache = this.cache;
+        compilation.bestLB = Double.NEGATIVE_INFINITY;
+        compilation.cutSetType = CutSetType.LastExactLayer;
+        compilation.exportAsDot = this.exportAsDot;
+        compilation.debugLevel = this.debugLevel;
+
         DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
         extractBest(mdd);

@@ -280,22 +280,22 @@ public final class SequentialSolver<T, K> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationInput<T, K> compilation = new CompilationInput<>(
-                    CompilationType.Restricted,
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    sub,
-                    maxWidth,
-                    fub,
-                    dominance,
-                    cache,
-                    bestLB,
-                    frontier.cutSetType(),
-                    exportAsDot && firstRestricted,
-                    debugLevel
-            );
+            CompilationInput<T, K> compilation = new CompilationInput<>();
+            compilation.compilationType = CompilationType.Restricted;
+            compilation.problem = this.problem;
+            compilation.relaxation = this.relax;
+            compilation.variableHeuristic = this.varh;
+            compilation.stateRanking = this.ranking;
+            compilation.residual = sub;
+            compilation.maxWidth = maxWidth;
+            compilation.fub = fub;
+            compilation.dominance = this.dominance;
+            compilation.cache = this.cache;
+            compilation.bestLB = this.bestLB;
+            compilation.cutSetType = frontier.cutSetType();
+            compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
+            compilation.debugLevel = this.debugLevel;
+
             DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
@@ -313,26 +313,13 @@ public final class SequentialSolver<T, K> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation = new CompilationInput<>(
-                    CompilationType.Relaxed,
-                    problem,
-                    relax,
-                    varh,
-                    ranking,
-                    sub,
-                    maxWidth,
-                    fub,
-                    dominance,
-                    cache,
-                    bestLB,
-                    frontier.cutSetType(),
-                    exportAsDot && firstRelaxed,
-                    debugLevel
-            );
+            compilation.compilationType = CompilationType.Relaxed;
+            compilation.bestLB = this.bestLB;
+            compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
             DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();
-            if (compilation.compilationType() == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
+            if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
             }
