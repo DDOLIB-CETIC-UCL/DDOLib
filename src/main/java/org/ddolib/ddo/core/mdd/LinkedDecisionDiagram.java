@@ -93,6 +93,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
     private final CompilationInput<T, K> config;
 
+    /**
+     * Creates an all new MDD
+     *
+     * @param config The set of parameters used by the compilation.
+     */
     public LinkedDecisionDiagram(CompilationInput<T, K> config) {
         final SubProblem<T> residual = config.residual();
         final Node root = new Node(residual.getValue());
@@ -104,9 +109,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     @Override
-    public void compile(CompilationInput<T, K> input) {
-        // make sure we don't have any stale data left
-        //this.clear();
+    public void compile() {
 
         // initialize the compilation
         final int maxWidth = config.maxWidth();
@@ -185,7 +188,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             if (nextVar == null) {
                 // Some variables simply can't be assigned
-                //clear();
                 return;
             } else {
                 variables.remove(nextVar);

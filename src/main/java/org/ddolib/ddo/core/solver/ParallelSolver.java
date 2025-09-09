@@ -274,7 +274,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 debugLevel
         );
         DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
-        restrictedMdd.compile(compilation);
+        restrictedMdd.compile();
         maybeUpdateBest(restrictedMdd, verbosityLevel);
         if (restrictedMdd.isExact()) {
             return;
@@ -299,7 +299,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 debugLevel
         );
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
-        relaxedMdd.compile(compilation);
+        relaxedMdd.compile();
         if (relaxedMdd.isExact()) {
             maybeUpdateBest(relaxedMdd, verbosityLevel);
         } else {

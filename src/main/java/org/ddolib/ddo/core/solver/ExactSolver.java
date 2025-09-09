@@ -178,7 +178,7 @@ public final class ExactSolver<T, K> implements Solver {
                 debugLevel
         );
         DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
-        mdd.compile(compilation);
+        mdd.compile();
         extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");

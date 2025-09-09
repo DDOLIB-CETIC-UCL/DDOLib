@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.ParallelSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -100,7 +100,7 @@ public final class MispMain {
 
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new ExactSolver<>(config);
+        final Solver solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
