@@ -35,7 +35,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * The list of decisions that have led to the root of this DD
      */
-    private Set<Decision> pathToRoot;
+    private final Set<Decision> pathToRoot;
 
     /**
      * All the nodes from the previous layer
@@ -76,11 +76,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Used to build the .dot file displaying the compiled mdd.
      */
-    private StringBuilder dotStr = new StringBuilder();
+    private final StringBuilder dotStr = new StringBuilder();
     /**
      * Given the hashcode of an edge, save its .dot representation
      */
-    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
+    private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     /**
      * <ul>
@@ -89,7 +89,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      *     <li>2: 1 + export failing mdd as .dot</li>
      * </ul>
      */
-    private int debugLevel;
+    private final int debugLevel;
 
     private final CompilationInput<T, K> config;
 
