@@ -64,4 +64,6 @@ public interface Problem<T> {
     default Optional<Double> optimalValue() {
         return Optional.empty();
     }
+
+    default void setLB(){};
 }

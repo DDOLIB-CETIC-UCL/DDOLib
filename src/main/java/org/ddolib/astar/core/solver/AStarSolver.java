@@ -267,6 +267,9 @@ public final class AStarSolver<T, K> implements Solver {
             if (debugLevel >= 1)
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
+            if(newState==null){
+                continue;
+            }
             double cost = problem.transitionCost(state, decision);
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());

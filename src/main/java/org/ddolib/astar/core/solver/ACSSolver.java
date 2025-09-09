@@ -224,9 +224,11 @@ public final class ACSSolver<T, K> implements Solver {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
             T newState = problem.transition(state, decision);
+            if(newState==null){
+                continue;
+            }
             double cost = problem.transitionCost(state, decision);
             double value = subProblem.getValue() + cost;
-
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path), bestLB);
