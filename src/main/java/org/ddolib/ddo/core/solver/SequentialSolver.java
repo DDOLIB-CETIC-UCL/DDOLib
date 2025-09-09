@@ -255,7 +255,6 @@ public final class SequentialSolver<T, K> implements Solver {
                 long now = System.currentTimeMillis();
                 if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
                             nbIter, frontier.size(), bestLB, bestInFrontier, gap());
