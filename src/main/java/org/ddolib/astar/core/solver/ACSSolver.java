@@ -12,6 +12,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public final class ACSSolver<T, K> implements Solver {
@@ -48,6 +49,9 @@ public final class ACSSolver<T, K> implements Solver {
     private HashMap<T, Double> g;
 
     private final int K;
+
+    private final int timeout;
+
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
@@ -104,6 +108,7 @@ public final class ACSSolver<T, K> implements Solver {
         this.present = new HashSet[problem.nbVars() + 1];
         this.g = new HashMap<>();
         this.K = K;
+        this.timeout = config.timeLimit;
         if (config.debugLevel != 0) {
             throw new IllegalArgumentException("The debug mode for this solver is not available " +
                     "for the moment.");
@@ -170,6 +175,10 @@ public final class ACSSolver<T, K> implements Solver {
                     addChildren(sub, i + 1);
                 }
                 candidates.clear();
+            }
+
+            if (System.currentTimeMillis() - t0> timeout* 1000L){
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap());
             }
 
             nbIter++;
@@ -242,5 +251,23 @@ public final class ACSSolver<T, K> implements Solver {
             set.remove(d.var());
         }
         return set;
+    }
+
+    private double gap() {
+        if (allEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = bestInFrontier();
+            return 100 * (bestInFrontier - bestLB) / bestLB;
+        }
+    }
+    public double bestInFrontier() {
+        double bestInFrontier = Double.MIN_VALUE;
+        for (PriorityQueue<SubProblem<T>> q : open) {
+           if (!q.isEmpty()) {
+               bestInFrontier = max(bestInFrontier,q.peek().f());
+           }
+        }
+        return bestInFrontier;
     }
 }

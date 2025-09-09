@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Math.max;
+
 public final class AStarSolver<T, K> implements Solver {
 
     /**
@@ -95,6 +97,8 @@ public final class AStarSolver<T, K> implements Solver {
      */
     private final int debugLevel;
 
+    private final int timeout;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
@@ -136,6 +140,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
+        this.timeout = config.timeLimit;
 
     }
 
@@ -163,6 +168,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
+        this.timeout = config.timeLimit;
     }
 
     @Override
@@ -206,6 +212,9 @@ public final class AStarSolver<T, K> implements Solver {
             }
             addChildren(sub, debugLevel);
             closed.put(subKey, sub.f());
+            if (nbIter%10000 == 0 && System.currentTimeMillis() - t0> timeout* 1000L) {
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, 100);
+            }
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
