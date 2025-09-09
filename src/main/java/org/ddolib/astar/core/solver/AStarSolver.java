@@ -199,6 +199,7 @@ public final class AStarSolver<T, K> implements Solver {
                 }
                 bestSol = Optional.of(sub.getPath());
                 bestLB = sub.getValue();
+                problem.setLB(bestLB);
                 break;
             }
 

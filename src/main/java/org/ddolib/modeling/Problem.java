@@ -65,5 +65,5 @@ public interface Problem<T> {
         return Optional.empty();
     }
 
-    default void setLB(){};
+    default void setLB(double lb){};
 }
