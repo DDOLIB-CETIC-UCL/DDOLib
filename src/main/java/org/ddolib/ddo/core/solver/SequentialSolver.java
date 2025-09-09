@@ -416,7 +416,7 @@ public final class SequentialSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return 100 * (bestInFrontier - bestLB) / bestLB;
+            return 100 * (Math.abs(bestInFrontier) - Math.abs(bestLB)) / bestLB;
         }
     }
 }
