@@ -144,7 +144,6 @@ public final class ParallelSolver<T, K> implements Solver {
             workers[i] = new Thread() {
                 @Override
                 public void run() {
-                    DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>();
                     while (true) {
                         Workload<T> wl = getWorkload(threadId);
                         switch (wl.status) {
@@ -157,7 +156,7 @@ public final class ParallelSolver<T, K> implements Solver {
                                 queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 if (verbosityLevel >= 2)
                                     System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
-                                processOneNode(wl.subProblem, mdd, verbosityLevel, exportAsDot);
+                                processOneNode(wl.subProblem, verbosityLevel, exportAsDot);
                                 notifyNodeFinished(threadId);
                                 break;
                         }
@@ -248,7 +247,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * This is typically the method you are searching for if you are searching after an implementation
      * of the branch and bound with mdd algo.
      */
-    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
+    private void processOneNode(final SubProblem<T> sub, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION
         double nodeUB = sub.getUpperBound();
         double bestLB = bestLB();
@@ -274,10 +273,10 @@ public final class ParallelSolver<T, K> implements Solver {
                 false,
                 debugLevel
         );
-
-        mdd.compile(compilation);
-        maybeUpdateBest(mdd, verbosityLevel);
-        if (mdd.isExact()) {
+        DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+        restrictedMdd.compile(compilation);
+        maybeUpdateBest(restrictedMdd, verbosityLevel);
+        if (restrictedMdd.isExact()) {
             return;
         }
 
@@ -299,11 +298,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 false,
                 debugLevel
         );
-        mdd.compile(compilation);
-        if (mdd.isExact()) {
-            maybeUpdateBest(mdd, verbosityLevel);
+        DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+        relaxedMdd.compile(compilation);
+        if (relaxedMdd.isExact()) {
+            maybeUpdateBest(relaxedMdd, verbosityLevel);
         } else {
-            enqueueCutset(mdd);
+            enqueueCutset(relaxedMdd);
         }
     }
 
