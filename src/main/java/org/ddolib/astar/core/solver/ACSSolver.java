@@ -166,6 +166,7 @@ public final class ACSSolver<T, K> implements Solver {
                         if (bestLB < sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestLB = sub.getValue();
+                            problem.setLB(bestLB);
                             if (verbosityLevel >= 1) {
                                 System.out.println("NEWOBJ:" + bestLB);
                             }
