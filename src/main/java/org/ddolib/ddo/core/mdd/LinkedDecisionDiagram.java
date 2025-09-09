@@ -480,22 +480,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * --- UT
-     * Reset the state of this MDD. This way it can easily be reused
-     */
-    private void clear() {
-        pathToRoot = Collections.emptySet();
-        prevLayer.clear();
-        currentLayer.clear();
-        nextLayer.clear();
-        cutset.clear();
-        exact = true;
-        best = null;
-        dotStr = new StringBuilder();
-        edgesDotStr = new HashMap<>();
-    }
-
-    /**
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
