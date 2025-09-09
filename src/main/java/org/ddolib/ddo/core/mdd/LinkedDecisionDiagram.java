@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.cache.Threshold;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -91,14 +91,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private final int debugLevel;
 
-    private final CompilationInput<T, K> config;
+    private final CompilationConfig<T, K> config;
 
     /**
      * Creates an all new MDD
      *
      * @param config The set of parameters used by the compilation.
      */
-    public LinkedDecisionDiagram(CompilationInput<T, K> config) {
+    public LinkedDecisionDiagram(CompilationConfig<T, K> config) {
         final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
@@ -469,7 +469,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     // UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T, K> input) {
+    private Set<Integer> varSet(final CompilationConfig<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < input.problem.nbVars(); i++) {
             set.add(i);

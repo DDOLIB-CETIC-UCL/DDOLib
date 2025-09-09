@@ -5,7 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -257,7 +257,7 @@ public final class ParallelSolver<T, K> implements Solver {
         }
 
         int width = shared.width.maximumWidth(sub.getState());
-        CompilationInput<T, K> compilation = new CompilationInput<>();
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Restricted;
         compilation.problem = shared.problem;
         compilation.relaxation = shared.relax;

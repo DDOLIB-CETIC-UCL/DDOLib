@@ -6,7 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -161,7 +161,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationInput<T, K> compilation = new CompilationInput<>();
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;

@@ -18,7 +18,7 @@ import java.util.Optional;
  * @param <T> The type used to model the state of your problem.
  * @param <K> The type of the dominance key.
  */
-public class CompilationInput<T, K> {
+public class CompilationConfig<T, K> {
 
 
     /**
