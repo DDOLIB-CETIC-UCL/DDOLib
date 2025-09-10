@@ -54,9 +54,6 @@ public final class ACSSolver<T, K> implements Solver {
 
     private final int timeout;
 
-    private double min;
-
-    private double max;
 
 
 
@@ -149,8 +146,7 @@ public final class ACSSolver<T, K> implements Solver {
         open.get(0).add(root());
         present[0].add(root().getState());
         g.put(root().getState(), 0.0);
-        min = root().f();
-        max = min;
+
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars() + 1; i++) {
@@ -164,6 +160,8 @@ public final class ACSSolver<T, K> implements Solver {
                         }
                     }
                 }else{
+                    double min = open.get(i).peek().f();
+                    double max = Collections.max(open.get(i), Comparator.comparingDouble(SubProblem<T>::f).reversed()).f();
                     ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
                     while(candidates.size()<K){
                         if (open.get(i).isEmpty()) {
@@ -193,8 +191,6 @@ public final class ACSSolver<T, K> implements Solver {
                         open.get(i).add(subProblem);
                     }
                 }
-                min = Integer.MAX_VALUE;
-                max = Integer.MIN_VALUE;
                 for (int k = 0; k < candidates.size(); k++) {
                     if (verbosityLevel >= 2) {
                         System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
@@ -280,8 +276,7 @@ public final class ACSSolver<T, K> implements Solver {
                 }
                 g.put(newState, value);
                 open.get(varIndex).add(newSubProblem);
-                min = min(min,newSubProblem.f());
-                max = max(max,newSubProblem.f());
+
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);
                 }
