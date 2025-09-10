@@ -12,8 +12,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 public final class ACSSolver<T, K> implements Solver {
 
@@ -54,6 +53,11 @@ public final class ACSSolver<T, K> implements Solver {
     private final int K;
 
     private final int timeout;
+
+    private double min;
+
+    private double max;
+
 
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
@@ -149,13 +153,32 @@ public final class ACSSolver<T, K> implements Solver {
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 int l = min(K, open.get(i).size());
-                for (int j = 0; j < l; j++) {
-                    SubProblem<T> s = open.get(i).poll();
-                    present[i].remove(s.getState());
-                    if (s.f() > bestLB) {
-                        candidates.add(s);
+                if(l<K) {
+                    for (int j = 0; j < l; j++) {
+                        SubProblem<T> s = open.get(i).poll();
+                        present[i].remove(s.getState());
+                        if (s.f() > bestLB) {
+                            candidates.add(s);
+                        }
+                    }
+                }else{
+                    ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
+                    while(candidates.size()<K){
+                        SubProblem<T> s = open.get(i).poll();
+                        double prob = abs((s.f() - min)/(max-min))+ 0.01;
+                        double r = random();
+                        if (r<= prob){
+                            candidates.add(s);
+                        }else{
+                            toAdd.add(s);
+                        }
+                    }
+                    for (SubProblem<T> subProblem : toAdd) {
+                        open.get(i).add(subProblem);
                     }
                 }
+                min = Integer.MAX_VALUE;
+                max = Integer.MIN_VALUE;
                 for (int k = 0; k < candidates.size(); k++) {
                     if (verbosityLevel >= 2) {
                         System.out.println("it " + nbIter + "\t frontier:" + candidates.get(k) + "\t " + "bestObj:" + bestLB);
@@ -241,6 +264,8 @@ public final class ACSSolver<T, K> implements Solver {
                 }
                 g.put(newState, value);
                 open.get(varIndex).add(newSubProblem);
+                min = min(min,subProblem.f());
+                max = max(max,subProblem.f());
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);
                 }
@@ -264,7 +289,7 @@ public final class ACSSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = bestInFrontier();
-            return 100 * (bestInFrontier - bestLB) / bestLB;
+            return 100 * (bestInFrontier - bestLB) / bestInFrontier;
         }
     }
     public double bestInFrontier() {
