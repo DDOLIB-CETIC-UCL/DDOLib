@@ -280,8 +280,8 @@ public final class ACSSolver<T, K> implements Solver {
                 }
                 g.put(newState, value);
                 open.get(varIndex).add(newSubProblem);
-                min = min(min,subProblem.f());
-                max = max(max,subProblem.f());
+                min = min(min,newSubProblem.f());
+                max = max(max,newSubProblem.f());
                 if (closed[varIndex].contains(newState)) {
                     closed[varIndex].remove(newState);
                 }
