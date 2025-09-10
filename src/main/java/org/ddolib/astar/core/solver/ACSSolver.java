@@ -171,15 +171,19 @@ public final class ACSSolver<T, K> implements Solver {
                             toAdd.clear();
                         }
                         SubProblem<T> s = open.get(i).poll();
-                        double prob = abs((s.f() - min)/(max-min))+ 0.01;
-                        if(verbosityLevel>0){
-                            System.out.println("prob = " + prob + " s :" + s.f() + " min = " + min + " max = " + max);
-                        }
-                        double r = random();
-                        if (r<= prob){
+                        if (s.f()==max){
                             candidates.add(s);
-                        }else{
-                            toAdd.add(s);
+                        }else {
+                            double prob = abs((s.f() - min) / (max - min)) + 0.01;
+                            if (verbosityLevel > 0) {
+                                System.out.println("prob = " + prob + " s :" + s.f() + " min = " + min + " max = " + max);
+                            }
+                            double r = random();
+                            if (r <= prob) {
+                                candidates.add(s);
+                            } else {
+                                toAdd.add(s);
+                            }
                         }
 
                     }
