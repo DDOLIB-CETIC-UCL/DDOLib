@@ -149,6 +149,8 @@ public final class ACSSolver<T, K> implements Solver {
         open.get(0).add(root());
         present[0].add(root().getState());
         g.put(root().getState(), 0.0);
+        min = root().f();
+        max = min;
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             for (int i = 0; i < problem.nbVars() + 1; i++) {
