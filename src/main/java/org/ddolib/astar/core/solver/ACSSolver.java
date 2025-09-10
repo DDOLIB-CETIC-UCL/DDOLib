@@ -161,14 +161,24 @@ public final class ACSSolver<T, K> implements Solver {
                 }else{
                     ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
                     while(candidates.size()<K){
+                        if (open.get(i).isEmpty()) {
+                            for (SubProblem<T> subProblem : toAdd) {
+                                open.get(i).add(subProblem);
+                            }
+                            toAdd.clear();
+                        }
                         SubProblem<T> s = open.get(i).poll();
                         double prob = abs((s.f() - min)/(max-min))+ 0.01;
+                        if(verbosityLevel>0){
+                            System.out.println("prob = " + prob + " s :" + s.f() + " min = " + min + " max = " + max);
+                        }
                         double r = random();
                         if (r<= prob){
                             candidates.add(s);
                         }else{
                             toAdd.add(s);
                         }
+
                     }
                     for (SubProblem<T> subProblem : toAdd) {
                         open.get(i).add(subProblem);
