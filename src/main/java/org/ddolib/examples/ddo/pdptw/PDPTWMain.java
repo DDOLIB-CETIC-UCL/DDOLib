@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.*;
@@ -263,6 +264,7 @@ public final class PDPTWMain {
                 case 0: //unrelated
                     if(nbNodesForUnrelated ==0) throw new Error("A");
                     unrelatedNodes.add(currentNode);
+
                     break;
                 case 1: //pickup
                     if(nbNodesForPickup ==0) throw new Error("B");
@@ -279,7 +281,7 @@ public final class PDPTWMain {
                     deliveryToAssociatedPickup.put(currentNode,pickup);
                     openPickups.remove(pickup);
 
-                    //we delete one of the two timeWindows, to make the problem more interesting
+                    //we delete one of the two timeWindows, to make the problem more challenging
                     if(random.nextBoolean()){
                         timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
                     }else{
@@ -291,7 +293,7 @@ public final class PDPTWMain {
 
         totalDistance += distance[currentNode][0];
         int arrivalTime = currentTime + distance[currentNode][0];
-        int deadline = arrivalTime + random.nextInt(100);
+        int deadline = Integer.MAX_VALUE; // + random.nextInt(100);
         timeWindows[0] = new TimeWindow(0, deadline);
 
         //now, we must calculate the maxCapa for the solution
@@ -332,11 +334,12 @@ public final class PDPTWMain {
         config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
 
-        config.verbosityLevel = 2;
+        config.verbosityLevel = 3;
         config.exportAsDot = false;
+
         final Solver solver = new SequentialSolver<>(config);
 
         SearchStatistics statistics = solver.maximize();

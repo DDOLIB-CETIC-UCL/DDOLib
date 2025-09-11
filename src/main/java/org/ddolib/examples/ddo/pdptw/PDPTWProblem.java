@@ -118,12 +118,15 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         if(newMinContent <0) newMinContent = 0;
         if(newMaxContent > instance.maxCapa) newMaxContent = instance.maxCapa;
 
+        if(newMinContent > instance.maxCapa) throw new Error("error");
+        if(newMaxContent < 0) throw new Error("error");
+
         int arrivalTime = state.currentTime + state.current.stream()
                 .map(possibleCurrentNode -> instance.timeAndDistanceMatrix[possibleCurrentNode][decision.val()])
                 .min().getAsInt();
 
-        if(arrivalTime < instance.timeWindows[decision.val()].start()){
-            arrivalTime = instance.timeWindows[decision.val()].start();
+        if(arrivalTime < instance.timeWindows[node].start()){
+            arrivalTime = instance.timeWindows[node].start();
         }
 
         return new PDPTWState(
