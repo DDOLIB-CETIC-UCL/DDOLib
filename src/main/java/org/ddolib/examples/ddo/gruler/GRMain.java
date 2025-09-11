@@ -31,6 +31,7 @@ public class GRMain {
     public static void main(final String[] args) throws IOException {
         SolverConfig<GRState, Integer> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(9);
+        config.problem = problem;
         config.relax = new GRRelax();
         config.ranking = new GRRanking();
         config.width = new FixedWidth<>(10);

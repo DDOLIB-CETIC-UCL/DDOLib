@@ -159,6 +159,26 @@ public final class SequentialSolver<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+
+    /*
+
+    <ul>
+                <li>0: no additional tests (default)</li>
+                <li>1: checks if the upper bound is well-defined</li>
+                <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+            </ul>
+          </li>
+     */
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
      *
@@ -180,6 +200,14 @@ public final class SequentialSolver<T, K> implements Solver {
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
      *     <li>A boolean to export some mdd as .dot file</li>
+     *     <li>A debug level:
+     *          <ul>
+     *               <li>0: no additional tests (default)</li>
+     *               <li>1: checks if the upper bound is well-defined and if the hash code
+     *               of the states are coherent</li>
+     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *             </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -200,6 +228,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.gapLimit = config.gapLimit;
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
     }
 
 
@@ -266,7 +295,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
 
             mdd.compile(compilation);
@@ -296,7 +326,8 @@ public final class SequentialSolver<T, K> implements Solver {
                     dominance,
                     bestLB,
                     frontier.cutSetType(),
-                    exportAsDot && firstRelaxed
+                    exportAsDot && firstRelaxed,
+                    debugLevel
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()

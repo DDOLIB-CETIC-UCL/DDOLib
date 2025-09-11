@@ -6,6 +6,7 @@ import org.ddolib.modeling.Problem;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Class to model the Knapsack problem.
@@ -17,13 +18,37 @@ public class KSProblem implements Problem<Integer> {
     public final int capa;
     final int[] profit;
     final int[] weight;
-    public final double optimal;
+    private Optional<Double> optimal = Optional.empty();
+
+    private Optional<String> name = Optional.empty();
 
     public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
-        this.optimal = optimal;
+        this.optimal = Optional.of(optimal);
+    }
+
+    public KSProblem(final int capa, final int[] profit, final int[] weight) {
+        this.capa = capa;
+        this.profit = profit;
+        this.weight = weight;
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
+    public String toString() {
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            return String.format("Max capacity: %d\nProfits: %s\nWeights: %s",
+                    capa,
+                    Arrays.toString(profit),
+                    Arrays.toString(weight));
+        }
     }
 
     @Override
@@ -63,8 +88,8 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
-    public String toString() {
-        return "(" + capa + "," + Arrays.toString(profit) + "," + Arrays.toString(weight) + ")";
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 }
 

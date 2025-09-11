@@ -3,7 +3,6 @@ package org.ddolib.examples.ddo.smic;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -13,6 +12,7 @@ import org.ddolib.ddo.core.solver.SequentialSolver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
 
 
@@ -34,9 +34,7 @@ public class SMICMain {
         config.ranking = new SMICRanking();
         config.width = new FixedWidth<>(200);
         config.varh = new DefaultVariableHeuristic<>();
-        config.dominance =
-                new SimpleDominanceChecker<>(new SMICDominance(),
-                        problem.nbVars());
+        config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(config);
 
@@ -45,14 +43,7 @@ public class SMICMain {
         solver.maximize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-
-        int[] solution = solver.bestSolution().map(decisions -> {
-            int[] values = new int[problem.nbVars()];
-            for (Decision d : decisions) {
-                values[d.var()] = d.val();
-            }
-            return values;
-        }).get();
+        int[] solution = solver.constructBestSolution(problem.nbVars());
 
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", solver.bestValue().get());
@@ -74,6 +65,7 @@ public class SMICMain {
             int[] weight = new int[nbJob];
             int[] release = new int[nbJob];
             int[] inventory = new int[nbJob];
+            Optional<Double> opti = Optional.empty();
             for (int i = 0; i < nbJob; i++) {
                 type[i] = s.nextInt();
                 processing[i] = s.nextInt();
@@ -81,7 +73,16 @@ public class SMICMain {
                 release[i] = s.nextInt();
                 inventory[i] = s.nextInt();
             }
-            return new SMICProblem(name, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            if (s.hasNextInt()) {
+                opti = Optional.of(s.nextDouble());
+            }
+
+            if (opti.isPresent()) {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
+                        opti.get());
+            } else {
+                return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
+            }
         } else {
             int nbJob = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);
             int initInventory = Integer.parseInt(s.nextLine().split("\t=\t")[1].split(";")[0]);

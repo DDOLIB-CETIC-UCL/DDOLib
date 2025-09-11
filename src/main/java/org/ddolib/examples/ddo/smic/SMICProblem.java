@@ -3,10 +3,7 @@ package org.ddolib.examples.ddo.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class SMICProblem implements Problem<SMICState> {
     public final String name;
@@ -19,7 +16,18 @@ public class SMICProblem implements Problem<SMICState> {
     final int[] release;
     final int[] inventory;
 
-    public SMICProblem(String name, int nbJob, int initInventory, int capaInventory, int[] type, int[] processing, int[] weight, int[] release, int[] inventory) {
+    private Optional<Double> optimal = Optional.empty();
+
+    public SMICProblem(String name,
+                       int nbJob,
+                       int initInventory,
+                       int capaInventory,
+                       int[] type,
+                       int[] processing,
+                       int[] weight,
+                       int[] release,
+                       int[] inventory,
+                       double optimal) {
         this.name = name;
         this.nbJob = nbJob;
         this.initInventory = initInventory;
@@ -29,6 +37,37 @@ public class SMICProblem implements Problem<SMICState> {
         this.weight = weight;
         this.release = release;
         this.inventory = inventory;
+        this.optimal = Optional.of(optimal);
+    }
+
+    public SMICProblem(String name,
+                       int nbJob,
+                       int initInventory,
+                       int capaInventory,
+                       int[] type,
+                       int[] processing,
+                       int[] weight,
+                       int[] release,
+                       int[] inventory) {
+        this.name = name;
+        this.nbJob = nbJob;
+        this.initInventory = initInventory;
+        this.capaInventory = capaInventory;
+        this.type = type;
+        this.processing = processing;
+        this.weight = weight;
+        this.release = release;
+        this.inventory = inventory;
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     @Override

@@ -27,4 +27,21 @@ public interface Solver {
      * @return the solution leading to the best solution in this decision diagram (if it exists)
      */
     Optional<Set<Decision>> bestSolution();
+
+    /**
+     * Constructs an array containing the values assigned to each variable from the taken decisions.
+     *
+     * @param numVar The number of variables in the solved problem.
+     * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
+     * {@code i}. Or empty array if the solution does not exist.
+     */
+    default int[] constructBestSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
+    }
 }
