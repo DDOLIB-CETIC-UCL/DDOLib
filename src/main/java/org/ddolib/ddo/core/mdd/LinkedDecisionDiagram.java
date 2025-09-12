@@ -372,27 +372,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
-    /**
-     * Given a node, returns the list of decisions taken from the root to reach this node.
-     *
-     * @param node A node of the mdd
-     * @return The list of decisions took from the root to reach the input node.
-     */
-    private LinkedList<Decision> constructPathFromRoot(Node node) {
-        LinkedList<Decision> path = new LinkedList<>();
-        Edge eb = node.best;
-        while (eb != null) {
-            path.addFirst(eb.decision);
-            System.out.println("decision: " + eb.decision);
-            if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
-            System.out.println("origin: " + eb.origin.best);
-            eb = eb.origin == null ? null : eb.origin.best;
-
-        }
-
-        return path;
-    }
-
     private record PathInfo(Decision decision, double fubOfOrigin, double lengthToEnd) {
     }
 
@@ -430,10 +409,21 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                                                  Problem<T> problem) {
         LinkedList<String> states = new LinkedList<>();
         T current = problem.initialState();
-        states.addLast(current);
-        for (Decision decision : pathFromRoot) {
-            current = problem.transition(current, decision);
-            states.addLast(current);
+        int depth = 0;
+        String msg = String.format("%-23s", depth + ".");
+        for (PathInfo pathInfo : pathFromRoot) {
+            msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
+            msg += String.format(" - fub: %6s", pathInfo.fubOfOrigin);
+            if (pathInfo.fubOfOrigin + 1e-10 < pathInfo.lengthToEnd) msg += "!";
+            msg += " - " + current.toString();
+            msg += "\n" + pathInfo.decision;
+            states.addLast(msg);
+            depth++;
+            msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+                    pathInfo.decision));
+            current = problem.transition(current, pathInfo.decision);
+
+
         }
         states.addLast(msg);
         states.addLast(current.toString());
