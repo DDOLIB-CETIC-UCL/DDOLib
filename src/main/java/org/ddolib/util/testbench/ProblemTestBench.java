@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
- * Abstract class to generate tests on implementations of {@link Problem}. The user need to implement an instance
+ * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
  * generator and a {@link SolverConfig}.
  *
  * @param <T> The type of states.
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
     /**
-     * List of problem used for tests.
+     * List of problems used for tests.
      */
     protected final List<P> problems;
 
@@ -111,8 +111,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default the tests here disable the fast upper bound. If one of the two
-     * mechanism  is needed (e.g. for A* solver), be sure to configure by overriding the
+     * <b>Note:</b> By default, the tests here disable the fast upper bound. If one of the two
+     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
      * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
