@@ -142,10 +142,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testRelaxation(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.fub = new DefaultFastUpperBound<>();
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.fub = new DefaultFastUpperBound<>();
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
@@ -161,10 +161,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testFubOnRelaxedNodes(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.debugLevel = 1;
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
