@@ -89,34 +89,9 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         problems = generateProblems();
     }
 
-    /**
-     * Instantiate a solver used for tests not based on the relaxation. By default, it
-     * returns an {@link ExactSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForTests(SolverConfig<T, K> config) {
-        return new ExactSolver<>(config);
-    }
-
-    /**
-     * Instantiates a solver used for tests based on the relaxation. By default, it returns a
-     * {@link SequentialSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForRelaxation(SolverConfig<T, K> config) {
-        return new SequentialSolver<>(config);
-    }
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
-     * <p>
-     * <b>Note:</b> By default, the tests here disable the fast upper bound. If one of the two
-     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
-     * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
      */
@@ -125,7 +100,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         config.fub = new DefaultFastUpperBound<>();
         config.dominance = new DefaultDominanceChecker<>();
 
-        Solver solver = solverForTests(config);
+        Solver solver = new ExactSolver<>(config);
         solver.maximize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
@@ -140,7 +115,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         SolverConfig<T, K> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.debugLevel = 1;
-        Solver solver = solverForTests(config);
+        Solver solver = new ExactSolver<>(config);
 
         solver.maximize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
@@ -157,7 +132,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             config.dominance = new DefaultDominanceChecker<>();
             config.fub = new DefaultFastUpperBound<>();
             config.width = new FixedWidth<>(w);
-            Solver solver = solverForRelaxation(config);
+            Solver solver = new SequentialSolver<>(config);
 
             solver.maximize();
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
@@ -174,7 +149,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             SolverConfig<T, K> config = configSolver(problem);
             config.width = new FixedWidth<>(w);
             config.cache = new SimpleCache<>();
-            Solver solver = solverForRelaxation(config);
+            Solver solver = new SequentialSolver<>(config);
 
             solver.maximize();
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
@@ -233,7 +208,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             config.dominance = new DefaultDominanceChecker<>();
             config.debugLevel = 1;
             config.width = new FixedWidth<>(w);
-            Solver solver = solverForRelaxation(config);
+            Solver solver = new ExactSolver<>(config);
 
             solver.maximize();
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
@@ -248,7 +223,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.fub = new DefaultFastUpperBound<>();
-        Solver solver = solverForTests(config);
+        Solver solver = new ExactSolver<>(config);
 
         solver.maximize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
