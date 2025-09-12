@@ -57,13 +57,15 @@ public final class ALP {
                 int arrivalTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
                 double cost = problem.transitionCost(curState, d);
                 curState = problem.transition(curState, d);
-                values[d.var()] = String.format("Aircraft :%d, landing :%d, cost :%,.2f", aircraft, arrivalTime, cost);
+                values[d.var()] =
+                        String.format("Aircraft: %d\t landing: %d\t runway: %d\tcost: %,.2f\n",
+                                aircraft, arrivalTime, alpD.runway, cost);
             }
             return values;
         }).get();
 
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %,.2f%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        System.out.printf("Solution : %s%n\n", Arrays.toString(solution));
     }
 }

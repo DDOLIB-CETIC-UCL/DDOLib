@@ -24,6 +24,8 @@ public class ALPProblem implements Problem<ALPState> {
     // Minimal time between a "no_class" aircraft and "class" aircraft.
     int[] minSeparationTo;
 
+    private Optional<String> name = Optional.empty();
+
     // When no plane has yet landed the previous class is -1.
     public static final int DUMMY = -1;
 
@@ -52,7 +54,11 @@ public class ALPProblem implements Problem<ALPState> {
         }
     }
 
-  @Override
+    public void setName(String name) {
+        this.name = Optional.of(name);
+    }
+
+    @Override
     public Optional<Double> optimalValue() {
         return instance.optimal;
     }
@@ -192,6 +198,13 @@ public class ALPProblem implements Problem<ALPState> {
             int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);
             return -(getArrivalTime(state.runwayStates, aircraft, alpDecision.runway) - instance.aircraftTarget[aircraft]);
         }
+    }
+
+    @Override
+    public String toString() {
+        String out = String.format("ALP problem with %d aircrafts, %d classes and %d runways",
+                instance.nbAircraft, instance.nbClasses, instance.nbRunways);
+        return name.orElse(out);
     }
 }
 
