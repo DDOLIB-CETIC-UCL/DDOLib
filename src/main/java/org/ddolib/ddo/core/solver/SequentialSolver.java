@@ -5,6 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -118,6 +119,11 @@ public final class SequentialSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * This is the cache used to prune the search tree
+     */
+    private Optional<SimpleCache<T>> cache;
+
+    /**
      * Only the first restricted mdd can be exported to a .dot file
      */
     private boolean firstRestricted = true;
@@ -220,6 +226,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.width = config.width;
         this.fub = config.fub;
         this.dominance = config.dominance;
+        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.frontier = config.frontier;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
@@ -240,13 +247,14 @@ public final class SequentialSolver<T, K> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
+        cache.ifPresent(c -> c.initialize(problem));
+
         while (!frontier.isEmpty()) {
             nbIter++;
             if (verbosityLevel >= 2) {
                 long now = System.currentTimeMillis();
                 if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
                             nbIter, frontier.size(), bestLB, bestInFrontier, gap());
@@ -264,7 +272,7 @@ public final class SequentialSolver<T, K> implements Solver {
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
             }
-            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
+            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
             }
 
@@ -293,6 +301,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     fub,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType(),
                     exportAsDot && firstRestricted,
@@ -324,6 +333,7 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     fub,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType(),
                     exportAsDot && firstRelaxed,
@@ -347,7 +357,9 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
+                cache.map(SimpleCache::stats).orElse("noCache"));
     }
 
     @Override
