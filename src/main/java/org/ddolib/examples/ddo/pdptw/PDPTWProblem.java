@@ -19,7 +19,11 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public int nbVars() {
-        return instance.n; //the last decision will be to come back to point zero
+        //there are n-1 decisions,
+        // however, we have one more decision at the end,
+        //and it is to come back to point zero
+        // so its value is already known; it is only to make the code easier.
+        return instance.n;
     }
 
     @Override
@@ -53,7 +57,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     public Iterator<Integer> domain(PDPTWState state, int var) {
         if (var == n - 1) {
             //the final decision is to come back to node zero
-            //only if we are before the deadline of node0
+            //it is only possible  if we are before the deadline of node0
             if(state.currentTime
                     + state.current.stream().map(from -> instance.timeAndDistanceMatrix[from][0]).max().getAsInt()
                     > instance.timeWindows[0].end()) {
@@ -71,6 +75,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             //check that all states that must be visited can still be visited given the currentTime,
             // otherwise, there is no successor at all.
+            //this assumes that we have triangular inequality
             long nbStillReachablePoints = state.allToVisit.stream().filter(point ->
                     (state.currentTime + state.current.stream().map(
                             from -> instance.timeAndDistanceMatrix[from][point]).min().getAsInt()) <= instance.timeWindows[point].end()
@@ -147,8 +152,12 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 .min()
                 .getAsInt();
 
+        //the final decision is to come back to node zero.
+        // The earlyLine has a different semantics for that node.
+        // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
+
         int waitTime = instance.timeWindows[decision.val()].waitTime(state.currentTime + travelTime);
-        return travelTime + waitTime;
+        return -(travelTime + waitTime);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class PDPTWDominance implements Dominance<PDPTWState, PDPTWDominanceKey> 
 
     @Override
     public PDPTWDominanceKey getKey(PDPTWState state) {
-        return new PDPTWDominanceKey(state.openToVisit,  state.allToVisit, state.current,
+        return new PDPTWDominanceKey(state.openToVisit, state.allToVisit, state.current,
                 state.minContent, state.maxContent);
     }
 

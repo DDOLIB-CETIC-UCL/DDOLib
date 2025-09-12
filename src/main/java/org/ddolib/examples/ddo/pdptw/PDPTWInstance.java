@@ -13,14 +13,38 @@ public class PDPTWInstance {
     final TimeWindow[] timeWindows;
     final int maxCapa;
 
+    final int knownSolutionValue;
+
     HashMap<Integer, Integer> pickupToAssociatedDelivery;
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
     Set<Integer> unrelatedNodes;
 
+    public PDPTWInstance(final int[][] distanceMatrix,
+                         HashMap<Integer, Integer> pickupToAssociatedDelivery,
+                         int maxCapa, TimeWindow[] timeWindows, int knownSolutionValue) {
+        this.timeAndDistanceMatrix = distanceMatrix;
+        this.n = distanceMatrix.length;
+        this.timeWindows = timeWindows;
+        this.maxCapa = maxCapa;
+        this.knownSolutionValue = knownSolutionValue;
+
+        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
+        this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
+
+        deliveryToAssociatedPickup = new HashMap<>();
+        for (int p : pickupToAssociatedDelivery.keySet()) {
+            int d = pickupToAssociatedDelivery.get(p);
+            unrelatedNodes.remove(p);
+            unrelatedNodes.remove(d);
+            deliveryToAssociatedPickup.put(d, p);
+        }
+    }
+
     @Override
     public String toString() {
         return "PDPTWInstance(\n\tn:" + n + "\n" +
+                "\tknownSolutionValue:" + knownSolutionValue  + "\n" +
                 "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
                 "\tmaxCapa:" + maxCapa + "\n" +
                 "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
@@ -62,26 +86,6 @@ public class PDPTWInstance {
             return -4;
         }
         return currentTime;
-    }
-
-    public PDPTWInstance(final int[][] distanceMatrix,
-                         HashMap<Integer, Integer> pickupToAssociatedDelivery,
-                         int maxCapa, TimeWindow[] timeWindows) {
-        this.timeAndDistanceMatrix = distanceMatrix;
-        this.n = distanceMatrix.length;
-        this.timeWindows = timeWindows;
-        this.maxCapa = maxCapa;
-
-        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
-        this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
-
-        deliveryToAssociatedPickup = new HashMap<>();
-        for (int p : pickupToAssociatedDelivery.keySet()) {
-            int d = pickupToAssociatedDelivery.get(p);
-            unrelatedNodes.remove(p);
-            unrelatedNodes.remove(d);
-            deliveryToAssociatedPickup.put(d, p);
-        }
     }
 }
 
