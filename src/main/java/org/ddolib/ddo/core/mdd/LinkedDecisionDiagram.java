@@ -161,8 +161,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         @Override
         public String toString() {
-            return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
-                    value, suffix, best, edges);
+            return String.format("Node: value:%.0f",
+                    value);
         }
 
         // Deterministic hash
@@ -519,31 +519,73 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         Edge eb = node.best;
         while (eb != null) {
             path.addFirst(eb.decision);
+            System.out.println("decision: " + eb.decision);
             if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            System.out.println("origin: " + eb.origin.best);
             eb = eb.origin == null ? null : eb.origin.best;
+
         }
 
         return path;
     }
 
-    /**
-     * Given a list of decisions returns of the generated states from root
-     *
-     * @param pathFromRoot A list of decision
-     * @param problem      The problem linked to this mdd
-     * @return A list of decisions returns of the generated states from root
-     */
-    private LinkedList<T> constructStateFromRoot(LinkedList<Decision> pathFromRoot, Problem<T> problem) {
-        LinkedList<T> states = new LinkedList<>();
-        T current = problem.initialState();
-        states.addLast(current);
-        for (Decision decision : pathFromRoot) {
-            current = problem.transition(current, decision);
-            states.addLast(current);
-        }
-        return states;
+    private record PathInfo(Decision decision, double fubOfOrigin, double lengthToEnd) {
     }
 
+
+    /**
+     * Given a node, returns the list of decisions taken from the root to reach this node.
+     *
+     * @param node A node of the mdd
+     * @return The list of decisions took from the root to reach the input node.
+     */
+    private LinkedList<PathInfo> constructPathFromRoot(Node node, double lengthToEnd) {
+        LinkedList<PathInfo> path = new LinkedList<>();
+        Edge eb = node.best;
+        double currentLength = lengthToEnd;
+        while (eb != null) {
+            currentLength += eb.weight;
+            PathInfo info = new PathInfo(eb.decision, eb.origin.fub, currentLength);
+            path.addFirst(info);
+            if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            eb = eb.origin == null ? null : eb.origin.best;
+
+        }
+        return path;
+    }
+
+
+    /**
+     * Given a list of decisions returns string describing the states from root.
+     *
+     * @param pathFromRoot A list of decision.
+     * @param problem      The problem linked to this mdd.
+     * @return A list of decisions of the generated states from root.
+     */
+    private LinkedList<String> constructStateDescriptionFromRoot(LinkedList<PathInfo> pathFromRoot,
+                                                                 Problem<T> problem) {
+        LinkedList<String> states = new LinkedList<>();
+        T current = problem.initialState();
+        int depth = 0;
+        String msg = String.format("%-23s", depth + ".");
+        for (PathInfo pathInfo : pathFromRoot) {
+            msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
+            msg += String.format(" - fub: %6s", pathInfo.fubOfOrigin);
+            if (pathInfo.fubOfOrigin + 1e-10 < pathInfo.lengthToEnd) msg += "!";
+            msg += " - " + current.toString();
+            msg += "\n" + pathInfo.decision;
+            states.addLast(msg);
+            depth++;
+            msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+                    pathInfo.decision));
+            current = problem.transition(current, pathInfo.decision);
+
+
+        }
+        states.addLast(msg);
+        states.addLast(current.toString());
+        return states;
+    }
 
     /**
      * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
@@ -560,15 +602,23 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             while (!parent.isEmpty()) {
                 Entry<Node, Double> current = parent.pollFirstEntry();
                 if (current.getKey().fub + 1e-10 < current.getValue()) {
-                    LinkedList<Decision> path = constructPathFromRoot(current.getKey());
-                    LinkedList<T> failedState = constructStateFromRoot(path, problem);
-                    String statesStr = failedState.stream().map(Object::toString)
-                            .collect(Collectors.joining("\n\t"));
+                    LinkedList<PathInfo> pathFromRoot = constructPathFromRoot(current.getKey(),
+                            current.getValue());
+                    LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
+                    String lastState = failedState.getLast();
+                    lastState =
+                            String.format(" - fub: %6s", current.getKey().fub) + "! - " + lastState;
+                    lastState =
+                            String.format("length to end: %6s", current.getValue()) + lastState;
+                    failedState.removeLast();
+                    lastState = failedState.getLast() + lastState;
+                    failedState.removeLast();
+                    failedState.addLast(lastState);
+                    String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
                     String failureMsg = String.format("Found node with upper bound (%s) lower than " +
                                     "its longest path (%s)\n", df.format(current.getKey().fub),
                             df.format(current.getValue()));
-                    failureMsg += String.format("Path from root: %s\n", path);
-                    failureMsg += String.format("States from root: \n\t%s\n\n", statesStr);
+                    failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
                     failureMsg += String.format("Failing state: %s\n", failedState.getLast());
                     if (debugLevel >= 2) {
                         String dot = exportAsDot();
