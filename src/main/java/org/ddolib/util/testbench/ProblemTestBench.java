@@ -1,8 +1,12 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.astar.core.solver.ACSSolver;
+import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.astar.core.solver.BestFirstSearchSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -18,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
- * Abstract class to generate tests on implementations of {@link Problem}. The user need to implement an instance
+ * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
  * generator and a {@link SolverConfig}.
  *
  * @param <T> The type of states.
@@ -28,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
     /**
-     * List of problem used for tests.
+     * List of problems used for tests.
      */
     protected final List<P> problems;
 
@@ -46,6 +50,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * Whether the dominance must be tested.
      */
     public boolean testDominance = false;
+
+    /**
+     * Whether the cache has to be tested.
+     */
+    public boolean testCache = false;
 
     /**
      * The minimum width of mdd to test with the relaxation.
@@ -105,8 +114,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default the tests here disable the fast upper bound. If one of the two
-     * mechanism  is needed (e.g. for A* solver), be sure to configure by overriding the
+     * <b>Note:</b> By default, the tests here disable the fast upper bound. If one of the two
+     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
      * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
@@ -114,6 +123,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.fub = new DefaultFastUpperBound<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
         solver.maximize();
@@ -142,10 +152,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testRelaxation(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.fub = new DefaultFastUpperBound<>();
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.fub = new DefaultFastUpperBound<>();
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
@@ -155,16 +165,73 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
+     * Test if using the cache lead to the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testCache(P problem) {
+        for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.width = new FixedWidth<>(w);
+            config.cache = new SimpleCache<>();
+            Solver solver = solverForRelaxation(config);
+
+            solver.maximize();
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+        }
+    }
+
+    /**
+     * Test if the A* solver reaches the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testAStarSolver(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        Solver solver = new AStarSolver<>(config);
+
+        solver.maximize();
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+    }
+
+
+    /**
+     * Test if the ACS solver reaches the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testACSSolver(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        Solver solver = new ACSSolver<>(config, 4);
+
+        solver.maximize();
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+    }
+
+    /**
+     * Test if the Best First search solver reaches the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testBestFirstSearch(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        Solver solver = new BestFirstSearchSolver<>(config);
+        solver.maximize();
+
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+    }
+
+    /**
      * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
      * effect, it tests if the fast upper bound on merged states does not cause errors.
      *
      * @param problem The instance to test.
      */
     protected void testFubOnRelaxedNodes(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.debugLevel = 1;
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
@@ -229,6 +296,29 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             allTests = Stream.concat(allTests, dominanceTests);
         }
 
+        if (testCache) {
+            Stream<DynamicTest> cacheTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Cache for %s", p.toString()), () -> testCache(p))
+            );
+            allTests = Stream.concat(allTests, cacheTests);
+        }
+
+        Stream<DynamicTest> aStarTests = problems.stream().map(p ->
+                DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
+        );
+        allTests = Stream.concat(allTests, aStarTests);
+
+        Stream<DynamicTest> acsTests = problems.stream().map(p ->
+                DynamicTest.dynamicTest(String.format("ACS for %s", p.toString()), () -> testACSSolver(p))
+        );
+        allTests = Stream.concat(allTests, acsTests);
+
+        Stream<DynamicTest> bestFirstTests = problems.stream().map(p ->
+                DynamicTest.dynamicTest(String.format("BestFirstSearch for %s", p.toString()),
+                        () -> testBestFirstSearch(p))
+        );
+
+        allTests = Stream.concat(allTests, bestFirstTests);
         return allTests;
     }
 

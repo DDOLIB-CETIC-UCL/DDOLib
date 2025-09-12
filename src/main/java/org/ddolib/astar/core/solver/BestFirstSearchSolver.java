@@ -2,6 +2,7 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -48,20 +49,13 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
     /**
      * Creates a fully qualified instance
      *
-     * @param problem   The problem we want to maximize.
-     * @param ub        A suitable upper-bound for the problem we want to maximize
-     * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
-     * @param dominance The dominance object that will be used to prune the search space.
+     * @param config The parameters of the solver
      */
-    public BestFirstSearchSolver(
-            final Problem<T> problem,
-            final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
-            final DominanceChecker<T, K> dominance) {
-        this.problem = problem;
-        this.varh = varh;
-        this.ub = ub;
-        this.dominance = dominance;
+    public BestFirstSearchSolver(SolverConfig<T, K> config) {
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
@@ -151,8 +145,8 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState,path.size(),value)) {
-                frontier.add(new SubProblem<>(newState, value, fastUpperBound,path));
+            if (!dominance.updateDominance(newState, path.size(), value)) {
+                frontier.add(new SubProblem<>(newState, value, fastUpperBound, path));
             }
         }
     }
