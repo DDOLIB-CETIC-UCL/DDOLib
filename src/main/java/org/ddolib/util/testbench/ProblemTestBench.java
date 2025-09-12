@@ -3,6 +3,7 @@ package org.ddolib.util.testbench;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -46,6 +47,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * Whether the dominance must be tested.
      */
     public boolean testDominance = false;
+
+    /**
+     * Whether the cache has to be tested.
+     */
+    public boolean testCache = false;
 
     /**
      * The minimum width of mdd to test with the relaxation.
@@ -114,6 +120,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.fub = new DefaultFastUpperBound<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
         solver.maximize();
@@ -153,6 +160,24 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
+
+    /**
+     * Test if using the cache lead to the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testCache(P problem) {
+        for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.width = new FixedWidth<>(w);
+            config.cache = new SimpleCache<>();
+            Solver solver = solverForRelaxation(config);
+
+            solver.maximize();
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+        }
+    }
+
 
     /**
      * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
@@ -227,6 +252,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
                     DynamicTest.dynamicTest(String.format("Dominance for %s", p.toString()), () -> testDominance(p))
             );
             allTests = Stream.concat(allTests, dominanceTests);
+        }
+
+        if (testCache) {
+            Stream<DynamicTest> cacheTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Cache for %s", p.toString()),
+                            () -> testCache(p))
+            );
+            allTests = Stream.concat(allTests, cacheTests);
         }
 
         return allTests;
