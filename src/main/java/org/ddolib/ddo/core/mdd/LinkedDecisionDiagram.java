@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.cache.Threshold;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -35,7 +35,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * The list of decisions that have led to the root of this DD
      */
-    private Set<Decision> pathToRoot = Collections.emptySet();
+    private final Set<Decision> pathToRoot;
 
     /**
      * All the nodes from the previous layer
@@ -76,11 +76,11 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Used to build the .dot file displaying the compiled mdd.
      */
-    private StringBuilder dotStr = new StringBuilder();
+    private final StringBuilder dotStr = new StringBuilder();
     /**
      * Given the hashcode of an edge, save its .dot representation
      */
-    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
+    private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     /**
      * <ul>
@@ -89,39 +89,51 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      *     <li>2: 1 + export failing mdd as .dot</li>
      * </ul>
      */
-    private int debugLevel = 0;
+    private final int debugLevel;
 
+    /**
+     * The parameter used to tweak the compilation
+     */
+    private final CompilationConfig<T, K> config;
 
-    @Override
-    public void compile(CompilationInput<T, K> input) {
-        // make sure we don't have any stale data left
-        this.clear();
-
-        // initialize the compilation
-        final int maxWidth = input.maxWidth();
-        final SubProblem<T> residual = input.residual();
+    /**
+     * Creates an all new MDD
+     *
+     * @param config The set of parameters used by the compilation.
+     */
+    public LinkedDecisionDiagram(CompilationConfig<T, K> config) {
+        final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
-        this.debugLevel = input.debugLevel();
+        this.debugLevel = config.debugLevel;
+        this.config = config;
 
-        dotStr.append("digraph ").append(input.compilationType().toString().toLowerCase()).append("{\n");
+    }
+
+    @Override
+    public void compile() {
+
+        // initialize the compilation
+        final int maxWidth = config.maxWidth;
+        final SubProblem<T> residual = config.residual;
+
+        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
-        final Problem<T> problem = input.problem();
-        final Relaxation<T> relax = input.relaxation();
-        final VariableHeuristic<T> var = input.variableHeuristic();
-        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(input.stateRanking());
-        final DominanceChecker<T, K> dominance = input.dominance();
-        final Optional<SimpleCache<T>> cache = input.cache();
-        double bestLb = input.bestLB();
+        final Problem<T> problem = config.problem;
+        final Relaxation<T> relax = config.relaxation;
+        final VariableHeuristic<T> var = config.variableHeuristic;
+        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
+        final DominanceChecker<T, K> dominance = config.dominance;
+        final Optional<SimpleCache<T>> cache = config.cache;
+        double bestLb = config.bestLB;
 
-        final Set<Integer> variables = varSet(input);
+        final Set<Integer> variables = varSet(config);
 
         int depthGlobalDD = residual.getPath().size();
         int depthCurrentDD = 0;
         int initialDepth = residual.getPath().size();
-        ;
 
 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
@@ -150,7 +162,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node node = e.getValue();
                 if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
-                    double fub = input.fub().fastUpperBound(state, variables);
+                    double fub = config.fub.fastUpperBound(state, variables);
                     double rub = saturatedAdd(node.value, fub);
                     node.fub = fub;
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
@@ -179,7 +191,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             if (nextVar == null) {
                 // Some variables simply can't be assigned
-                clear();
                 return;
             } else {
                 variables.remove(nextVar);
@@ -198,7 +209,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
-                switch (input.compilationType()) {
+                switch (config.compilationType) {
                     case Restricted:
                         exact = false;
                         restrict(maxWidth, ranking);
@@ -206,7 +217,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     case Relaxed:
                         if (exact) {
                             exact = false;
-                            if (input.cutSetType() == CutSetType.LastExactLayer) {
+                            if (config.cutSetType == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
                                 depthLEL = depthCurrentDD - 1;
                             }
@@ -220,10 +231,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.exportAsDot() || input.debugLevel() >= 2) {
+                if (config.exportAsDot || config.debugLevel >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.ub <= input.bestLB()) {
+                if (n.ub <= config.bestLB) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -234,7 +245,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2) {
+                if (config.cutSetType == CutSetType.Frontier
+                        && config.compilationType == CompilationType.Relaxed
+                        && !exact && depthCurrentDD >= 2) {
                     if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
@@ -249,7 +262,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
-            if (cache.isPresent() && input.compilationType() == CompilationType.Relaxed) {
+            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
                 listDepths.add(depthGlobalDD);
                 nodeSubProblemPerLayer.add(new ArrayList<>());
                 layersThresholds.add(new ArrayList<>());
@@ -262,7 +275,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
-        if (input.compilationType() == CompilationType.Relaxed && input.cutSetType() == CutSetType.Frontier) {
+        if (config.compilationType == CompilationType.Relaxed && config.cutSetType == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
 
@@ -274,7 +287,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot() || debugLevel >= 2) {
+        if (config.exportAsDot || debugLevel >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -284,7 +297,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
 
-        if (cache.isPresent() && input.compilationType() == CompilationType.Relaxed) {
+        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
             if (!cutset.isEmpty()) {
                 computeLocalBounds();
 
@@ -294,26 +307,25 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     }
                 }
 
-                markNodesAboveExactCutSet(nodeSubProblemPerLayer, input.cutSetType());
+                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
                 // update the cache to improve the next computation of the BB
                 computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                        layersThresholds, bestLb, input.cutSetType());
+                        layersThresholds, bestLb, config.cutSetType);
             }
-        } else if (input.compilationType() == CompilationType.Relaxed) {
+        } else if (config.compilationType == CompilationType.Relaxed) {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
         }
 
 
-        if (debugLevel >= 1 && input.compilationType() != CompilationType.Relaxed) {
-            checkFub(input.problem());
+        if (debugLevel >= 1 && config.compilationType != CompilationType.Relaxed) {
+            checkFub(config.problem);
         }
     }
 
     @Override
     public boolean isExact() {
         return exact;
-        //return !lelWasSet;
     }
 
     @Override
@@ -487,32 +499,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     // UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T, K> input) {
+    private Set<Integer> varSet(final CompilationConfig<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.problem().nbVars(); i++) {
+        for (int i = 0; i < input.problem.nbVars(); i++) {
             set.add(i);
         }
 
-        for (Decision d : input.residual().getPath()) {
+        for (Decision d : input.residual.getPath()) {
             set.remove(d.var());
         }
         return set;
-    }
-
-    /**
-     * --- UT
-     * Reset the state of this MDD. This way it can easily be reused
-     */
-    private void clear() {
-        pathToRoot = Collections.emptySet();
-        prevLayer.clear();
-        currentLayer.clear();
-        nextLayer.clear();
-        cutset.clear();
-        exact = true;
-        best = null;
-        dotStr = new StringBuilder();
-        edgesDotStr = new HashMap<>();
     }
 
     /**
