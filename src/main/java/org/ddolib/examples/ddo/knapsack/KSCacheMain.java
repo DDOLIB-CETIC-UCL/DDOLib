@@ -9,7 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,7 +48,7 @@ public class KSCacheMain {
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         config.timeLimit = 100;
 
-        final Solver solver = new SequentialSolverWithCache<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
 
         long start = System.currentTimeMillis();
