@@ -18,9 +18,6 @@ public class ALPFastUpperBound implements FastUpperBound<ALPState> {
         int sum = 0;
         ALPInstance inst = problem.instance;
 
-        // Basically sum of the current best landing delta of each aircraft.
-        // ==> For each aircraft, find the current best runway to land and computes its delta.
-        Set<Integer> remainingAircraft = new HashSet<>();
         for (int c = 0; c < problem.instance.nbClasses; c++) {
             for (int r = 0; r < state.remainingAircraftOfClass[c]; r++) {
                 //rem(c) always start with a 0
@@ -39,6 +36,6 @@ public class ALPFastUpperBound implements FastUpperBound<ALPState> {
             }
         }
 
-        return (-sum);
+        return -sum;
     }
 }

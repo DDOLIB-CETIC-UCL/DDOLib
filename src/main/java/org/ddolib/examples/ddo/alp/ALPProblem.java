@@ -52,7 +52,8 @@ public class ALPProblem implements Problem<ALPState> {
         }
     }
 
-    public Optional<Double> getOptimal() {
+  @Override
+    public Optional<Double> optimalValue() {
         return instance.optimal;
     }
 

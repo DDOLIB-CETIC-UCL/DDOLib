@@ -17,7 +17,7 @@ import java.util.Arrays;
 public final class ALP {
 
     public static void main(final String[] args) throws IOException {
-        final String fileStr = "data/alp/alp_n50_r1_c2_std10_s0";
+        final String fileStr = Paths.get("data", "alp", "alp_n50_r1_c2_std10_s0").toString();
         ALPInstance instance = new ALPInstance(fileStr);
         ALPProblem problem = new ALPProblem(instance);
         ALPRelax relax = new ALPRelax(problem);
