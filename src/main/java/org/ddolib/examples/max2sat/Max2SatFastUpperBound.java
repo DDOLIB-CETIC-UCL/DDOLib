@@ -21,7 +21,10 @@ public class Max2SatFastUpperBound implements FastUpperBound<Max2SatState> {
 
     @Override
     public double fastUpperBound(Max2SatState state, Set<Integer> variables) {
-        return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
+        int k = state.depth();
+        if (k == problem.nbVars()) return 0.0;
+        else
+            return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
     }
 
     private int[] precomputeUnary() {
