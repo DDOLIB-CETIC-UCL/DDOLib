@@ -1,5 +1,7 @@
 package org.ddolib.examples.ddo.pdptw;
 
+import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.astar.core.solver.BestFirstSearchSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -64,7 +66,7 @@ public final class PDPTWMain {
             pickupToAssociatedDelivery.put(p, d);
         }
 
-        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
+        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows, Integer.MAX_VALUE);
     }
 
     /**
@@ -160,9 +162,8 @@ public final class PDPTWMain {
         timeWindows[0] = new TimeWindow(0, deadline);
 
         //now, we must calculate the maxCapa for the solution
-        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
+        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows, Integer.MAX_VALUE);
     }
-
 
     public static int biasedRandom(Random random, int[] valuesAndBias){
        // System.out.println("biasedRandom" + Arrays.toString(valuesAndBias));
@@ -179,6 +180,7 @@ public final class PDPTWMain {
         //if we get there, there has been a problem
         throw new Error("error in random");
     }
+
     /**
      * Generates a PDPTW problem with a single vehicle:
      * a TSP problem such that
@@ -214,9 +216,11 @@ public final class PDPTWMain {
 
         List<Integer> solution = new ArrayList<>();
         for (int i = 1; i <= n-1; i++) {
+            //solution does not include zero
             solution.add(i);
         }
         Collections.shuffle(solution, random);
+
 
         HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
         HashMap<Integer, Integer> deliveryToAssociatedPickup = new HashMap<>();
@@ -287,27 +291,39 @@ public final class PDPTWMain {
                     }else{
                         timeWindows[currentNode] = new TimeWindow(0, Integer.MAX_VALUE);
                     }
-
             }
         }
 
         totalDistance += distance[currentNode][0];
         int arrivalTime = currentTime + distance[currentNode][0];
-        int deadline = Integer.MAX_VALUE; // + random.nextInt(100);
+        int deadline = arrivalTime + random.nextInt(100);
         timeWindows[0] = new TimeWindow(0, deadline);
 
+        PDPTWInstance instance = new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows, arrivalTime);
+
+        int[]fullSolutionArray = new int[n+1];
+        for(int i = 0 ; i < n-1 ; i++){
+            fullSolutionArray[i+1] = solution.get(i);
+        }
+        fullSolutionArray[0]= 0;
+        fullSolutionArray[n] = 0;
+        PDPTWSolution solution2 = new PDPTWSolution(new PDPTWProblem(instance), fullSolutionArray, arrivalTime);
+
+        //System.out.println("Artificial Solution: " + solution2);
+
         //now, we must calculate the maxCapa for the solution
-        return new PDPTWInstance(distance, pickupToAssociatedDelivery, maxCapa, timeWindows);
+        return instance;
     }
 
     static int dist(int dx, int dy) {
-        return (int) Math.sqrt(dx * dx + dy * dy);
+        //we take floor to ensure that the matrix respects the triangular inequality
+        return (int) Math.floor(Math.sqrt(dx * dx + dy * dy));
     }
 
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(30, 10, 5,new Random(1));
+        final PDPTWInstance instance = genInstance3(20, 5, 4, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
@@ -322,6 +338,10 @@ public final class PDPTWMain {
         System.out.println("Problem:" + problem);
 
         System.out.println("end");
+
+        if(solution.value > problem.instance.knownSolutionValue){
+            throw new Error("solution is worse than known one");
+        }
     }
 
     public static Solver solveDPD(PDPTWProblem problem) {
@@ -337,10 +357,14 @@ public final class PDPTWMain {
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
 
-        config.verbosityLevel = 3;
+        config.verbosityLevel = 0;
         config.exportAsDot = false;
 
-        final Solver solver = new SequentialSolver<>(config);
+        //config.debugLevel = 1;
+
+        //final Solver solver = new ACSSolver<>(config,10);
+        //final Solver solver = new AStarSolver<>(config);
+        final Solver solver = new SequentialSolverWithCache<>(config);
 
         SearchStatistics statistics = solver.maximize();
         System.out.println(statistics);

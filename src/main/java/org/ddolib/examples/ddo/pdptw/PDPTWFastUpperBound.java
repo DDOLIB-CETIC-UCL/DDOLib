@@ -39,6 +39,7 @@ public class PDPTWFastUpperBound implements FastUpperBound<PDPTWState> {
         // and there can be fewer than toVisit.size()
         int lb = 0;
         if (toVisitLB.size() > variables.size()) {
+            //this method dominates the whole run time
             Collections.sort(toVisitLB);
         }
         for (int i = 0; i < variables.size(); i++) {
