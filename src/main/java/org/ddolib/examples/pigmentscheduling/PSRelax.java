@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.ddolib.examples.ddo.pigmentscheduling.PSProblem.IDLE;
+import static org.ddolib.examples.pigmentscheduling.PSProblem.IDLE;
 
 public class PSRelax implements Relaxation<PSState> {
 

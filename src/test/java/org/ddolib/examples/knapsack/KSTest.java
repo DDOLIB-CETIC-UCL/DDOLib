@@ -69,6 +69,7 @@ public class KSTest {
         bench.testRelaxation = true;
         bench.testFUB = true;
         bench.testDominance = true;
+        bench.testCache = true;
         return bench.generateTests();
     }
 }
