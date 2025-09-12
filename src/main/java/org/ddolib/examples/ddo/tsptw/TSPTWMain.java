@@ -1,5 +1,6 @@
 package org.ddolib.examples.ddo.tsptw;
 
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -9,6 +10,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.IOException;
@@ -40,22 +42,22 @@ public class TSPTWMain {
     public static void main(String[] args) throws IOException {
 
         final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
-        final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
         config.problem = problem;
         config.relax = new TSPTWRelax(problem);
         config.ranking = new TSPTWRanking();
-        config.fub = new TSPTWFastUpperBound(problem);
+        //config.fub = new TSPTWFastUpperBound(problem);
 
-        config.width = new FixedWidth<>(20);
+        config.width = new FixedWidth<>(20000);
         config.varh = new DefaultVariableHeuristic<>();
-        config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+        //config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
+        config.exportAsDot = true;
 
-        final Solver solver = new SequentialSolver<>(config);
+        final Solver solver = new ExactSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();
@@ -77,7 +79,6 @@ public class TSPTWMain {
         String bestStr = solver.bestValue().map(Object::toString).orElse("No feasible solution");
 
         System.out.printf("Instance : %s%n", file);
-        System.out.printf("Width factor : %d%n", widthFactor);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);

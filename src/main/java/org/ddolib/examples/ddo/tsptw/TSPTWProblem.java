@@ -11,7 +11,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     private Optional<String> name = Optional.empty();
 
-    public TSPTWProblem(TSPTWInstance instance) {
+    public  TSPTWProblem(TSPTWInstance instance) {
         this.instance = instance;
     }
 
@@ -54,14 +54,12 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             //The only decision for the last variable is to go back to the depot
             toReturn.set(0, reachable(state, 0));
         } else {
-
             var mustIt = state.mustVisit().stream().iterator();
             while (mustIt.hasNext()) {
                 int i = mustIt.nextInt();
                 if (!reachable(state, i)) {
-                    // We found a node that is no more reachable at the current time.
-                    // Eventually, this state will lead to unfeasible solution.
-                    // So we return now an empty set of decision to cut the sub diagram.
+                    // A node that is no more reachable at the current time.
+                    // If not directly reachable, it won't be reachable later (triangular inequality assumption)
                     return Collections.emptyIterator();
                 } else {
                     toReturn.set(i, true);

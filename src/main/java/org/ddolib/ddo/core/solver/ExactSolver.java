@@ -170,7 +170,7 @@ public final class ExactSolver<T, K> implements Solver {
                 varh,
                 ranking,
                 root,
-                Integer.MAX_VALUE,
+                Integer.MAX_VALUE, // exact mdd => max width = infinite
                 fub,
                 dominance,
                 Double.NEGATIVE_INFINITY,
