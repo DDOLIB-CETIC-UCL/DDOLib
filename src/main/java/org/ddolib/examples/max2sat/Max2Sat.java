@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static org.ddolib.examples.ddo.max2sat.Max2SatIO.readInstance;
+import static org.ddolib.examples.max2sat.Max2SatIO.readInstance;
 
 public final class Max2Sat {
 

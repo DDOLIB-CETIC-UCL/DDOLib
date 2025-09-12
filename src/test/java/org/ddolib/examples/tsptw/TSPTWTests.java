@@ -1,4 +1,4 @@
-package org.ddolib.examples.tstptw;
+package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
