@@ -91,6 +91,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private final int debugLevel;
 
+    /**
+     * The parameter used to tweak the compilation
+     */
     private final CompilationConfig<T, K> config;
 
     /**
@@ -323,7 +326,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     @Override
     public boolean isExact() {
         return exact;
-        //return !lelWasSet;
     }
 
     @Override
