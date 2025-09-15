@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.alp;
+package org.ddolib.examples.alp;
 
 
 import org.ddolib.common.solver.SolverConfig;
@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.examples.ddo.alp.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
