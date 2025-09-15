@@ -7,10 +7,10 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
-import org.ddolib.examples.ddo.knapsack.KSProblem;
-import org.ddolib.examples.ddo.knapsack.KSRanking;
-import org.ddolib.examples.ddo.knapsack.KSRelax;
+import org.ddolib.examples.knapsack.KSFastUpperBound;
+import org.ddolib.examples.knapsack.KSProblem;
+import org.ddolib.examples.knapsack.KSRanking;
+import org.ddolib.examples.knapsack.KSRelax;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
