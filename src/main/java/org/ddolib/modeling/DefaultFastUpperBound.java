@@ -10,6 +10,6 @@ import java.util.Set;
 public class DefaultFastUpperBound<T> implements FastUpperBound<T> {
     @Override
     public double fastUpperBound(T state, Set<Integer> variables) {
-        return Double.POSITIVE_INFINITY;
+        return 1000;
     }
 }

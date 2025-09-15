@@ -1,6 +1,7 @@
 package org.ddolib.examples.knapsack;
 
 import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.astar.core.solver.BestFirstSearchSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -44,7 +45,8 @@ public class KSMainAstarDebug {
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
         final Solver solverDDO = new SequentialSolver<>(config);
-        final Solver solverAstar = new AStarSolver<>(config);
+        final Solver solverAstar = new BestFirstSearchSolver<>(config);// new AStarSolver<>(config);
+        //final Solver solverAstar = new AStarSolver<>(config);
 
 
         Map.of("ddo", solverDDO, "astar", solverAstar).forEach((name, solver) -> {

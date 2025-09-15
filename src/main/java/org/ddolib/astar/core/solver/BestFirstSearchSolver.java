@@ -2,6 +2,7 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -42,6 +43,12 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
 
+    /**
+     * The priority queue that will be used as a frontier.
+     * It is ordered by decreasing f = g + h values where
+     * >> g is the value of the subproblem
+     * >> h is an upper bound of the subproblem
+     */
     private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f).reversed());
 
@@ -49,19 +56,35 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
      * Creates a fully qualified instance
      *
      * @param problem   The problem we want to maximize.
-     * @param ub        A suitable upper-bound for the problem we want to maximize
+     * @param fub        A suitable fast upper-bound for the problem we want to maximize
      * @param varh      A heuristic to choose the next variable to branch on when developing a DD.
      * @param dominance The dominance object that will be used to prune the search space.
      */
     public BestFirstSearchSolver(
             final Problem<T> problem,
             final VariableHeuristic<T> varh,
-            final FastUpperBound<T> ub,
+            final FastUpperBound<T> fub,
             final DominanceChecker<T, K> dominance) {
         this.problem = problem;
         this.varh = varh;
-        this.ub = ub;
+        this.ub = fub;
         this.dominance = dominance;
+        this.bestLB = Integer.MIN_VALUE;
+        this.bestSol = Optional.empty();
+    }
+
+    /**
+     * Creates a fully qualified instance from a config object
+     *
+     * @param config The configuration object
+     */
+    public BestFirstSearchSolver(
+            SolverConfig<T, K> config
+    ) {
+        this.problem = config.problem;
+        this.varh = config.varh;
+        this.ub = config.fub;
+        this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
