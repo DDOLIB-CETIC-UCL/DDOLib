@@ -5,6 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -119,6 +120,11 @@ public final class SequentialSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * This is the cache used to prune the search tree
+     */
+    private Optional<SimpleCache<T>> cache;
+
+    /**
      * Only the first restricted mdd can be exported to a .dot file
      */
     private boolean firstRestricted = true;
@@ -170,6 +176,26 @@ public final class SequentialSolver<T, K> implements Solver {
     private final ReductionStrategy<T> restrictStrategy;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+
+    /*
+
+    <ul>
+                <li>0: no additional tests (default)</li>
+                <li>1: checks if the upper bound is well-defined</li>
+                <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+            </ul>
+          </li>
+     */
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
      *
@@ -191,6 +217,14 @@ public final class SequentialSolver<T, K> implements Solver {
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
      *     <li>A boolean to export some mdd as .dot file</li>
+     *     <li>A debug level:
+     *          <ul>
+     *               <li>0: no additional tests (default)</li>
+     *               <li>1: checks if the upper bound is well-defined and if the hash code
+     *               of the states are coherent</li>
+     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *             </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -203,6 +237,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.width = config.width;
         this.fub = config.fub;
         this.dominance = config.dominance;
+        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.frontier = config.frontier;
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
@@ -213,6 +248,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.relaxStrategy = config.relaxStrategy;
         this.restrictStrategy = config.restrictStrategy;
+        this.debugLevel = config.debugLevel;
     }
 
 
@@ -224,13 +260,14 @@ public final class SequentialSolver<T, K> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
+        cache.ifPresent(c -> c.initialize(problem));
+
         while (!frontier.isEmpty()) {
             nbIter++;
             if (verbosityLevel >= 2) {
                 long now = System.currentTimeMillis();
                 if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
-                    double gap = 100 * (bestInFrontier - bestLB) / bestLB;
 
                     System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
                             nbIter, frontier.size(), bestLB, bestInFrontier, gap());
@@ -248,7 +285,7 @@ public final class SequentialSolver<T, K> implements Solver {
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
             }
-            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
+            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
             }
 
@@ -277,10 +314,12 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     fub,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType(),
                     restrictStrategy,
-                    exportAsDot && firstRestricted
+                    exportAsDot && firstRestricted,
+                    debugLevel
             );
 
             mdd.compile(compilation);
@@ -308,10 +347,12 @@ public final class SequentialSolver<T, K> implements Solver {
                     maxWidth,
                     fub,
                     dominance,
+                    cache,
                     bestLB,
                     frontier.cutSetType(),
                     relaxStrategy,
-                    exportAsDot && firstRelaxed
+                    exportAsDot && firstRelaxed,
+                    debugLevel
             );
             mdd.compile(compilation);
             if (compilation.compilationType() == CompilationType.Relaxed && mdd.relaxedBestPathIsExact()
@@ -331,7 +372,9 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
+                cache.map(SimpleCache::stats).orElse("noCache"));
     }
 
     @Override

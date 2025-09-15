@@ -4,14 +4,14 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
-import org.ddolib.examples.ddo.knapsack.KSProblem;
-import org.ddolib.examples.ddo.knapsack.KSRanking;
-import org.ddolib.examples.ddo.knapsack.KSRelax;
+import org.ddolib.examples.knapsack.KSFastUpperBound;
+import org.ddolib.examples.knapsack.KSProblem;
+import org.ddolib.examples.knapsack.KSRanking;
+import org.ddolib.examples.knapsack.KSRelax;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -70,8 +70,10 @@ public class KSCacheTest {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
+        config.restrictStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new CostBased<>(config.ranking);
 
-        final Solver solverWithCaching = new SequentialSolverWithCache<>(config);
+        final Solver solverWithCaching = new SequentialSolver<>(config);
 
         solverWithCaching.maximize();
         return solverWithCaching.bestValue().get();

@@ -2,6 +2,7 @@ package org.ddolib.ddo.core.compilation;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -9,6 +10,8 @@ import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
+
+import java.util.Optional;
 
 /**
  * The set of parameters used to tweak the compilation of an MDD
@@ -22,9 +25,12 @@ import org.ddolib.modeling.StateRanking;
  * @param maxWidth          The maximum width of the mdd.
  * @param fub               The heuristic defining a very rough estimation (upper bound) of the optimal value.
  * @param dominance         The dominance checker used to prune the search space.
+ * @param cache             The cache used to prune the search space.
  * @param bestLB            The best known lower bound at the time when the dd is being compiled.
  * @param cutSetType        The type of cut set used in the compilation.
  * @param exportAsDot       Whether the compiled diagram have to be exported to a dot file.
+ * @param debugLevel        The debug level of the compilation to add additional checks (see
+ *                          {@link org.ddolib.common.solver.SolverConfig for details}
  * @param <T>               The type used to model the state of your problem.
  * @param <K>               The type of the dominance key.
  */
@@ -37,10 +43,12 @@ public record CompilationInput<T, K>(CompilationType compilationType,
                                      int maxWidth,
                                      FastUpperBound<T> fub,
                                      DominanceChecker<T, K> dominance,
+                                     Optional<SimpleCache<T>> cache,
                                      double bestLB,
                                      CutSetType cutSetType,
                                      ReductionStrategy<T> reductionStrategy,
-                                     boolean exportAsDot) {
+                                     boolean exportAsDot,
+                                     int debugLevel) {
 
     /**
      * Returns a string representation of this record class.

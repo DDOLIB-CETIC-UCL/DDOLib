@@ -28,17 +28,14 @@ public final class ACSSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-
     /**
      * Value of the best known lower bound.
      */
     private double bestLB;
-
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-
     /**
      * The dominance object that will be used to prune the search space.
      */
@@ -51,7 +48,6 @@ public final class ACSSolver<T, K> implements Solver {
     private HashMap<T, Double> g;
 
     private final int K;
-
 
     private ArrayList<PriorityQueue<SubProblem<T>>> open = new ArrayList<>();
 
@@ -66,7 +62,7 @@ public final class ACSSolver<T, K> implements Solver {
      * </ul>
      * <p>
      * <p>
-     * 3: 2 + every developed sub-problem
+     * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
     private final int verbosityLevel;
@@ -108,6 +104,10 @@ public final class ACSSolver<T, K> implements Solver {
         this.present = new HashSet[problem.nbVars() + 1];
         this.g = new HashMap<>();
         this.K = K;
+        if (config.debugLevel != 0) {
+            throw new IllegalArgumentException("The debug mode for this solver is not available " +
+                    "for the moment.");
+        }
 
         for (int i = 0; i < problem.nbVars() + 1; i++) {
             open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f).reversed()));
@@ -167,8 +167,6 @@ public final class ACSSolver<T, K> implements Solver {
                     addChildren(sub, i + 1);
                 }
                 candidates.clear();
-
-
             }
 
             nbIter++;

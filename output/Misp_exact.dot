@@ -1,39 +1,39 @@
 digraph exact{
-883049899 [label="{0, 1, 2, 3, 4}
-ub: 18 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
-317574433 [label="{3, 4}
-ub: 12 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
-1587487668 [label="{1, 2, 3, 4}
-ub: 15 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
-932172204 [label="{4}
-ub: 11 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
-1848402763 [label="{3, 4}
-ub: 12 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
-2121055098 [label="{2, 3, 4}
-ub: 11 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
-1896277646 [label="{4}
-ub: 11 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
-1996181658 [label="{3, 4}
-ub: 12 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
-1296064247 [label="{4}
-ub: 11 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
-205797316 [label="{}
-ub: 5 - value: 5", style=rounded, shape=rectangle, tooltip="Exact node"];
-1066516207 [label="{}
-ub: 11 - value: 11", style=rounded, shape=rectangle, tooltip="Exact node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
-932172204 -> 1896277646 [label=0, tooltip="Decision: assign 0 to var 2", color="#6fb052", fontcolor="#6fb052"];
-1996181658 -> 205797316 [label=2, tooltip="Decision: assign 1 to var 3"];
-1587487668 -> 2121055098 [label=0, tooltip="Decision: assign 0 to var 1"];
-2121055098 -> 1996181658 [label=0, tooltip="Decision: assign 0 to var 2"];
-2121055098 -> 1896277646 [label=2, tooltip="Decision: assign 1 to var 2"];
-1848402763 -> 1996181658 [label=0, tooltip="Decision: assign 0 to var 2"];
-1296064247 -> 1066516207 [label=0, tooltip="Decision: assign 0 to var 4"];
-1587487668 -> 932172204 [label=4, tooltip="Decision: assign 1 to var 1", color="#6fb052", fontcolor="#6fb052"];
-317574433 -> 1848402763 [label=0, tooltip="Decision: assign 0 to var 1"];
-1896277646 -> 1296064247 [label=0, tooltip="Decision: assign 0 to var 3", color="#6fb052", fontcolor="#6fb052"];
-205797316 -> 1066516207 [label=0, tooltip="Decision: assign 0 to var 4"];
-1996181658 -> 1296064247 [label=0, tooltip="Decision: assign 0 to var 3"];
-1296064247 -> 1066516207 [label=7, tooltip="Decision: assign 1 to var 4", color="#6fb052", fontcolor="#6fb052"];
-883049899 -> 1587487668 [label=0, tooltip="Decision: assign 0 to var 0", color="#6fb052", fontcolor="#6fb052"];
-883049899 -> 317574433 [label=3, tooltip="Decision: assign 1 to var 0"];
+0 [label="{0, 1, 2, 3, 4}
+fub: 18 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+2 [label="{3, 4}
+fub: 9 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
+1 [label="{1, 2, 3, 4}
+fub: 15 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+5 [label="{4}
+fub: 7 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
+3 [label="{3, 4}
+fub: 9 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
+4 [label="{2, 3, 4}
+fub: 11 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
+6 [label="{4}
+fub: 7 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
+7 [label="{3, 4}
+fub: 9 - value: 3", style=rounded, shape=rectangle, tooltip="Exact node"];
+8 [label="{4}
+fub: 7 - value: 4", style=rounded, shape=rectangle, tooltip="Exact node"];
+9 [label="{}
+fub: 0 - value: 5", style=rounded, shape=rectangle, tooltip="Exact node"];
+10 [label="{}
+fub: 0 - value: 11", style=rounded, shape=rectangle, tooltip="Exact node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+2 -> 3 [label=0, tooltip="Decision: assign 0 to var 1"];
+1 -> 4 [label=0, tooltip="Decision: assign 0 to var 1"];
+7 -> 8 [label=0, tooltip="Decision: assign 0 to var 3"];
+8 -> 10 [label=0, tooltip="Decision: assign 0 to var 4"];
+9 -> 10 [label=0, tooltip="Decision: assign 0 to var 4"];
+4 -> 6 [label=2, tooltip="Decision: assign 1 to var 2"];
+8 -> 10 [label=7, tooltip="Decision: assign 1 to var 4", color="#6fb052", fontcolor="#6fb052"];
+0 -> 1 [label=0, tooltip="Decision: assign 0 to var 0", color="#6fb052", fontcolor="#6fb052"];
+6 -> 8 [label=0, tooltip="Decision: assign 0 to var 3", color="#6fb052", fontcolor="#6fb052"];
+0 -> 2 [label=3, tooltip="Decision: assign 1 to var 0"];
+4 -> 7 [label=0, tooltip="Decision: assign 0 to var 2"];
+1 -> 5 [label=4, tooltip="Decision: assign 1 to var 1", color="#6fb052", fontcolor="#6fb052"];
+3 -> 7 [label=0, tooltip="Decision: assign 0 to var 2"];
+5 -> 6 [label=0, tooltip="Decision: assign 0 to var 2", color="#6fb052", fontcolor="#6fb052"];
+7 -> 9 [label=2, tooltip="Decision: assign 1 to var 3"];
 }

@@ -5,6 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationInput;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -84,6 +85,11 @@ public final class RelaxationSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * This is the cache used to prune the search tree
+     */
+    private Optional<SimpleCache<T>> cache;
+
+    /**
      * Only the first restricted mdd can be exported to a .dot file
      */
     private boolean firstRestricted = true;
@@ -119,6 +125,15 @@ public final class RelaxationSolver<T, K> implements Solver {
     private final ReductionStrategy<T> relaxStrategy;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
      *
@@ -152,12 +167,14 @@ public final class RelaxationSolver<T, K> implements Solver {
         this.width = config.width;
         this.fub = config.fub;
         this.dominance = config.dominance;
+        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
         this.relaxStrategy = config.relaxStrategy;
+        this.debugLevel = config.debugLevel;
     }
 
 
@@ -177,10 +194,12 @@ public final class RelaxationSolver<T, K> implements Solver {
                 maxWidth,
                 fub,
                 dominance,
+                cache,
                 bestLB,
                 CutSetType.None,
                 relaxStrategy,
-                exportAsDot && firstRelaxed
+                exportAsDot && firstRelaxed,
+                debugLevel
         );
         mdd.compile(compilation);
 

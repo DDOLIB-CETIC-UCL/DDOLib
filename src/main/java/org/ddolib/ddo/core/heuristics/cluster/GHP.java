@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
 
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class GHP<T> implements ReductionStrategy<T> {
      * @return an array of List representing the clusters.
      */
     @Override
-    public List<LinkedDecisionDiagram.NodeSubProblem<T>>[] defineClusters(List<LinkedDecisionDiagram.NodeSubProblem<T>> layer, int maxWidth) {
+    public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
         PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
         pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer)));
@@ -56,13 +57,13 @@ public class GHP<T> implements ReductionStrategy<T> {
             // Poll the next cluster to divide
             ClusterNode nodeCurrent = pqClusters.poll();
             assert nodeCurrent != null;
-            List<LinkedDecisionDiagram.NodeSubProblem<T>> current = nodeCurrent.cluster;
+            List<NodeSubProblem<T>> current = nodeCurrent.cluster;
 
             // Selection of the two pivot
             Collections.shuffle(current, rnd);
-            LinkedDecisionDiagram.NodeSubProblem<T> pivotA = current.getFirst();
+            NodeSubProblem<T> pivotA = current.getFirst();
             assert pivotA != null;
-            LinkedDecisionDiagram.NodeSubProblem<T> pivotB;
+            NodeSubProblem<T> pivotB;
             if (!mostDistantPivot) {
                 pivotB = current.get(1);
             } else {
@@ -76,8 +77,8 @@ public class GHP<T> implements ReductionStrategy<T> {
 
 
             // Generates the two clusters
-            List<LinkedDecisionDiagram.NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
-            List<LinkedDecisionDiagram.NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
+            List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
+            List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
             newClusterA.add(pivotA);
             newClusterB.add(pivotB);
@@ -85,7 +86,7 @@ public class GHP<T> implements ReductionStrategy<T> {
             double maxDistA = 0;
             double maxDistB = 0;
 
-            for (LinkedDecisionDiagram.NodeSubProblem<T> node : current) {
+            for (NodeSubProblem<T> node : current) {
                 if (node.state.equals(pivotA.state) || node.state.equals(pivotB.state)) {
                     continue;
                 }
@@ -111,7 +112,7 @@ public class GHP<T> implements ReductionStrategy<T> {
         }
 
         // Retrieve the clusters from the queue
-        List<LinkedDecisionDiagram.NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
+        List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
         int index = 0;
         for (ClusterNode cluster : pqClusters) {
             clusters[index] = cluster.cluster;
@@ -126,10 +127,10 @@ public class GHP<T> implements ReductionStrategy<T> {
      * @param nodes a cluster
      * @return the node in the given cluster that is the most distant of the given reference
      */
-    private LinkedDecisionDiagram.NodeSubProblem<T> selectFarthest(LinkedDecisionDiagram.NodeSubProblem<T> ref, List<LinkedDecisionDiagram.NodeSubProblem<T>> nodes) {
+    private NodeSubProblem<T> selectFarthest(NodeSubProblem<T> ref, List<NodeSubProblem<T>> nodes) {
         double maxDistance = -1;
-        LinkedDecisionDiagram.NodeSubProblem<T> farthest = null;
-        for (LinkedDecisionDiagram.NodeSubProblem<T> node : nodes) {
+        NodeSubProblem<T> farthest = null;
+        for (NodeSubProblem<T> node : nodes) {
             double currentDistance = distance.distance(node.state, ref.state);
             if (currentDistance > maxDistance && !node.state.equals(ref.state)) {
                 maxDistance = currentDistance;
@@ -141,9 +142,9 @@ public class GHP<T> implements ReductionStrategy<T> {
 
     private class ClusterNode implements Comparable<ClusterNode> {
         final double maxDistance;
-        final List<LinkedDecisionDiagram.NodeSubProblem<T>> cluster;
+        final List<NodeSubProblem<T>> cluster;
 
-        public ClusterNode(double maxDistance, List<LinkedDecisionDiagram.NodeSubProblem<T>> cluster) {
+        public ClusterNode(double maxDistance, List<NodeSubProblem<T>> cluster) {
             this.maxDistance = maxDistance;
             this.cluster = cluster;
         }
