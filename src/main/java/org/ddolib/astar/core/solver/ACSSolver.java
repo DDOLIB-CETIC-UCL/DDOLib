@@ -177,7 +177,7 @@ public final class ACSSolver<T, K> implements Solver {
                             double prob = abs((s.f() - min) / (max - min)) + 0.01;
                             double r = random();
                             if (verbosityLevel > 0) {
-                                System.out.println("prob = " + prob + " r : " + r);
+                                System.out.println("prob = " + prob + " r : " + r + " min : "+ min + " max : "+ max + " f : "+ s.f());
                             }
                             if (r <= prob) {
                                 candidates.add(s);
