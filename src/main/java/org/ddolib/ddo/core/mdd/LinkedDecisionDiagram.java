@@ -498,6 +498,45 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
+    private void checkRelaxation(List<T> toMerge, T merged, Problem<T> problem,
+                                 Set<Integer> notAffected) {
+
+        String toMergeStr =
+                "To merge:\n\t" + toMerge.stream().map(Objects::toString).collect(Collectors.joining("\n\t")) + "\n";
+        String mergedStr = "Merged: " + merged + "\n";
+
+        for (T state : toMerge) {
+            for (int var : notAffected) {
+                List<Integer> mergedDomain = new ArrayList<>();
+                problem.domain(merged, var).forEachRemaining(mergedDomain::add);
+                List<Integer> stateDomain = new ArrayList<>();
+                problem.domain(state, var).forEachRemaining(stateDomain::add);
+                for (int value : stateDomain) {
+                    Decision d = new Decision(var, value);
+                    String errorMsg = "";
+                    errorMsg += toMergeStr;
+                    errorMsg += mergedStr;
+                    errorMsg += (d + "\n");
+                    errorMsg += "Source of the decision: " + state + "\n";
+                    if (!mergedDomain.contains(value)) {
+                        errorMsg = String.format("The %s cannot be made from the merged state\n", d) + errorMsg;
+                        throw new RuntimeException(errorMsg);
+                    } else {
+                        double stateTransitionCost = problem.transitionCost(state, d);
+                        double mergedTransitionCost = problem.transitionCost(merged, d);
+                        if (stateTransitionCost > mergedTransitionCost) {
+                            errorMsg = String.format("The cost of the %s is lower when applied  " +
+                                    "on merged state", d) + errorMsg;
+                            errorMsg += "Cost from the origin node: " + stateTransitionCost + "\n";
+                            errorMsg += "Cost from the merged state: " + mergedTransitionCost + "\n";
+                            throw new RuntimeException(errorMsg);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
