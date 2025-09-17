@@ -297,6 +297,8 @@ public final class ACSSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = bestInFrontier();
+            System.out.println("bestInFrontier: " + bestInFrontier);
+            System.out.println("bestLB: " + bestLB);
             return 100 * (bestInFrontier - bestLB) / bestInFrontier;
         }
     }
