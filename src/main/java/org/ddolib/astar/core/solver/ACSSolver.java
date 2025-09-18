@@ -303,7 +303,7 @@ public final class ACSSolver<T, K> implements Solver {
         }
     }
     public double bestInFrontier() {
-        double bestInFrontier = Double.MIN_VALUE;
+        double bestInFrontier = Integer.MIN_VALUE;
         for (PriorityQueue<SubProblem<T>> q : open) {
            if (!q.isEmpty()) {
                bestInFrontier = max(bestInFrontier,q.peek().f());
