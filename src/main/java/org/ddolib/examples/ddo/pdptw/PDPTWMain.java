@@ -380,7 +380,6 @@ public final class PDPTWMain {
             }
             case 1: {
                 final Solver solver = new AStarSolver<>(config);
-                //final Solver solver = new SequentialSolverWithCache<>(config);
 
                 SearchStatistics statistics = solver.maximize();
                 System.out.println(statistics);
