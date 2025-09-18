@@ -1,8 +1,7 @@
-package org.ddolib.examples.ddo.alp;
+package org.ddolib.examples.alp;
 
 import org.ddolib.modeling.FastUpperBound;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class ALPFastUpperBound implements FastUpperBound<ALPState> {
