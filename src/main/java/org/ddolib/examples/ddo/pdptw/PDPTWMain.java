@@ -323,13 +323,13 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(20, 5, 4, new Random(1));
+        final PDPTWInstance instance = genInstance3(40, 5, 4, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
         System.out.println("initState:" + problem.initialState());
 
-        Solver solver = solveDPD(problem);
+        Solver solver = solveDPD(problem, 1);
         PDPTWSolution solution = extractSolution(solver, problem);
 
         System.out.printf("Objective: %f%n", solver.bestValue().get());
@@ -344,7 +344,14 @@ public final class PDPTWMain {
         }
     }
 
-    public static Solver solveDPD(PDPTWProblem problem) {
+    /**
+     * @param problem
+     * @param solveurId
+     *          0 for DDO
+     *          1 for A*
+     * @return
+     */
+    public static Solver solveDPD(PDPTWProblem problem, int solveurId) {
 
         SolverConfig<PDPTWState, PDPTWDominanceKey> config = new SolverConfig<>();
         config.problem = problem;
@@ -362,14 +369,27 @@ public final class PDPTWMain {
 
         //config.debugLevel = 1;
 
-        //final Solver solver = new ACSSolver<>(config,10);
-        //final Solver solver = new AStarSolver<>(config);
-        final Solver solver = new SequentialSolverWithCache<>(config);
+        switch(solveurId){
+            case 0: {
+                final Solver solver = new SequentialSolverWithCache<>(config);
 
-        SearchStatistics statistics = solver.maximize();
-        System.out.println(statistics);
+                SearchStatistics statistics = solver.maximize();
+                System.out.println(statistics);
 
-        return solver;
+                return solver;
+            }
+            case 1: {
+                final Solver solver = new AStarSolver<>(config);
+                //final Solver solver = new SequentialSolverWithCache<>(config);
+
+                SearchStatistics statistics = solver.maximize();
+                System.out.println(statistics);
+
+                return solver;
+            }
+            case 3:
+        }
+        return null;
     }
 
     public static PDPTWSolution extractSolution(Solver solver, PDPTWProblem problem) {
