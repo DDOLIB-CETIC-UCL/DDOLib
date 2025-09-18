@@ -5,7 +5,7 @@ import org.ddolib.modeling.StateRanking;
 import java.util.Arrays;
 
 /**
- * Ranking for {@link org.ddolib.examples.ddo.alp.ALPState}.
+ * Ranking for {@link org.ddolib.examples.alp.ALPState}.
  * <p>
  * First compares remaining aircraft to land, then the sum of previous time of the runways.
  * </P>
