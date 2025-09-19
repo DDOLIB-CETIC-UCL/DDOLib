@@ -222,7 +222,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+                        relax(maxWidth, ranking, relax, variables);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -571,12 +571,18 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param relax    the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
-                       final Relaxation<T> relax) {
+                       final Relaxation<T> relax, final Set<Integer> unaffectedVariables) {
         this.currentLayer.sort(ranking.reversed());
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
+
+        if (config.debugLevel >= 1) {
+            List<T> toMerge = new ArrayList<>();
+            new NodeSubProblemsAsStateIterator<>(merge.iterator()).forEachRemaining(toMerge::add);
+            checkRelaxation(toMerge, merged, config.problem, unaffectedVariables);
+        }
 
         // is there another state in the kept partition having the same state as the merged state ?
         NodeSubProblem<T> node = null;
