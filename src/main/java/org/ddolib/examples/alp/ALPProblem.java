@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.alp;
+package org.ddolib.examples.alp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;

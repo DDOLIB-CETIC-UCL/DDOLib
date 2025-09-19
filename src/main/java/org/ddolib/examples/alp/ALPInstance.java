@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.alp;
+package org.ddolib.examples.alp;
 
 import java.io.*;
 import java.util.Arrays;
@@ -68,8 +68,9 @@ public class ALPInstance {
      * Generates an ALP instance following the given parameters.
      * The instance is generated such that the optimal solution is always 0 (meaning 0 delay).
      * <p>
-     *
-     * <ul> Steps :
+     * <p>
+     * Steps :
+     * <ul>
      *     <li> We select the class of the aircraft and the runway where it will land.</li>
      *     <li> Based on the runway we get the transition cost and the last landing time. </li>
      *     <li> Finally we add a small gap for the target time and a bigger one for the deadline. </li>

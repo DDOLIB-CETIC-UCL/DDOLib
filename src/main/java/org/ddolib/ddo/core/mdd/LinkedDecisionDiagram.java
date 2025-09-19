@@ -719,10 +719,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         DecimalFormat df = new DecimalFormat("#.##########");
 
+        if (lastLayer) {
+            node.node.fub = config.fub.fastUpperBound(node.state, new HashSet<>());
+        }
+
         String nodeStr = String.format(
                 "\"%s\nfub: %s - value: %s\"",
                 node.state,
-                df.format(node.ub - node.node.value),
+                df.format(node.node.fub),
                 df.format(node.node.value)
         );
 
