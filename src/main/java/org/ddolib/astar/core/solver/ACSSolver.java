@@ -200,7 +200,7 @@ public final class ACSSolver<T, K> implements Solver {
                             open.get(i).add(subProblem);
                         }
                     }else{
-                        while (candidates.size() < K) {
+                        while (candidates.size() < K && !open.get(i).isEmpty()) {
                             SubProblem<T> s = open.get(i).poll();
                             if (s.f() > bestLB) {
                                 candidates.add(s);
