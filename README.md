@@ -20,7 +20,7 @@ INFORMS Journal on Computing.*
 
 Then the technique was improved in several papers that are also implemented in this project or will eventually be:
 
-* *Coppé, V., Gillard, X., & Sc[target](target)haus, P. (2024). Decision diagram-based branch-and-bound with caching for
+* *Coppé, V., Gillard, X., & Schaus, P. (2024). Decision diagram-based branch-and-bound with caching for
   dominance and suboptimality detection. INFORMS Journal on Computing.*
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Modeling and Exploiting Dominance Rules for Discrete Optimization with
   Decision Diagrams. CPAIOR.*
