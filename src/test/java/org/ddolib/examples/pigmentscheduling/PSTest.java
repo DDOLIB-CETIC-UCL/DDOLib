@@ -62,7 +62,7 @@ class PSTest {
     public Stream<DynamicTest> testPSP() {
         var bench = new PSPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

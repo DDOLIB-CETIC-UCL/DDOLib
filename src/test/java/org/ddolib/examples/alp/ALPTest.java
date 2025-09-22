@@ -68,7 +68,7 @@ public class ALPTest {
     public Stream<DynamicTest> testALP() {
         var bench = new ALPTest.AlpBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

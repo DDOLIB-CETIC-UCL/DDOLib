@@ -66,7 +66,7 @@ public class LCSTest {
     public Stream<DynamicTest> testLCS() {
         var bench = new LCSBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 

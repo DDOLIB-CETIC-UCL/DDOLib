@@ -67,7 +67,7 @@ public class KSTest {
     public Stream<DynamicTest> testKS() {
         var bench = new KSBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();

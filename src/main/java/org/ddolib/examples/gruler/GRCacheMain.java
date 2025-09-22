@@ -45,7 +45,7 @@ public class GRCacheMain {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
 

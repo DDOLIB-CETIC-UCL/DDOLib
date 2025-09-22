@@ -96,7 +96,7 @@ public final class ACSSolver<T, K> implements Solver {
             final int K) {
         this.problem = config.problem;
         this.varh = config.varh;
-        this.ub = config.fub;
+        this.ub = config.flb;
         this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
@@ -130,7 +130,7 @@ public final class ACSSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;

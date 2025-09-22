@@ -61,7 +61,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
-    private final FastLowerBound<T> fub;
+    private final FastLowerBound<T> flb;
 
     /**
      * The dominance object that will be used to prune the search space.

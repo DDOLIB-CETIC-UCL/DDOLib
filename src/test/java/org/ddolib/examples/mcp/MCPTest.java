@@ -69,7 +69,7 @@ public class MCPTest {
     public Stream<DynamicTest> testMCP() {
         var bench = new MCPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

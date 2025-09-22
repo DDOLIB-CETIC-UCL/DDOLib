@@ -80,11 +80,11 @@ public final class SimpleFrontier<T> implements Frontier<T> {
 
         @Override
         public int compare(SubProblem<T> o1, SubProblem<T> o2) {
-            double cmp = o1.getUpperBound() - o2.getUpperBound();
+            double cmp = o1.getLowerBound() - o2.getLowerBound();
             if (cmp == 0) {
                 return delegate.compare(o1.getState(), o2.getState());
             } else {
-                return Double.compare(o1.getUpperBound(), o2.getUpperBound());
+                return Double.compare(o1.getLowerBound(), o2.getLowerBound());
             }
         }
     }
@@ -96,6 +96,6 @@ public final class SimpleFrontier<T> implements Frontier<T> {
 
     @Override
     public double bestInFrontier() {
-        return heap.peek().getUpperBound();
+        return heap.peek().getLowerBound();
     }
 }

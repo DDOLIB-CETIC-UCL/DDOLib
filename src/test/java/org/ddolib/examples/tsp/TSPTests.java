@@ -62,7 +62,7 @@ public class TSPTests {
     public Stream<DynamicTest> testTSP() {
         var bench = new TSPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

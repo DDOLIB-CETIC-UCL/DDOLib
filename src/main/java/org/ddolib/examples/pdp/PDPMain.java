@@ -89,7 +89,7 @@ public final class PDPMain {
         config.problem = problem;
         config.relax = new PDPRelax(problem);
         config.ranking = new PDPRanking();
-        config.fub = new PDPFastLowerBound(problem);
+        config.flb = new PDPFastLowerBound(problem);
         config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
@@ -99,7 +99,7 @@ public final class PDPMain {
         config.exportAsDot = true;
         final Solver solver = new SequentialSolver<>(config);
 
-        SearchStatistics statistics = solver.maximize();
+        SearchStatistics statistics = solver.minimize();
         System.out.println(statistics);
 
         return solver;

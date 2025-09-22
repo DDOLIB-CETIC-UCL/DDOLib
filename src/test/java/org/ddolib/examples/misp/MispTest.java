@@ -67,7 +67,7 @@ public class MispTest {
     public Stream<DynamicTest> testMISP() {
         var bench = new MispBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.testCache = true;
         return bench.generateTests();
     }

@@ -63,7 +63,7 @@ public class Max2SatTest {
     public Stream<DynamicTest> testMax2Sat() {
         var bench = new Max2SatBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 

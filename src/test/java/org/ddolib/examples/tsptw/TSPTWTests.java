@@ -67,7 +67,7 @@ public class TSPTWTests {
     public Stream<DynamicTest> testTSPTW() {
         var bench = new TSPTWBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();

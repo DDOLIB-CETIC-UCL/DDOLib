@@ -40,7 +40,7 @@ public class SMICMain {
 
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

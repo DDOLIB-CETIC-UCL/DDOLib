@@ -68,7 +68,7 @@ public class PDPTests {
     public Stream<DynamicTest> testPDP() {
         var bench = new PDPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.minWidth = 45;
         bench.maxWidth = 50;
         return bench.generateTests();

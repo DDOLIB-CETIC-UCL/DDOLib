@@ -63,7 +63,7 @@ public class TSPMain {
         config.problem = problem;
         config.relax = new TSPRelax(problem);
         config.ranking = new TSPRanking();
-        config.fub = new TSPFastLowerBound(problem);
+        config.flb = new TSPFastLowerBound(problem);
         config.width = new FixedWidth<>(500);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
@@ -72,7 +72,7 @@ public class TSPMain {
         config.verbosityLevel = 2;
         final Solver solver = new SequentialSolver<>(config);
 
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         System.out.println(stats);
         return solver;
     }

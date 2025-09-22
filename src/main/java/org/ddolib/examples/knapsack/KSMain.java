@@ -39,7 +39,7 @@ public class KSMain {
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
-        config.fub = new KSFastLowerBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
@@ -52,7 +52,7 @@ public class KSMain {
             System.out.println("Solving with " + name + "...");
 
             long start = System.currentTimeMillis();
-            SearchStatistics stats = solver.maximize();
+            SearchStatistics stats = solver.minimize();
             double duration = (System.currentTimeMillis() - start) / 1000.0;
 
             System.out.println("Search statistics using ddo:" + stats);

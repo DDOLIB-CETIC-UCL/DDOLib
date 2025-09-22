@@ -36,14 +36,14 @@ public class PSMain {
         config.problem = problem;
         config.relax = new PSRelax(instance);
         config.ranking = new PSRanking();
-        config.fub = new PSFastLowerBound(instance);
+        config.flb = new PSFastLowerBound(instance);
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

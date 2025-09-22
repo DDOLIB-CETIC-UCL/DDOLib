@@ -126,7 +126,7 @@ public final class AStarSolver<T, K> implements Solver {
             SolverConfig<T, K> config) {
         this.problem = config.problem;
         this.varh = config.varh;
-        this.ub = config.fub;
+        this.ub = config.flb;
         this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
@@ -153,7 +153,7 @@ public final class AStarSolver<T, K> implements Solver {
     ) {
         this.problem = config.problem;
         this.varh = config.varh;
-        this.ub = config.fub;
+        this.ub = config.flb;
         this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
@@ -166,7 +166,7 @@ public final class AStarSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -196,7 +196,7 @@ public final class AStarSolver<T, K> implements Solver {
                 break;
             }
 
-            double nodeUB = sub.getUpperBound();
+            double nodeUB = sub.getLowerBound();
 
             if (verbosityLevel >= 2) {
                 System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
@@ -313,7 +313,7 @@ public final class AStarSolver<T, K> implements Solver {
         SolverConfig<T, K> config = new SolverConfig<>();
         config.problem = this.problem;
         config.varh = this.varh;
-        config.fub = this.ub;
+        config.flb = this.ub;
         config.dominance = this.dominance;
 
         for (AstarKey<T> current : toCheck) {
@@ -321,7 +321,7 @@ public final class AStarSolver<T, K> implements Solver {
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFUB = ub.fastLowerBound(current.state, vars);
 
-            internalSolver.maximize();
+            internalSolver.minimize();
             Optional<Double> longestFromCurrent = internalSolver.bestValue();
             if (longestFromCurrent.isPresent() && currentFUB + 1e-10 < longestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
@@ -349,7 +349,7 @@ public final class AStarSolver<T, K> implements Solver {
             double transitionCost
     ) {
         Logger logger = Logger.getLogger(AStarSolver.class.getName());
-        if (current.getUpperBound() + 1e-10 < next.getUpperBound() + transitionCost) {
+        if (current.getLowerBound() + 1e-10 < next.getLowerBound() + transitionCost) {
             String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
                     "Current state " + current + "\n" +
                     "Next state: " + next + "\n" +

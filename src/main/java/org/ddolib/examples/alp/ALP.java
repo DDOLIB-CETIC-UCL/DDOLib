@@ -24,7 +24,7 @@ public final class ALP {
         ALPInstance instance = new ALPInstance(fileStr);
         ALPProblem problem = new ALPProblem(instance);
         ALPRelax relax = new ALPRelax(problem);
-        ALPFastLowerBound fub = new ALPFastLowerBound(problem);
+        ALPFastLowerBound flb = new ALPFastLowerBound(problem);
         ALPRanking ranking = new ALPRanking();
 
         WidthHeuristic<ALPState> width = new FixedWidth<>(100);
@@ -34,7 +34,7 @@ public final class ALP {
         SolverConfig<ALPState, NullType> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = relax;
-        config.fub = fub;
+        config.flb = flb;
         config.ranking = ranking;
         config.width = width;
         config.varh = variableHeuristic;
@@ -43,7 +43,7 @@ public final class ALP {
         Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         String[] solution = solver.bestSolution().map(decisions -> {
