@@ -552,9 +552,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(Double.NEGATIVE_INFINITY);
+            Node newNode = new Node(Double.POSITIVE_INFINITY);
             newNode.type = NodeType.RELAXED;
-            node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
+            node = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
         }
 
         // redirect and relax all arcs entering the merged node

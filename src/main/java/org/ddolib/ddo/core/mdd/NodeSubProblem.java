@@ -70,6 +70,6 @@ final class NodeSubProblem<T> {
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##########");
-        return String.format("%s - ub: %s - value: %s", state, df.format(lb), df.format(node.value));
+        return String.format("%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
     }
 }
