@@ -289,7 +289,6 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.residual = sub;
             compilation.maxWidth = maxWidth;
             compilation.flb = flb;
-            compilation.flb = fub;
             compilation.dominance = this.dominance;
             compilation.cache = this.cache;
             compilation.bestUB = this.bestUB;
