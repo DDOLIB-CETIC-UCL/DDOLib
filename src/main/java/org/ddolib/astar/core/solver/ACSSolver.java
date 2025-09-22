@@ -80,6 +80,8 @@ public final class ACSSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
+    private final boolean sampling;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
@@ -113,6 +115,7 @@ public final class ACSSolver<T, K> implements Solver {
         this.g = new HashMap<>();
         this.K = K;
         this.timeout = config.timeLimit;
+        this.sampling = config.sampling;
         if (config.debugLevel != 0) {
             throw new IllegalArgumentException("The debug mode for this solver is not available " +
                     "for the moment.");
@@ -160,35 +163,42 @@ public final class ACSSolver<T, K> implements Solver {
                         }
                     }
                 }else{
-                    double max = open.get(i).peek().f();
-                    double min = Collections.min(open.get(i), Comparator.comparingDouble(SubProblem<T>::f)).f();
-                    ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
-                    while(candidates.size()<K){
-                        if (open.get(i).isEmpty()) {
-                            for (SubProblem<T> subProblem : toAdd) {
-                                open.get(i).add(subProblem);
+                    if (sampling) {
+                        double max = open.get(i).peek().f();
+                        double min = Collections.min(open.get(i), Comparator.comparingDouble(SubProblem<T>::f)).f();
+                        ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
+                        while (candidates.size() < K) {
+                            if (open.get(i).isEmpty()) {
+                                for (SubProblem<T> subProblem : toAdd) {
+                                    open.get(i).add(subProblem);
+                                }
+                                toAdd.clear();
                             }
-                            toAdd.clear();
-                        }
-                        SubProblem<T> s = open.get(i).poll();
-                        if (s.f()==max){
-                            candidates.add(s);
-                        }else {
-                            double prob = abs((s.f() - min) / (max - min)) + 0.01;
-                            double r = random();
-                            if (verbosityLevel > 1) {
-                                System.out.println("prob = " + prob + " r : " + r + " min : "+ min + " max : "+ max + " f : "+ s.f());
-                            }
-                            if (r <= prob) {
+                            SubProblem<T> s = open.get(i).poll();
+                            if (s.f() == max) {
                                 candidates.add(s);
                             } else {
-                                toAdd.add(s);
+                                double prob = abs((s.f() - min) / (max - min)) + 0.01;
+                                double r = random();
+                                if (verbosityLevel > 1) {
+                                    System.out.println("prob = " + prob + " r : " + r + " min : " + min + " max : " + max + " f : " + s.f());
+                                }
+                                if (r <= prob) {
+                                    candidates.add(s);
+                                } else {
+                                    toAdd.add(s);
+                                }
                             }
-                        }
 
-                    }
-                    for (SubProblem<T> subProblem : toAdd) {
-                        open.get(i).add(subProblem);
+                        }
+                        for (SubProblem<T> subProblem : toAdd) {
+                            open.get(i).add(subProblem);
+                        }
+                    }else{
+                        while (candidates.size() < K) {
+                            SubProblem<T> s = open.get(i).poll();
+                            candidates.add(s);
+                        }
                     }
                 }
                 for (int k = 0; k < candidates.size(); k++) {
@@ -300,8 +310,6 @@ public final class ACSSolver<T, K> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = bestInFrontier();
-            System.out.println("bestInFrontier: " + bestInFrontier);
-            System.out.println("bestLB: " + bestLB);
             return 100 * (bestInFrontier - bestLB) / bestInFrontier;
         }
     }

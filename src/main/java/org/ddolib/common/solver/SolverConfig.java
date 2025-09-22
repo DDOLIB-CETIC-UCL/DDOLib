@@ -135,4 +135,6 @@ public class SolverConfig<T, K> {
      */
     public Integer debugLevel = 0;
 
+    public Boolean sampling = false;
+
 }
