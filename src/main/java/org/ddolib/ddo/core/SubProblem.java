@@ -79,8 +79,8 @@ public final class SubProblem<T> {
     }
 
     /**
-     * @return the f-value of this subproblem, i.e., the value of the longest path to this
-     * subproblem plus the upper bound on the objective reachable in this subproblem
+     * @return the f-value of this subproblem, i.e., the value of the shortest path to this
+     * subproblem plus the lower bound on the objective reachable in this subproblem
      */
     public double f() {
         return this.value + this.lb;
