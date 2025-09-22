@@ -427,7 +427,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         for (PathInfo pathInfo : pathFromRoot) {
             msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
             msg += String.format(" - flb: %6s", pathInfo.flbOfOrigin);
-            if (pathInfo.flbOfOrigin + 1e-10 < pathInfo.lengthToEnd) msg += "!";
+            if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg += "!";
             msg += " - " + current.toString();
             msg += "\n" + pathInfo.decision;
             states.addLast(msg);

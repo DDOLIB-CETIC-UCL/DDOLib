@@ -31,7 +31,7 @@ public final class SimpleFrontier<T> implements Frontier<T> {
      * @param cutSetType the type of cutset : LastExactLayer or Frontier
      */
     public SimpleFrontier(final StateRanking<T> ranking, final CutSetType cutSetType) {
-        heap = new PriorityQueue<>(new SubProblemComparator<>(ranking).reversed());
+        heap = new PriorityQueue<>(new SubProblemComparator<>(ranking));
         this.cutSetType = cutSetType;
     }
 
@@ -82,7 +82,7 @@ public final class SimpleFrontier<T> implements Frontier<T> {
         public int compare(SubProblem<T> o1, SubProblem<T> o2) {
             double cmp = o1.getLowerBound() - o2.getLowerBound();
             if (cmp == 0) {
-                return delegate.compare(o1.getState(), o2.getState());
+                return delegate.reversed().compare(o1.getState(), o2.getState());
             } else {
                 return Double.compare(o1.getLowerBound(), o2.getLowerBound());
             }
