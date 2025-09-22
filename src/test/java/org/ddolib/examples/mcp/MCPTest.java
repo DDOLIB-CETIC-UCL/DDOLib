@@ -53,7 +53,7 @@ public class MCPTest {
             config.problem = problem;
             config.relax = new MCPRelax(problem);
             config.ranking = new MCPRanking();
-            config.fub = new MCPFastLowerBound(problem);
+            config.flb = new MCPFastLowerBound(problem);
 
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();

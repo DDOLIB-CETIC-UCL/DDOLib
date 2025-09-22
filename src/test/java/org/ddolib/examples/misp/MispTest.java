@@ -53,7 +53,7 @@ public class MispTest {
             config.problem = problem;
             config.relax = new MispRelax(problem);
             config.ranking = new MispRanking();
-            config.fub = new MispFastLowerBound(problem);
+            config.flb = new MispFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
 

@@ -52,7 +52,7 @@ public class TSPTWTests {
             config.problem = problem;
             config.relax = new TSPTWRelax(problem);
             config.ranking = new TSPTWRanking();
-            config.fub = new TSPTWFastLowerBound(problem);
+            config.flb = new TSPTWFastLowerBound(problem);
 
             config.width = new FixedWidth<>(20);
             config.varh = new DefaultVariableHeuristic<>();

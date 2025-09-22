@@ -54,7 +54,7 @@ public class PDPTests {
             config.problem = problem;
             config.relax = new PDPRelax(problem);
             config.ranking = new PDPRanking();
-            config.fub = new PDPFastLowerBound(problem);
+            config.flb = new PDPFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
