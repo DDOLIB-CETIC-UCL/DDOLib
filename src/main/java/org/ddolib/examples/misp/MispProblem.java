@@ -87,7 +87,7 @@ public class MispProblem implements Problem<BitSet> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 
     @Override
