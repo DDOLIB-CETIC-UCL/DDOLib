@@ -51,7 +51,7 @@ public class ALPTest {
             config.problem = problem;
             config.relax = new ALPRelax(problem);
             config.ranking = new ALPRanking();
-            config.fub = new ALPFastUpperBound(problem);
+            config.fub = new ALPFastLowerBound(problem);
 
             config.width = new FixedWidth<>(100);
             config.varh = new DefaultVariableHeuristic<>();

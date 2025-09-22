@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @param <T> The type of the states
  */
-public interface FastUpperBound<T> {
+public interface FastLowerBound<T> {
 
 
     /**
@@ -19,5 +19,5 @@ public interface FastUpperBound<T> {
      * @return A very rough estimation (upper bound) of the optimal value that could be
      * reached if state were the initial state.
      */
-    double fastUpperBound(final T state, final Set<Integer> variables);
+    double fastLowerBound(final T state, final Set<Integer> variables);
 }

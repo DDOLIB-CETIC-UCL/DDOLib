@@ -112,7 +112,7 @@ public final class LCSMain {
         config.problem = problem;
         config.relax = new LCSRelax(problem);
         config.ranking = new LCSRanking();
-        config.fub = new LCSFastUpperBound(problem);
+        config.fub = new LCSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();

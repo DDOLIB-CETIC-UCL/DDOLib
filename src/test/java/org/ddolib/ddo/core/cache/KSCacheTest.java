@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.knapsack.KSFastUpperBound;
+import org.ddolib.examples.knapsack.KSFastLowerBound;
 import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.knapsack.KSRanking;
 import org.ddolib.examples.knapsack.KSRelax;
@@ -46,7 +46,7 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.fub = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(10000);
         config.varh = new DefaultVariableHeuristic<>();
@@ -63,7 +63,7 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.fub = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(w);
         config.varh = new DefaultVariableHeuristic<>();

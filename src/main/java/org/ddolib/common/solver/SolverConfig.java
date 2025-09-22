@@ -30,9 +30,9 @@ public class SolverConfig<T, K> {
 
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value
-     * ({@link DefaultFastUpperBound} by default).
+     * ({@link DefaultFastLowerBound} by default).
      */
-    public FastUpperBound<T> fub = new DefaultFastUpperBound<>();
+    public FastLowerBound<T> fub = new DefaultFastLowerBound<>();
 
     /**
      * The dominance object that will be used to prune the search space ({@link DefaultDominanceChecker} by default).

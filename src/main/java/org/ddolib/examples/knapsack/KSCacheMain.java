@@ -39,7 +39,7 @@ public class KSCacheMain {
         final KSProblem problem = readInstance(instance);
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.fub = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(250);
         config.varh = new DefaultVariableHeuristic<Integer>();

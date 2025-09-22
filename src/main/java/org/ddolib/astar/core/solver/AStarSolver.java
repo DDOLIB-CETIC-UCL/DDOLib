@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.DebugUtil;
 
@@ -26,7 +26,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * A suitable ub for the problem we want to maximize
      */
-    private final FastUpperBound<T> ub;
+    private final FastLowerBound<T> ub;
     /**
      * A heuristic to choose the next variable to branch on when developing a DD
      */
@@ -102,7 +102,7 @@ public final class AStarSolver<T, K> implements Solver {
      * <b>Mandatory parameters:</b>
      * <ul>
      *     <li>An implementation of {@link Problem}</li>
-     *         <li>An implementation of {@link FastUpperBound}</li>
+     *         <li>An implementation of {@link FastLowerBound}</li>
      *     <li>An implementation of {@link VariableHeuristic}</li>
      * </ul>
      * <br>
@@ -243,7 +243,7 @@ public final class AStarSolver<T, K> implements Solver {
         return new SubProblem<>(
                 state,
                 value,
-                ub.fastUpperBound(state, vars),
+                ub.fastLowerBound(state, vars),
                 nullDecisions);
     }
 
@@ -262,7 +262,7 @@ public final class AStarSolver<T, K> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+            double fastUpperBound = ub.fastLowerBound(newState, varSet(path));
 
 
             // if the new state is dominated, we skip it
@@ -319,7 +319,7 @@ public final class AStarSolver<T, K> implements Solver {
         for (AstarKey<T> current : toCheck) {
             AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-            double currentFUB = ub.fastUpperBound(current.state, vars);
+            double currentFUB = ub.fastLowerBound(current.state, vars);
 
             internalSolver.maximize();
             Optional<Double> longestFromCurrent = internalSolver.bestValue();

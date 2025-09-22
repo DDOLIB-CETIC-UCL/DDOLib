@@ -24,7 +24,7 @@ public final class ALP {
         ALPInstance instance = new ALPInstance(fileStr);
         ALPProblem problem = new ALPProblem(instance);
         ALPRelax relax = new ALPRelax(problem);
-        ALPFastUpperBound fub = new ALPFastUpperBound(problem);
+        ALPFastLowerBound fub = new ALPFastLowerBound(problem);
         ALPRanking ranking = new ALPRanking();
 
         WidthHeuristic<ALPState> width = new FixedWidth<>(100);

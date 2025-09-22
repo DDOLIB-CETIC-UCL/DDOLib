@@ -89,7 +89,7 @@ public final class PDPMain {
         config.problem = problem;
         config.relax = new PDPRelax(problem);
         config.ranking = new PDPRanking();
-        config.fub = new PDPFastUpperBound(problem);
+        config.fub = new PDPFastLowerBound(problem);
         config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why

@@ -48,7 +48,7 @@ public class TSPTWMain {
         config.problem = problem;
         config.relax = new TSPTWRelax(problem);
         config.ranking = new TSPTWRanking();
-        config.fub = new TSPTWFastUpperBound(problem);
+        config.fub = new TSPTWFastLowerBound(problem);
 
         config.width = new FixedWidth<>(2);
         config.varh = new DefaultVariableHeuristic<>();

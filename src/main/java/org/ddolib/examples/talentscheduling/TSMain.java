@@ -92,7 +92,7 @@ public class TSMain {
         config.problem = problem;
         config.relax = new TSRelax(problem);
         config.ranking = new TSRanking();
-        config.fub = new TSFastUpperBound(problem);
+        config.fub = new TSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();

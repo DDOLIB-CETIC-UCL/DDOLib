@@ -25,7 +25,7 @@ public final class MCPMain {
         config.problem = problem;
         config.relax = new MCPRelax(problem);
         config.ranking = new MCPRanking();
-        config.fub = new MCPFastUpperBound(problem);
+        config.fub = new MCPFastLowerBound(problem);
 
         config.width = new FixedWidth<>(w);
         config.varh = new DefaultVariableHeuristic<>();

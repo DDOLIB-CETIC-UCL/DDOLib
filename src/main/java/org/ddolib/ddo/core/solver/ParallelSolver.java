@@ -13,7 +13,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -100,7 +100,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * <b>Optional parameters: </b>
      * <ul>
      *     <li>The number of threads that can be used in parallel (all available processors by default).</li>
-     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link FastLowerBound}</li>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
@@ -465,7 +465,7 @@ public final class ParallelSolver<T, K> implements Solver {
         /**
          * The heuristic defining a very rough estimation (upper bound) of the optimal value.
          */
-        private final FastUpperBound<T> fub;
+        private final FastLowerBound<T> fub;
 
         private final DominanceChecker<T, K> dominance;
         /**
@@ -480,7 +480,7 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
-                FastUpperBound<T> fub,
+                FastLowerBound<T> fub,
                 final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;

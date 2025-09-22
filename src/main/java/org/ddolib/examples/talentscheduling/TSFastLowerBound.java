@@ -1,6 +1,6 @@
 package org.ddolib.examples.talentscheduling;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,15 +11,15 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the Talent Scheduling problem.
  */
-public class TSFastUpperBound implements FastUpperBound<TSState> {
+public class TSFastLowerBound implements FastLowerBound<TSState> {
     private final TSProblem problem;
 
-    public TSFastUpperBound(TSProblem problem) {
+    public TSFastLowerBound(TSProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public double fastUpperBound(TSState state, Set<Integer> variables) {
+    public double fastLowerBound(TSState state, Set<Integer> variables) {
         return -fastLowerBound(state);
     }
 

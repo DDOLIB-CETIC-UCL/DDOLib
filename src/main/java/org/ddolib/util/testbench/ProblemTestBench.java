@@ -10,7 +10,7 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -122,7 +122,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.fub = new DefaultFastLowerBound<>();
         config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
@@ -155,7 +155,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         for (int w = minWidth; w <= maxWidth; w++) {
             SolverConfig<T, K> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
-            config.fub = new DefaultFastUpperBound<>();
+            config.fub = new DefaultFastLowerBound<>();
             config.width = new FixedWidth<>(w);
             config.debugLevel = 1;
             Solver solver = solverForRelaxation(config);
@@ -252,7 +252,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.fub = new DefaultFastLowerBound<>();
         Solver solver = solverForTests(config);
 
         solver.maximize();

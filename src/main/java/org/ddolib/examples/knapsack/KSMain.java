@@ -39,7 +39,7 @@ public class KSMain {
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
-        config.fub = new KSFastUpperBound(problem);
+        config.fub = new KSFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 

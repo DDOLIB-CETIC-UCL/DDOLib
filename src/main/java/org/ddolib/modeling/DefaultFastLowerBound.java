@@ -7,9 +7,9 @@ import java.util.Set;
  *
  * @param <T> The type of the states.
  */
-public class DefaultFastUpperBound<T> implements FastUpperBound<T> {
+public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
     @Override
-    public double fastUpperBound(T state, Set<Integer> variables) {
-        return Double.POSITIVE_INFINITY;
+    public double fastLowerBound(T state, Set<Integer> variables) {
+        return Double.NEGATIVE_INFINITY;
     }
 }

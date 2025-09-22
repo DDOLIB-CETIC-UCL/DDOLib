@@ -1,21 +1,21 @@
 package org.ddolib.examples.lcs;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
 /**
  * Implementation of a fast upper bound heuristic for the LCS.
  */
-public class LCSFastUpperBound implements FastUpperBound<LCSState> {
+public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     LCSProblem problem;
 
-    public LCSFastUpperBound(LCSProblem problem) {
+    public LCSFastLowerBound(LCSProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public double fastUpperBound(LCSState state, Set<Integer> variables) {
+    public double fastLowerBound(LCSState state, Set<Integer> variables) {
         // For each character, gets the minimal amount left in common between all strings.
         int total = 0;
         for (int c = 0; c < problem.diffCharNb; ++c) {

@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.DebugUtil;
@@ -162,7 +163,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node node = e.getValue();
                 if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
-                    double flb = config.flb.fastUpperBound(state, variables);
+                    double flb = config.flb.fastLowerBound(state, variables);
                     double rlb = saturatedAdd(node.value, flb);
                     node.flb = flb;
                     this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
@@ -443,7 +444,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
+     * Checks if the {@link FastLowerBound} is well-defined.
      * This method constructs longest path from terminal nodes and checks for each node the mdd
      * if the associated fast upper bound if bigger than the identified path.
      *
@@ -675,7 +676,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         DecimalFormat df = new DecimalFormat("#.##########");
 
         if (lastLayer) {
-            node.node.flb = config.flb.fastUpperBound(node.state, new HashSet<>());
+            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
 
         String nodeStr = String.format(

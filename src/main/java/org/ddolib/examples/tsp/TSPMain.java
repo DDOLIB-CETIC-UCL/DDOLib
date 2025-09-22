@@ -63,7 +63,7 @@ public class TSPMain {
         config.problem = problem;
         config.relax = new TSPRelax(problem);
         config.ranking = new TSPRanking();
-        config.fub = new TSPFastUpperBound(problem);
+        config.fub = new TSPFastLowerBound(problem);
         config.width = new FixedWidth<>(500);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();

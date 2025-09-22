@@ -1,18 +1,18 @@
 package org.ddolib.examples.max2sat;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
 import static java.lang.Integer.max;
 
-public class Max2SatFastUpperBound implements FastUpperBound<Max2SatState> {
+public class Max2SatFastLowerBound implements FastLowerBound<Max2SatState> {
     private final Max2SatProblem problem;
     private final int[] overApprox;
 
     private final int[] precomputationForUnary;
 
-    public Max2SatFastUpperBound(Max2SatProblem problem) {
+    public Max2SatFastLowerBound(Max2SatProblem problem) {
         this.problem = problem;
         overApprox = precomputeOverApproximation();
         precomputationForUnary = precomputeUnary();
@@ -20,7 +20,7 @@ public class Max2SatFastUpperBound implements FastUpperBound<Max2SatState> {
 
 
     @Override
-    public double fastUpperBound(Max2SatState state, Set<Integer> variables) {
+    public double fastLowerBound(Max2SatState state, Set<Integer> variables) {
         int k = state.depth();
         if (k == problem.nbVars()) return 0.0;
         else

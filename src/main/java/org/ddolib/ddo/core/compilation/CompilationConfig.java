@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -58,7 +58,7 @@ public class CompilationConfig<T, K> {
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
-    public FastUpperBound<T> flb = null;
+    public FastLowerBound<T> flb = null;
 
     /**
      * The dominance checker used to prune the search space.

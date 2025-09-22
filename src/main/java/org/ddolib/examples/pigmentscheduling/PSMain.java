@@ -36,7 +36,7 @@ public class PSMain {
         config.problem = problem;
         config.relax = new PSRelax(instance);
         config.ranking = new PSRanking();
-        config.fub = new PSFastUpperBound(instance);
+        config.fub = new PSFastLowerBound(instance);
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);

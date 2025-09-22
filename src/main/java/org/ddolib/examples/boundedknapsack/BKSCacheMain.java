@@ -30,7 +30,7 @@ public class BKSCacheMain {
         config.problem = problem;
 
         config.relax = new BKSRelax();
-        config.fub = new BKSFastUpperBound(problem);
+        config.fub = new BKSFastLowerBound(problem);
         config.ranking = new BKSRanking();
         config.width = new FixedWidth<>(3);
         config.varh = new DefaultVariableHeuristic<>();

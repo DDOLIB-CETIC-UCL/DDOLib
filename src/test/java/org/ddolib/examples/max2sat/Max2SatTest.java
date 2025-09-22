@@ -48,7 +48,7 @@ public class Max2SatTest {
             config.problem = problem;
             config.relax = new Max2SatRelax(problem);
             config.ranking = new Max2SatRanking();
-            config.fub = new Max2SatFastUpperBound(problem);
+            config.fub = new Max2SatFastLowerBound(problem);
 
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();

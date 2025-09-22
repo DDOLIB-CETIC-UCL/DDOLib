@@ -1,18 +1,18 @@
 package org.ddolib.examples.boundedknapsack;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
-public class BKSFastUpperBound implements FastUpperBound<Integer> {
+public class BKSFastLowerBound implements FastLowerBound<Integer> {
     private final BKSProblem problem;
 
-    public BKSFastUpperBound(BKSProblem problem) {
+    public BKSFastLowerBound(BKSProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public double fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastLowerBound(Integer state, Set<Integer> variables) {
         int rub = 0;
         for (int v : variables) {
             rub += this.problem.quantity[v] * this.problem.values[v];

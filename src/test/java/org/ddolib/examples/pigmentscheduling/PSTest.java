@@ -48,7 +48,7 @@ class PSTest {
             config.problem = problem;
             config.relax = new PSRelax(problem.instance);
             config.ranking = new PSRanking();
-            config.fub = new PSFastUpperBound(problem.instance);
+            config.fub = new PSFastLowerBound(problem.instance);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
