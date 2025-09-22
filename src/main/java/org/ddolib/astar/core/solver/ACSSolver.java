@@ -167,11 +167,16 @@ public final class ACSSolver<T, K> implements Solver {
                         while (candidates.size() < K) {
                             if (open.get(i).isEmpty()) {
                                 for (SubProblem<T> subProblem : toAdd) {
-                                    open.get(i).add(subProblem);
+                                    if (subProblem.f() > bestLB) {
+                                        open.get(i).add(subProblem);
+                                    }
                                 }
                                 toAdd.clear();
                             }
                             SubProblem<T> s = open.get(i).poll();
+                            if (s.f() <= bestLB) {
+                                continue;
+                            }
                             if (s.f() == max) {
                                 candidates.add(s);
                             } else {
@@ -194,7 +199,9 @@ public final class ACSSolver<T, K> implements Solver {
                     }else{
                         while (candidates.size() < K) {
                             SubProblem<T> s = open.get(i).poll();
-                            candidates.add(s);
+                            if (s.f() > bestLB) {
+                                candidates.add(s);
+                            }
                         }
                     }
                 }
