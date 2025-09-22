@@ -253,10 +253,10 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
 
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), null, gap(), cache.stats());
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000 * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()),null, gap(), cache.stats());
             }
 
 
@@ -270,7 +270,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, cache.stats());
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap),null, gap, cache.stats());
             }
             int depth = sub.getPath().size();
             if (cache.getLayer(depth).containsKey(sub.getState())) {
@@ -344,7 +344,7 @@ public final class SequentialSolverWithCache<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, cache.stats());
+        return new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, null, 0.0, cache.stats());
     }
 
     @Override

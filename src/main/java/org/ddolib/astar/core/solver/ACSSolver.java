@@ -6,6 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.profiling.Pair;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
@@ -143,6 +144,7 @@ public final class ACSSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics maximize() {
+        ArrayList<Pair> gaps = new ArrayList<>();
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -231,16 +233,19 @@ public final class ACSSolver<T, K> implements Solver {
                     addChildren(sub, i + 1);
                 }
                 candidates.clear();
+                if(nbIter%100==0){
+                    gaps.add(new Pair(gap(),System.currentTimeMillis() - t0));
+                }
             }
 
             if (System.currentTimeMillis() - t0> timeout* 1000L){
-                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gap());
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, gaps, gap());
             }
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, gaps, 0.0);
     }
 
     @Override
