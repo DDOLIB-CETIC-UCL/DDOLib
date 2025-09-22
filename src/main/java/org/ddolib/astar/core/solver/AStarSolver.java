@@ -6,6 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.profiling.Pair;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
@@ -214,10 +215,10 @@ public final class AStarSolver<T, K> implements Solver {
             addChildren(sub, debugLevel);
             closed.put(subKey, sub.f());
             if (nbIter%10000 == 0 && System.currentTimeMillis() - t0> timeout* 1000L) {
-                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, 100);
+                return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0,  SearchStatistics.SearchStatus.UNKNOWN, null, 100);
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, null, 0.0);
     }
 
     @Override
