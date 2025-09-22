@@ -266,7 +266,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
 
             if (verbosityLevel >= 3) {
-                System.out.println("it:" + nbIter + "\t" + sub.statistics());
+                System.out.println("it:" + nbIter + "\t" + sub);
                 if (verbosityLevel >= 4) {
                     System.out.println("\t" + sub.getState());
                 }

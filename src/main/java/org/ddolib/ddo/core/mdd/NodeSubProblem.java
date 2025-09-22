@@ -58,11 +58,11 @@ final class NodeSubProblem<T> {
             e = e.origin == null ? null : e.origin.best;
         }
 
-        double locb = Double.NEGATIVE_INFINITY;
+        double locb = Double.POSITIVE_INFINITY;
         if (node.suffix != null) {
             locb = saturatedAdd(node.value, node.suffix);
         }
-        lb = Math.min(lb, locb);
+        lb = Math.max(lb, locb);
 
         return new SubProblem<>(state, node.value, lb, path);
     }
