@@ -103,7 +103,8 @@ public final class LCSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_26_50-60_test.txt" : args[0];
+        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_3_10_test.txt" :
+                args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         SolverConfig<LCSState, NullType> config = new SolverConfig<>();

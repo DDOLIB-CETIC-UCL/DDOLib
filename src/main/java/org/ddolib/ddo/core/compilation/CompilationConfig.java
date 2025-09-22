@@ -58,7 +58,7 @@ public class CompilationConfig<T, K> {
     /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
-    public FastUpperBound<T> fub = null;
+    public FastUpperBound<T> flb = null;
 
     /**
      * The dominance checker used to prune the search space.

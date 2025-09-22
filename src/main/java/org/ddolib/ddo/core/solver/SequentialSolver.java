@@ -90,9 +90,9 @@ public final class SequentialSolver<T, K> implements Solver {
 
 
     /**
-     * Value of the best known upper bound.
+     * Value of the best known lower bound.
      */
-    private double bestUB;
+    private double bestLB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
@@ -229,7 +229,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
 
     @Override
-    public SearchStatistics manimize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;
@@ -289,6 +289,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.residual = sub;
             compilation.maxWidth = maxWidth;
             compilation.flb = flb;
+            compilation.flb = fub;
             compilation.dominance = this.dominance;
             compilation.cache = this.cache;
             compilation.bestUB = this.bestUB;
