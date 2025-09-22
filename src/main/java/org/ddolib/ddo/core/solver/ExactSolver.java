@@ -169,7 +169,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.stateRanking = this.ranking;
         compilation.residual = root;
         compilation.maxWidth = Integer.MAX_VALUE;
-        compilation.fub = fub;
+        compilation.flb = fub;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
         compilation.bestLB = Double.NEGATIVE_INFINITY;

@@ -265,7 +265,7 @@ public final class ParallelSolver<T, K> implements Solver {
         compilation.stateRanking = shared.ranking;
         compilation.residual = sub;
         compilation.maxWidth = width;
-        compilation.fub = shared.fub;
+        compilation.flb = shared.fub;
         compilation.dominance = shared.dominance;
         compilation.cache = Optional.empty();
         compilation.bestLB = bestLB;
