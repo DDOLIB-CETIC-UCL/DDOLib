@@ -187,7 +187,7 @@ public final class ExactSolver<T, K> implements Solver {
         }
 
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, null, 0.0);
     }
 
 

@@ -171,7 +171,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(nbIter.get(), queueMaxSize.get(), end - start, SearchStatistics.SearchStatus.OPTIMAL, null, 0.0);
     }
 
     @Override
