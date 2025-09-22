@@ -7,4 +7,8 @@ public class Pair {
         this.gap = gap;
         this.runTime = runTime;
     }
+    @Override
+    public String toString() {
+        return "("+gap+","+runTime+")";
+    }
 }
