@@ -228,11 +228,11 @@ public final class ACSSolver<T, K> implements Solver {
                         continue;
                     }
                     addChildren(sub, i + 1);
+                    if(nbIter%100==0){
+                        gaps.add(new Pair(gap(),System.currentTimeMillis() - t0));
+                    }
                 }
                 candidates.clear();
-                if(nbIter%100==0){
-                    gaps.add(new Pair(gap(),System.currentTimeMillis() - t0));
-                }
             }
 
             if (System.currentTimeMillis() - t0> timeout* 1000L){
