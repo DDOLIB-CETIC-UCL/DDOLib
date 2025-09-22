@@ -73,7 +73,7 @@ public class CompilationConfig<T, K> {
     /**
      * The best known lower bound at the time when the dd is being compiled.
      */
-    public Double bestLB = null;
+    public Double bestUB = null;
 
     /**
      * The type of cut set used in the compilation.
@@ -98,6 +98,6 @@ public class CompilationConfig<T, K> {
      */
     @Override
     public String toString() {
-        return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestLB);
+        return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestUB);
     }
 }

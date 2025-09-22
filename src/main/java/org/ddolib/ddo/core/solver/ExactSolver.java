@@ -172,7 +172,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.flb = fub;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
-        compilation.bestLB = Double.NEGATIVE_INFINITY;
+        compilation.bestUB = Double.NEGATIVE_INFINITY;
         compilation.cutSetType = CutSetType.LastExactLayer;
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;

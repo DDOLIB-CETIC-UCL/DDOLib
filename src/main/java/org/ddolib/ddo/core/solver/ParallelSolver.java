@@ -268,7 +268,7 @@ public final class ParallelSolver<T, K> implements Solver {
         compilation.flb = shared.fub;
         compilation.dominance = shared.dominance;
         compilation.cache = Optional.empty();
-        compilation.bestLB = bestLB;
+        compilation.bestUB = bestLB;
         compilation.cutSetType = critical.frontier.cutSetType();
         compilation.exportAsDot = false;
         compilation.debugLevel = this.debugLevel;
@@ -282,7 +282,7 @@ public final class ParallelSolver<T, K> implements Solver {
         // 2. RELAXATION
         bestLB = bestLB();
         compilation.compilationType = CompilationType.Relaxed;
-        compilation.bestLB = bestLB;
+        compilation.bestUB = bestLB;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         if (relaxedMdd.isExact()) {

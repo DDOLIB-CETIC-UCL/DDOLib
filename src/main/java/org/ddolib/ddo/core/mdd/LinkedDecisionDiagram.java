@@ -127,7 +127,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
         final DominanceChecker<T, K> dominance = config.dominance;
         final Optional<SimpleCache<T>> cache = config.cache;
-        double bestUb = config.bestLB;
+        double bestUb = config.bestUB;
 
         final Set<Integer> variables = varSet(config);
 
@@ -234,7 +234,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (config.exportAsDot || config.debugLevel >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.lb <= config.bestLB) {
+                if (n.lb >= config.bestUB) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -282,7 +282,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
-            if (best == null || n.value > best.value) {
+            if (best == null || n.value < best.value) {
                 best = n;
             }
         }

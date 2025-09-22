@@ -291,7 +291,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.flb = fub;
             compilation.dominance = this.dominance;
             compilation.cache = this.cache;
-            compilation.bestLB = this.bestLB;
+            compilation.bestUB = this.bestLB;
             compilation.cutSetType = frontier.cutSetType();
             compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
             compilation.debugLevel = this.debugLevel;
@@ -314,7 +314,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
             // 2. RELAXATION
             compilation.compilationType = CompilationType.Relaxed;
-            compilation.bestLB = this.bestLB;
+            compilation.bestUB = this.bestLB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
             DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
