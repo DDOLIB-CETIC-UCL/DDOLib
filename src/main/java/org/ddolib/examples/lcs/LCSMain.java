@@ -112,7 +112,7 @@ public final class LCSMain {
         config.problem = problem;
         config.relax = new LCSRelax(problem);
         config.ranking = new LCSRanking();
-        config.fub = new LCSFastUpperBound(problem);
+        config.flb = new LCSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
@@ -123,7 +123,7 @@ public final class LCSMain {
         final ParallelSolver<LCSState, NullType> solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

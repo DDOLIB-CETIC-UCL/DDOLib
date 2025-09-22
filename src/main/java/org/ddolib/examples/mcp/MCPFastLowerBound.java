@@ -1,20 +1,20 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
 /**
  * Implementation of fast upper bound heuristic for the MCP.
  */
-public class MCPFastUpperBound implements FastUpperBound<MCPState> {
+public class MCPFastLowerBound implements FastLowerBound<MCPState> {
 
     final MCPProblem problem;
     private final double initVal;
     private final int[] estimation;
     private final int[] partialSum;
 
-    public MCPFastUpperBound(MCPProblem problem) {
+    public MCPFastLowerBound(MCPProblem problem) {
         this.problem = problem;
         initVal = problem.initialValue();
         estimation = precomputeAllEstimate();
@@ -22,10 +22,10 @@ public class MCPFastUpperBound implements FastUpperBound<MCPState> {
     }
 
     @Override
-    public double fastUpperBound(MCPState state, Set<Integer> variables) {
+    public double fastLowerBound(MCPState state, Set<Integer> variables) {
         int k = state.depth();
         if (k == problem.nbVars()) return 0.0;
-        else return MCPRanking.rank(state) + estimation[k] + partialSum[k] - initVal;
+        else return -(MCPRanking.rank(state) + estimation[k] + partialSum[k] - initVal);
     }
 
      /* Some part of the upper bound can be precomputed (some partial sum).

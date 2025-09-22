@@ -1,19 +1,19 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
-public class ALPFastUpperBound implements FastUpperBound<ALPState> {
+public class ALPFastLowerBound implements FastLowerBound<ALPState> {
 
     private final ALPProblem problem;
 
-    public ALPFastUpperBound(ALPProblem problem) {
+    public ALPFastLowerBound(ALPProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public double fastUpperBound(ALPState state, Set<Integer> variables) {
+    public double fastLowerBound(ALPState state, Set<Integer> variables) {
         int sum = 0;
         ALPInstance inst = problem.instance;
 
@@ -35,6 +35,6 @@ public class ALPFastUpperBound implements FastUpperBound<ALPState> {
             }
         }
 
-        return -sum;
+        return sum;
     }
 }

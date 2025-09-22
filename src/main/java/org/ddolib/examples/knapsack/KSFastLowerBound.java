@@ -1,6 +1,6 @@
 package org.ddolib.examples.knapsack;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound heuristic for the Knapsack problem.
  */
-public class KSFastUpperBound implements FastUpperBound<Integer> {
+public class KSFastLowerBound implements FastLowerBound<Integer> {
     private final KSProblem problem;
 
     /**
@@ -18,12 +18,12 @@ public class KSFastUpperBound implements FastUpperBound<Integer> {
      *
      * @param problem The associated Knapsack instance.
      */
-    public KSFastUpperBound(KSProblem problem) {
+    public KSFastLowerBound(KSProblem problem) {
         this.problem = problem;
     }
 
     @Override
-    public double fastUpperBound(Integer state, Set<Integer> variables) {
+    public double fastLowerBound(Integer state, Set<Integer> variables) {
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {
@@ -54,6 +54,6 @@ public class KSFastUpperBound implements FastUpperBound<Integer> {
             }
         }
 
-        return maxProfit;
+        return -maxProfit;
     }
 }

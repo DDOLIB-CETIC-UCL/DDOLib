@@ -39,7 +39,7 @@ public class KSCacheMain {
         final KSProblem problem = readInstance(instance);
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(250);
         config.varh = new DefaultVariableHeuristic<Integer>();
@@ -52,7 +52,7 @@ public class KSCacheMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         System.out.println("Search statistics:" + stats);

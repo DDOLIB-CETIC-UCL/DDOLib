@@ -172,7 +172,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.flb = flb;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
-        compilation.bestUB = Double.NEGATIVE_INFINITY;
+        compilation.bestUB = Double.POSITIVE_INFINITY;
         compilation.cutSetType = CutSetType.LastExactLayer;
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
@@ -209,6 +209,7 @@ public final class ExactSolver<T, K> implements Solver {
     private void extractBest(DecisionDiagram<T, K> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
+            System.out.println("pouet");
             bestSol = mdd.bestSolution();
             bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");

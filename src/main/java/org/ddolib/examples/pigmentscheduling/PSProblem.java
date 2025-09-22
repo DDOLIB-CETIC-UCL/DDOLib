@@ -112,7 +112,7 @@ public class PSProblem implements Problem<PSState> {
             int stocking = instance.stockingCost[item] * duration;
             int changeover = state.next != -1 ? instance.changeoverCost[item][state.next] : 0;
             // stocking cost + changeover cost
-            return -(changeover + stocking);
+            return changeover + stocking;
         }
     }
 }

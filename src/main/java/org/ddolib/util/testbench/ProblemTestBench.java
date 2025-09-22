@@ -10,7 +10,7 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -44,7 +44,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Whether the fast upper bound must be tested.
      */
-    public boolean testFUB = false;
+    public boolean testFLB = false;
 
     /**
      * Whether the dominance must be tested.
@@ -122,11 +122,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
         config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -136,13 +136,13 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testFub(P problem) {
+    protected void testFlb(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.debugLevel = 1;
         Solver solver = solverForTests(config);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -155,12 +155,12 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         for (int w = minWidth; w <= maxWidth; w++) {
             SolverConfig<T, K> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
-            config.fub = new DefaultFastUpperBound<>();
+            config.flb = new DefaultFastLowerBound<>();
             config.width = new FixedWidth<>(w);
             config.debugLevel = 1;
             Solver solver = solverForRelaxation(config);
             try {
-                solver.maximize();
+                solver.minimize();
                 assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
@@ -181,7 +181,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             config.cache = new SimpleCache<>();
             Solver solver = solverForRelaxation(config);
 
-            solver.maximize();
+            solver.minimize();
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -195,7 +195,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         SolverConfig<T, K> config = configSolver(problem);
         Solver solver = new AStarSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -209,7 +209,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         SolverConfig<T, K> config = configSolver(problem);
         Solver solver = new ACSSolver<>(config, 4);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -221,7 +221,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     protected void testBestFirstSearch(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         Solver solver = new BestFirstSearchSolver<>(config);
-        solver.maximize();
+        solver.minimize();
 
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
@@ -232,7 +232,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testFubOnRelaxedNodes(P problem) {
+    protected void testFlbOnRelaxedNodes(P problem) {
         for (int w = minWidth; w <= maxWidth; w++) {
             SolverConfig<T, K> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
@@ -240,7 +240,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
-            solver.maximize();
+            solver.minimize();
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -252,10 +252,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
         Solver solver = solverForTests(config);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -280,18 +280,18 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, relaxTests);
         }
-        if (testFUB) {
-            Stream<DynamicTest> fubTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFub(p))
+        if (testFLB) {
+            Stream<DynamicTest> flbTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFlb(p))
             );
-            allTests = Stream.concat(allTests, fubTests);
+            allTests = Stream.concat(allTests, flbTests);
         }
 
-        if (testRelaxation && testFUB) {
-            Stream<DynamicTest> relaxAndFubTest = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Relax and FUB for %s", p.toString()), () -> testFubOnRelaxedNodes(p))
+        if (testRelaxation && testFLB) {
+            Stream<DynamicTest> relaxAndFlbTest = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Relax and FUB for %s", p.toString()), () -> testFlbOnRelaxedNodes(p))
             );
-            allTests = Stream.concat(allTests, relaxAndFubTest);
+            allTests = Stream.concat(allTests, relaxAndFlbTest);
         }
 
         if (testDominance) {

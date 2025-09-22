@@ -48,7 +48,7 @@ class PSTest {
             config.problem = problem;
             config.relax = new PSRelax(problem.instance);
             config.ranking = new PSRanking();
-            config.fub = new PSFastUpperBound(problem.instance);
+            config.flb = new PSFastLowerBound(problem.instance);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
@@ -62,7 +62,7 @@ class PSTest {
     public Stream<DynamicTest> testPSP() {
         var bench = new PSPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

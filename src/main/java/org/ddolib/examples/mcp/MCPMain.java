@@ -25,7 +25,7 @@ public final class MCPMain {
         config.problem = problem;
         config.relax = new MCPRelax(problem);
         config.ranking = new MCPRanking();
-        config.fub = new MCPFastUpperBound(problem);
+        config.flb = new MCPFastLowerBound(problem);
 
         config.width = new FixedWidth<>(w);
         config.varh = new DefaultVariableHeuristic<>();
@@ -34,7 +34,7 @@ public final class MCPMain {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

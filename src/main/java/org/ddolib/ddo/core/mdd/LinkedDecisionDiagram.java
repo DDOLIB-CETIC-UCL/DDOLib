@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.DebugUtil;
@@ -175,7 +176,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     for (NodeSubProblem<T> n : this.currentLayer) {
                         if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
                                 && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
-                                && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                                && n.node.value <= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
                             pruned.add(n);
                         }
                     }
@@ -443,7 +444,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * Checks if the {@link org.ddolib.modeling.FastLowerBound} is well-defined.
+     * Checks if the {@link FastLowerBound} is well-defined.
      * This method constructs longest path from terminal nodes and checks for each node the mdd
      * if the associated fast upper bound if bigger than the identified path.
      *
@@ -551,9 +552,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
         // when the merged node is new, set its type to relaxed
         if (node == null) {
-            Node newNode = new Node(Double.NEGATIVE_INFINITY);
+            Node newNode = new Node(Double.POSITIVE_INFINITY);
             newNode.type = NodeType.RELAXED;
-            node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
+            node = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
         }
 
         // redirect and relax all arcs entering the merged node

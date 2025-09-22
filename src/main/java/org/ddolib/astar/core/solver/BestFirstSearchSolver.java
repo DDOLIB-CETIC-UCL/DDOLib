@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 
 import java.util.*;
@@ -21,7 +21,7 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
     /**
      * A suitable ub for the problem we want to maximize
      */
-    private final FastUpperBound<T> ub;
+    private final FastLowerBound<T> ub;
     /**
      * A heuristic to choose the next variable to branch on when developing a DD
      */
@@ -54,18 +54,18 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
     public BestFirstSearchSolver(SolverConfig<T, K> config) {
         this.problem = config.problem;
         this.varh = config.varh;
-        this.ub = config.fub;
+        this.ub = config.flb;
         this.dominance = config.dominance;
         this.bestLB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
     }
 
     @Override
-    public SearchStatistics maximize() {
-        return maximize(0);
+    public SearchStatistics minimize() {
+        return minimize(0);
     }
 
-    public SearchStatistics maximize(int verbosityLevel) {
+    public SearchStatistics minimize(int verbosityLevel) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -88,7 +88,7 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
                 break;
             }
 
-            double nodeUB = sub.getUpperBound();
+            double nodeUB = sub.getLowerBound();
 
             if (verbosityLevel >= 2) {
                 System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
@@ -143,7 +143,7 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+            double fastUpperBound = ub.fastLowerBound(newState, varSet(path));
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 frontier.add(new SubProblem<>(newState, value, fastUpperBound, path));

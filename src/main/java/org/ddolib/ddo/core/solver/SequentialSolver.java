@@ -218,7 +218,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.frontier = config.frontier;
-        this.bestUB = Double.NEGATIVE_INFINITY;
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.timeLimit = config.timeLimit;
         this.gapLimit = config.gapLimit;
