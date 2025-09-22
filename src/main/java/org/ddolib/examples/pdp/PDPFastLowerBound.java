@@ -44,6 +44,6 @@ public class PDPFastLowerBound implements FastLowerBound<PDPState> {
         for (int i = 0; i < variables.size(); i++) {
             lb += toVisitLB.get(i);
         }
-        return -lb;
+        return lb;
     }
 }

@@ -40,7 +40,7 @@ public class PDPProblem implements Problem<PDPState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPState(singleton(0), openToVisit, allToVisit,0,0);
+        return new PDPState(singleton(0), openToVisit, allToVisit, 0, 0);
     }
 
     public BitSet singleton(int singletonValue) {
@@ -62,14 +62,14 @@ public class PDPProblem implements Problem<PDPState> {
         } else {
 
             boolean canIncludePickups = state.minContent < instance.maxCapa;
-            boolean canIncludeDeliveries = state.maxContent !=0;
+            boolean canIncludeDeliveries = state.maxContent != 0;
 
             return state
                     .openToVisit
                     .stream()
                     .filter(point ->
                             ((canIncludePickups | !instance.pickupToAssociatedDelivery.containsKey(point))
-                                    && (canIncludeDeliveries | ! instance.deliveryToAssociatedPickup.containsKey(point))))
+                                    && (canIncludeDeliveries | !instance.deliveryToAssociatedPickup.containsKey(point))))
                     .boxed()
                     .iterator();
         }
@@ -100,8 +100,8 @@ public class PDPProblem implements Problem<PDPState> {
             newMaxContent -= 1;
         }
 
-        if(newMinContent <0) newMinContent = 0;
-        if(newMaxContent > instance.maxCapa) newMaxContent = instance.maxCapa;
+        if (newMinContent < 0) newMinContent = 0;
+        if (newMaxContent > instance.maxCapa) newMaxContent = instance.maxCapa;
         return new PDPState(
                 state.singleton(node),
                 newOpenToVisit,
@@ -112,7 +112,7 @@ public class PDPProblem implements Problem<PDPState> {
 
     @Override
     public double transitionCost(PDPState state, Decision decision) {
-        return -state.current.stream()
+        return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> instance.distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()

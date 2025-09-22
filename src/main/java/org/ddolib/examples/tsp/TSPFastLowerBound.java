@@ -44,6 +44,6 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
         for (int i = 0; i < unassignedVariables.size(); i++) {
             lb += toVisitLB.get(i);
         }
-        return -lb;
+        return lb;
     }
 }

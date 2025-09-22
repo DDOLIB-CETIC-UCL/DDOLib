@@ -35,6 +35,6 @@ public class ALPFastLowerBound implements FastLowerBound<ALPState> {
             }
         }
 
-        return -sum;
+        return sum;
     }
 }

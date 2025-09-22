@@ -24,7 +24,7 @@ public class Max2SatFastLowerBound implements FastLowerBound<Max2SatState> {
         int k = state.depth();
         if (k == problem.nbVars()) return 0.0;
         else
-            return Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()];
+            return -(Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()]);
     }
 
     private int[] precomputeUnary() {

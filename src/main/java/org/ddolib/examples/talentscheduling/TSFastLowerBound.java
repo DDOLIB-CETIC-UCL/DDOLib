@@ -18,16 +18,12 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
         this.problem = problem;
     }
 
-    @Override
-    public double fastLowerBound(TSState state, Set<Integer> variables) {
-        return -fastLowerBound(state);
-    }
-
     /**
      * Based on the lower bound of
      * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>
      */
-    private double fastLowerBound(TSState state) {
+    @Override
+    public double fastLowerBound(TSState state, Set<Integer> variables) {
         double lb = 0.0;
 
         BitSet presentActors = problem.onLocationActors(state);

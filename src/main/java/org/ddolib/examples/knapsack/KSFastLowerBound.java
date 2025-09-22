@@ -54,6 +54,6 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
             }
         }
 
-        return maxProfit;
+        return -maxProfit;
     }
 }

@@ -79,7 +79,7 @@ public class PSFastLowerBound implements FastLowerBound<PSState> {
                 stockingCostLb += item.cost() * (time - item.deadLine());
             }
         }
-        return -changeOverLb - stockingCostLb;
+        return changeOverLb + stockingCostLb;
     }
 
     private record ItemDemand(int cost, int deadLine) {

@@ -17,6 +17,6 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
         for (int v : variables) {
             rub += this.problem.quantity[v] * this.problem.values[v];
         }
-        return rub;
+        return -rub;
     }
 }

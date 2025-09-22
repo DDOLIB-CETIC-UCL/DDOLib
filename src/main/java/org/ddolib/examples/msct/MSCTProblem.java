@@ -30,7 +30,7 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 
     @Override
@@ -76,7 +76,6 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     @Override
     public double transitionCost(MSCTState state, Decision decision) {
-        int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        return -currentTime;
+        return Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
     }
 }

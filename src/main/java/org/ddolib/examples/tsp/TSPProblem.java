@@ -97,7 +97,7 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public double transitionCost(TSPState state, Decision decision) {
-        return -state.current.stream()
+        return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()

@@ -32,6 +32,6 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
             minPairwiseLCS = Math.min(minPairwiseLCS, problem.tables[s][state.position[s]][state.position[s + 1]]);
         }
 
-        return Math.min(total, minPairwiseLCS);
+        return -(Math.min(total, minPairwiseLCS));
     }
 }

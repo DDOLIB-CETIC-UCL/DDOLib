@@ -30,11 +30,6 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
 
     @Override
     public double fastLowerBound(TSPTWState state, Set<Integer> variables) {
-        return -fastLowerBound(state);
-    }
-
-
-    private double fastLowerBound(TSPTWState state) {
         // This lower bound assumes that we will always select the cheapest edges from each node
 
         int completeTour = numVar - state.depth() - 1;
