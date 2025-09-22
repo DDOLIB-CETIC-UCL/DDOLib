@@ -164,7 +164,7 @@ public final class ACSSolver<T, K> implements Solver {
                         double max = open.get(i).peek().f();
                         double min = Collections.min(open.get(i), Comparator.comparingDouble(SubProblem<T>::f)).f();
                         ArrayList<SubProblem<T>> toAdd = new ArrayList<>();
-                        while (candidates.size() < K) {
+                        while (candidates.size() < K && !open.get(i).isEmpty()) {
                             if (open.get(i).isEmpty()) {
                                 for (SubProblem<T> subProblem : toAdd) {
                                     if (subProblem.f() > bestLB) {
