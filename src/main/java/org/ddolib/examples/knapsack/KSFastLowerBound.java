@@ -24,6 +24,7 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
 
     @Override
     public double fastLowerBound(Integer state, Set<Integer> variables) {
+
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {
@@ -53,7 +54,6 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
                 capacity = 0;
             }
         }
-
         return -maxProfit;
     }
 }

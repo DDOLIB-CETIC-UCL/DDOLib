@@ -173,8 +173,19 @@ public final class AStarSolver<T, K> implements Solver {
                 if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
+
+                if (verbosityLevel >= 1) {
+                    System.out.println("bestObj:" + bestUB+ " lb min:"+frontier.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(frontier.peek().f()-bestUB)/bestUB)+ "%");
+                    ti = System.currentTimeMillis();
+                }
+
                 if (!negativeTransitionCosts) {
                     // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    break;
+                }
+                if (frontier.peek().f() >= bestUB-0.00001) {
+                    // gap is 0%
                     break;
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {

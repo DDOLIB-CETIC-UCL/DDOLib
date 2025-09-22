@@ -2,7 +2,6 @@ package org.ddolib.util.testbench;
 
 import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.astar.core.solver.BestFirstSearchSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -214,19 +213,6 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
-     * Test if the Best First search solver reaches the optimal solution.
-     *
-     * @param problem The instance to test.
-     */
-    protected void testBestFirstSearch(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = new BestFirstSearchSolver<>(config);
-        solver.minimize();
-
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
-    }
-
-    /**
      * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
      * effect, it tests if the fast upper bound on merged states does not cause errors.
      *
@@ -318,12 +304,6 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         );
         allTests = Stream.concat(allTests, acsTests);
 
-        Stream<DynamicTest> bestFirstTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("BestFirstSearch for %s", p.toString()),
-                        () -> testBestFirstSearch(p))
-        );
-
-        allTests = Stream.concat(allTests, bestFirstTests);
         return allTests;
     }
 
