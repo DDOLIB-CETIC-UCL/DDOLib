@@ -374,7 +374,7 @@ public final class SequentialSolver<T, K> implements Solver {
      */
     private void maybeUpdateBest(DecisionDiagram<T, K> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
-        if (ddval.isPresent() && ddval.get() > bestUB) {
+        if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
             if (verbosityLevel >= 1) System.out.println("new best: " + bestUB);

@@ -175,7 +175,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     for (NodeSubProblem<T> n : this.currentLayer) {
                         if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
                                 && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
-                                && n.node.value <= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                                && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
                             pruned.add(n);
                         }
                     }
@@ -443,7 +443,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     /**
-     * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
+     * Checks if the {@link org.ddolib.modeling.FastLowerBound} is well-defined.
      * This method constructs longest path from terminal nodes and checks for each node the mdd
      * if the associated fast upper bound if bigger than the identified path.
      *
