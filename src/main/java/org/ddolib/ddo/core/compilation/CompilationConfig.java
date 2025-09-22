@@ -56,7 +56,7 @@ public class CompilationConfig<T, K> {
     public Integer maxWidth = null;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
      */
     public FastLowerBound<T> flb = null;
 
@@ -71,7 +71,7 @@ public class CompilationConfig<T, K> {
     public Optional<SimpleCache<T>> cache = Optional.empty();
 
     /**
-     * The best known lower bound at the time when the dd is being compiled.
+     * The best known upper bound at the time when the dd is being compiled.
      */
     public Double bestUB = null;
 
@@ -98,6 +98,6 @@ public class CompilationConfig<T, K> {
      */
     @Override
     public String toString() {
-        return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestUB);
+        return String.format("Compilation: %s - Sub problem: %s - bestUB: %f", compilationType, residual, bestUB);
     }
 }

@@ -142,7 +142,7 @@ public final class ExactSolver<T, K> implements Solver {
         this.relax = config.relax;
         this.ranking = config.ranking;
         this.varh = config.varh;
-        this.fub = config.fub;
+        this.flb = config.flb;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.bestSol = Optional.empty();
@@ -152,7 +152,7 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -169,7 +169,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.stateRanking = this.ranking;
         compilation.residual = root;
         compilation.maxWidth = Integer.MAX_VALUE;
-        compilation.flb = fub;
+        compilation.flb = flb;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
         compilation.bestUB = Double.NEGATIVE_INFINITY;

@@ -3,7 +3,7 @@ package org.ddolib.modeling;
 import java.util.Set;
 
 /**
- * Heuristic defining a fast upper bound for states
+ * Heuristic defining a fast lower bound for states
  *
  * @param <T> The type of the states
  */

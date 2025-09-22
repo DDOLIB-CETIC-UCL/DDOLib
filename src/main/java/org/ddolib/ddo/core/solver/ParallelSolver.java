@@ -118,7 +118,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * @param config All the parameters needed to configure the solver.
      */
     public ParallelSolver(SolverConfig<T, K> config) {
-        this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
+        this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.flb,
                 config.dominance);
         this.critical = new Critical<>(config.nbThreads, config.frontier);
         this.verbosityLevel = config.verbosityLevel;
@@ -131,7 +131,7 @@ public final class ParallelSolver<T, K> implements Solver {
 
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         final AtomicInteger nbIter = new AtomicInteger(0);
         final AtomicInteger queueMaxSize = new AtomicInteger(0);
@@ -155,7 +155,7 @@ public final class ParallelSolver<T, K> implements Solver {
                                 nbIter.incrementAndGet();
                                 queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 if (verbosityLevel >= 2)
-                                    System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
+                                    System.out.println("subProblem(ub:" + wl.subProblem.getLowerBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getLowerBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
                                 processOneNode(wl.subProblem, verbosityLevel, exportAsDot);
                                 notifyNodeFinished(threadId);
                                 break;
@@ -249,10 +249,10 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private void processOneNode(final SubProblem<T> sub, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION
-        double nodeUB = sub.getUpperBound();
+        double nodeLB = sub.getLowerBound();
         double bestLB = bestLB();
 
-        if (nodeUB <= bestLB) {
+        if (nodeLB >= bestLB) {
             return;
         }
 
@@ -265,7 +265,7 @@ public final class ParallelSolver<T, K> implements Solver {
         compilation.stateRanking = shared.ranking;
         compilation.residual = sub;
         compilation.maxWidth = width;
-        compilation.flb = shared.fub;
+        compilation.flb = shared.flb;
         compilation.dominance = shared.dominance;
         compilation.cache = Optional.empty();
         compilation.bestUB = bestLB;
@@ -328,7 +328,7 @@ public final class ParallelSolver<T, K> implements Solver {
             Iterator<SubProblem<T>> cutset = mdd.exactCutset();
             while (cutset.hasNext()) {
                 SubProblem<T> cutsetNode = cutset.next();
-                if (cutsetNode.getUpperBound() > bestLB) {
+                if (cutsetNode.getLowerBound() > bestLB) {
                     critical.frontier.push(cutsetNode);
                 }
             }
@@ -341,7 +341,7 @@ public final class ParallelSolver<T, K> implements Solver {
     private void notifyNodeFinished(final int threadId) {
         synchronized (critical) {
             critical.ongoing -= 1;
-            critical.upperBounds[threadId] = Integer.MAX_VALUE;
+            critical.lowerBounds[threadId] = Integer.MAX_VALUE;
             critical.notifyAll();
         }
     }
@@ -374,7 +374,7 @@ public final class ParallelSolver<T, K> implements Solver {
             }
             // Nothing relevant ? =>  Wait for someone to post jobs
             SubProblem<T> nn = critical.frontier.pop();
-            if (nn.getUpperBound() <= critical.bestLB) {
+            if (nn.getLowerBound() <= critical.bestUB) {
                 critical.frontier.clear();
                 if (critical.ongoing == 0) {
                     return new Workload<>(WorkloadStatus.Complete, null);
@@ -390,7 +390,7 @@ public final class ParallelSolver<T, K> implements Solver {
             // Consume the current node and process it
             critical.ongoing += 1;
             critical.explored += 1;
-            critical.upperBounds[threadId] = nn.getUpperBound();
+            critical.lowerBounds[threadId] = nn.getLowerBound();
 
             return new Workload<>(WorkloadStatus.WorkItem, nn);
         }
@@ -465,7 +465,7 @@ public final class ParallelSolver<T, K> implements Solver {
         /**
          * The heuristic defining a very rough estimation (upper bound) of the optimal value.
          */
-        private final FastLowerBound<T> fub;
+        private final FastLowerBound<T> flb;
 
         private final DominanceChecker<T, K> dominance;
         /**
@@ -480,12 +480,12 @@ public final class ParallelSolver<T, K> implements Solver {
                 final VariableHeuristic<T> varh,
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
-                FastLowerBound<T> fub,
+                FastLowerBound<T> flb,
                 final DominanceChecker<T, K> dominance) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
-            this.fub = fub;
+            this.flb = flb;
             this.varh = varh;
             this.ranking = ranking;
             this.width = width;
@@ -519,7 +519,7 @@ public final class ParallelSolver<T, K> implements Solver {
          * it node), it should place the value i32::min_value() in its corresponding
          * cell.
          */
-        final double[] upperBounds;
+        final double[] lowerBounds;
         /**
          * This is the number of nodes that are currently being explored.
          * <p>
@@ -557,10 +557,10 @@ public final class ParallelSolver<T, K> implements Solver {
             this.explored = 0;
             this.bestLB = Double.NEGATIVE_INFINITY;
             this.bestUB = Double.POSITIVE_INFINITY;
-            this.upperBounds = new double[nbThreads];
+            this.lowerBounds = new double[nbThreads];
             this.bestSol = Optional.empty();
             for (int i = 0; i < nbThreads; i++) {
-                upperBounds[i] = Double.POSITIVE_INFINITY;
+                lowerBounds[i] = Double.NEGATIVE_INFINITY;
             }
         }
     }

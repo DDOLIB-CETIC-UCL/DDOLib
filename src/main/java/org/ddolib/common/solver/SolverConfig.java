@@ -29,10 +29,10 @@ public class SolverConfig<T, K> {
     public VariableHeuristic<T> varh = null;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value
+     * The heuristic defining a very rough estimation (lower bound) of the optimal value
      * ({@link DefaultFastLowerBound} by default).
      */
-    public FastLowerBound<T> fub = new DefaultFastLowerBound<>();
+    public FastLowerBound<T> flb = new DefaultFastLowerBound<>();
 
     /**
      * The dominance object that will be used to prune the search space ({@link DefaultDominanceChecker} by default).

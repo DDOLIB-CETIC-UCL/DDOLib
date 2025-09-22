@@ -16,7 +16,7 @@ public interface Solver {
      *
      * @return statistics about the search
      */
-    SearchStatistics maximize();
+    SearchStatistics minimize();
 
     /**
      * @return the value of the best solution in this decision diagram if there is one
