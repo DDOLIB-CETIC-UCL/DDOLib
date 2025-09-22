@@ -157,10 +157,15 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             config.dominance = new DefaultDominanceChecker<>();
             config.fub = new DefaultFastUpperBound<>();
             config.width = new FixedWidth<>(w);
+            config.debugLevel = 1;
             Solver solver = solverForRelaxation(config);
-
-            solver.maximize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+            try {
+                solver.maximize();
+                assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+            } catch (Exception e) {
+                String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
+                throw new RuntimeException(msg);
+            }
         }
     }
 

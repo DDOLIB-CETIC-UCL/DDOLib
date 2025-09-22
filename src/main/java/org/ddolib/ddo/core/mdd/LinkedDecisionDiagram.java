@@ -127,7 +127,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
         final DominanceChecker<T, K> dominance = config.dominance;
         final Optional<SimpleCache<T>> cache = config.cache;
-        double bestUb = config.bestLB;
+        double bestUb = config.bestUB;
 
         final Set<Integer> variables = varSet(config);
 
@@ -162,7 +162,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node node = e.getValue();
                 if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
-                    double flb = config.flb.fastUpperBound(state, variables);
+                    double flb = config.flb.fastLowerBound(state, variables);
                     double rlb = saturatedAdd(node.value, flb);
                     node.flb = flb;
                     this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
@@ -234,7 +234,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 if (config.exportAsDot || config.debugLevel >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.lb <= config.bestLB) {
+                if (n.lb >= config.bestUB) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -282,7 +282,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
-            if (best == null || n.value > best.value) {
+            if (best == null || n.value < best.value) {
                 best = n;
             }
         }
@@ -675,7 +675,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         DecimalFormat df = new DecimalFormat("#.##########");
 
         if (lastLayer) {
-            node.node.flb = config.flb.fastUpperBound(node.state, new HashSet<>());
+            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
 
         String nodeStr = String.format(

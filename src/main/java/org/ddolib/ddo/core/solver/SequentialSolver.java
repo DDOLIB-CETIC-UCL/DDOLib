@@ -15,7 +15,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -92,7 +92,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * Value of the best known lower bound.
      */
-    private double bestLB;
+    private double bestUB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
@@ -218,7 +218,7 @@ public final class SequentialSolver<T, K> implements Solver {
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.frontier = config.frontier;
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.timeLimit = config.timeLimit;
         this.gapLimit = config.gapLimit;
@@ -314,7 +314,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
             // 2. RELAXATION
             compilation.compilationType = CompilationType.Relaxed;
-            compilation.bestLB = this.bestLB;
+            compilation.bestUB = this.bestUB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
             DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
