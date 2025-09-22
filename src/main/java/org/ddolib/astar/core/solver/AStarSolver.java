@@ -103,7 +103,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.varh = config.varh;
         this.lb = config.flb;
         this.dominance = config.dominance;
-        this.bestUB = Integer.MIN_VALUE;
+        this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -166,23 +166,25 @@ public final class AStarSolver<T, K> implements Solver {
             if (closed.containsKey(subKey)) {
                 continue;
             }
-            if (sub.getPath().size() == problem.nbVars() && !negativeTransitionCosts) {
-                // with A*, the first complete solution is optimal only if there is no negative transition cost
+            if (sub.getPath().size() == problem.nbVars()) {
                 if (debugLevel >= 1) {
                     checkFLBAdmissibility();
                 }
+                if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-                break;
+                if (!negativeTransitionCosts) {
+                    // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    break;
+                }
+            } else if (sub.getPath().size() < problem.nbVars()) {
+                double nodeUB = sub.getLowerBound();
+                if (verbosityLevel >= 2) {
+                    System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+                }
+                addChildren(sub, debugLevel);
+                closed.put(subKey, sub.f());
             }
-
-            double nodeUB = sub.getLowerBound();
-
-            if (verbosityLevel >= 2) {
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-            }
-            addChildren(sub, debugLevel);
-            closed.put(subKey, sub.f());
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
