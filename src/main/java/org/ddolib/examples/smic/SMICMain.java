@@ -34,6 +34,7 @@ public class SMICMain {
         config.ranking = new SMICRanking();
         config.width = new FixedWidth<>(200);
         config.varh = new DefaultVariableHeuristic<>();
+        config.flb = new SMICFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(config);
