@@ -222,7 +222,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+                        relax(maxWidth, ranking, relax, variables);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -498,6 +498,45 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
     }
 
+    private void checkRelaxation(List<T> toMerge, T merged, Problem<T> problem,
+                                 Set<Integer> notAffected) {
+
+        String toMergeStr =
+                "To merge:\n\t" + toMerge.stream().map(Objects::toString).collect(Collectors.joining("\n\t")) + "\n";
+        String mergedStr = "Merged: " + merged + "\n";
+
+        for (T state : toMerge) {
+            for (int var : notAffected) {
+                List<Integer> mergedDomain = new ArrayList<>();
+                problem.domain(merged, var).forEachRemaining(mergedDomain::add);
+                List<Integer> stateDomain = new ArrayList<>();
+                problem.domain(state, var).forEachRemaining(stateDomain::add);
+                for (int value : stateDomain) {
+                    Decision d = new Decision(var, value);
+                    String errorMsg = "";
+                    errorMsg += toMergeStr;
+                    errorMsg += mergedStr;
+                    errorMsg += (d + "\n");
+                    errorMsg += "Source of the decision: " + state + "\n";
+                    if (!mergedDomain.contains(value)) {
+                        errorMsg = String.format("The %s cannot be made from the merged state\n", d) + errorMsg;
+                        throw new RuntimeException(errorMsg);
+                    } else {
+                        double stateTransitionCost = problem.transitionCost(state, d);
+                        double mergedTransitionCost = problem.transitionCost(merged, d);
+                        if (stateTransitionCost > mergedTransitionCost) {
+                            errorMsg = String.format("The cost of the %s is lower when applied  " +
+                                    "on merged state", d) + errorMsg;
+                            errorMsg += "Cost from the origin node: " + stateTransitionCost + "\n";
+                            errorMsg += "Cost from the merged state: " + mergedTransitionCost + "\n";
+                            throw new RuntimeException(errorMsg);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
@@ -532,12 +571,18 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param relax    the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
-                       final Relaxation<T> relax) {
+                       final Relaxation<T> relax, final Set<Integer> unaffectedVariables) {
         this.currentLayer.sort(ranking.reversed());
 
         final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
         final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
+
+        if (config.debugLevel >= 1) {
+            List<T> toMerge = new ArrayList<>();
+            new NodeSubProblemsAsStateIterator<>(merge.iterator()).forEachRemaining(toMerge::add);
+            checkRelaxation(toMerge, merged, config.problem, unaffectedVariables);
+        }
 
         // is there another state in the kept partition having the same state as the merged state ?
         NodeSubProblem<T> node = null;
