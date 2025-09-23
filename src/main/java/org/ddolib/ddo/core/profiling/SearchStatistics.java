@@ -18,6 +18,6 @@ public record SearchStatistics(int nbIterations, int queueMaxSize, long runTimeM
                 ";" + SearchStatus +
                 ";" + gaps +
                 ";" + Gap +
-                ";" + cacheStats ;
+                ";" + cacheStats + ";" ;
     }
 }
