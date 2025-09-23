@@ -176,7 +176,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     for (NodeSubProblem<T> n : this.currentLayer) {
                         if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
                                 && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
-                                && n.node.value <= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                                && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
                             pruned.add(n);
                         }
                     }
@@ -269,7 +269,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 layersThresholds.add(new ArrayList<>());
                 for (NodeSubProblem<T> n : this.currentLayer) {
                     nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
-                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MAX_VALUE, false));
+                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));
                 }
             }
 
@@ -320,7 +320,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
 
         if (debugLevel >= 1 && config.compilationType != CompilationType.Relaxed) {
-            checkFub(config.problem);
+            checkFlb(config.problem);
         }
     }
 
@@ -449,7 +449,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * if the associated fast upper bound if bigger than the identified path.
      *
      */
-    private void checkFub(Problem<T> problem) {
+    private void checkFlb(Problem<T> problem) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
             //For each node we save the longest path to last
@@ -771,16 +771,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
                 if (simpleCache.getLayer(depth).containsKey(sub.state)
                         && simpleCache.getLayer(depth).get(sub.state).isPresent()
-                        && sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                        && sub.node.value >= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
                     double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
                     currentCache.get(j).get(i).setValue(value);
                 } else {
-                    if (sub.lb <= ub) {
-                        double rub = saturatedDiff(sub.lb, sub.node.value);
-                        double value = saturatedDiff(ub, rub);
+                    if (sub.lb >= ub) {
+                        double rlb = saturatedDiff(sub.lb, sub.node.value);
+                        double value = saturatedDiff(ub, rlb);
                         currentCache.get(j).get(i).setValue(value);
                     } else if (sub.node.isInExactCutSet) {
-                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= ub) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) >= ub) {
                             double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(ub, sub.node.suffix));
                             currentCache.get(j).get(i).setValue(value);
                         } else {
@@ -792,7 +792,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             currentCache.get(j).get(i).setExplored(true);
                         }
                         if (cutSetType == CutSetType.LastExactLayer
-                                && sub.node.value < currentCache.get(j).get(i).getValue()
+                                && sub.node.value > currentCache.get(j).get(i).getValue()
                                 && sub.node.isInExactCutSet)
                             currentCache.get(j).get(i).setExplored(true);
                         if (currentCache.get(j).get(i).isExplored()) {
@@ -809,7 +809,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             break;
                         }
                     }
-                    double value = Math.min(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    double value = Math.max(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
                     currentCache.get(j - 1).get(index).setValue(value);
                 }
             }

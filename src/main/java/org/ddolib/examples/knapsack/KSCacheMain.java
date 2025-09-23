@@ -35,13 +35,13 @@ public class KSCacheMain {
     public static void main(final String[] args) throws IOException {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
 
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_9";
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         config.problem = problem;
         config.relax = new KSRelax();
         config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(250);
+        config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<Integer>();
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.cache = new SimpleCache<>();
