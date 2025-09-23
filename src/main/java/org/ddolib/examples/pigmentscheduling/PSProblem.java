@@ -26,7 +26,7 @@ public class PSProblem implements Problem<PSState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return Optional.of(-1.0 * instance.optimal);
+        return Optional.of((double) instance.optimal);
     }
 
     @Override

@@ -33,9 +33,9 @@ public final class AStarSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * Value of the best known lower bound.
+     * Value of the best known upper bound.
      */
-    private double bestLB;
+    private double bestUB;
 
     /**
      * HashMap with all explored nodes
@@ -64,6 +64,8 @@ public final class AStarSolver<T, K> implements Solver {
             Comparator.comparingDouble(SubProblem<T>::f));
 
     private final SubProblem<T> root;
+
+    private boolean negativeTransitionCosts = false; // in case of negative transition cost, A* must not stop
 
 
     /**
@@ -95,40 +97,13 @@ public final class AStarSolver<T, K> implements Solver {
      */
     private final int debugLevel;
 
-    /**
-     * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link SolverConfig}<br><br>
-     *
-     * <b>Mandatory parameters:</b>
-     * <ul>
-     *     <li>An implementation of {@link Problem}</li>
-     *         <li>An implementation of {@link FastLowerBound}</li>
-     *     <li>An implementation of {@link VariableHeuristic}</li>
-     * </ul>
-     * <br>
-     * <b>Optional parameters: </b>
-     * <ul>
-     *     <li>An implementation of {@link DominanceChecker}</li>
-     *     <li>A verbosity level</li>
-     *     <li>A debug level:
-     *          <ul>
-     *              <li>0: no debug (default) </li>
-     *              <li>1: check if the lower bound is admissible and if the hash of states are
-     *              coherent.</li>
-     *              <li>2: 1 + check if the lower bound is consistent.</li>
-     *          </ul>
-     *     </li>
-     * </ul>
-     *
-     * @param config All the parameters needed to configure the solver.
-     */
     public AStarSolver(
             SolverConfig<T, K> config) {
         this.problem = config.problem;
         this.varh = config.varh;
         this.lb = config.flb;
         this.dominance = config.dominance;
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -155,7 +130,7 @@ public final class AStarSolver<T, K> implements Solver {
         this.varh = config.varh;
         this.lb = config.flb;
         this.dominance = config.dominance;
-        this.bestLB = Integer.MIN_VALUE;
+        this.bestUB = Integer.MIN_VALUE;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -168,13 +143,18 @@ public final class AStarSolver<T, K> implements Solver {
     @Override
     public SearchStatistics minimize() {
         long t0 = System.currentTimeMillis();
+        long ti = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!frontier.isEmpty()) {
             if (verbosityLevel >= 1) {
-                System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestLB);
+                if (System.currentTimeMillis() - ti > 500) {
+                    System.out.println("bestObj:" + bestUB+ " lb min:"+frontier.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(frontier.peek().f()-bestUB)/bestUB)+ "%");
+                    ti = System.currentTimeMillis();
+                }
             }
 
             nbIter++;
@@ -187,25 +167,35 @@ public final class AStarSolver<T, K> implements Solver {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
-                // optimal solution found
                 if (debugLevel >= 1) {
                     checkFLBAdmissibility();
                 }
+                if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
-                bestLB = sub.getValue();
-                break;
-            }
+                bestUB = sub.getValue();
 
-            double nodeUB = sub.getLowerBound();
+                if (verbosityLevel >= 1) {
+                    System.out.println("bestObj:" + bestUB+ " lb min:"+frontier.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(frontier.peek().f()-bestUB)/bestUB)+ "%");
+                    ti = System.currentTimeMillis();
+                }
 
-            if (verbosityLevel >= 2) {
-                System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+                if (!negativeTransitionCosts) {
+                    // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    break;
+                }
+                if (frontier.peek().f() >= bestUB-0.00001) {
+                    // gap is 0%
+                    break;
+                }
+            } else if (sub.getPath().size() < problem.nbVars()) {
+                double nodeUB = sub.getLowerBound();
+                if (verbosityLevel >= 2) {
+                    System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+                }
+                addChildren(sub, debugLevel);
+                closed.put(subKey, sub.f());
             }
-            if (verbosityLevel >= 1) {
-                System.out.println("\n");
-            }
-            addChildren(sub, debugLevel);
-            closed.put(subKey, sub.f());
         }
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
     }
@@ -213,7 +203,7 @@ public final class AStarSolver<T, K> implements Solver {
     @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
-            return Optional.of(bestLB);
+            return Optional.of(bestUB);
         } else {
             return Optional.empty();
         }
@@ -259,6 +249,9 @@ public final class AStarSolver<T, K> implements Solver {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
+            if (cost < 0) {
+                negativeTransitionCosts = true;
+            }
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);

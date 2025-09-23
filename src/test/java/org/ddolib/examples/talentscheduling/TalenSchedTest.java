@@ -64,7 +64,7 @@ public class TalenSchedTest {
 
     @DisplayName("Talent Scheduling")
     @TestFactory
-    public Stream<DynamicTest> testMCP() {
+    public Stream<DynamicTest> testTS() {
         var bench = new TSBench();
         bench.testRelaxation = true;
         bench.testFLB = true;

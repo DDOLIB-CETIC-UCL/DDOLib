@@ -130,6 +130,6 @@ public class PDPProblem implements Problem<PDPState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
+        return optimal;
     }
 }
