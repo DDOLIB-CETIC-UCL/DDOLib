@@ -38,12 +38,13 @@ public final class AStarSolver<T, K> implements Solver {
     private double bestUB;
 
     /**
-     * HashMap with all explored nodes
+     * HashMap mapping (state,depth) to the f value.
+     * Closed nodes are the ones for which their children have been generated.
      */
     private final HashMap<AstarKey<T>, Double> closed;
 
     /**
-     * HashMap with states in the Priority Queue
+     * HashMap mapping (state,depth) open nodes to the f value.
      */
     private final HashMap<AstarKey<T>, Double> present;
 
@@ -60,7 +61,7 @@ public final class AStarSolver<T, K> implements Solver {
      * The priority queue containing the subproblems to be explored,
      * ordered by decreasing f = value + fastUpperBound
      */
-    private final PriorityQueue<SubProblem<T>> frontier = new PriorityQueue<>(
+    private final PriorityQueue<SubProblem<T>> open = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f));
 
     private final SubProblem<T> root;
@@ -146,21 +147,21 @@ public final class AStarSolver<T, K> implements Solver {
         long ti = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        frontier.add(root);
+        open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
-        while (!frontier.isEmpty()) {
+        while (!open.isEmpty()) {
             if (verbosityLevel >= 1) {
                 if (System.currentTimeMillis() - ti > 500) {
-                    System.out.println("bestObj:" + bestUB+ " lb min:"+frontier.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(frontier.peek().f()-bestUB)/bestUB)+ "%");
+                    System.out.println("bestObj:" + bestUB+ " lb min:"+ open.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(open.peek().f()-bestUB)/bestUB)+ "%");
                     ti = System.currentTimeMillis();
                 }
             }
 
             nbIter++;
-            queueMaxSize = Math.max(queueMaxSize, frontier.size());
+            queueMaxSize = Math.max(queueMaxSize, open.size());
 
-            SubProblem<T> sub = frontier.poll();
+            SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
@@ -175,8 +176,8 @@ public final class AStarSolver<T, K> implements Solver {
                 bestUB = sub.getValue();
 
                 if (verbosityLevel >= 1) {
-                    System.out.println("bestObj:" + bestUB+ " lb min:"+frontier.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + frontier.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(frontier.peek().f()-bestUB)/bestUB)+ "%");
+                    System.out.println("bestObj:" + bestUB+ " lb min:"+ open.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(open.peek().f()-bestUB)/bestUB)+ "%");
                     ti = System.currentTimeMillis();
                 }
 
@@ -184,7 +185,7 @@ public final class AStarSolver<T, K> implements Solver {
                     // with A*, the first complete solution is optimal only if there is no negative transition cost
                     break;
                 }
-                if (frontier.peek().f() >= bestUB-0.00001) {
+                if (open.peek().f() >= bestUB-0.00001) {
                     // gap is 0%
                     break;
                 }
@@ -226,15 +227,11 @@ public final class AStarSolver<T, K> implements Solver {
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-        Set<Decision> nullDecisions = new HashSet<>();
-        for (int i = 0; i < depth; i++) {
-            nullDecisions.add(new Decision(i, 0));
-        }
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                nullDecisions);
+                Collections.EMPTY_SET);
     }
 
 
@@ -267,16 +264,16 @@ public final class AStarSolver<T, K> implements Solver {
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
-                    frontier.add(newSub);
+                    open.add(newSub);
                     present.put(newKey, newSub.f());
                 } else {
                     Double closedValue = closed.get(newKey);
                     if (closedValue != null && closedValue > newSub.f()) {
-                        frontier.add(newSub);
+                        open.add(newSub);
                         closed.remove(newKey);
                         present.put(newKey, newSub.f());
                     } else {
-                        frontier.add(newSub);
+                        open.add(newSub);
                         present.put(newKey, newSub.f());
                     }
                 }
