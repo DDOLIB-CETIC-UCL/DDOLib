@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -90,7 +90,8 @@ public final class MispMain {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? Paths.get("data", "MISP", "Tadpole_4_2.dot").toString() : args[0];
+        final String file = args.length == 0 ?
+                Paths.get("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         SolverConfig<BitSet, Integer> config = new SolverConfig<>();
@@ -106,9 +107,8 @@ public final class MispMain {
         config.dominance = new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
 
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        config.exportAsDot = true;
 
-        final Solver solver = new ExactSolver<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
