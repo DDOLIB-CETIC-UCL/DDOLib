@@ -209,7 +209,6 @@ public final class ExactSolver<T, K> implements Solver {
     private void extractBest(DecisionDiagram<T, K> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
-            System.out.println("pouet");
             bestSol = mdd.bestSolution();
             bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");

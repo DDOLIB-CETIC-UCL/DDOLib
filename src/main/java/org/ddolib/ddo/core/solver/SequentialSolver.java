@@ -90,7 +90,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
 
     /**
-     * Value of the best known lower bound.
+     * Value of the best known upper bound.
      */
     private double bestUB;
     /**
@@ -111,7 +111,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * This is the cache used to prune the search tree
      */
-    private Optional<SimpleCache<T>> cache;
+    private final Optional<SimpleCache<T>> cache;
 
     /**
      * Only the first restricted mdd can be exported to a .dot file
@@ -162,17 +162,6 @@ public final class SequentialSolver<T, K> implements Solver {
      * </ul>
      */
     private final int debugLevel;
-
-
-    /*
-
-    <ul>
-                <li>0: no additional tests (default)</li>
-                <li>1: checks if the upper bound is well-defined</li>
-                <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-            </ul>
-          </li>
-     */
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
