@@ -25,4 +25,8 @@ public abstract class DominanceChecker<T, K> {
      * @return Whether the input state is dominated.
      */
     public abstract boolean updateDominance(T state, int depth, double objValue);
+
+    public abstract boolean isDominated(T state, int depth, double objValue);
+
+    public abstract DominanceChecker<T, K> clear();
 }
