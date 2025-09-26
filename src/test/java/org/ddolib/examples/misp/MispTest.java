@@ -68,6 +68,7 @@ public class MispTest {
         var bench = new MispBench();
         bench.testRelaxation = true;
         bench.testFUB = true;
+        bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();
     }
