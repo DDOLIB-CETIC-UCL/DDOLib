@@ -1,14 +1,14 @@
 package org.ddolib.examples.misp;
 
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.ExactSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,6 +41,8 @@ public final class MispMain {
             br.readLine();
             String line;
             while ((line = br.readLine()) != null && !line.contains("--")) {
+                if (line.isEmpty()) continue;
+
                 if (line.contains("optimal")) {
                     String optiStr = line.replace(";", "");
                     String[] tokens = optiStr.split("=");
@@ -57,6 +59,10 @@ public final class MispMain {
             neighbor = new BitSet[n];
             Arrays.setAll(neighbor, i -> new BitSet(n));
             while (line != null && !line.equals("}")) {
+                if (line.isEmpty()) {
+                    line = br.readLine();
+                    continue;
+                }
                 String[] tokens = line.replace(" ", "").replace(";", "").split("--");
                 int source = Integer.parseInt(tokens[0]) - 1;
                 int target = Integer.parseInt(tokens[1]) - 1;
@@ -84,23 +90,25 @@ public final class MispMain {
      * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
      */
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? Paths.get("data", "MISP", "weighted.dot").toString() :
-                args[0];
+        final String file = args.length == 0 ? Paths.get("data", "MISP", "Tadpole_4_2.dot").toString() : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
-        SolverConfig<BitSet, NullType> config = new SolverConfig<>();
-
+        SolverConfig<BitSet, Integer> config = new SolverConfig<>();
         MispProblem problem = readFile(file);
         config.problem = problem;
+
+
         config.relax = new MispRelax(problem);
         config.ranking = new MispRanking();
         config.fub = new MispFastUpperBound(problem);
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
+        config.dominance = new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
 
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.exportAsDot = true;
 
-        final Solver solver = new SequentialSolver<>(config);
+        final Solver solver = new ExactSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.maximize();
