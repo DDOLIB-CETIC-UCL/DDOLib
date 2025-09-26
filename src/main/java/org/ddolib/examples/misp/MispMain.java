@@ -94,7 +94,7 @@ public final class MispMain {
         config.problem = problem;
         config.relax = new MispRelax(problem);
         config.ranking = new MispRanking();
-        config.fub = new MispFastUpperBound(problem);
+        config.flb = new MispFastLowerBound(problem);
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
 
@@ -103,7 +103,7 @@ public final class MispMain {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

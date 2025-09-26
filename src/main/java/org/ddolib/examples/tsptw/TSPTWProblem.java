@@ -100,7 +100,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         int travel = minDuration(state, to);
         int arrival = state.time() + travel;
         int waiting = arrival < instance.timeWindows[to].start() ? instance.timeWindows[to].start() - arrival : 0;
-        return -(travel + waiting);
+        return travel + waiting;
 
     }
 

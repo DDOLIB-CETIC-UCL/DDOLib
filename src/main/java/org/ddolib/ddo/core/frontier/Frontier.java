@@ -53,5 +53,5 @@ public interface Frontier<T> {
     /**
      * @return the best ub currently in the frontier; crashes if the frontier is empty
      */
-    double bestInFrontier();
+    Double bestInFrontier();
 }

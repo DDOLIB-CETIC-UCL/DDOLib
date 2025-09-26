@@ -40,7 +40,7 @@ public final class Max2Sat {
         Solver solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 

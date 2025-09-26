@@ -1,6 +1,6 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,10 +10,10 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the PDP
  */
-public class PDPFastUpperBound implements FastUpperBound<PDPState> {
+public class PDPFastLowerBound implements FastLowerBound<PDPState> {
     private final double[] leastIncidentEdge;
 
-    public PDPFastUpperBound(PDPProblem problem) {
+    public PDPFastLowerBound(PDPProblem problem) {
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.POSITIVE_INFINITY;
@@ -27,7 +27,7 @@ public class PDPFastUpperBound implements FastUpperBound<PDPState> {
     }
 
     @Override
-    public double fastUpperBound(PDPState state, Set<Integer> variables) {
+    public double fastLowerBound(PDPState state, Set<Integer> variables) {
         BitSet toVisit = state.allToVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(variables.size());
@@ -44,6 +44,6 @@ public class PDPFastUpperBound implements FastUpperBound<PDPState> {
         for (int i = 0; i < variables.size(); i++) {
             lb += toVisitLB.get(i);
         }
-        return -lb;
+        return lb;
     }
 }

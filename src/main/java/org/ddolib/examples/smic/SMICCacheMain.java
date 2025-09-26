@@ -41,7 +41,7 @@ public class SMICCacheMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
 

@@ -92,7 +92,7 @@ public class TSMain {
         config.problem = problem;
         config.relax = new TSRelax(problem);
         config.ranking = new TSRanking();
-        config.fub = new TSFastUpperBound(problem);
+        config.flb = new TSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
@@ -101,7 +101,7 @@ public class TSMain {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize();
+        SearchStatistics stat = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

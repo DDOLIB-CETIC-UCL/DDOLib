@@ -51,7 +51,7 @@ public class ALPTest {
             config.problem = problem;
             config.relax = new ALPRelax(problem);
             config.ranking = new ALPRanking();
-            config.fub = new ALPFastUpperBound(problem);
+            config.flb = new ALPFastLowerBound(problem);
 
             config.width = new FixedWidth<>(100);
             config.varh = new DefaultVariableHeuristic<>();
@@ -68,7 +68,7 @@ public class ALPTest {
     public Stream<DynamicTest> testALP() {
         var bench = new ALPTest.AlpBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

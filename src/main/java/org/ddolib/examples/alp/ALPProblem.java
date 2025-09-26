@@ -196,7 +196,7 @@ public class ALPProblem implements Problem<ALPState> {
             ALPDecision alpDecision = fromDecision(decision.val());
             int aircraftClass = alpDecision.aircraftClass;
             int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);
-            return -(getArrivalTime(state.runwayStates, aircraft, alpDecision.runway) - instance.aircraftTarget[aircraft]);
+            return getArrivalTime(state.runwayStates, aircraft, alpDecision.runway) - instance.aircraftTarget[aircraft];
         }
     }
 

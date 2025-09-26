@@ -52,7 +52,7 @@ public class TalenSchedTest {
             config.problem = problem;
             config.relax = new TSRelax(problem);
             config.ranking = new TSRanking();
-            config.fub = new TSFastUpperBound(problem);
+            config.flb = new TSFastLowerBound(problem);
 
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
@@ -64,10 +64,10 @@ public class TalenSchedTest {
 
     @DisplayName("Talent Scheduling")
     @TestFactory
-    public Stream<DynamicTest> testMCP() {
+    public Stream<DynamicTest> testTS() {
         var bench = new TSBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 

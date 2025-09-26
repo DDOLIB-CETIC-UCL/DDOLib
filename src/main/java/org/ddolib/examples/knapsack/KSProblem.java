@@ -84,12 +84,12 @@ public class KSProblem implements Problem<Integer> {
     @Override
     public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
-        return profit[decision.var()] * decision.val();
+        return -profit[decision.var()] * decision.val();
     }
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 }
 

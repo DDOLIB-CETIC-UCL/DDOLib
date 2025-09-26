@@ -32,14 +32,14 @@ import java.util.Map;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
-        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         config.problem = problem;
         config.relax = new KSRelax();
         config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(10);
+        config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
@@ -52,7 +52,7 @@ public class KSMain {
             System.out.println("Solving with " + name + "...");
 
             long start = System.currentTimeMillis();
-            SearchStatistics stats = solver.maximize();
+            SearchStatistics stats = solver.minimize();
             double duration = (System.currentTimeMillis() - start) / 1000.0;
 
             System.out.println("Search statistics using ddo:" + stats);

@@ -1,6 +1,6 @@
 package org.ddolib.examples.tsptw;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +11,7 @@ import static java.lang.Integer.min;
 /**
  * Implementation of a fast upper bound for the TSPTW.
  */
-public class TSPTWFastUpperBound implements FastUpperBound<TSPTWState> {
+public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
 
     private static final int INFINITY = Integer.MAX_VALUE;
 
@@ -21,7 +21,7 @@ public class TSPTWFastUpperBound implements FastUpperBound<TSPTWState> {
     private final int[] cheapestEdges;
 
 
-    public TSPTWFastUpperBound(TSPTWProblem problem) {
+    public TSPTWFastLowerBound(TSPTWProblem problem) {
         this.problem = problem;
         this.instance = problem.instance;
         this.numVar = instance.distance.length;
@@ -29,12 +29,7 @@ public class TSPTWFastUpperBound implements FastUpperBound<TSPTWState> {
     }
 
     @Override
-    public double fastUpperBound(TSPTWState state, Set<Integer> variables) {
-        return -fastLowerBound(state);
-    }
-
-
-    private double fastLowerBound(TSPTWState state) {
+    public double fastLowerBound(TSPTWState state, Set<Integer> variables) {
         // This lower bound assumes that we will always select the cheapest edges from each node
 
         int completeTour = numVar - state.depth() - 1;

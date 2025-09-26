@@ -54,7 +54,7 @@ public class KSTest {
             config.ranking = new KSRanking();
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();
-            config.fub = new KSFastUpperBound(problem);
+            config.flb = new KSFastLowerBound(problem);
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
@@ -67,7 +67,7 @@ public class KSTest {
     public Stream<DynamicTest> testKS() {
         var bench = new KSBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();

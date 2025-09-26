@@ -30,7 +30,7 @@ public class BKSCacheMain {
         config.problem = problem;
 
         config.relax = new BKSRelax();
-        config.fub = new BKSFastUpperBound(problem);
+        config.flb = new BKSFastLowerBound(problem);
         config.ranking = new BKSRanking();
         config.width = new FixedWidth<>(3);
         config.varh = new DefaultVariableHeuristic<>();
@@ -42,7 +42,7 @@ public class BKSCacheMain {
 
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
 
