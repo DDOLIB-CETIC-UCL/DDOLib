@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -40,8 +41,7 @@ public class TSPTWMain {
     public static void main(String[] args) throws IOException {
 
         final String file = args.length == 0 ?
-                Paths.get("data", "TSPTW", "test_example.txt").toString() : args[0];
-        final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+                Paths.get("data", "TSPTW", "nbNodes_4_1.txt").toString() : args[0];
 
         SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
@@ -55,6 +55,7 @@ public class TSPTWMain {
         config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         config.exportAsDot = true;
+        config.cache = new SimpleCache<>();
 
 
         final Solver solver = new ExactSolver<>(config);
@@ -79,7 +80,6 @@ public class TSPTWMain {
         String bestStr = solver.bestValue().map(Object::toString).orElse("No feasible solution");
 
         System.out.printf("Instance : %s%n", file);
-        System.out.printf("Width factor : %d%n", widthFactor);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %s%n", bestStr);
         System.out.printf("Solution : %s%n", solutionStr);

@@ -28,5 +28,14 @@ public class DefaultDominanceChecker<T, K> extends DominanceChecker<T, K> {
     public boolean updateDominance(T state, int depth, double objValue) {
         return false;
     }
-    
+
+    @Override
+    public boolean isDominated(T state, int depth, double objValue) {
+        return false;
+    }
+
+    @Override
+    public DominanceChecker<T, K> clear() {
+        return new DefaultDominanceChecker<>();
+    }
 }
