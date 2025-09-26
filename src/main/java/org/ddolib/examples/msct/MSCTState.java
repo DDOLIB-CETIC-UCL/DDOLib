@@ -31,4 +31,13 @@ public class MSCTState {
     public int hashCode() {
         return Objects.hash(remainingJobs.hashCode(), currentTime);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MSCTState other) {
+            return this.remainingJobs.equals(other.remainingJobs) && this.currentTime == other.currentTime;
+        } else {
+            return false;
+        }
+    }
 }

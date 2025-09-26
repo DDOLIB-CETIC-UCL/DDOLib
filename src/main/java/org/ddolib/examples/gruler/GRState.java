@@ -67,6 +67,15 @@ public class GRState {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof GRState other) {
+            return this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public String toString() {
         return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
     }

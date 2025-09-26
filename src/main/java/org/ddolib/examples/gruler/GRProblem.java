@@ -25,7 +25,7 @@ public class GRProblem implements Problem<GRState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 
     @Override
