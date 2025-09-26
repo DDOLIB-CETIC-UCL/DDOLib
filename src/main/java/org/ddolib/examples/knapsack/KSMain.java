@@ -4,7 +4,6 @@ import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -33,7 +32,7 @@ import java.util.Map;
 public class KSMain {
     public static void main(final String[] args) throws IOException {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
-        final String instance = "src/test/resources/Knapsack/instance_test_5";
+        final String instance = "data/Knapsack/instance_n100_c500_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
         config.problem = problem;
         config.relax = new KSRelax();
@@ -43,7 +42,6 @@ public class KSMain {
         config.fub = new KSFastUpperBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        config.cache = new SimpleCache<>();
 
         final Solver solverDDO = new SequentialSolver<>(config);
         final Solver solverAstar = new AStarSolver<>(config);
