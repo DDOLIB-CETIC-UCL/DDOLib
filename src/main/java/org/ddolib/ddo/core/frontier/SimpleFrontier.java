@@ -95,7 +95,8 @@ public final class SimpleFrontier<T> implements Frontier<T> {
     }
 
     @Override
-    public double bestInFrontier() {
-        return heap.peek().getLowerBound();
+    public Double bestInFrontier() {
+        if (heap.isEmpty()) return null;
+        else return heap.peek().getLowerBound();
     }
 }

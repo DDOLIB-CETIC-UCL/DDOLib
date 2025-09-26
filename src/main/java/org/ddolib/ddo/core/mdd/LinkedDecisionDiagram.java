@@ -161,8 +161,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
-                        depthGlobalDD, node.value)) {
+                if (node.type != NodeType.EXACT || !dominance.updateDominance(state, depthGlobalDD, node.value)) {
                     double flb = config.flb.fastLowerBound(state, variables);
                     double rlb = saturatedAdd(node.value, flb);
                     node.flb = flb;
@@ -463,7 +462,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
                     String lastState = failedState.getLast();
                     lastState =
-                            String.format(" - fub: %6s", current.getKey().flb) + "! - " + lastState;
+                            String.format(" - flb: %6s", current.getKey().flb) + "! - " + lastState;
                     lastState =
                             String.format("length to end: %6s", current.getValue()) + lastState;
                     failedState.removeLast();
@@ -471,8 +470,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                     failedState.removeLast();
                     failedState.addLast(lastState);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
-                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
-                                    "its longest path (%s)\n", df.format(current.getKey().flb),
+                    String failureMsg = String.format("Found node with lower bound (%s) bigger " +
+                                    "than its shortest path (%s)\n", df.format(current.getKey().flb),
                             df.format(current.getValue()));
                     failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
                     failureMsg += String.format("Failing state: %s\n", failedState.getLast());
@@ -492,8 +491,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
 
                 for (Edge edge : current.getKey().edges) {
-                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
-                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                    double longestFromParent = parent.getOrDefault(edge.origin, Double.POSITIVE_INFINITY);
+                    parent.put(edge.origin, Double.min(longestFromParent, edge.weight + current.getValue()));
                 }
             }
         }

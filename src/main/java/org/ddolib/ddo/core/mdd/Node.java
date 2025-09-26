@@ -31,12 +31,12 @@ final class Node {
     public NodeType type;
 
     /**
-     * The falg to indicate if a node is marked
+     * The flag to indicate if a node is marked
      */
     public boolean isMarked;
 
     /**
-     * An overapproximation of the shortest from this node to a terminal node
+     * An under-approximation of the shortest from this node to a terminal node
      */
     public double flb = Double.NEGATIVE_INFINITY;
 
