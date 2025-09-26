@@ -51,11 +51,11 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         // The net benefits in merged state are smaller than the net benefit in exact states.
         // To offset the losses of benefit and guarantee an over-approximation of the optimal
         // solution, we add the losses to the transition cost.
-        double toReturn = cost;
+        double toReturn = -cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
-        return toReturn;
+        return -toReturn;
     }
 
 
