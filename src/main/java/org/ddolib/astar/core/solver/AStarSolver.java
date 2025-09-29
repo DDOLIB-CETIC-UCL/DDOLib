@@ -70,7 +70,7 @@ public final class AStarSolver<T, K> implements Solver {
 
 
     /**
-     * <ul>
+     * <ul>g
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
      *     <li>2: 1 + statistics about the front every half a second (or so)</li>
