@@ -252,6 +252,7 @@ public final class AStarSolver<T, K> implements Solver {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
+        ArrayList<SubProblem<T>> children = new ArrayList<>();
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -264,32 +265,38 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
 
+            children.add(new SubProblem<>(newState, value, fastUpperBound, path));
+            dominance.updateDominance(newState, path.size(), value);
+        }
 
+        for (SubProblem<T> child : children) {
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastUpperBound, path);
+            if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
+                double cost = child.getValue() - subProblem.getValue();
                 if (debugLevel >= 2) {
-                    checkFUBConsistency(subProblem, newSub, cost);
+                    checkFUBConsistency(subProblem, child, cost);
                 }
-                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                AstarKey<T> newKey = new AstarKey<>(child.getState(), child.getDepth());
                 Double presentValue = present.get(newKey);
-                if (presentValue != null && presentValue < newSub.f()) {
-                    frontier.add(newSub);
-                    present.put(newKey, newSub.f());
+                if (presentValue != null && presentValue < child.f()) {
+                    frontier.add(child);
+                    present.put(newKey, child.f());
                 } else {
                     Double closedValue = closed.get(newKey);
-                    if (closedValue != null && closedValue < newSub.f()) {
-                        frontier.add(newSub);
+                    if (closedValue != null && closedValue < child.f()) {
+                        frontier.add(child);
                         closed.remove(newKey);
-                        present.put(newKey, newSub.f());
+                        present.put(newKey, child.f());
                     } else {
-                        frontier.add(newSub);
-                        present.put(newKey, newSub.f());
+                        frontier.add(child);
+                        present.put(newKey, child.f());
                     }
                 }
 
             }
         }
+
+
     }
 
     private Set<Integer> varSet(Set<Decision> path) {
