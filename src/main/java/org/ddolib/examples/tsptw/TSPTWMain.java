@@ -9,7 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.ExactSolver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -39,7 +39,8 @@ public class TSPTWMain {
      */
     public static void main(String[] args) throws IOException {
 
-        final String file = args.length == 0 ? Paths.get("data", "TSPTW", "AFG", "rbg020a.tw").toString() : args[0];
+        final String file = args.length == 0 ?
+                Paths.get("data", "TSPTW", "test_example.txt").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
@@ -49,13 +50,14 @@ public class TSPTWMain {
         config.ranking = new TSPTWRanking();
         config.fub = new TSPTWFastUpperBound(problem);
 
-        config.width = new FixedWidth<>(20);
+        config.width = new FixedWidth<>(2);
         config.varh = new DefaultVariableHeuristic<>();
         config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.exportAsDot = true;
 
 
-        final Solver solver = new SequentialSolver<>(config);
+        final Solver solver = new ExactSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.maximize();
