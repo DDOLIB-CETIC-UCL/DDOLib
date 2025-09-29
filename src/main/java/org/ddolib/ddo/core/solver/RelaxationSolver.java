@@ -21,6 +21,10 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -198,12 +202,19 @@ public final class RelaxationSolver<T, K> implements Solver {
                 bestLB,
                 CutSetType.None,
                 relaxStrategy,
-                exportAsDot && firstRelaxed,
+                exportAsDot,
                 debugLevel
         );
         mdd.compile(compilation);
-
+        String problemName = problem.getClass().getSimpleName().replace("Problem", "");
         maybeUpdateBest(exportAsDot);
+        if (exportAsDot) {
+            if (!mdd.isExact()) mdd.bestSolution(); // to update the best edges' color
+            exportDot(mdd.exportAsDot(),
+                    Paths.get("output", problemName + "_relaxed.dot").toString());
+        }
+
+
         long end = System.currentTimeMillis();
         return new SearchStatistics(1, 0,end-start, SearchStatistics.SearchStatus.UNKNOWN, 0.0);
     }
@@ -246,6 +257,14 @@ public final class RelaxationSolver<T, K> implements Solver {
             if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
         } else if (exportDot) {
             mdd.exportAsDot(); // to be sure to update the color of the edges.
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

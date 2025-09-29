@@ -7,6 +7,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
@@ -76,6 +77,9 @@ public class LaunchInterface {
         options.addOption(Option.builder("w").longOpt("width-factor").argName("WIDTHFACTOR").hasArg()
                 .desc("Factor used to scale the maximal width.").build());
 
+        options.addOption(Option.builder("l").longOpt("width-limit").argName("WIDTHLIMIT").hasArg()
+                .desc("Maximal width.").build());
+
         options.addOption(Option.builder().longOpt("seed").argName("SEED").hasArg()
                 .desc("Seed").build());
 
@@ -84,6 +88,8 @@ public class LaunchInterface {
 
         options.addOption(Option.builder().longOpt("kmeans-iter").argName("NBR_ITERATION").hasArg()
                 .desc("Maximal number of iterations for the kmean algorithm (default is 50)").build());
+
+        options.addOption(Option.builder().longOpt("export-graph").build());
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -98,6 +104,7 @@ public class LaunchInterface {
         String instancePath = null;
         int timeLimit = DEFAULT_TIME_LIMIT;
         double widthFactor = DEFAULT_WIDTH_FACTOR;
+        int widthLimit = -1;
         int seed = DEFAULT_SEED;
         int kmeansIter = DEFAULT_KMEANS_ITER;
         String solverStr = DEFAULT_SOLVER;
@@ -105,6 +112,7 @@ public class LaunchInterface {
         String relaxStratStr = DEFAULT_CLUSTER;
         String restrictStratStr = DEFAULT_CLUSTER;
         String problemStr = null;
+        boolean exportGraph = false;
 
         try {
             instancePath = cmd.getOptionValue("input");
@@ -145,9 +153,15 @@ public class LaunchInterface {
                 widthFactor = Double.parseDouble(cmd.getOptionValue("width-factor"));
             }
 
+            if (cmd.hasOption("width-limit")) {
+                widthLimit = Integer.parseInt(cmd.getOptionValue("width-limit"));
+            }
+
             if (cmd.hasOption("kmeans-iter")) {
                 kmeansIter = Integer.parseInt(cmd.getOptionValue("kmeans-iter"));
             }
+
+            exportGraph = cmd.hasOption("export-graph");
 
         } catch (IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());
@@ -170,10 +184,12 @@ public class LaunchInterface {
             case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
         }
         assert config != null;
-
+        config.exportAsDot = exportGraph;
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
         config.timeLimit = timeLimit;
         config.gapLimit = 0.0; // TODO add it to the interface
+        config.verbosityLevel = 2;
+        if (widthLimit > 0) config.width = new FixedWidth(widthLimit);
 
         switch (relaxStrat) {
             case Cost -> config.relaxStrategy = new CostBased(config.ranking);
@@ -192,6 +208,30 @@ public class LaunchInterface {
             case GHP -> {
                 GHP relaxStrategy = new GHP(config.distance);
                 relaxStrategy.setMostDistantPivot(false);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+            case GHPS -> {
+                GHPSeparated relaxStrategy = new GHPSeparated(config.distance);
+                relaxStrategy.setMostDistantPivot(true);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+            case GHPAlt -> {
+                GHPAlt relaxStrategy = new GHPAlt(config.distance, config.relax);
+                relaxStrategy.setMostDistantPivot(true);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+            case GHPSAlt -> {
+                GHPSeparatedAlt relaxStrategy = new GHPSeparatedAlt(config.distance, config.relax);
+                relaxStrategy.setMostDistantPivot(true);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
+            case GHPQ -> {
+                GHPQuarantine relaxStrategy = new GHPQuarantine(config.distance, config.relax);
+                relaxStrategy.setMostDistantPivot(true);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
@@ -219,6 +259,30 @@ public class LaunchInterface {
             case GHP -> {
                 GHP restrictStrategy = new GHP(config.distance);
                 restrictStrategy.setMostDistantPivot(false);
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case GHPS -> {
+                GHPSeparated restrictStrategy = new GHPSeparated(config.distance);
+                restrictStrategy.setMostDistantPivot(true);
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case GHPAlt -> {
+                GHPAlt restrictStrategy = new GHPAlt(config.distance, config.relax);
+                restrictStrategy.setMostDistantPivot(true);
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case GHPSAlt -> {
+                GHPSeparatedAlt restrictStrategy = new GHPSeparatedAlt(config.distance, config.relax);
+                restrictStrategy.setMostDistantPivot(true);
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case GHPQ -> {
+                GHPQuarantine restrictStrategy = new GHPQuarantine(config.distance, config.relax);
+                restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
@@ -319,8 +383,12 @@ public class LaunchInterface {
         CostUB,
         Kmeans,
         GHP,
+        GHPS, // GHP Separated
+        GHPSAlt,
+        GHPAlt,
         GHPMDP,
-        MBP
+        MBP,
+        GHPQ
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
@@ -329,7 +397,11 @@ public class LaunchInterface {
             put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
+            put("GHPS", ClusterStrat.GHPS);
+            put("GHPA", ClusterStrat.GHPAlt);
+            put("GHPSA", ClusterStrat.GHPSAlt);
             put("GHPMDP", ClusterStrat.GHPMDP);
+            put("GHPQ", ClusterStrat.GHPQ);
             put("MBP", ClusterStrat.MBP);
         }
     };
@@ -340,7 +412,11 @@ public class LaunchInterface {
             put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
+            put("GHPS", ClusterStrat.GHPS);
+            put("GHPA", ClusterStrat.GHPAlt);
+            put("GHPSA", ClusterStrat.GHPSAlt);
             put("GHPMDP", ClusterStrat.GHPMDP);
+            put("GHPQ", ClusterStrat.GHPQ);
             put("MBP", ClusterStrat.MBP);
         }
     };

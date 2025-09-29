@@ -67,6 +67,10 @@ final public class NodeSubProblem<T> {
         return new SubProblem<>(state, node.value, ub, path);
     }
 
+    public double maxIncidentCost() {
+        return node.maxIncidentCost();
+    }
+
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##########");

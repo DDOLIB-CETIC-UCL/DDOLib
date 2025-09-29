@@ -2,7 +2,6 @@ package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.modeling.Relaxation;
 
 import java.util.*;
 
@@ -11,13 +10,13 @@ import java.util.*;
  * It requires a problem-specific StateDistance function that computes the distance between two states
  * @param <T> the type of state
  */
-public class GHP<T> implements ReductionStrategy<T> {
+public class GHPSeparated<T> implements ReductionStrategy<T> {
 
     final private StateDistance<T> distance;
     final private Random rnd;
     private boolean mostDistantPivot;
 
-    public GHP(StateDistance<T> distance) {
+    public GHPSeparated(StateDistance<T> distance) {
         this.distance = distance;
         rnd = new Random();
         mostDistantPivot = true;
@@ -39,6 +38,36 @@ public class GHP<T> implements ReductionStrategy<T> {
         this.rnd.setSeed(seed);
     }
 
+    private List<NodeSubProblem<T>>[] costSeparation(List<NodeSubProblem<T>> layer) {
+        List<NodeSubProblem<T>>[] separatedLayer = new List[2];
+        separatedLayer[0] = new ArrayList<>();
+        separatedLayer[1] = new ArrayList<>();
+        for (NodeSubProblem<T> node : layer) {
+            double maxIncidentCost = node.maxIncidentCost();
+            if (node.maxIncidentCost() == 0) {
+                separatedLayer[0].add(node);
+            } else {
+                separatedLayer[1].add(node);
+            }
+        }
+
+        return separatedLayer;
+    }
+
+    private double computeMaxDistance(List<NodeSubProblem<T>> cluster) {
+        if (cluster.size() == 1) {
+            return 0.0;
+        }
+        Collections.shuffle(cluster, rnd);
+        NodeSubProblem<T> pivotA = cluster.getFirst();
+        NodeSubProblem<T> pivotB = selectFarthest(pivotA, cluster);
+        for (int i = 0; i < 5; i++) {
+            pivotA = selectFarthest(pivotB, cluster);
+            pivotB = selectFarthest(pivotA, cluster);
+        }
+
+        return distance.distance(pivotA.state, pivotB.state);
+    }
 
     /**
      * Computes maxWidth clusters using Generalized Hyperplan Partitioning.
@@ -51,7 +80,14 @@ public class GHP<T> implements ReductionStrategy<T> {
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
         PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
-        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer)));
+
+        for (List<NodeSubProblem<T>> cluster: this.costSeparation(layer)) {
+            if (!cluster.isEmpty()) {
+                System.out.println(cluster.size());
+                pqClusters.add(new ClusterNode(computeMaxDistance(cluster)/cluster.size(), cluster));
+            }
+        }
+        //pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer)));
 
         while (pqClusters.size() < maxWidth) {
 
@@ -96,12 +132,12 @@ public class GHP<T> implements ReductionStrategy<T> {
                 double distWithB = distance.distance(node.state, pivotB.state);
 
                 if (distWithA < distWithB) {
-                    maxDistA = Math.min(distance.distanceWithBase(node.state), maxDistA);
-                    // maxDistA = Math.max(distWithA, maxDistA);
+                    // maxDistA = Math.min(distance.distanceWithBase(node.state), maxDistA);
+                    maxDistA = Math.max(distWithA, maxDistA);
                     newClusterA.add(node);
                 } else {
-                    maxDistB = Math.min(distance.distanceWithBase(node.state), maxDistB);
-                    // maxDistB = Math.max(distWithB, maxDistB);
+                    // maxDistB = Math.min(distance.distanceWithBase(node.state), maxDistB);
+                    maxDistB = Math.max(distWithB, maxDistB);
                     newClusterB.add(node);
                 }
             }
@@ -122,6 +158,7 @@ public class GHP<T> implements ReductionStrategy<T> {
             index++;
         }
         layer.clear();
+
         return clusters;
     }
 

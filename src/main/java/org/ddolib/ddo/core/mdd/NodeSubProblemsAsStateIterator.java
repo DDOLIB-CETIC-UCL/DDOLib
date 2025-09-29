@@ -5,7 +5,7 @@ import java.util.Iterator;
 /**
  * An iterator that transforms the inner subroblems into their representing states
  */
-final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
+public final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
     /**
      * The collection being iterated upon
      */

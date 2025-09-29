@@ -546,10 +546,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
-            if (cluster.size() == 1) {
-                currentLayer.add(cluster.getFirst());
-                continue;
-            }
+            // if (cluster.size() == 1) {
+            //     currentLayer.add(cluster.getFirst());
+            //     continue;
+            // }
+
+            NodeType type = cluster.size() == 1 ? cluster.getFirst().node.type: NodeType.RELAXED;
 
             if (cluster.isEmpty()) {
                 continue;
@@ -561,14 +563,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
                     node = n;
-                    node.node.type = NodeType.RELAXED;
+                    node.node.type = node.node.type == NodeType.EXACT ? type: NodeType.RELAXED;
                     break;
                 }
             }
 
             if (node == null) {
                 Node newNode = new Node(Double.NEGATIVE_INFINITY);
-                newNode.type = NodeType.RELAXED;
+                newNode.type = type;
                 node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
                 currentLayer.add(node);
             }
