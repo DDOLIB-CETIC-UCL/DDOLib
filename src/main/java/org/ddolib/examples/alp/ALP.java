@@ -1,14 +1,16 @@
 package org.ddolib.examples.alp;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.heuristics.variable.*;
-import org.ddolib.ddo.core.heuristics.width.*;
 
 import javax.lang.model.type.NullType;
 import java.io.IOException;

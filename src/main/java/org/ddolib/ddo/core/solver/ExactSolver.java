@@ -6,7 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
@@ -60,18 +60,6 @@ public final class ExactSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * Your implementation (just like the parallel version) will reuse the same
-     * data structure to compile all mdds.
-     * <p>
-     * # Note:
-     * This approach is recommended, however we do not force this design choice.
-     * You might decide against reusing the same object over and over (even though
-     * it has been designed to be reused). Should you decide to not reuse this
-     * object, then you can simply ignore this field (and remove it altogether).
-     */
-    private final DecisionDiagram<T, K> mdd;
-
-    /**
      * The heuristic defining a very rough estimation (upper bound) of the optimal value.
      */
     private final FastUpperBound<T> fub;
@@ -84,13 +72,15 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * This is the cache used to prune the search tree
      */
-    private Optional<SimpleCache<T>> cache;
+    private final Optional<SimpleCache<T>> cache;
 
 
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
+
+    private Optional<Double> bestValue = Optional.empty();
 
     private final ReductionStrategy<T> relaxStrategy;
     private final ReductionStrategy<T> restrictStrategy;
@@ -159,7 +149,6 @@ public final class ExactSolver<T, K> implements Solver {
         this.fub = config.fub;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
-        this.mdd = new LinkedDecisionDiagram<>();
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
@@ -178,25 +167,25 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Exact,
-                problem,
-                relax,
-                varh,
-                ranking,
-                root,
-                Integer.MAX_VALUE,
-                fub,
-                dominance,
-                cache,
-                Double.NEGATIVE_INFINITY,
-                CutSetType.LastExactLayer,
-                this.restrictStrategy,
-                exportAsDot,
-                debugLevel
-        );
-        mdd.compile(compilation);
-        extractBest();
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        compilation.compilationType = CompilationType.Exact;
+        compilation.problem = this.problem;
+        compilation.relaxation = this.relax;
+        compilation.variableHeuristic = this.varh;
+        compilation.stateRanking = this.ranking;
+        compilation.residual = root;
+        compilation.maxWidth = Integer.MAX_VALUE;
+        compilation.fub = fub;
+        compilation.dominance = this.dominance;
+        compilation.cache = this.cache;
+        compilation.bestLB = Double.NEGATIVE_INFINITY;
+        compilation.cutSetType = CutSetType.LastExactLayer;
+        compilation.exportAsDot = this.exportAsDot;
+        compilation.debugLevel = this.debugLevel;
+
+        DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
+        mdd.compile();
+        extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(mdd.exportAsDot(),
@@ -212,7 +201,7 @@ public final class ExactSolver<T, K> implements Solver {
 
     @Override
     public Optional<Double> bestValue() {
-        return mdd.bestValue();
+        return bestValue;
     }
 
     @Override
@@ -223,10 +212,11 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest() {
+    private void extractBest(DecisionDiagram<T, K> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();
+            bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");
             if (verbosityLevel >= 1)
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));

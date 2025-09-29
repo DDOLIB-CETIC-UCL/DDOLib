@@ -188,6 +188,8 @@ public class KSTest {
         config.fub = new KSFastUpperBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        config.restrictStrategy = config.relaxStrategy;
         final Solver solver = new SequentialSolver<>(config);
 
         solver.maximize();
@@ -219,6 +221,7 @@ public class KSTest {
         config.width = new FixedWidth<>(5);
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
+        config.restrictStrategy = new CostBased<Integer>(config.ranking);
         ReductionStrategy[] strats = new ReductionStrategy[5];
         strats[0] = new Kmeans<>(new KSCoordinates());
         strats[1] = new CostBased<>(new KSRanking());
@@ -247,6 +250,7 @@ public class KSTest {
         config.width = new FixedWidth<>(5);
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
+        config.relaxStrategy = new CostBased<Integer>(config.ranking);
         ReductionStrategy[] strats = new ReductionStrategy[5];
         strats[0] = new Kmeans<>(new KSCoordinates());
         strats[1] = new CostBased<>(new KSRanking());

@@ -3,7 +3,8 @@ package org.ddolib.examples.alp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class ALPRelax implements Relaxation<ALPState> {
 

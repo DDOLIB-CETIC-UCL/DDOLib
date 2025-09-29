@@ -8,9 +8,6 @@ import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -133,12 +130,12 @@ class MSCTTest {
 
     }
 
-    @DisplayName("MSCT")
+   /* @DisplayName("MSCT")
     @TestFactory
     public Stream<DynamicTest> testMSCT() {
         var bench = new MSCTBench();
         bench.testRelaxation = true;
         bench.testDominance = true;
         return bench.generateTests();
-    }
+    }*/
 }

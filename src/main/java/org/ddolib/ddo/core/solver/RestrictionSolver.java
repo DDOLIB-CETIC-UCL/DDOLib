@@ -6,7 +6,7 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -21,12 +21,16 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
 /**
- * Solver to only compute a restricted DD from the root
+ * Solver to only compute a relaxed DD from the root
  *
  * @param <T> The type of states.
  * @param <K> The type of dominance keys.
@@ -54,18 +58,6 @@ public final class RestrictionSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * Your implementation (just like the parallel version) will reuse the same
-     * data structure to compile all mdds.
-     * <p>
-     * # Note:
-     * This approach is recommended, however we do not force this design choice.
-     * You might decide against reusing the same object over and over (even though
-     * it has been designed to be reused). Should you decide to not reuse this
-     * object, then you can simply ignore this field (and remove it altogether).
-     */
-    private final DecisionDiagram<T, K> mdd;
-
-    /**
      * Value of the best known lower bound.
      */
     private double bestLB;
@@ -88,9 +80,6 @@ public final class RestrictionSolver<T, K> implements Solver {
      * This is the cache used to prune the search tree
      */
     private Optional<SimpleCache<T>> cache;
-
-
-
 
     /**
      * Only the first restricted mdd can be exported to a .dot file
@@ -136,7 +125,6 @@ public final class RestrictionSolver<T, K> implements Solver {
      */
     private final int debugLevel;
 
-
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
@@ -172,7 +160,6 @@ public final class RestrictionSolver<T, K> implements Solver {
         this.fub = config.fub;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
-        this.mdd = new LinkedDecisionDiagram<>();
         this.bestLB = Double.NEGATIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
@@ -188,26 +175,34 @@ public final class RestrictionSolver<T, K> implements Solver {
         SubProblem<T> root = root();
         int maxWidth = width.maximumWidth(root.getState());
         // 2. RELAXATION
-        CompilationInput<T,K> compilation = new CompilationInput<>(
-                CompilationType.Restricted,
-                problem,
-                relax,
-                varh,
-                ranking,
-                root,
-                maxWidth,
-                fub,
-                dominance,
-                cache,
-                bestLB,
-                CutSetType.None,
-                restrictStrategy,
-                exportAsDot && firstRelaxed,
-                debugLevel
-        );
-        mdd.compile(compilation);
+        CompilationConfig<T,K> compilation = new CompilationConfig<>();
+        compilation.compilationType = CompilationType.Restricted;
+        compilation.problem = this.problem;
+        compilation.relaxation = this.relax;
+        compilation.variableHeuristic = this.varh;
+        compilation.stateRanking = this.ranking;
+        compilation.residual = root;
+        compilation.maxWidth = maxWidth;
+        compilation.fub = fub;
+        compilation.dominance = this.dominance;
+        compilation.cache = this.cache;
+        compilation.bestLB = this.bestLB;
+        compilation.cutSetType = CutSetType.None;
+        compilation.reductionStrategy = this.restrictStrategy;
+        compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
+        compilation.debugLevel = this.debugLevel;
 
-        maybeUpdateBest(exportAsDot);
+        DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+        restrictedMdd.compile();
+        String problemName = problem.getClass().getSimpleName().replace("Problem", "");
+        maybeUpdateBest(restrictedMdd, exportAsDot);
+        if (exportAsDot) {
+            if (!restrictedMdd.isExact()) restrictedMdd.bestSolution(); // to update the best edges' color
+            exportDot(restrictedMdd.exportAsDot(),
+                    Paths.get("output", problemName + "_relaxed.dot").toString());
+        }
+
+
         long end = System.currentTimeMillis();
         return new SearchStatistics(1, 0,end-start, SearchStatistics.SearchStatus.UNKNOWN, 0.0);
     }
@@ -242,14 +237,22 @@ public final class RestrictionSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(boolean exportDot) {
-        Optional<Double> ddval = mdd.bestValue();
+    private void maybeUpdateBest(DecisionDiagram<T, K> currentMdd, boolean exportDot) {
+        Optional<Double> ddval = currentMdd.bestValue();
         if (ddval.isPresent() && ddval.get() > bestLB) {
             bestLB = ddval.get();
-            bestSol = mdd.bestSolution();
+            bestSol = currentMdd.bestSolution();
             if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
         } else if (exportDot) {
-            mdd.exportAsDot(); // to be sure to update the color of the edges.
+            currentMdd.exportAsDot(); // to be sure to update the color of the edges.
+        }
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

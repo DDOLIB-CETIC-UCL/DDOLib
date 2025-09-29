@@ -2,7 +2,6 @@ package org.ddolib.ddo.core.mdd;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -20,10 +19,8 @@ public interface DecisionDiagram<T, K> {
      * Triggers the compilation of the decision diagram according to the parameters given
      * in the input.
      *
-     * @param input this corresponds to the set of parameters in the input section of the
-     *              algorithm pseudocode
      */
-    void compile(final CompilationInput<T, K> input);
+    void compile();
 
     /**
      * @return true iff the diagram resulting from the compilation is an exact dd

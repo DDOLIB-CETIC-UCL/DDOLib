@@ -8,34 +8,34 @@ fub: 184 - value: 0", style=rounded, shape=rectangle, tooltip="Exact node"];
 17 [label="9
 fub: 112 - value: 27", style=rounded, shape=rectangle, tooltip="Exact node"];
 20 [label="15
-fub: 169 - value: 15", shape=box, tooltip="Relaxed node"];
+fub: ∞ - value: 15", shape=box, tooltip="Relaxed node"];
 22 [label="5
 fub: 62 - value: 135", shape=box, tooltip="Relaxed node"];
 24 [label="15
-fub: 138 - value: 27", shape=box, tooltip="Relaxed node"];
+fub: ∞ - value: 27", shape=box, tooltip="Relaxed node"];
 25 [label="5
 fub: 62 - value: 135", shape=box, tooltip="Relaxed node"];
 28 [label="15
-fub: 100 - value: 77", shape=box, tooltip="Relaxed node"];
+fub: ∞ - value: 77", shape=box, tooltip="Relaxed node"];
 29 [label="5
-fub: 42 - value: 135", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
+fub: 0 - value: 135", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
 30 [label="7
 fub: 0 - value: 177", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
 31 [label="15
-fub: 100 - value: 77", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
-24 -> 28 [label=50, tooltip="Decision: assign 1 to var 3", color="#6fb052", fontcolor="#6fb052"];
-22 -> 25 [label=0, tooltip="Decision: assign 0 to var 3"];
-14 -> 16 [label=0, tooltip="Decision: assign 0 to var 0"];
-20 -> 24 [label=0, tooltip="Decision: assign 0 to var 2"];
-20 -> 22 [label=120, tooltip="Decision: assign 1 to var 2"];
-17 -> 24 [label=0, tooltip="Decision: assign 0 to var 2", color="#6fb052", fontcolor="#6fb052"];
-25 -> 29 [label=0, tooltip="Decision: assign 0 to var 4"];
-28 -> 30 [label=100, tooltip="Decision: assign 1 to var 4", color="#6fb052", fontcolor="#6fb052"];
-28 -> 31 [label=0, tooltip="Decision: assign 0 to var 4"];
-16 -> 20 [label=0, tooltip="Decision: assign 0 to var 1"];
+fub: 0 - value: 77", shape=box, tooltip="Relaxed node", style="filled, rounded", shape=rectangle, color=black, fontcolor=white, tooltip="Terminal node"];
 15 -> 20 [label=0, tooltip="Decision: assign 0 to var 1"];
-15 -> 17 [label=12, tooltip="Decision: assign 1 to var 1", color="#6fb052", fontcolor="#6fb052"];
-16 -> 20 [label=12, tooltip="Decision: assign 1 to var 1"];
 14 -> 15 [label=15, tooltip="Decision: assign 1 to var 0", color="#6fb052", fontcolor="#6fb052"];
+16 -> 20 [label=12, tooltip="Decision: assign 1 to var 1"];
+16 -> 20 [label=0, tooltip="Decision: assign 0 to var 1"];
+20 -> 24 [label=0, tooltip="Decision: assign 0 to var 2"];
+14 -> 16 [label=0, tooltip="Decision: assign 0 to var 0"];
+20 -> 22 [label=120, tooltip="Decision: assign 1 to var 2"];
+28 -> 31 [label=0, tooltip="Decision: assign 0 to var 4"];
+24 -> 28 [label=50, tooltip="Decision: assign 1 to var 3", color="#6fb052", fontcolor="#6fb052"];
+25 -> 29 [label=0, tooltip="Decision: assign 0 to var 4"];
 24 -> 28 [label=0, tooltip="Decision: assign 0 to var 3"];
+22 -> 25 [label=0, tooltip="Decision: assign 0 to var 3"];
+28 -> 30 [label=100, tooltip="Decision: assign 1 to var 4", color="#6fb052", fontcolor="#6fb052"];
+15 -> 17 [label=12, tooltip="Decision: assign 1 to var 1", color="#6fb052", fontcolor="#6fb052"];
+17 -> 24 [label=0, tooltip="Decision: assign 0 to var 2", color="#6fb052", fontcolor="#6fb052"];
 }
