@@ -205,6 +205,7 @@ public final class ACSSolver<T, K> implements Solver {
         T state = subProblem.getState();
         int var = varIndex - 1;
         final Iterator<Integer> domain = problem.domain(state, var);
+        ArrayList<SubProblem<T>> children = new ArrayList<>();
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -215,17 +216,23 @@ public final class ACSSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+            children.add(new SubProblem<>(newState, value, fastUpperBound, path));
+            dominance.updateDominance(newState, path.size(), value);
+        }
+
+
+        for (SubProblem<T> child : children) {
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSubProblem = new SubProblem<>(newState, value, fastUpperBound, path);
-                if (((present[varIndex].contains(newState) || closed[varIndex].contains(newState)) && g.getOrDefault(newState, Double.MAX_VALUE) > value) || newSubProblem.f() <= bestLB) {
+            if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
+                T newState = child.getState();
+                if (((present[varIndex].contains(newState)
+                        || closed[varIndex].contains(newState))
+                        && g.getOrDefault(newState, Double.MAX_VALUE) > child.getValue()) || child.f() <= bestLB) {
                     continue;
                 }
-                g.put(newState, value);
-                open.get(varIndex).add(newSubProblem);
-                if (closed[varIndex].contains(newState)) {
-                    closed[varIndex].remove(newState);
-                }
+                g.put(newState, child.getValue());
+                open.get(varIndex).add(child);
+                closed[varIndex].remove(newState);
             }
         }
     }
