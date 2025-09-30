@@ -80,7 +80,7 @@ public class SMICMain {
 
             if (opti.isPresent()) {
                 return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory,
-                        opti.get());
+                        -opti.get());
             } else {
                 return new SMICProblem(filename, nbJob, initInventory, capaInventory, type, processing, weight, release, inventory);
             }
