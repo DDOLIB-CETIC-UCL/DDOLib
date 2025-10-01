@@ -218,23 +218,23 @@ public class LaunchInterface {
                 config.relaxStrategy = relaxStrategy;
             }
             case GHPAlt -> {
-                GHPAlt relaxStrategy = new GHPAlt(config.distance, config.relax);
+                GHPAlt relaxStrategy = new GHPAlt(config.distance, config.relax, config.problem.initialState());
                 relaxStrategy.setMostDistantPivot(true);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
             case GHPSAlt -> {
-                GHPSeparatedAlt relaxStrategy = new GHPSeparatedAlt(config.distance, config.relax);
+                GHPSeparatedAlt relaxStrategy = new GHPSeparatedAlt(config.distance, config.relax, config.problem.initialState());
                 relaxStrategy.setMostDistantPivot(true);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
-            case GHPQ -> {
+            /*case GHPQ -> {
                 GHPQuarantine relaxStrategy = new GHPQuarantine(config.distance, config.relax);
                 relaxStrategy.setMostDistantPivot(true);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
-            }
+            }*/
             case MBP -> {
                 MBP relaxStrategy = new MBP(config.distance);
                 relaxStrategy.setSeed(seed);
@@ -269,23 +269,23 @@ public class LaunchInterface {
                 config.restrictStrategy = restrictStrategy;
             }
             case GHPAlt -> {
-                GHPAlt restrictStrategy = new GHPAlt(config.distance, config.relax);
+                GHPAlt restrictStrategy = new GHPAlt(config.distance, config.relax, config.problem.initialState());
                 restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
             case GHPSAlt -> {
-                GHPSeparatedAlt restrictStrategy = new GHPSeparatedAlt(config.distance, config.relax);
+                GHPSeparatedAlt restrictStrategy = new GHPSeparatedAlt(config.distance, config.relax, config.problem.initialState());
                 restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
-            case GHPQ -> {
+            /*case GHPQ -> {
                 GHPQuarantine restrictStrategy = new GHPQuarantine(config.distance, config.relax);
                 restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
-            }
+            }*/
             case MBP -> {
                 MBP restrictStrategy = new MBP(config.distance);
                 restrictStrategy.setSeed(seed);
@@ -388,7 +388,7 @@ public class LaunchInterface {
         GHPAlt,
         GHPMDP,
         MBP,
-        GHPQ
+        // GHPQ
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
@@ -401,7 +401,7 @@ public class LaunchInterface {
             put("GHPA", ClusterStrat.GHPAlt);
             put("GHPSA", ClusterStrat.GHPSAlt);
             put("GHPMDP", ClusterStrat.GHPMDP);
-            put("GHPQ", ClusterStrat.GHPQ);
+            // put("GHPQ", ClusterStrat.GHPQ);
             put("MBP", ClusterStrat.MBP);
         }
     };
@@ -416,7 +416,7 @@ public class LaunchInterface {
             put("GHPA", ClusterStrat.GHPAlt);
             put("GHPSA", ClusterStrat.GHPSAlt);
             put("GHPMDP", ClusterStrat.GHPMDP);
-            put("GHPQ", ClusterStrat.GHPQ);
+            // put("GHPQ", ClusterStrat.GHPQ);
             put("MBP", ClusterStrat.MBP);
         }
     };

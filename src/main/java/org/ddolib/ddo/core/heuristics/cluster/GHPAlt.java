@@ -16,13 +16,15 @@ public class GHPAlt<T> implements ReductionStrategy<T> {
     final private StateDistance<T> distance;
     final private Relaxation<T> relaxation;
     final private Random rnd;
+    final private T rootState;
     private boolean mostDistantPivot;
 
-    public GHPAlt(StateDistance<T> distance, Relaxation<T> relaxation) {
+    public GHPAlt(StateDistance<T> distance, Relaxation<T> relaxation, T rootState) {
         this.distance = distance;
         rnd = new Random();
         mostDistantPivot = true;
         this.relaxation = relaxation;
+        this.rootState = rootState;
     }
 
     /**
@@ -98,20 +100,16 @@ public class GHPAlt<T> implements ReductionStrategy<T> {
                 double distWithB = distance.distance(node.state, pivotB.state);
 
                 if (distWithA < distWithB) {
-                    // maxDistA = Math.min(distance.distanceWithBase(node.state), maxDistA);
-                    // maxDistA = Math.max(distWithA, maxDistA);
                     newClusterA.add(node);
                 } else {
-                    // maxDistB = Math.min(distance.distanceWithBase(node.state), maxDistB);
-                    // maxDistB = Math.max(distWithB, maxDistB);
                     newClusterB.add(node);
                 }
             }
 
             T mergedA = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterA.iterator()));
             T mergedB = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterB.iterator()));
-            double priorityA = newClusterA.size() == 1 ? Double.MAX_VALUE : distance.distanceWithBase(mergedA);
-            double priorityB = newClusterB.size() == 1 ? Double.MAX_VALUE : distance.distanceWithBase(mergedB);
+            double priorityA = newClusterA.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedA, rootState);
+            double priorityB = newClusterB.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedB, rootState);
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA));

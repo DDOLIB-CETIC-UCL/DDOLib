@@ -20,8 +20,4 @@ public interface StateDistance<T> {
      */
     double distance(T a, T b);
 
-    default double distanceWithBase(T a) {
-        return 0.0;
-    }
-
 }

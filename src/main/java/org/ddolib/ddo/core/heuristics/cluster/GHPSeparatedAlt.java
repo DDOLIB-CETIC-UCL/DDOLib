@@ -16,13 +16,15 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
     final private StateDistance<T> distance;
     final private Relaxation<T> relaxation;
     final private Random rnd;
+    final private T rootState;
     private boolean mostDistantPivot;
 
-    public GHPSeparatedAlt(StateDistance<T> distance, Relaxation<T> relaxation) {
+    public GHPSeparatedAlt(StateDistance<T> distance, Relaxation<T> relaxation, T rootState) {
         this.distance = distance;
         rnd = new Random();
         mostDistantPivot = true;
         this.relaxation = relaxation;
+        this.rootState = rootState;
     }
 
     /**
@@ -149,8 +151,8 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
             }
             T mergedA = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterA.iterator()));
             T mergedB = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterB.iterator()));
-            double priorityA = newClusterA.size() == 1 ? Double.MAX_VALUE : distance.distanceWithBase(mergedA);
-            double priorityB = newClusterB.size() == 1 ? Double.MAX_VALUE : distance.distanceWithBase(mergedB);
+            double priorityA = newClusterA.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedA, rootState);
+            double priorityB = newClusterB.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedB, rootState);
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA));

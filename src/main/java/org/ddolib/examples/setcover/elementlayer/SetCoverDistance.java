@@ -23,9 +23,4 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
         }
         return a.uncoveredElements.size() + b.uncoveredElements.size() - 2 * intersectionSize;
     }
-
-    @Override
-    public double distanceWithBase(SetCoverState a) {
-        return a.uncoveredElements.size();
-    }
 }

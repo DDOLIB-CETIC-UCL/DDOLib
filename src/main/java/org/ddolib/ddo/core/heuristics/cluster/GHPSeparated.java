@@ -1,6 +1,5 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
 
 import java.util.*;
@@ -132,11 +131,9 @@ public class GHPSeparated<T> implements ReductionStrategy<T> {
                 double distWithB = distance.distance(node.state, pivotB.state);
 
                 if (distWithA < distWithB) {
-                    // maxDistA = Math.min(distance.distanceWithBase(node.state), maxDistA);
                     maxDistA = Math.max(distWithA, maxDistA);
                     newClusterA.add(node);
                 } else {
-                    // maxDistB = Math.min(distance.distanceWithBase(node.state), maxDistB);
                     maxDistB = Math.max(distWithB, maxDistB);
                     newClusterB.add(node);
                 }
@@ -181,20 +178,20 @@ public class GHPSeparated<T> implements ReductionStrategy<T> {
     }
 
     private class ClusterNode implements Comparable<ClusterNode> {
-        final double maxDistance;
+        final double priority;
         final List<NodeSubProblem<T>> cluster;
 
         public ClusterNode(double maxDistance, List<NodeSubProblem<T>> cluster) {
-            this.maxDistance = maxDistance;
+            this.priority = maxDistance;
             this.cluster = cluster;
         }
 
         @Override
         public int compareTo(ClusterNode o) {
-            if (this.maxDistance == o.maxDistance) {
+            if (this.priority == o.priority) {
                 return Integer.compare(this.cluster.size(), o.cluster.size());
             } else {
-                return Double.compare(this.maxDistance, o.maxDistance);
+                return Double.compare(this.priority, o.priority);
             }
         }
     }

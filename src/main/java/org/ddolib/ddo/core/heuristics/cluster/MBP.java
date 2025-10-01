@@ -145,7 +145,7 @@ public class MBP<T> implements ReductionStrategy<T> {
     }
 
     private class ClusterNode implements Comparable<ClusterNode> {
-        final double maxDistance; // the maximal distance between the pivot and one of the other node in the cluster
+        final double priority;
         final NodeSubProblem<T> pivot; // the pivot associated to this cluster
         final NodeSubProblem<T> mostDistant; // If the cluster is split, this node will be the pivot of the new cluster
         final List<NodeSubProblem<T>> cluster;
@@ -154,7 +154,7 @@ public class MBP<T> implements ReductionStrategy<T> {
                            List<NodeSubProblem<T>> cluster,
                            NodeSubProblem<T> pivot,
                            NodeSubProblem<T> mostDistant) {
-            this.maxDistance = maxDistance;
+            this.priority = maxDistance;
             this.cluster = cluster;
             this.pivot = pivot;
             this.mostDistant = mostDistant;
@@ -162,10 +162,10 @@ public class MBP<T> implements ReductionStrategy<T> {
 
         @Override
         public int compareTo(ClusterNode o) {
-            if (this.maxDistance == o.maxDistance) {
+            if (this.priority == o.priority) {
                 return Integer.compare(this.cluster.size(), o.cluster.size());
             } else {
-                return Double.compare(this.maxDistance, o.maxDistance);
+                return Double.compare(this.priority, o.priority);
             }
         }
     }
