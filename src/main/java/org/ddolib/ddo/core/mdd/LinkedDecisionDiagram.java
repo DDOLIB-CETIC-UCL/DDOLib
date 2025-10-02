@@ -502,7 +502,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T, K> input) {
         final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.problem.nbVars(); i++) {
+        for (int i = 0; i < config.problem.nbVars(); i++) {
             set.add(i);
         }
 

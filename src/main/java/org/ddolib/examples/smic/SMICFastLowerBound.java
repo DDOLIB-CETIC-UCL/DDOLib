@@ -13,11 +13,11 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
 
     @Override
     public double fastLowerBound(SMICState state, Set<Integer> variables) {
-        double lowerBound = 0.0;
-        for (Integer variable : variables) {
-            lowerBound += problem.processing[variable];
-        }
 
+        double lowerBound = 0.0;
+        for (int j : state.remainingJobs()) {
+            lowerBound += problem.processing[j];
+        }
         return lowerBound;
     }
 }

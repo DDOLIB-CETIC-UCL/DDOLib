@@ -6,6 +6,7 @@ import org.ddolib.modeling.Problem;
 import java.util.*;
 
 public class SMICProblem implements Problem<SMICState> {
+
     public final String name;
     final int nbJob;
     final int initInventory;
@@ -92,10 +93,11 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        for (Integer job : state.getRemainingJobs()) {
-            int minCurrentInventory = (type[job] == 0) ? (state.getMinCurrentInventory() - inventory[job]) : (state.getMinCurrentInventory() + inventory[job]);
-            int maxCurrentInventory = (type[job] == 0) ? (state.getMaxCurrentInventory() - inventory[job]) : (state.getMaxCurrentInventory() + inventory[job]);
-            if (minCurrentInventory >= 0 && maxCurrentInventory <= capaInventory) {
+        for (Integer job : state.remainingJobs()) {
+            int deltaInventory = (type[job] == 0) ? - inventory[job] : + inventory[job];
+            int minCurrentInventory = state.minCurrentInventory() + deltaInventory;
+            int maxCurrentInventory = state.maxCurrentInventory() + deltaInventory;
+            if (maxCurrentInventory >= 0 && minCurrentInventory <= capaInventory) {
                 domain.add(job);
             }
         }
@@ -104,16 +106,18 @@ public class SMICProblem implements Problem<SMICState> {
 
     @Override
     public SMICState transition(SMICState state, Decision decision) {
-        Set<Integer> remaining = new HashSet<>(state.getRemainingJobs());
-        remaining.remove(decision.val());
-        int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
-        int minCurrentInventory = (type[decision.val()] == 0) ? (state.getMinCurrentInventory() - inventory[decision.val()]) : (state.getMinCurrentInventory() + inventory[decision.val()]);
-        int maxCurrentInventory = (type[decision.val()] == 0) ? (state.getMaxCurrentInventory() - inventory[decision.val()]) : (state.getMaxCurrentInventory() + inventory[decision.val()]);
+        Set<Integer> remaining = new HashSet<>(state.remainingJobs());
+        int job = decision.val();
+        remaining.remove(job);
+        int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
+        int deltaInventory = (type[job] == 0) ? - inventory[job] : + inventory[job];
+        int minCurrentInventory = state.minCurrentInventory() + deltaInventory;
+        int maxCurrentInventory = state.maxCurrentInventory() + deltaInventory;
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     @Override
     public double transitionCost(SMICState state, Decision decision) {
-        return Math.max(release[decision.val()] - state.getCurrentTime(), 0) + processing[decision.val()];
+        return Math.max(release[decision.val()] - state.currentTime(), 0) + processing[decision.val()];
     }
 }

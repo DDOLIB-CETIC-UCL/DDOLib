@@ -238,6 +238,10 @@ public final class AStarSolver<T, K> implements Solver {
     private void addChildren(SubProblem<T> subProblem, int debugLevel) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
+
+        //int var = varh.nextVariable();
+
+
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
@@ -253,6 +257,7 @@ public final class AStarSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
+
 
 
             // if the new state is dominated, we skip it
