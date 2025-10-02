@@ -26,7 +26,7 @@ public class SetCoverLoader {
         config.relax = new SetCoverRelax();
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
-        config.varh = new SetCoverHeuristics.MinCentralityDynamic(problem);
+        config.varh = new SetCoverHeuristics.MinCentrality(problem);
         config.fub = new DefaultFastUpperBound<>();
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new SetCoverDistance();

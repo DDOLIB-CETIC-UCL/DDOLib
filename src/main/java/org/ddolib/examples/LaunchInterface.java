@@ -316,7 +316,7 @@ public class LaunchInterface {
             statsString.append(solverStr).append(";"); // Solver
             statsString.append(cutSetStr).append(";"); // Cutset
             statsString.append(relaxStratStr).append(";"); // RelaxStrat
-            statsString.append(restrictionStrat).append(";"); // RestrictionStrat
+            statsString.append(restrictStratStr).append(";"); // RestrictionStrat
             statsString.append(timeLimit).append(";"); // timelimit
             statsString.append(widthFactor).append(";"); // widthFactor
             statsString.append(kmeansIter).append(";");
@@ -388,7 +388,7 @@ public class LaunchInterface {
         GHPAlt,
         GHPMDP,
         MBP,
-        // GHPQ
+        GHPQ
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {

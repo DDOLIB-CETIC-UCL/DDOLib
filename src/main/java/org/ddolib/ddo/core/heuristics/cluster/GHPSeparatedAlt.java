@@ -83,7 +83,7 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
-        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>();
+        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
         List<NodeSubProblem<T>>[] partitions = this.costSeparation(layer);
         for (NodeSubProblem<T> singleton: partitions[0]) {
             pqClusters.add(new ClusterNode(Double.MAX_VALUE, List.of(singleton)));
@@ -151,8 +151,8 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
             }
             T mergedA = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterA.iterator()));
             T mergedB = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterB.iterator()));
-            double priorityA = newClusterA.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedA, rootState);
-            double priorityB = newClusterB.size() == 1 ? Double.MAX_VALUE : distance.distance(mergedB, rootState);
+            double priorityA = newClusterA.size() == 1 ? 0.0 : distance.distance(mergedA, rootState);
+            double priorityB = newClusterB.size() == 1 ? 0.0 : distance.distance(mergedB, rootState);
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA));
