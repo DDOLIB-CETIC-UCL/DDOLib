@@ -1,5 +1,6 @@
 package org.ddolib.examples.misp;
 
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -10,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class MispTest {
 
-    private static class MispBench extends ProblemTestBench<BitSet, NullType, MispProblem> {
+    private static class MispBench extends ProblemTestBench<BitSet, Integer, MispProblem> {
 
 
         public MispBench() {
@@ -48,14 +48,15 @@ public class MispTest {
         }
 
         @Override
-        protected SolverConfig<BitSet, NullType> configSolver(MispProblem problem) {
-            SolverConfig<BitSet, NullType> config = new SolverConfig<>();
+        protected SolverConfig<BitSet, Integer> configSolver(MispProblem problem) {
+            SolverConfig<BitSet, Integer> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MispRelax(problem);
             config.ranking = new MispRanking();
             config.fub = new MispFastUpperBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
+            config.dominance = new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
 
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             return config;
