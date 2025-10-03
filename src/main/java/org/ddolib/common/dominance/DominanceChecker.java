@@ -22,9 +22,8 @@ public abstract class DominanceChecker<T, K> {
      * @param state    The state on which test dominance.
      * @param depth    The depth of the state in the MDD.
      * @param objValue The length of the longest path from the root to the input state.
-     * @return Whether the input state is dominated.
      */
-    public abstract boolean updateDominance(T state, int depth, double objValue);
+    public abstract void updateDominance(T state, int depth, double objValue);
 
     public abstract boolean isDominated(T state, int depth, double objValue);
 

@@ -60,17 +60,15 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
     }
 
     /**
-     * Check if the state is dominated by any of the states in the front
-     * If it is, return true
-     * If it is not, add the state and remove the dominated states from the front
+     * Check if the state is dominated by any of the states in the front.
+     * If it is not, add the state and remove the dominated states from the front.
      *
      * @param state    the state to check
      * @param depth    the depth of the state in the MDD
      * @param objValue the objective value of the state
-     * @return true if the state is dominated, false otherwise
      */
     @Override
-    public boolean updateDominance(T state, int depth, double objValue) {
+    public void updateDominance(T state, int depth, double objValue) {
         Map<K, TreeSet<ValueState>> front = fronts.get(depth);
         K key = dominance.getKey(state);
         boolean dominated = false;
@@ -93,7 +91,6 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
             TreeSet<ValueState> set = front.computeIfAbsent(key, k -> new TreeSet<>());
             set.add(new ValueState(objValue, state));
         }
-        return dominated;
     }
 
     @Override
