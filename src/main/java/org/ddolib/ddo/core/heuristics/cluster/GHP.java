@@ -140,20 +140,20 @@ public class GHP<T> implements ReductionStrategy<T> {
     }
 
     private class ClusterNode implements Comparable<ClusterNode> {
-        final double maxDistance;
+        final double priority;
         final List<LinkedDecisionDiagram.NodeSubProblem<T>> cluster;
 
-        public ClusterNode(double maxDistance, List<LinkedDecisionDiagram.NodeSubProblem<T>> cluster) {
-            this.maxDistance = maxDistance;
+        public ClusterNode(double priority, List<LinkedDecisionDiagram.NodeSubProblem<T>> cluster) {
+            this.priority = priority;
             this.cluster = cluster;
         }
 
         @Override
         public int compareTo(ClusterNode o) {
-            if (this.maxDistance == o.maxDistance) {
+            if (this.priority == o.priority) {
                 return Integer.compare(this.cluster.size(), o.cluster.size());
             } else {
-                return Double.compare(this.maxDistance, o.maxDistance);
+                return Double.compare(this.priority, o.priority);
             }
         }
     }
