@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastUpperBound;
 import org.ddolib.modeling.Problem;
@@ -90,6 +91,11 @@ public class CompilationConfig<T, K> {
      * {@link org.ddolib.common.solver.SolverConfig for details}
      */
     public Integer debugLevel = null;
+
+    /**
+     * The Reduction Strategy that should be used to select nodes to merge/drop
+     */
+    public ReductionStrategy<T> reductionStrategy = null;
 
     /**
      * Returns a string representation of this record class.

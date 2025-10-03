@@ -22,7 +22,7 @@ import static org.ddolib.util.MathUtil.saturatedAdd;
  * - turn an MDD node from the exact cutset into a subproblem which is used
  * by the API.
  */
-final class NodeSubProblem<T> {
+public final class NodeSubProblem<T> {
     /**
      * The state associated to this node
      */
@@ -71,5 +71,13 @@ final class NodeSubProblem<T> {
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##########");
         return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
+    }
+
+    public double getValue() {
+        return node.value;
+    }
+
+    public double getUb() {
+        return ub;
     }
 }

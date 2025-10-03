@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -119,7 +120,7 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     public ParallelSolver(SolverConfig<T, K> config) {
         this.shared = new Shared<>(config.nbThreads, config.problem, config.relax, config.varh, config.ranking, config.width, config.fub,
-                config.dominance);
+                config.dominance, config.relaxStrategy, config.restrictStrategy);
         this.critical = new Critical<>(config.nbThreads, config.frontier);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
@@ -272,6 +273,7 @@ public final class ParallelSolver<T, K> implements Solver {
         compilation.cutSetType = critical.frontier.cutSetType();
         compilation.exportAsDot = false;
         compilation.debugLevel = this.debugLevel;
+        compilation.reductionStrategy = shared.restrictStrategy;
         DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();
         maybeUpdateBest(restrictedMdd, verbosityLevel);
@@ -283,6 +285,7 @@ public final class ParallelSolver<T, K> implements Solver {
         bestLB = bestLB();
         compilation.compilationType = CompilationType.Relaxed;
         compilation.bestLB = bestLB;
+        compilation.reductionStrategy = shared.relaxStrategy;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         if (relaxedMdd.isExact()) {
@@ -473,6 +476,16 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final VariableHeuristic<T> varh;
 
+        /**
+         * Strategy to select which nodes should be merged together on a relaxed DD.
+         */
+        private final ReductionStrategy<T> relaxStrategy;
+
+        /**
+         * Strategy to select which nodes should be dropped on a restricted DD.
+         */
+        private final ReductionStrategy<T> restrictStrategy;
+
         public Shared(
                 final int nbThreads,
                 final Problem<T> problem,
@@ -481,7 +494,9 @@ public final class ParallelSolver<T, K> implements Solver {
                 final StateRanking<T> ranking,
                 final WidthHeuristic<T> width,
                 FastUpperBound<T> fub,
-                final DominanceChecker<T, K> dominance) {
+                final DominanceChecker<T, K> dominance,
+                final ReductionStrategy<T> relaxStrategy,
+                final ReductionStrategy<T> restrictStrategy) {
             this.nbThreads = nbThreads;
             this.problem = problem;
             this.relax = relax;
@@ -490,6 +505,8 @@ public final class ParallelSolver<T, K> implements Solver {
             this.ranking = ranking;
             this.width = width;
             this.dominance = dominance;
+            this.relaxStrategy = relaxStrategy;
+            this.restrictStrategy = restrictStrategy;
         }
     }
 
