@@ -135,6 +135,7 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
+        ArrayList<SubProblem<T>> children = new ArrayList<>();
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -144,9 +145,15 @@ public final class BestFirstSearchSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
-            // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                frontier.add(new SubProblem<>(newState, value, fastUpperBound, path));
+
+            dominance.updateDominance(newState, path.size(), value);
+            children.add(new SubProblem<>(newState, value, fastUpperBound, path));
+        }
+
+        for (SubProblem<T> child : children) {
+            // If the child is dominated, we skip it
+            if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
+                frontier.add(child);
             }
         }
     }
