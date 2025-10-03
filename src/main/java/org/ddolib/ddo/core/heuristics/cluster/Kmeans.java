@@ -1,6 +1,6 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
 import smile.clustering.CentroidClustering;
 import smile.clustering.KMeans;
 
@@ -38,7 +38,7 @@ public class Kmeans<T> implements ReductionStrategy<T> {
      * @return an array of List representing the clusters.
      */
     @Override
-    public List<LinkedDecisionDiagram.NodeSubProblem<T>>[] defineClusters(List<LinkedDecisionDiagram.NodeSubProblem<T>> layer, int maxWidth) {
+    public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
         int dimensions = coordinates.getCoordinates(layer.getFirst().state).length;
         double[][] data = new double[layer.size()][dimensions];
         for (int node = 0; node < layer.size(); node++) {
@@ -46,11 +46,11 @@ public class Kmeans<T> implements ReductionStrategy<T> {
         }
         CentroidClustering<double[], double[]> clustering = KMeans.fit(data, maxWidth, maxIterations, 1.0E-4);
 
-        List<LinkedDecisionDiagram.NodeSubProblem<T>>[] clusters = new List[maxWidth];
+        List<NodeSubProblem<T>>[] clusters = new List[maxWidth];
         for (int i = 0; i < clusters.length; i++) {
             clusters[i] = new ArrayList<>();
         }
-        for (LinkedDecisionDiagram.NodeSubProblem<T> node : layer) {
+        for (NodeSubProblem<T> node : layer) {
             double[] coords = coordinates.getCoordinates(node.state);
             int clusterIndex = clustering.predict(coords);
             clusters[clusterIndex].add(node);

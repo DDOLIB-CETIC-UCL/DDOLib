@@ -3,18 +3,28 @@ package org.ddolib.ddo.core.mdd;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.cache.Threshold;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.util.DebugUtil;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static org.ddolib.util.MathUtil.saturatedAdd;
+import static org.ddolib.util.MathUtil.saturatedDiff;
 
 /**
  * This class implements the decision diagram as a linked structure.
@@ -26,26 +36,27 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * The list of decisions that have led to the root of this DD
      */
-    private Set<Decision> pathToRoot = Collections.emptySet();
+    private final Set<Decision> pathToRoot;
+
     /**
      * All the nodes from the previous layer
      */
-    private HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
+    private final HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
+
     /**
      * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
      */
-    private List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+    private final List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
+
     /**
      * All the nodes from the next layer
      */
-    private HashMap<T, Node> nextLayer = new HashMap<T, Node>();
+    private final HashMap<T, Node> nextLayer = new HashMap<>();
+
     /**
      * All the nodes from the last exact layer cutset or the frontier cutset
      */
-    private List<NodeSubProblem<T>> cutset = new ArrayList<>();
-    /**
-     * A flag to keep track of the fact that LEL might be empty albeit not set
-     */
+    private final List<NodeSubProblem<T>> cutset = new ArrayList<>();
 
     /**
      * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
@@ -58,238 +69,84 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private Node best = null;
 
     /**
+     * Depth of the last exact layer
+     */
+    private int depthLEL = -1;
+
+
+    /**
      * Used to build the .dot file displaying the compiled mdd.
      */
-    private StringBuilder dotStr = new StringBuilder();
+    private final StringBuilder dotStr = new StringBuilder();
     /**
      * Given the hashcode of an edge, save its .dot representation
      */
-    private HashMap<Integer, String> edgesDotStr = new HashMap<>();
-
-    // --- UTILITY CLASSES -----------------------------------------------
+    private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     /**
-     * This is an atomic node from the decision diagram. Per-se, it does not
-     * hold much interpretable information.
+     * <ul>
+     *     <li>0: no debug</li>
+     *     <li>1: checks the coherence of the fub</li>
+     *     <li>2: 1 + export failing mdd as .dot</li>
+     * </ul>
      */
-    private static final class Node {
-        /**
-         * The length of the longest path to this node
-         */
-        private double value;
-        /**
-         * The length of the longest suffix of this node (bottom part of a local bound)
-         */
-        private Double suffix;
-        /**
-         * The edge terminating the longest path to this node
-         */
-        private Edge best;
-        /**
-         * The list of edges leading to this node
-         */
-        private List<Edge> edges;
-
-        /**
-         * The type of this node (exact, relaxed, etc...)
-         */
-        private NodeType type;
-
-        /**
-         * The falg to indicate if a node is marked
-         */
-        private boolean isMarked;
-
-        /**
-         * Creates a new node
-         */
-        public Node(final double value) {
-            this.value = value;
-            this.suffix = null;
-            this.best = null;
-            this.edges = new ArrayList<>();
-            this.type = NodeType.EXACT;
-            this.isMarked = false;
-        }
-
-        /**
-         * set the type of the node when different to exact type
-         *
-         * @param nodeType
-         */
-        public void setNodeType(final NodeType nodeType) {
-            this.type = nodeType;
-        }
-
-        /**
-         * get the type of the node
-         *
-         * @return NodeType
-         */
-        public NodeType getNodeType() {
-            return this.type;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
-                    value, suffix, best, edges);
-        }
-
-        // Deterministic hash
-        private static int nextHash = 0;
-        private final int hash = nextHash++;
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
-    }
+    private final int debugLevel;
 
     /**
-     * Flag to identify the type of node: exact node, relaxed node, marked node, etc ...
+     * The parameter used to tweak the compilation
      */
-    public enum NodeType {
-        EXACT, RELAXED
-    }
+    private final CompilationConfig<T, K> config;
 
     /**
-     * This is an edge that connects two nodes from the decision diagram
+     * Creates an all new MDD
+     *
+     * @param config The set of parameters used by the compilation.
      */
-    private static final class Edge {
-        /**
-         * The source node of this arc
-         */
-        private Node origin;
-        /**
-         * The decision that was made when traversing this arc
-         */
-        private Decision decision;
-        /**
-         * The weight of the arc
-         */
-        private double weight;
-
-        /**
-         * Creates a new edge between pairs of nodes
-         *
-         * @param src the source node
-         * @param d   the decision that was made when traversing this edge
-         * @param w   the weight of the edge
-         */
-        public Edge(final Node src, final Decision d, final double w) {
-            this.origin = src;
-            this.decision = d;
-            this.weight = w;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Origin:%s\n\t Decision:%s\n\t Weight:%s ", origin, decision, weight);
-        }
-    }
-
-    /**
-     * This class encapsulates the association of a node with its state and
-     * associated rough upper bound.
-     * <p>
-     * This class essentially serves two purposes:
-     * <p>
-     * - associate a node with a state during the compilation (and allow to
-     * eagerly forget about the given state, which allows to save substantial
-     * amounts of RAM while compiling the DD).
-     * <p>
-     * - turn an MDD node from the exact cutset into a subproblem which is used
-     * by the API.
-     */
-    public static final class NodeSubProblem<T> {
-        /**
-         * The state associated to this node
-         */
-        public final T state;
-        /**
-         * The actual node from the graph of decision diagrams
-         */
-        private final Node node;
-        /**
-         * The upper bound associated with this node (if state were the root)
-         */
-        private double ub;
-
-        /**
-         * Creates a new instance
-         */
-        public NodeSubProblem(final T state, final double ub, final Node node) {
-            this.state = state;
-            this.ub = ub;
-            this.node = node;
-        }
-
-        public double getValue() {
-            return node.value;
-        }
-
-        public double getUb() {
-            return this.ub;
-        }
-
-        /**
-         * @return Turns this association into an actual subproblem
-         */
-        public SubProblem<T> toSubProblem(final Set<Decision> pathToRoot) {
-            HashSet<Decision> path = new HashSet<>();
-            path.addAll(pathToRoot);
-
-            Edge e = node.best;
-            while (e != null) {
-                path.add(e.decision);
-                e = e.origin == null ? null : e.origin.best;
-            }
-
-            double locb = Double.NEGATIVE_INFINITY;
-            if (node.suffix != null) {
-                locb = saturatedAdd(node.value, node.suffix);
-            }
-            ub = Math.min(ub, locb);
-
-            return new SubProblem<>(state, node.value, ub, path);
-        }
-
-        @Override
-        public String toString() {
-            DecimalFormat df = new DecimalFormat("#.##########");
-            return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
-        }
-    }
-
-    @Override
-    public void compile(CompilationInput<T, K> input) {
-        // make sure we don't have any stale data left
-        this.clear();
-
-        // initialize the compilation
-        final int maxWidth = input.maxWidth();
-        final SubProblem<T> residual = input.residual();
+    public LinkedDecisionDiagram(CompilationConfig<T, K> config) {
+        final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
+        this.debugLevel = config.debugLevel;
+        this.config = config;
 
-        dotStr.append("digraph ").append(input.compilationType().toString().toLowerCase()).append("{\n");
+    }
+
+    @Override
+    public void compile() {
+
+        // initialize the compilation
+        final int maxWidth = config.maxWidth;
+        final SubProblem<T> residual = config.residual;
+
+        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
-        final Problem<T> problem = input.problem();
-        final Relaxation<T> relax = input.relaxation();
-        final VariableHeuristic<T> var = input.variableHeuristic();
-        final NodeSubroblemComparator<T> ranking = new NodeSubroblemComparator<>(input.stateRanking());
-        final DominanceChecker<T, K> dominance = input.dominance();
+        final Problem<T> problem = config.problem;
+        final Relaxation<T> relax = config.relaxation;
+        final VariableHeuristic<T> var = config.variableHeuristic;
+        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
+        final DominanceChecker<T, K> dominance = config.dominance;
+        final Optional<SimpleCache<T>> cache = config.cache;
+        double bestLb = config.bestLB;
 
-        final Set<Integer> variables = varSet(input);
+        final Set<Integer> variables = varSet(config);
 
         int depthGlobalDD = residual.getPath().size();
         int depthCurrentDD = 0;
+        int initialDepth = residual.getPath().size();
 
 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
+
+        // list of depth for the current relax compilation of the DD
+        ArrayList<Integer> listDepths = cache.isPresent() ? new ArrayList<>() : null;
+        // the list of NodeSubProblem of the corresponding depth
+        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = cache.isPresent() ? new ArrayList<>() : null;
+        // the list of Threshold of the corresponding depth
+        ArrayList<ArrayList<Threshold>> layersThresholds = cache.isPresent() ? new ArrayList<>() : null;
+        // list of nodes pruned
+        ArrayList<NodeSubProblem<T>> pruned = cache.isPresent() ? new ArrayList<>() : null;
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -304,12 +161,27 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.getNodeType() == NodeType.EXACT && dominance.updateDominance(state, depthGlobalDD, node.value)) {
-                    continue;
-                } else {
-                    double rub = saturatedAdd(node.value, input.fub().fastUpperBound(state, variables));
+                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
+                        depthGlobalDD, node.value)) {
+                    double fub = config.fub.fastUpperBound(state, variables);
+                    double rub = saturatedAdd(node.value, fub);
+                    node.fub = fub;
                     this.currentLayer.add(new NodeSubProblem<>(state, rub, node));
                 }
+            }
+
+            if (cache.isPresent()) {
+                pruned.clear();
+                if (depthGlobalDD > initialDepth) {
+                    for (NodeSubProblem<T> n : this.currentLayer) {
+                        if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
+                                && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
+                                && n.node.value <= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                            pruned.add(n);
+                        }
+                    }
+                }
+                this.currentLayer.removeAll(pruned);
             }
             this.nextLayer.clear();
 
@@ -320,7 +192,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             if (nextVar == null) {
                 // Some variables simply can't be assigned
-                clear();
                 return;
             } else {
                 variables.remove(nextVar);
@@ -339,19 +210,20 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
-                switch (input.compilationType()) {
+                switch (config.compilationType) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking, input.reductionStrategy());
+                        restrict(maxWidth, ranking, config.reductionStrategy);
                         break;
                     case Relaxed:
                         if (exact) {
                             exact = false;
-                            if (input.cutSetType() == CutSetType.LastExactLayer) {
+                            if (config.cutSetType == CutSetType.LastExactLayer) {
                                 cutset.addAll(prevLayer.values());
+                                depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, relax, input.reductionStrategy());
+                        relax(maxWidth, relax, config.reductionStrategy);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -360,10 +232,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (input.exportAsDot()) {
+                if (config.exportAsDot || config.debugLevel >= 2) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.ub <= input.bestLB()) {
+                if (n.ub <= config.bestLB) {
                     continue;
                 } else {
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
@@ -374,14 +246,16 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         branchOn(n, decision, problem);
                     }
                 }
-                if (input.cutSetType() == CutSetType.Frontier && input.compilationType() == CompilationType.Relaxed && !exact && depthCurrentDD >= 2) {
-                    if (variables.isEmpty() && n.node.getNodeType() == NodeType.EXACT) {
+                if (config.cutSetType == CutSetType.Frontier
+                        && config.compilationType == CompilationType.Relaxed
+                        && !exact && depthCurrentDD >= 2) {
+                    if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
                         currentCutSet.add(n);
                     }
-                    if (n.node.getNodeType() == NodeType.RELAXED) {
+                    if (n.node.type == NodeType.RELAXED) {
                         for (Edge e : n.node.edges) {
                             Node origin = e.origin;
-                            if (origin.getNodeType() == NodeType.EXACT) {
+                            if (origin.type == NodeType.EXACT) {
                                 currentCutSet.add(prevLayer.get(origin));
                             }
                         }
@@ -389,10 +263,20 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
 
+            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
+                listDepths.add(depthGlobalDD);
+                nodeSubProblemPerLayer.add(new ArrayList<>());
+                layersThresholds.add(new ArrayList<>());
+                for (NodeSubProblem<T> n : this.currentLayer) {
+                    nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
+                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MAX_VALUE, false));
+                }
+            }
+
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
-        if (input.compilationType() == CompilationType.Relaxed && input.cutSetType() == CutSetType.Frontier) {
+        if (config.compilationType == CompilationType.Relaxed && config.cutSetType == CutSetType.Frontier) {
             cutset.addAll(currentCutSet);
         }
 
@@ -404,7 +288,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (input.exportAsDot()) {
+        if (config.exportAsDot || debugLevel >= 2) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -414,16 +298,35 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
 
-        // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
-        if (input.compilationType() == CompilationType.Relaxed) {
+        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
+            if (!cutset.isEmpty()) {
+                computeLocalBounds();
+
+                for (NodeSubProblem<T> n : cutset) {
+                    if (n.node.isMarked) {
+                        n.node.isInExactCutSet = true;
+                    }
+                }
+
+                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
+                // update the cache to improve the next computation of the BB
+                computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
+                        layersThresholds, bestLb, config.cutSetType);
+            }
+        } else if (config.compilationType == CompilationType.Relaxed) {
+            // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
+        }
+
+
+        if (debugLevel >= 1 && config.compilationType != CompilationType.Relaxed) {
+            checkFub(config.problem);
         }
     }
 
     @Override
     public boolean isExact() {
         return exact;
-        //return !lelWasSet;
     }
 
     @Override
@@ -445,7 +348,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             Edge eb = best.best;
             while (eb != null) {
                 sol.add(eb.decision);
-                updateBestEdgeColor(eb.hashCode());
+                updateBestEdgeColor(eb.hashCode(), "#6fb052");
                 eb = eb.origin == null ? null : eb.origin.best;
             }
             return Optional.of(sol);
@@ -464,7 +367,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         } else {
             Edge eb = best.best;
             while (eb != null) {
-                if (eb.origin.getNodeType() == NodeType.RELAXED)
+                if (eb.origin.type == NodeType.RELAXED)
                     return false;
                 eb = eb.origin.best;
             }
@@ -482,32 +385,131 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         return dotStr.toString();
     }
 
-    // --- UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationInput<T, K> input) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < input.problem().nbVars(); i++) {
-            set.add(i);
-        }
+    private record PathInfo(Decision decision, double fubOfOrigin, double lengthToEnd) {
+    }
 
-        for (Decision d : input.residual().getPath()) {
-            set.remove(d.var());
+
+    /**
+     * Given a node, returns the list of decisions taken from the root to reach this node.
+     *
+     * @param node A node of the mdd
+     * @return The list of decisions took from the root to reach the input node.
+     */
+    private LinkedList<PathInfo> constructPathFromRoot(Node node, double lengthToEnd) {
+        LinkedList<PathInfo> path = new LinkedList<>();
+        Edge eb = node.best;
+        double currentLength = lengthToEnd;
+        while (eb != null) {
+            currentLength += eb.weight;
+            PathInfo info = new PathInfo(eb.decision, eb.origin.fub, currentLength);
+            path.addFirst(info);
+            if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            eb = eb.origin == null ? null : eb.origin.best;
+
         }
-        return set;
+        return path;
+    }
+
+
+    /**
+     * Given a list of decisions returns string describing the states from root.
+     *
+     * @param pathFromRoot A list of decision.
+     * @param problem      The problem linked to this mdd.
+     * @return A list of decisions of the generated states from root.
+     */
+    private LinkedList<String> constructStateDescriptionFromRoot(LinkedList<PathInfo> pathFromRoot,
+                                                                 Problem<T> problem) {
+        LinkedList<String> states = new LinkedList<>();
+        T current = problem.initialState();
+        int depth = 0;
+        String msg = String.format("%-23s", depth + ".");
+        for (PathInfo pathInfo : pathFromRoot) {
+            msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
+            msg += String.format(" - fub: %6s", pathInfo.fubOfOrigin);
+            if (pathInfo.fubOfOrigin + 1e-10 < pathInfo.lengthToEnd) msg += "!";
+            msg += " - " + current.toString();
+            msg += "\n" + pathInfo.decision;
+            states.addLast(msg);
+            depth++;
+            msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+                    pathInfo.decision));
+            current = problem.transition(current, pathInfo.decision);
+
+
+        }
+        states.addLast(msg);
+        states.addLast(current.toString());
+        return states;
     }
 
     /**
-     * Reset the state of this MDD. This way it can easily be reused
+     * Checks if the {@link org.ddolib.modeling.FastUpperBound} is well-defined.
+     * This method constructs longest path from terminal nodes and checks for each node the mdd
+     * if the associated fast upper bound if bigger than the identified path.
+     *
      */
-    private void clear() {
-        pathToRoot = Collections.emptySet();
-        prevLayer.clear();
-        currentLayer.clear();
-        nextLayer.clear();
-        cutset.clear();
-        exact = true;
-        best = null;
-        dotStr = new StringBuilder();
-        edgesDotStr = new HashMap<>();
+    private void checkFub(Problem<T> problem) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+        for (Node last : nextLayer.values()) {
+            //For each node we save the longest path to last
+            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
+            parent.put(last, 0.0);
+            while (!parent.isEmpty()) {
+                Entry<Node, Double> current = parent.pollFirstEntry();
+                if (current.getKey().fub + 1e-10 < current.getValue()) {
+                    LinkedList<PathInfo> pathFromRoot = constructPathFromRoot(current.getKey(),
+                            current.getValue());
+                    LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
+                    String lastState = failedState.getLast();
+                    lastState =
+                            String.format(" - fub: %6s", current.getKey().fub) + "! - " + lastState;
+                    lastState =
+                            String.format("length to end: %6s", current.getValue()) + lastState;
+                    failedState.removeLast();
+                    lastState = failedState.getLast() + lastState;
+                    failedState.removeLast();
+                    failedState.addLast(lastState);
+                    String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
+                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
+                                    "its longest path (%s)\n", df.format(current.getKey().fub),
+                            df.format(current.getValue()));
+                    failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
+                    failureMsg += String.format("Failing state: %s\n", failedState.getLast());
+                    if (debugLevel >= 2) {
+                        String dot = exportAsDot();
+                        try (BufferedWriter bw =
+                                     new BufferedWriter(new FileWriter(Paths.get("output",
+                                             "failed.dot").toString()))) {
+                            bw.write(dot);
+                            failureMsg += "MDD saved in output/failed.dot\n";
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    throw new RuntimeException(failureMsg);
+                }
+
+                for (Edge edge : current.getKey().edges) {
+                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
+                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                }
+            }
+        }
+    }
+
+    // UTILITY METHODS -----------------------------------------------
+    private Set<Integer> varSet(final CompilationConfig<T, K> input) {
+        final HashSet<Integer> set = new HashSet<>();
+        for (int i = 0; i < input.problem.nbVars(); i++) {
+            set.add(i);
+        }
+
+        for (Decision d : input.residual.getPath()) {
+            set.remove(d.var());
+        }
+        return set;
     }
 
     /**
@@ -516,7 +518,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param maxWidth the maximum tolerated layer width
 
      */
-    private void restrict(final int maxWidth, final NodeSubroblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
         // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
@@ -555,14 +557,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
                     node = n;
-                    node.node.setNodeType(NodeType.RELAXED);
+                    node.node.type = NodeType.RELAXED;
                     break;
                 }
             }
 
             if (node == null) {
                 Node newNode = new Node(Double.NEGATIVE_INFINITY);
-                newNode.setNodeType(NodeType.RELAXED);
+                newNode.type = NodeType.RELAXED;
                 node = new NodeSubProblem<>(merged, Double.NEGATIVE_INFINITY, newNode);
                 currentLayer.add(node);
             }
@@ -575,6 +577,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
                     double value = saturatedAdd(e.origin.value, rcost);
                     e.weight  = rcost;
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                    if (e.origin.type == NodeType.RELAXED) {
+                        node.node.type = NodeType.RELAXED;
+                    }
 
                     node.node.edges.add(e);
                     if (value > node.node.value) {
@@ -594,7 +600,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param decision the decision being made
      * @param problem  the problem that defines the transition and transition cost functions
      */
-    private void branchOn(final NodeSubProblem<T> node, final Decision decision, final Problem<T> problem) {
+    private void branchOn(final NodeSubProblem<T> node,
+                          final Decision decision,
+                          final Problem<T> problem) {
+        if (debugLevel >= 1)
+            DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
+
         T state = problem.transition(node.state, decision);
         double cost = problem.transitionCost(node.state, decision);
         double value = saturatedAdd(node.node.value, cost);
@@ -603,13 +614,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         Node n = nextLayer.get(state);
         if (n == null) {
             n = new Node(value);
-            if (node.node.getNodeType() == NodeType.RELAXED) {
-                n.setNodeType(NodeType.RELAXED);
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
             }
             nextLayer.put(state, n);
         } else {
-            if (node.node.getNodeType() == NodeType.RELAXED) {
-                n.setNodeType(NodeType.RELAXED);
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
             }
         }
 
@@ -627,8 +638,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      */
     private void computeLocalBounds() {
         HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent = new HashSet<>();
-        parent.addAll(nextLayer.values());
+        HashSet<Node> parent = new HashSet<>(nextLayer.values());
 
         for (Node n : parent) {
             n.suffix = 0.0;
@@ -670,17 +680,21 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         DecimalFormat df = new DecimalFormat("#.##########");
 
+        if (lastLayer) {
+            node.node.fub = config.fub.fastUpperBound(node.state, new HashSet<>());
+        }
+
         String nodeStr = String.format(
-                "\"%s\nub: %s - value: %s\"",
+                "\"%s\nfub: %s - value: %s\"",
                 node.state,
-                df.format(node.ub),
+                df.format(node.node.fub),
                 df.format(node.node.value)
         );
 
         StringBuilder sb = new StringBuilder();
         sb.append(node.node.hashCode());
         sb.append(" [label=").append(nodeStr);
-        if (node.node.getNodeType() == NodeType.RELAXED) {
+        if (node.node.type == NodeType.RELAXED) {
             sb.append(", shape=box, tooltip=\"Relaxed node\"");
         } else {
             sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
@@ -704,118 +718,102 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
      *
      * @param edgeHash The hashcode of the edge to color.
+     * @param color    HTML string for the color of the edge
      */
-    private void updateBestEdgeColor(int edgeHash) {
+    private void updateBestEdgeColor(int edgeHash, String color) {
         String edgeStr = edgesDotStr.get(edgeHash);
         if (edgeStr != null) {
-            edgeStr += ", color=\"#6fb052\", fontcolor=\"#6fb052\"";
+            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
             edgesDotStr.replace(edgeHash, edgeStr);
         }
     }
 
-    /**
-     * Performs a saturated addition (no overflow)
-     */
-    private static double saturatedAdd(double a, double b) {
-        double sum = a + b;
-        if (Double.isInfinite(sum)) {
-            return sum > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-        }
-        return sum;
-    }
+    private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
+        HashSet<Node> current = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>();
 
-    /**
-     * An iterator that transforms the inner subroblems into actual subroblems
-     */
-    private static final class NodeSubProblemsAsSubProblemsIterator<T> implements Iterator<SubProblem<T>> {
-        /**
-         * The collection being iterated upon
-         */
-        private final Iterator<NodeSubProblem<T>> it;
-        /**
-         * The list of decisions constitutive of the path to root
-         */
-        private final Set<Decision> ptr;
-
-        /**
-         * Creates a new instance
-         *
-         * @param it  the decorated iterator
-         * @param ptr the path to root
-         */
-        public NodeSubProblemsAsSubProblemsIterator(final Iterator<NodeSubProblem<T>> it, final Set<Decision> ptr) {
-            this.it = it;
-            this.ptr = ptr;
+        if (cutSetType == CutSetType.LastExactLayer) {
+            for (NodeSubProblem<T> n : nodePerLayer.get(depthLEL)) {
+                parent.add(n.node);
+            }
+        } else {
+            parent.addAll(nextLayer.values());
         }
 
-        @Override
-        public boolean hasNext() {
-            return it.hasNext();
-        }
+        while (!parent.isEmpty()) {
+            HashSet<Node> tmp = current;
+            current = parent;
+            parent = tmp;
+            parent.clear();
 
-        @Override
-        public SubProblem<T> next() {
-            return it.next().toSubProblem(ptr);
-        }
-    }
-
-    /**
-     * An iterator that transforms the inner subroblems into their representing states
-     */
-    private static final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
-        /**
-         * The collection being iterated upon
-         */
-        private final Iterator<NodeSubProblem<T>> it;
-
-        /**
-         * Creates a new instance
-         *
-         * @param it the decorated iterator
-         */
-        public NodeSubProblemsAsStateIterator(final Iterator<NodeSubProblem<T>> it) {
-            this.it = it;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        @Override
-        public T next() {
-            return it.next().state;
-        }
-    }
-
-    /**
-     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
-     */
-    private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>> {
-        /**
-         * This is the decorated ranking
-         */
-        private final StateRanking<T> delegate;
-
-        /**
-         * Creates a new instance
-         *
-         * @param delegate the decorated ranking
-         */
-        public NodeSubroblemComparator(final StateRanking<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.getValue() - o2.getValue();
-            if (cmp == 0) {
-                return delegate.compare(o1.state, o2.state);
-            } else {
-                return Double.compare(o1.getValue(), o2.getValue());
+            for (Node n : current) {
+                for (Edge e : n.edges) {
+                    // Note: we might want to do something and stop as soon as the lel has been reached
+                    Node origin = e.origin;
+                    parent.add(origin);
+                    if ((n.isInExactCutSet || n.isAboveExactCutSet)
+                            && origin.type == NodeType.EXACT
+                            && !origin.isInExactCutSet) {
+                        origin.isAboveExactCutSet = true;
+                    }
+                }
             }
         }
     }
 
+    /**
+     * Performs the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache, ArrayList<Integer> listDepth, ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, ArrayList<ArrayList<Threshold>> currentCache, double lb, CutSetType cutSetType) {
+        for (int j = listDepth.size() - 1; j >= 0; j--) {
+            int depth = listDepth.get(j);
+            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
+                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
+                if (simpleCache.getLayer(depth).containsKey(sub.state)
+                        && simpleCache.getLayer(depth).get(sub.state).isPresent()
+                        && sub.node.value <= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    currentCache.get(j).get(i).setValue(value);
+                } else {
+                    if (sub.ub <= lb) {
+                        double rub = saturatedDiff(sub.ub, sub.node.value);
+                        double value = saturatedDiff(lb, rub);
+                        currentCache.get(j).get(i).setValue(value);
+                    } else if (sub.node.isInExactCutSet) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) <= lb) {
+                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(lb, sub.node.suffix));
+                            currentCache.get(j).get(i).setValue(value);
+                        } else {
+                            currentCache.get(j).get(i).setValue(sub.node.value);
+                        }
+                    }
+                    if (sub.node.type == NodeType.EXACT) {
+                        if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
+                            currentCache.get(j).get(i).setExplored(true);
+                        }
+                        if (cutSetType == CutSetType.LastExactLayer
+                                && sub.node.value < currentCache.get(j).get(i).getValue()
+                                && sub.node.isInExactCutSet)
+                            currentCache.get(j).get(i).setExplored(true);
+                        if (currentCache.get(j).get(i).isExplored()) {
+                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                        }
+                    }
+                }
+                for (Edge e : sub.node.edges) {
+                    Node origin = e.origin;
+                    int index = -1;
+                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
+                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
+                            index = k;
+                            break;
+                        }
+                    }
+                    double value = Math.min(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j - 1).get(index).setValue(value);
+                }
+            }
+        }
+    }
 }
 

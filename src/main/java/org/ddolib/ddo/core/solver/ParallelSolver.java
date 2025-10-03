@@ -5,7 +5,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
@@ -74,6 +74,15 @@ public final class ParallelSolver<T, K> implements Solver {
      */
     private final boolean exportAsDot;
 
+    /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -97,6 +106,14 @@ public final class ParallelSolver<T, K> implements Solver {
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
+     *     <li>A debug level:
+     *      <ul>
+     *           <li>0: no additional tests (default)</li>
+     *          <li>1: checks if the upper bound is well-defined and if the hash code
+     *          of the states are coherent</li>
+     *           <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *       </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -107,6 +124,10 @@ public final class ParallelSolver<T, K> implements Solver {
         this.critical = new Critical<>(config.nbThreads, config.frontier);
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
+        if (config.cache != null) {
+            throw new IllegalArgumentException("Caching is not available for parallel solver");
+        }
     }
 
 
@@ -124,7 +145,6 @@ public final class ParallelSolver<T, K> implements Solver {
             workers[i] = new Thread() {
                 @Override
                 public void run() {
-                    DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>();
                     while (true) {
                         Workload<T> wl = getWorkload(threadId);
                         switch (wl.status) {
@@ -137,7 +157,7 @@ public final class ParallelSolver<T, K> implements Solver {
                                 queueMaxSize.updateAndGet(current -> Math.max(current, critical.frontier.size()));
                                 if (verbosityLevel >= 2)
                                     System.out.println("subProblem(ub:" + wl.subProblem.getUpperBound() + " val:" + wl.subProblem.getValue() + " depth:" + wl.subProblem.getPath().size() + " fastUpperBound:" + (wl.subProblem.getUpperBound() - wl.subProblem.getValue()) + "):" + wl.subProblem.getState());
-                                processOneNode(wl.subProblem, mdd, verbosityLevel, exportAsDot);
+                                processOneNode(wl.subProblem, verbosityLevel, exportAsDot);
                                 notifyNodeFinished(threadId);
                                 break;
                         }
@@ -228,7 +248,7 @@ public final class ParallelSolver<T, K> implements Solver {
      * This is typically the method you are searching for if you are searching after an implementation
      * of the branch and bound with mdd algo.
      */
-    private void processOneNode(final SubProblem<T> sub, final DecisionDiagram<T, K> mdd, int verbosityLevel, boolean exportAsDot) {
+    private void processOneNode(final SubProblem<T> sub, int verbosityLevel, boolean exportAsDot) {
         // 1. RESTRICTION
         double nodeUB = sub.getUpperBound();
         double bestLB = bestLB();
@@ -238,50 +258,40 @@ public final class ParallelSolver<T, K> implements Solver {
         }
 
         int width = shared.width.maximumWidth(sub.getState());
-        CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Restricted,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.fub,
-                shared.dominance,
-                bestLB,
-                critical.frontier.cutSetType(),
-                shared.restrictStrategy,
-                false
-        );
-
-        mdd.compile(compilation);
-        maybeUpdateBest(mdd, verbosityLevel);
-        if (mdd.isExact()) {
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        compilation.compilationType = CompilationType.Restricted;
+        compilation.problem = shared.problem;
+        compilation.relaxation = shared.relax;
+        compilation.variableHeuristic = shared.varh;
+        compilation.stateRanking = shared.ranking;
+        compilation.residual = sub;
+        compilation.maxWidth = width;
+        compilation.fub = shared.fub;
+        compilation.dominance = shared.dominance;
+        compilation.cache = Optional.empty();
+        compilation.bestLB = bestLB;
+        compilation.cutSetType = critical.frontier.cutSetType();
+        compilation.exportAsDot = false;
+        compilation.debugLevel = this.debugLevel;
+        compilation.reductionStrategy = shared.restrictStrategy;
+        DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+        restrictedMdd.compile();
+        maybeUpdateBest(restrictedMdd, verbosityLevel);
+        if (restrictedMdd.isExact()) {
             return;
         }
 
         // 2. RELAXATION
         bestLB = bestLB();
-        compilation = new CompilationInput<>(
-                CompilationType.Relaxed,
-                shared.problem,
-                shared.relax,
-                shared.varh,
-                shared.ranking,
-                sub,
-                width,
-                shared.fub,
-                shared.dominance,
-                bestLB,
-                critical.frontier.cutSetType(),
-                shared.relaxStrategy,
-                false
-        );
-        mdd.compile(compilation);
-        if (mdd.isExact()) {
-            maybeUpdateBest(mdd, verbosityLevel);
+        compilation.compilationType = CompilationType.Relaxed;
+        compilation.bestLB = bestLB;
+        compilation.reductionStrategy = shared.relaxStrategy;
+        DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+        relaxedMdd.compile();
+        if (relaxedMdd.isExact()) {
+            maybeUpdateBest(relaxedMdd, verbosityLevel);
         } else {
-            enqueueCutset(mdd);
+            enqueueCutset(relaxedMdd);
         }
     }
 
@@ -392,7 +402,7 @@ public final class ParallelSolver<T, K> implements Solver {
     /**
      * The status of when a workload is retrieved
      */
-    private static enum WorkloadStatus {
+    private enum WorkloadStatus {
         /**
          * When the complete state space has been explored
          */

@@ -1,6 +1,6 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram.NodeSubProblem;
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
 
 import java.util.*;
 
