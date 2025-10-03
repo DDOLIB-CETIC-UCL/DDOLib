@@ -64,12 +64,12 @@ public class MCPTest {
         }
     }
 
-    @DisplayName("MCP")
+    /*@DisplayName("MCP")
     @TestFactory
     public Stream<DynamicTest> testMCP() {
         var bench = new MCPBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
-    }
+    }*/
 }

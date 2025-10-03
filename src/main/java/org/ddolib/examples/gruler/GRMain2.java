@@ -1,20 +1,18 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.Solver;
+import org.ddolib.astar.core.solver.ACSSolver;
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DefaultFastLowerBound;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
-
 
 /**
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
@@ -31,24 +29,25 @@ import java.util.Arrays;
  * The cost of a transition is defined as the distance between the new mark and the
  * previous last mark. Consequently, the cost of a solution is the position of the last mark.
  */
-public class GRCacheMain {
+public class GRMain2 {
 
     public static void main(final String[] args) throws IOException {
-        SolverConfig<GRState, NullType> config = new SolverConfig<>();
-        GRProblem problem = new GRProblem(9);
+        SolverConfig<GRState, Integer> config = new SolverConfig<>();
+        GRProblem problem = new GRProblem(3);
         config.problem = problem;
-        config.relax = new GRRelax();
-        config.ranking = new GRRanking();
+//        config.relax = new GRRelax();
+//        config.ranking = new GRRanking();
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
-        config.cache = new SimpleCache<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
-        final Solver solver = new SequentialSolver<>(config);
+//        config.exportAsDot = true;
+        config.flb = new GRFastLowerBound(problem);
+//        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+//        final SequentialSolver<GRState, Integer> solver = new SequentialSolver<>(config);
+        final AStarSolver<GRState, Integer> solver = new AStarSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.minimize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
-        System.out.println(stats);
 
         int[] solution = solver.bestSolution()
                 .map(decisions -> {
@@ -61,8 +60,8 @@ public class GRCacheMain {
                 })
                 .get();
 
-        System.out.println(String.format("Duration : %.3f", duration));
-        System.out.println(String.format("Objective: %s", solver.bestValue().get()));
-        System.out.println(String.format("Solution : %s", Arrays.toString(solution)));
+        System.out.printf("Duration : %.3f%n", duration);
+        System.out.printf("Objective: %s%n", solver.bestValue().get());
+        System.out.printf("Solution : %s%n", Arrays.toString(solution));
     }
 }

@@ -268,14 +268,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         }
         if (testFLB) {
             Stream<DynamicTest> flbTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFlb(p))
+                    DynamicTest.dynamicTest(String.format("FLB for %s", p.toString()), () -> testFlb(p))
             );
             allTests = Stream.concat(allTests, flbTests);
         }
 
         if (testRelaxation && testFLB) {
             Stream<DynamicTest> relaxAndFlbTest = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Relax and FUB for %s", p.toString()), () -> testFlbOnRelaxedNodes(p))
+                    DynamicTest.dynamicTest(String.format("Relax and FLB for %s", p.toString()), () -> testFlbOnRelaxedNodes(p))
             );
             allTests = Stream.concat(allTests, relaxAndFlbTest);
         }

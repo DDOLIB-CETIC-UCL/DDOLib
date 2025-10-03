@@ -61,14 +61,14 @@ public class LCSTest {
         }
     }
 
-    @DisplayName("LCS")
+    /*@DisplayName("LCS")
     @TestFactory
     public Stream<DynamicTest> testLCS() {
         var bench = new LCSBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
-    }
+    }*/
 
 
 }

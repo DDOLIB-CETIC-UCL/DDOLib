@@ -13,11 +13,8 @@ public class SMICRelax implements Relaxation<SMICState> {
     public SMICRelax(SMICProblem problem) {
         this.problem = problem;
     }
-
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-//        final SMICState s = states.next();
-//        Set<Integer> intersectionJobs = new HashSet<>(s.getRemainingJobs());
 
         SMICState state = states.next();
         Set<Integer> intersectionJobs = new HashSet<>(state.remainingJobs());
