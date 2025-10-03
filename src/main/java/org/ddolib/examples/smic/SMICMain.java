@@ -27,12 +27,12 @@ import java.util.Scanner;
  */
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SMICProblem problem = readProblem("data/SMIC/data10_1.txt");
+        SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
         SolverConfig<SMICState, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SMICRelax(problem);
         config.ranking = new SMICRanking();
-        config.width = new FixedWidth<>(200);
+        config.width = new FixedWidth<>(20);
         config.varh = new DefaultVariableHeuristic<>();
         config.flb = new SMICFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());

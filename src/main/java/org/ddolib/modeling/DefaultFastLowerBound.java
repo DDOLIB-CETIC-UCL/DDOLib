@@ -10,6 +10,6 @@ import java.util.Set;
 public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
     @Override
     public double fastLowerBound(T state, Set<Integer> variables) {
-        return Double.NEGATIVE_INFINITY;
+        return Integer.MIN_VALUE;
     }
 }

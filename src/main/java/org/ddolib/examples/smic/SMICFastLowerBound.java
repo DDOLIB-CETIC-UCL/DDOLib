@@ -14,9 +14,11 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
     @Override
     public double fastLowerBound(SMICState state, Set<Integer> variables) {
         double lowerBound = 0.0;
+        int minRelease = Integer.MAX_VALUE;
         for (int j : state.remainingJobs()) {
+            minRelease = Math.min(minRelease, problem.release[j]);
             lowerBound += problem.processing[j];
         }
-        return lowerBound;
+        return Math.min(0, minRelease - state.currentTime()) + lowerBound; //minProcessing * variables.size();
     }
 }
