@@ -39,7 +39,6 @@ public class GRTest {
             config.ranking = new GRRanking();
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new GRFastLowerBound(problem);
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             return config;
         }
