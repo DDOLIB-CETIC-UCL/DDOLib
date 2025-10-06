@@ -17,8 +17,9 @@ public final class MCPMain {
 
     public static void main(String[] args) throws IOException {
 
-        final String filename = args.length == 0 ? Paths.get("data", "MCP", "mcp_4.txt").toString() : args[0];
-        final int w = args.length == 2 ? Integer.parseInt(args[1]) : 500;
+        final String filename = args.length == 0 ?
+                Paths.get("data", "MCP", "mcp_5_2.txt").toString() : args[0];
+        final int w = args.length == 2 ? Integer.parseInt(args[1]) : 2;
 
         SolverConfig<MCPState, NullType> config = new SolverConfig<>();
         final MCPProblem problem = MCPIO.readInstance(filename);
@@ -27,14 +28,16 @@ public final class MCPMain {
         config.ranking = new MCPRanking();
         config.flb = new MCPFastLowerBound(problem);
 
-        config.width = new FixedWidth<>(w);
+        config.width = new FixedWidth<>(2);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.exportAsDot = true;
 
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.minimize();
+        config.verbosityLevel = 3;
+        var stat = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());
@@ -52,7 +55,7 @@ public final class MCPMain {
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %f%n", solver.bestValue().get());
         System.out.printf("Solution : S = %s T = %s%n", s, t);
-
+        System.out.println(stat);
 
     }
 }
