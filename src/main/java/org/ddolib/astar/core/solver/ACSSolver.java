@@ -216,13 +216,15 @@ public final class ACSSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
+
+            // Saves all children and finds the dominant ones
             children.add(new SubProblem<>(newState, value, fastUpperBound, path));
             dominance.updateDominance(newState, path.size(), value);
         }
 
 
         for (SubProblem<T> child : children) {
-            // if the new state is dominated, we skip it
+            // If the new state is dominated, we skip it
             if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
                 T newState = child.getState();
                 if (((present[varIndex].contains(newState)

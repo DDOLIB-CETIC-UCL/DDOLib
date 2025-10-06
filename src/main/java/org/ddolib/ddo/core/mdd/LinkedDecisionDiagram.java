@@ -156,6 +156,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
             this.currentLayer.clear();
 
+            // Finds dominant nodes
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
@@ -166,6 +167,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
+                // If a node is dominated, we skip it
                 if (node.type != NodeType.EXACT || !dominance.isDominated(state,
                         depthGlobalDD, node.value)) {
                     double fub = config.fub.fastUpperBound(state, variables);

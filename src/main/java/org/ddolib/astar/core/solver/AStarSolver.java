@@ -265,12 +265,13 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastUpperBound = ub.fastUpperBound(newState, varSet(path));
 
+            // Saves all the children and finds the dominant ones
             children.add(new SubProblem<>(newState, value, fastUpperBound, path));
             dominance.updateDominance(newState, path.size(), value);
         }
 
         for (SubProblem<T> child : children) {
-            // if the new state is dominated, we skip it
+            // If the new state is dominated, we skip it
             if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
                 double cost = child.getValue() - subProblem.getValue();
                 if (debugLevel >= 2) {
