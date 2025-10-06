@@ -74,6 +74,7 @@ public class SMICTest {
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench();
         bench.testRelaxation = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         return bench.generateTests();
     }
