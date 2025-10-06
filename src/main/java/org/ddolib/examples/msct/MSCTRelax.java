@@ -21,8 +21,8 @@ public class MSCTRelax implements Relaxation<MSCTState> {
         int minCurrentTime = Integer.MAX_VALUE;
         while (states.hasNext()) {
             final MSCTState state = states.next();
-            unionJobs.addAll(state.getRemainingJobs());
-            minCurrentTime = Math.min(state.getCurrentTime(), minCurrentTime);
+            unionJobs.addAll(state.remainingJobs());
+            minCurrentTime = Math.min(state.currentTime(), minCurrentTime);
         }
         return new MSCTState(unionJobs, minCurrentTime);
     }

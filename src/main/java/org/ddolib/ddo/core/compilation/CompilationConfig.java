@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -56,9 +56,9 @@ public class CompilationConfig<T, K> {
     public Integer maxWidth = null;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
      */
-    public FastUpperBound<T> fub = null;
+    public FastLowerBound<T> flb = null;
 
     /**
      * The dominance checker used to prune the search space.
@@ -71,9 +71,9 @@ public class CompilationConfig<T, K> {
     public Optional<SimpleCache<T>> cache = Optional.empty();
 
     /**
-     * The best known lower bound at the time when the dd is being compiled.
+     * The best known upper bound at the time when the dd is being compiled.
      */
-    public Double bestLB = null;
+    public Double bestUB = null;
 
     /**
      * The type of cut set used in the compilation.
@@ -98,6 +98,6 @@ public class CompilationConfig<T, K> {
      */
     @Override
     public String toString() {
-        return String.format("Compilation: %s - Sub problem: %s - bestLB: %f", compilationType, residual, bestLB);
+        return String.format("Compilation: %s - Sub problem: %s - bestUB: %f", compilationType, residual, bestUB);
     }
 }

@@ -83,7 +83,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
             toReturn += weight(t(i), f(i));
             toReturn += weight(f(i), t(i));
         }
-        return toReturn;
+        return -toReturn;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
                         positiveOrNull(-s_k_l) + weight(t(k), f(l)));
             }
         }
-        return toReturn;
+        return -toReturn;
     }
 
 
@@ -200,6 +200,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 }

@@ -74,7 +74,7 @@ public class TSProblem implements Problem<TSState> {
                 cost += costs[actor] * duration[scene];
             }
         }
-        return -cost;
+        return cost;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class TSProblem implements Problem<TSState> {
         }
 
 
-        return -cost; // Talent scheduling is a minimization problem. To get a maximization
+        return cost;
     }
 
 

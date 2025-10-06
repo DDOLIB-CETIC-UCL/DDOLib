@@ -42,7 +42,7 @@ public final class LCSMain {
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
+        if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
@@ -103,7 +103,8 @@ public final class LCSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_26_50-60_test.txt" : args[0];
+        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_3_10_test.txt" :
+                args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         SolverConfig<LCSState, NullType> config = new SolverConfig<>();
@@ -111,7 +112,7 @@ public final class LCSMain {
         config.problem = problem;
         config.relax = new LCSRelax(problem);
         config.ranking = new LCSRanking();
-        config.fub = new LCSFastUpperBound(problem);
+        config.flb = new LCSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
@@ -122,7 +123,7 @@ public final class LCSMain {
         final ParallelSolver<LCSState, NullType> solver = new ParallelSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());

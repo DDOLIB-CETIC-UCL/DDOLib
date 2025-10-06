@@ -48,7 +48,7 @@ public class TSPTWMain {
         config.problem = problem;
         config.relax = new TSPTWRelax(problem);
         config.ranking = new TSPTWRanking();
-        config.fub = new TSPTWFastUpperBound(problem);
+        config.flb = new TSPTWFastLowerBound(problem);
 
         config.width = new FixedWidth<>(2);
         config.varh = new DefaultVariableHeuristic<>();
@@ -61,7 +61,7 @@ public class TSPTWMain {
         final Solver solver = new ExactSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.maximize();
+        SearchStatistics stat = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 
