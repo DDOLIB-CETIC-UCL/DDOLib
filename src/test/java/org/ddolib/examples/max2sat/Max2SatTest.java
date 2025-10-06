@@ -58,14 +58,14 @@ public class Max2SatTest {
         }
     }
 
-    /*@DisplayName("Max2Sat")
+    @DisplayName("Max2Sat")
     @TestFactory
     public Stream<DynamicTest> testMax2Sat() {
         var bench = new Max2SatBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
-    }*/
+    }
 
 
 }
