@@ -152,8 +152,8 @@ public final class AStarSolver<T, K> implements Solver {
         while (!open.isEmpty()) {
             if (verbosityLevel >= 1) {
                 if (System.currentTimeMillis() - ti > 500) {
-                    System.out.println("bestObj:" + bestUB+ " lb min:"+ open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(open.peek().f()-bestUB)/bestUB)+ "%");
+                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
                     ti = System.currentTimeMillis();
                 }
             }
@@ -176,8 +176,8 @@ public final class AStarSolver<T, K> implements Solver {
                 bestUB = sub.getValue();
 
                 if (verbosityLevel >= 1) {
-                    System.out.println("bestObj:" + bestUB+ " lb min:"+ open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100*Math.abs(open.peek().f()-bestUB)/bestUB)+ "%");
+                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
+                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
                     ti = System.currentTimeMillis();
                 }
 
@@ -185,7 +185,7 @@ public final class AStarSolver<T, K> implements Solver {
                     // with A*, the first complete solution is optimal only if there is no negative transition cost
                     break;
                 }
-                if (open.peek().f() >= bestUB-0.00001) {
+                if (open.peek().f() >= bestUB - 0.00001) {
                     // gap is 0%
                     break;
                 }
@@ -227,11 +227,17 @@ public final class AStarSolver<T, K> implements Solver {
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+        Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
+        if (debugLevel > 0) {
+            for (int i = 0; i < depth; i++) {
+                nullDecisions.add(new Decision(i, 0));
+            }
+        }
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                Collections.EMPTY_SET);
+                nullDecisions);
     }
 
 
@@ -257,7 +263,6 @@ public final class AStarSolver<T, K> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
-
 
 
             // if the new state is dominated, we skip it
