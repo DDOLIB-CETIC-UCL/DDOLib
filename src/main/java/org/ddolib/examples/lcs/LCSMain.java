@@ -42,7 +42,7 @@ public final class LCSMain {
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
+        if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
