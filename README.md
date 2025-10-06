@@ -153,11 +153,6 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
     mvn test
     ```
 
-## Known bugs
-
-There is a bug with the A* and the Best First Search solver when using the default fast upper bound.
-We are working on it. The tests failing because this bug are disabled.
-
 ## Acknowledgments
 
 This project is funded by the Walloon Region (Belgium) as part of the Win4Collective project Convention 2410118.
