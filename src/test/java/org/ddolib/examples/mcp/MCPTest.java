@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 public class MCPTest {
 
-    private static class MCPBench extends ProblemTestBench<MCPState, NullType, MCPProblem> {
+    private static class MCPBench extends ProblemTestBench<MCPState, MCPProblem> {
 
         public MCPBench() {
             super();
@@ -48,8 +47,8 @@ public class MCPTest {
         }
 
         @Override
-        protected SolverConfig<MCPState, NullType> configSolver(MCPProblem problem) {
-            SolverConfig<MCPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<MCPState> configSolver(MCPProblem problem) {
+            SolverConfig<MCPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MCPRelax(problem);
             config.ranking = new MCPRanking();

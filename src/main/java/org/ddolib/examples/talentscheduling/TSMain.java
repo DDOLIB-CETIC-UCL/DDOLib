@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -87,7 +86,7 @@ public class TSMain {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
-        SolverConfig<TSState, NullType> config = new SolverConfig<>();
+        SolverConfig<TSState> config = new SolverConfig<>();
         final TSProblem problem = readFile(file);
         config.problem = problem;
         config.relax = new TSRelax(problem);

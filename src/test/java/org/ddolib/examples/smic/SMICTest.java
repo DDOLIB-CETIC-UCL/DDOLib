@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 public class SMICTest {
 
-    private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
+    private static class SMICBench extends ProblemTestBench<SMICState, SMICProblem> {
 
         public SMICBench() {
             super();
@@ -48,8 +48,8 @@ public class SMICTest {
         }
 
         @Override
-        protected SolverConfig<SMICState, Integer> configSolver(SMICProblem problem) {
-            SolverConfig<SMICState, Integer> config = new SolverConfig<>();
+        protected SolverConfig<SMICState> configSolver(SMICProblem problem) {
+            SolverConfig<SMICState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new SMICRelax(problem);
             config.ranking = new SMICRanking();
@@ -63,7 +63,7 @@ public class SMICTest {
         }
 
         @Override
-        protected Solver solverForTests(SolverConfig<SMICState, Integer> config) {
+        protected Solver solverForTests(SolverConfig<SMICState> config) {
             config.width = new FixedWidth<>(100);
             return new SequentialSolver<>(config);
         }

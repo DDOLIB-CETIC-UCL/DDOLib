@@ -8,7 +8,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -108,7 +107,7 @@ public final class LCSMain {
                 args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
-        SolverConfig<LCSState, NullType> config = new SolverConfig<>();
+        SolverConfig<LCSState> config = new SolverConfig<>();
         LCSProblem problem = extractFile(file);
         config.problem = problem;
         config.relax = new LCSRelax(problem);

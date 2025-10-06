@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class TSPTWTests {
 
-    private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWDominanceKey, TSPTWProblem> {
+    private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWProblem> {
 
         public TSPTWBench() {
             super();
@@ -47,8 +47,8 @@ public class TSPTWTests {
         }
 
         @Override
-        protected SolverConfig<TSPTWState, TSPTWDominanceKey> configSolver(TSPTWProblem problem) {
-            SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
+        protected SolverConfig<TSPTWState> configSolver(TSPTWProblem problem) {
+            SolverConfig<TSPTWState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSPTWRelax(problem);
             config.ranking = new TSPTWRanking();

@@ -24,7 +24,7 @@ class MSCTTest {
     }
 
 
-    private static class MSCTBench extends ProblemTestBench<MSCTState, Integer, MSCTProblem> {
+    private static class MSCTBench extends ProblemTestBench<MSCTState, MSCTProblem> {
 
         public MSCTBench() {
             super();
@@ -37,8 +37,8 @@ class MSCTTest {
         }
 
         @Override
-        protected SolverConfig<MSCTState, Integer> configSolver(MSCTProblem problem) {
-            SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
+        protected SolverConfig<MSCTState> configSolver(MSCTProblem problem) {
+            SolverConfig<MSCTState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MSCTRelax(problem);
             config.ranking = new MSCTRanking();

@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class BKSCacheMain {
 
     public static void main(String[] args) {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        SolverConfig<Integer> config = new SolverConfig<>();
         // Example from the paper "Decision Diagram-Based Branch and Bound with Caching"
         final BKSProblem problem = new BKSProblem(15, // capacity
                 new int[]{2, 3, 6, 6, 1}, // values

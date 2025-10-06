@@ -33,7 +33,7 @@ import java.util.Optional;
  */
 public class KSCacheMain {
     public static void main(final String[] args) throws IOException {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        SolverConfig<Integer> config = new SolverConfig<>();
 
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);

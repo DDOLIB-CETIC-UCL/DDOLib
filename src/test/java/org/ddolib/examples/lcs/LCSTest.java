@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class LCSTest {
-    private static class LCSBench extends ProblemTestBench<LCSState, NullType, LCSProblem> {
+    private static class LCSBench extends ProblemTestBench<LCSState, LCSProblem> {
 
         public LCSBench() {
             super();
@@ -47,8 +46,8 @@ public class LCSTest {
         }
 
         @Override
-        protected SolverConfig<LCSState, NullType> configSolver(LCSProblem problem) {
-            SolverConfig<LCSState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<LCSState> configSolver(LCSProblem problem) {
+            SolverConfig<LCSState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new LCSRelax(problem);
             config.ranking = new LCSRanking();

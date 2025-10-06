@@ -43,7 +43,7 @@ public class TSPTWMain {
                 Paths.get("data", "TSPTW", "test_example.txt").toString() : args[0];
         final int widthFactor = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
-        SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
+        SolverConfig<TSPTWState> config = new SolverConfig<>();
         final TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(file));
         config.problem = problem;
         config.relax = new TSPTWRelax(problem);

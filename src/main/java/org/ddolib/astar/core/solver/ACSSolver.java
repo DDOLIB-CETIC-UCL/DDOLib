@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
 
-public final class ACSSolver<T, K> implements Solver {
+public final class ACSSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -42,7 +42,7 @@ public final class ACSSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * HashMap mapping (state,depth) to the f value.
@@ -91,7 +91,7 @@ public final class ACSSolver<T, K> implements Solver {
      * @param config All the parameters needed to configure the solver.
      */
     public ACSSolver(
-            SolverConfig<T, K> config,
+            SolverConfig<T> config,
             final int K) {
         this.problem = config.problem;
         this.varh = config.varh;
@@ -154,7 +154,7 @@ public final class ACSSolver<T, K> implements Solver {
                         break;
                     }
                 }
-                for (SubProblem<T> sub: candidates) {
+                for (SubProblem<T> sub : candidates) {
                     nbIter++;
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
@@ -249,7 +249,6 @@ public final class ACSSolver<T, K> implements Solver {
             }
         }
     }
-
 
 
     private Set<Integer> varSet(Set<Decision> path) {

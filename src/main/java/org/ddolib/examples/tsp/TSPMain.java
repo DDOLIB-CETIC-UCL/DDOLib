@@ -11,7 +11,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -57,7 +56,7 @@ public class TSPMain {
     }
 
     public static Solver solveTSP(TSPInstance instance) {
-        SolverConfig<TSPState, NullType> config = new SolverConfig<>();
+        SolverConfig<TSPState> config = new SolverConfig<>();
 
         final TSPProblem problem = new TSPProblem(instance.distanceMatrix);
         config.problem = problem;

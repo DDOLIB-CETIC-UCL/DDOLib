@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 public class TalenSchedTest {
 
-    private static class TSBench extends ProblemTestBench<TSState, NullType, TSProblem> {
+    private static class TSBench extends ProblemTestBench<TSState, TSProblem> {
 
         public TSBench() {
             super();
@@ -47,8 +46,8 @@ public class TalenSchedTest {
         }
 
         @Override
-        protected SolverConfig<TSState, NullType> configSolver(TSProblem problem) {
-            SolverConfig<TSState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<TSState> configSolver(TSProblem problem) {
+            SolverConfig<TSState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSRelax(problem);
             config.ranking = new TSRanking();

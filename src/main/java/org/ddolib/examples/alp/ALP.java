@@ -12,7 +12,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -31,7 +30,7 @@ public final class ALP {
         VariableHeuristic<ALPState> variableHeuristic = new DefaultVariableHeuristic<>();
         Frontier<ALPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
 
-        SolverConfig<ALPState, NullType> config = new SolverConfig<>();
+        SolverConfig<ALPState> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = relax;
         config.flb = flb;

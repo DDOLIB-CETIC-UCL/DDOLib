@@ -11,7 +11,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
@@ -85,7 +84,7 @@ public final class PDPMain {
     }
 
     public static Solver solveDPD(PDPProblem problem) {
-        SolverConfig<PDPState, NullType> config = new SolverConfig<>();
+        SolverConfig<PDPState> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new PDPRelax(problem);
         config.ranking = new PDPRanking();

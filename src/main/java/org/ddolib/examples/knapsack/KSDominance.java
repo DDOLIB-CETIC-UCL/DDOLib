@@ -2,7 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.modeling.Dominance;
 
-public class KSDominance implements Dominance<Integer, Integer> {
+public class KSDominance implements Dominance<Integer> {
 
     @Override
     public Integer getKey(Integer capa) {

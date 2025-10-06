@@ -12,9 +12,8 @@ import org.ddolib.modeling.*;
  * Class containing all the parameter needed for all kind of solver with default value.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public class SolverConfig<T, K> {
+public class SolverConfig<T> {
 
     // USEFUL FOR ALL SOLVER
 
@@ -37,7 +36,7 @@ public class SolverConfig<T, K> {
     /**
      * The dominance object that will be used to prune the search space ({@link DefaultDominanceChecker} by default).
      */
-    public DominanceChecker<T, K> dominance = new DefaultDominanceChecker<>();
+    public DominanceChecker<T> dominance = new DefaultDominanceChecker<>();
 
 
     // USEFUL FOR DDO SOLVER

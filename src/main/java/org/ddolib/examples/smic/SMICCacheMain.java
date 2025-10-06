@@ -10,7 +10,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -28,7 +27,7 @@ import java.util.Scanner;
  */
 public class SMICCacheMain {
     public static void main(String[] args) throws FileNotFoundException {
-        SolverConfig<SMICState, NullType> config = new SolverConfig<>();
+        SolverConfig<SMICState> config = new SolverConfig<>();
         SMICProblem problem = readProblem("data/SMIC/data10_5.txt");
         config.problem = problem;
         config.relax = new SMICRelax(problem);

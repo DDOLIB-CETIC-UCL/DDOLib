@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +19,7 @@ import java.util.stream.Stream;
 
 public class MispTest {
 
-    private static class MispBench extends ProblemTestBench<BitSet, NullType, MispProblem> {
+    private static class MispBench extends ProblemTestBench<BitSet, MispProblem> {
 
 
         public MispBench() {
@@ -48,8 +47,8 @@ public class MispTest {
         }
 
         @Override
-        protected SolverConfig<BitSet, NullType> configSolver(MispProblem problem) {
-            SolverConfig<BitSet, NullType> config = new SolverConfig<>();
+        protected SolverConfig<BitSet> configSolver(MispProblem problem) {
+            SolverConfig<BitSet> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MispRelax(problem);
             config.ranking = new MispRanking();

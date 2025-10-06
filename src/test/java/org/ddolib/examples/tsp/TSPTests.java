@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 
 public class TSPTests {
 
-    private static class TSPBench extends ProblemTestBench<TSPState, NullType, TSPProblem> {
+    private static class TSPBench extends ProblemTestBench<TSPState, TSPProblem> {
 
         public TSPBench() {
             super();
@@ -43,8 +42,8 @@ public class TSPTests {
         }
 
         @Override
-        protected SolverConfig<TSPState, NullType> configSolver(TSPProblem problem) {
-            SolverConfig<TSPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<TSPState> configSolver(TSPProblem problem) {
+            SolverConfig<TSPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSPRelax(problem);
             config.ranking = new TSPRanking();

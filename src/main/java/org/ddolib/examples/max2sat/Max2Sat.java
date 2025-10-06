@@ -8,7 +8,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -29,7 +28,7 @@ public final class Max2Sat {
         int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
 
         Max2SatProblem problem = readInstance(file);
-        SolverConfig<Max2SatState, NullType> config = new SolverConfig<>();
+        SolverConfig<Max2SatState> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new Max2SatRelax(problem);
         config.ranking = new Max2SatRanking();

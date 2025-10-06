@@ -31,12 +31,11 @@ import java.util.Set;
  * Solver that compile an unique exact mdd.
  * <p>
  * <b>Note:</b> By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
- * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
+ * test your model on small instances. See {@link SequentialSolver} for other use cases.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public final class ExactSolver<T, K> implements Solver {
+public final class ExactSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -66,7 +65,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -137,7 +136,7 @@ public final class ExactSolver<T, K> implements Solver {
      *
      * @param config All the parameters needed to configure the solver.
      */
-    public ExactSolver(SolverConfig<T, K> config) {
+    public ExactSolver(SolverConfig<T> config) {
         this.problem = config.problem;
         this.relax = config.relax;
         this.ranking = config.ranking;
@@ -161,7 +160,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
@@ -177,7 +176,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
 
-        DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
+        DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
         extractBest(mdd);
         if (exportAsDot) {
@@ -206,7 +205,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest(DecisionDiagram<T, K> mdd) {
+    private void extractBest(DecisionDiagram<T> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();

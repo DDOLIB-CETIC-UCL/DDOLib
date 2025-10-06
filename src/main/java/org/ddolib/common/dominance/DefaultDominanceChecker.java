@@ -8,12 +8,12 @@ import org.ddolib.modeling.Dominance;
  *
  * @param <T> The type of states.
  */
-public class DefaultDominanceChecker<T, K> extends DominanceChecker<T, K> {
+public class DefaultDominanceChecker<T> extends DominanceChecker<T> {
 
     public DefaultDominanceChecker() {
         super(new Dominance<>() {
             @Override
-            public K getKey(T state) {
+            public Object getKey(T state) {
                 return null;
             }
 
@@ -28,5 +28,5 @@ public class DefaultDominanceChecker<T, K> extends DominanceChecker<T, K> {
     public boolean updateDominance(T state, int depth, double objValue) {
         return false;
     }
-    
+
 }

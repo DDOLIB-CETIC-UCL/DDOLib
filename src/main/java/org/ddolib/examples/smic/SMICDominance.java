@@ -2,7 +2,7 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.modeling.Dominance;
 
-public class SMICDominance implements Dominance<SMICState, Integer> {
+public class SMICDominance implements Dominance<SMICState> {
     @Override
     public Integer getKey(SMICState state) {
         return 0;

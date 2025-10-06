@@ -50,9 +50,8 @@ import java.util.Set;
  * EASY TO COMPLETE.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public final class SequentialSolver<T, K> implements Solver {
+public final class SequentialSolver<T> implements Solver {
     /**
      * The problem we want to minimize
      */
@@ -106,7 +105,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -208,7 +207,7 @@ public final class SequentialSolver<T, K> implements Solver {
      *
      * @param config All the parameters needed to configure the solver.
      */
-    public SequentialSolver(SolverConfig<T, K> config) {
+    public SequentialSolver(SolverConfig<T> config) {
         this.problem = config.problem;
         this.relax = config.relax;
         this.varh = config.varh;
@@ -280,7 +279,7 @@ public final class SequentialSolver<T, K> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationConfig<T, K> compilation = new CompilationConfig<>();
+            CompilationConfig<T> compilation = new CompilationConfig<>();
             compilation.compilationType = CompilationType.Restricted;
             compilation.problem = this.problem;
             compilation.relaxation = this.relax;
@@ -296,7 +295,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
             compilation.debugLevel = this.debugLevel;
 
-            DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+            DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
@@ -316,7 +315,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.compilationType = CompilationType.Relaxed;
             compilation.bestUB = this.bestUB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
-            DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+            DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
@@ -372,7 +371,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(DecisionDiagram<T, K> currentMdd, boolean exportDot) {
+    private void maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
@@ -387,7 +386,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * If necessary, tightens the bound of nodes in the cutset of `mdd` and
      * then add the relevant nodes to the shared fringe.
      */
-    private void enqueueCutset(DecisionDiagram<T, K> currentMdd) {
+    private void enqueueCutset(DecisionDiagram<T> currentMdd) {
         Iterator<SubProblem<T>> cutset = currentMdd.exactCutset();
         while (cutset.hasNext()) {
             SubProblem<T> cutsetNode = cutset.next();

@@ -30,7 +30,7 @@ public class MSCTMain {
 //        final String instance = "data/MSCT/msct1.txt";
 //        final MSCTProblem problem = readInstance(instance);
         int n = 11;
-        SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
+        SolverConfig<MSCTState> config = new SolverConfig<>();
         MSCTProblem problem = instanceGenerator(n);
         config.problem = problem;
         System.out.println(Arrays.toString(problem.release));

@@ -12,9 +12,8 @@ import java.util.Set;
  * The latter can be compiled either as a relaxed DD or as a restricted DD.
  *
  * @param <T> the type of state.
- * @param <K> the type of key
  */
-public interface DecisionDiagram<T, K> {
+public interface DecisionDiagram<T> {
     /**
      * Triggers the compilation of the decision diagram according to the parameters given
      * in the input.

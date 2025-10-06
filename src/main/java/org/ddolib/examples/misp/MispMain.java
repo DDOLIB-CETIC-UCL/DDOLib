@@ -94,7 +94,7 @@ public final class MispMain {
                 Paths.get("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
-        SolverConfig<BitSet, Integer> config = new SolverConfig<>();
+        SolverConfig<BitSet> config = new SolverConfig<>();
         MispProblem problem = readFile(file);
         config.problem = problem;
 

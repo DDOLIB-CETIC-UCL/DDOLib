@@ -11,7 +11,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -34,7 +33,7 @@ import java.util.Arrays;
 public class GRCacheMain {
 
     public static void main(final String[] args) throws IOException {
-        SolverConfig<GRState, NullType> config = new SolverConfig<>();
+        SolverConfig<GRState> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(9);
         config.problem = problem;
         config.relax = new GRRelax();

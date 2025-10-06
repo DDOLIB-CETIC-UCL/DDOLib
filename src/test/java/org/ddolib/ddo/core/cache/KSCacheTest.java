@@ -43,7 +43,7 @@ public class KSCacheTest {
     }
 
     private static double optimalSolutionNoCaching(KSProblem problem) {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        SolverConfig<Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
         config.flb = new KSFastLowerBound(problem);
@@ -60,7 +60,7 @@ public class KSCacheTest {
 
 
     private double optimalSolutionWithCache(KSProblem problem, int w, CutSetType cutSetType) {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        SolverConfig<Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
         config.flb = new KSFastLowerBound(problem);

@@ -29,7 +29,7 @@ import java.util.Arrays;
 public class GRMain {
 
     public static void main(final String[] args) throws IOException {
-        SolverConfig<GRState, Integer> config = new SolverConfig<>();
+        SolverConfig<GRState> config = new SolverConfig<>();
         GRProblem problem = new GRProblem(9);
         config.problem = problem;
         config.relax = new GRRelax();
@@ -37,7 +37,7 @@ public class GRMain {
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        final SequentialSolver<GRState, Integer> solver = new SequentialSolver<>(config);
+        final SequentialSolver<GRState> solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();

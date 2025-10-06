@@ -28,7 +28,7 @@ import java.util.Scanner;
 public class SMICMain {
     public static void main(String[] args) throws FileNotFoundException {
         SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
-        SolverConfig<SMICState, Integer> config = new SolverConfig<>();
+        SolverConfig<SMICState> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SMICRelax(problem);
         config.ranking = new SMICRanking();

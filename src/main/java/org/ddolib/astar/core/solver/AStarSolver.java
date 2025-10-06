@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public final class AStarSolver<T, K> implements Solver {
+public final class AStarSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -56,7 +56,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
     /**
      * The priority queue containing the subproblems to be explored,
      * ordered by decreasing f = value + fastUpperBound
@@ -99,7 +99,7 @@ public final class AStarSolver<T, K> implements Solver {
     private final int debugLevel;
 
     public AStarSolver(
-            SolverConfig<T, K> config) {
+            SolverConfig<T> config) {
         this.problem = config.problem;
         this.varh = config.varh;
         this.lb = config.flb;
@@ -124,7 +124,7 @@ public final class AStarSolver<T, K> implements Solver {
      * @param rootKey The state and the depth from which start the search.
      */
     private AStarSolver(
-            SolverConfig<T, K> config,
+            SolverConfig<T> config,
             AstarKey<T> rootKey
     ) {
         this.problem = config.problem;
@@ -310,14 +310,14 @@ public final class AStarSolver<T, K> implements Solver {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        SolverConfig<T, K> config = new SolverConfig<>();
+        SolverConfig<T> config = new SolverConfig<>();
         config.problem = this.problem;
         config.varh = this.varh;
         config.flb = this.lb;
         config.dominance = this.dominance;
 
         for (AstarKey<T> current : toCheck) {
-            AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
+            AStarSolver<T> internalSolver = new AStarSolver<>(config, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 

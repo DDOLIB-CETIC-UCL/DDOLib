@@ -10,7 +10,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -31,7 +30,7 @@ public class PSMain {
     public static void main(final String[] args) throws IOException {
         PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");
 
-        SolverConfig<PSState, NullType> config = new SolverConfig<>();
+        SolverConfig<PSState> config = new SolverConfig<>();
         PSProblem problem = new PSProblem(instance);
         config.problem = problem;
         config.relax = new PSRelax(instance);

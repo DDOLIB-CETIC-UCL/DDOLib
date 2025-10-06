@@ -8,7 +8,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -21,7 +20,7 @@ public final class MCPMain {
                 Paths.get("data", "MCP", "mcp_5_2.txt").toString() : args[0];
         final int w = args.length == 2 ? Integer.parseInt(args[1]) : 2;
 
-        SolverConfig<MCPState, NullType> config = new SolverConfig<>();
+        SolverConfig<MCPState> config = new SolverConfig<>();
         final MCPProblem problem = MCPIO.readInstance(filename);
         config.problem = problem;
         config.relax = new MCPRelax(problem);

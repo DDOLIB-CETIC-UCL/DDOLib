@@ -22,7 +22,7 @@ public class BKSMain {
 
     public static void main(String[] args) {
         // Example from the paper "Decision Diagram-Based Branch and Bound with Caching"
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        SolverConfig<Integer> config = new SolverConfig<>();
 
         final BKSProblem problem = new BKSProblem(15, // capacity
                 new int[]{2, 3, 6, 6, 1}, // values

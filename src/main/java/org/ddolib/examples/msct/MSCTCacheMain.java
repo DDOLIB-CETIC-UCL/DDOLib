@@ -10,7 +10,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
@@ -31,7 +30,7 @@ public class MSCTCacheMain {
 //        final String instance = "data/MSCT/msct1.txt";
 //        final MSCTProblem problem = readInstance(instance);
         int n = 11;
-        SolverConfig<MSCTState, NullType> config = new SolverConfig<>();
+        SolverConfig<MSCTState> config = new SolverConfig<>();
         MSCTProblem problem = instanceGenerator(n);
         config.problem = problem;
         System.out.println(Arrays.toString(problem.release));
