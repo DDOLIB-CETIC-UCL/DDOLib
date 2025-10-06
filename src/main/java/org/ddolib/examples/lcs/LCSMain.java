@@ -1,11 +1,12 @@
 package org.ddolib.examples.lcs;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ParallelSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -120,7 +121,7 @@ public final class LCSMain {
 
         config.verbosityLevel = 1;
 
-        final ParallelSolver<LCSState, NullType> solver = new ParallelSolver<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();
@@ -135,9 +136,6 @@ public final class LCSMain {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.NEGATIVE_INFINITY));
-        System.out.printf("Upper Bnd : %s%n", solver.upperBound());
-        System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
-        System.out.printf("Explored : %s%n", solver.explored());
         System.out.printf("Max width : %d%n", maxWidth);
         System.out.printf("Solution : %s%n", Arrays.toString(charNbSolution));
     }

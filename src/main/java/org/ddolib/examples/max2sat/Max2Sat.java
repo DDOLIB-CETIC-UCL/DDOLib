@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ParallelSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public final class Max2Sat {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        Solver solver = new ParallelSolver<>(config);
+        Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();
