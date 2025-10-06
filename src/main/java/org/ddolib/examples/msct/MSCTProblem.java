@@ -60,7 +60,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     @Override
     public Iterator<Integer> domain(MSCTState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        for (Integer job : state.remainingJobs) {
+        for (Integer job : state.remainingJobs()) {
             domain.add(job);
         }
         return domain.iterator();
@@ -68,14 +68,14 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     @Override
     public MSCTState transition(MSCTState state, Decision decision) {
-        Set<Integer> remaining = new HashSet<>(state.remainingJobs);
+        Set<Integer> remaining = new HashSet<>(state.remainingJobs());
         remaining.remove(decision.val());
-        int currentTime = Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
+        int currentTime = Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
         return new MSCTState(remaining, currentTime);
     }
 
     @Override
     public double transitionCost(MSCTState state, Decision decision) {
-        return Math.max(state.getCurrentTime(), release[decision.val()]) + processing[decision.val()];
+        return Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
     }
 }
