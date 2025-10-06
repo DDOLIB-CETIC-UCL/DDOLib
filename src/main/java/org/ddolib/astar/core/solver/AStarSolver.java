@@ -249,6 +249,7 @@ public final class AStarSolver<T, K> implements Solver {
 
 
         final Iterator<Integer> domain = problem.domain(state, var);
+        ArrayList<SubProblem<T>> children = new ArrayList<>();
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -264,27 +265,34 @@ public final class AStarSolver<T, K> implements Solver {
             path.add(decision);
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
+            // Saves all the children and finds the dominant ones
+            children.add(new SubProblem<>(newState, value, fastLowerBound, path));
+            dominance.updateDominance(newState, path.size(), value);
+
+        }
+
+        for (SubProblem<T> child : children) {
 
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+            if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
+                double cost = child.getValue() - subProblem.getValue();
                 if (debugLevel >= 2) {
-                    checkFLBConsistency(subProblem, newSub, cost);
+                    checkFLBConsistency(subProblem, child, cost);
                 }
-                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                AstarKey<T> newKey = new AstarKey<>(child.getState(), child.getDepth());
                 Double presentValue = present.get(newKey);
-                if (presentValue != null && presentValue > newSub.f()) {
-                    open.add(newSub);
-                    present.put(newKey, newSub.f());
+                if (presentValue != null && presentValue > child.f()) {
+                    open.add(child);
+                    present.put(newKey, child.f());
                 } else {
                     Double closedValue = closed.get(newKey);
-                    if (closedValue != null && closedValue > newSub.f()) {
-                        open.add(newSub);
+                    if (closedValue != null && closedValue > child.f()) {
+                        open.add(child);
                         closed.remove(newKey);
-                        present.put(newKey, newSub.f());
+                        present.put(newKey, child.f());
                     } else {
-                        open.add(newSub);
-                        present.put(newKey, newSub.f());
+                        open.add(child);
+                        present.put(newKey, child.f());
                     }
                 }
 

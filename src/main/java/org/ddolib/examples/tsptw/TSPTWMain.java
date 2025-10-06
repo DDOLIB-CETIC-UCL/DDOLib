@@ -1,5 +1,6 @@
 package org.ddolib.examples.tsptw;
 
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -10,7 +11,6 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.ExactSolver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -58,7 +58,7 @@ public class TSPTWMain {
         config.cache = new SimpleCache<>();
 
 
-        final Solver solver = new ExactSolver<>(config);
+        final Solver solver = new AStarSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.minimize();
