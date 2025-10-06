@@ -5,7 +5,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -69,6 +68,7 @@ public class MispTest {
         var bench = new MispBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
+        bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();
     }
