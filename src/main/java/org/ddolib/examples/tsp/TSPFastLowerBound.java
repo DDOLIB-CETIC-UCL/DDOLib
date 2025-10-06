@@ -1,6 +1,6 @@
 package org.ddolib.examples.tsp;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,10 +10,10 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the TSP.
  */
-public class TSPFastUpperBound implements FastUpperBound<TSPState> {
+public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     private final double[] leastIncidentEdge;
 
-    public TSPFastUpperBound(TSPProblem problem) {
+    public TSPFastLowerBound(TSPProblem problem) {
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.POSITIVE_INFINITY;
@@ -27,7 +27,7 @@ public class TSPFastUpperBound implements FastUpperBound<TSPState> {
     }
 
     @Override
-    public double fastUpperBound(TSPState state, Set<Integer> unassignedVariables) {
+    public double fastLowerBound(TSPState state, Set<Integer> unassignedVariables) {
         BitSet toVisit = state.toVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(unassignedVariables.size());
@@ -44,6 +44,6 @@ public class TSPFastUpperBound implements FastUpperBound<TSPState> {
         for (int i = 0; i < unassignedVariables.size(); i++) {
             lb += toVisitLB.get(i);
         }
-        return -lb;
+        return lb;
     }
 }

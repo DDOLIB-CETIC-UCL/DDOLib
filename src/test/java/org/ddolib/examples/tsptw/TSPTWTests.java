@@ -52,7 +52,7 @@ public class TSPTWTests {
             config.problem = problem;
             config.relax = new TSPTWRelax(problem);
             config.ranking = new TSPTWRanking();
-            config.fub = new TSPTWFastUpperBound(problem);
+            config.flb = new TSPTWFastLowerBound(problem);
 
             config.width = new FixedWidth<>(20);
             config.varh = new DefaultVariableHeuristic<>();
@@ -67,7 +67,7 @@ public class TSPTWTests {
     public Stream<DynamicTest> testTSPTW() {
         var bench = new TSPTWBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();

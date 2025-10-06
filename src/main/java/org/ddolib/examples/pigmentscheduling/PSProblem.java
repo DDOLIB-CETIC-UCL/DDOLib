@@ -26,7 +26,7 @@ public class PSProblem implements Problem<PSState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return Optional.of(-1.0 * instance.optimal);
+        return Optional.of((double) instance.optimal);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class PSProblem implements Problem<PSState> {
             int stocking = instance.stockingCost[item] * duration;
             int changeover = state.next != -1 ? instance.changeoverCost[item][state.next] : 0;
             // stocking cost + changeover cost
-            return -(changeover + stocking);
+            return changeover + stocking;
         }
     }
 }
