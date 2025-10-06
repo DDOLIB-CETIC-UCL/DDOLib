@@ -9,11 +9,11 @@ public enum CompilationType {
      */
     Exact,
     /**
-     * If you want to compile a restricted DD which yields a lower bound on the objective
+     * If you want to compile a restricted DD which yields an upper bound on the objective
      */
     Restricted,
     /**
-     * If you want to compile a relaxed DD which yields an upper bound on the objective
+     * If you want to compile a relaxed DD which yields a lower bound on the objective
      */
     Relaxed,
 }

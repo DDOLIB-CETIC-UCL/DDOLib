@@ -3,7 +3,7 @@ package org.ddolib.modeling;
 import java.util.Set;
 
 /**
- * Default implementation of the fast lower bound that always returns {@code Double.NEGATIVE_INFINITY}.
+ * Default implementation of the fast lower bound that always returns {@code Integer.MIN_VALUE}.
  *
  * @param <T> The type of the states.
  */

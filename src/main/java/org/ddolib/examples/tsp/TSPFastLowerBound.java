@@ -8,7 +8,8 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the TSP.
+ * Implementation of a fast lower bound for the TSP:
+ * for each unvisited node, we take the smallest incident edge
  */
 public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     private final double[] leastIncidentEdge;

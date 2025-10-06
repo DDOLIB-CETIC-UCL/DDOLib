@@ -41,7 +41,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     public boolean testRelaxation = false;
 
     /**
-     * Whether the fast upper bound must be tested.
+     * Whether the fast lower bound must be tested.
      */
     public boolean testFLB = false;
 
@@ -113,7 +113,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default, the tests here disable the fast upper bound. If one of the two
+     * <b>Note:</b> By default, the tests here disable the fast lower bound. If one of the two
      * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
      * {@link #solverForTests(SolverConfig)} method.
      *
@@ -130,7 +130,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
-     * Test if the fast upper bound is an upper bound for the root node and if the compilation with only the fast upper
+     * Test if the fast lower bound is a lower bound for the root node and if the compilation with only the fast lower
      * bound enabled lead to the optimal solution.
      *
      * @param problem The instance to test.
@@ -213,8 +213,8 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     }
 
     /**
-     * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
-     * effect, it tests if the fast upper bound on merged states does not cause errors.
+     * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal solution. As side
+     * effect, it tests if the fast lower bound on merged states does not cause errors.
      *
      * @param problem The instance to test.
      */

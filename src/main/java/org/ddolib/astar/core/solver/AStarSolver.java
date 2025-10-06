@@ -20,11 +20,11 @@ import java.util.stream.IntStream;
 public final class AStarSolver<T, K> implements Solver {
 
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
     /**
-     * A suitable lb for the problem we want to maximize
+     * A suitable lb for the problem we want to minimize
      */
     private final FastLowerBound<T> lb;
     /**

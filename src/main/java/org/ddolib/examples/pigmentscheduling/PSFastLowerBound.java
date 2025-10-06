@@ -9,7 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the PSP.
+ * Implementation of a fast lower bound for the PSP.
  */
 public class PSFastLowerBound implements FastLowerBound<PSState> {
     private final PSInstance instance;

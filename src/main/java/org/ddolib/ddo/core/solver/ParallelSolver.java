@@ -446,11 +446,11 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final int nbThreads;
         /**
-         * The problem we want to maximize
+         * The problem we want to minimize
          */
         private final Problem<T> problem;
         /**
-         * A suitable relaxation for the problem we want to maximize
+         * A suitable relaxation for the problem we want to minimize
          */
         private final Relaxation<T> relax;
         /**
@@ -511,7 +511,7 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         private final Frontier<T> frontier;
         /**
-         * This vector is used to store the upper bound on the node which is
+         * This vector is used to store the lower bound on the node which is
          * currently processed by each thread.
          * <p>
          * # Note
@@ -542,7 +542,7 @@ public final class ParallelSolver<T, K> implements Solver {
          */
         double bestLB;
         /**
-         * This is the value of the best known lower bound.
+         * This is the value of the best known upper bound.
          * *WARNING* This one only gets set when the interrupt condition is satisfied
          */
         double bestUB;

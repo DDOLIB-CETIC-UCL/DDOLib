@@ -39,12 +39,12 @@ import java.util.Set;
 public final class ExactSolver<T, K> implements Solver {
 
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
 
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable relaxation for the problem we want to minimize
      */
     private final Relaxation<T> relax;
 
@@ -59,7 +59,7 @@ public final class ExactSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * The heuristic defining a lower bound of the optimal value.
      */
     private final FastLowerBound<T> flb;
 

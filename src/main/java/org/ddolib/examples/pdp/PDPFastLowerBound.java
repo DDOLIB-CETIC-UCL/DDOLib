@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the PDP
+ * Implementation of a fast lower bound for the PDP
  */
 public class PDPFastLowerBound implements FastLowerBound<PDPState> {
     private final double[] leastIncidentEdge;

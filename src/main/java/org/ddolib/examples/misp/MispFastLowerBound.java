@@ -6,7 +6,7 @@ import java.util.BitSet;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the MISP.
+ * Implementation of a fast lower bound for the MISP.
  */
 public class MispFastLowerBound implements FastLowerBound<BitSet> {
     private final MispProblem problem;

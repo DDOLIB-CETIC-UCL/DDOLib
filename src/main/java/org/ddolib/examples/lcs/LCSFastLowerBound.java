@@ -5,7 +5,7 @@ import org.ddolib.modeling.FastLowerBound;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound heuristic for the LCS.
+ * Implementation of a fast lower bound heuristic for the LCS.
  */
 public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     LCSProblem problem;

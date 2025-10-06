@@ -446,7 +446,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * Checks if the {@link FastLowerBound} is well-defined.
      * This method constructs longest path from terminal nodes and checks for each node the mdd
-     * if the associated fast upper bound if bigger than the identified path.
+     * if the associated fast lower bound is larger than the identified path.
      *
      */
     private void checkFlb(Problem<T> problem) {

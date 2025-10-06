@@ -5,7 +5,7 @@ import org.ddolib.modeling.FastLowerBound;
 import java.util.Set;
 
 /**
- * Implementation of fast upper bound heuristic for the MCP.
+ * Implementation of fast lower bound heuristic for the MCP.
  */
 public class MCPFastLowerBound implements FastLowerBound<MCPState> {
 
@@ -27,10 +27,6 @@ public class MCPFastLowerBound implements FastLowerBound<MCPState> {
         if (k == problem.nbVars()) return 0.0;
         else return -(MCPRanking.rank(state) + estimation[k] + partialSum[k]) - initVal;
     }
-
-     /* Some part of the upper bound can be precomputed (some partial sum).
-    These methods are called at initialization.
-    */
 
     /**
      * Returns the sum of positive weight from edges starting at node bigger than the given depth.

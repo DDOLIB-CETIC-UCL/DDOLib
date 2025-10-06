@@ -19,7 +19,7 @@ public class SolverConfig<T, K> {
     // USEFUL FOR ALL SOLVER
 
     /**
-     * The problem we want to maximize ({@code null} by default).
+     * The problem we want to minimize ({@code null} by default).
      */
     public Problem<T> problem = null;
 
@@ -43,7 +43,7 @@ public class SolverConfig<T, K> {
     // USEFUL FOR DDO SOLVER
 
     /**
-     * A suitable relaxation for the problem we want to maximize ({@code null} by default).
+     * A suitable relaxation for the problem we want to minimize ({@code null} by default).
      */
     public Relaxation<T> relax = null;
 
@@ -126,7 +126,7 @@ public class SolverConfig<T, K> {
     /**
      * <ul>
      *     <li>0: no additional tests (default)</li>
-     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>1: checks if the lower bound is well-defined</li>
      *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
      * </ul>
      */

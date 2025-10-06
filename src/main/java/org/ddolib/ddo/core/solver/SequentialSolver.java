@@ -54,11 +54,11 @@ import java.util.Set;
  */
 public final class SequentialSolver<T, K> implements Solver {
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable relaxation for the problem we want to minimize
      */
     private final Relaxation<T> relax;
     /**
@@ -79,18 +79,18 @@ public final class SequentialSolver<T, K> implements Solver {
      * the problem can be considered 'solved'.
      * <p>
      * # Note:
-     * This fringe orders the nodes by upper bound (so the highest ub is going
-     * to pop first). So, it is guaranteed that the upper bound of the first
-     * node being popped is an upper bound on the value reachable by exploring
+     * This fringe orders the nodes by lower bound (so the lowest lower bound is going
+     * to pop first). So, it is guaranteed that the lower-bound of the first
+     * node being popped is a lower bound on the value reachable by exploring
      * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an ub &#8804; current best
+     * exploration can be stopped as soon as a node with an lb &#8804; current best
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
 
 
     /**
-     * Value of the best known lower bound.
+     * Value of the best known upper bound.
      */
     private double bestUB;
     /**
@@ -157,7 +157,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * <ul>
      *     <li>0: no additional tests</li>
-     *     <li>1: checks if the upper bound is well-defined</li>
+     *     <li>1: checks if the lower bound is well-defined</li>
      *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
      * </ul>
      */
@@ -168,7 +168,7 @@ public final class SequentialSolver<T, K> implements Solver {
 
     <ul>
                 <li>0: no additional tests (default)</li>
-                <li>1: checks if the upper bound is well-defined</li>
+                <li>1: checks if the lower bound is well-defined</li>
                 <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
             </ul>
           </li>
@@ -368,7 +368,7 @@ public final class SequentialSolver<T, K> implements Solver {
     }
 
     /**
-     * This private method updates the best known node and lower bound in
+     * Updates the best known node and upper bound in
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
