@@ -86,7 +86,7 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
         PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
         List<NodeSubProblem<T>>[] partitions = this.costSeparation(layer);
         for (NodeSubProblem<T> singleton: partitions[0]) {
-            pqClusters.add(new ClusterNode(Double.MAX_VALUE, List.of(singleton)));
+            pqClusters.add(new ClusterNode(0.0, List.of(singleton)));
         }
         for (int i = 1; i < partitions.length; i++) {
             pqClusters.add(new ClusterNode(computeMaxDistance(partitions[i]), partitions[i]));
