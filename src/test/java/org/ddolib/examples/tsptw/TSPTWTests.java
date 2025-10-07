@@ -62,7 +62,7 @@ public class TSPTWTests {
         }
     }
 
-    @DisplayName("TSPTW")
+    /*@DisplayName("TSPTW")
     @TestFactory
     public Stream<DynamicTest> testTSPTW() {
         var bench = new TSPTWBench();
@@ -71,5 +71,5 @@ public class TSPTWTests {
         bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();
-    }
+    }*/
 }

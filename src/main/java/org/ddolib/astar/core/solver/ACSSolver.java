@@ -172,7 +172,9 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        int[] sol = constructSolution(bestSol.get().size());
+        double solVal = bestValue().get();
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
     @Override
@@ -270,5 +272,15 @@ public final class ACSSolver<T> implements Solver {
      * @param <T>   The type of the state.
      */
     private record ACSKey<T>(T state, int depth) {
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

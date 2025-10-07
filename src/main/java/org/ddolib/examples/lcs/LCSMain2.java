@@ -6,7 +6,11 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solve;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +22,7 @@ import java.util.stream.IntStream;
 /**
  * The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.
  */
-public final class LCSMain {
+public final class LCSMain2 {
 
     public static LCSProblem extractFile(String fileName) throws IOException {
         final File f = new File(fileName);
@@ -103,40 +107,37 @@ public final class LCSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_3_10_test.txt" :
-                args[0];
-        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
+        final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
+        DdoModel<LCSState> model = new DdoModel<>() {
+            private LCSProblem problem;
+            @Override
+            public Problem<LCSState> problem() {
+                try {
+                    problem = extractFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public LCSRelax relaxation() {
+                return new LCSRelax(problem);
+            }
 
-        SolverConfig<LCSState> config = new SolverConfig<>();
-        LCSProblem problem = extractFile(file);
-        config.problem = problem;
-        config.relax = new LCSRelax(problem);
-        config.ranking = new LCSRanking();
-        config.flb = new LCSFastLowerBound(problem);
+            @Override
+            public LCSRanking ranking() {
+                return new LCSRanking();
+            }
+            @Override
+            public LCSFastLowerBound lowerBound() {
+                return new LCSFastLowerBound(problem);
+            }
+        };
 
-        config.width = new FixedWidth<>(maxWidth);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        Solve<LCSState> solve = new Solve<>();
+        SearchStatistics stats = solve.minimizeDdo(model);
+        solve.onSolution(stats);
 
-        config.verbosityLevel = 1;
-
-        final Solver solver = new SequentialSolver<>(config);
-
-        long start = System.currentTimeMillis();
-        solver.minimize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.constructBestSolution(problem.nbVars());
-
-        int[] filteredSolution = Arrays.stream(solution).filter(x -> x >= 0).toArray();
-        Character[] charNbSolution = Arrays.stream(filteredSolution).
-                mapToObj(x -> problem.idToChar[x]).toArray(Character[]::new);
-
-        System.out.printf("Instance : %s%n", file);
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.NEGATIVE_INFINITY));
-        System.out.printf("Max width : %d%n", maxWidth);
-        System.out.printf("Solution : %s%n", Arrays.toString(charNbSolution));
     }
 
 }

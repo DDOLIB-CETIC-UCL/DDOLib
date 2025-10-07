@@ -3,6 +3,7 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
@@ -23,7 +24,6 @@ import java.io.IOException;
  */
 public class KSMain2 {
     public static void main(final String[] args) throws IOException {
-        SolverConfig<Integer> config = new SolverConfig<>();
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
 
@@ -56,7 +56,13 @@ public class KSMain2 {
             }
         };
 
-        Solver.minimize(model);
+        Solve<Integer> solve = new Solve<>();
+
+        SearchStatistics stats = solve.minimize(model);
+
+        solve.onSolution(stats);
+
+
 
 
     }

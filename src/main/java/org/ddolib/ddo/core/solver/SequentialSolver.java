@@ -258,10 +258,14 @@ public final class SequentialSolver<T> implements Solver {
 
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+                int[] sol = constructSolution(bestSol.get().size());
+                double solVal = bestUB;
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), solVal, sol, Double.MIN_VALUE);
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+                int[] sol = constructSolution(bestSol.get().size());
+                double solVal = bestUB;
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), solVal, sol, Double.MIN_VALUE);
             }
 
             if (verbosityLevel >= 3) {
@@ -275,7 +279,9 @@ public final class SequentialSolver<T> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap);
+                int[] sol = constructSolution(bestSol.get().size());
+                double solVal = bestValue().get();
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, solVal, sol, solVal);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -336,9 +342,11 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
+        int[] sol = constructSolution(bestSol.get().size());
+        double solVal = bestValue().get();
         return new SearchStatistics(nbIter, queueMaxSize, end - start,
                 SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"));
+                cache.map(SimpleCache::stats).orElse("noCache"),  solVal, sol, solVal);
     }
 
     @Override
@@ -425,5 +433,15 @@ public final class SequentialSolver<T> implements Solver {
             double bestInFrontier = frontier.bestInFrontier();
             return 100 * (bestUB - bestInFrontier) / bestUB;
         }
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

@@ -186,9 +186,11 @@ public final class ExactSolver<T> implements Solver {
         }
 
         long end = System.currentTimeMillis();
+        int[] sol = (bestSol.isPresent()) ? constructSolution(bestSol.get().size()) : new int[problem.nbVars()];
+        double solVal = (bestSol.isPresent()) ? bestValue.get() : Double.MIN_VALUE;
         return new SearchStatistics(1, 1, end - start,
                 SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"));
+                cache.map(SimpleCache::stats).orElse("noCache"), solVal, sol, solVal);
     }
 
 
@@ -222,5 +224,14 @@ public final class ExactSolver<T> implements Solver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }
