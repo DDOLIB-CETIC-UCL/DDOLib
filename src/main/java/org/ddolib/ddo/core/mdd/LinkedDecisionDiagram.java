@@ -527,7 +527,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
             cluster.sort(ranking.reversed());
             currentLayer.add(cluster.getFirst());
-            cluster.clear();
         }
     }
 
