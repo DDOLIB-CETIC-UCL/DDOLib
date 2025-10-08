@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Solver that compile an unique exact mdd.
@@ -152,6 +153,11 @@ public final class ExactSolver<T> implements Solver {
 
     @Override
     public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
+
+    @Override
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),

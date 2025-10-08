@@ -24,10 +24,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -226,6 +223,10 @@ public final class SequentialSolver<T> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
     }
+    @Override
+    public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
 
 
     @Override
@@ -258,18 +259,28 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                int[] sol = constructSolution(bestSol.get().size());
-                Optional<Double> solVal = Optional.of(bestUB);
-                return new SearchStatistics(nbIter, queueMaxSize, end - start,
-                        currentSearchStatus(gap()), gap(), solVal, sol, Optional.empty());
+            int[] sol = new int[problem.nbVars()];
+            Optional<Double> solVal = Optional.empty();
+            SearchStatistics statistics;
+            if (limit != null) {
+                if (bestSol.isEmpty()) {
+                    Arrays.fill(sol, -1);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+                } else {
+                    if (bestSol.get().size() < problem.nbVars()) {
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.UNSAT, gap(), solVal, sol, solVal);
+                    } else {
+                        sol = constructSolution(bestSol.get().size());
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.SAT, gap(), solVal, sol, solVal);
+                    }
+                }
+                if (limit.test(statistics)) {
+                    return statistics;
+                }
             }
-            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
-                int[] sol = constructSolution(bestSol.get().size());
-                Optional<Double> solVal = Optional.of(bestUB);
-                return new SearchStatistics(nbIter, queueMaxSize, end - start,
-                        currentSearchStatus(gap()), gap(), solVal, sol, Optional.empty());
-            }
+
 
             if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub);
@@ -282,8 +293,8 @@ public final class SequentialSolver<T> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                int[] sol = constructSolution(bestSol.get().size());
-                Optional<Double> solVal = Optional.of(bestUB);
+                sol = constructSolution(bestSol.get().size());
+                solVal = Optional.of(bestUB);
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, solVal, sol, solVal);
             }
 

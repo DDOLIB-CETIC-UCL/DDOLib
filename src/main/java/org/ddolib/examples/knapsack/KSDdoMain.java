@@ -75,13 +75,13 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(1000);
+                return new FixedWidth<>(100);
             }
         };
 
         Solve<Integer> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solve.minimizeDdo(model, s -> s.runTimeMS() >=  10000);
 
         solve.onSolution(stats);
 

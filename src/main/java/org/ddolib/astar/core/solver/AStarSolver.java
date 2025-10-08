@@ -13,6 +13,7 @@ import org.ddolib.util.DebugUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -143,6 +144,11 @@ public final class AStarSolver<T> implements Solver {
 
     @Override
     public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
+
+    @Override
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long t0 = System.currentTimeMillis();
         long ti = System.currentTimeMillis();
         int nbIter = 0;
@@ -163,6 +169,26 @@ public final class AStarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+            int[] sol = new int[problem.nbVars()];
+            Optional<Double> solVal = Optional.empty();
+            SearchStatistics statistics;
+            if (bestSol.isEmpty()) {
+                Arrays.fill(sol, -1);
+                statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+            } else {
+                if (bestSol.get().size() < problem.nbVars()) {
+                    solVal = bestValue();
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size() , solVal, sol, solVal);
+                } else {
+                    sol = constructSolution(bestSol.get().size());
+                    solVal = bestValue();
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                }
+            }
+            if (limit.test(statistics)) {
+                return statistics;
+            }
+
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
@@ -323,7 +349,7 @@ public final class AStarSolver<T> implements Solver {
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 
-            internalSolver.minimize();
+            internalSolver.minimize(null);
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
             if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");

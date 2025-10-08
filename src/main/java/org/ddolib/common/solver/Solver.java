@@ -19,6 +19,8 @@ public interface Solver {
      */
     SearchStatistics minimize();
 
+    SearchStatistics minimize(Predicate<SearchStatistics> limit);
+
     /**
      * @return the value of the best solution in this decision diagram if there is one
      */
