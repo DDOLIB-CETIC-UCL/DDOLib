@@ -23,6 +23,8 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     private Optional<String> name = Optional.empty();
 
+    private Double rootValue;
+
     /**
      * Constructs a new instance of the SRFLP.
      *
@@ -76,9 +78,22 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         return new SRFLPState(all, new BitSet(nbVars()), new int[nbVars()], 0);
     }
 
+    /**
+     * Returns a constant accounting for all contributions of half department lengths.
+     *
+     * @return The problem's initial value
+     */
     @Override
     public double initialValue() {
-        return 0;
+        if (rootValue == null) {
+            rootValue = 0.0;
+            for (int i = 0; i < nbVars(); i++) {
+                for (int j = i + 1; j < nbVars(); j++) {
+                    rootValue += flows[i][j] * (lengths[i] + lengths[j]) * 0.5;
+                }
+            }
+        }
+        return rootValue;
     }
 
     @Override
@@ -127,21 +142,6 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         }
 
         return cut * lengths[decision.val()];
-    }
-
-    /**
-     * Returns a constant accounting for all contributions of half department lengths.
-     *
-     * @return A constant accounting for all contributions of half department lengths.
-     */
-    public double rootValue() {
-        double toReturn = 0;
-        for (int i = 0; i < nbVars(); i++) {
-            for (int j = i + 1; j < nbVars(); j++) {
-                toReturn += flows[i][j] * (lengths[i] + lengths[j]) * 0.5;
-            }
-        }
-        return toReturn;
     }
 
     @Override

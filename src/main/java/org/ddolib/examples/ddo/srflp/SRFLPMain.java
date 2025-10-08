@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.ExactSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.IOException;
@@ -32,7 +32,8 @@ import java.util.Arrays;
 public final class SRFLPMain {
 
     public static void main(String[] args) throws IOException {
-        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "Cl5").toString() : args[0];
+        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :
+                args[0];
         final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
         final SRFLPProblem problem = SRFLPIO.readInstance(filename);
@@ -46,14 +47,14 @@ public final class SRFLPMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        Solver solver = new SequentialSolver<>(config);
+        Solver solver = new ExactSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());
-        double obj = solver.bestValue().get() + problem.rootValue();
+        double obj = solver.bestValue().get();
 
         System.out.printf("Instance: %s%n", filename);
         System.out.printf("Max width: %s%n", maxWidth);
