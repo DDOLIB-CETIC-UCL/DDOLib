@@ -126,7 +126,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
      *
      * @param state        The state on which compute the lower bound.
      * @param complete     How many department must be placed to complete the solution.
-     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @param maxFromMaybe The maximum number of departments that can be selected.
      * @return The pairs of departments and flows, sorted in decreasing order, that will be used
      * to compute the free lower bound.
      */
@@ -162,7 +162,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
      * Selects the cuts from the input state that will be used to compute the fixed lower bound.
      *
      * @param state        The state on which compute the lower bound.
-     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @param maxFromMaybe The maximum number of departments that can be selected.
      * @return The cuts from the inputs state, sorted in decreasing order, that will be used
      * to compute the fixed lower bound.
      */
@@ -193,7 +193,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
 
 
     /**
-     * Contains a pair of department and their flow. It is used to sort the pairs of départment by their flow.
+     * Contains a pair of department and their flow. It is used to sort the pairs of department by their flow.
      *
      * @param x    The first department.
      * @param y    The seconde department.
@@ -227,7 +227,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
     }
 
     /**
-     * Contains the length and the cut associated to a state. Used to be sort following the ratio {@code cut / length}
+     * Contains the length and the cut associated to a state. Used to sort following the ratio {@code cut / length}
      *
      * @param length The length associated to a state.
      * @param cut    The cut value associated to a state (see {@link SRFLPState}

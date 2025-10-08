@@ -11,7 +11,7 @@ import java.util.Objects;
  * @param maybe Used by merged nodes. Contains department that must be placed for some of the merged nodes but that
  *              has already been placed for other ones.
  * @param cut   For each free department, contains the sum of all traffic intensities from the fixed departments and
- *              each free department.
+ *              the free department.
  * @param depth The depth of the state in the associated MDD.
  */
 public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {
