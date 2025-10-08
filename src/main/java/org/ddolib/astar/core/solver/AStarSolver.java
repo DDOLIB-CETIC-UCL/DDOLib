@@ -169,24 +169,26 @@ public final class AStarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
-            int[] sol = new int[problem.nbVars()];
-            Optional<Double> solVal = Optional.empty();
-            SearchStatistics statistics;
-            if (bestSol.isEmpty()) {
-                Arrays.fill(sol, -1);
-                statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
-            } else {
-                if (bestSol.get().size() < problem.nbVars()) {
-                    solVal = bestValue();
-                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size() , solVal, sol, solVal);
+            if (limit != null) {
+                int[] sol = new int[problem.nbVars()];
+                Optional<Double> solVal = Optional.empty();
+                SearchStatistics statistics;
+                if (bestSol.isEmpty()) {
+                    Arrays.fill(sol, -1);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
                 } else {
-                    sol = constructSolution(bestSol.get().size());
-                    solVal = bestValue();
-                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                    if (bestSol.get().size() < problem.nbVars()) {
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+                    } else {
+                        sol = constructSolution(bestSol.get().size());
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                    }
                 }
-            }
-            if (limit.test(statistics)) {
-                return statistics;
+                if (limit.test(statistics)) {
+                    return statistics;
+                }
             }
 
             present.remove(subKey);

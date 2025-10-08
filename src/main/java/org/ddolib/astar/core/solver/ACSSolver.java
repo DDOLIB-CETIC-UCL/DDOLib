@@ -142,24 +142,26 @@ public final class ACSSolver<T> implements Solver {
         int queueMaxSize = 0;
         open[0].add(root);
         present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
-        int[] sol = new int[problem.nbVars()];
-        Optional<Double> solVal = Optional.empty();
-        SearchStatistics statistics;
-        if (bestSol.isEmpty()) {
-            Arrays.fill(sol, -1);
-            statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
-        } else {
-            if (bestSol.get().size() < problem.nbVars()) {
-                solVal = bestValue();
-                statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+        if (limit != null) {
+            int[] sol = new int[problem.nbVars()];
+            Optional<Double> solVal = Optional.empty();
+            SearchStatistics statistics;
+            if (bestSol.isEmpty()) {
+                Arrays.fill(sol, -1);
+                statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
             } else {
-                sol = constructSolution(bestSol.get().size());
-                solVal = bestValue();
-                statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                if (bestSol.get().size() < problem.nbVars()) {
+                    solVal = bestValue();
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+                } else {
+                    sol = constructSolution(bestSol.get().size());
+                    solVal = bestValue();
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                }
             }
-        }
-        if (limit.test(statistics)) {
-            return statistics;
+            if (limit.test(statistics)) {
+                return statistics;
+            }
         }
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
@@ -196,8 +198,8 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        sol = constructSolution(problem.nbVars());
-        solVal = bestValue();
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
