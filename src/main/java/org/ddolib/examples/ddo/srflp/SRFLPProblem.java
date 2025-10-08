@@ -34,6 +34,14 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         this.lengths = lengths;
         this.flows = flows;
         this.optimal = optimal;
+
+        for (int i = 0; i < nbVars(); i++) {
+            for (int j = i + 1; j < nbVars(); j++) {
+                if (flows[i][j] != flows[j][i]) {
+                    throw new IllegalArgumentException("flows matrix is not symmetric");
+                }
+            }
+        }
     }
 
     /**
