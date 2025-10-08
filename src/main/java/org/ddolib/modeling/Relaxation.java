@@ -8,7 +8,7 @@ import java.util.Iterator;
  * This is the second most important abstraction that a client should provide
  * when using this library. It defines the relaxation that may be applied to
  * the given problem. In particular, the merge_states method from this trait
- * defines how the nodes of a layer may be combined to provide an upper bound
+ * defines how the nodes of a layer may be combined to provide a lower bound
  * approximation standing for an arbitrarily selected set of nodes.
  * <p>
  * Again, the type parameter `T` denotes the type of the states.

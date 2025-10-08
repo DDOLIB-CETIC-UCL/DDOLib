@@ -5,14 +5,15 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationInput;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -38,12 +39,12 @@ import java.util.Set;
 public final class ExactSolver<T, K> implements Solver {
 
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
 
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable relaxation for the problem we want to minimize
      */
     private final Relaxation<T> relax;
 
@@ -58,21 +59,9 @@ public final class ExactSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * Your implementation (just like the parallel version) will reuse the same
-     * data structure to compile all mdds.
-     * <p>
-     * # Note:
-     * This approach is recommended, however we do not force this design choice.
-     * You might decide against reusing the same object over and over (even though
-     * it has been designed to be reused). Should you decide to not reuse this
-     * object, then you can simply ignore this field (and remove it altogether).
+     * The heuristic defining a lower bound of the optimal value.
      */
-    private final DecisionDiagram<T, K> mdd;
-
-    /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
-     */
-    private final FastUpperBound<T> fub;
+    private final FastLowerBound<T> flb;
 
     /**
      * The dominance object that will be used to prune the search space.
@@ -80,9 +69,17 @@ public final class ExactSolver<T, K> implements Solver {
     private final DominanceChecker<T, K> dominance;
 
     /**
+     * This is the cache used to prune the search tree
+     */
+    private final Optional<SimpleCache<T>> cache;
+
+
+    /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
+
+    private Optional<Double> bestValue = Optional.empty();
 
 
     /**
@@ -122,7 +119,7 @@ public final class ExactSolver<T, K> implements Solver {
      * <br>
      * <b>Optional parameters: </b>
      * <ul>
-     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link FastLowerBound}</li>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
@@ -145,9 +142,9 @@ public final class ExactSolver<T, K> implements Solver {
         this.relax = config.relax;
         this.ranking = config.ranking;
         this.varh = config.varh;
-        this.fub = config.fub;
+        this.flb = config.flb;
         this.dominance = config.dominance;
-        this.mdd = new LinkedDecisionDiagram<>();
+        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
@@ -155,31 +152,34 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
                 Double.POSITIVE_INFINITY,
                 Collections.emptySet());
+        cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationInput<T, K> compilation = new CompilationInput<>(
-                CompilationType.Exact,
-                problem,
-                relax,
-                varh,
-                ranking,
-                root,
-                Integer.MAX_VALUE,
-                fub,
-                dominance,
-                Double.NEGATIVE_INFINITY,
-                CutSetType.LastExactLayer,
-                exportAsDot,
-                debugLevel
-        );
-        mdd.compile(compilation);
-        extractBest();
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        compilation.compilationType = CompilationType.Exact;
+        compilation.problem = this.problem;
+        compilation.relaxation = this.relax;
+        compilation.variableHeuristic = this.varh;
+        compilation.stateRanking = this.ranking;
+        compilation.residual = root;
+        compilation.maxWidth = Integer.MAX_VALUE;
+        compilation.flb = flb;
+        compilation.dominance = this.dominance;
+        compilation.cache = this.cache;
+        compilation.bestUB = Double.POSITIVE_INFINITY;
+        compilation.cutSetType = CutSetType.LastExactLayer;
+        compilation.exportAsDot = this.exportAsDot;
+        compilation.debugLevel = this.debugLevel;
+
+        DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
+        mdd.compile();
+        extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(mdd.exportAsDot(),
@@ -187,13 +187,15 @@ public final class ExactSolver<T, K> implements Solver {
         }
 
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 1, end - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(1, 1, end - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
+                cache.map(SimpleCache::stats).orElse("noCache"));
     }
 
 
     @Override
     public Optional<Double> bestValue() {
-        return mdd.bestValue();
+        return bestValue;
     }
 
     @Override
@@ -204,10 +206,11 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest() {
+    private void extractBest(DecisionDiagram<T, K> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();
+            bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");
             if (verbosityLevel >= 1)
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));

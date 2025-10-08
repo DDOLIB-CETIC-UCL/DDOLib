@@ -60,7 +60,7 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
 
     public SimpleDominanceChecker(Dominance<T, K> dominance, int nVars) {
         super(dominance);
-        this.fronts = new ArrayList<>(nVars+1);
+        this.fronts = new ArrayList<>(nVars + 1);
         for (int i = 0; i <= nVars; i++) {
             fronts.add(new HashMap<>());
         }
@@ -87,10 +87,10 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
             TreeSet<ValueState> set = front.get(key);
             ArrayList<ValueState> removed = new ArrayList<>();
             for (ValueState vs : set) {
-                if (vs.value > objValue && dominance.isDominatedOrEqual(state, vs.state)) {
+                if (vs.value < objValue && dominance.isDominatedOrEqual(state, vs.state)) {
                     dominated = true;
                     break;
-                } else if (objValue >= vs.value && dominance.isDominatedOrEqual(vs.state, state)) {
+                } else if (objValue <= vs.value && dominance.isDominatedOrEqual(vs.state, state)) {
                     removed.add(vs);
                 }
             }
