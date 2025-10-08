@@ -86,6 +86,8 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         BitSet toReturn = new BitSet(nbVars());
         toReturn.or(state.must());
         if (state.depth() + toReturn.cardinality() < nbVars()) {
+            //If there is not enough  "must node" to reach the end of the diagram we can select
+            // some nodes from
             toReturn.or(state.maybe());
         }
 
@@ -94,13 +96,13 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     @Override
     public SRFLPState transition(SRFLPState state, Decision decision) {
-        BitSet remaining = new BitSet(nbVars());
+        BitSet newMust = new BitSet(nbVars());
         BitSet newMaybe = new BitSet(nbVars());
         int[] newCut = new int[nbVars()];
 
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
             if (i != decision.val()) {
-                remaining.set(i);
+                newMust.set(i);
                 newCut[i] = state.cut()[i] + flows[decision.val()][i];
             }
         }
@@ -113,7 +115,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         }
 
 
-        return new SRFLPState(remaining, newMaybe, newCut, state.depth() + 1);
+        return new SRFLPState(newMust, newMaybe, newCut, state.depth() + 1);
     }
 
     @Override
