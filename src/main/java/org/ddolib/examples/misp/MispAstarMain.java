@@ -2,15 +2,9 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
 
@@ -23,7 +17,47 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public final class MispMain2 {
+public final class MispAstarMain {
+
+
+
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain -Dexec.args="<your file>
+     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
+     */
+    public static void main(String[] args) throws IOException {
+        final String file = Paths.get("data", "MISP", "tadpole_4_2.dot").toString();
+
+        Model<BitSet> model = new Model<>(){
+            private MispProblem problem;
+            @Override
+            public Problem<BitSet> problem() {
+                try {
+                    problem = readFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public DominanceChecker<BitSet> dominance() {
+                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+            }
+            @Override
+            public MispFastLowerBound lowerBound() {
+                return new MispFastLowerBound(problem);
+            }
+        };
+
+        Solve<BitSet> solve = new Solve<>();
+
+        SearchStatistics stats = solve.minimize(model);
+
+        solve.onSolution(stats);
+    }
 
 
     /**
@@ -87,48 +121,5 @@ public final class MispMain2 {
     }
 
 
-    /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
-     * default instance. <br>
-     * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain -Dexec.args="<your file>
-     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
-     */
-    public static void main(String[] args) throws IOException {
-        final String file = Paths.get("data", "MISP", "tadpole_4_2.dot").toString();
-
-        DdoModel<BitSet> model = new DdoModel<>(){
-            private MispProblem problem;
-            @Override
-            public Problem<BitSet> problem() {
-                try {
-                    problem = readFile(file);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            @Override
-            public MispRelax relaxation() {
-                return new MispRelax(problem);
-            }
-
-            @Override
-            public MispRanking ranking() {
-                return new MispRanking();
-            }
-
-            @Override
-            public DominanceChecker<BitSet> dominance() {
-                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
-            }
-        };
-
-        Solve<BitSet> solve = new Solve<>();
-
-        SearchStatistics stats = solve.minimizeDdo(model);
-
-        solve.onSolution(stats);
-    }
 
 }

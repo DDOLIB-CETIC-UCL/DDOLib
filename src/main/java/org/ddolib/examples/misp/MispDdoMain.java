@@ -1,13 +1,11 @@
 package org.ddolib.examples.misp;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solve;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,7 +16,57 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public final class MispMain {
+public final class MispDdoMain {
+
+
+
+    /**
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
+     * default instance. <br>
+     * <p>
+     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain -Dexec.args="<your file>
+     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
+     */
+    public static void main(String[] args) throws IOException {
+        final String file = Paths.get("data", "MISP", "tadpole_4_2.dot").toString();
+
+        DdoModel<BitSet> model = new DdoModel<>(){
+            private MispProblem problem;
+            @Override
+            public Problem<BitSet> problem() {
+                try {
+                    problem = readFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public MispRelax relaxation() {
+                return new MispRelax(problem);
+            }
+
+            @Override
+            public MispRanking ranking() {
+                return new MispRanking();
+            }
+
+            @Override
+            public DominanceChecker<BitSet> dominance() {
+                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+            }
+            @Override
+            public MispFastLowerBound lowerBound() {
+                return new MispFastLowerBound(problem);
+            }
+        };
+
+        Solve<BitSet> solve = new Solve<>();
+
+        SearchStatistics stats = solve.minimizeDdo(model);
+
+        solve.onSolution(stats);
+    }
 
 
     /**
@@ -82,45 +130,5 @@ public final class MispMain {
     }
 
 
-    /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
-     * default instance. <br>
-     * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain -Dexec.args="<your file>
-     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.
-     */
-    public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ?
-                Paths.get("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
-        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
-
-        SolverConfig<BitSet> config = new SolverConfig<>();
-        MispProblem problem = readFile(file);
-        config.problem = problem;
-
-
-        config.relax = new MispRelax(problem);
-        config.ranking = new MispRanking();
-        config.flb = new MispFastLowerBound(problem);
-        config.width = new FixedWidth<>(maxWidth);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.dominance = new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
-
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = new SequentialSolver<>(config);
-
-        long start = System.currentTimeMillis();
-        solver.minimize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.constructBestSolution(problem.nbVars());
-
-        System.out.printf("Instance : %s%n", file);
-        System.out.printf("Max width : %d%n", maxWidth);
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %f%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-    }
 
 }

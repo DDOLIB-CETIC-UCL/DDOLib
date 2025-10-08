@@ -33,11 +33,8 @@ public final class ALPAcsMain {
 
         Solve<ALPState> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solve.minimizeAcs(model, s -> s.nbIterations() > 1000000);
 
         solve.onSolution(stats);
-
-
-
     }
 }

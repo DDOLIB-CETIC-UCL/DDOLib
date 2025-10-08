@@ -1,13 +1,7 @@
 package org.ddolib.examples.lcs;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
@@ -22,7 +16,32 @@ import java.util.stream.IntStream;
 /**
  * The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.
  */
-public final class LCSMain2 {
+public final class LCSAcsMain {
+
+    public static void main(String[] args) throws IOException {
+        final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
+        AcsModel<LCSState> model = new AcsModel<>() {
+            private LCSProblem problem;
+            @Override
+            public Problem<LCSState> problem() {
+                try {
+                    problem = extractFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public LCSFastLowerBound lowerBound() {
+                return new LCSFastLowerBound(problem);
+            }
+        };
+
+        Solve<LCSState> solve = new Solve<>();
+        SearchStatistics stats = solve.minimizeAcs(model);
+        solve.onSolution(stats);
+
+    }
 
     public static LCSProblem extractFile(String fileName) throws IOException {
         final File f = new File(fileName);
@@ -106,38 +125,5 @@ public final class LCSMain2 {
         return new LCSProblem(fileName, stringNb, diffCharNb, stringsAsInt, stringsLength, nextCharPos, remChar, charToId, idToChar, optimal);
     }
 
-    public static void main(String[] args) throws IOException {
-        final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
-        DdoModel<LCSState> model = new DdoModel<>() {
-            private LCSProblem problem;
-            @Override
-            public Problem<LCSState> problem() {
-                try {
-                    problem = extractFile(file);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            @Override
-            public LCSRelax relaxation() {
-                return new LCSRelax(problem);
-            }
-
-            @Override
-            public LCSRanking ranking() {
-                return new LCSRanking();
-            }
-            @Override
-            public LCSFastLowerBound lowerBound() {
-                return new LCSFastLowerBound(problem);
-            }
-        };
-
-        Solve<LCSState> solve = new Solve<>();
-        SearchStatistics stats = solve.minimizeDdo(model);
-        solve.onSolution(stats);
-
-    }
 
 }

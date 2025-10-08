@@ -8,26 +8,20 @@ import java.util.Iterator;
 
 public class BKSProblem implements Problem<Integer> {
 
-    final int capacity;
-    final int[] values;
-    final int[] weights;
-    final int[] quantity;
+    final BKSInstance instance;
 
-    public BKSProblem(int capacity, int[] values, int[] weights, int[] quantity) {
-        this.capacity = capacity;
-        this.values = values;
-        this.weights = weights;
-        this.quantity = quantity;
+    public BKSProblem(BKSInstance instance) {
+        this.instance = instance;
     }
 
     @Override
     public int nbVars() {
-        return values.length;
+        return instance.values.length;
     }
 
     @Override
     public Integer initialState() {
-        return capacity;
+        return instance.capacity;
     }
 
     @Override
@@ -39,8 +33,8 @@ public class BKSProblem implements Problem<Integer> {
     public Iterator<Integer> domain(Integer state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
         domain.add(0);
-        for (int v = 1; v <= quantity[var]; v++) {
-            if (state >= v * weights[var]) {
+        for (int v = 1; v <= instance.quantity[var]; v++) {
+            if (state >= v * instance.weights[var]) {
                 domain.add(v);
             }
         }
@@ -50,12 +44,12 @@ public class BKSProblem implements Problem<Integer> {
     @Override
     public Integer transition(Integer state, Decision decision) {
         // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
-        return state - weights[decision.var()] * decision.val();
+        return state - instance.weights[decision.var()] * decision.val();
     }
 
     @Override
     public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
-        return -values[decision.var()] * decision.val();
+        return - instance.values[decision.var()] * decision.val();
     }
 }

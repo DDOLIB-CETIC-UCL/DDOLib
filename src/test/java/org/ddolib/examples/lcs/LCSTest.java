@@ -36,7 +36,7 @@ public class LCSTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            LCSProblem problem = LCSMain2.extractFile(filePath.toString());
+                            LCSProblem problem = LCSDdoMain.extractFile(filePath.toString());
                             problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {

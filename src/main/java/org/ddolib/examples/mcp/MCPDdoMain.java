@@ -1,13 +1,6 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -15,9 +8,8 @@ import org.ddolib.modeling.Solve;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashSet;
 
-public final class MCPMain2 {
+public final class MCPDdoMain {
 
     public static void main(String[] args) throws IOException {
 
