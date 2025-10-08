@@ -1,5 +1,6 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
@@ -321,7 +322,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(60, 10, 4, new Random(1));
+        final PDPTWInstance instance = genInstance3(40, 5, 6, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
@@ -356,13 +357,13 @@ public final class PDPTWMain {
         config.relax = new PDPTWRelax(problem);
         config.ranking = new PDPTWRanking();
         config.flb = new PDPTWFastLowerBound(problem);
-        config.width = new FixedWidth<>(1000);
+        config.width = new FixedWidth<>(500);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
 
-        config.verbosityLevel = 0;
+        config.verbosityLevel = 1;
         config.exportAsDot = false;
 
         //config.debugLevel = 1;
@@ -384,7 +385,13 @@ public final class PDPTWMain {
 
                 return solver;
             }
-            case 3:
+            case 2:
+                final Solver solver = new ACSSolver<>(config, 5);
+
+                SearchStatistics statistics = solver.minimize();
+                System.out.println(statistics);
+
+                return solver;
         }
         return null;
     }

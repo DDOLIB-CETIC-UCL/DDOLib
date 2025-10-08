@@ -156,7 +156,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
 
         int waitTime = instance.timeWindows[decision.val()].waitTime(state.currentTime + travelTime);
-        return -(travelTime + waitTime);
+        return travelTime + waitTime;
     }
 
     @Override
