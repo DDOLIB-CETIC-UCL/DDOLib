@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
 import java.util.BitSet;
 

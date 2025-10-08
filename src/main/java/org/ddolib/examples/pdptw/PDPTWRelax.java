@@ -1,7 +1,6 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.examples.ddo.pdp.PDPState;
 import org.ddolib.modeling.Relaxation;
 
 import java.util.BitSet;

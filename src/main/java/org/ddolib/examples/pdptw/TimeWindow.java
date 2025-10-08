@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
 public record TimeWindow(int start, int end) {
     public int entryTime(int arrivalTime){
