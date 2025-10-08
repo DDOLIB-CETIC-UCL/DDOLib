@@ -7,11 +7,10 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
-import org.ddolib.examples.ddo.knapsack.KSFastUpperBound;
-import org.ddolib.examples.ddo.knapsack.KSProblem;
-import org.ddolib.examples.ddo.knapsack.KSRanking;
-import org.ddolib.examples.ddo.knapsack.KSRelax;
+import org.ddolib.examples.knapsack.KSFastLowerBound;
+import org.ddolib.examples.knapsack.KSProblem;
+import org.ddolib.examples.knapsack.KSRanking;
+import org.ddolib.examples.knapsack.KSRelax;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -47,7 +46,7 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(10000);
         config.varh = new DefaultVariableHeuristic<>();
@@ -55,7 +54,7 @@ public class KSCacheTest {
 
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
         return solver.bestValue().get();
     }
 
@@ -64,16 +63,17 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(w);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
 
-        final Solver solverWithCaching = new SequentialSolverWithCache<>(config);
 
-        solverWithCaching.maximize();
+        final Solver solverWithCaching = new SequentialSolver<>(config);
+
+        solverWithCaching.minimize();
         return solverWithCaching.bestValue().get();
     }
 

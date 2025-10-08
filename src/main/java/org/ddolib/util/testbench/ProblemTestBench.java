@@ -1,12 +1,15 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.astar.core.solver.ACSSolver;
+import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -18,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
- * Abstract class to generate tests on implementations of {@link Problem}. The user need to implement an instance
+ * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
  * generator and a {@link SolverConfig}.
  *
  * @param <T> The type of states.
@@ -28,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
 
     /**
-     * List of problem used for tests.
+     * List of problems used for tests.
      */
     protected final List<P> problems;
 
@@ -38,14 +41,19 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     public boolean testRelaxation = false;
 
     /**
-     * Whether the fast upper bound must be tested.
+     * Whether the fast lower bound must be tested.
      */
-    public boolean testFUB = false;
+    public boolean testFLB = false;
 
     /**
      * Whether the dominance must be tested.
      */
     public boolean testDominance = false;
+
+    /**
+     * Whether the cache has to be tested.
+     */
+    public boolean testCache = false;
 
     /**
      * The minimum width of mdd to test with the relaxation.
@@ -105,34 +113,35 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default the tests here disable the fast upper bound. If one of the two
-     * mechanism  is needed (e.g. for A* solver), be sure to configure by overriding the
+     * <b>Note:</b> By default, the tests here disable the fast lower bound. If one of the two
+     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
      * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
      */
     protected void testTransitionModel(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
+        config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
     /**
-     * Test if the fast upper bound is an upper bound for the root node and if the compilation with only the fast upper
+     * Test if the fast lower bound is a lower bound for the root node and if the compilation with only the fast lower
      * bound enabled lead to the optimal solution.
      *
      * @param problem The instance to test.
      */
-    protected void testFub(P problem) {
+    protected void testFlb(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.debugLevel = 1;
         Solver solver = solverForTests(config);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -142,34 +151,83 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testRelaxation(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.fub = new DefaultFastUpperBound<>();
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.flb = new DefaultFastLowerBound<>();
             config.width = new FixedWidth<>(w);
+            config.debugLevel = 1;
             Solver solver = solverForRelaxation(config);
-
-            solver.maximize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+            try {
+                solver.minimize();
+                assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+            } catch (Exception e) {
+                String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
+                throw new RuntimeException(msg);
+            }
         }
     }
 
     /**
-     * Test if the mode with the relaxation and the fast upper bound enabled lead to the optimal solution. As side
-     * effect, it tests if the fast upper bound on merged states does not cause errors.
+     * Test if using the cache lead to the optimal solution.
      *
      * @param problem The instance to test.
      */
-    protected void testFubOnRelaxedNodes(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
+    protected void testCache(P problem) {
         for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.width = new FixedWidth<>(w);
+            config.cache = new SimpleCache<>();
+            Solver solver = solverForRelaxation(config);
+
+            solver.minimize();
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+        }
+    }
+
+    /**
+     * Test if the A* solver reaches the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testAStarSolver(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        Solver solver = new AStarSolver<>(config);
+
+        solver.minimize();
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+    }
+
+
+    /**
+     * Test if the ACS solver reaches the optimal solution.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testACSSolver(P problem) {
+        SolverConfig<T, K> config = configSolver(problem);
+        Solver solver = new ACSSolver<>(config, 4);
+
+        solver.minimize();
+        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+    }
+
+    /**
+     * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal solution. As side
+     * effect, it tests if the fast lower bound on merged states does not cause errors.
+     *
+     * @param problem The instance to test.
+     */
+    protected void testFlbOnRelaxedNodes(P problem) {
+        for (int w = minWidth; w <= maxWidth; w++) {
+            SolverConfig<T, K> config = configSolver(problem);
+            config.dominance = new DefaultDominanceChecker<>();
+            config.debugLevel = 1;
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
-            solver.maximize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+            solver.minimize();
+            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
 
@@ -180,10 +238,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testDominance(P problem) {
         SolverConfig<T, K> config = configSolver(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
         Solver solver = solverForTests(config);
 
-        solver.maximize();
+        solver.minimize();
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -208,18 +266,18 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, relaxTests);
         }
-        if (testFUB) {
-            Stream<DynamicTest> fubTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("FUB for %s", p.toString()), () -> testFub(p))
+        if (testFLB) {
+            Stream<DynamicTest> flbTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("FLB for %s", p.toString()), () -> testFlb(p))
             );
-            allTests = Stream.concat(allTests, fubTests);
+            allTests = Stream.concat(allTests, flbTests);
         }
 
-        if (testRelaxation && testFUB) {
-            Stream<DynamicTest> relaxAndFubTest = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Relax and FUB for %s", p.toString()), () -> testFubOnRelaxedNodes(p))
+        if (testRelaxation && testFLB) {
+            Stream<DynamicTest> relaxAndFlbTest = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Relax and FLB for %s", p.toString()), () -> testFlbOnRelaxedNodes(p))
             );
-            allTests = Stream.concat(allTests, relaxAndFubTest);
+            allTests = Stream.concat(allTests, relaxAndFlbTest);
         }
 
         if (testDominance) {
@@ -228,6 +286,23 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, dominanceTests);
         }
+
+        if (testCache) {
+            Stream<DynamicTest> cacheTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest(String.format("Cache for %s", p.toString()), () -> testCache(p))
+            );
+            allTests = Stream.concat(allTests, cacheTests);
+        }
+
+        Stream<DynamicTest> aStarTests = problems.stream().map(p ->
+                DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
+        );
+        allTests = Stream.concat(allTests, aStarTests);
+
+        Stream<DynamicTest> acsTests = problems.stream().map(p ->
+                DynamicTest.dynamicTest(String.format("ACS for %s", p.toString()), () -> testACSSolver(p))
+        );
+        allTests = Stream.concat(allTests, acsTests);
 
         return allTests;
     }
@@ -238,12 +313,30 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param expected The expected {@code Optional<Double>}.
      * @param actual   The actual {@code Optional<Double>}.
      * @param delta    The tolerance for the comparison if both optionals contain a value.
+     * @param width    The maximum width of mdd used for the tests. Used to display error message.
      */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected, Optional<Double> actual, double delta) {
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta,
+                                                 int width) {
+        String failureMsg = width > 0 ? String.format("Max width of the MDD: %d", width) : "";
         if (expected.isPresent() && actual.isPresent()) {
-            assertEquals(expected.get(), actual.get(), delta);
+            assertEquals(expected.get(), actual.get(), delta, failureMsg);
         } else {
-            assertEquals(expected, actual);
+            assertEquals(expected, actual, failureMsg);
         }
+    }
+
+    /**
+     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
+     *
+     * @param expected The expected {@code Optional<Double>}.
+     * @param actual   The actual {@code Optional<Double>}.
+     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     */
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta) {
+        assertOptionalDoubleEqual(expected, actual, delta, -1);
     }
 }
