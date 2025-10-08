@@ -1,6 +1,6 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -10,10 +10,10 @@ import java.util.Set;
 /**
  * Implementation of a fast upper bound for the PDPTW
  */
-public class PDPTWFastUpperBound implements FastUpperBound<PDPTWState> {
+public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
     private final double[] leastIncidentEdge;
 
-    public PDPTWFastUpperBound(PDPTWProblem problem) {
+    public PDPTWFastLowerBound(PDPTWProblem problem) {
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.POSITIVE_INFINITY;
@@ -27,7 +27,7 @@ public class PDPTWFastUpperBound implements FastUpperBound<PDPTWState> {
     }
 
     @Override
-    public double fastUpperBound(PDPTWState state, Set<Integer> variables) {
+    public double fastLowerBound(PDPTWState state, Set<Integer> variables) {
         BitSet toVisit = state.allToVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(variables.size());
@@ -45,6 +45,6 @@ public class PDPTWFastUpperBound implements FastUpperBound<PDPTWState> {
         for (int i = 0; i < variables.size(); i++) {
             lb += toVisitLB.get(i);
         }
-        return -lb;
+        return lb;
     }
 }

@@ -1,9 +1,8 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;

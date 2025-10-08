@@ -1,9 +1,6 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
-import org.ddolib.examples.ddo.tsptw.TSPTWState;
 import org.ddolib.modeling.Dominance;
-
-import java.util.BitSet;
 
 /**
  * Dominance class for the TSPTW problem.

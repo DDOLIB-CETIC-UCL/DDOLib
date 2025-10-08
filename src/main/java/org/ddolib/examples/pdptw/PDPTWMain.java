@@ -1,7 +1,6 @@
-package org.ddolib.examples.ddo.pdptw;
+package org.ddolib.examples.pdptw;
 
 import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.astar.core.solver.BestFirstSearchSolver;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -13,7 +12,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.ddo.core.solver.SequentialSolverWithCache;
 
 import java.io.IOException;
 import java.util.*;
@@ -357,7 +355,7 @@ public final class PDPTWMain {
         config.problem = problem;
         config.relax = new PDPTWRelax(problem);
         config.ranking = new PDPTWRanking();
-        config.fub = new PDPTWFastUpperBound(problem);
+        config.flb = new PDPTWFastLowerBound(problem);
         config.width = new FixedWidth<>(1000);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>(); //cache does not work on this problem dunno why
@@ -371,9 +369,9 @@ public final class PDPTWMain {
 
         switch(solveurId){
             case 0: {
-                final Solver solver = new SequentialSolverWithCache<>(config);
+                final Solver solver = new SequentialSolver<>(config);
 
-                SearchStatistics statistics = solver.maximize();
+                SearchStatistics statistics = solver.minimize();
                 System.out.println(statistics);
 
                 return solver;
@@ -381,7 +379,7 @@ public final class PDPTWMain {
             case 1: {
                 final Solver solver = new AStarSolver<>(config);
 
-                SearchStatistics statistics = solver.maximize();
+                SearchStatistics statistics = solver.minimize();
                 System.out.println(statistics);
 
                 return solver;
