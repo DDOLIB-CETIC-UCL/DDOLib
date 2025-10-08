@@ -36,6 +36,11 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
 
     @Override
     public double fastUpperBound(SRFLPState state, Set<Integer> variables) {
+        /*   This lower bound is decomposed in two terms.
+          One under-approximating the traffic between each free department (that must be placed) and
+           another based on the traffic between the fixed department and the free ones.
+        */
+
         int complete = problem.nbVars() - state.depth();
         int maxFromMaybe = complete - state.must().cardinality();
         int free = freeLB(selectLength(state, complete, maxFromMaybe), selectFlow(state, complete, maxFromMaybe),
@@ -93,10 +98,13 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
 
     /**
      * Selects the departments and lengths that will be used to computes the free lower bound.
+     * All the departments from the "must" set are selected. If needed, some of the departments from
+     * the "maybe" set are selected to complete the solution.
      *
      * @param state        The state on which compute the lower bound.
      * @param complete     How many department must be placed to complete the solution.
-     * @param maxFromMaybe The maximum number of departments that can selected.
+     * @param maxFromMaybe The maximum number of departments that can be selected from the "maybe"
+     *                     set.
      * @return The departments and lengths, sorted in increasing order, that will be used to compute the free lower
      * bound.
      */
@@ -123,6 +131,8 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
 
     /**
      * Selects the pairs of department and flows that will be used to compute the free lower bound.
+     * All the departments from the "must" set are selected. If needed, some of the departments from
+     * the "maybe" set are selected to complete the solution.
      *
      * @param state        The state on which compute the lower bound.
      * @param complete     How many department must be placed to complete the solution.
