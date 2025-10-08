@@ -259,13 +259,15 @@ public final class SequentialSolver<T> implements Solver {
             long end = System.currentTimeMillis();
             if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
                 int[] sol = constructSolution(bestSol.get().size());
-                double solVal = bestUB;
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), solVal, sol, Double.MIN_VALUE);
+                Optional<Double> solVal = Optional.of(bestUB);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start,
+                        currentSearchStatus(gap()), gap(), solVal, sol, Optional.empty());
             }
             if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
                 int[] sol = constructSolution(bestSol.get().size());
-                double solVal = bestUB;
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap(), solVal, sol, Double.MIN_VALUE);
+                Optional<Double> solVal = Optional.of(bestUB);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start,
+                        currentSearchStatus(gap()), gap(), solVal, sol, Optional.empty());
             }
 
             if (verbosityLevel >= 3) {
@@ -280,7 +282,7 @@ public final class SequentialSolver<T> implements Solver {
                 frontier.clear();
                 end = System.currentTimeMillis();
                 int[] sol = constructSolution(bestSol.get().size());
-                double solVal = bestValue().get();
+                Optional<Double> solVal = Optional.of(bestUB);
                 return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, solVal, sol, solVal);
             }
 
@@ -342,11 +344,10 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        int[] sol = constructSolution(bestSol.get().size());
-        double solVal = bestValue().get();
+        int[] sol = constructSolution(problem.nbVars());
         return new SearchStatistics(nbIter, queueMaxSize, end - start,
                 SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"),  solVal, sol, solVal);
+                cache.map(SimpleCache::stats).orElse("noCache"), bestValue(), sol, bestValue());
     }
 
     @Override

@@ -2,26 +2,15 @@ package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * The TSPTW (TSP with Time Windows) is
@@ -44,12 +33,13 @@ public class TSPTWMain2 {
      */
     public static void main(String[] args) throws IOException {
 
-        final String file = Paths.get("data", "TSPTW", "AFG", "rbg010a.tw").toString();
+        final String file = Paths.get("data", "TSPTW", "impossible.txt").toString();
 
-        DdoModel<TSPTWState> model = new DdoModel<>(){
+        DdoModel<TSPTWState> model = new DdoModel<>() {
             private TSPTWProblem problem;
+
             @Override
-            public Problem<TSPTWState>  problem() {
+            public Problem<TSPTWState> problem() {
                 try {
                     problem = new TSPTWProblem(new TSPTWInstance(file));
                     return problem;
@@ -57,18 +47,22 @@ public class TSPTWMain2 {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public TSPTWRelax relaxation() {
                 return new TSPTWRelax(problem);
             }
+
             @Override
             public TSPTWRanking ranking() {
                 return new TSPTWRanking();
             }
+
             @Override
             public TSPTWFastLowerBound lowerBound() {
                 return new TSPTWFastLowerBound(problem);
             }
+
             @Override
             public DominanceChecker<TSPTWState> dominance() {
                 return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());

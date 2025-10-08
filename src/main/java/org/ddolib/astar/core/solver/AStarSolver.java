@@ -198,8 +198,8 @@ public final class AStarSolver<T> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
-        int[] sol = constructSolution(bestSol.get().size());
-        double solVal = bestValue().get();
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
@@ -370,6 +370,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private record AstarKey<T>(T state, int depth) {
     }
+
     private int[] constructSolution(int numVar) {
         return bestSolution().map(decisions -> {
             int[] toReturn = new int[numVar];

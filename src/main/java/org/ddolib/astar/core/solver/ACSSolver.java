@@ -172,8 +172,8 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        int[] sol = constructSolution(bestSol.get().size());
-        double solVal = bestValue().get();
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
         return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
