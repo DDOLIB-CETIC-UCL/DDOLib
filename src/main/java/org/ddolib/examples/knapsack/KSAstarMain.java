@@ -2,7 +2,11 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.*;
 
@@ -22,12 +26,12 @@ import java.io.IOException;
  * with a knapsack capacity of c, p[i] is the profit of item i,
  * w[i] is the weight of item i.
  */
-public class KSMain2 {
+public class KSAstarMain {
     public static void main(final String[] args) throws IOException {
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = readInstance(instance);
 
-        final Model<Integer> model = new DdoModel<>() {
+        final Model<Integer> model = new Model<>() {
             private KSProblem problem;
 
             @Override
@@ -39,20 +43,13 @@ public class KSMain2 {
                     throw new RuntimeException(e);
                 }
             }
-
-            @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
-            }
-
-            @Override
-            public FastLowerBound<Integer> lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
-
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
             }
         };
 

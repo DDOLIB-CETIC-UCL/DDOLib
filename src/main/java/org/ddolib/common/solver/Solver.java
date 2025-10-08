@@ -5,6 +5,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * This defines the expected behavior of a solver: an object able to find a solution

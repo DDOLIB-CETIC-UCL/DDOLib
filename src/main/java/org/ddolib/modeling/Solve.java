@@ -3,7 +3,6 @@ package org.ddolib.modeling;
 import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.Cache;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.SequentialSolver;

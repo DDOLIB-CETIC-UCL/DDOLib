@@ -1,19 +1,9 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.*;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * This class demonstrates how to implement a solver for the Golomb ruler problem.
@@ -30,28 +20,21 @@ import java.util.Arrays;
  * The cost of a transition is defined as the distance between the new mark and the
  * previous last mark. Consequently, the cost of a solution is the position of the last mark.
  */
-public class GRMain2 {
+public class GRAstarMain {
 
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(9);
-        final DdoModel<GRState> model = new DdoModel<>() {
+        GRProblem problem = new GRProblem(8);
+        final Model<GRState> model = new Model<>() {
             @Override
             public Problem<GRState> problem() {
                 return problem;
             }
-            @Override
-            public Relaxation<GRState> relaxation() {
-                return new GRRelax();
-            }
-            @Override
-            public StateRanking<GRState> ranking() {
-                return new GRRanking();
-            }
+
         };
 
         Solve<GRState> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solve.minimize(model);
 
         solve.onSolution(stats);
     }
