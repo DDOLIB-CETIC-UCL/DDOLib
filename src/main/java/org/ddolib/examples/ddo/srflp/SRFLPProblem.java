@@ -3,10 +3,7 @@ package org.ddolib.examples.ddo.srflp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -136,9 +133,27 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     @Override
     public double transitionCost(SRFLPState state, Decision decision) {
         int cut = 0;
-
+        int complete = nbVars() - (state.depth() + 1);
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
-            if (i != decision.val()) cut += state.cut()[i];
+            if (i != decision.val()) {
+                cut += state.cut()[i];
+                complete--;
+            }
+        }
+
+        if (complete > 0) {
+            // The current state is a relaxed state or has a relaxed state among its ancestors.
+            // The complete the solution we need to pick up some department from the "maybe" set.
+            // As we are compiling a relaxed mdd, we want to get a lower bound on the optimal
+            // solution. So we assume that we will select the department with the smallest cut
+            // values.
+            ArrayList<Integer> maybesCut = new ArrayList<>();
+            for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
+                if (i != decision.val()) maybesCut.add(i);
+            }
+
+            Collections.sort(maybesCut);
+            cut += maybesCut.subList(0, complete).stream().mapToInt(x -> x).sum();
         }
 
         return cut * lengths[decision.val()];
