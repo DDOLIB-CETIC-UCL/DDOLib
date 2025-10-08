@@ -114,7 +114,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
     @Override
     public void compile() {
-
         // initialize the compilation
         final int maxWidth = config.maxWidth;
         final SubProblem<T> residual = config.residual;
@@ -158,10 +157,19 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
             this.currentLayer.clear();
 
+            // Finds dominant nodes
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
+                if (node.type == NodeType.EXACT)
+                    dominance.updateDominance(state, depthGlobalDD, node.value);
+            }
+
+            for (Entry<T, Node> e : this.nextLayer.entrySet()) {
+                T state = e.getKey();
+                Node node = e.getValue();
+                // If a node is dominated, we skip it
+                if (node.type != NodeType.EXACT || !dominance.isDominated(state,
                         depthGlobalDD, node.value)) {
                     double flb = config.flb.fastLowerBound(state, variables);
                     double rlb = saturatedAdd(node.value, flb);

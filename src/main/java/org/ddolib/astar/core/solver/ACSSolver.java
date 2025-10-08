@@ -154,7 +154,7 @@ public final class ACSSolver<T, K> implements Solver {
                         break;
                     }
                 }
-                for (SubProblem<T> sub: candidates) {
+                for (SubProblem<T> sub : candidates) {
                     nbIter++;
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
@@ -213,6 +213,7 @@ public final class ACSSolver<T, K> implements Solver {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
+        ArrayList<SubProblem<T>> children = new ArrayList<>();
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -225,31 +226,35 @@ public final class ACSSolver<T, K> implements Solver {
             path.add(decision);
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
+            // Saves all the children and finds the dominant ones
+            children.add(new SubProblem<>(newState, value, fastLowerBound, path));
+            dominance.updateDominance(newState, path.size(), value);
+        }
 
+        for (SubProblem<T> child : children) {
             // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                ACSKey<T> newKey = new ACSKey<>(newState, newSub.getDepth());
+            if (!dominance.isDominated(child.getState(), child.getDepth(), child.getValue())) {
+
+                ACSKey<T> newKey = new ACSKey<>(child.getState(), child.getDepth());
                 Double presentValue = present.get(newKey);
-                if (presentValue != null && presentValue > newSub.f()) {
-                    open[newSub.getDepth()].add(newSub);
-                    present.put(newKey, newSub.f());
+                if (presentValue != null && presentValue > child.f()) {
+                    open[child.getDepth()].add(child);
+                    present.put(newKey, child.f());
                 } else {
                     Double closedValue = closed.get(newKey);
-                    if (closedValue != null && closedValue > newSub.f()) {
-                        open[newSub.getDepth()].add(newSub);
+                    if (closedValue != null && closedValue > child.f()) {
+                        open[child.getDepth()].add(child);
                         closed.remove(newKey);
-                        present.put(newKey, newSub.f());
+                        present.put(newKey, child.f());
                     } else {
-                        open[newSub.getDepth()].add(newSub);
-                        present.put(newKey, newSub.f());
+                        open[child.getDepth()].add(child);
+                        present.put(newKey, child.f());
                     }
                 }
 
             }
         }
     }
-
 
 
     private Set<Integer> varSet(Set<Decision> path) {

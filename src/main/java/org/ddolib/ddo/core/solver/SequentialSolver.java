@@ -106,7 +106,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private DominanceChecker<T, K> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -237,6 +237,7 @@ public final class SequentialSolver<T, K> implements Solver {
         int queueMaxSize = 0;
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
+        dominance = dominance.clear();
 
         while (!frontier.isEmpty()) {
             nbIter++;
