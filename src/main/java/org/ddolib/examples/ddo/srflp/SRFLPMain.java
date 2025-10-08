@@ -2,7 +2,6 @@ package org.ddolib.examples.ddo.srflp;
 
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
@@ -40,7 +39,7 @@ public final class SRFLPMain {
         SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SRFLPRelax(problem);
-        config.fub = new SRFLPFastUpperBound(problem);
+        config.flb = new SRFLPFastLowerBound(problem);
         config.ranking = new SRFLPRanking();
 
         config.width = new FixedWidth<>(maxWidth);
@@ -50,20 +49,11 @@ public final class SRFLPMain {
         Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
-        int[] solution = solver.bestSolution()
-                .map(decisions -> {
-                    int[] values = new int[problem.nbVars()];
-                    for (Decision d : decisions) {
-                        values[d.var()] = d.val();
-                    }
-                    return values;
-                })
-                .get();
-
-        double obj = -solver.bestValue().get() + problem.rootValue();
+        int[] solution = solver.constructBestSolution(problem.nbVars());
+        double obj = solver.bestValue().get() + problem.rootValue();
 
         System.out.printf("Instance: %s%n", filename);
         System.out.printf("Max width: %s%n", maxWidth);

@@ -1,12 +1,12 @@
 package org.ddolib.examples.ddo.srflp;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
+public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     private final SRFLPProblem problem;
 
     /**
@@ -18,7 +18,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
      */
     private final ArrayList<DepartmentAndLength> departmentsSortedByLength = new ArrayList<>();
 
-    public SRFLPFastUpperBound(SRFLPProblem problem) {
+    public SRFLPFastLowerBound(SRFLPProblem problem) {
         this.problem = problem;
 
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -35,7 +35,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
 
 
     @Override
-    public double fastUpperBound(SRFLPState state, Set<Integer> variables) {
+    public double fastLowerBound(SRFLPState state, Set<Integer> variables) {
         /*   This lower bound is decomposed in two terms.
           One under-approximating the traffic between each free department (that must be placed) and
            another based on the traffic between the fixed department and the free ones.
@@ -47,7 +47,7 @@ public class SRFLPFastUpperBound implements FastUpperBound<SRFLPState> {
                 complete);
         int fixed = fixedLB(selectCutRatio(state, maxFromMaybe));
 
-        return -(free + fixed);
+        return free + fixed;
     }
 
     /**

@@ -126,7 +126,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
             if (i != decision.val()) cut += state.cut()[i];
         }
 
-        return -cut * lengths[decision.val()];
+        return cut * lengths[decision.val()];
     }
 
     /**
@@ -169,6 +169,6 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
+        return optimal;
     }
 }

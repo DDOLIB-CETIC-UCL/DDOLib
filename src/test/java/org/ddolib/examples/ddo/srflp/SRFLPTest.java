@@ -48,7 +48,7 @@ public class SRFLPTest {
             SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new SRFLPRelax(problem);
-            config.fub = new SRFLPFastUpperBound(problem);
+            config.flb = new SRFLPFastLowerBound(problem);
             config.ranking = new SRFLPRanking();
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
@@ -63,7 +63,7 @@ public class SRFLPTest {
     public Stream<DynamicTest> testSRFLP() {
         var bench = new SRFLPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }
