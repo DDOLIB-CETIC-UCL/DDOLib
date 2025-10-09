@@ -1,17 +1,19 @@
 package org.ddolib.examples.smic;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solve;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -25,30 +27,38 @@ import java.util.Scanner;
  * This problem is considered in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
  * Minimizing makespan on a single machine with release dates and inventory constraints. Eur. J. Oper. Res. 286(1): 115-128 (2020)
  */
-public class SMICMain {
+public class SMICAcsMain {
     public static void main(String[] args) throws FileNotFoundException {
+        final String file = "data/SMIC/data10_2.txt";
         SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
-        SolverConfig<SMICState> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new SMICRelax(problem);
-        config.ranking = new SMICRanking();
-        config.width = new FixedWidth<>(20);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.flb = new SMICFastLowerBound(problem);
-        config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        final Solver solver = new SequentialSolver<>(config);
+        AcsModel<SMICState> model = new AcsModel<>(){
+            private SMICProblem problem;
+            @Override
+            public Problem<SMICState> problem() {
+                try {
+                    problem = readProblem(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException();
+                }
+            }
 
+            @Override
+            public SMICFastLowerBound lowerBound() {
+                return new SMICFastLowerBound(problem);
+            }
+            @Override
+            public DominanceChecker<SMICState> dominance() {
+                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+            }
+        };
 
-        long start = System.currentTimeMillis();
-        solver.minimize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
+        Solve<SMICState> solve = new Solve<>();
 
-        int[] solution = solver.constructBestSolution(problem.nbVars());
+        SearchStatistics stats = solve.minimizeAcs(model);
 
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %s%n", solver.bestValue().get());
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
+        solve.onSolution(stats);
+
     }
 
     public static SMICProblem readProblem(String filename) throws FileNotFoundException {

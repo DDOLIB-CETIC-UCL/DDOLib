@@ -36,7 +36,7 @@ public class TalenSchedTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            TSProblem problem = TSMain.readFile(filePath.toString());
+                            TSProblem problem = TSDdoMain.readFile(filePath.toString());
                             problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {

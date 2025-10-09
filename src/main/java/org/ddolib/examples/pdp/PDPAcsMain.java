@@ -1,16 +1,12 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
@@ -21,7 +17,36 @@ import java.util.Random;
 
 import static java.lang.Math.max;
 
-public final class PDPMain2 {
+public final class PDPAcsMain {
+
+
+
+    public static void main(final String[] args) throws IOException {
+
+        final PDPInstance instance = genInstance(18, 2, 3, new Random(1));
+        AcsModel<PDPState> model = new AcsModel<>(){
+            private PDPProblem problem;
+            @Override
+            public Problem<PDPState> problem() {
+                problem = new PDPProblem(instance);
+                return problem;
+            }
+            @Override
+            public PDPFastLowerBound lowerBound() {
+                return new PDPFastLowerBound(problem);
+            }
+            @Override
+            public int columnWidth() {
+                return 30;
+            }
+        };
+
+        Solve<PDPState> solve = new Solve<>();
+
+        SearchStatistics stats =  solve.minimizeAcs(model, s -> s.runTimeMS() > 1000);
+
+        solve.onSolution(stats);
+    }
 
     /**
      * Generates a PDP problem with a single vehicle:
@@ -66,45 +91,5 @@ public final class PDPMain2 {
 
     static int dist(int dx, int dy) {
         return (int) Math.sqrt(dx * dx + dy * dy);
-    }
-
-    public static void main(final String[] args) throws IOException {
-
-        final PDPInstance instance = genInstance(18, 2, 3, new Random(1));
-        DdoModel<PDPState> model = new DdoModel<>(){
-            private PDPProblem problem;
-            @Override
-            public Problem<PDPState> problem() {
-                problem = new PDPProblem(instance);
-                return problem;
-            }
-            @Override
-            public PDPRelax relaxation() {
-                return new PDPRelax(problem);
-            }
-            @Override
-            public PDPRanking ranking() {
-                return new PDPRanking();
-            }
-
-            @Override
-            public PDPFastLowerBound lowerBound() {
-                return new PDPFastLowerBound(problem);
-            }
-            @Override
-            public boolean useCache() {
-                return true;
-            }
-            @Override
-            public WidthHeuristic<PDPState> widthHeuristic() {
-                return new FixedWidth<>(1000);
-            }
-        };
-
-        Solve<PDPState> solve = new Solve<>();
-
-        SearchStatistics stats =  solve.minimizeDdo(model);
-
-        solve.onSolution(stats);
     }
 }

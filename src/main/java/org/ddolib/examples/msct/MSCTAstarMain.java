@@ -2,20 +2,13 @@ package org.ddolib.examples.msct;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -28,11 +21,11 @@ import java.util.Scanner;
  * - the set of remaining jobs
  * - the current time (the end time of last sequenced job)
  */
-public class MSCTMain2 {
+public class MSCTAstarMain {
 
     public static void main(final String[] args) throws Exception {
         final String file = "data/MSCT/msct1.txt";
-        DdoModel<MSCTState> model = new DdoModel<>(){
+        Model<MSCTState> model = new Model<>(){
             private MSCTProblem problem;
             @Override
             public Problem<MSCTState> problem() {
@@ -44,14 +37,6 @@ public class MSCTMain2 {
                 }
             }
             @Override
-            public MSCTRelax relaxation() {
-                return new MSCTRelax(problem);
-            }
-            @Override
-            public MSCTRanking ranking() {
-                return new MSCTRanking();
-            }
-            @Override
             public DominanceChecker<MSCTState> dominance() {
                 return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
             }
@@ -59,7 +44,7 @@ public class MSCTMain2 {
 
         Solve<MSCTState> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solve.minimize(model);
 
         solve.onSolution(stats);
     }

@@ -2,22 +2,18 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -31,11 +27,11 @@ import java.util.Scanner;
  * This problem is considered in the paper: Morteza Davari, Mohammad Ranjbar, Patrick De Causmaecker, Roel Leus:
  * Minimizing makespan on a single machine with release dates and inventory constraints. Eur. J. Oper. Res. 286(1): 115-128 (2020)
  */
-public class SMICMain2 {
+public class SMICAstarMain {
     public static void main(String[] args) throws FileNotFoundException {
         final String file = "data/SMIC/data10_2.txt";
         SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
-        DdoModel<SMICState> model = new DdoModel<>(){
+        Model<SMICState> model = new Model<>(){
             private SMICProblem problem;
             @Override
             public Problem<SMICState> problem() {
@@ -46,14 +42,7 @@ public class SMICMain2 {
                     throw new RuntimeException();
                 }
             }
-            @Override
-            public SMICRelax relaxation() {
-                return new SMICRelax(problem);
-            }
-            @Override
-            public SMICRanking ranking() {
-                return new SMICRanking();
-            }
+
             @Override
             public SMICFastLowerBound lowerBound() {
                 return new SMICFastLowerBound(problem);
@@ -66,7 +55,7 @@ public class SMICMain2 {
 
         Solve<SMICState> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solve.minimize(model);
 
         solve.onSolution(stats);
 

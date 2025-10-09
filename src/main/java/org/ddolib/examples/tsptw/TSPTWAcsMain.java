@@ -2,9 +2,13 @@ package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solve;
@@ -19,7 +23,7 @@ import java.nio.file.Paths;
  * and return to the starting point, while respecting
  * specified time windows for each customer.
  */
-public class TSPTWMain2 {
+public class TSPTWAcsMain {
 
     /**
      * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain"} in your terminal to execute
@@ -33,9 +37,9 @@ public class TSPTWMain2 {
      */
     public static void main(String[] args) throws IOException {
 
-        final String file = Paths.get("data", "TSPTW", "impossible.txt").toString();
+        final String file = Paths.get("data", "TSPTW", "AFG", "rbg010a.tw").toString();
 
-        DdoModel<TSPTWState> model = new DdoModel<>() {
+        AcsModel<TSPTWState> model = new AcsModel<>() {
             private TSPTWProblem problem;
 
             @Override
@@ -47,17 +51,6 @@ public class TSPTWMain2 {
                     throw new RuntimeException(e);
                 }
             }
-
-            @Override
-            public TSPTWRelax relaxation() {
-                return new TSPTWRelax(problem);
-            }
-
-            @Override
-            public TSPTWRanking ranking() {
-                return new TSPTWRanking();
-            }
-
             @Override
             public TSPTWFastLowerBound lowerBound() {
                 return new TSPTWFastLowerBound(problem);
@@ -67,16 +60,11 @@ public class TSPTWMain2 {
             public DominanceChecker<TSPTWState> dominance() {
                 return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             }
-
-            @Override
-            public WidthHeuristic<TSPTWState> widthHeuristic() {
-                return new FixedWidth<>(500);
-            }
         };
 
         Solve<TSPTWState> solve = new Solve<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solve.minimizeAcs(model);
 
         solve.onSolution(stats);
     }

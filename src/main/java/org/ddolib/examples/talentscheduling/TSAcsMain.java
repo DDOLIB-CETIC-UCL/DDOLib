@@ -1,24 +1,41 @@
 package org.ddolib.examples.talentscheduling;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public class TSMain {
+public class TSAcsMain {
+    public static void main(String[] args) throws IOException {
+        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        AcsModel<TSState> model = new AcsModel<>() {
+            private TSProblem problem;
+            @Override
+            public Problem<TSState> problem() {
+                try {
+                    problem = readFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public TSFastLowerBound lowerBound() {
+                return new TSFastLowerBound(problem);
+            }
+        };
 
+        Solve<TSState> solve = new Solve<>();
+
+        SearchStatistics stats = solve.minimizeAcs(model);
+
+        solve.onSolution(stats);
+    }
 
     /**
      * Read data file following the format of
@@ -82,36 +99,4 @@ public class TSMain {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
-        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
-
-        SolverConfig<TSState> config = new SolverConfig<>();
-        final TSProblem problem = readFile(file);
-        config.problem = problem;
-        config.relax = new TSRelax(problem);
-        config.ranking = new TSRanking();
-        config.flb = new TSFastLowerBound(problem);
-
-        config.width = new FixedWidth<>(maxWidth);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-
-        final Solver solver = new SequentialSolver<>(config);
-
-        long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.minimize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.constructBestSolution(problem.nbVars());
-
-        String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
-
-
-        System.out.printf("Instance : %s%n", file);
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %s%n", bestStr);
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println(stat);
-    }
 }

@@ -1,29 +1,41 @@
 package org.ddolib.examples.talentscheduling;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.pigmentscheduling.PSProblem;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Optional;
 
-public class TSMain2 {
+public class TSAstarMain {
+    public static void main(String[] args) throws IOException {
+        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        Model<TSState> model = new Model<>() {
+            private TSProblem problem;
+            @Override
+            public Problem<TSState> problem() {
+                try {
+                    problem = readFile(file);
+                    return problem;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public TSFastLowerBound lowerBound() {
+                return new TSFastLowerBound(problem);
+            }
+        };
 
+        Solve<TSState> solve = new Solve<>();
+
+        SearchStatistics stats = solve.minimize(model);
+
+        solve.onSolution(stats);
+    }
 
     /**
      * Read data file following the format of
@@ -87,38 +99,4 @@ public class TSMain2 {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
-        DdoModel<TSState> model = new DdoModel<>() {
-            private TSProblem problem;
-            @Override
-            public Problem<TSState> problem() {
-                try {
-                    problem = readFile(file);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public Relaxation<TSState> relaxation() {
-                return new TSRelax(problem);
-            }
-            @Override
-            public TSRanking ranking() {
-                return new TSRanking();
-            }
-            @Override
-            public TSFastLowerBound lowerBound() {
-                return new TSFastLowerBound(problem);
-            }
-        };
-
-        Solve<TSState> solve = new Solve<>();
-
-        SearchStatistics stats = solve.minimizeDdo(model);
-
-        solve.onSolution(stats);
-    }
 }
