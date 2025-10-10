@@ -1,23 +1,13 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Solve;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public final class ALPDdoMain {
 
@@ -58,8 +48,5 @@ public final class ALPDdoMain {
         SearchStatistics stats = solve.minimizeDdo(model);
 
         solve.onSolution(stats);
-
-
-
     }
 }
