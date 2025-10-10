@@ -61,18 +61,8 @@ public class GHP<T> implements ReductionStrategy<T> {
             // Selection of the two pivot
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
-            assert pivotA != null;
-            NodeSubProblem<T> pivotB;
-            if (!mostDistantPivot) {
-                pivotB = current.get(1);
-            } else {
-                pivotB = selectFarthest(pivotA, current);
-                assert pivotB != null;
-                for (int i = 0; i < 5; i++) {
-                    pivotA = selectFarthest(pivotB, current);
-                    pivotB = selectFarthest(pivotA, current);
-                }
-            }
+            NodeSubProblem<T> pivotB = selectFarthest(pivotA, current);
+            pivotA = selectFarthest(pivotB, current);
 
 
             // Generates the two clusters

@@ -311,7 +311,6 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.debugLevel = this.debugLevel;
 
             DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
-
             restrictedMdd.compile();
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
@@ -332,7 +331,6 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.bestLB = this.bestLB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
             DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
-
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {

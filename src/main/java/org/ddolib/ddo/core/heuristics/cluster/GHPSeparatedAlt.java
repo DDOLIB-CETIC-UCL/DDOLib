@@ -58,19 +58,10 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
         return separatedLayer;
     }
 
-    private double computeMaxDistance(List<NodeSubProblem<T>> cluster) {
-        if (cluster.size() == 1) {
-            return 0.0;
-        }
-        Collections.shuffle(cluster, rnd);
-        NodeSubProblem<T> pivotA = cluster.getFirst();
-        NodeSubProblem<T> pivotB = selectFarthest(pivotA, cluster);
-        for (int i = 0; i < 5; i++) {
-            pivotA = selectFarthest(pivotB, cluster);
-            pivotB = selectFarthest(pivotA, cluster);
-        }
+    private double computePriority(List<NodeSubProblem<T>> cluster) {
+        T mergedState = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
 
-        return distance.distance(pivotA.state, pivotB.state);
+        return distance.distance(mergedState, rootState);
     }
 
     /**
@@ -89,12 +80,12 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
             pqClusters.add(new ClusterNode(0.0, Collections.singletonList(singleton)));
         }
         for (int i = 1; i < partitions.length; i++) {
-            pqClusters.add(new ClusterNode(computeMaxDistance(partitions[i]), partitions[i]));
+            pqClusters.add(new ClusterNode(computePriority(partitions[i]), partitions[i]));
         }
 
         /*for (List<NodeSubProblem<T>> cluster: this.costSeparation(layer)) {
             if (!cluster.isEmpty()) {
-                pqClusters.add(new ClusterNode(computeMaxDistance(cluster), cluster));
+                pqClusters.add(new ClusterNode(computePriority(cluster), cluster));
             }
         }*/
         //pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer)));
@@ -109,17 +100,8 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
             // Selection of the two pivot
             Collections.shuffle(current, rnd);
             NodeSubProblem<T> pivotA = current.getFirst();
-            NodeSubProblem<T> pivotB;
-            if (!mostDistantPivot) {
-                pivotB = current.get(1);
-            } else {
-                pivotB = selectFarthest(pivotA, current);
-                for (int i = 0; i < 5; i++) {
-                    pivotA = selectFarthest(pivotB, current);
-                    pivotB = selectFarthest(pivotA, current);
-                }
-            }
-
+            NodeSubProblem<T> pivotB = selectFarthest(pivotA, current);
+            pivotA = selectFarthest(pivotB, current);
 
             // Generates the two clusters
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
@@ -149,10 +131,9 @@ public class GHPSeparatedAlt<T> implements ReductionStrategy<T> {
                     newClusterB.add(node);
                 }
             }
-            T mergedA = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterA.iterator()));
-            T mergedB = relaxation.mergeStates(new NodeSubProblemsAsStateIterator<>(newClusterB.iterator()));
-            double priorityA = newClusterA.size() == 1 ? 0.0 : distance.distance(mergedA, rootState);
-            double priorityB = newClusterB.size() == 1 ? 0.0 : distance.distance(mergedB, rootState);
+
+            double priorityA = newClusterA.size() == 1 ? 0.0 : computePriority(newClusterA);
+            double priorityB = newClusterB.size() == 1 ? 0.0 : computePriority(newClusterB);
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA));
