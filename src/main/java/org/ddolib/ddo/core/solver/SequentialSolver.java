@@ -24,10 +24,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -50,9 +48,8 @@ import java.util.Set;
  * EASY TO COMPLETE.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public final class SequentialSolver<T, K> implements Solver {
+public final class SequentialSolver<T> implements Solver {
     /**
      * The problem we want to minimize
      */
@@ -106,7 +103,7 @@ public final class SequentialSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -208,7 +205,7 @@ public final class SequentialSolver<T, K> implements Solver {
      *
      * @param config All the parameters needed to configure the solver.
      */
-    public SequentialSolver(SolverConfig<T, K> config) {
+    public SequentialSolver(SolverConfig<T> config) {
         this.problem = config.problem;
         this.relax = config.relax;
         this.varh = config.varh;
@@ -226,10 +223,14 @@ public final class SequentialSolver<T, K> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
     }
+    @Override
+    public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
 
 
     @Override
-    public SearchStatistics minimize() {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long start = System.currentTimeMillis();
         int printInterval = 500; //ms; half a second
         long nextPrint = start + printInterval;
@@ -258,12 +259,28 @@ public final class SequentialSolver<T, K> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            if (!frontier.isEmpty() && gapLimit != 0.0 && gap() <= gapLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
+            int[] sol = new int[problem.nbVars()];
+            Optional<Double> solVal = Optional.empty();
+            SearchStatistics statistics;
+            if (limit != null) {
+                if (bestSol.isEmpty()) {
+                    Arrays.fill(sol, -1);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+                } else {
+                    if (bestSol.get().size() < problem.nbVars()) {
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.UNSAT, gap(), solVal, sol, solVal);
+                    } else {
+                        sol = constructSolution(bestSol.get().size());
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.SAT, gap(), solVal, sol, solVal);
+                    }
+                }
+                if (limit.test(statistics)) {
+                    return statistics;
+                }
             }
-            if (!frontier.isEmpty() && timeLimit != Integer.MAX_VALUE && end - start > 1000L * timeLimit) {
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap()), gap());
-            }
+
 
             if (verbosityLevel >= 3) {
                 System.out.println("it:" + nbIter + "\t" + sub);
@@ -276,11 +293,13 @@ public final class SequentialSolver<T, K> implements Solver {
                 double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap);
+                sol = constructSolution(bestSol.get().size());
+                solVal = Optional.of(bestUB);
+                return new SearchStatistics(nbIter, queueMaxSize, end - start, currentSearchStatus(gap), gap, solVal, sol, solVal);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationConfig<T, K> compilation = new CompilationConfig<>();
+            CompilationConfig<T> compilation = new CompilationConfig<>();
             compilation.compilationType = CompilationType.Restricted;
             compilation.problem = this.problem;
             compilation.relaxation = this.relax;
@@ -296,7 +315,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
             compilation.debugLevel = this.debugLevel;
 
-            DecisionDiagram<T, K> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+            DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
@@ -316,7 +335,7 @@ public final class SequentialSolver<T, K> implements Solver {
             compilation.compilationType = CompilationType.Relaxed;
             compilation.bestUB = this.bestUB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
-            DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+            DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
@@ -337,9 +356,10 @@ public final class SequentialSolver<T, K> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
+        int[] sol = constructSolution(problem.nbVars());
         return new SearchStatistics(nbIter, queueMaxSize, end - start,
                 SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"));
+                cache.map(SimpleCache::stats).orElse("noCache"), bestValue(), sol, bestValue());
     }
 
     @Override
@@ -372,7 +392,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
-    private void maybeUpdateBest(DecisionDiagram<T, K> currentMdd, boolean exportDot) {
+    private void maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
@@ -387,7 +407,7 @@ public final class SequentialSolver<T, K> implements Solver {
      * If necessary, tightens the bound of nodes in the cutset of `mdd` and
      * then add the relevant nodes to the shared fringe.
      */
-    private void enqueueCutset(DecisionDiagram<T, K> currentMdd) {
+    private void enqueueCutset(DecisionDiagram<T> currentMdd) {
         Iterator<SubProblem<T>> cutset = currentMdd.exactCutset();
         while (cutset.hasNext()) {
             SubProblem<T> cutsetNode = cutset.next();
@@ -426,5 +446,15 @@ public final class SequentialSolver<T, K> implements Solver {
             double bestInFrontier = frontier.bestInFrontier();
             return 100 * (bestUB - bestInFrontier) / bestUB;
         }
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

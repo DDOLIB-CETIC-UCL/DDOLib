@@ -5,6 +5,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * This defines the expected behavior of a solver: an object able to find a solution
@@ -17,6 +18,8 @@ public interface Solver {
      * @return statistics about the search
      */
     SearchStatistics minimize();
+
+    SearchStatistics minimize(Predicate<SearchStatistics> limit);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one

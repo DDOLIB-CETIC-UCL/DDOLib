@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 public class Max2SatTest {
 
-    private static class Max2SatBench extends ProblemTestBench<Max2SatState, NullType, Max2SatProblem> {
+    private static class Max2SatBench extends ProblemTestBench<Max2SatState, Max2SatProblem> {
 
         @Override
         protected List<Max2SatProblem> generateProblems() {
@@ -43,8 +42,8 @@ public class Max2SatTest {
         }
 
         @Override
-        protected SolverConfig<Max2SatState, NullType> configSolver(Max2SatProblem problem) {
-            SolverConfig<Max2SatState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<Max2SatState> configSolver(Max2SatProblem problem) {
+            SolverConfig<Max2SatState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new Max2SatRelax(problem);
             config.ranking = new Max2SatRanking();

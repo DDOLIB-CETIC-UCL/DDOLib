@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 
 public class PDPTests {
 
-    private static class PDPBench extends ProblemTestBench<PDPState, NullType, PDPProblem> {
+    private static class PDPBench extends ProblemTestBench<PDPState, PDPProblem> {
 
         public PDPBench() {
             super();
@@ -49,8 +48,8 @@ public class PDPTests {
         }
 
         @Override
-        protected SolverConfig<PDPState, NullType> configSolver(PDPProblem problem) {
-            SolverConfig<PDPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<PDPState> configSolver(PDPProblem problem) {
+            SolverConfig<PDPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new PDPRelax(problem);
             config.ranking = new PDPRanking();

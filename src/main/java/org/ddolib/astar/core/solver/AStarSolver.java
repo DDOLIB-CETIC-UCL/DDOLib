@@ -13,11 +13,12 @@ import org.ddolib.util.DebugUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public final class AStarSolver<T, K> implements Solver {
+public final class AStarSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -56,7 +57,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
     /**
      * The priority queue containing the subproblems to be explored,
      * ordered by decreasing f = value + fastUpperBound
@@ -99,7 +100,7 @@ public final class AStarSolver<T, K> implements Solver {
     private final int debugLevel;
 
     public AStarSolver(
-            SolverConfig<T, K> config) {
+            SolverConfig<T> config) {
         this.problem = config.problem;
         this.varh = config.varh;
         this.lb = config.flb;
@@ -124,7 +125,7 @@ public final class AStarSolver<T, K> implements Solver {
      * @param rootKey The state and the depth from which start the search.
      */
     private AStarSolver(
-            SolverConfig<T, K> config,
+            SolverConfig<T> config,
             AstarKey<T> rootKey
     ) {
         this.problem = config.problem;
@@ -143,6 +144,11 @@ public final class AStarSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
+
+    @Override
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long t0 = System.currentTimeMillis();
         long ti = System.currentTimeMillis();
         int nbIter = 0;
@@ -163,6 +169,28 @@ public final class AStarSolver<T, K> implements Solver {
 
             SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+            if (limit != null) {
+                int[] sol = new int[problem.nbVars()];
+                Optional<Double> solVal = Optional.empty();
+                SearchStatistics statistics;
+                if (bestSol.isEmpty()) {
+                    Arrays.fill(sol, -1);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+                } else {
+                    if (bestSol.get().size() < problem.nbVars()) {
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+                    } else {
+                        sol = constructSolution(bestSol.get().size());
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                    }
+                }
+                if (limit.test(statistics)) {
+                    return statistics;
+                }
+            }
+
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
@@ -198,7 +226,9 @@ public final class AStarSolver<T, K> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
     @Override
@@ -310,18 +340,18 @@ public final class AStarSolver<T, K> implements Solver {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        SolverConfig<T, K> config = new SolverConfig<>();
+        SolverConfig<T> config = new SolverConfig<>();
         config.problem = this.problem;
         config.varh = this.varh;
         config.flb = this.lb;
         config.dominance = this.dominance;
 
         for (AstarKey<T> current : toCheck) {
-            AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
+            AStarSolver<T> internalSolver = new AStarSolver<>(config, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 
-            internalSolver.minimize();
+            internalSolver.minimize(null);
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
             if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
@@ -367,5 +397,15 @@ public final class AStarSolver<T, K> implements Solver {
      * @param <T>   The type of the state.
      */
     private record AstarKey<T>(T state, int depth) {
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

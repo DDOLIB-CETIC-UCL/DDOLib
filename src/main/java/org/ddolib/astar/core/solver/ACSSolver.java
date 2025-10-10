@@ -12,12 +12,13 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.util.DebugUtil;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
 
-public final class ACSSolver<T, K> implements Solver {
+public final class ACSSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -42,7 +43,7 @@ public final class ACSSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * HashMap mapping (state,depth) to the f value.
@@ -91,7 +92,7 @@ public final class ACSSolver<T, K> implements Solver {
      * @param config All the parameters needed to configure the solver.
      */
     public ACSSolver(
-            SolverConfig<T, K> config,
+            SolverConfig<T> config,
             final int K) {
         this.problem = config.problem;
         this.varh = config.varh;
@@ -129,16 +130,42 @@ public final class ACSSolver<T, K> implements Solver {
         }
         return true;
     }
-
     @Override
     public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
+
+    @Override
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         open[0].add(root);
         present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
+
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
+            if (limit != null) {
+                int[] sol = new int[problem.nbVars()];
+                Optional<Double> solVal = Optional.empty();
+                SearchStatistics statistics;
+                if (bestSol.isEmpty()) {
+                    Arrays.fill(sol, -1);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+                } else {
+                    if (bestSol.get().size() < problem.nbVars()) {
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+                    } else {
+                        sol = constructSolution(bestSol.get().size());
+                        solVal = bestValue();
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                    }
+                }
+                if (limit.test(statistics)) {
+                    return statistics;
+                }
+            }
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
                 int l = min(K, open[i].size());
@@ -154,7 +181,7 @@ public final class ACSSolver<T, K> implements Solver {
                         break;
                     }
                 }
-                for (SubProblem<T> sub: candidates) {
+                for (SubProblem<T> sub : candidates) {
                     nbIter++;
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
@@ -172,7 +199,9 @@ public final class ACSSolver<T, K> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
     @Override
@@ -251,7 +280,6 @@ public final class ACSSolver<T, K> implements Solver {
     }
 
 
-
     private Set<Integer> varSet(Set<Decision> path) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -271,5 +299,15 @@ public final class ACSSolver<T, K> implements Solver {
      * @param <T>   The type of the state.
      */
     private record ACSKey<T>(T state, int depth) {
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

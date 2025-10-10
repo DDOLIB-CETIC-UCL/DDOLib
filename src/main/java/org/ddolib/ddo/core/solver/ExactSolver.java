@@ -26,17 +26,17 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Solver that compile an unique exact mdd.
  * <p>
  * <b>Note:</b> By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
- * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
+ * test your model on small instances. See {@link SequentialSolver} for other use cases.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public final class ExactSolver<T, K> implements Solver {
+public final class ExactSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -66,7 +66,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -137,7 +137,7 @@ public final class ExactSolver<T, K> implements Solver {
      *
      * @param config All the parameters needed to configure the solver.
      */
-    public ExactSolver(SolverConfig<T, K> config) {
+    public ExactSolver(SolverConfig<T> config) {
         this.problem = config.problem;
         this.relax = config.relax;
         this.ranking = config.ranking;
@@ -153,6 +153,11 @@ public final class ExactSolver<T, K> implements Solver {
 
     @Override
     public SearchStatistics minimize() {
+        return minimize((Predicate<SearchStatistics>) null);
+    }
+
+    @Override
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -161,7 +166,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
@@ -177,7 +182,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
 
-        DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
+        DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
         extractBest(mdd);
         if (exportAsDot) {
@@ -187,9 +192,11 @@ public final class ExactSolver<T, K> implements Solver {
         }
 
         long end = System.currentTimeMillis();
+        int[] sol = constructSolution(problem.nbVars());
+        Optional<Double> solVal = bestValue();
         return new SearchStatistics(1, 1, end - start,
                 SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"));
+                cache.map(SimpleCache::stats).orElse("noCache"), solVal, sol, solVal);
     }
 
 
@@ -206,7 +213,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest(DecisionDiagram<T, K> mdd) {
+    private void extractBest(DecisionDiagram<T> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();
@@ -223,5 +230,15 @@ public final class ExactSolver<T, K> implements Solver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private int[] constructSolution(int numVar) {
+        return bestSolution().map(decisions -> {
+            int[] toReturn = new int[numVar];
+            for (Decision d : decisions) {
+                toReturn[d.var()] = d.val();
+            }
+            return toReturn;
+        }).orElse(new int[0]);
     }
 }

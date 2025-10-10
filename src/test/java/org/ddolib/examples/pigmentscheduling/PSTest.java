@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 
 class PSTest {
 
-    private static class PSPBench extends ProblemTestBench<PSState, NullType, PSProblem> {
+    private static class PSPBench extends ProblemTestBench<PSState, PSProblem> {
 
         public PSPBench() {
             super();
@@ -43,8 +42,8 @@ class PSTest {
         }
 
         @Override
-        protected SolverConfig<PSState, NullType> configSolver(PSProblem problem) {
-            SolverConfig<PSState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<PSState> configSolver(PSProblem problem) {
+            SolverConfig<PSState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new PSRelax(problem.instance);
             config.ranking = new PSRanking();

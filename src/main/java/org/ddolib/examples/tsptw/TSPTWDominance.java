@@ -7,7 +7,7 @@ import org.ddolib.modeling.Dominance;
  * If for two states, the position is the same and the {@code mustVisit} set is the same,
  * then we can only keep the state with the lowest time.
  */
-public class TSPTWDominance implements Dominance<TSPTWState, TSPTWDominanceKey> {
+public class TSPTWDominance implements Dominance<TSPTWState> {
 
     @Override
     public TSPTWDominanceKey getKey(TSPTWState state) {

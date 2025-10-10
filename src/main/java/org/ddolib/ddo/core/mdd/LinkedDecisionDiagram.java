@@ -30,9 +30,8 @@ import static org.ddolib.util.MathUtil.saturatedDiff;
  * This class implements the decision diagram as a linked structure.
  *
  * @param <T> the type of state
- * @param <K> the type of key
  */
-public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
+public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -95,14 +94,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     /**
      * The parameter used to tweak the compilation
      */
-    private final CompilationConfig<T, K> config;
+    private final CompilationConfig<T> config;
 
     /**
      * Creates an all new MDD
      *
      * @param config The set of parameters used by the compilation.
      */
-    public LinkedDecisionDiagram(CompilationConfig<T, K> config) {
+    public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
@@ -126,7 +125,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final Relaxation<T> relax = config.relaxation;
         final VariableHeuristic<T> var = config.variableHeuristic;
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
-        final DominanceChecker<T, K> dominance = config.dominance;
+        final DominanceChecker<T> dominance = config.dominance;
         final Optional<SimpleCache<T>> cache = config.cache;
         double bestUb = config.bestUB;
 
@@ -500,7 +499,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     // UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationConfig<T, K> input) {
+    private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < config.problem.nbVars(); i++) {
             set.add(i);

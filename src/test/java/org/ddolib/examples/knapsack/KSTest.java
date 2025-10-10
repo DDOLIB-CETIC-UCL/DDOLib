@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class KSTest {
-    private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
+    private static class KSBench extends ProblemTestBench<Integer, KSProblem> {
 
         public KSBench() {
             super();
@@ -37,7 +37,7 @@ public class KSTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            KSProblem problem = KSMain.readInstance(filePath.toString());
+                            KSProblem problem = KSDdoMain.readInstance(filePath.toString());
                             problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {
@@ -47,8 +47,8 @@ public class KSTest {
         }
 
         @Override
-        protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        protected SolverConfig<Integer> configSolver(KSProblem problem) {
+            SolverConfig<Integer> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new KSRelax();
             config.ranking = new KSRanking();

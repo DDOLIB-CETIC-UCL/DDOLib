@@ -16,9 +16,8 @@ import java.util.Optional;
  * The set of parameters used to tweak the compilation of an MDD.
  *
  * @param <T> The type used to model the state of your problem.
- * @param <K> The type of the dominance key.
  */
-public class CompilationConfig<T, K> {
+public class CompilationConfig<T> {
 
     /**
      * How is the mdd being compiled.
@@ -63,7 +62,7 @@ public class CompilationConfig<T, K> {
     /**
      * The dominance checker used to prune the search space.
      */
-    public DominanceChecker<T, K> dominance = null;
+    public DominanceChecker<T> dominance = null;
 
     /**
      * The cache used to prune the search space.

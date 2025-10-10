@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +19,7 @@ import java.util.stream.Stream;
 
 public class ALPTest {
 
-    public static class AlpBench extends ProblemTestBench<ALPState, NullType, ALPProblem> {
+    public static class AlpBench extends ProblemTestBench<ALPState, ALPProblem> {
 
         @Override
         protected List<ALPProblem> generateProblems() {
@@ -46,8 +45,8 @@ public class ALPTest {
         }
 
         @Override
-        protected SolverConfig<ALPState, NullType> configSolver(ALPProblem problem) {
-            SolverConfig<ALPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<ALPState> configSolver(ALPProblem problem) {
+            SolverConfig<ALPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new ALPRelax(problem);
             config.ranking = new ALPRanking();
