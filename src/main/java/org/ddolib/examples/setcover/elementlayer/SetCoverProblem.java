@@ -11,11 +11,13 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     final public int nSet;
     final public List<Set<Integer>> constraints; // for each element, the collection of sets that contain this element
     final public Optional<Double> optimal = Optional.empty();
+    final public List<Double> weights;
 
-    public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> constraints) {
+    public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> constraints, List<Double> weights) {
         this.nElem = nElem;
         this.nSet = nSet;
         this.constraints = constraints;
+        this.weights = weights;
     }
 
     @Override
@@ -90,7 +92,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     @Override
     public double transitionCost(SetCoverState state, Decision decision) {
         if (decision.val() != -1) { // a set is added to the solution
-            return -1;
+            return -weights.get(decision.val());
         } else { // no set is added to the solution
             return 0;
         }

@@ -35,7 +35,11 @@ public class SetCoverTest {
         constraints.add(Set.of(1,4));
         constraints.add(Set.of(1,5));
 
-        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
+        List<Double> weights = new ArrayList<>();
+        for (int i = 0; i < nSets; i++)
+            weights.add(1.0);
+
+        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints, weights);
         final int optimalCost = bruteForce(problem);
 
         final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
@@ -127,8 +131,11 @@ public class SetCoverTest {
         constraints.add(Set.of(1,4));
         constraints.add(Set.of(1,5));
 
+        List<Double> weights = new ArrayList<>();
+        for (int i = 0; i < nSets; i++)
+            weights.add(1.0);
 
-        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
+        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints, weights);
         final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SetCoverRelax();
@@ -160,7 +167,11 @@ public class SetCoverTest {
         constraints.add(Set.of(1,4));
         constraints.add(Set.of(1,5));
 
-        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints);
+        List<Double> weights = new ArrayList<>();
+        for (int i = 0; i < nSets; i++)
+            weights.add(1.0);
+
+        final SetCoverProblem problem = new SetCoverProblem(nElem, nSets, constraints, weights);
         final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SetCoverRelax();
@@ -320,7 +331,11 @@ public class SetCoverTest {
                 constraints.add(constraint);
             }
 
-            instances.add(new SetCoverProblem(nElem, nSet, constraints));
+            List<Double> weights = new ArrayList<>();
+            for (int i = 0; i < nSet; i++)
+                weights.add(1.0);
+
+            instances.add(new SetCoverProblem(nElem, nSet, constraints, weights));
 
         }
         return instances.stream();

@@ -12,10 +12,10 @@ import static org.ddolib.examples.setcover.elementlayer.SetCover.readInstance;
 
 public class SetCoverLoader {
 
-    public static SolverConfig<SetCoverState, Integer> loadProblem(String fileName, double widthFactor) {
+    public static SolverConfig<SetCoverState, Integer> loadProblem(final String fileName, final double widthFactor, final boolean weighted) {
         SetCoverProblem problem = null;
         try {
-            problem = readInstance(fileName);
+            problem = readInstance(fileName, weighted);
         } catch (IOException e) {
             System.err.println("Problem reading " + fileName);
             System.exit(-1);

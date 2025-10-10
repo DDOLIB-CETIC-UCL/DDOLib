@@ -178,7 +178,8 @@ public class LaunchInterface {
         SolverConfig config = null ;
         switch (problemType) {
             case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
-            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor);
+            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, false);
+            case WSC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, true);
             case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor);
             case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
             case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
@@ -359,6 +360,7 @@ public class LaunchInterface {
         KS, // knapsack
         MISP, // minimum independent set problem,
         SC, // set cover problem
+        WSC, // weighted set cover problem
         SCS // set cover with set layer model
     }
 
@@ -368,6 +370,7 @@ public class LaunchInterface {
             put("ks", ProblemType.KS);
             put("misp", ProblemType.MISP);
             put("sc", ProblemType.SC);
+            put("wsc", ProblemType.WSC);
             put("scs", ProblemType.SCS);
         }
     };
