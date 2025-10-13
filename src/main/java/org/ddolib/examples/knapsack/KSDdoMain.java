@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
@@ -77,9 +77,12 @@ public class KSDdoMain {
 
         Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMS() >= 10000);
+        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
+            System.out.println("--------------------");
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        });
 
-        System.out.println(stats);
 
     }
 

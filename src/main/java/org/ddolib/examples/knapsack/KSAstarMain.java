@@ -2,7 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
@@ -48,7 +48,11 @@ public class KSAstarMain {
 
         Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimizeAstar(model);
+        SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
+            System.out.println("--------------------");
+            System.out.println("new incumbent found "+ s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        });
 
         System.out.println(stats);
 

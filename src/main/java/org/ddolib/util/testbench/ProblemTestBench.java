@@ -125,7 +125,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -141,7 +141,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         config.debugLevel = DebugLevel.ON;
         Solver solver = solverForTests(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -159,7 +159,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             config.debugLevel = DebugLevel.ON;
             Solver solver = solverForRelaxation(config);
             try {
-                solver.minimize();
+                solver.minimize(s -> false, (sol, s) -> {});
                 assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
@@ -180,7 +180,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             config.cache = new SimpleCache<>();
             Solver solver = solverForRelaxation(config);
 
-            solver.minimize();
+            solver.minimize(s -> false, (sol, s) -> {});
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -194,7 +194,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         SolverConfig<T> config = configSolver(problem);
         Solver solver = new AStarSolver<>(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -208,7 +208,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         SolverConfig<T> config = configSolver(problem);
         Solver solver = new ACSSolver<>(config, 4);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -226,7 +226,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
-            solver.minimize();
+            solver.minimize(s -> false, (sol, s) -> {});
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -241,7 +241,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         config.flb = new DefaultFastLowerBound<>();
         Solver solver = solverForTests(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 

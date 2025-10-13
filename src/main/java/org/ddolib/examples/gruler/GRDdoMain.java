@@ -1,6 +1,6 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.IOException;

@@ -8,6 +8,8 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 
+import java.util.function.Consumer;
+
 /**
  * Class containing all the parameter needed for all kind of solver with default value.
  *
@@ -112,5 +114,11 @@ public class SolverConfig<T> {
      * </ul>
      */
     public DebugLevel debugLevel = DebugLevel.OFF;
+
+    /**
+     * A function that will be called whenever a new best solution is found
+     * (no-op by default).
+     */
+    public Consumer<SearchStatistics> onSolution = s -> {};
 
 }

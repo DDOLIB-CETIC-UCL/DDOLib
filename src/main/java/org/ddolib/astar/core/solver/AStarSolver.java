@@ -1,12 +1,13 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -15,6 +16,7 @@ import org.ddolib.util.DebugUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -135,12 +137,7 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize() {
-        return minimize((Predicate<SearchStatistics>) null);
-    }
-
-    @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         long ti = System.currentTimeMillis();
         int nbIter = 0;
@@ -161,27 +158,17 @@ public final class AStarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
-            if (limit != null) {
-                int[] sol = new int[problem.nbVars()];
-                Optional<Double> solVal = Optional.empty();
-                SearchStatistics statistics;
-                if (bestSol.isEmpty()) {
-                    Arrays.fill(sol, -1);
-                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
-                } else {
-                    if (bestSol.get().size() < problem.nbVars()) {
-                        solVal = bestValue();
-                        double gap = Math.abs((bestUB - bestValue().get()) / bestUB) * 100;
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, gap, solVal, sol, solVal);
-                    } else {
-                        sol = constructSolution(bestSol.get().size());
-                        solVal = bestValue();
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
-                    }
-                }
-                if (limit.test(statistics)) {
-                    return statistics;
-                }
+
+            SearchStatistics statistics = new SearchStatistics(
+                    SearchStatus.UNKNOWN,
+                    nbIter,
+                    queueMaxSize,
+                    System.currentTimeMillis() - t0,
+                    bestUB,
+                    0);
+
+            if (limit.test(statistics)) {
+                return statistics;
             }
 
             present.remove(subKey);
@@ -195,6 +182,16 @@ public final class AStarSolver<T> implements Solver {
                 if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
+
+                SearchStatistics stats = new SearchStatistics(
+                        SearchStatus.UNKNOWN,
+                        nbIter,
+                        queueMaxSize,
+                        System.currentTimeMillis() - t0,
+                        bestUB,
+                        0);
+
+                onSolution.accept(bestSol.get(), statistics);
 
                 if (verbosityLevel != VerbosityLevel.SILENT) {
                     System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
@@ -219,9 +216,7 @@ public final class AStarSolver<T> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
-        int[] sol = constructSolution(problem.nbVars());
-        Optional<Double> solVal = bestValue();
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, 0);
     }
 
     @Override
@@ -344,7 +339,7 @@ public final class AStarSolver<T> implements Solver {
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 
-            internalSolver.minimize(null);
+            internalSolver.minimize(s -> false, (sol, stats) -> {});
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
             if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
