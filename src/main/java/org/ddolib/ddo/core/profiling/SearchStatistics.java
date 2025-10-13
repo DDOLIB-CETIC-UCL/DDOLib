@@ -28,20 +28,6 @@ public record SearchStatistics(int nbIterations,
         OPTIMAL, UNSAT, SAT, UNKNOWN;
     }
 
-    //    @Override
-//    public String toString() {
-//        return "SearchStatistics{" +
-//                "nbIterations=" + nbIterations +
-//                ", queueMaxSize=" + queueMaxSize +
-//                ", runTimeMS=" + runTimeMS +
-//                ", SearchStatus=" + SearchStatus +
-//                ", Gap=" + Gap +
-//                ", cacheStats=" + cacheStats +
-//                ", currentObjectiveValue=" + currentObjectiveValue +
-//                ", solution=" + Arrays.toString(solution) +
-//                ", optimalValue=" + optimalValue +
-//                '}';
-//    }
     @Override
     public String toString() {
         return "\n\t Optimal value : " + optimalValue.map(Object::toString).orElse("No feasible " +
