@@ -69,7 +69,7 @@ public final class MispAstarMain {
 
         SearchStatistics stats = solver.minimizeAstar(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 
 

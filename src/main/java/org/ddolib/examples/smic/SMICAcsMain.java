@@ -55,7 +55,7 @@ public class SMICAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 

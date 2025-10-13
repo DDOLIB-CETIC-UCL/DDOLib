@@ -52,7 +52,7 @@ public class PSDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

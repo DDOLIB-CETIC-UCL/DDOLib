@@ -66,7 +66,7 @@ public final class PDPDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 
     /**

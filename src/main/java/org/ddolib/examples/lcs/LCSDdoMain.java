@@ -50,7 +50,7 @@ public final class LCSDdoMain {
 
         Solver<LCSState> solver = new Solver<>();
         SearchStatistics stats = solver.minimizeDdo(model);
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 

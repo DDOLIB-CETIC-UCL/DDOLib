@@ -79,8 +79,7 @@ public class KSDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMS() >= 10000);
 
-        solver.onSolution(stats);
-
+        System.out.println(stats);
 
     }
 

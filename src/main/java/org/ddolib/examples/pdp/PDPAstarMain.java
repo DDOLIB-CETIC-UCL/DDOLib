@@ -36,7 +36,7 @@ public final class PDPAstarMain {
 
         SearchStatistics stats = solver.minimizeAstar(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 
     /**

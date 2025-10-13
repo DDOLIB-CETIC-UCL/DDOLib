@@ -42,6 +42,6 @@ public class GRAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }
