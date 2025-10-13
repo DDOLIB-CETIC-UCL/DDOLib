@@ -15,10 +15,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -144,7 +141,7 @@ public final class SequentialSolver<T> implements Solver {
      * 3: 2 + every developed sub-problem
      * 4: 3 + details about the developed state
      */
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
 
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
@@ -159,17 +156,6 @@ public final class SequentialSolver<T> implements Solver {
      * </ul>
      */
     private final int debugLevel;
-
-
-    /*
-
-    <ul>
-                <li>0: no additional tests (default)</li>
-                <li>1: checks if the lower bound is well-defined</li>
-                <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-            </ul>
-          </li>
-     */
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -223,6 +209,7 @@ public final class SequentialSolver<T> implements Solver {
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
     }
+
     @Override
     public SearchStatistics minimize() {
         return minimize((Predicate<SearchStatistics>) null);
@@ -241,7 +228,7 @@ public final class SequentialSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             nbIter++;
-            if (verbosityLevel >= 2) {
+            if (verbosityLevel == VerbosityLevel.LARGE) {
                 long now = System.currentTimeMillis();
                 if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
@@ -282,11 +269,9 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            if (verbosityLevel >= 3) {
+            if (verbosityLevel == VerbosityLevel.LARGE) {
                 System.out.println("it:" + nbIter + "\t" + sub);
-                if (verbosityLevel >= 4) {
-                    System.out.println("\t" + sub.getState());
-                }
+                System.out.println("\t" + sub.getState());
             }
 
             if (nodeLB >= bestUB) {
@@ -397,7 +382,7 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            if (verbosityLevel >= 1) System.out.println("new best: " + bestUB);
+            if (verbosityLevel != VerbosityLevel.SILENT) System.out.println("new best: " + bestUB);
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }
