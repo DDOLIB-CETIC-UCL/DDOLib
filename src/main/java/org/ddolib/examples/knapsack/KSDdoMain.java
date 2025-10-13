@@ -28,20 +28,15 @@ import java.io.IOException;
  */
 public class KSDdoMain {
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
-        final KSProblem problem = readInstance(instance);
 
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final DdoModel<Integer> model = new DdoModel<>() {
-            private KSProblem problem;
+
+            private KSProblem problem = new KSProblem(instance);;
 
             @Override
             public Problem<Integer> problem() {
-                try {
-                    problem = readInstance(instance);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override

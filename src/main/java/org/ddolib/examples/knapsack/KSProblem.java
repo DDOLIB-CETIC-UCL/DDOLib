@@ -3,6 +3,10 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -15,9 +19,9 @@ import java.util.Optional;
  */
 public class KSProblem implements Problem<Integer> {
 
-    public final int capa;
-    final int[] profit;
-    final int[] weight;
+    public int capa;
+    int[] profit;
+    int[] weight;
     private Optional<Double> optimal = Optional.empty();
 
     private Optional<String> name = Optional.empty();
@@ -33,6 +37,49 @@ public class KSProblem implements Problem<Integer> {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
+    }
+
+
+    public KSProblem(final String fname) throws IOException {
+        this(0, new int[0], new int[0]);
+        boolean isFirst = true;
+        int count = 0;
+        int optimal = 0;
+        int n = 0;
+        final File f = new File(fname);
+        String line;
+        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
+            while ((line = bf.readLine()) != null) {
+                if (isFirst) {
+                    isFirst = false;
+                    String[] tokens = line.split("\\s");
+                    n = Integer.parseInt(tokens[0]);
+                    this.capa = Integer.parseInt(tokens[1]);
+                    if (tokens.length == 3) {
+                        this.optimal = Optional.of(Double.parseDouble(tokens[2]));
+                    }
+                    this.profit = new int[n];
+                    this.weight = new int[n];
+                } else {
+                    if (count < n) {
+                        String[] tokens = line.split("\\s");
+                        this.profit[count] = Integer.parseInt(tokens[0]);
+                        this.weight[count] = Integer.parseInt(tokens[1]);
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+
+    private static class PinReadContext {
+        boolean isFirst = true;
+        int n = 0;
+        int count = 0;
+        int capa = 0;
+        int[] profit = new int[0];
+        int[] weight = new int[0];
+        Integer optimal = null;
     }
 
     public void setName(String name) {
