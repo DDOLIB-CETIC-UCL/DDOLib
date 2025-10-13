@@ -89,14 +89,8 @@ public final class SequentialSolver<T> implements Solver {
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T> dominance;
-    /**
-     * Add a time limit for the search, by default it is set to infinity
-     */
-    private final int timeLimit;
-    /**
-     * Add a gap limit for the search, by default it is set to zero
-     */
-    private final double gapLimit;
+
+
     /**
      * <ul>
      *     <li>0: no verbosity</li>
@@ -187,8 +181,6 @@ public final class SequentialSolver<T> implements Solver {
         this.frontier = config.frontier;
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
-        this.timeLimit = config.timeLimit;
-        this.gapLimit = config.gapLimit;
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
