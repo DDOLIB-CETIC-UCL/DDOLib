@@ -141,18 +141,23 @@ public final class AStarSolver<T> implements Solver {
 
     @Override
     public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
-        long t0 = System.currentTimeMillis();
-        long ti = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
+        int printInterval = 500; //ms; half a second
+        long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;
         open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            if (verbosityLevel != VerbosityLevel.SILENT) {
-                if (System.currentTimeMillis() - ti > 500) {
-                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
-                    ti = System.currentTimeMillis();
+            if (verbosityLevel == VerbosityLevel.LARGE) {
+                long now = System.currentTimeMillis();
+                if (now > nextPrint) {
+                    String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
+                                    "best in frontier: %g - gap: %g%n", nbIter, open.size(), bestUB,
+                            open.peek().getLowerBound(), gap());
+                    System.out.println(msg);
+
+                    nextPrint = now + printInterval;
                 }
             }
 
@@ -167,16 +172,20 @@ public final class AStarSolver<T> implements Solver {
                 SearchStatistics statistics;
                 if (bestSol.isEmpty()) {
                     Arrays.fill(sol, -1);
-                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
+                    statistics = new SearchStatistics(nbIter, queueMaxSize,
+                            System.currentTimeMillis() - start,
+                            SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
                 } else {
                     if (bestSol.get().size() < problem.nbVars()) {
                         solVal = bestValue();
-                        double gap = Math.abs((bestUB - bestValue().get()) / bestUB) * 100;
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, gap, solVal, sol, solVal);
+                        statistics = new SearchStatistics(nbIter, queueMaxSize,
+                                System.currentTimeMillis() - start,
+                                SearchStatistics.SearchStatus.UNSAT, gap(), solVal, sol, solVal);
                     } else {
                         sol = constructSolution(bestSol.get().size());
                         solVal = bestValue();
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+                        statistics = new SearchStatistics(nbIter, queueMaxSize,
+                                System.currentTimeMillis() - start, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
                     }
                 }
                 if (limit.test(statistics)) {
@@ -197,9 +206,7 @@ public final class AStarSolver<T> implements Solver {
                 bestUB = sub.getValue();
 
                 if (verbosityLevel != VerbosityLevel.SILENT) {
-                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
-                    ti = System.currentTimeMillis();
+                    System.out.println("new best:" + bestUB);
                 }
 
                 if (!negativeTransitionCosts) {
@@ -211,9 +218,9 @@ public final class AStarSolver<T> implements Solver {
                     break;
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
-                double nodeUB = sub.getLowerBound();
                 if (verbosityLevel == VerbosityLevel.LARGE) {
-                    System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
+                    String msg = String.format("\tit: %d\n\t%s", nbIter, sub);
+                    System.out.println(msg);
                 }
                 addChildren(sub, debugLevel);
                 closed.put(subKey, sub.f());
@@ -221,7 +228,8 @@ public final class AStarSolver<T> implements Solver {
         }
         int[] sol = constructSolution(problem.nbVars());
         Optional<Double> solVal = bestValue();
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
     }
 
     @Override
@@ -267,8 +275,6 @@ public final class AStarSolver<T> implements Solver {
     private void addChildren(SubProblem<T> subProblem, DebugLevel debugLevel) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
-
-        //int var = varh.nextVariable();
 
 
         final Iterator<Integer> domain = problem.domain(state, var);
@@ -380,6 +386,15 @@ public final class AStarSolver<T> implements Solver {
             logger.warning(warningMsg);
         }
 
+    }
+
+    private double gap() {
+        if (open.isEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = open.peek().getLowerBound();
+            return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
+        }
     }
 
     /**

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -135,6 +136,9 @@ public final class SequentialSolver<T> implements Solver {
      */
     private boolean firstRelaxed = true;
 
+
+    private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link SolverConfig}<br><br>
@@ -209,8 +213,11 @@ public final class SequentialSolver<T> implements Solver {
                 if (now >= nextPrint) {
                     double bestInFrontier = frontier.bestInFrontier();
 
-                    System.out.printf("it:%d  frontierSize:%d bestObj:%g bestInFrontier:%g gap:%.1f%%%n",
-                            nbIter, frontier.size(), bestUB, bestInFrontier, gap());
+                    String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
+                                    "best in frontier: %g - gap: %g%n", nbIter, frontier.size(),
+                            bestUB, bestInFrontier, gap());
+
+                    System.out.println(msg);
 
                     nextPrint = now + printInterval;
                 }
@@ -250,8 +257,8 @@ public final class SequentialSolver<T> implements Solver {
 
 
             if (verbosityLevel == VerbosityLevel.LARGE) {
-                System.out.println("it:" + nbIter + "\t" + sub);
-                System.out.println("\t" + sub.getState());
+                String msg = String.format("\tit: %d\n\t\t%s", nbIter, sub);
+                System.out.println(msg);
             }
 
             if (nodeLB >= bestUB) {
@@ -362,7 +369,9 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            if (verbosityLevel != VerbosityLevel.SILENT) System.out.println("new best: " + bestUB);
+            if (verbosityLevel != VerbosityLevel.SILENT) {
+                System.out.printf("new best: %g%n", bestUB);
+            }
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }

@@ -16,8 +16,10 @@ public class Solver<T> {
         config.dominance = model.dominance();
         config.flb = model.lowerBound();
         config.varh = model.variableHeuristic();
+        config.verbosityLevel = model.verbosityLevel();
         return new AStarSolver<>(config).minimize();
     }
+
     public final SearchStatistics minimize(Model<T> model, Predicate<SearchStatistics> limit) {
         SolverConfig<T> config = new SolverConfig<>();
         config.problem = model.problem();
@@ -38,6 +40,7 @@ public class Solver<T> {
         config.dominance = model.dominance();
         config.frontier = model.frontier();
         config.cache = (model.useCache()) ? new SimpleCache<>() : null;
+        config.verbosityLevel = model.verbosityLevel();
 
         return new SequentialSolver<>(config).minimize();
     }
