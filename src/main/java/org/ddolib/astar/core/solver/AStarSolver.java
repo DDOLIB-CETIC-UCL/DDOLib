@@ -179,7 +179,8 @@ public final class AStarSolver<T> implements Solver {
                 } else {
                     if (bestSol.get().size() < problem.nbVars()) {
                         solVal = bestValue();
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
+                        double gap = Math.abs((bestUB - bestValue().get())/ bestUB) * 100;
+                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, gap, solVal, sol, solVal);
                     } else {
                         sol = constructSolution(bestSol.get().size());
                         solVal = bestValue();
@@ -408,4 +409,5 @@ public final class AStarSolver<T> implements Solver {
             return toReturn;
         }).orElse(new int[0]);
     }
+
 }

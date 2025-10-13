@@ -155,6 +155,7 @@ public final class ACSSolver<T> implements Solver {
                 } else {
                     if (bestSol.get().size() < problem.nbVars()) {
                         solVal = bestValue();
+                        double gap = Math.abs((bestUB - solVal.get())/bestUB) * 100;
                         statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
                     } else {
                         sol = constructSolution(bestSol.get().size());

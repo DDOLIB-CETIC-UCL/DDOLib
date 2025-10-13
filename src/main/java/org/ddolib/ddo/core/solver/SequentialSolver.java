@@ -273,7 +273,11 @@ public final class SequentialSolver<T> implements Solver {
                     } else {
                         sol = constructSolution(bestSol.get().size());
                         solVal = bestValue();
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.SAT, gap(), solVal, sol, solVal);
+                        if (gap() == 0.0)
+                            statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.OPTIMAL, gap(), solVal, sol, solVal);
+                        else
+                            statistics = new SearchStatistics(nbIter, queueMaxSize, end - start, SearchStatistics.SearchStatus.SAT, gap(), solVal, sol, solVal);
+
                     }
                 }
                 if (limit.test(statistics)) {
@@ -444,7 +448,7 @@ public final class SequentialSolver<T> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return 100 * (bestUB - bestInFrontier) / bestUB;
+            return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
         }
     }
 
