@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -15,7 +16,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 import org.ddolib.util.VerbosityPrinter;
 
@@ -23,7 +23,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -334,7 +337,7 @@ public final class SequentialSolver<T> implements Solver {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
             verbosityPrinter.newBest(bestUB);
-            return true
+            return true;
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }

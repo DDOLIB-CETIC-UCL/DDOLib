@@ -39,7 +39,6 @@ public class KSTest {
                     .map(filePath -> {
                         try {
                             KSProblem problem = KSDdoMain.readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
