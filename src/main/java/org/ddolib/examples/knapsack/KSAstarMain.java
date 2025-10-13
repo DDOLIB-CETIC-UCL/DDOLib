@@ -3,10 +3,7 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.*;
 
 import java.io.IOException;
 
@@ -43,6 +40,11 @@ public class KSAstarMain {
             @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.LARGE;
             }
         };
 

@@ -32,7 +32,8 @@ public class KSDdoMain {
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final DdoModel<Integer> model = new DdoModel<>() {
 
-            private KSProblem problem = new KSProblem(instance);;
+            private KSProblem problem = new KSProblem(instance);
+            ;
 
             @Override
             public Problem<Integer> problem() {
@@ -72,6 +73,11 @@ public class KSDdoMain {
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
                 return new FixedWidth<>(100);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.LARGE;
             }
         };
 

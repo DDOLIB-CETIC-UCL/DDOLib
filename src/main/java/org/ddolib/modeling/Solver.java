@@ -21,6 +21,7 @@ public class Solver<T> {
         config.dominance = model.dominance();
         config.flb = model.lowerBound();
         config.varh = model.variableHeuristic();
+        config.verbosityLevel = model.verbosityLevel();
         return new AStarSolver<>(config).minimize(limit);
     }
 
@@ -39,16 +40,19 @@ public class Solver<T> {
         config.dominance = model.dominance();
         config.frontier = model.frontier();
         config.cache = (model.useCache()) ? new SimpleCache<>() : null;
+        config.verbosityLevel = model.verbosityLevel();
 
         return new SequentialSolver<>(config).minimize(limit);
     }
 
     public SearchStatistics minimizeAcs(AcsModel<T> model) {
-        return minimizeAcs(model, s -> false, searchStatistics -> {});
+        return minimizeAcs(model, s -> false, searchStatistics -> {
+        });
     }
 
     public SearchStatistics minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit) {
-        return minimizeAcs(model, limit, searchStatistics -> {});
+        return minimizeAcs(model, limit, searchStatistics -> {
+        });
     }
 
     public SearchStatistics minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, Consumer<SearchStatistics> onSolution) {
@@ -57,6 +61,7 @@ public class Solver<T> {
         config.dominance = model.dominance();
         config.flb = model.lowerBound();
         config.varh = model.variableHeuristic();
+        config.verbosityLevel = model.verbosityLevel();
         return new ACSSolver<>(config, model.columnWidth()).minimize(limit);
     }
 }

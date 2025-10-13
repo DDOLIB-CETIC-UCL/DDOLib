@@ -12,6 +12,7 @@ import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.DebugUtil;
+import org.ddolib.util.VerbosityPrinter;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -87,6 +88,8 @@ public final class AStarSolver<T> implements Solver {
      */
     private final VerbosityLevel verbosityLevel;
 
+    private final VerbosityPrinter verbosityPrinter;
+
     /**
      * The debug level of the compilation to add additional checks (see
      * {@link org.ddolib.modeling.DebugLevel for details}
@@ -104,6 +107,7 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = config.verbosityLevel;
+        this.verbosityPrinter = new VerbosityPrinter(config.verbosityLevel, 500L);
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
@@ -130,6 +134,7 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = config.verbosityLevel;
+        this.verbosityPrinter = new VerbosityPrinter(VerbosityLevel.SILENT, 0);
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
@@ -149,17 +154,8 @@ public final class AStarSolver<T> implements Solver {
         open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            if (verbosityLevel == VerbosityLevel.LARGE) {
-                long now = System.currentTimeMillis();
-                if (now > nextPrint) {
-                    String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
-                                    "best in frontier: %g - gap: %g%n", nbIter, open.size(), bestUB,
-                            open.peek().getLowerBound(), gap());
-                    System.out.println(msg);
-
-                    nextPrint = now + printInterval;
-                }
-            }
+            verbosityPrinter.detailedSearchState(nbIter, open.size(), bestUB,
+                    open.peek().getLowerBound(), gap());
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.size());
@@ -205,9 +201,7 @@ public final class AStarSolver<T> implements Solver {
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
 
-                if (verbosityLevel != VerbosityLevel.SILENT) {
-                    System.out.println("new best:" + bestUB);
-                }
+                verbosityPrinter.newBest(bestUB);
 
                 if (!negativeTransitionCosts) {
                     // with A*, the first complete solution is optimal only if there is no negative transition cost
@@ -218,10 +212,7 @@ public final class AStarSolver<T> implements Solver {
                     break;
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
-                if (verbosityLevel == VerbosityLevel.LARGE) {
-                    String msg = String.format("\tit: %d\n\t%s", nbIter, sub);
-                    System.out.println(msg);
-                }
+                verbosityPrinter.currentSubProblem(nbIter, sub);
                 addChildren(sub, debugLevel);
                 closed.put(subKey, sub.f());
             }

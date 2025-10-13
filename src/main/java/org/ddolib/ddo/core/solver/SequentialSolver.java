@@ -16,6 +16,7 @@ import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.*;
+import org.ddolib.util.VerbosityPrinter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 /**
  * From the lecture, you should have a good grasp on what a branch-and-bound
@@ -106,6 +106,8 @@ public final class SequentialSolver<T> implements Solver {
      * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
+
+    private final VerbosityPrinter verbosityPrinter;
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
@@ -136,8 +138,6 @@ public final class SequentialSolver<T> implements Solver {
      */
     private boolean firstRelaxed = true;
 
-
-    private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -186,6 +186,7 @@ public final class SequentialSolver<T> implements Solver {
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
+        this.verbosityPrinter = new VerbosityPrinter(verbosityLevel, 500L);
         this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
     }
@@ -199,8 +200,6 @@ public final class SequentialSolver<T> implements Solver {
     @Override
     public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
         long start = System.currentTimeMillis();
-        int printInterval = 500; //ms; half a second
-        long nextPrint = start + printInterval;
         int nbIter = 0;
         int queueMaxSize = 0;
         frontier.push(root());
@@ -208,20 +207,8 @@ public final class SequentialSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             nbIter++;
-            if (verbosityLevel == VerbosityLevel.LARGE) {
-                long now = System.currentTimeMillis();
-                if (now >= nextPrint) {
-                    double bestInFrontier = frontier.bestInFrontier();
-
-                    String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
-                                    "best in frontier: %g - gap: %g%n", nbIter, frontier.size(),
-                            bestUB, bestInFrontier, gap());
-
-                    System.out.println(msg);
-
-                    nextPrint = now + printInterval;
-                }
-            }
+            verbosityPrinter.detailedSearchState(nbIter, frontier.size(), bestUB,
+                    frontier.bestInFrontier(), gap());
 
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
             // 1. RESTRICTION
@@ -256,10 +243,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            if (verbosityLevel == VerbosityLevel.LARGE) {
-                String msg = String.format("\tit: %d\n\t\t%s", nbIter, sub);
-                System.out.println(msg);
-            }
+            verbosityPrinter.currentSubProblem(nbIter, sub);
 
             if (nodeLB >= bestUB) {
                 double gap = gap();
@@ -369,9 +353,7 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            if (verbosityLevel != VerbosityLevel.SILENT) {
-                System.out.printf("new best: %g%n", bestUB);
-            }
+            verbosityPrinter.newBest(bestUB);
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }
