@@ -3,7 +3,7 @@ package org.ddolib.examples.lcs;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,6 +21,7 @@ public final class LCSDdoMain {
         final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
         DdoModel<LCSState> model = new DdoModel<>() {
             private LCSProblem problem;
+
             @Override
             public Problem<LCSState> problem() {
                 try {
@@ -30,6 +31,7 @@ public final class LCSDdoMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public LCSRelax relaxation() {
                 return new LCSRelax(problem);
@@ -39,15 +41,16 @@ public final class LCSDdoMain {
             public LCSRanking ranking() {
                 return new LCSRanking();
             }
+
             @Override
             public LCSFastLowerBound lowerBound() {
                 return new LCSFastLowerBound(problem);
             }
         };
 
-        Solve<LCSState> solve = new Solve<>();
-        SearchStatistics stats = solve.minimizeDdo(model);
-        solve.onSolution(stats);
+        Solver<LCSState> solver = new Solver<>();
+        SearchStatistics stats = solver.minimizeDdo(model);
+        solver.onSolution(stats);
 
     }
 

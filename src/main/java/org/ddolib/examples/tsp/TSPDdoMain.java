@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -19,6 +19,7 @@ public class TSPDdoMain {
 
         DdoModel<TSPState> model = new DdoModel<TSPState>() {
             private TSPProblem problem;
+
             @Override
             public Problem<TSPState> problem() {
                 try {
@@ -33,30 +34,33 @@ public class TSPDdoMain {
             public Relaxation<TSPState> relaxation() {
                 return new TSPRelax(problem);
             }
+
             @Override
             public TSPRanking ranking() {
                 return new TSPRanking();
             }
+
             @Override
             public TSPFastLowerBound lowerBound() {
                 return new TSPFastLowerBound(problem);
             }
+
             @Override
             public boolean useCache() {
                 return true;
             }
+
             @Override
             public WidthHeuristic<TSPState> widthHeuristic() {
                 return new FixedWidth<>(500);
             }
         };
 
-        Solve<TSPState> solve = new Solve<>();
+        Solver<TSPState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
-
+        solver.onSolution(stats);
 
 
         //data/TSP/instance_18_0.xml

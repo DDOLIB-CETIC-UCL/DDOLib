@@ -4,9 +4,8 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.File;
 import java.util.Random;
@@ -25,8 +24,9 @@ public class MSCTAcsMain {
 
     public static void main(final String[] args) throws Exception {
         final String file = "data/MSCT/msct1.txt";
-        AcsModel<MSCTState> model = new AcsModel<>(){
+        AcsModel<MSCTState> model = new AcsModel<>() {
             private MSCTProblem problem;
+
             @Override
             public Problem<MSCTState> problem() {
                 try {
@@ -43,11 +43,11 @@ public class MSCTAcsMain {
             }
         };
 
-        Solve<MSCTState> solve = new Solve<>();
+        Solver<MSCTState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
 

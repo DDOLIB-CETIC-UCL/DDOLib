@@ -1,15 +1,9 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,32 +14,34 @@ import static java.lang.Math.max;
 public final class PDPAcsMain {
 
 
-
     public static void main(final String[] args) throws IOException {
 
         final PDPInstance instance = genInstance(18, 2, 3, new Random(1));
-        AcsModel<PDPState> model = new AcsModel<>(){
+        AcsModel<PDPState> model = new AcsModel<>() {
             private PDPProblem problem;
+
             @Override
             public Problem<PDPState> problem() {
                 problem = new PDPProblem(instance);
                 return problem;
             }
+
             @Override
             public PDPFastLowerBound lowerBound() {
                 return new PDPFastLowerBound(problem);
             }
+
             @Override
             public int columnWidth() {
                 return 30;
             }
         };
 
-        Solve<PDPState> solve = new Solve<>();
+        Solver<PDPState> solver = new Solver<>();
 
-        SearchStatistics stats =  solve.minimizeAcs(model, s -> s.runTimeMS() > 1000);
+        SearchStatistics stats = solver.minimizeAcs(model, s -> s.runTimeMS() > 1000);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
     /**

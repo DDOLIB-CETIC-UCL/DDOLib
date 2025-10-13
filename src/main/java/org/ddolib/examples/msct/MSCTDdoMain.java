@@ -5,7 +5,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.File;
 import java.util.Random;
@@ -24,8 +24,9 @@ public class MSCTDdoMain {
 
     public static void main(final String[] args) throws Exception {
         final String file = "data/MSCT/msct1.txt";
-        DdoModel<MSCTState> model = new DdoModel<>(){
+        DdoModel<MSCTState> model = new DdoModel<>() {
             private MSCTProblem problem;
+
             @Override
             public Problem<MSCTState> problem() {
                 try {
@@ -35,29 +36,33 @@ public class MSCTDdoMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public MSCTRelax relaxation() {
                 return new MSCTRelax(problem);
             }
+
             @Override
             public MSCTRanking ranking() {
                 return new MSCTRanking();
             }
+
             @Override
             public DominanceChecker<MSCTState> dominance() {
                 return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
             }
+
             @Override
             public boolean useCache() {
                 return true;
             }
         };
 
-        Solve<MSCTState> solve = new Solve<>();
+        Solver<MSCTState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
 

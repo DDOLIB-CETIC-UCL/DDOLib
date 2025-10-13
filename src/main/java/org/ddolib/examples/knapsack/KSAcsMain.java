@@ -3,7 +3,10 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,6 +41,7 @@ public class KSAcsMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
@@ -55,13 +59,11 @@ public class KSAcsMain {
 
         };
 
-        Solve<Integer> solve = new Solve<>();
+        Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
-
-
+        solver.onSolution(stats);
 
 
     }

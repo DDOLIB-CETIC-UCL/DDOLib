@@ -2,8 +2,7 @@ package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -26,22 +25,24 @@ public class PSAcsMain {
 
         AcsModel<PSState> model = new AcsModel<>() {
             private PSProblem problem;
+
             @Override
             public PSProblem problem() {
                 problem = new PSProblem(instance);
                 return problem;
             }
+
             @Override
             public PSFastLowerBound lowerBound() {
                 return new PSFastLowerBound(instance);
             }
         };
 
-        Solve<PSState> solve = new Solve<>();
+        Solver<PSState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 }

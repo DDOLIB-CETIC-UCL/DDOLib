@@ -29,20 +29,22 @@ public class GRDdoMain {
             public Problem<GRState> problem() {
                 return problem;
             }
+
             @Override
             public Relaxation<GRState> relaxation() {
                 return new GRRelax();
             }
+
             @Override
             public StateRanking<GRState> ranking() {
                 return new GRRanking();
             }
         };
 
-        Solve<GRState> solve = new Solve<>();
+        Solver<GRState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

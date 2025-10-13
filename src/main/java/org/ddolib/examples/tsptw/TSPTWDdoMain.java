@@ -10,7 +10,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -70,10 +70,12 @@ public class TSPTWDdoMain {
             public DominanceChecker<TSPTWState> dominance() {
                 return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             }
+
             @Override
             public Frontier<TSPTWState> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
+
             @Override
             public boolean useCache() {
                 return true;
@@ -85,10 +87,10 @@ public class TSPTWDdoMain {
             }
         };
 
-        Solve<TSPTWState> solve = new Solve<>();
+        Solver<TSPTWState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

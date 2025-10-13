@@ -2,9 +2,8 @@ package org.ddolib.examples.gruler;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -32,16 +31,17 @@ public class GRAcsMain {
             public Problem<GRState> problem() {
                 return problem;
             }
+
             @Override
             public int columnWidth() {
                 return 20;
             }
         };
 
-        Solve<GRState> solve = new Solve<>();
+        Solver<GRState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

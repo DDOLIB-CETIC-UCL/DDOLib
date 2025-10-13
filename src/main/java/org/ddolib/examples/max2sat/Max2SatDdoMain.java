@@ -4,7 +4,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -33,6 +33,7 @@ public final class Max2SatDdoMain {
 
         DdoModel<Max2SatState> ddoModel = new DdoModel<>() {
             private Max2SatProblem problem;
+
             @Override
             public Problem<Max2SatState> problem() {
                 try {
@@ -42,6 +43,7 @@ public final class Max2SatDdoMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public Relaxation<Max2SatState> relaxation() {
                 return new Max2SatRelax(problem);
@@ -51,17 +53,18 @@ public final class Max2SatDdoMain {
             public Max2SatRanking ranking() {
                 return new Max2SatRanking();
             }
+
             @Override
             public Max2SatFastLowerBound lowerBound() {
                 return new Max2SatFastLowerBound(problem);
             }
         };
 
-        Solve<Max2SatState> solve = new Solve<>();
+        Solver<Max2SatState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(ddoModel);
+        SearchStatistics stats = solver.minimizeDdo(ddoModel);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 }

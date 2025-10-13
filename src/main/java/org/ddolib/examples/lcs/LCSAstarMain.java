@@ -1,10 +1,9 @@
 package org.ddolib.examples.lcs;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,6 +21,7 @@ public final class LCSAstarMain {
         final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
         Model<LCSState> model = new Model<>() {
             private LCSProblem problem;
+
             @Override
             public Problem<LCSState> problem() {
                 try {
@@ -31,15 +31,16 @@ public final class LCSAstarMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public LCSFastLowerBound lowerBound() {
                 return new LCSFastLowerBound(problem);
             }
         };
 
-        Solve<LCSState> solve = new Solve<>();
-        SearchStatistics stats = solve.minimize(model);
-        solve.onSolution(stats);
+        Solver<LCSState> solver = new Solver<>();
+        SearchStatistics stats = solver.minimize(model);
+        solver.onSolution(stats);
 
     }
 

@@ -14,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.KeyStoreSpi;
 
 /**
  * The Knapsack problem is a classic optimization problem
@@ -49,6 +48,7 @@ public class KSDdoMain {
             public Relaxation<Integer> relaxation() {
                 return new KSRelax();
             }
+
             @Override
             public KSRanking ranking() {
                 return new KSRanking();
@@ -68,6 +68,7 @@ public class KSDdoMain {
             public Frontier<Integer> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
+
             @Override
             public boolean useCache() {
                 return true;
@@ -79,13 +80,11 @@ public class KSDdoMain {
             }
         };
 
-        Solve<Integer> solve = new Solve<>();
+        Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model, s -> s.runTimeMS() >=  10000);
+        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMS() >= 10000);
 
-        solve.onSolution(stats);
-
-
+        solver.onSolution(stats);
 
 
     }

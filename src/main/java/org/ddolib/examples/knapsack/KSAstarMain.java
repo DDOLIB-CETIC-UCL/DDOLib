@@ -2,13 +2,11 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,23 +41,23 @@ public class KSAstarMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             }
+
             @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
             }
         };
 
-        Solve<Integer> solve = new Solve<>();
+        Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
-
-
+        solver.onSolution(stats);
 
 
     }

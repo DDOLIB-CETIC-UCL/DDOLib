@@ -9,7 +9,7 @@ import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.util.function.Predicate;
 
-public class Solve<T> {
+public class Solver<T> {
     public final SearchStatistics minimize(Model<T> model) {
         SolverConfig<T> config = new SolverConfig<>();
         config.problem = model.problem();
