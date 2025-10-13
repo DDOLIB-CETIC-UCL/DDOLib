@@ -81,53 +81,22 @@ public final class SequentialSolver<T> implements Solver {
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
-
-
-    /**
-     * Value of the best known upper bound.
-     */
-    private double bestUB;
-    /**
-     * If set, this keeps the info about the best solution so far.
-     */
-    private Optional<Set<Decision>> bestSol;
-
     /**
      * The heuristic defining a very rough estimation (lower bound) of the optimal value.
      */
     private final FastLowerBound<T> flb;
-
     /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T> dominance;
-
-    /**
-     * This is the cache used to prune the search tree
-     */
-    private Optional<SimpleCache<T>> cache;
-
-    /**
-     * Only the first restricted mdd can be exported to a .dot file
-     */
-    private boolean firstRestricted = true;
-    /**
-     * Only the first relaxed mdd can be exported to a .dot file
-     */
-    private boolean firstRelaxed = true;
-
-
     /**
      * Add a time limit for the search, by default it is set to infinity
      */
     private final int timeLimit;
-
     /**
      * Add a gap limit for the search, by default it is set to zero
      */
     private final double gapLimit;
-
-
     /**
      * <ul>
      *     <li>0: no verbosity</li>
@@ -142,17 +111,35 @@ public final class SequentialSolver<T> implements Solver {
      * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
-
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
-
     /**
      * The debug level of the compilation to add additional checks (see
      * {@link org.ddolib.modeling.DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    /**
+     * Value of the best known upper bound.
+     */
+    private double bestUB;
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
+    private Optional<Set<Decision>> bestSol;
+    /**
+     * This is the cache used to prune the search tree
+     */
+    private Optional<SimpleCache<T>> cache;
+    /**
+     * Only the first restricted mdd can be exported to a .dot file
+     */
+    private boolean firstRestricted = true;
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file
+     */
+    private boolean firstRelaxed = true;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a

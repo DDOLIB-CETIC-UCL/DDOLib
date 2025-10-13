@@ -148,7 +148,7 @@ public final class AStarSolver<T> implements Solver {
         open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            if (verbosityLevel != VerbosityLevel.NORMAL) {
+            if (verbosityLevel != VerbosityLevel.SILENT) {
                 if (System.currentTimeMillis() - ti > 500) {
                     System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
                     System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
