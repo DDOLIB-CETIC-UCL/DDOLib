@@ -62,17 +62,13 @@ public final class ACSSolver<T> implements Solver {
 
     private PriorityQueue<SubProblem<T>>[] open;
 
-    private final int K;
+    private final int columnWidth;
 
     private final SubProblem<T> root;
 
 
     private final VerbosityLevel verbosityLevel;
 
-    /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
-     */
-    private final boolean exportAsDot;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -95,14 +91,14 @@ public final class ACSSolver<T> implements Solver {
      */
     public ACSSolver(
             SolverConfig<T> config,
-            final int K) {
+            final int columnWidth) {
         this.problem = config.problem;
         this.varh = config.varh;
         this.lb = config.flb;
         this.dominance = config.dominance;
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
-        this.K = K;
+        this.columnWidth = columnWidth;
 
         this.closed = new HashMap<>();
         this.present = new HashMap<>();
@@ -114,7 +110,6 @@ public final class ACSSolver<T> implements Solver {
         }
 
         this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         if (config.debugLevel != DebugLevel.OFF) {
@@ -172,7 +167,7 @@ public final class ACSSolver<T> implements Solver {
             }
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
-                int l = min(K, open[i].size());
+                int l = min(columnWidth, open[i].size());
                 for (int j = 0; j < l; j++) {
                     SubProblem<T> sub = open[i].poll();
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
