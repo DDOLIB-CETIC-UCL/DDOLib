@@ -232,14 +232,4 @@ public final class ExactSolver<T> implements Solver {
             throw new RuntimeException(e);
         }
     }
-
-    private int[] constructSolution(int numVar) {
-        return bestSolution().map(decisions -> {
-            int[] toReturn = new int[numVar];
-            for (Decision d : decisions) {
-                toReturn[d.var()] = d.val();
-            }
-            return toReturn;
-        }).orElse(new int[0]);
-    }
 }

@@ -38,7 +38,7 @@ public interface Solver {
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
      * {@code i}. Or empty array if the solution does not exist.
      */
-    default int[] constructBestSolution(int numVar) {
+    default int[] constructSolution(int numVar) {
         return bestSolution().map(decisions -> {
             int[] toReturn = new int[numVar];
             for (Decision d : decisions) {

@@ -420,14 +420,4 @@ public final class SequentialSolver<T> implements Solver {
             return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
         }
     }
-
-    private int[] constructSolution(int numVar) {
-        return bestSolution().map(decisions -> {
-            int[] toReturn = new int[numVar];
-            for (Decision d : decisions) {
-                toReturn[d.var()] = d.val();
-            }
-            return toReturn;
-        }).orElse(new int[0]);
-    }
 }

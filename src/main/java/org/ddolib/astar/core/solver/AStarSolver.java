@@ -392,14 +392,4 @@ public final class AStarSolver<T> implements Solver {
     private record AstarKey<T>(T state, int depth) {
     }
 
-    private int[] constructSolution(int numVar) {
-        return bestSolution().map(decisions -> {
-            int[] toReturn = new int[numVar];
-            for (Decision d : decisions) {
-                toReturn[d.var()] = d.val();
-            }
-            return toReturn;
-        }).orElse(new int[0]);
-    }
-
 }
