@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,21 +19,23 @@ import static java.lang.Math.max;
 public final class PDPDdoMain {
 
 
-
     public static void main(final String[] args) throws IOException {
 
         final PDPInstance instance = genInstance(18, 2, 3, new Random(1));
-        DdoModel<PDPState> model = new DdoModel<>(){
+        DdoModel<PDPState> model = new DdoModel<>() {
             private PDPProblem problem;
+
             @Override
             public Problem<PDPState> problem() {
                 problem = new PDPProblem(instance);
                 return problem;
             }
+
             @Override
             public PDPRelax relaxation() {
                 return new PDPRelax(problem);
             }
+
             @Override
             public PDPRanking ranking() {
                 return new PDPRanking();
@@ -43,25 +45,28 @@ public final class PDPDdoMain {
             public PDPFastLowerBound lowerBound() {
                 return new PDPFastLowerBound(problem);
             }
+
             @Override
             public Frontier<PDPState> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
+
             @Override
             public boolean useCache() {
                 return true;
             }
+
             @Override
             public WidthHeuristic<PDPState> widthHeuristic() {
                 return new FixedWidth<>(1000);
             }
         };
 
-        Solve<PDPState> solve = new Solve<>();
+        Solver<PDPState> solver = new Solver<>();
 
-        SearchStatistics stats =  solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
     /**

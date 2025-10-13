@@ -2,16 +2,10 @@ package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -51,6 +45,7 @@ public class TSPTWAstarMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public TSPTWFastLowerBound lowerBound() {
                 return new TSPTWFastLowerBound(problem);
@@ -62,10 +57,10 @@ public class TSPTWAstarMain {
             }
         };
 
-        Solve<TSPTWState> solve = new Solve<>();
+        Solver<TSPTWState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

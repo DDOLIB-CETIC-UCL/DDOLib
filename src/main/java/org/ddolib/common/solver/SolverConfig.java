@@ -112,7 +112,7 @@ public class SolverConfig<T> {
      * 3: 2 + every developed sub-problem
      * 4: 3 + details about the developed state
      */
-    public Integer verbosityLevel = 0;
+    public VerbosityLevel verbosityLevel = VerbosityLevel.NORMAL;
 
     /**
      * Whether we want to export the first explored restricted and relaxed mdd ({@code false} by

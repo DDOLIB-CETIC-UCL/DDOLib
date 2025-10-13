@@ -1,7 +1,9 @@
 package org.ddolib.examples.talentscheduling;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,6 +17,7 @@ public class TSAstarMain {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         Model<TSState> model = new Model<>() {
             private TSProblem problem;
+
             @Override
             public Problem<TSState> problem() {
                 try {
@@ -24,17 +27,18 @@ public class TSAstarMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public TSFastLowerBound lowerBound() {
                 return new TSFastLowerBound(problem);
             }
         };
 
-        Solve<TSState> solve = new Solve<>();
+        Solver<TSState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
     /**

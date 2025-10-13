@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.DebugUtil;
 
 import java.text.DecimalFormat;
@@ -83,7 +84,7 @@ public final class AStarSolver<T> implements Solver {
      * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
 
     /**
      * Whether to export the first explored restricted and relaxed mdd.
@@ -156,7 +157,7 @@ public final class AStarSolver<T> implements Solver {
         open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            if (verbosityLevel >= 1) {
+            if (verbosityLevel != VerbosityLevel.NORMAL) {
                 if (System.currentTimeMillis() - ti > 500) {
                     System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
                     System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
@@ -204,7 +205,7 @@ public final class AStarSolver<T> implements Solver {
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
 
-                if (verbosityLevel >= 1) {
+                if (verbosityLevel != VerbosityLevel.SILENT) {
                     System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
                     System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
                     ti = System.currentTimeMillis();
@@ -220,7 +221,7 @@ public final class AStarSolver<T> implements Solver {
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
                 double nodeUB = sub.getLowerBound();
-                if (verbosityLevel >= 2) {
+                if (verbosityLevel == VerbosityLevel.LARGE) {
                     System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
                 }
                 addChildren(sub, debugLevel);

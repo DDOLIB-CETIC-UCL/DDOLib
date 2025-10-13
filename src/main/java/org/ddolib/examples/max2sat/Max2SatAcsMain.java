@@ -1,7 +1,9 @@
 package org.ddolib.examples.max2sat;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -31,6 +33,7 @@ public final class Max2SatAcsMain {
 
         AcsModel<Max2SatState> model = new AcsModel<>() {
             private Max2SatProblem problem;
+
             @Override
             public Problem<Max2SatState> problem() {
                 try {
@@ -40,17 +43,18 @@ public final class Max2SatAcsMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public Max2SatFastLowerBound lowerBound() {
                 return new Max2SatFastLowerBound(problem);
             }
         };
 
-        Solve<Max2SatState> solve = new Solve<>();
+        Solver<Max2SatState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 }

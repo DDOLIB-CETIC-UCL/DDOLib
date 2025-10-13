@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,8 +30,9 @@ public class SMICDdoMain {
     public static void main(String[] args) throws FileNotFoundException {
         final String file = "data/SMIC/data10_2.txt";
         SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
-        DdoModel<SMICState> model = new DdoModel<>(){
+        DdoModel<SMICState> model = new DdoModel<>() {
             private SMICProblem problem;
+
             @Override
             public Problem<SMICState> problem() {
                 try {
@@ -41,37 +42,43 @@ public class SMICDdoMain {
                     throw new RuntimeException();
                 }
             }
+
             @Override
             public SMICRelax relaxation() {
                 return new SMICRelax(problem);
             }
+
             @Override
             public SMICRanking ranking() {
                 return new SMICRanking();
             }
+
             @Override
             public SMICFastLowerBound lowerBound() {
                 return new SMICFastLowerBound(problem);
             }
+
             @Override
             public DominanceChecker<SMICState> dominance() {
                 return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
             }
+
             @Override
             public Frontier<SMICState> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
+
             @Override
             public boolean useCache() {
                 return true;
             }
         };
 
-        Solve<SMICState> solve = new Solve<>();
+        Solver<SMICState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 

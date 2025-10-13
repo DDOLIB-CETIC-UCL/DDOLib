@@ -2,7 +2,7 @@ package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -25,30 +25,34 @@ public class PSDdoMain {
 
         DdoModel<PSState> model = new DdoModel<>() {
             private PSProblem problem;
+
             @Override
             public PSProblem problem() {
                 problem = new PSProblem(instance);
                 return problem;
             }
+
             @Override
             public PSRelax relaxation() {
                 return new PSRelax(instance);
             }
+
             @Override
             public PSRanking ranking() {
                 return new PSRanking();
             }
+
             @Override
             public PSFastLowerBound lowerBound() {
                 return new PSFastLowerBound(instance);
             }
         };
 
-        Solve<PSState> solve = new Solve<>();
+        Solver<PSState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 }

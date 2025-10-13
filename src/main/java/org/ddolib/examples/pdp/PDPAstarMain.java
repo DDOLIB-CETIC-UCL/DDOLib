@@ -1,15 +1,9 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,12 +14,12 @@ import static java.lang.Math.max;
 public final class PDPAstarMain {
 
 
-
     public static void main(final String[] args) throws IOException {
 
         final PDPInstance instance = genInstance(18, 2, 3, new Random(1));
-        Model<PDPState> model = new Model<>(){
+        Model<PDPState> model = new Model<>() {
             private PDPProblem problem;
+
             @Override
             public Problem<PDPState> problem() {
                 problem = new PDPProblem(instance);
@@ -38,11 +32,11 @@ public final class PDPAstarMain {
             }
         };
 
-        Solve<PDPState> solve = new Solve<>();
+        Solver<PDPState> solver = new Solver<>();
 
-        SearchStatistics stats =  solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
     /**

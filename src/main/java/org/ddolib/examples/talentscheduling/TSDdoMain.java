@@ -4,7 +4,7 @@ import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,6 +18,7 @@ public class TSDdoMain {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         DdoModel<TSState> model = new DdoModel<>() {
             private TSProblem problem;
+
             @Override
             public Problem<TSState> problem() {
                 try {
@@ -32,21 +33,23 @@ public class TSDdoMain {
             public Relaxation<TSState> relaxation() {
                 return new TSRelax(problem);
             }
+
             @Override
             public TSRanking ranking() {
                 return new TSRanking();
             }
+
             @Override
             public TSFastLowerBound lowerBound() {
                 return new TSFastLowerBound(problem);
             }
         };
 
-        Solve<TSState> solve = new Solve<>();
+        Solver<TSState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
     /**

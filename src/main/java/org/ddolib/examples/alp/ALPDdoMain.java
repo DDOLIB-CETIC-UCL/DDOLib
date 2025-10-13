@@ -4,7 +4,7 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -15,6 +15,7 @@ public final class ALPDdoMain {
         final String fileStr = Paths.get("data", "alp", "alp_n50_r1_c2_std10_s0").toString();
         DdoModel<ALPState> model = new DdoModel<>() {
             private ALPProblem problem;
+
             @Override
             public ALPProblem problem() {
                 try {
@@ -25,28 +26,32 @@ public final class ALPDdoMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public ALPRelax relaxation() {
                 return new ALPRelax(problem);
             }
+
             @Override
             public ALPRanking ranking() {
                 return new ALPRanking();
             }
+
             @Override
             public ALPFastLowerBound lowerBound() {
                 return new ALPFastLowerBound(problem);
             }
+
             @Override
             public WidthHeuristic widthHeuristic() {
                 return new FixedWidth<>(100);
             }
         };
 
-        Solve<ALPState> solve = new Solve<>();
+        Solver<ALPState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

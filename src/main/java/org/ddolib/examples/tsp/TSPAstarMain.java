@@ -1,9 +1,9 @@
 package org.ddolib.examples.tsp;
 
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -16,6 +16,7 @@ public class TSPAstarMain {
 
         Model<TSPState> model = new Model<TSPState>() {
             private TSPProblem problem;
+
             @Override
             public Problem<TSPState> problem() {
                 try {
@@ -25,18 +26,18 @@ public class TSPAstarMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public TSPFastLowerBound lowerBound() {
                 return new TSPFastLowerBound(problem);
             }
         };
 
-        Solve<TSPState> solve = new Solve<>();
+        Solver<TSPState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
-
+        solver.onSolution(stats);
 
 
         //data/TSP/instance_18_0.xml

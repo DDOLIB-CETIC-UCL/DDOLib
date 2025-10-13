@@ -13,10 +13,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -95,7 +92,7 @@ public final class ExactSolver<T> implements Solver {
      * 3: 2 + every developed sub-problem
      * 4: 3 + details about the developed state
      */
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
 
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
@@ -219,7 +216,7 @@ public final class ExactSolver<T> implements Solver {
             bestSol = mdd.bestSolution();
             bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");
-            if (verbosityLevel >= 1)
+            if (verbosityLevel != VerbosityLevel.SILENT)
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));
         }
     }

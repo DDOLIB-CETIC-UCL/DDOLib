@@ -2,22 +2,13 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
-
-import java.util.Arrays;
-import java.util.Random;
+import org.ddolib.modeling.Solver;
 
 /**
  * Bounded Knapsack Problem (BKS)
@@ -29,8 +20,9 @@ public class BKSDdoMain {
     public static void main(String[] args) {
         BoundedKnapsackGenerator generator = new BoundedKnapsackGenerator(10, 1000, BoundedKnapsackGenerator.InstanceType.STRONGLY_CORRELATED, 0);
 
-        DdoModel<Integer> model = new DdoModel<>(){
+        DdoModel<Integer> model = new DdoModel<>() {
             private BKSProblem problem;
+
             @Override
             public BKSProblem problem() {
                 try {
@@ -40,41 +32,48 @@ public class BKSDdoMain {
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public BKSRelax relaxation() {
                 return new BKSRelax();
             }
+
             @Override
             public BKSRanking ranking() {
                 return new BKSRanking();
             }
+
             @Override
             public BKSFastLowerBound lowerBound() {
                 return new BKSFastLowerBound(problem);
             }
+
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<Integer>(new BKSDominance(), problem.nbVars());
             }
+
             @Override
             public boolean useCache() {
                 return true;
             }
+
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
                 return new FixedWidth<>(100);
             }
+
             @Override
             public SimpleFrontier<Integer> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
         };
 
-        Solve<Integer> solve = new Solve<>();
+        Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }
 

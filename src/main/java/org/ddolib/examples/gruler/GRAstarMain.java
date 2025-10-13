@@ -1,7 +1,9 @@
 package org.ddolib.examples.gruler;
 
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 
@@ -32,10 +34,10 @@ public class GRAstarMain {
 
         };
 
-        Solve<GRState> solve = new Solve<>();
+        Solver<GRState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimize(model);
+        SearchStatistics stats = solver.minimize(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 }

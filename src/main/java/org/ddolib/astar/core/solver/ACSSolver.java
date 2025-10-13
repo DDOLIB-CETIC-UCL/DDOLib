@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.DebugUtil;
 
 import java.util.*;
@@ -65,7 +66,7 @@ public final class ACSSolver<T> implements Solver {
     private final SubProblem<T> root;
 
 
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
 
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
@@ -130,6 +131,7 @@ public final class ACSSolver<T> implements Solver {
         }
         return true;
     }
+
     @Override
     public SearchStatistics minimize() {
         return minimize((Predicate<SearchStatistics>) null);

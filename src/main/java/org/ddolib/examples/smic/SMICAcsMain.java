@@ -2,14 +2,10 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,8 +27,9 @@ public class SMICAcsMain {
     public static void main(String[] args) throws FileNotFoundException {
         final String file = "data/SMIC/data10_2.txt";
         SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
-        AcsModel<SMICState> model = new AcsModel<>(){
+        AcsModel<SMICState> model = new AcsModel<>() {
             private SMICProblem problem;
+
             @Override
             public Problem<SMICState> problem() {
                 try {
@@ -47,17 +44,18 @@ public class SMICAcsMain {
             public SMICFastLowerBound lowerBound() {
                 return new SMICFastLowerBound(problem);
             }
+
             @Override
             public DominanceChecker<SMICState> dominance() {
                 return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
             }
         };
 
-        Solve<SMICState> solve = new Solve<>();
+        Solver<SMICState> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
 
     }
 

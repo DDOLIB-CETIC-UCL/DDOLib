@@ -4,9 +4,8 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solve;
+import org.ddolib.modeling.Solver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,12 +26,12 @@ public final class MispAcsMain {
      * no edge exists in the graph that connects two of the selected nodes and
      * the sum of the weight of the selected nodes is maximal.
      * This problem is considered in the paper:
-     *      - David Bergman et al. Decision Diagrams for Optimization. Ed. by Barry O’Sullivan and Michael Wooldridge. Springer, 2016.
-     *      - David Bergman et al. “Discrete Optimization with Decision Diagrams”. In: INFORMS Journal on Computing 28.1 (2016), pp. 47–66.
-     /**
-
-
-    /**
+     * - David Bergman et al. Decision Diagrams for Optimization. Ed. by Barry O’Sullivan and Michael Wooldridge. Springer, 2016.
+     * - David Bergman et al. “Discrete Optimization with Decision Diagrams”. In: INFORMS Journal on Computing 28.1 (2016), pp. 47–66.
+     * /**
+     * <p>
+     * <p>
+     * /**
      * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.misp.MispMain"} in your terminal to execute
      * default instance. <br>
      * <p>
@@ -42,8 +41,9 @@ public final class MispAcsMain {
     public static void main(String[] args) throws IOException {
         final String file = Paths.get("data", "MISP", "tadpole_4_2.dot").toString();
 
-        AcsModel<BitSet> model = new AcsModel<>(){
+        AcsModel<BitSet> model = new AcsModel<>() {
             private MispProblem problem;
+
             @Override
             public Problem<BitSet> problem() {
                 try {
@@ -58,17 +58,18 @@ public final class MispAcsMain {
             public DominanceChecker<BitSet> dominance() {
                 return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
             }
+
             @Override
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
         };
 
-        Solve<BitSet> solve = new Solve<>();
+        Solver<BitSet> solver = new Solver<>();
 
-        SearchStatistics stats = solve.minimizeAcs(model);
+        SearchStatistics stats = solver.minimizeAcs(model);
 
-        solve.onSolution(stats);
+        solver.onSolution(stats);
     }
 
 
@@ -131,7 +132,6 @@ public final class MispAcsMain {
             return new MispProblem(initialState, neighbor, weight.stream().mapToInt(i -> i).toArray());
         }
     }
-
 
 
 }
