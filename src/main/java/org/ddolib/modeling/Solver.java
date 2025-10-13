@@ -10,7 +10,7 @@ import org.ddolib.ddo.core.solver.SequentialSolver;
 import java.util.function.Predicate;
 
 public class Solver<T> {
-    public final SearchStatistics minimize(Model<T> model) {
+    public final SearchStatistics minimizeAstar(Model<T> model) {
         SolverConfig<T> config = new SolverConfig<>();
         config.problem = model.problem();
         config.dominance = model.dominance();
@@ -18,7 +18,7 @@ public class Solver<T> {
         config.varh = model.variableHeuristic();
         return new AStarSolver<>(config).minimize();
     }
-    public final SearchStatistics minimize(Model<T> model, Predicate<SearchStatistics> limit) {
+    public final SearchStatistics minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
         SolverConfig<T> config = new SolverConfig<>();
         config.problem = model.problem();
         config.dominance = model.dominance();

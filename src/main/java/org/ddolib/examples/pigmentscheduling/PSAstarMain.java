@@ -40,7 +40,7 @@ public class PSAstarMain {
 
         Solver<PSState> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(model);
+        SearchStatistics stats = solver.minimizeAstar(model);
 
         solver.onSolution(stats);
 

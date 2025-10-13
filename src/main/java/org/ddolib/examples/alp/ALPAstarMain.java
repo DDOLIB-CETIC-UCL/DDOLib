@@ -34,7 +34,7 @@ public final class ALPAstarMain {
 
         Solver<ALPState> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(model);
+        SearchStatistics stats = solver.minimizeAstar(model);
 
         solver.onSolution(stats);
 

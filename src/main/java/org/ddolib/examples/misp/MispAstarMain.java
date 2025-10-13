@@ -67,7 +67,7 @@ public final class MispAstarMain {
 
         Solver<BitSet> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(model);
+        SearchStatistics stats = solver.minimizeAstar(model);
 
         solver.onSolution(stats);
     }
