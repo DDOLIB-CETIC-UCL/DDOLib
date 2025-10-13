@@ -19,57 +19,66 @@ import java.util.Optional;
  */
 public class KSProblem implements Problem<Integer> {
 
-    public int capa;
-    int[] profit;
-    int[] weight;
-    private Optional<Double> optimal = Optional.empty();
-
-    private Optional<String> name = Optional.empty();
+    public final int capa;
+    public final int[] profit;
+    public final int[] weight;
+    public final Optional<Double> optimal;
+    public final Optional<String> name;
 
     public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
         this.optimal = Optional.of(optimal);
+        this.name = Optional.empty();
     }
 
     public KSProblem(final int capa, final int[] profit, final int[] weight) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
+        this.optimal = Optional.empty();
+        this.name = Optional.empty();
     }
 
 
     public KSProblem(final String fname) throws IOException {
-        this(0, new int[0], new int[0]);
         boolean isFirst = true;
         int count = 0;
-        int optimal = 0;
         int n = 0;
         final File f = new File(fname);
         String line;
+        int c = 0;
+        int [] profit = new int[0];
+        int [] weight = new int[0];
+        Optional<Double> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             while ((line = bf.readLine()) != null) {
                 if (isFirst) {
                     isFirst = false;
                     String[] tokens = line.split("\\s");
                     n = Integer.parseInt(tokens[0]);
-                    this.capa = Integer.parseInt(tokens[1]);
+                    c = Integer.parseInt(tokens[1]);
                     if (tokens.length == 3) {
-                        this.optimal = Optional.of(Double.parseDouble(tokens[2]));
+                        optimal = Optional.of(Double.parseDouble(tokens[2]));
                     }
-                    this.profit = new int[n];
-                    this.weight = new int[n];
+                    profit = new int[n];
+                    weight = new int[n];
                 } else {
                     if (count < n) {
                         String[] tokens = line.split("\\s");
-                        this.profit[count] = Integer.parseInt(tokens[0]);
-                        this.weight[count] = Integer.parseInt(tokens[1]);
+                        profit[count] = Integer.parseInt(tokens[0]);
+                        weight[count] = Integer.parseInt(tokens[1]);
                         count++;
                     }
                 }
             }
         }
+        this.capa = c;
+        this.profit = profit;
+        this.weight = weight;
+        this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
     private static class PinReadContext {
@@ -80,10 +89,6 @@ public class KSProblem implements Problem<Integer> {
         int[] profit = new int[0];
         int[] weight = new int[0];
         Integer optimal = null;
-    }
-
-    public void setName(String name) {
-        this.name = Optional.of(name);
     }
 
     @Override
