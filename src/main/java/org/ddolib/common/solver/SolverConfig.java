@@ -129,6 +129,6 @@ public class SolverConfig<T> {
      *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
      * </ul>
      */
-    public Integer debugLevel = 0;
+    public DebugLevel debugLevel = DebugLevel.OFF;
 
 }

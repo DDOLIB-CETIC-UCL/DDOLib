@@ -99,7 +99,11 @@ public final class ExactSolver<T> implements Solver {
      */
     private final boolean exportAsDot;
 
-    private final int debugLevel;
+    /**
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
+     */
+    private final DebugLevel debugLevel;
 
 
     /**

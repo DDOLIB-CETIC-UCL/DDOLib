@@ -149,13 +149,10 @@ public final class SequentialSolver<T> implements Solver {
     private final boolean exportAsDot;
 
     /**
-     * <ul>
-     *     <li>0: no additional tests</li>
-     *     <li>1: checks if the lower bound is well-defined</li>
-     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     * </ul>
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
      */
-    private final int debugLevel;
+    private final DebugLevel debugLevel;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a

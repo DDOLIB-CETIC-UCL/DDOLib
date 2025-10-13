@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
@@ -116,7 +117,7 @@ public final class ACSSolver<T> implements Solver {
         this.exportAsDot = config.exportAsDot;
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-        if (config.debugLevel != 0) {
+        if (config.debugLevel != DebugLevel.OFF) {
             throw new IllegalArgumentException("The debug mode for this solver is not available " +
                     "for the moment.");
         }
@@ -157,7 +158,7 @@ public final class ACSSolver<T> implements Solver {
                 } else {
                     if (bestSol.get().size() < problem.nbVars()) {
                         solVal = bestValue();
-                        double gap = Math.abs((bestUB - solVal.get())/bestUB) * 100;
+                        double gap = Math.abs((bestUB - solVal.get()) / bestUB) * 100;
                         statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
                     } else {
                         sol = constructSolution(bestSol.get().size());

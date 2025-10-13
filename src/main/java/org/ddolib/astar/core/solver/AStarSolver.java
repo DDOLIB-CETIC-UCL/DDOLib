@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
@@ -87,18 +88,10 @@ public final class AStarSolver<T> implements Solver {
     private final VerbosityLevel verbosityLevel;
 
     /**
-     * Whether to export the first explored restricted and relaxed mdd.
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
      */
-    private final boolean exportAsDot;
-
-    /**
-     * <ul>
-     *     <li>0: no additional tests</li>
-     *     <li>1: checks if the upper bound is well-defined</li>
-     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     * </ul>
-     */
-    private final int debugLevel;
+    private final DebugLevel debugLevel;
 
     public AStarSolver(
             SolverConfig<T> config) {
@@ -111,7 +104,6 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
@@ -138,7 +130,6 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
         this.debugLevel = config.debugLevel;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
@@ -180,7 +171,7 @@ public final class AStarSolver<T> implements Solver {
                 } else {
                     if (bestSol.get().size() < problem.nbVars()) {
                         solVal = bestValue();
-                        double gap = Math.abs((bestUB - bestValue().get())/ bestUB) * 100;
+                        double gap = Math.abs((bestUB - bestValue().get()) / bestUB) * 100;
                         statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, gap, solVal, sol, solVal);
                     } else {
                         sol = constructSolution(bestSol.get().size());
@@ -198,7 +189,7 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
-                if (debugLevel >= 1) {
+                if (debugLevel != DebugLevel.OFF) {
                     checkFLBAdmissibility();
                 }
                 if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
@@ -260,7 +251,7 @@ public final class AStarSolver<T> implements Solver {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
         Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
-        if (debugLevel > 0) {
+        if (debugLevel != DebugLevel.OFF) {
             for (int i = 0; i < depth; i++) {
                 nullDecisions.add(new Decision(i, 0));
             }
@@ -273,7 +264,7 @@ public final class AStarSolver<T> implements Solver {
     }
 
 
-    private void addChildren(SubProblem<T> subProblem, int debugLevel) {
+    private void addChildren(SubProblem<T> subProblem, DebugLevel debugLevel) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
 
@@ -284,7 +275,7 @@ public final class AStarSolver<T> implements Solver {
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel >= 1)
+            if (debugLevel != DebugLevel.OFF)
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
@@ -300,7 +291,7 @@ public final class AStarSolver<T> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                if (debugLevel >= 2) {
+                if (debugLevel == DebugLevel.EXTENDED) {
                     checkFLBConsistency(subProblem, newSub, cost);
                 }
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());

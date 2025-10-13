@@ -29,11 +29,9 @@ public interface Model<T> {
         return VerbosityLevel.NORMAL;
     }
 
-    default boolean debugMode() {
-        return false;
+    default DebugLevel debugMode() {
+        return DebugLevel.OFF;
     }
-
-
 
 
 }

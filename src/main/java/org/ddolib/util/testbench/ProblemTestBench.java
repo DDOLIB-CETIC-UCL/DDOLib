@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
@@ -137,7 +138,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
     protected void testFlb(P problem) {
         SolverConfig<T> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
+        config.debugLevel = DebugLevel.ON;
         Solver solver = solverForTests(config);
 
         solver.minimize();
@@ -155,7 +156,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             config.dominance = new DefaultDominanceChecker<>();
             config.flb = new DefaultFastLowerBound<>();
             config.width = new FixedWidth<>(w);
-            config.debugLevel = 1;
+            config.debugLevel = DebugLevel.ON;
             Solver solver = solverForRelaxation(config);
             try {
                 solver.minimize();
@@ -221,7 +222,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         for (int w = minWidth; w <= maxWidth; w++) {
             SolverConfig<T> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
-            config.debugLevel = 1;
+            config.debugLevel = DebugLevel.ON;
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
