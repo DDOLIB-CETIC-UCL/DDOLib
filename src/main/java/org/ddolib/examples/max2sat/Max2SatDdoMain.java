@@ -64,7 +64,7 @@ public final class Max2SatDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(ddoModel);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

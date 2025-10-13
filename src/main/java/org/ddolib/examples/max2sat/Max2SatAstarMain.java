@@ -52,9 +52,9 @@ public final class Max2SatAstarMain {
 
         Solver<Max2SatState> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(ddoModel);
+        SearchStatistics stats = solver.minimizeAstar(ddoModel);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

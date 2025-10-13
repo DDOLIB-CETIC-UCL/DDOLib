@@ -39,8 +39,8 @@ public final class LCSAstarMain {
         };
 
         Solver<LCSState> solver = new Solver<>();
-        SearchStatistics stats = solver.minimize(model);
-        solver.onSolution(stats);
+        SearchStatistics stats = solver.minimizeAstar(model);
+        System.out.println(stats);
 
     }
 

@@ -59,8 +59,8 @@ public class TSPTWAstarMain {
 
         Solver<TSPTWState> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(model);
+        SearchStatistics stats = solver.minimizeAstar(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }

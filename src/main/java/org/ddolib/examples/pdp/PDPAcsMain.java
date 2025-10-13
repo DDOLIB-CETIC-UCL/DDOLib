@@ -41,7 +41,7 @@ public final class PDPAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model, s -> s.runTimeMS() > 1000);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 
     /**

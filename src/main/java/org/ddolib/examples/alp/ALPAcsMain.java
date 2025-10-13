@@ -36,6 +36,6 @@ public final class ALPAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model, s -> s.nbIterations() > 1000000);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }

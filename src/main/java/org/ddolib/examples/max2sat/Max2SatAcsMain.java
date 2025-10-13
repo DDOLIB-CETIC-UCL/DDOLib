@@ -54,7 +54,7 @@ public final class Max2SatAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }
