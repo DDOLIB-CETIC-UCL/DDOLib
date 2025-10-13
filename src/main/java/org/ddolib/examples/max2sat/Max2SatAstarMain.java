@@ -1,6 +1,6 @@
 package org.ddolib.examples.max2sat;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;

@@ -1,12 +1,13 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -14,6 +15,8 @@ import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.DebugUtil;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -65,7 +68,6 @@ public final class ACSSolver<T> implements Solver {
     private final int columnWidth;
 
     private final SubProblem<T> root;
-
 
     private final VerbosityLevel verbosityLevel;
 
@@ -129,12 +131,7 @@ public final class ACSSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize() {
-        return minimize((Predicate<SearchStatistics>) null);
-    }
-
-    @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -143,28 +140,14 @@ public final class ACSSolver<T> implements Solver {
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            if (limit != null) {
-                int[] sol = new int[problem.nbVars()];
-                Optional<Double> solVal = Optional.empty();
-                SearchStatistics statistics;
-                if (bestSol.isEmpty()) {
-                    Arrays.fill(sol, -1);
-                    statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNKNOWN, Double.MAX_VALUE, solVal, sol, solVal);
-                } else {
-                    if (bestSol.get().size() < problem.nbVars()) {
-                        solVal = bestValue();
-                        double gap = Math.abs((bestUB - solVal.get()) / bestUB) * 100;
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.UNSAT, problem.nbVars() - bestSol.get().size(), solVal, sol, solVal);
-                    } else {
-                        sol = constructSolution(bestSol.get().size());
-                        solVal = bestValue();
-                        statistics = new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
-                    }
-                }
-                if (limit.test(statistics)) {
-                    return statistics;
-                }
+
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+                    System.currentTimeMillis() - t0, bestUB, 0);
+
+            if (limit.test(stats)) {
+                return stats;
             }
+
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
                 int l = min(columnWidth, open[i].size());
@@ -190,6 +173,10 @@ public final class ACSSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                         }
+                        double gap = 0; // TODO compute the gap when we have a valid LB
+                        stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+                                System.currentTimeMillis() - t0, bestUB, gap);
+                        onSolution.accept(bestSol.get(), stats);
                     } else {
                         addChildren(sub, i + 1);
                     }
@@ -198,9 +185,7 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        int[] sol = constructSolution(problem.nbVars());
-        Optional<Double> solVal = bestValue();
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0, solVal, sol, solVal);
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, 0);
     }
 
     @Override
