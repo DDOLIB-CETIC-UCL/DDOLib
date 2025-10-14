@@ -42,6 +42,7 @@ public class MispProblem implements Problem<BitSet> {
      * @param neighbors      For each node {@code i}, {@code neighbors[i]} returns the adjacency list of {@code i}.
      * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
      *                       in the problem instance.
+     * @param optimal        The value of the optimal solution if known.
      */
     public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, double optimal) {
         this.remainingNodes = remainingNodes;
@@ -50,6 +51,14 @@ public class MispProblem implements Problem<BitSet> {
         this.optimal = Optional.of(optimal);
     }
 
+    /**
+     *
+     * @param remainingNodes The remaining node that can be selected in the current independent set. Considered
+     *                       as the state of the MDD.
+     * @param neighbors      For each node {@code i}, {@code neighbors[i]} returns the adjacency list of {@code i}.
+     * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
+     *                       in the problem instance.
+     */
     public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
@@ -69,6 +78,7 @@ public class MispProblem implements Problem<BitSet> {
      * By default, of the node is {@code 1}.
      *
      * @param fname A .dot file containing a graph.
+     * @throws IOException If something goes wrong while reading input file.
      */
     public MispProblem(String fname) throws IOException {
         ArrayList<Integer> weight = new ArrayList<>();
@@ -117,16 +127,6 @@ public class MispProblem implements Problem<BitSet> {
         this.weight = weight.stream().mapToInt(x -> x).toArray();
         this.optimal = optimal;
         this.name = Optional.of(fname);
-    }
-
-
-    /**
-     * Sets the name of the instance. The name will override the default toString.
-     *
-     * @param name The new string that will override the default toString.
-     */
-    public void setName(String name) {
-        this.name = Optional.of(name);
     }
 
     @Override
