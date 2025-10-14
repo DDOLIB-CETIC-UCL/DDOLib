@@ -60,20 +60,40 @@ public class SetCover {
      * @throws IOException if the file cannot be found or is not readable
      */
     public static SetCoverProblem readInstance(final String fname) throws IOException {
+        return readInstance(fname, false);
+    }
+
+    /**
+     * Load the SetCoverProblem from a file
+     * @param fname the path to the file describing the instance
+     * @param weighted true if the instance has cost for the set, false otherwise
+     * @return a SetCoverProblem representing the instance
+     * @throws IOException if the file cannot be found or is not readable
+     */
+    public static SetCoverProblem readInstance(final String fname, final boolean weighted) throws IOException {
         final File f = new File(fname);
         try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
-            final PinReadContext context = new PinReadContext();
+            final SetCover.PinReadContext context = new SetCover.PinReadContext();
 
             br.lines().forEachOrdered((String s) -> {
                 if (context.isFirst) {
                     context.isFirst = false;
+                    context.isSecond = true;
 
                     String[] tokens = s.split("\\s");
                     context.nElem = Integer.parseInt(tokens[0]);
                     context.nSet = Integer.parseInt(tokens[1]);
 
                     context.sets = new ArrayList<>(context.nSet);
-                } else {
+                } else if (context.isSecond && weighted) {
+                    context.isSecond = false;
+                    String[] tokens = s.split("\\s");
+                    context.weights = new ArrayList<>(context.nSet);
+                    for (int i = 0; i < context.nSet; i++) {
+                        context.weights.add(Double.parseDouble(tokens[i]));
+                    }
+                }
+                else {
                     if (context.count< context.nSet) {
                         String[] tokens = s.split("\\s");
                         context.sets.add(new HashSet<>(tokens.length));
@@ -84,16 +104,25 @@ public class SetCover {
                     }
                 }
             });
-
-            return new SetCoverProblem(context.nElem, context.nSet, context.sets);
+            if (weighted)
+                return new SetCoverProblem(context.nElem, context.nSet, context.sets, context.weights);
+            else {
+                context.weights = new ArrayList<>(context.nSet);
+                for (int i = 0; i < context.nSet; i++) {
+                    context.weights.add(1.0);
+                }
+                return new SetCoverProblem(context.nElem, context.nSet, context.sets, context.weights);
+            }
         }
     }
 
     private static class PinReadContext {
         boolean isFirst = true;
+        boolean isSecond = false;
         int nElem = 0;
         int nSet = 0;
         List<Set<Integer>> sets;
+        List<Double> weights;
         int count = 0;
     }
 

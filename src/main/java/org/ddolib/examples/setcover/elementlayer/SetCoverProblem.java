@@ -12,12 +12,23 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     final public List<Set<Integer>> constraints; // for each element, the collection of sets that contain this element
     final public Optional<Double> optimal = Optional.empty();
     final public List<Double> weights;
+    final public List<Double> elemMinWeights; // for each elem, the minimal weight among the set containing the element
 
     public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> constraints, List<Double> weights) {
         this.nElem = nElem;
         this.nSet = nSet;
         this.constraints = constraints;
         this.weights = weights;
+        this.elemMinWeights = new ArrayList<>(nElem);
+
+        for (int i = 0; i < nElem; i++) {
+            double minWeight = Double.MAX_VALUE;
+            for (int set : constraints.get(i)) {
+                minWeight = Math.min(minWeight, weights.get(set));
+            }
+            elemMinWeights.add(minWeight);
+        }
+
     }
 
     @Override

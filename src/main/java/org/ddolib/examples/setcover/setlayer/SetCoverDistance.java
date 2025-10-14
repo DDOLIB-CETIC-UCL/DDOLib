@@ -11,11 +11,20 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      * @param b the second state
      * @return
      */
+    /**
+     * The distance between two states in the set cover problem is the
+     * size of the symmetric difference between the two sets of uncovered elements
+     * @param a the first state
+     * @param b the second state
+     * @return
+     */
     @Override
     public double distance(SetCoverState a, SetCoverState b) {
         int intersectionSize = 0;
-        for (int elem: a.uncoveredElements.keySet()) {
-            if(b.uncoveredElements.containsKey(elem)) {
+        SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
+        SetCoverState larger = a.uncoveredElements.size() < b.uncoveredElements.size() ? b : a;
+        for (int elem: smaller.uncoveredElements.keySet()) {
+            if(larger.uncoveredElements.containsKey(elem)) {
                 intersectionSize++;
             }
         }

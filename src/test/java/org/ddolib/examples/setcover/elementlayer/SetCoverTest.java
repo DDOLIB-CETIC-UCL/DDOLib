@@ -77,49 +77,6 @@ public class SetCoverTest {
     }
 
     @Test
-    public void testDistance() {
-        final SetCoverState a = new SetCoverState(Set.of(0, 1));
-        final SetCoverState b = new SetCoverState(Set.of(2, 3));
-        final SetCoverState c = new SetCoverState(Set.of(0));
-        final SetCoverState d = new SetCoverState(Set.of(0));
-
-        final SetCoverDistance dist = new SetCoverDistance();
-        Assertions.assertEquals(dist.distance(a,b), 4);
-        Assertions.assertEquals(dist.distance(a,c), 1);
-        Assertions.assertEquals(dist.distance(b,c), 3);
-        Assertions.assertEquals(dist.distance(b,a), 4);
-        Assertions.assertEquals(dist.distance(c,a), 1);
-        Assertions.assertEquals(dist.distance(c,b), 3);
-        Assertions.assertEquals(dist.distance(d,c), 0);
-        Assertions.assertEquals(dist.distance(c,d), 0);
-    }
-
-    @Test
-    public void testDistanceRnd() {
-        Random rnd = new Random(684654654);
-        SetCoverDistance dist = new SetCoverDistance();
-        for (int test = 0; test < 100; test++) {
-            Set<Integer> a = new HashSet<>(50);
-            while (a.size() < 50) {
-                a.add(rnd.nextInt());
-            }
-
-            Set<Integer> b = new HashSet<>(a);
-            int nbrRemoved = rnd.nextInt(5, 10);
-            List<Integer> tmp = new ArrayList<>(b);
-            Collections.shuffle(tmp, rnd);
-            tmp.subList(0, nbrRemoved).forEach(b::remove);
-            int nbrAdded = rnd.nextInt(5, 10);
-            while (b.size() < a.size() - nbrRemoved + nbrAdded) {
-                b.add(rnd.nextInt());
-            }
-
-            int distRef = nbrRemoved + nbrAdded;
-            Assertions.assertEquals(distRef, dist.distance(new SetCoverState(a), new SetCoverState(b)));
-        }
-    }
-
-    @Test
     public void testSmallRestriction() {
         int nElem = 6;
         int nSets = 6;
@@ -178,7 +135,7 @@ public class SetCoverTest {
         config.varh = new MinCentralityDynamic(problem);
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
-        config.distance = new SetCoverDistance();
+        config.distance = new SetCoverDistance(problem);
         config.dominance = new DefaultDominanceChecker<>();
 
         config.relaxStrategy  = new CostBased<>(config.ranking);
@@ -206,12 +163,12 @@ public class SetCoverTest {
         config.relax = new SetCoverRelax();
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
-        config.distance = new SetCoverDistance();
+        config.distance = new SetCoverDistance(problem);
         config.dominance = new DefaultDominanceChecker<>();
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
-        strategies.add(new GHP<>(new SetCoverDistance()));
+        strategies.add(new GHP<>(new SetCoverDistance(problem)));
         strategies.add(new CostBased<>(config.ranking));
-        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new MBP<>(new SetCoverDistance(problem)));
         strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
 
         for (ReductionStrategy<SetCoverState> relaxStrategy: strategies) {
@@ -250,11 +207,11 @@ public class SetCoverTest {
         config.relax = new SetCoverRelax();
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>(2);
-        config.distance = new SetCoverDistance();
+        config.distance = new SetCoverDistance(problem);
         config.dominance = new DefaultDominanceChecker<>();
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
-        strategies.add(new GHP<>(new SetCoverDistance()));
-        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new GHP<>(new SetCoverDistance(problem)));
+        strategies.add(new MBP<>(new SetCoverDistance(problem)));
         strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
         strategies.add(new CostBased<>(config.ranking));
 

@@ -11,21 +11,29 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     final public List<Set<Integer>> sets;
     public int nbrElemRemoved;
     final public Optional<Double> optimal = Optional.empty();
+    final public List<Double> weights;
     // Used to monitor how many times each type of branching is used
     public int countZeroOnly;
     public int countOneOnly;
     public int countZeroOne;
+    final public List<Double> elemMinWeights; // for each elem, the minimal weight among the set containing the element
 
-    public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> sets) {
-        this(nElem, nSet, sets, 0);
-    }
 
-    public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> sets, int nbrElemRemoved) {
+    public SetCoverProblem(int nElem, int nSet, List<Set<Integer>> sets, List<Double> weights) {
         this.nElem = nElem;
         this.nSet = nSet;
         this.sets = sets;
+        this.weights = weights;
         this.nbrElemRemoved = nbrElemRemoved;
-
+        this.elemMinWeights = new ArrayList<>(nElem);
+        for (int i = 0; i < nElem; i++) {
+            elemMinWeights.add(Double.MAX_VALUE);
+        }
+        for (int set = 0; set < nSet; set++) {
+            for (Integer elem : sets.get(set)) {
+                elemMinWeights.set(elem, Math.min(elemMinWeights.get(elem), weights.get(set)));
+            }
+        }
     }
 
     @Override
@@ -112,6 +120,6 @@ public class SetCoverProblem implements Problem<SetCoverState> {
 
     @Override
     public double transitionCost(SetCoverState state, Decision decision) {
-        return -decision.val();
+        return -decision.val()*weights.get(decision.var());
     }
 }

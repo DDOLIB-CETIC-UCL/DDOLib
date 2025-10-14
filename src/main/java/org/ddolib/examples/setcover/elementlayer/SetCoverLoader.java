@@ -29,7 +29,7 @@ public class SetCoverLoader {
         config.varh = new SetCoverHeuristics.MinCentrality(problem);
         config.fub = new DefaultFastUpperBound<>();
         config.dominance = new DefaultDominanceChecker<>();
-        config.distance = new SetCoverDistance();
+        config.distance = new SetCoverDistanceWeighted(problem);
         config.coordinates = new SetCoverCoordinates(problem);
 
         return config;

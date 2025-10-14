@@ -5,11 +5,11 @@ import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetCoverDistance implements StateDistance<SetCoverState> {
+public class SetCoverDistanceWeighted implements StateDistance<SetCoverState> {
 
     private final SetCoverProblem instance;
 
-    public SetCoverDistance(SetCoverProblem instance) {
+    public SetCoverDistanceWeighted(SetCoverProblem instance) {
         this.instance = instance;
     }
 
@@ -22,16 +22,16 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      */
     @Override
     public double distance(SetCoverState a, SetCoverState b) {
-        int intersectionSize = 0;
-        SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
-        SetCoverState larger = a.uncoveredElements.size() < b.uncoveredElements.size() ? b : a;
-        for (int elem: smaller.uncoveredElements) {
-            if(larger.uncoveredElements.contains(elem)) {
-                intersectionSize++;
+        double distance = 0.0;
+        // Set<Integer> union = new HashSet<>(a.uncoveredElements);
+        // union.addAll(b.uncoveredElements);
+
+        for (int i = 0; i < instance.nElem; i++) {
+            if (a.uncoveredElements.contains(i) != b.uncoveredElements.contains(i)) {
+                distance += instance.elemMinWeights.get(i);
             }
         }
-        return a.uncoveredElements.size() + b.uncoveredElements.size() - 2 * intersectionSize;
+
+        return distance;
     }
-
-
 }

@@ -180,10 +180,12 @@ public class LaunchInterface {
             case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
             case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, false);
             case WSC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, true);
-            case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor);
+            case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, false);
+            case WSCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, true);
             case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
             case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
         }
+
         assert config != null;
         config.exportAsDot = exportGraph;
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
@@ -361,6 +363,7 @@ public class LaunchInterface {
         MISP, // minimum independent set problem,
         SC, // set cover problem
         WSC, // weighted set cover problem
+        WSCS,// weighted set cover with set layer model
         SCS // set cover with set layer model
     }
 
@@ -372,6 +375,7 @@ public class LaunchInterface {
             put("sc", ProblemType.SC);
             put("wsc", ProblemType.WSC);
             put("scs", ProblemType.SCS);
+            put("wscs", ProblemType.WSCS);
         }
     };
 

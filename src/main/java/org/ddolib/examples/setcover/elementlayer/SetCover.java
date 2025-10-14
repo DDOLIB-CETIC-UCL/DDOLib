@@ -28,7 +28,7 @@ public class SetCover {
         config.relax = new SetCoverRelax();
         config.width = new FixedWidth<>(w);
         config.varh = new SetCoverHeuristics.MinCentrality(problem);
-        config.distance = new SetCoverDistance();
+        config.distance = new SetCoverDistance(problem);
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new DefaultDominanceChecker<>();
         final Solver solver = new SequentialSolver<>(config);
