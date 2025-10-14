@@ -3,6 +3,7 @@ package org.ddolib.examples.tsptw;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.IOException;
 import java.util.*;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
@@ -15,8 +16,29 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         this.instance = instance;
     }
 
-    public void setName(String name) {
-        this.name = Optional.of(name);
+    /**
+     * Creates instance from data files.<br>
+     * <p>
+     * The expected format is the following:
+     * <ul>
+     *     <li>
+     *         The first line must contain the number of variable. A second  optional value can be
+     *         given: the expected objective value for an optimal solution.
+     *     </li>
+     *     <li>
+     *         The time matrix.
+     *     </li>
+     *     <li>
+     *         A time window for each node.
+     *     </li>
+     * </ul>
+     *
+     * @param fname The path to the input file.
+     * @throws IOException If something goes wrong while reading input file.
+     */
+    public TSPTWProblem(String fname) throws IOException {
+        this.instance = new TSPTWInstance(fname);
+        this.name = Optional.of(fname);
     }
 
     @Override

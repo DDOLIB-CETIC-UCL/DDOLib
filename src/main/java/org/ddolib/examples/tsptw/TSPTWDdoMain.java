@@ -2,12 +2,12 @@ package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -44,7 +44,7 @@ public class TSPTWDdoMain {
             @Override
             public Problem<TSPTWState> problem() {
                 try {
-                    problem = new TSPTWProblem(new TSPTWInstance(file));
+                    problem = new TSPTWProblem(file);
                     return problem;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
