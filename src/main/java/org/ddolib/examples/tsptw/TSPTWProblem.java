@@ -3,18 +3,20 @@ package org.ddolib.examples.tsptw;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TSPTWProblem implements Problem<TSPTWState> {
 
-    TSPTWInstance instance;
+    public final int[][] distance;
+    public final TimeWindow[] timeWindows;
+    public final Optional<Double> optimal;
 
-    private Optional<String> name = Optional.empty();
+    private final Optional<String> name;
 
-    public TSPTWProblem(TSPTWInstance instance) {
-        this.instance = instance;
-    }
 
     /**
      * Creates instance from data files.<br>
@@ -37,23 +39,66 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * @throws IOException If something goes wrong while reading input file.
      */
     public TSPTWProblem(String fname) throws IOException {
-        this.instance = new TSPTWInstance(fname);
+        int numVar = 0;
+        int[][] dist = new int[0][0];
+        TimeWindow[] tw = new TimeWindow[0];
+        Optional<Double> opti = Optional.empty();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
+            int lineCount = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                //Skip comment
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue;
+                }
+                if (lineCount == 0) {
+                    String[] tokens = line.split("\\s+");
+                    numVar = Integer.parseInt(tokens[0]);
+                    dist = new int[numVar][numVar];
+                    tw = new TimeWindow[numVar];
+                    if (tokens.length == 2) opti = Optional.of(Double.parseDouble(tokens[1]));
+                } else if (1 <= lineCount && lineCount <= numVar) {
+                    int i = lineCount - 1;
+                    String[] distanceFromI = line.split("\\s+");
+                    dist[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();
+                } else {
+                    int i = lineCount - 1 - numVar;
+                    String[] twStr = line.split("\\s+");
+                    tw[i] = new TimeWindow(Integer.parseInt(twStr[0]), Integer.parseInt(twStr[1]));
+                }
+                lineCount++;
+            }
+        }
+
+        this.distance = dist;
+        this.timeWindows = tw;
+        this.optimal = opti;
         this.name = Optional.of(fname);
     }
 
     @Override
     public Optional<Double> optimalValue() {
-        return instance.optimal;
+        return optimal;
     }
 
     @Override
     public String toString() {
-        return name.orElse(instance.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append("\n");
+        sb.append(Arrays.toString(timeWindows)).append("\n");
+        String timeStr = Arrays.stream(distance)
+                .map(row -> Arrays.stream(row)
+                        .mapToObj(x -> String.format("%4s", x))
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining("\n"));
+        sb.append(timeStr);
+        return name.orElse(sb.toString());
     }
 
     @Override
     public int nbVars() {
-        return instance.distance.length;
+        return distance.length;
     }
 
     @Override
@@ -121,7 +166,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
         int travel = minDuration(state, to);
         int arrival = state.time() + travel;
-        int waiting = arrival < instance.timeWindows[to].start() ? instance.timeWindows[to].start() - arrival : 0;
+        int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
         return travel + waiting;
 
     }
@@ -134,7 +179,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      */
     boolean reachable(TSPTWState from, Integer to) {
         int duration = minDuration(from, to);
-        return from.time() + duration <= instance.timeWindows[to].end();
+        return from.time() + duration <= timeWindows[to].end();
     }
 
     /**
@@ -144,9 +189,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      */
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
-            case TSPNode(int value) -> instance.distance[value][to];
+            case TSPNode(int value) -> distance[value][to];
             case VirtualNodes(Set<Integer> nodes) ->
-                    nodes.stream().mapToInt(x -> instance.distance[x][to]).min().getAsInt();
+                    nodes.stream().mapToInt(x -> distance[x][to]).min().getAsInt();
         };
     }
 
@@ -160,41 +205,12 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      */
     int arrivalTime(TSPTWState from, Integer to) {
         int time = from.time() + minDuration(from, to);
-        return Integer.max(time, instance.timeWindows[to].start());
+        return Integer.max(time, timeWindows[to].start());
     }
 
 }
 
-/**
- * Interface to model the position of the vehicle in a {@link TSPTWState}.
- */
-sealed interface Position permits TSPNode, VirtualNodes {
-}
 
 
-/**
- * Unique position of the vehicle.
- *
- * @param value Last position of the vehicle in the current route.
- */
-record TSPNode(int value) implements Position {
-    @Override
-    public String toString() {
-        return "" + value;
-    }
-}
-
-
-/**
- * Used for merged states. The vehicle can be at all the position of the merged states.
- *
- * @param nodes All the position of the merged states.
- */
-record VirtualNodes(Set<Integer> nodes) implements Position {
-    @Override
-    public String toString() {
-        return nodes.toString();
-    }
-}
 
 
