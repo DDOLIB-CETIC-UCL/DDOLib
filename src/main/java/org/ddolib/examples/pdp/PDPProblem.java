@@ -3,6 +3,7 @@ package org.ddolib.examples.pdp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Optional;
@@ -21,6 +22,11 @@ public class PDPProblem implements Problem<PDPState> {
         this.instance = instance;
         this.n = instance.n;
         this.optimal = instance.optimal == -1 ? Optional.empty() : Optional.of(instance.optimal);
+    }
+
+    public PDPProblem(String fname) throws IOException {
+        this(new PDPInstance(fname));
+        this.name = Optional.of(fname);
     }
 
     @Override
@@ -117,10 +123,6 @@ public class PDPProblem implements Problem<PDPState> {
                 .mapToDouble(possibleCurrentNode -> instance.distanceMatrix[possibleCurrentNode][decision.val()])
                 .min()
                 .getAsDouble();
-    }
-
-    public void setName(String name) {
-        this.name = Optional.of(name);
     }
 
     @Override

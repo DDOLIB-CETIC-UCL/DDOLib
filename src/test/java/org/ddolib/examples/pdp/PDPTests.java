@@ -38,10 +38,7 @@ public class PDPTests {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            PDPInstance instance = new PDPInstance(filePath.toString());
-                            PDPProblem problem = new PDPProblem(instance);
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new PDPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
