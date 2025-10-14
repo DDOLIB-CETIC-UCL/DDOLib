@@ -36,7 +36,7 @@ public final class SRFLPMain {
                 args[0];
         final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
-        final SRFLPProblem problem = SRFLPIO.readInstance(filename);
+        final SRFLPProblem problem = new SRFLPProblem(filename);
         SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new SRFLPRelax(problem);

@@ -33,10 +33,7 @@ public class SRFLPTest {
                     .map(file -> Paths.get(dir, file.getName()))
                     .map(filePath -> {
                         try {
-                            SRFLPProblem problem = SRFLPIO.readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
-
+                            return new SRFLPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

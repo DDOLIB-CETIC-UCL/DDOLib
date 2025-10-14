@@ -3,6 +3,9 @@ package org.ddolib.examples.ddo.srflp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,6 +54,51 @@ public class SRFLPProblem implements Problem<SRFLPState> {
      */
     public SRFLPProblem(int[] lengths, int[][] flows) {
         this(lengths, flows, Optional.empty());
+    }
+
+    /**
+     * Reads file to construct new instance of the SRFLP.
+     *
+     * @param fname The file to read.
+     * @throws IOException If something goes wrong while reading the input file.
+     */
+    public SRFLPProblem(String fname) throws IOException {
+        int[] lengths = new int[0];
+        int[][] flows = new int[0][0];
+        Optional<Double> optimal = Optional.empty();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
+            int lineCount = 0;
+            int skip = 0;
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.isEmpty()) {
+                    skip++;
+                } else if (lineCount == 0) {
+                    String[] tokens = line.replace(",", " ").split("\\s+");
+                    int n = Integer.parseInt(tokens[0]);
+                    lengths = new int[n];
+                    flows = new int[n][n];
+                    if (tokens.length > 1) optimal = Optional.of(Double.parseDouble(tokens[1]));
+
+                } else if (lineCount - skip == 1) {
+                    String[] tokens = line.replace(",", " ").split("\\s+");
+                    lengths = Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
+                } else {
+                    int department = lineCount - skip - 2;
+                    String[] tokens = line.replace(",", " ").split("\\s+");
+                    int[] row = Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
+                    flows[department] = row;
+                }
+                lineCount++;
+            }
+        }
+
+        this.lengths = lengths;
+        this.flows = flows;
+        this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
     /**
@@ -161,25 +209,20 @@ public class SRFLPProblem implements Problem<SRFLPState> {
 
     @Override
     public String toString() {
-        if (name.isPresent()) {
-            return name.get();
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("SRFLP Problem:\n");
-            String lengthsStr = Arrays.stream(lengths)
-                    .mapToObj(x -> String.format("%2s", x))
-                    .collect(Collectors.joining(", "));
-            sb.append("Lengths: ").append(lengthsStr).append("\n");
-            String flowStr = Arrays.stream(flows)
-                    .map(row -> Arrays.stream(row)
-                            .mapToObj(x -> String.format("%2s", x))
-                            .collect(Collectors.joining(" ")))
-                    .collect(Collectors.joining("\n"));
-            sb.append("Flows: \n").append(flowStr);
 
-            return sb.toString();
-        }
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("SRFLP Problem:\n");
+        String lengthsStr = Arrays.stream(lengths)
+                .mapToObj(x -> String.format("%2s", x))
+                .collect(Collectors.joining(", "));
+        sb.append("Lengths: ").append(lengthsStr).append("\n");
+        String flowStr = Arrays.stream(flows)
+                .map(row -> Arrays.stream(row)
+                        .mapToObj(x -> String.format("%2s", x))
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining("\n"));
+        sb.append("Flows: \n").append(flowStr);
+        return name.orElse(sb.toString());
     }
 
     @Override
