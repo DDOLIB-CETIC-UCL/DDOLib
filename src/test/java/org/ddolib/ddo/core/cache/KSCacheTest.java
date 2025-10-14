@@ -54,7 +54,8 @@ public class KSCacheTest {
 
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {
+        });
         return solver.bestValue().get();
     }
 
@@ -73,7 +74,8 @@ public class KSCacheTest {
 
         final Solver solverWithCaching = new SequentialSolver<>(config);
 
-        solverWithCaching.minimize();
+        solverWithCaching.minimize(s -> false, (sol, s) -> {
+        });
         return solverWithCaching.bestValue().get();
     }
 

@@ -2,7 +2,7 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -55,7 +55,7 @@ public class SMICAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 

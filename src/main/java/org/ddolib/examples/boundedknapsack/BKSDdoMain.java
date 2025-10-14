@@ -6,7 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Solver;
 
@@ -73,7 +73,7 @@ public class BKSDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }
 

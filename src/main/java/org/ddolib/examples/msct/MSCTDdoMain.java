@@ -2,7 +2,7 @@ package org.ddolib.examples.msct;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -62,7 +62,7 @@ public class MSCTDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 
 

@@ -1,6 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Solver;
 
@@ -52,7 +52,7 @@ public class PSDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

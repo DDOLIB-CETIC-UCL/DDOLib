@@ -1,6 +1,6 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -59,7 +59,7 @@ public final class MCPDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

@@ -8,6 +8,8 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 
+import java.util.function.Consumer;
+
 /**
  * Class containing all the parameter needed for all kind of solver with default value.
  *
@@ -70,24 +72,6 @@ public class SolverConfig<T> {
      */
     public Frontier<T> frontier = null;
 
-    /**
-     * The budget of time give to the solver to solve the problem ({@code Integer.MAX_VALUE} by
-     * default).
-     */
-    public Integer timeLimit = Integer.MAX_VALUE;
-    /**
-     * The stop the search when the gat of the search reach the limit ({@code 0} by default).
-     */
-    public Double gapLimit = 0.0;
-
-
-    // USEFUL FOR PARALLEL SOLVER
-
-    /**
-     * The number of threads that can be used in parallel (all available processors by default).
-     */
-    public Integer nbThreads = Runtime.getRuntime().availableProcessors();
-
     // USEFUl FOR SOLVER USING CACHE
 
     /**
@@ -129,6 +113,12 @@ public class SolverConfig<T> {
      *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
      * </ul>
      */
-    public Integer debugLevel = 0;
+    public DebugLevel debugLevel = DebugLevel.OFF;
+
+    /**
+     * A function that will be called whenever a new best solution is found
+     * (no-op by default).
+     */
+    public Consumer<SearchStatistics> onSolution = s -> {};
 
 }

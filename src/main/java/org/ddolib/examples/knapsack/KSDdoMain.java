@@ -7,7 +7,7 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
@@ -15,33 +15,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * The Knapsack problem is a classic optimization problem
- * where the goal is to maximize the total value of items
- * while staying within a given weight limit.
- * The dynamic programming model is used to solve this problem is
- * using the recurrence relation:
- * KS(i, c) = max(KS(i-1, c), KS(i-1, c - w[i]) + p[i])
- * where KS(i, c) is the maximum value of the first i items
- * with a knapsack capacity of c, p[i] is the profit of item i,
- * w[i] is the weight of item i.
- */
 public class KSDdoMain {
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
-        final KSProblem problem = readInstance(instance);
 
+        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final DdoModel<Integer> model = new DdoModel<>() {
-            private KSProblem problem;
+
+            private KSProblem problem = new KSProblem(instance);
+            ;
 
             @Override
             public Problem<Integer> problem() {
-                try {
-                    problem = readInstance(instance);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override
@@ -78,13 +63,20 @@ public class KSDdoMain {
             public WidthHeuristic<Integer> widthHeuristic() {
                 return new FixedWidth<>(100);
             }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.LARGE;
+            }
         };
 
         Solver<Integer> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMS() >= 10000);
-
-        solver.onSolution(stats);
+        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
+            System.out.println("--------------------");
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        });
 
 
     }

@@ -5,10 +5,7 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 
 import java.util.Optional;
 
@@ -86,9 +83,9 @@ public class CompilationConfig<T> {
 
     /**
      * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.common.solver.SolverConfig for details}
+     * {@link org.ddolib.modeling.DebugLevel for details}
      */
-    public Integer debugLevel = null;
+    public DebugLevel debugLevel = null;
 
     /**
      * Returns a string representation of this record class.

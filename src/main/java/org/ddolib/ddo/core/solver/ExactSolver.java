@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
@@ -12,7 +13,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedWriter;
@@ -23,6 +24,7 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -99,7 +101,11 @@ public final class ExactSolver<T> implements Solver {
      */
     private final boolean exportAsDot;
 
-    private final int debugLevel;
+    /**
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
+     */
+    private final DebugLevel debugLevel;
 
 
     /**
@@ -149,12 +155,7 @@ public final class ExactSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize() {
-        return minimize((Predicate<SearchStatistics>) null);
-    }
-
-    @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -191,9 +192,7 @@ public final class ExactSolver<T> implements Solver {
         long end = System.currentTimeMillis();
         int[] sol = constructSolution(problem.nbVars());
         Optional<Double> solVal = bestValue();
-        return new SearchStatistics(1, 1, end - start,
-                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"), solVal, sol, solVal);
+        return new SearchStatistics(SearchStatus.OPTIMAL, 1, 1, end - start, bestValue.get(), 0);
     }
 
 
@@ -227,15 +226,5 @@ public final class ExactSolver<T> implements Solver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private int[] constructSolution(int numVar) {
-        return bestSolution().map(decisions -> {
-            int[] toReturn = new int[numVar];
-            for (Decision d : decisions) {
-                toReturn[d.var()] = d.val();
-            }
-            return toReturn;
-        }).orElse(new int[0]);
     }
 }

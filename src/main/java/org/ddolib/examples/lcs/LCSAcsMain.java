@@ -1,6 +1,6 @@
 package org.ddolib.examples.lcs;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -40,7 +40,7 @@ public final class LCSAcsMain {
 
         Solver<LCSState> solver = new Solver<>();
         SearchStatistics stats = solver.minimizeAcs(model);
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 

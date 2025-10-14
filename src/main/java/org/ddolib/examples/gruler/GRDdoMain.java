@@ -1,6 +1,6 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.IOException;
@@ -45,6 +45,6 @@ public class GRDdoMain {
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }

@@ -1,6 +1,6 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Solver;
 
@@ -36,6 +36,6 @@ public final class ALPAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model, s -> s.nbIterations() > 1000000);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
     }
 }

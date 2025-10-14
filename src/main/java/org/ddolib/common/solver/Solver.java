@@ -1,10 +1,10 @@
 package org.ddolib.common.solver;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -12,14 +12,9 @@ import java.util.function.Predicate;
  * that minimizes the objective value of some underlying optimization problem.
  */
 public interface Solver {
-    /**
-     * Tries to minimize the objective value of the problem which is being solved.
-     *
-     * @return statistics about the search
-     */
-    SearchStatistics minimize();
 
-    SearchStatistics minimize(Predicate<SearchStatistics> limit);
+    SearchStatistics minimize(Predicate<SearchStatistics> limit,
+                              BiConsumer<Set<Decision>, SearchStatistics> onSolution);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one
@@ -38,7 +33,7 @@ public interface Solver {
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
      * {@code i}. Or empty array if the solution does not exist.
      */
-    default int[] constructBestSolution(int numVar) {
+    default int[] constructSolution(int numVar) {
         return bestSolution().map(decisions -> {
             int[] toReturn = new int[numVar];
             for (Decision d : decisions) {

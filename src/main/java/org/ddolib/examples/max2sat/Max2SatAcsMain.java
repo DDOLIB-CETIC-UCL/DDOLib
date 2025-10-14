@@ -1,6 +1,6 @@
 package org.ddolib.examples.max2sat;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -54,7 +54,7 @@ public final class Max2SatAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

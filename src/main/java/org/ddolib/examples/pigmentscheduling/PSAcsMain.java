@@ -1,6 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Solver;
 
@@ -42,7 +42,7 @@ public class PSAcsMain {
 
         SearchStatistics stats = solver.minimizeAcs(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }

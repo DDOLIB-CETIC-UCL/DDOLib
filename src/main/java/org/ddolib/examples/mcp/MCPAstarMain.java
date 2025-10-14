@@ -1,6 +1,6 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
@@ -45,9 +45,9 @@ public final class MCPAstarMain {
 
         Solver<MCPState> solver = new Solver<>();
 
-        SearchStatistics stats = solver.minimize(model);
+        SearchStatistics stats = solver.minimizeAstar(model);
 
-        solver.onSolution(stats);
+        System.out.println(stats);
 
     }
 }
