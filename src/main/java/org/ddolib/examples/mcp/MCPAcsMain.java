@@ -31,7 +31,7 @@ public final class MCPAcsMain {
             @Override
             public Problem<MCPState> problem() {
                 try {
-                    problem = MCPIO.readInstance(filename);
+                    problem = new MCPProblem(filename);
                     return problem;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
