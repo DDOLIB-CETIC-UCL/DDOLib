@@ -6,13 +6,14 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-public class Solver<T> {
+public class Solvers<T> {
 
     public final SearchStatistics minimizeDdo(DdoModel<T> model) {
         return minimizeDdo(model, stats -> false, (sol, s) -> {
@@ -82,5 +83,16 @@ public class Solver<T> {
         config.verbosityLevel = model.verbosityLevel();
 
         return new ACSSolver<>(config, model.columnWidth()).minimize(limit, onSolution);
+    }
+
+    public SearchStatistics minimizeExact(Model<T> model) {
+        SolverConfig<T> config = new SolverConfig<>();
+        config.problem = model.problem();
+        config.dominance = model.dominance();
+        config.flb = model.lowerBound();
+        config.varh = model.variableHeuristic();
+        config.verbosityLevel = model.verbosityLevel();
+        return new ExactSolver<>(config).minimize(s -> false, (sol, s) -> {
+        });
     }
 }

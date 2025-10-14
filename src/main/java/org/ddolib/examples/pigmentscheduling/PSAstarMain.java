@@ -2,7 +2,7 @@ package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 
@@ -38,7 +38,7 @@ public class PSAstarMain {
             }
         };
 
-        Solver<PSState> solver = new Solver<>();
+        Solvers<PSState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model);
 

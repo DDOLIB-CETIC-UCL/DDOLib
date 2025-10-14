@@ -4,7 +4,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 /**
  * Bounded Knapsack Problem (BKS)
@@ -40,7 +40,7 @@ public class BKSAcsMain {
             }
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAcs(model);
 

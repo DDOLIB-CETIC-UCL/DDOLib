@@ -2,13 +2,13 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,7 +74,7 @@ public class SMICDdoMain {
             }
         };
 
-        Solver<SMICState> solver = new Solver<>();
+        Solvers<SMICState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model);
 

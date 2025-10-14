@@ -2,12 +2,12 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedReader;
@@ -70,7 +70,7 @@ public class KSDdoMain {
             }
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
             System.out.println("--------------------");

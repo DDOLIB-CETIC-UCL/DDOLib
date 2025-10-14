@@ -2,7 +2,7 @@ package org.ddolib.examples.alp;
 
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -32,7 +32,7 @@ public final class ALPAcsMain {
 
         };
 
-        Solver<ALPState> solver = new Solver<>();
+        Solvers<ALPState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAcs(model, s -> s.nbIterations() > 1000000);
 

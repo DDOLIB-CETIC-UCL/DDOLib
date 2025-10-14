@@ -3,7 +3,7 @@ package org.ddolib.examples.pdp;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.util.Random;
@@ -28,7 +28,7 @@ public final class PDPAstarMain {
             }
         };
 
-        Solver<PDPState> solver = new Solver<>();
+        Solvers<PDPState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model);
 

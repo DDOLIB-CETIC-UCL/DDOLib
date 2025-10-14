@@ -10,7 +10,7 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -87,7 +87,7 @@ public class TSPTWDdoMain {
             }
         };
 
-        Solver<TSPTWState> solver = new Solver<>();
+        Solvers<TSPTWState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model);
 

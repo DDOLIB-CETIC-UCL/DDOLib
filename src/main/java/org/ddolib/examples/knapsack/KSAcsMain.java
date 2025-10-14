@@ -6,7 +6,7 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 
@@ -41,16 +41,16 @@ public class KSAcsMain {
 
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAcs(model,
                 // stop afer 10 iterations
                 s -> s.nbIterations() > 10,
-                (sol,s) -> {
+                (sol, s) -> {
                     System.out.println("------");
                     System.out.println("new incumbent :" + s.incumbent() + " found  at iteration " + s.nbIterations());
                     System.out.println("New solution: " + sol);
-        });
+                });
 
         System.out.println(stats);
 

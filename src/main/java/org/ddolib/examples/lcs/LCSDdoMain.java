@@ -3,7 +3,7 @@ package org.ddolib.examples.lcs;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,7 +48,7 @@ public final class LCSDdoMain {
             }
         };
 
-        Solver<LCSState> solver = new Solver<>();
+        Solvers<LCSState> solver = new Solvers<>();
         SearchStatistics stats = solver.minimizeDdo(model);
         System.out.println(stats);
 

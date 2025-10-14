@@ -41,7 +41,7 @@ public class GRDdoMain {
             }
         };
 
-        Solver<GRState> solver = new Solver<>();
+        Solvers<GRState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model);
 
