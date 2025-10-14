@@ -13,7 +13,10 @@ import org.ddolib.modeling.Solver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Scanner;
 
 
@@ -28,19 +31,45 @@ import java.util.Scanner;
  */
 public class SMICDdoMain {
     public static void main(String[] args) throws FileNotFoundException {
-        final String file = "data/SMIC/data10_2.txt";
-        SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
+//        final String file = "data/SMIC/data10_2.txt";
+//        SMICProblem problem = readProblem("data/SMIC/data10_2.txt");
+        int[] NS = {10, 20, 30, 40, 50};
+        int[] ALPHAS = {10, 100};
+        double[] TAUS = {0.5, 1.0, 1.5, 2.0};
+        int[] ETAS = {1, 3, 5};
+        // number of instances per (n,alpha,tau,eta) combination
+        int INSTANCES_PER_CONFIG = 3;
+        SMICProblem[] problems = new SMICProblem[NS.length * ALPHAS.length * ETAS.length * TAUS.length * INSTANCES_PER_CONFIG];
+        long globalSeed = System.currentTimeMillis();
+        Random globalRand = new Random(globalSeed);
+        int k = 0;
+        for (int n : NS) {
+            for (int alpha : ALPHAS) {
+                for (double tau : TAUS) {
+                    for (int eta : ETAS) {
+                        for (int inst = 0; inst < INSTANCES_PER_CONFIG; inst++) {
+                            long seed = globalRand.nextLong();
+                            problems[k] = new SMICGenrator(n, alpha, tau, eta, seed).generate();
+                            k++;
+                        }
+                    }
+                }
+            }
+        }
+
         DdoModel<SMICState> model = new DdoModel<>() {
             private SMICProblem problem;
 
             @Override
             public Problem<SMICState> problem() {
-                try {
+                problem = problems[0];
+                return problem;
+                /*try {
                     problem = readProblem(file);
                     return problem;
                 } catch (IOException e) {
                     throw new RuntimeException();
-                }
+                }*/
             }
 
             @Override
