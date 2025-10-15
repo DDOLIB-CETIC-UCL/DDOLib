@@ -9,16 +9,16 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
-
+/**
+ * ######### Knapsack Problem (KS) #############
+ */
 public class KSAcsMain {
     public static void main(final String[] args) throws IOException {
 
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
+        final KSProblem problem = new KSProblem(instance);
 
         final AcsModel<Integer> model = new AcsModel<>() {
-
-            private KSProblem problem = new KSProblem(instance);
-
             @Override
             public Problem<Integer> problem() {
                 return problem;

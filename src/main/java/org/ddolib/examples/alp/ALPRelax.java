@@ -16,9 +16,9 @@ public class ALPRelax implements Relaxation<ALPState> {
 
     @Override
     public ALPState mergeStates(Iterator<ALPState> states) {
-        int[] remainingAircraft = new int[problem.instance.nbClasses];
+        int[] remainingAircraft = new int[problem.nbClasses];
         Arrays.fill(remainingAircraft, Integer.MAX_VALUE);
-        RunwayState[] runwayStates = new RunwayState[problem.instance.nbRunways];
+        RunwayState[] runwayStates = new RunwayState[problem.nbRunways];
         Arrays.fill(runwayStates, new RunwayState(ALPProblem.DUMMY, Integer.MAX_VALUE));
 
         // Set the remaining nb of aircraft (for each class) of the merged state as the minimal value of each merged states.

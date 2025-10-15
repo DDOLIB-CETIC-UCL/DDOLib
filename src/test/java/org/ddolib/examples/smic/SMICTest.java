@@ -35,13 +35,13 @@ public class SMICTest {
             File[] files = new File(dir).listFiles();
             assert files != null;
             Stream<File> stream = Stream.of(files);
-
+//            SMICProblem problem = new SMICProblem(filePath.toString());
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            return SMICDdoMain.readProblem(filePath.toString());
+                            return  new SMICProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

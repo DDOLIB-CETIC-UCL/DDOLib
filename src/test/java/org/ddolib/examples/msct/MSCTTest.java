@@ -56,16 +56,16 @@ class MSCTTest {
             int release = 15;
             return IntStream.range(2, 7).mapToObj(i -> {
                 MSCTData data = randomMSCTDataFixedRelease(i, release);
-                int opti = bruteForceForFixedRelease(release, data.processing);
-                return new MSCTProblem(data.release, data.processing, opti);
+                double opti = bruteForceForFixedRelease(release, data.processing);
+                return new MSCTProblem(data.release, data.processing, Optional.of(-opti));
             });
         }
 
         private Stream<MSCTProblem> problemWithUnfixedRelease() {
             return IntStream.range(2, 9).mapToObj(i -> {
                 MSCTData data = randomMSCTData(i);
-                int opti = bestBruteForceForUnfixedRelease(data.release, data.processing);
-                return new MSCTProblem(data.release, data.processing, opti);
+                double opti = bestBruteForceForUnfixedRelease(data.release, data.processing);
+                return new MSCTProblem(data.release, data.processing, Optional.of(-opti));
             });
         }
 

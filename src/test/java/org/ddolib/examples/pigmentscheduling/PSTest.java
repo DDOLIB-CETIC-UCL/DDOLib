@@ -36,9 +36,9 @@ class PSTest {
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
-                        PSProblem problem = new PSProblem(new PSInstance(filePath.toString()));
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
+//                        PSProblem problem = new PSProblem(new PSProblem(filePath.toString()));
+//                        problem.setName(filePath.getFileName().toString());
+                        return new PSProblem(filePath.toString());
                     }).toList();
         }
 
@@ -46,9 +46,9 @@ class PSTest {
         protected SolverConfig<PSState> configSolver(PSProblem problem) {
             SolverConfig<PSState> config = new SolverConfig<>();
             config.problem = problem;
-            config.relax = new PSRelax(problem.instance);
+            config.relax = new PSRelax(problem);
             config.ranking = new PSRanking();
-            config.flb = new PSFastLowerBound(problem.instance);
+            config.flb = new PSFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);

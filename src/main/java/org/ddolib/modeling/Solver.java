@@ -24,6 +24,10 @@ public class Solver<T> {
         });
     }
 
+    public final SearchStatistics minimizeDdo(DdoModel<T> model, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
+        return minimizeDdo(model, s -> false, onSolution);
+    }
+
     public final SearchStatistics minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         SolverConfig<T> config = new SolverConfig<>();
         config.problem = model.problem();
@@ -40,12 +44,17 @@ public class Solver<T> {
     }
 
     public final SearchStatistics minimizeAstar(Model<T> model) {
-        return minimizeAstar(model, s -> false);
+        return minimizeAstar(model, s -> false, (sol, s) -> {
+        });
     }
 
     public final SearchStatistics minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
         return minimizeAstar(model, limit, (sol, s) -> {
         });
+    }
+
+    public final SearchStatistics minimizeAstar(Model<T> model, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
+        return minimizeAstar(model, s -> false, onSolution);
     }
 
     public final SearchStatistics minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {

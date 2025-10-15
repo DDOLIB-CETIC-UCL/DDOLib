@@ -19,7 +19,7 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {
-            ratio[v] = ((double) problem.instance.values[v] / problem.instance.weights[v]);
+            ratio[v] = ((double) problem.values[v] / problem.weights[v]);
         }
 
         class RatioComparator implements Comparator<Integer> {
@@ -37,10 +37,10 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
         Iterator<Integer> itemIterator = Arrays.stream(sorted).iterator();
         while (itemIterator.hasNext()) {
             int item = itemIterator.next();
-            if (currentTotalWeight + problem.instance.weights[item] < capacity) {
-                int x = Math.min(problem.instance.quantity[item], (capacity - currentTotalWeight)/problem.instance.weights[item]);
-                currentSolutionValue += x * problem.instance.weights[item];
-                currentSolutionValue += x * problem.instance.values[item];
+            if (currentTotalWeight + problem.weights[item] < capacity) {
+                int x = Math.min(problem.quantity[item], (capacity - currentTotalWeight)/problem.weights[item]);
+                currentSolutionValue += x * problem.weights[item];
+                currentSolutionValue += x * problem.values[item];
             }
         }
         return -currentSolutionValue;

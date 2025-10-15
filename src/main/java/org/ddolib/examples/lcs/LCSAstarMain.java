@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * The LCS problem consists in finding the Longest Common Subsequence between several strings of characters.
+ * ############# Longest Common Subsequence (LCS) ###############
  */
 public final class LCSAstarMain {
 
