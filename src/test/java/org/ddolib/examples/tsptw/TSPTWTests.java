@@ -38,9 +38,7 @@ public class TSPTWTests {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(filePath.toString()));
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new TSPTWProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

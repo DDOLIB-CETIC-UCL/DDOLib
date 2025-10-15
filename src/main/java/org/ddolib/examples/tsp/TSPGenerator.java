@@ -2,10 +2,7 @@ package org.ddolib.examples.tsp;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,7 +11,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,12 +20,12 @@ import java.util.Random;
  * Author: Pierre Schaus
  * Class to read and generate TSP instance instances
  */
-public class TSPInstance {
+public class TSPGenerator {
     public double[][] distanceMatrix;
     public int n;
     public final double objective;
 
-    public TSPInstance(double[][] distanceMatrix) {
+    public TSPGenerator(double[][] distanceMatrix) {
         n = distanceMatrix.length;
         this.distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
@@ -40,7 +36,7 @@ public class TSPInstance {
         this.objective = -1;
     }
 
-    public TSPInstance(int[][] distanceMatrix) {
+    public TSPGenerator(int[][] distanceMatrix) {
         n = distanceMatrix.length;
         this.distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
@@ -58,7 +54,7 @@ public class TSPInstance {
      * @param seed         for the random number generator
      * @param squareLength the square length for the sampling of x/y coordinates of nodes
      */
-    public TSPInstance(int n, int seed, int squareLength) {
+    public TSPGenerator(int n, int seed, int squareLength) {
         this.n = n;
         Random rand = new Random(seed);
         double[] xCoord = new double[n];
@@ -84,7 +80,7 @@ public class TSPInstance {
      * @param xCoord
      * @param yCoord
      */
-    public TSPInstance(int[] xCoord, int[] yCoord) {
+    public TSPGenerator(int[] xCoord, int[] yCoord) {
         this.n = xCoord.length;
         distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
@@ -95,60 +91,6 @@ public class TSPInstance {
         }
         this.objective = -1;
     }
-
-    /**
-     * Read TSP Instance from xml
-     * See http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf
-     *
-     * @param xmlPath path to the file
-     */
-    public TSPInstance(String xmlPath) {
-        // Instantiate the Factory
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        int obj = -1;
-        try {
-
-            // optional, but recommended
-            // process XML securely, avoid attacks like XML External Entities (XXE)
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-            // parse XML file
-            DocumentBuilder db = dbf.newDocumentBuilder();
-
-            Document doc = db.parse(new File(xmlPath));
-            doc.getDocumentElement().normalize();
-
-            NodeList objlist = doc.getElementsByTagName("objective");
-            if (objlist.getLength() > 0) {
-                obj = Integer.parseInt(objlist.item(0).getTextContent());
-            }
-
-            NodeList list = doc.getElementsByTagName("vertex");
-
-            n = list.getLength();
-            distanceMatrix = new double[n][n];
-
-            for (int i = 0; i < n; i++) {
-                NodeList edgeList = list.item(i).getChildNodes();
-                for (int v = 0; v < edgeList.getLength(); v++) {
-
-                    Node node = edgeList.item(v);
-                    if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Element element = (Element) node;
-                        String cost = element.getAttribute("cost");
-                        String adjacentNode = element.getTextContent();
-                        int j = Integer.parseInt(adjacentNode);
-                        distanceMatrix[i][j] = Math.rint(Double.parseDouble(cost));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        this.objective = obj;
-    }
-
 
     /**
      * Number of cities

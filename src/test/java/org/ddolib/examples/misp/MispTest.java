@@ -38,9 +38,7 @@ public class MispTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            MispProblem problem = MispDdoMain.readFile(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new MispProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

@@ -3,7 +3,16 @@ package org.ddolib.examples.tsp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class TSPProblem implements Problem<TSPState> {
@@ -22,7 +31,7 @@ public class TSPProblem implements Problem<TSPState> {
     public String toString() {
         String defaultStr = "TSP(n:" + n + "\n" +
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
-        return name.orElseGet(defaultStr::toString);
+        return name.orElse(defaultStr);
     }
 
     public double eval(int[] solution) {
@@ -45,8 +54,66 @@ public class TSPProblem implements Problem<TSPState> {
         this.optimal = Optional.of(optimal);
     }
 
-    public void setName(String name) {
-        this.name = Optional.of(name);
+
+    /**
+     * Read TSP Instance from xml
+     * See <a href="http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf">
+     * "http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf"</a>
+     *
+     * @param fname The path to the file.
+     * @throws IOException If something goes wrong while reading the input file.
+     */
+    public TSPProblem(final String fname) throws IOException {
+        // Instantiate the Factory
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Optional<Double> obj = Optional.empty();
+        int n;
+        double[][] distanceMatrix;
+        try {
+
+            // optional, but recommended
+            // process XML securely, avoid attacks like XML External Entities (XXE)
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            // parse XML file
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
+            Document doc = db.parse(new File(fname));
+            doc.getDocumentElement().normalize();
+
+            NodeList objlist = doc.getElementsByTagName("objective");
+            if (objlist.getLength() > 0) {
+                obj = Optional.of(Double.parseDouble(objlist.item(0).getTextContent()));
+            }
+
+            NodeList list = doc.getElementsByTagName("vertex");
+
+            n = list.getLength();
+            distanceMatrix = new double[n][n];
+
+            for (int i = 0; i < n; i++) {
+                NodeList edgeList = list.item(i).getChildNodes();
+                for (int v = 0; v < edgeList.getLength(); v++) {
+
+                    Node node = edgeList.item(v);
+                    if (node.getNodeType() == Node.ELEMENT_NODE) {
+                        Element element = (Element) node;
+                        String cost = element.getAttribute("cost");
+                        String adjacentNode = element.getTextContent();
+                        int j = Integer.parseInt(adjacentNode);
+                        distanceMatrix[i][j] = Math.rint(Double.parseDouble(cost));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+
+        this.n = n;
+        this.distanceMatrix = distanceMatrix;
+        this.optimal = obj;
+        this.name = Optional.of(fname);
+
     }
 
     @Override

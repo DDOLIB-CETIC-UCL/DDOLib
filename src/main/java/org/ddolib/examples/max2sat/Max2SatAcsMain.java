@@ -8,8 +8,6 @@ import org.ddolib.modeling.Solver;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import static org.ddolib.examples.max2sat.Max2SatIO.readInstance;
-
 public final class Max2SatAcsMain {
     /**
      * ******* Maximum 2-Satisfiability Problem (MAX2SAT) *******
@@ -37,7 +35,7 @@ public final class Max2SatAcsMain {
             @Override
             public Problem<Max2SatState> problem() {
                 try {
-                    problem = readInstance(file);
+                    problem = new Max2SatProblem(file);
                     return problem;
                 } catch (IOException e) {
                     throw new RuntimeException(e);

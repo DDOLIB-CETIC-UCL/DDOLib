@@ -19,7 +19,7 @@ public class PDPFastLowerBound implements FastLowerBound<PDPState> {
             double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
-                    min = Math.min(min, problem.instance.distanceMatrix[i][j]);
+                    min = Math.min(min, problem.distanceMatrix[i][j]);
                 }
             }
             leastIncidentEdge[i] = min;

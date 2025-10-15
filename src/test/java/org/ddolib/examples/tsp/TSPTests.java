@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
@@ -35,10 +36,11 @@ public class TSPTests {
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
-                        TSPInstance instance = new TSPInstance(filePath.toString());
-                        TSPProblem problem = new TSPProblem(instance.distanceMatrix, instance.objective);
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
+                        try {
+                            return new TSPProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }).toList();
         }
 

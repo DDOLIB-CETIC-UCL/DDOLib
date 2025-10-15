@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
@@ -13,7 +14,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
 import java.io.BufferedWriter;
@@ -190,9 +190,13 @@ public final class ExactSolver<T> implements Solver {
         }
 
         long end = System.currentTimeMillis();
-        int[] sol = constructSolution(problem.nbVars());
-        Optional<Double> solVal = bestValue();
-        return new SearchStatistics(SearchStatus.OPTIMAL, 1, 1, end - start, bestValue.get(), 0);
+
+        return new SearchStatistics(SearchStatus.OPTIMAL,
+                1,
+                1,
+                end - start,
+                bestValue.orElse(Double.POSITIVE_INFINITY),
+                0);
     }
 
 

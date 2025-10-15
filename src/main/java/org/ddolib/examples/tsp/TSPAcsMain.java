@@ -6,13 +6,13 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class TSPAcsMain {
 
     public static void main(final String[] args) throws IOException {
 
-        //TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
-        TSPInstance instance = new TSPInstance("data/TSP/instance_18_0.xml");
+        String file = Paths.get("data", "TSP", "instance_18_0.xml").toString();
 
         AcsModel<TSPState> model = new AcsModel<TSPState>() {
             private TSPProblem problem;
@@ -20,7 +20,7 @@ public class TSPAcsMain {
             @Override
             public Problem<TSPState> problem() {
                 try {
-                    problem = new TSPProblem(instance.distanceMatrix);
+                    problem = new TSPProblem(file);
                     return problem;
                 } catch (Exception e) {
                     throw new RuntimeException(e);

@@ -39,7 +39,7 @@ public class TSPTWAcsMain {
             @Override
             public Problem<TSPTWState> problem() {
                 try {
-                    problem = new TSPTWProblem(new TSPTWInstance(file));
+                    problem = new TSPTWProblem(file);
                     return problem;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
