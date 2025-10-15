@@ -13,7 +13,6 @@ public class BKSAcsMain {
 
     public static void main(String[] args) {
         final BKSProblem problem = new BKSProblem(10, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
-
         AcsModel<Integer> model = new AcsModel<>() {
             @Override
             public BKSProblem problem() {

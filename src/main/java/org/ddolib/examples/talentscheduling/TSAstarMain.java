@@ -7,21 +7,17 @@ import org.ddolib.modeling.Solver;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-
+/**
+ * ################  The talent scheduling problem (tsp) ####################
+ */
 public class TSAstarMain {
     public static void main(String[] args) throws IOException {
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        final TSProblem problem = new TSProblem(file);
         Model<TSState> model = new Model<>() {
-            private TSProblem problem;
-
             @Override
             public Problem<TSState> problem() {
-                try {
-                    problem = new TSProblem(file);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override

@@ -32,6 +32,4 @@ public interface Model<T> {
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
     }
-
-
 }

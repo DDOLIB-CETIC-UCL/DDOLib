@@ -11,11 +11,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 /**
- * The TSPTW (TSP with Time Windows) is
- * to find the shortest possible route for a salesman to visit
- * a set of customers (or nodes) exactly once
- * and return to the starting point, while respecting
- * specified time windows for each customer.
+ * ############### TSPTW (TSP with Time Windows) #################
  */
 public class TSPTWAstarMain {
 
@@ -32,18 +28,11 @@ public class TSPTWAstarMain {
     public static void main(String[] args) throws IOException {
 
         final String file = Paths.get("data", "TSPTW", "AFG", "rbg010a.tw").toString();
-
+        final TSPTWProblem problem = new TSPTWProblem(file);
         Model<TSPTWState> model = new Model<>() {
-            private TSPTWProblem problem;
-
             @Override
             public Problem<TSPTWState> problem() {
-                try {
-                    problem = new TSPTWProblem(file);
-                    return problem;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override

@@ -14,20 +14,12 @@ import java.nio.file.Paths;
 public class TSPDdoMain {
 
     public static void main(final String[] args) throws IOException {
-
         String file = Paths.get("data", "TSP", "instance_18_0.xml").toString();
-
+        final TSPProblem problem = new TSPProblem(file);
         DdoModel<TSPState> model = new DdoModel<TSPState>() {
-            private TSPProblem problem;
-
             @Override
             public Problem<TSPState> problem() {
-                try {
-                    problem = new TSPProblem(file);
-                    return problem;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override

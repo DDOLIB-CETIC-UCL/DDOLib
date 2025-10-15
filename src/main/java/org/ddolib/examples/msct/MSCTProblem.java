@@ -12,7 +12,6 @@ import java.util.*;
 
 public class MSCTProblem implements Problem<MSCTState> {
 
-    int n;
     final int[] release; // release date of each job
     final int[] processing; // processing time of each job
     final Optional<Double> optimal;
@@ -20,7 +19,6 @@ public class MSCTProblem implements Problem<MSCTState> {
     public MSCTProblem(final int[] release, final int[] processing, Optional<Double> optimal) {
         this.release = release;
         this.processing = processing;
-        this.n = release.length;
         this.optimal = optimal;
     }
     public MSCTProblem(final int[] release, final int[] processing) {
@@ -89,7 +87,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         Random rand = new Random(100);
         for (int i = 0; i < n; i++) {
             release[i] = rand.nextInt(10);
-            processing[i] = rand.nextInt(10);
+            processing[i] = 1 + rand.nextInt(10);
         }
         this.release = release;
         this.processing = processing;
@@ -109,7 +107,7 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     @Override
     public int nbVars() {
-        return n;
+        return release.length;
     }
 
     @Override

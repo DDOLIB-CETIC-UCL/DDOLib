@@ -1,4 +1,5 @@
 /**
+ * ######### Knapsack Problem (KS) #############
  * This package contains the implementation of the knapsack problem.
  *
  * The Knapsack problem is a classic optimization problem

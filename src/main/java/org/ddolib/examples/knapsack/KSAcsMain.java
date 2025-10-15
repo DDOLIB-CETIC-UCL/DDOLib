@@ -14,10 +14,8 @@ import java.io.IOException;
  */
 public class KSAcsMain {
     public static void main(final String[] args) throws IOException {
-
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
         final KSProblem problem = new KSProblem(instance);
-
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
             public Problem<Integer> problem() {
