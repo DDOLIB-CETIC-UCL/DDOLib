@@ -3,11 +3,13 @@ package org.ddolib.examples.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class SMICProblem implements Problem<SMICState> {
 
-    public final String name;
+    final String name;
     final int nbJob;
     final int initInventory;
     final int capaInventory;
@@ -17,7 +19,7 @@ public class SMICProblem implements Problem<SMICState> {
     final int[] release;
     final int[] inventory;
 
-    private Optional<Double> optimal = Optional.empty();
+    private Optional<Double> optimal;
 
     public SMICProblem(String name,
                        int nbJob,
@@ -28,7 +30,7 @@ public class SMICProblem implements Problem<SMICState> {
                        int[] weight,
                        int[] release,
                        int[] inventory,
-                       double optimal) {
+                       Optional<Double> optimal) {
         this.name = name;
         this.nbJob = nbJob;
         this.initInventory = initInventory;
@@ -38,7 +40,7 @@ public class SMICProblem implements Problem<SMICState> {
         this.weight = weight;
         this.release = release;
         this.inventory = inventory;
-        this.optimal = Optional.of(optimal);
+        this.optimal = optimal;
     }
 
     public SMICProblem(String name,
@@ -59,6 +61,52 @@ public class SMICProblem implements Problem<SMICState> {
         this.weight = weight;
         this.release = release;
         this.inventory = inventory;
+        this.optimal = Optional.empty();
+    }
+
+    public SMICProblem(String filename) throws IOException {
+        Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
+        int nbJob = 0;
+        int initInventory = 0;
+        int capaInventory = 0;
+        int[] type = new int[0];
+        int[] processing = new int[0];
+        int[] weight = new int[0];
+        int[] release = new int[0];
+        int[] inventory = new int[0];
+        this.name = filename;
+        while (!s.hasNextLine()) {
+            s.nextLine();
+        }
+        nbJob = s.nextInt();
+        initInventory = s.nextInt();
+        capaInventory = s.nextInt();
+        type = new int[nbJob];
+        processing = new int[nbJob];
+        weight = new int[nbJob];
+        release = new int[nbJob];
+        inventory = new int[nbJob];
+        Optional<Double> opti = Optional.empty();
+        for (int i = 0; i < nbJob; i++) {
+            type[i] = s.nextInt();
+            processing[i] = s.nextInt();
+            weight[i] = s.nextInt();
+            release[i] = s.nextInt();
+            inventory[i] = s.nextInt();
+        }
+        if (s.hasNextInt()) {
+            opti = Optional.of(s.nextDouble());
+        }
+        s.close();
+        this.nbJob = nbJob;
+        this.initInventory = initInventory;
+        this.capaInventory = capaInventory;
+        this.type = type;
+        this.processing = processing;
+        this.weight = weight;
+        this.release = release;
+        this.inventory = inventory;
+        this.optimal = opti;
     }
 
     @Override

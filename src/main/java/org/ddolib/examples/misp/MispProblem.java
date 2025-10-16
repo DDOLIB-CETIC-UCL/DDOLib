@@ -3,10 +3,10 @@ package org.ddolib.examples.misp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public class MispProblem implements Problem<BitSet> {
 
@@ -42,6 +42,7 @@ public class MispProblem implements Problem<BitSet> {
      * @param neighbors      For each node {@code i}, {@code neighbors[i]} returns the adjacency list of {@code i}.
      * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
      *                       in the problem instance.
+     * @param optimal        The value of the optimal solution if known.
      */
     public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, double optimal) {
         this.remainingNodes = remainingNodes;
@@ -50,19 +51,82 @@ public class MispProblem implements Problem<BitSet> {
         this.optimal = Optional.of(optimal);
     }
 
+    /**
+     *
+     * @param remainingNodes The remaining node that can be selected in the current independent set. Considered
+     *                       as the state of the MDD.
+     * @param neighbors      For each node {@code i}, {@code neighbors[i]} returns the adjacency list of {@code i}.
+     * @param weight         For each node {@code i}, {@code weight[i]} returns the weight associated to {@code i}
+     *                       in the problem instance.
+     */
     public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
     }
 
+
     /**
-     * Sets the name of the instance. The name will override the default toString.
+     * Creates an instance of Maximum Independent Set Problem from a .dot file.
+     * If given, the expected value of the optimal solution {@code x} of the problem must in the second line written as
+     * {@code optimal=x}.
+     * <p>
+     * To be correctly read, the file must contain first the list of the nodes and then the edges. If given the
+     * optimal value must be written before the nodes.
+     * <p>
+     * Each node can have a weight {@code w} with by adding the parameter {@code [weight=w]}.
+     * By default, of the node is {@code 1}.
      *
-     * @param name The new string that will override the default toString.
+     * @param fname A .dot file containing a graph.
+     * @throws IOException If something goes wrong while reading input file.
      */
-    public void setName(String name) {
-        this.name = Optional.of(name);
+    public MispProblem(String fname) throws IOException {
+        ArrayList<Integer> weight = new ArrayList<>();
+        BitSet[] neighbor;
+        Optional<Double> optimal = Optional.empty();
+        int n;
+        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null && !line.contains("--")) {
+                if (line.isEmpty()) continue;
+
+                if (line.contains("optimal")) {
+                    String optiStr = line.replace(";", "");
+                    String[] tokens = optiStr.split("=");
+                    optimal = Optional.of(Double.parseDouble(tokens[1]));
+                } else if (line.contains("weight")) {
+                    String w = line.trim().split(" ")[1];
+                    w = w.replace("[weight=", "").replace("];", "");
+                    weight.add(Integer.parseInt(w));
+                } else {
+                    weight.add(1);
+                }
+            }
+            n = weight.size();
+            neighbor = new BitSet[n];
+            Arrays.setAll(neighbor, i -> new BitSet(n));
+            while (line != null && !line.equals("}")) {
+                if (line.isEmpty()) {
+                    line = br.readLine();
+                    continue;
+                }
+                String[] tokens = line.replace(" ", "").replace(";", "").split("--");
+                int source = Integer.parseInt(tokens[0]) - 1;
+                int target = Integer.parseInt(tokens[1]) - 1;
+                neighbor[source].set(target);
+                neighbor[target].set(source);
+                line = br.readLine();
+            }
+        }
+        BitSet initialState = new BitSet(n);
+        initialState.set(0, n, true);
+
+        this.remainingNodes = initialState;
+        this.neighbors = neighbor;
+        this.weight = weight.stream().mapToInt(x -> x).toArray();
+        this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
     @Override

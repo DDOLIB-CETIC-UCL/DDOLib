@@ -3,40 +3,129 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Class to model the Knapsack problem.
- * The state is the remaining capacity of the knapsack (an Integer thus).
- * The decision is the item to take or not (1 or 0).
+ * Represents an instance of the Knapsack Problem (KP).
+ * <p>
+ * The state of the problem is the remaining capacity of the knapsack (represented as an {@link Integer}).
+ * Decisions correspond to selecting or not selecting a specific item (1 for selected, 0 for not selected).
+ * </p>
+ * <p>
+ * This class supports creating instances from:
+ * </p>
+ * <ul>
+ *     <li>Explicit arrays of profits and weights, with or without a known optimal value.</li>
+ *     <li>A file formatted with the number of items, capacity, (optional) optimal value,
+ *     and a list of item profits and weights.</li>
+ * </ul>
+ *
+ * <p>
+ * Costs are negated profits to allow using solvers designed for minimization.
+ * </p>
  */
 public class KSProblem implements Problem<Integer> {
 
+    /** Maximum capacity of the knapsack. */
     public final int capa;
-    final int[] profit;
-    final int[] weight;
-    private Optional<Double> optimal = Optional.empty();
 
-    private Optional<String> name = Optional.empty();
+    /** Profits of the items. */
+    public final int[] profit;
 
+    /** Weights of the items. */
+    public final int[] weight;
+
+    /** Optional known optimal solution value. */
+    public final Optional<Double> optimal;
+
+    /** Optional name of the instance (usually the filename). */
+    public final Optional<String> name;
+    /**
+     * Constructs a Knapsack problem with given capacity, profits, weights, and known optimal value.
+     *
+     * @param capa maximum capacity of the knapsack
+     * @param profit array of item profits
+     * @param weight array of item weights
+     * @param optimal known optimal value
+     */
     public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
         this.optimal = Optional.of(optimal);
+        this.name = Optional.empty();
     }
-
+    /**
+     * Constructs a Knapsack problem with given capacity, profits, and weights.
+     * No optimal value is provided.
+     *
+     * @param capa maximum capacity of the knapsack
+     * @param profit array of item profits
+     * @param weight array of item weights
+     */
     public KSProblem(final int capa, final int[] profit, final int[] weight) {
         this.capa = capa;
         this.profit = profit;
         this.weight = weight;
+        this.optimal = Optional.empty();
+        this.name = Optional.empty();
     }
-
-    public void setName(String name) {
-        this.name = Optional.of(name);
+    /**
+     * Constructs a Knapsack problem from a file.
+     * <p>
+     * The file format should contain:
+     * <ul>
+     *     <li>First line: number of items, capacity, (optional) optimal value.</li>
+     *     <li>Following lines: item profit and weight for each item.</li>
+     * </ul>
+     *
+     * @param fname path to the file
+     * @throws IOException if an I/O error occurs while reading the file
+     */
+    public KSProblem(final String fname) throws IOException {
+        boolean isFirst = true;
+        int count = 0;
+        int n = 0;
+        final File f = new File(fname);
+        String line;
+        int c = 0;
+        int [] profit = new int[0];
+        int [] weight = new int[0];
+        Optional<Double> optimal = Optional.empty();
+        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
+            while ((line = bf.readLine()) != null) {
+                if (isFirst) {
+                    isFirst = false;
+                    String[] tokens = line.split("\\s");
+                    n = Integer.parseInt(tokens[0]);
+                    c = Integer.parseInt(tokens[1]);
+                    if (tokens.length == 3) {
+                        optimal = Optional.of(Double.parseDouble(tokens[2]));
+                    }
+                    profit = new int[n];
+                    weight = new int[n];
+                } else {
+                    if (count < n) {
+                        String[] tokens = line.split("\\s");
+                        profit[count] = Integer.parseInt(tokens[0]);
+                        weight[count] = Integer.parseInt(tokens[1]);
+                        count++;
+                    }
+                }
+            }
+        }
+        this.capa = c;
+        this.profit = profit;
+        this.weight = weight;
+        this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
     @Override

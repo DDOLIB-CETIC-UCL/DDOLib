@@ -1,23 +1,29 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.DebugUtil;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
 
-public final class ACSSolver<T, K> implements Solver {
+public final class ACSSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -42,7 +48,7 @@ public final class ACSSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * HashMap mapping (state,depth) to the f value.
@@ -59,17 +65,12 @@ public final class ACSSolver<T, K> implements Solver {
 
     private PriorityQueue<SubProblem<T>>[] open;
 
-    private final int K;
+    private final int columnWidth;
 
     private final SubProblem<T> root;
 
+    private final VerbosityLevel verbosityLevel;
 
-    private final int verbosityLevel;
-
-    /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
-     */
-    private final boolean exportAsDot;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -91,15 +92,15 @@ public final class ACSSolver<T, K> implements Solver {
      * @param config All the parameters needed to configure the solver.
      */
     public ACSSolver(
-            SolverConfig<T, K> config,
-            final int K) {
+            SolverConfig<T> config,
+            final int columnWidth) {
         this.problem = config.problem;
         this.varh = config.varh;
         this.lb = config.flb;
         this.dominance = config.dominance;
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
-        this.K = K;
+        this.columnWidth = columnWidth;
 
         this.closed = new HashMap<>();
         this.present = new HashMap<>();
@@ -111,10 +112,9 @@ public final class ACSSolver<T, K> implements Solver {
         }
 
         this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-        if (config.debugLevel != 0) {
+        if (config.debugLevel != DebugLevel.OFF) {
             throw new IllegalArgumentException("The debug mode for this solver is not available " +
                     "for the moment.");
         }
@@ -131,17 +131,26 @@ public final class ACSSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize() {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         open[0].add(root);
         present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
+
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
+
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+                    System.currentTimeMillis() - t0, bestUB, 0);
+
+            if (limit.test(stats)) {
+                return stats;
+            }
+
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
-                int l = min(K, open[i].size());
+                int l = min(columnWidth, open[i].size());
                 for (int j = 0; j < l; j++) {
                     SubProblem<T> sub = open[i].poll();
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
@@ -154,7 +163,7 @@ public final class ACSSolver<T, K> implements Solver {
                         break;
                     }
                 }
-                for (SubProblem<T> sub: candidates) {
+                for (SubProblem<T> sub : candidates) {
                     nbIter++;
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
@@ -164,6 +173,10 @@ public final class ACSSolver<T, K> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                         }
+                        double gap = 0; // TODO compute the gap when we have a valid LB
+                        stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+                                System.currentTimeMillis() - t0, bestUB, gap);
+                        onSolution.accept(bestSol.get(), stats);
                     } else {
                         addChildren(sub, i + 1);
                     }
@@ -172,7 +185,7 @@ public final class ACSSolver<T, K> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, 0);
     }
 
     @Override
@@ -249,7 +262,6 @@ public final class ACSSolver<T, K> implements Solver {
             }
         }
     }
-
 
 
     private Set<Integer> varSet(Set<Decision> path) {

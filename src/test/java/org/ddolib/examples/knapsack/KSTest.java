@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class KSTest {
-    private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
+    private static class KSBench extends ProblemTestBench<Integer, KSProblem> {
 
         public KSBench() {
             super();
@@ -37,9 +38,7 @@ public class KSTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            KSProblem problem = KSMain.readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new KSProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -47,8 +46,8 @@ public class KSTest {
         }
 
         @Override
-        protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            SolverConfig<Integer, Integer> config = new SolverConfig<>();
+        protected SolverConfig<Integer> configSolver(KSProblem problem) {
+            SolverConfig<Integer> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new KSRelax();
             config.ranking = new KSRanking();
@@ -57,6 +56,7 @@ public class KSTest {
             config.flb = new KSFastLowerBound(problem);
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }

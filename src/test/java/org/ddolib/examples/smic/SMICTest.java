@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
 
 public class SMICTest {
 
-    private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
+    private static class SMICBench extends ProblemTestBench<SMICState, SMICProblem> {
 
         public SMICBench() {
             super();
@@ -34,13 +35,13 @@ public class SMICTest {
             File[] files = new File(dir).listFiles();
             assert files != null;
             Stream<File> stream = Stream.of(files);
-
+//            SMICProblem problem = new SMICProblem(filePath.toString());
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            return SMICMain.readProblem(filePath.toString());
+                            return  new SMICProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -48,8 +49,8 @@ public class SMICTest {
         }
 
         @Override
-        protected SolverConfig<SMICState, Integer> configSolver(SMICProblem problem) {
-            SolverConfig<SMICState, Integer> config = new SolverConfig<>();
+        protected SolverConfig<SMICState> configSolver(SMICProblem problem) {
+            SolverConfig<SMICState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new SMICRelax(problem);
             config.ranking = new SMICRanking();
@@ -58,12 +59,13 @@ public class SMICTest {
             config.flb = new SMICFastLowerBound(problem);
             config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }
 
         @Override
-        protected Solver solverForTests(SolverConfig<SMICState, Integer> config) {
+        protected Solver solverForTests(SolverConfig<SMICState> config) {
             config.width = new FixedWidth<>(100);
             return new SequentialSolver<>(config);
         }

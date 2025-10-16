@@ -12,12 +12,12 @@ import java.util.Set;
  * Implementation of a fast lower bound for the PSP.
  */
 public class PSFastLowerBound implements FastLowerBound<PSState> {
-    private final PSInstance instance;
+    private final PSProblem problem;
     private final int[] tspLb;
 
-    public PSFastLowerBound(PSInstance instance) {
-        this.instance = instance;
-        tspLb = TSPLowerBound.lowerBoundForAllSubsets(instance.changeoverCost);
+    public PSFastLowerBound(PSProblem problem) {
+        this.problem = problem;
+        tspLb = TSPLowerBound.lowerBoundForAllSubsets(problem.changeoverCost);
     }
 
     // Set of item types that have an unsatisfied demand,
@@ -70,8 +70,8 @@ public class PSFastLowerBound implements FastLowerBound<PSState> {
             for (int i = 0; i < state.previousDemands.length; i++) {
                 int demand = state.previousDemands[i]; // previous demand of item i
                 while (demand >= time) {
-                    itemDemands.offer(new ItemDemand(instance.stockingCost[i], demand)); // Assuming pb.stocking is defined
-                    demand = instance.previousDemands[i][demand];
+                    itemDemands.offer(new ItemDemand(problem.stockingCost[i], demand)); // Assuming pb.stocking is defined
+                    demand = problem.previousDemands[i][demand];
                 }
             }
             if (!itemDemands.isEmpty()) {

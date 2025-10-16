@@ -3,7 +3,7 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.modeling.Dominance;
 
-public class BKSDominance implements Dominance<Integer, Integer> {
+public class BKSDominance implements Dominance<Integer> {
     @Override
     public Integer getKey(Integer capa) {
         return 0;

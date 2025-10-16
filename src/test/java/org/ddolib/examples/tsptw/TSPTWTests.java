@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 
 public class TSPTWTests {
 
-    private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWDominanceKey, TSPTWProblem> {
+    private static class TSPTWBench extends ProblemTestBench<TSPTWState, TSPTWProblem> {
 
         public TSPTWBench() {
             super();
@@ -37,9 +38,7 @@ public class TSPTWTests {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            TSPTWProblem problem = new TSPTWProblem(new TSPTWInstance(filePath.toString()));
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new TSPTWProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -47,8 +46,8 @@ public class TSPTWTests {
         }
 
         @Override
-        protected SolverConfig<TSPTWState, TSPTWDominanceKey> configSolver(TSPTWProblem problem) {
-            SolverConfig<TSPTWState, TSPTWDominanceKey> config = new SolverConfig<>();
+        protected SolverConfig<TSPTWState> configSolver(TSPTWProblem problem) {
+            SolverConfig<TSPTWState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSPTWRelax(problem);
             config.ranking = new TSPTWRanking();
@@ -58,6 +57,7 @@ public class TSPTWTests {
             config.varh = new DefaultVariableHeuristic<>();
             config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
             return config;
         }
     }

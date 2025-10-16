@@ -2,7 +2,7 @@ package org.ddolib.examples.msct;
 
 import org.ddolib.modeling.Dominance;
 
-public class MSCTDominance implements Dominance<MSCTState, Integer> {
+public class MSCTDominance implements Dominance<MSCTState> {
     @Override
     public Integer getKey(MSCTState state) {
         return 0;

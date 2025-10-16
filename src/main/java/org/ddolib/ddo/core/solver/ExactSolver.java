@@ -1,6 +1,8 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
@@ -12,11 +14,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -26,17 +24,18 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * Solver that compile an unique exact mdd.
  * <p>
  * <b>Note:</b> By only using exact mdd, this solver can consume a lot of memory. It is advisable to use this solver to
- * test your model on small instances. See {@link SequentialSolver} or {@link ParallelSolver} for other use cases.
+ * test your model on small instances. See {@link SequentialSolver} for other use cases.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public final class ExactSolver<T, K> implements Solver {
+public final class ExactSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -66,7 +65,7 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
 
     /**
      * This is the cache used to prune the search tree
@@ -95,14 +94,18 @@ public final class ExactSolver<T, K> implements Solver {
      * 3: 2 + every developed sub-problem
      * 4: 3 + details about the developed state
      */
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
 
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
 
-    private final int debugLevel;
+    /**
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
+     */
+    private final DebugLevel debugLevel;
 
 
     /**
@@ -137,7 +140,7 @@ public final class ExactSolver<T, K> implements Solver {
      *
      * @param config All the parameters needed to configure the solver.
      */
-    public ExactSolver(SolverConfig<T, K> config) {
+    public ExactSolver(SolverConfig<T> config) {
         this.problem = config.problem;
         this.relax = config.relax;
         this.ranking = config.ranking;
@@ -152,7 +155,7 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize() {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -161,7 +164,7 @@ public final class ExactSolver<T, K> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationConfig<T, K> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
@@ -177,7 +180,7 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
 
-        DecisionDiagram<T, K> mdd = new LinkedDecisionDiagram<>(compilation);
+        DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
         extractBest(mdd);
         if (exportAsDot) {
@@ -187,9 +190,13 @@ public final class ExactSolver<T, K> implements Solver {
         }
 
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 1, end - start,
-                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
-                cache.map(SimpleCache::stats).orElse("noCache"));
+
+        return new SearchStatistics(SearchStatus.OPTIMAL,
+                1,
+                1,
+                end - start,
+                bestValue.orElse(Double.POSITIVE_INFINITY),
+                0);
     }
 
 
@@ -206,13 +213,13 @@ public final class ExactSolver<T, K> implements Solver {
     /**
      * Method that extract the best solution from the compiled mdd
      */
-    private void extractBest(DecisionDiagram<T, K> mdd) {
+    private void extractBest(DecisionDiagram<T> mdd) {
         Optional<Double> ddval = mdd.bestValue();
         if (ddval.isPresent()) {
             bestSol = mdd.bestSolution();
             bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");
-            if (verbosityLevel >= 1)
+            if (verbosityLevel != VerbosityLevel.SILENT)
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));
         }
     }

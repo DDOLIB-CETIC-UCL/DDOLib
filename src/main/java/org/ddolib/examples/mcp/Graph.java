@@ -21,7 +21,7 @@ public class Graph {
     public Graph(int[][] adjacencyMatrix) {
         this.adjacencyMatrix = adjacencyMatrix;
         this.numNodes = adjacencyMatrix.length;
-        numEdges = Arrays.stream(adjacencyMatrix)
+        this.numEdges = Arrays.stream(adjacencyMatrix)
                 .map(row -> (int) Arrays.stream(row)
                         .filter(x -> x != 0)
                         .count()

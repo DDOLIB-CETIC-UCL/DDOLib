@@ -9,9 +9,8 @@ import java.util.*;
  * DominanceChecker that maintains lists of non dominated nodes for each level of the mdd.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
+public class SimpleDominanceChecker<T> extends DominanceChecker<T> {
 
     /**
      * Container for a state and the value of the longest path to this state
@@ -49,9 +48,9 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
         }
     }
 
-    private final ArrayList<Map<K, TreeSet<ValueState>>> fronts;
+    private final ArrayList<Map<Object, TreeSet<ValueState>>> fronts;
 
-    public SimpleDominanceChecker(Dominance<T, K> dominance, int nVars) {
+    public SimpleDominanceChecker(Dominance<T> dominance, int nVars) {
         super(dominance);
         this.fronts = new ArrayList<>(nVars + 1);
         for (int i = 0; i <= nVars; i++) {
@@ -71,8 +70,8 @@ public class SimpleDominanceChecker<T, K> extends DominanceChecker<T, K> {
      */
     @Override
     public boolean updateDominance(T state, int depth, double objValue) {
-        Map<K, TreeSet<ValueState>> front = fronts.get(depth);
-        K key = dominance.getKey(state);
+        Map<Object, TreeSet<ValueState>> front = fronts.get(depth);
+        Object key = dominance.getKey(state);
         boolean dominated = false;
         if (front.containsKey(key)) {
             TreeSet<ValueState> set = front.get(key);

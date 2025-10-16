@@ -13,10 +13,10 @@ import static org.ddolib.examples.pigmentscheduling.PSProblem.IDLE;
 public class PSRelax implements Relaxation<PSState> {
 
 
-    PSInstance instance;
+    PSProblem problem;
 
-    public PSRelax(PSInstance instance) {
-        this.instance = instance;
+    public PSRelax(PSProblem problem) {
+        this.problem = problem;
     }
 
     // Set of item types that have an unsatisfied demand,

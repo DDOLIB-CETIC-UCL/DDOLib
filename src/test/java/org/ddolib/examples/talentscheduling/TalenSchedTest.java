@@ -5,12 +5,12 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class TalenSchedTest {
 
-    private static class TSBench extends ProblemTestBench<TSState, NullType, TSProblem> {
+    private static class TSBench extends ProblemTestBench<TSState, TSProblem> {
 
         public TSBench() {
             super();
@@ -37,9 +37,7 @@ public class TalenSchedTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            TSProblem problem = TSMain.readFile(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new TSProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -47,8 +45,8 @@ public class TalenSchedTest {
         }
 
         @Override
-        protected SolverConfig<TSState, NullType> configSolver(TSProblem problem) {
-            SolverConfig<TSState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<TSState> configSolver(TSProblem problem) {
+            SolverConfig<TSState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSRelax(problem);
             config.ranking = new TSRanking();
@@ -57,6 +55,7 @@ public class TalenSchedTest {
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }

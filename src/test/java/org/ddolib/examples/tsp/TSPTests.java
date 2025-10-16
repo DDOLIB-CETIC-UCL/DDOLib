@@ -5,20 +5,21 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class TSPTests {
 
-    private static class TSPBench extends ProblemTestBench<TSPState, NullType, TSPProblem> {
+    private static class TSPBench extends ProblemTestBench<TSPState, TSPProblem> {
 
         public TSPBench() {
             super();
@@ -35,16 +36,17 @@ public class TSPTests {
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
-                        TSPInstance instance = new TSPInstance(filePath.toString());
-                        TSPProblem problem = new TSPProblem(instance.distanceMatrix, instance.objective);
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
+                        try {
+                            return new TSPProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }).toList();
         }
 
         @Override
-        protected SolverConfig<TSPState, NullType> configSolver(TSPProblem problem) {
-            SolverConfig<TSPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<TSPState> configSolver(TSPProblem problem) {
+            SolverConfig<TSPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new TSPRelax(problem);
             config.ranking = new TSPRanking();
@@ -52,6 +54,7 @@ public class TSPTests {
             config.width = new FixedWidth<>(500);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }

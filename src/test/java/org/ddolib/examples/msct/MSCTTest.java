@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -24,7 +25,7 @@ class MSCTTest {
     }
 
 
-    private static class MSCTBench extends ProblemTestBench<MSCTState, Integer, MSCTProblem> {
+    private static class MSCTBench extends ProblemTestBench<MSCTState, MSCTProblem> {
 
         public MSCTBench() {
             super();
@@ -37,8 +38,8 @@ class MSCTTest {
         }
 
         @Override
-        protected SolverConfig<MSCTState, Integer> configSolver(MSCTProblem problem) {
-            SolverConfig<MSCTState, Integer> config = new SolverConfig<>();
+        protected SolverConfig<MSCTState> configSolver(MSCTProblem problem) {
+            SolverConfig<MSCTState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MSCTRelax(problem);
             config.ranking = new MSCTRanking();
@@ -46,6 +47,7 @@ class MSCTTest {
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }
@@ -54,16 +56,16 @@ class MSCTTest {
             int release = 15;
             return IntStream.range(2, 7).mapToObj(i -> {
                 MSCTData data = randomMSCTDataFixedRelease(i, release);
-                int opti = bruteForceForFixedRelease(release, data.processing);
-                return new MSCTProblem(data.release, data.processing, opti);
+                double opti = bruteForceForFixedRelease(release, data.processing);
+                return new MSCTProblem(data.release, data.processing, Optional.of(-opti));
             });
         }
 
         private Stream<MSCTProblem> problemWithUnfixedRelease() {
             return IntStream.range(2, 9).mapToObj(i -> {
                 MSCTData data = randomMSCTData(i);
-                int opti = bestBruteForceForUnfixedRelease(data.release, data.processing);
-                return new MSCTProblem(data.release, data.processing, opti);
+                double opti = bestBruteForceForUnfixedRelease(data.release, data.processing);
+                return new MSCTProblem(data.release, data.processing, Optional.of(-opti));
             });
         }
 

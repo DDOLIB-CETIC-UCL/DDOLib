@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.junit.jupiter.api.DynamicTest;
@@ -25,10 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * generator and a {@link SolverConfig}.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  * @param <P> The type of problem to test.
  */
-public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
+public abstract class ProblemTestBench<T, P extends Problem<T>> {
 
     /**
      * List of problems used for tests.
@@ -78,7 +78,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem A problem to solve during the tests.
      * @return The solver's inputs (relaxation, dominance, frontier,...).
      */
-    abstract protected SolverConfig<T, K> configSolver(P problem);
+    abstract protected SolverConfig<T> configSolver(P problem);
 
 
     /**
@@ -95,7 +95,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param config The configuration of the solver.
      * @return A solver using the given config to solve the input problem.
      */
-    protected Solver solverForTests(SolverConfig<T, K> config) {
+    protected Solver solverForTests(SolverConfig<T> config) {
         return new ExactSolver<>(config);
     }
 
@@ -106,7 +106,7 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param config The configuration of the solver.
      * @return A solver using the given config to solve the input problem.
      */
-    protected Solver solverForRelaxation(SolverConfig<T, K> config) {
+    protected Solver solverForRelaxation(SolverConfig<T> config) {
         return new SequentialSolver<>(config);
     }
 
@@ -120,12 +120,12 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testTransitionModel(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
+        SolverConfig<T> config = configSolver(problem);
         config.flb = new DefaultFastLowerBound<>();
         config.dominance = new DefaultDominanceChecker<>();
 
         Solver solver = solverForTests(config);
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -136,12 +136,12 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testFlb(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
+        SolverConfig<T> config = configSolver(problem);
         config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
+        config.debugLevel = DebugLevel.ON;
         Solver solver = solverForTests(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -152,14 +152,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testRelaxation(P problem) {
         for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
+            SolverConfig<T> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
             config.flb = new DefaultFastLowerBound<>();
             config.width = new FixedWidth<>(w);
-            config.debugLevel = 1;
+            config.debugLevel = DebugLevel.ON;
             Solver solver = solverForRelaxation(config);
             try {
-                solver.minimize();
+                solver.minimize(s -> false, (sol, s) -> {});
                 assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
@@ -175,12 +175,12 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testCache(P problem) {
         for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
+            SolverConfig<T> config = configSolver(problem);
             config.width = new FixedWidth<>(w);
             config.cache = new SimpleCache<>();
             Solver solver = solverForRelaxation(config);
 
-            solver.minimize();
+            solver.minimize(s -> false, (sol, s) -> {});
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -191,10 +191,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testAStarSolver(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
+        SolverConfig<T> config = configSolver(problem);
         Solver solver = new AStarSolver<>(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -205,10 +205,10 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testACSSolver(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
+        SolverConfig<T> config = configSolver(problem);
         Solver solver = new ACSSolver<>(config, 4);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 
@@ -220,13 +220,13 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     protected void testFlbOnRelaxedNodes(P problem) {
         for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
+            SolverConfig<T> config = configSolver(problem);
             config.dominance = new DefaultDominanceChecker<>();
-            config.debugLevel = 1;
+            config.debugLevel = DebugLevel.ON;
             config.width = new FixedWidth<>(w);
             Solver solver = solverForRelaxation(config);
 
-            solver.minimize();
+            solver.minimize(s -> false, (sol, s) -> {});
             assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
         }
     }
@@ -237,11 +237,11 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testDominance(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
+        SolverConfig<T> config = configSolver(problem);
         config.flb = new DefaultFastLowerBound<>();
         Solver solver = solverForTests(config);
 
-        solver.minimize();
+        solver.minimize(s -> false, (sol, s) -> {});
         assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
     }
 

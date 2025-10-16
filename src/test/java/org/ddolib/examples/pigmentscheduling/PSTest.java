@@ -5,12 +5,12 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 class PSTest {
 
-    private static class PSPBench extends ProblemTestBench<PSState, NullType, PSProblem> {
+    private static class PSPBench extends ProblemTestBench<PSState, PSProblem> {
 
         public PSPBench() {
             super();
@@ -36,22 +36,23 @@ class PSTest {
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
-                        PSProblem problem = new PSProblem(new PSInstance(filePath.toString()));
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
+//                        PSProblem problem = new PSProblem(new PSProblem(filePath.toString()));
+//                        problem.setName(filePath.getFileName().toString());
+                        return new PSProblem(filePath.toString());
                     }).toList();
         }
 
         @Override
-        protected SolverConfig<PSState, NullType> configSolver(PSProblem problem) {
-            SolverConfig<PSState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<PSState> configSolver(PSProblem problem) {
+            SolverConfig<PSState> config = new SolverConfig<>();
             config.problem = problem;
-            config.relax = new PSRelax(problem.instance);
+            config.relax = new PSRelax(problem);
             config.ranking = new PSRanking();
-            config.flb = new PSFastLowerBound(problem.instance);
+            config.flb = new PSFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }

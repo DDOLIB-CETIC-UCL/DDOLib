@@ -3,6 +3,9 @@ package org.ddolib.examples.max2sat;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public class Max2SatProblem implements Problem<Max2SatState> {
@@ -16,7 +19,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      */
     final static int F = 0;
 
-    final Max2SatState root;
     private final int numVar;
     final HashMap<BinaryClause, Integer> weights;
     private final Optional<Double> optimal;
@@ -33,7 +35,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
                           Optional<Double> optimal) {
         this.numVar = numVar;
         this.weights = weights;
-        this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
         this.optimal = optimal;
     }
 
@@ -46,12 +47,44 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
         this.numVar = numVar;
         this.weights = weights;
-        this.root = new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
         this.optimal = Optional.empty();
     }
 
-    public void setName(String name) {
-        this.name = Optional.of(name);
+    public Max2SatProblem(String fname) throws IOException {
+        int n = 0;
+        HashMap<BinaryClause, Integer> weights = new HashMap<>();
+        Optional<Double> opti = Optional.empty();
+        boolean firstLine = true;
+
+        try (BufferedReader bf = new BufferedReader(new FileReader(fname))) {
+            String line;
+            while ((line = bf.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                    String[] tokens = line.split("\\s");
+                    n = Integer.parseInt(tokens[0]);
+                    if (tokens.length == 2) {
+                        opti = Optional.of(Double.parseDouble(tokens[1]));
+                    }
+                } else {
+                    String[] tokens = line.split("\\s");
+                    if (tokens.length == 2) { // Unary clause
+                        int i = Integer.parseInt(tokens[0]);
+                        int w = Integer.parseInt(tokens[1]);
+                        weights.put(new BinaryClause(i, i), w);
+                    } else {
+                        int i = Integer.parseInt(tokens[0]);
+                        int j = Integer.parseInt(tokens[1]);
+                        int w = Integer.parseInt(tokens[2]);
+                        weights.put(new BinaryClause(i, j), w);
+                    }
+                }
+            }
+        }
+        this.numVar = n;
+        this.weights = weights;
+        this.optimal = opti;
+        this.name = Optional.of(fname);
     }
 
     @Override
@@ -66,7 +99,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     @Override
     public Max2SatState initialState() {
-        return root;
+        return new Max2SatState(new ArrayList<>(Collections.nCopies(numVar, 0)), 0);
     }
 
     /**

@@ -6,19 +6,19 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DefaultFastLowerBound;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GRTest {
 
-    private static class GRBench extends ProblemTestBench<GRState, NullType, GRProblem> {
+    private static class GRBench extends ProblemTestBench<GRState, GRProblem> {
 
         public GRBench() {
             super();
@@ -32,8 +32,8 @@ public class GRTest {
         }
 
         @Override
-        protected SolverConfig<GRState, NullType> configSolver(GRProblem problem) {
-            SolverConfig<GRState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<GRState> configSolver(GRProblem problem) {
+            SolverConfig<GRState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new GRRelax();
             config.ranking = new GRRanking();
@@ -41,6 +41,7 @@ public class GRTest {
             config.varh = new DefaultVariableHeuristic<>();
             config.flb = new DefaultFastLowerBound<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
             return config;
         }
     }

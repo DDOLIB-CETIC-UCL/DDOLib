@@ -5,12 +5,12 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class MCPTest {
 
-    private static class MCPBench extends ProblemTestBench<MCPState, NullType, MCPProblem> {
+    private static class MCPBench extends ProblemTestBench<MCPState, MCPProblem> {
 
         public MCPBench() {
             super();
@@ -38,9 +38,7 @@ public class MCPTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            MCPProblem problem = MCPIO.readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new MCPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -48,8 +46,8 @@ public class MCPTest {
         }
 
         @Override
-        protected SolverConfig<MCPState, NullType> configSolver(MCPProblem problem) {
-            SolverConfig<MCPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<MCPState> configSolver(MCPProblem problem) {
+            SolverConfig<MCPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new MCPRelax(problem);
             config.ranking = new MCPRanking();
@@ -58,6 +56,7 @@ public class MCPTest {
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
 
             return config;

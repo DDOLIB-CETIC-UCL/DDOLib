@@ -5,96 +5,125 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 
 import java.util.Optional;
-
 /**
- * The set of parameters used to tweak the compilation of an MDD.
+ * Represents the configuration parameters used during the compilation
+ * of a Multi-valued Decision Diagram (MDD) or similar decision structure.
+ * <p>
+ * A {@code CompilationConfig} object stores all components and heuristics
+ * required to guide the compilation process — including relaxations, heuristics,
+ * bounds, and pruning mechanisms.
+ * </p>
  *
- * @param <T> The type used to model the state of your problem.
- * @param <K> The type of the dominance key.
+ * @param <T> the type representing the state of the problem
+ * @see CompilationType
+ * @see Problem
+ * @see Relaxation
+ * @see VariableHeuristic
+ * @see StateRanking
+ * @see SubProblem
+ * @see FastLowerBound
+ * @see DominanceChecker
+ * @see SimpleCache
+ * @see CutSetType
+ * @see DebugLevel
  */
-public class CompilationConfig<T, K> {
+public class CompilationConfig<T> {
 
     /**
-     * How is the mdd being compiled.
+     * Specifies how the MDD is compiled.
+     * <p>Determines whether the compilation is exact, relaxed,
+     * approximate, or hybrid, depending on the algorithm used.</p>
      */
     public CompilationType compilationType = null;
 
     /**
-     * A reference to the original problem to solve.
+     * Reference to the original optimization or constraint problem to be solved.
      */
     public Problem<T> problem = null;
 
     /**
-     * The relaxation used to merge nodes in a relaxed mdd.
+     * Defines the relaxation model used to merge or approximate nodes
+     * during relaxed MDD compilation.
      */
     public Relaxation<T> relaxation = null;
 
     /**
-     * The variable heuristic used to decide the variable to branch on next.
+     * Heuristic used to decide which variable to branch on next
+     * during the compilation process.
      */
     public VariableHeuristic<T> variableHeuristic = null;
 
     /**
-     * The state ranking heuristic to choose the nodes to keep and those to discard.
+     * Ranking heuristic used to prioritize states and select
+     * which nodes to keep when pruning the MDD.
      */
     public StateRanking<T> stateRanking = null;
 
     /**
-     * The subproblem whose state space must be explored.
+     * Represents the subproblem or residual problem whose state space
+     * must be explored in the compilation process.
      */
     public SubProblem<T> residual = null;
 
     /**
-     * The maximum width of the mdd.
+     * Defines the maximum number of nodes (width) allowed per MDD layer.
+     * <p>Controls the trade-off between accuracy and performance.</p>
      */
     public Integer maxWidth = null;
 
     /**
-     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
+     * Heuristic used to compute a quick estimation (lower bound)
+     * of the optimal objective value during search.
      */
     public FastLowerBound<T> flb = null;
 
     /**
-     * The dominance checker used to prune the search space.
+     * Dominance checker used to identify and prune dominated states
+     * from the search space.
      */
-    public DominanceChecker<T, K> dominance = null;
+    public DominanceChecker<T> dominance = null;
 
     /**
-     * The cache used to prune the search space.
+     * Optional cache used to avoid redundant computations
+     * and prune the search space efficiently.
      */
     public Optional<SimpleCache<T>> cache = Optional.empty();
 
     /**
-     * The best known upper bound at the time when the dd is being compiled.
+     * Stores the best known upper bound on the objective function
+     * at the time of MDD compilation.
      */
     public Double bestUB = null;
 
     /**
-     * The type of cut set used in the compilation.
+     * Defines the type of cut set used to control the structure
+     * and pruning of the MDD during compilation.
      */
     public CutSetType cutSetType = null;
 
     /**
-     * Whether the compiled diagram have to be exported to a dot file.
+     * Indicates whether the compiled MDD should be exported
+     * to a DOT file (Graphviz format) for visualization.
      */
     public Boolean exportAsDot = null;
 
     /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.common.solver.SolverConfig for details}
+     * Defines the debugging level of the compilation process.
+     * <p>Higher levels include more internal consistency checks
+     * and detailed logging, at the cost of runtime performance.</p>
+     *
+     * @see org.ddolib.modeling.DebugLevel
      */
-    public Integer debugLevel = null;
+    public DebugLevel debugLevel = null;
 
     /**
-     * Returns a string representation of this record class.
+     * Returns a human-readable string representation of this configuration.
      *
-     * @return Returns a string representation of this record class.
+     * @return a formatted string containing the compilation type,
+     *         residual problem, and best known upper bound
      */
     @Override
     public String toString() {

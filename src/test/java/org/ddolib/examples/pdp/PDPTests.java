@@ -5,12 +5,12 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class PDPTests {
 
-    private static class PDPBench extends ProblemTestBench<PDPState, NullType, PDPProblem> {
+    private static class PDPBench extends ProblemTestBench<PDPState, PDPProblem> {
 
         public PDPBench() {
             super();
@@ -38,10 +38,7 @@ public class PDPTests {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            PDPInstance instance = new PDPInstance(filePath.toString());
-                            PDPProblem problem = new PDPProblem(instance);
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new PDPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -49,8 +46,8 @@ public class PDPTests {
         }
 
         @Override
-        protected SolverConfig<PDPState, NullType> configSolver(PDPProblem problem) {
-            SolverConfig<PDPState, NullType> config = new SolverConfig<>();
+        protected SolverConfig<PDPState> configSolver(PDPProblem problem) {
+            SolverConfig<PDPState> config = new SolverConfig<>();
             config.problem = problem;
             config.relax = new PDPRelax(problem);
             config.ranking = new PDPRanking();
@@ -58,6 +55,7 @@ public class PDPTests {
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
+            config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
         }
