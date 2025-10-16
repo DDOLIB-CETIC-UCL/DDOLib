@@ -8,6 +8,23 @@ import java.io.IOException;
 import java.nio.file.Paths;
 /**
  * ######### Aircraft Landing Problem (ALP) #############
+ * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
+ * the A* search algorithm.
+ * <p>
+ * This class demonstrates how to:
+ * </p>
+ * <ul>
+ *   <li>Load an ALP instance from a data file.</li>
+ *   <li>Define a {@link Model} for the problem, including the fast lower bound.</li>
+ *   <li>Solve the problem using the {@link Solver} with the A* algorithm.</li>
+ *   <li>Monitor and print intermediate incumbent solutions found during the search.</li>
+ * </ul>
+ *
+ * @see ALPProblem
+ * @see ALPState
+ * @see ALPFastLowerBound
+ * @see Solver
+ * @see Model
  */
 public final class ALPAstarMain {
 

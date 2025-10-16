@@ -10,28 +10,77 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * The definition of the ALP.
+ * Represents the <b>Aircraft Landing Problem (ALP)</b>.
  * <p>
- * The Aircraft Landing Problem consist in optimizing the landing plan of a fleet of aircraft.
- * Each aircraft must land before a defined time (deadline) and as close as possible to its target time.
+ * The ALP consists in scheduling the landing of a fleet of aircraft on one or multiple runways.
+ * Each aircraft has a target landing time and a deadline. The objective is to minimize the total
+ * deviation from target times (tardiness) while respecting deadlines and runway separation constraints.
  * </p>
  * <p>
- * The aircraft land on one or several runways. The landing time is defined by the landing time
- * of the previous aircraft and the class of both aircraft. There is a small delay between two landing,
- * which is defined by the class of the two aircraft.
+ * Landing times are constrained by:
  * </p>
+ * <ul>
+ *     <li>The previous aircraft landed on the same runway;</li>
+ *     <li>The minimum separation time between aircraft classes;</li>
+ *     <li>The aircraft’s target and deadline times.</li>
+ * </ul>
+ * <p>
+ * This class implements the {@link Problem} interface for states of type {@link ALPState}.
+ * It defines the state space, the feasible domain of decisions, the transition function, and the cost function.
+ * </p>
+ *
+ * <p><b>Fields:</b></p>
+ * <ul>
+ *     <li>{@code nbClasses}: Number of aircraft classes.</li>
+ *     <li>{@code nbAircraft}: Total number of aircraft.</li>
+ *     <li>{@code nbRunways}: Number of runways available.</li>
+ *     <li>{@code aircraftClass}: Array mapping each aircraft to its class.</li>
+ *     <li>{@code aircraftTarget}: Target landing time of each aircraft.</li>
+ *     <li>{@code aircraftDeadline}: Deadline for each aircraft.</li>
+ *     <li>{@code classTransitionCost}: Minimum separation times between classes.</li>
+ *     <li>{@code optimal}: Optional optimal value if known.</li>
+ * </ul>
+ *
+ * @see Problem
+ * @see ALPState
+ * @see ALPDecision
  */
 public class ALPProblem implements Problem<ALPState> {
+    /** Number of aircraft classes. */
     public final int nbClasses;
-    public final int nbAircraft;
-    public final int nbRunways;
-    public final int[] aircraftClass;
-    public final int[] aircraftTarget;
-    public final int[] aircraftDeadline;
-    public final int[][] classTransitionCost;
-    // Optimal solution
-    public final Optional<Double> optimal;
 
+    /** Total number of aircraft. */
+    public final int nbAircraft;
+
+    /** Number of available runways. */
+    public final int nbRunways;
+
+    /** Mapping of each aircraft to its class. */
+    public final int[] aircraftClass;
+
+    /** Target landing time for each aircraft. */
+    public final int[] aircraftTarget;
+
+    /** Deadline for each aircraft. */
+    public final int[] aircraftDeadline;
+
+    /** Minimum separation times between aircraft classes. */
+    public final int[][] classTransitionCost;
+
+    /** Known optimal value, if available. */
+    public final Optional<Double> optimal;
+    /**
+     * Constructs an ALP problem with the specified parameters.
+     *
+     * @param nbClasses Number of aircraft classes
+     * @param nbAircraft Total number of aircraft
+     * @param nbRunways Number of runways
+     * @param aircraftClass Array mapping aircraft to class
+     * @param aircraftTarget Target landing times
+     * @param aircraftDeadline Deadline times
+     * @param classTransitionCost Minimum separation times between classes
+     * @param optimal Optional optimal value
+     */
     public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost, final Optional<Double> optimal) {
         this.nbClasses = nbClasses;
         this.nbAircraft = nbAircraft;
@@ -42,10 +91,30 @@ public class ALPProblem implements Problem<ALPState> {
         this.classTransitionCost = classTransitionCost;
         this.optimal = optimal;
     }
-
+    /**
+     * Constructs an ALP problem without specifying an optimal value.
+     *
+     * @param nbClasses Number of aircraft classes
+     * @param nbAircraft Total number of aircraft
+     * @param nbRunways Number of runways
+     * @param aircraftClass Array mapping aircraft to class
+     * @param aircraftTarget Target landing times
+     * @param aircraftDeadline Deadline times
+     * @param classTransitionCost Minimum separation times between classes
+     */
     public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost) {
         this(nbClasses,nbAircraft,nbRunways,aircraftClass,aircraftTarget,aircraftDeadline,classTransitionCost,Optional.empty());
     }
+    /**
+     * Constructs an ALP problem by reading from a file.
+     * <p>
+     * The file format is expected to provide the number of aircraft, classes, runways,
+     * optionally the known optimal value, aircraft target and deadline times, and class separation costs.
+     * </p>
+     *
+     * @param fName Path to the input file
+     * @throws IOException if the file cannot be read
+     */
 
     public ALPProblem(final String fName) throws IOException {
         final File f = new File(fName);
@@ -128,12 +197,12 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     /**
-     * Returns the arrival time of an aircraft based on runway state.
+     * Computes the arrival time of an aircraft on a given runway.
      *
-     * @param runwayStates The array of runway states.
-     * @param aircraft     The aircraft for which we want to know the arrival time.
-     * @param runway       The runway on which the aircraft is supposed to land.
-     * @return The arrival (landing) time.
+     * @param runwayStates The current state of each runway
+     * @param aircraft The aircraft to land
+     * @param runway The runway index
+     * @return The computed landing time
      */
     public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway) {
         if (runwayStates[runway].prevClass == DUMMY) {
@@ -150,20 +219,20 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     /**
-     * Formats the ALPDecision as an Integer.
+     * Converts an {@link ALPDecision} to its integer representation.
      *
-     * @param decision The decision.
-     * @return The formated decision.
+     * @param decision The decision
+     * @return The integer encoding of the decision
      */
     public int toDecision(ALPDecision decision) {
         return decision.aircraftClass + nbClasses * decision.runway;
     }
 
     /**
-     * Restores a decision object from its Integer form.
+     * Restores an {@link ALPDecision} from its integer representation.
      *
-     * @param value THe formatted Integer form of the decision.
-     * @return An ALPDecision object.
+     * @param value The integer encoding
+     * @return The decoded decision
      */
     public ALPDecision fromDecision(int value) {
         return new ALPDecision(

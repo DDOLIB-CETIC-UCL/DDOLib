@@ -10,6 +10,25 @@ import java.io.IOException;
 import java.nio.file.Paths;
 /**
  * ######### Aircraft Landing Problem (ALP) #############
+ * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
+ * the Dynamic Decision Diagram (DDO) approach.
+ * <p>
+ * This class demonstrates how to:
+ * </p>
+ * <ul>
+ *   <li>Load an ALP instance from a data file.</li>
+ *   <li>Define a {@link DdoModel} for the problem, including relaxation, ranking,
+ *       width heuristic, and fast lower bound.</li>
+ *   <li>Solve the problem using the {@link Solver} with the DDO algorithm.</li>
+ *   <li>Monitor and print intermediate incumbent solutions found during the search.</li>
+ * </ul>
+ * @see ALPProblem
+ * @see ALPState
+ * @see ALPRelax
+ * @see ALPRanking
+ * @see ALPFastLowerBound
+ * @see Solver
+ * @see DdoModel
  */
 public final class ALPDdoMain {
 

@@ -7,6 +7,22 @@ import java.io.IOException;
 import java.nio.file.Paths;
 /**
  * ######### Aircraft Landing Problem (ALP) #############
+ * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
+ * the Anytime Column Search (ACS) algorithm.
+ * <p>
+ * This class demonstrates how to:
+ * </p>
+ * <ul>
+ *   <li>Load an ALP instance from a file.</li>
+ *   <li>Define an {@link AcsModel} for the problem, including the fast lower bound.</li>
+ *   <li>Solve the problem using the {@link Solver} with the ACS algorithm.</li>
+ *   <li>Track and display intermediate incumbent solutions during the search.</li>
+ * </ul>
+ * @see ALPProblem
+ * @see ALPState
+ * @see ALPFastLowerBound
+ * @see Solver
+ * @see AcsModel
  */
 public final class ALPAcsMain {
 

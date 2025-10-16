@@ -13,7 +13,24 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * ############# Longest Common Subsequence (LCS) ###############
+ * ######### Longest Common Subsequence (LCS) ###############
+ * <p>
+ * Main class to solve an instance of the Longest Common Subsequence problem using
+ * the Anytime Column Search (ACS) algorithm.
+ * </p>
+ * <p>
+ * This class demonstrates how to:
+ * </p>
+ * <ul>
+ *     <li>Load an LCS problem instance from a file.</li>
+ *     <li>Instantiate an {@link AcsModel} with a fast lower bound heuristic.</li>
+ *     <li>Use the {@link Solver} to minimize the objective function via ACS.</li>
+ *     <li>Track and print new incumbent solutions and search statistics.</li>
+ * </ul>
+ * <p>
+ * The ACS algorithm iteratively explores the state space, updating the best solution
+ * found while optionally applying a stopping criterion.
+ * </p>
  */
 public final class LCSAcsMain {
 
