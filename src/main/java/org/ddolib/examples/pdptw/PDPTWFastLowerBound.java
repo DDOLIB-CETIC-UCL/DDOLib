@@ -7,13 +7,18 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
 
+import static java.lang.Double.valueOf;
+import static java.lang.Math.max;
+
 /**
  * Implementation of a fast upper bound for the PDPTW
  */
 public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
     private final double[] leastIncidentEdge;
+    PDPTWProblem problem;
 
     public PDPTWFastLowerBound(PDPTWProblem problem) {
+        this.problem = problem;
         this.leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {
             double min = Double.POSITIVE_INFINITY;
@@ -37,14 +42,31 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         }
         // only unassigned.size() elements are to be visited
         // and there can be fewer than toVisit.size()
-        int lb = 0;
-        if (toVisitLB.size() > variables.size()) {
-            //this method dominates the whole run time
-            Collections.sort(toVisitLB);
+        Collections.sort(toVisitLB);
+
+        ArrayList<Double> toVisitEarlyLines = new ArrayList<>(variables.size());
+        toVisitEarlyLines.add(0.0); //one more earlyLine because there is the final hop
+        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+            toVisitEarlyLines.add(valueOf(problem.instance.timeWindows[i].start()));
         }
-        for (int i = 0; i < variables.size(); i++) {
-            lb += toVisitLB.get(i);
+        Collections.sort(toVisitEarlyLines);
+
+        ArrayList<Double> toVisitDeadlines = new ArrayList<>(variables.size());
+        toVisitDeadlines.add(valueOf(problem.instance.timeWindows[0].end())); //one more deadline because there is the final hop
+        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+            toVisitDeadlines.add(valueOf(problem.instance.timeWindows[i].end()));
         }
-        return lb;
+        Collections.sort(toVisitDeadlines);
+
+        double currentTime = state.currentTime;
+         for (int i = 0; i < variables.size(); i++) {
+             double earlyLine = toVisitEarlyLines.get(i);
+             double deadLine = toVisitDeadlines.get(toVisitDeadlines.size()-i-1);
+             double outgoingHop = toVisitLB.get(i);
+             currentTime = max(currentTime,earlyLine);
+             if(currentTime>deadLine){return Double.POSITIVE_INFINITY;}
+             currentTime+= outgoingHop;
+         }
+        return currentTime - state.currentTime;
     }
 }
