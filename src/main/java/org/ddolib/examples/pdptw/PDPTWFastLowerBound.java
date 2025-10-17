@@ -34,14 +34,13 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
     @Override
     public double fastLowerBound(PDPTWState state, Set<Integer> variables) {
         BitSet toVisit = state.allToVisit;
+
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(variables.size());
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }
-        // only unassigned.size() elements are to be visited
-        // and there can be fewer than toVisit.size()
         Collections.sort(toVisitLB);
 
         ArrayList<Double> toVisitEarlyLines = new ArrayList<>(variables.size());
@@ -58,15 +57,19 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         }
         Collections.sort(toVisitDeadlines);
 
-        double currentTime = state.currentTime;
-         for (int i = 0; i < variables.size(); i++) {
+        int offsetForDeadlines = toVisitDeadlines.size() - variables.size();
+        double currentSimulationTime = state.currentTime;
+         for (int i = 0; i < variables.size(); i++) { //variable.size already includes the final come back
+             double incomingHop = toVisitLB.get(i);
              double earlyLine = toVisitEarlyLines.get(i);
-             double deadLine = toVisitDeadlines.get(toVisitDeadlines.size()-i-1);
-             double outgoingHop = toVisitLB.get(i);
-             currentTime = max(currentTime,earlyLine);
-             if(currentTime>deadLine){return Double.POSITIVE_INFINITY;}
-             currentTime+= outgoingHop;
+             currentSimulationTime += incomingHop;
+             currentSimulationTime = max(currentSimulationTime,earlyLine);
+             double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
+             if(currentSimulationTime>deadLine){
+                 return Double.POSITIVE_INFINITY;
+             }
          }
-        return currentTime - state.currentTime;
+
+        return currentSimulationTime - state.currentTime;
     }
 }
