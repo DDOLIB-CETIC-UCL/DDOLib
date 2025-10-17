@@ -322,7 +322,7 @@ public final class PDPTWMain {
     public static void main(final String[] args) throws IOException {
 
 //        final PDPTWInstance instance = genRandomInstance(18, 2, 3, new Random(1));
-        final PDPTWInstance instance = genInstance3(100, 5, 6, new Random(1));
+        final PDPTWInstance instance = genInstance3(40, 5, 6, new Random(1));
         final PDPTWProblem problem = new PDPTWProblem(instance);
 
         System.out.println("problem:" + problem);
