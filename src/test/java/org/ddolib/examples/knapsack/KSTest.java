@@ -222,12 +222,10 @@ public class KSTest {
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
         config.restrictStrategy = new CostBased<Integer>(config.ranking);
-        ReductionStrategy[] strats = new ReductionStrategy[5];
+        ReductionStrategy[] strats = new ReductionStrategy[3];
         strats[0] = new Kmeans<>(new KSCoordinates());
         strats[1] = new CostBased<>(new KSRanking());
-        strats[2] = new CostUBBased<>(new KSRanking());
-        strats[3] = new GHP<>(new KSDistance());
-        strats[4] = new MBP<>(new KSDistance());
+        strats[2] = new GHP<>(new KSDistance());
 
         for (ReductionStrategy strategy : strats) {
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
@@ -251,12 +249,10 @@ public class KSTest {
         config.fub = new KSFastUpperBound(problem);
         config.relax = new KSRelax();
         config.relaxStrategy = new CostBased<Integer>(config.ranking);
-        ReductionStrategy[] strats = new ReductionStrategy[5];
+        ReductionStrategy[] strats = new ReductionStrategy[3];
         strats[0] = new Kmeans<>(new KSCoordinates());
         strats[1] = new CostBased<>(new KSRanking());
-        strats[2] = new CostUBBased<>(new KSRanking());
-        strats[3] = new GHP<>(new KSDistance());
-        strats[4] = new MBP<>(new KSDistance());
+        strats[2] = new GHP<>(new KSDistance());
 
         for (ReductionStrategy strategy : strats) {
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());

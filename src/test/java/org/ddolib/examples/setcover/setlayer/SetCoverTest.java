@@ -12,7 +12,6 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.setcover.setlayer.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.api.Test;
@@ -28,12 +27,20 @@ public class SetCoverTest {
         int nElem = 6;
         int nSets = 6;
         List<Set<Integer>> sets = new ArrayList<>();
+        List<Double> weights = new ArrayList<>();
         sets.add(Set.of(0,1,2));
         sets.add(Set.of(3,4,5));
         sets.add(Set.of(0,1));
         sets.add(Set.of(1,3));
         sets.add(Set.of(0,1,3,4));
         sets.add(Set.of(5));
+
+        weights.add(1.0);
+        weights.add(1.0);
+        weights.add(1.0);
+        weights.add(1.0);
+        weights.add(1.0);
+        weights.add(1.0);
 
         /*sets.add(Set.of(5));
         sets.add(Set.of(3,4,5));
@@ -43,7 +50,7 @@ public class SetCoverTest {
         sets.add(Set.of(0,1,2));*/
 
         final SolverConfig<SetCoverState, Integer> config = new SolverConfig<>();
-        config.problem = new SetCoverProblem(nElem, nSets, sets);
+        config.problem = new SetCoverProblem(nElem, nSets, sets, weights);
         config.relax = new SetCoverRelax();
         config.varh = new DefaultVariableHeuristic<>();
         config.ranking = new SetCoverRanking();
@@ -203,7 +210,7 @@ public class SetCoverTest {
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
         strategies.add(new GHP<>(new SetCoverDistance()));
         strategies.add(new CostBased<>(config.ranking));
-        strategies.add(new MBP<>(new SetCoverDistance()));
+        strategies.add(new GHP<>(new SetCoverDistance()));
         strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
 
         for (ReductionStrategy<SetCoverState> restrictStrategy: strategies) {
@@ -333,8 +340,10 @@ public class SetCoverTest {
 
             // We compute the sets and removes the empy ones
             List<Set<Integer>> sets = new ArrayList<>();
+            List<Double> weights = new ArrayList<>();
             for (int setIndex = 0; setIndex <= nSet; setIndex++) {
                 Set<Integer> currentSet = new HashSet<>();
+                weights.add(1.0);
                 for (int elem = 0; elem < nElem; elem++) {
                     if (constraints.get(elem).contains(setIndex)) {
                         currentSet.add(elem);
@@ -344,7 +353,7 @@ public class SetCoverTest {
                     sets.add(currentSet);
                 }
             }
-            instances.add(new SetCoverProblem(nElem, sets.size(), sets));
+            instances.add(new SetCoverProblem(nElem, sets.size(), sets, weights));
 
         }
         return instances.stream();

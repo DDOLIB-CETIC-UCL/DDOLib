@@ -6,6 +6,31 @@ import java.util.*;
 
 public class SetCoverHeuristics {
 
+    public static final class MinWeight implements VariableHeuristic<SetCoverState> {
+        private final SetCoverProblem problem;
+        private final Integer[] ordering;
+
+        public MinWeight(SetCoverProblem problem) {
+            this.problem = problem;
+            this.ordering = new Integer[problem.nElem];
+            for (int i = 0; i < problem.nElem; i++) {
+                ordering[i] = i;
+            }
+            Arrays.sort(ordering, Comparator.comparingDouble(this.problem.elemMinWeights::get).reversed());
+        }
+
+        @Override
+        public Integer nextVariable(Set<Integer> variables, Iterator<SetCoverState> states) {
+            for (int elem: ordering) {
+                if (variables.contains(elem)) {
+                    // System.out.println("Next element: " + elem);
+                    return elem;
+                }
+            }
+            return null;
+        }
+    }
+
     public static final class MinCentrality implements VariableHeuristic<SetCoverState> {
         // private final PriorityQueue<Integer> pq;
         private final SetCoverProblem problem;

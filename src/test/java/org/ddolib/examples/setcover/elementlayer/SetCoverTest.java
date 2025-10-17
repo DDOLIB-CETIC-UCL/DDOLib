@@ -11,7 +11,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.setcover.elementlayer.*;
 import org.ddolib.examples.setcover.elementlayer.SetCoverHeuristics.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -168,7 +167,6 @@ public class SetCoverTest {
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
         strategies.add(new GHP<>(new SetCoverDistance(problem)));
         strategies.add(new CostBased<>(config.ranking));
-        strategies.add(new MBP<>(new SetCoverDistance(problem)));
         strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
 
         for (ReductionStrategy<SetCoverState> relaxStrategy: strategies) {
@@ -211,7 +209,6 @@ public class SetCoverTest {
         config.dominance = new DefaultDominanceChecker<>();
         List<ReductionStrategy<SetCoverState>> strategies = new ArrayList<>();
         strategies.add(new GHP<>(new SetCoverDistance(problem)));
-        strategies.add(new MBP<>(new SetCoverDistance(problem)));
         strategies.add(new Kmeans<>(new SetCoverCoordinates(problem)));
         strategies.add(new CostBased<>(config.ranking));
 

@@ -196,55 +196,18 @@ public class LaunchInterface {
 
         switch (relaxStrat) {
             case Cost -> config.relaxStrategy = new CostBased(config.ranking);
-            case CostUB -> config.relaxStrategy = new CostUBBased(config.ranking);
             case Kmeans -> {
                 Kmeans relaxStrategy = new Kmeans(config.coordinates);
                 relaxStrategy.setMaxIterations(kmeansIter);
                 config.relaxStrategy = relaxStrategy;
             }
-            case GHPMDP -> {
-                GHP relaxStrategy = new GHP(config.distance);
-                relaxStrategy.setMostDistantPivot(true);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
             case GHP -> {
                 GHP relaxStrategy = new GHP(config.distance);
-                relaxStrategy.setMostDistantPivot(false);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
-            case GHPS -> {
-                GHPSeparated relaxStrategy = new GHPSeparated(config.distance);
-                relaxStrategy.setMostDistantPivot(true);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
             case GHPAlt -> {
                 GHPAlt relaxStrategy = new GHPAlt(config.distance, config.relax, config.problem.initialState());
-                relaxStrategy.setMostDistantPivot(true);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
-            case GHPSAlt -> {
-                GHPSeparatedAlt relaxStrategy = new GHPSeparatedAlt(config.distance, config.relax, config.problem.initialState());
-                relaxStrategy.setMostDistantPivot(true);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
-            case MBPAlt -> {
-                MBPAlt relaxStrategy = new MBPAlt(config.distance, config.relax, config.problem.initialState());
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
-            /*case GHPQ -> {
-                GHPQuarantine relaxStrategy = new GHPQuarantine(config.distance, config.relax);
-                relaxStrategy.setMostDistantPivot(true);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }*/
-            case MBP -> {
-                MBP relaxStrategy = new MBP(config.distance);
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
@@ -252,55 +215,18 @@ public class LaunchInterface {
 
         switch (restrictionStrat) {
             case Cost -> config.restrictStrategy = new CostBased(config.ranking);
-            case CostUB -> config.restrictStrategy = new CostUBBased(config.ranking);
             case Kmeans -> {
                 Kmeans restrictStrategy = new Kmeans(config.coordinates);
                 restrictStrategy.setMaxIterations(kmeansIter);
                 config.restrictStrategy = restrictStrategy;
             }
-            case GHPMDP -> {
-                GHP restrictStrategy = new GHP(config.distance);
-                restrictStrategy.setMostDistantPivot(true);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
             case GHP -> {
                 GHP restrictStrategy = new GHP(config.distance);
-                restrictStrategy.setMostDistantPivot(false);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
-            case GHPS -> {
-                GHPSeparated restrictStrategy = new GHPSeparated(config.distance);
-                restrictStrategy.setMostDistantPivot(true);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
             case GHPAlt -> {
                 GHPAlt restrictStrategy = new GHPAlt(config.distance, config.relax, config.problem.initialState());
-                restrictStrategy.setMostDistantPivot(true);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
-            case GHPSAlt -> {
-                GHPSeparatedAlt restrictStrategy = new GHPSeparatedAlt(config.distance, config.relax, config.problem.initialState());
-                restrictStrategy.setMostDistantPivot(true);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
-            case MBPAlt -> {
-                MBPAlt restrictStrategy = new MBPAlt(config.distance, config.relax, config.problem.initialState());
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
-            /*case GHPQ -> {
-                GHPQuarantine restrictStrategy = new GHPQuarantine(config.distance, config.relax);
-                restrictStrategy.setMostDistantPivot(true);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }*/
-            case MBP -> {
-                MBP restrictStrategy = new MBP(config.distance);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
@@ -397,47 +323,26 @@ public class LaunchInterface {
 
     public enum ClusterStrat {
         Cost,
-        CostUB,
         Kmeans,
         GHP,
-        GHPS, // GHP Separated
-        GHPSAlt,
         GHPAlt,
-        GHPMDP,
-        MBP,
-        MBPAlt,
-        GHPQ
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
         {
             put("Cost", ClusterStrat.Cost);
-            put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
-            put("GHPS", ClusterStrat.GHPS);
             put("GHPA", ClusterStrat.GHPAlt);
-            put("GHPSA", ClusterStrat.GHPSAlt);
-            put("GHPMDP", ClusterStrat.GHPMDP);
-            // put("GHPQ", ClusterStrat.GHPQ);
-            put("MBP", ClusterStrat.MBP);
-            put("MBPA", ClusterStrat.MBPAlt);
         }
     };
 
     private final static HashMap<String, ClusterStrat> clusteringRestrictMap = new HashMap() {
         {
             put("Cost", ClusterStrat.Cost);
-            put("CostUB", ClusterStrat.CostUB);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
-            put("GHPS", ClusterStrat.GHPS);
             put("GHPA", ClusterStrat.GHPAlt);
-            put("GHPSA", ClusterStrat.GHPSAlt);
-            put("GHPMDP", ClusterStrat.GHPMDP);
-            // put("GHPQ", ClusterStrat.GHPQ);
-            put("MBP", ClusterStrat.MBP);
-            put("MBPA", ClusterStrat.MBPAlt);
         }
     };
 

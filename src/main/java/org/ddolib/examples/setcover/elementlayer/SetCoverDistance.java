@@ -20,7 +20,7 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      * @param b the second state
      * @return
      */
-    /*@Override
+    @Override
     public double distance(SetCoverState a, SetCoverState b) {
         int intersectionSize = 0;
         SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
@@ -31,7 +31,7 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
             }
         }
         return a.uncoveredElements.size() + b.uncoveredElements.size() - 2 * intersectionSize;
-    }*/
+    }
 
     /**
      * The distance between two states in the set cover problem is the
@@ -40,7 +40,7 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      * @param b the second state
      * @return
      */
-    @Override
+    /*@Override
     public double distance(SetCoverState a, SetCoverState b) {
         double distance = 0.0;
         // Set<Integer> union = new HashSet<>(a.uncoveredElements);
@@ -53,7 +53,7 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
         }
 
         return distance;
-    }
+    }*/
 
 
 }
