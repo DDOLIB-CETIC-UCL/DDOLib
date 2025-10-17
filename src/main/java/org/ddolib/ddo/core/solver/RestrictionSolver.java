@@ -16,7 +16,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -58,18 +58,18 @@ public final class RestrictionSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * Value of the best known lower bound.
+     * Value of the best known upper bound.
      */
-    private double bestLB;
+    private double bestUB;
     /**
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
      */
-    private final FastUpperBound<T> fub;
+    private final FastLowerBound<T> flb;
 
     /**
      * The dominance object that will be used to prune the search space.
@@ -141,7 +141,7 @@ public final class RestrictionSolver<T, K> implements Solver {
      * <br>
      * <b>Optional parameters: </b>
      * <ul>
-     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link FastLowerBound}</li>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
@@ -157,10 +157,10 @@ public final class RestrictionSolver<T, K> implements Solver {
         this.varh = config.varh;
         this.ranking = config.ranking;
         this.width = config.width;
-        this.fub = config.fub;
+        this.flb = config.flb;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
-        this.bestLB = Double.NEGATIVE_INFINITY;
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
@@ -170,7 +170,7 @@ public final class RestrictionSolver<T, K> implements Solver {
 
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = root();
         int maxWidth = width.maximumWidth(root.getState());
@@ -183,10 +183,10 @@ public final class RestrictionSolver<T, K> implements Solver {
         compilation.stateRanking = this.ranking;
         compilation.residual = root;
         compilation.maxWidth = maxWidth;
-        compilation.fub = fub;
+        compilation.flb = flb;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
-        compilation.bestLB = this.bestLB;
+        compilation.bestUB = this.bestUB;
         compilation.cutSetType = CutSetType.None;
         compilation.reductionStrategy = this.restrictStrategy;
         compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
@@ -210,7 +210,7 @@ public final class RestrictionSolver<T, K> implements Solver {
     @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
-            return Optional.of(bestLB);
+            return Optional.of(bestUB);
         } else {
             return Optional.empty();
         }
@@ -228,7 +228,7 @@ public final class RestrictionSolver<T, K> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                Double.POSITIVE_INFINITY,
+                Double.NEGATIVE_INFINITY,
                 Collections.emptySet());
     }
 
@@ -239,10 +239,10 @@ public final class RestrictionSolver<T, K> implements Solver {
      */
     private void maybeUpdateBest(DecisionDiagram<T, K> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
-        if (ddval.isPresent() && ddval.get() > bestLB) {
-            bestLB = ddval.get();
+        if (ddval.isPresent() && ddval.get() < bestUB) {
+            bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            if (verbosityLevel >= 1) System.out.println("new best: " + bestLB);
+            if (verbosityLevel >= 1) System.out.println("new best: " + bestUB);
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }

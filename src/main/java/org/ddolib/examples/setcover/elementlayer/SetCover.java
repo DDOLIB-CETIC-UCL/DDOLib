@@ -34,7 +34,7 @@ public class SetCover {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
 

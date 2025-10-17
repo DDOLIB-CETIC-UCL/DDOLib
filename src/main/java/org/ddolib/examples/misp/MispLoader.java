@@ -26,7 +26,7 @@ public class MispLoader {
         config.ranking = new MispRanking();
         config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         config.varh = new DefaultVariableHeuristic<>();
-        config.fub = new MispFastUpperBound(problem);
+        config.flb = new MispFastLowerBound(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new MispDistance();
 

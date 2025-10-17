@@ -26,7 +26,7 @@ public class KSLoader {
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         config.varh = new DefaultVariableHeuristic<Integer>();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();

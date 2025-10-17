@@ -56,8 +56,8 @@ public class MKSTest {
         config.relaxStrategy = new CostBased<>(config.ranking);
         final Solver solver = new ExactSolver<>(config);
 
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        solver.minimize();
+        assertEquals(problem.optimal.get(), -solver.bestValue().get());
     }
 
     @ParameterizedTest
@@ -74,8 +74,8 @@ public class MKSTest {
         config.relaxStrategy = new CostBased<>(config.ranking);
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        solver.minimize();
+        assertEquals(problem.optimal.get(), -solver.bestValue().get());
     }
 
     @ParameterizedTest
@@ -95,8 +95,8 @@ public class MKSTest {
 ;
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        solver.minimize();
+        assertEquals(problem.optimal.get(), -solver.bestValue().get());
     }
 
     @ParameterizedTest
@@ -117,8 +117,8 @@ public class MKSTest {
         config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
         config.varh = new DefaultVariableHeuristic<>();
         final Solver solver = new  SequentialSolver<>(config);
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        solver.minimize();
+        assertEquals(problem.optimal.get(), -solver.bestValue().get());
     }
 
     @ParameterizedTest
@@ -139,8 +139,8 @@ public class MKSTest {
         config.dominance = new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
         config.varh = new DefaultVariableHeuristic<>();
         final Solver solver = new  SequentialSolver<>(config);
-        solver.maximize();
-        assertEquals(problem.optimal.get(), solver.bestValue().get());
+        solver.minimize();
+        assertEquals(problem.optimal.get(), -solver.bestValue().get());
     }
 
     @ParameterizedTest
@@ -159,9 +159,9 @@ public class MKSTest {
         config.relaxStrategy = new CostBased<>(config.ranking);
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
         System.out.println(String.format("optimal :%f, solution: %f", optimal, solver.bestValue().get()));
-        assertEquals(optimal, solver.bestValue().get());
+        assertEquals(optimal, -solver.bestValue().get());
     }
 
 

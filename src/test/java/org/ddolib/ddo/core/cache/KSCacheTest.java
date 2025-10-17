@@ -8,7 +8,7 @@ import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.knapsack.KSFastUpperBound;
+import org.ddolib.examples.knapsack.KSFastLowerBound;
 import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.knapsack.KSRanking;
 import org.ddolib.examples.knapsack.KSRelax;
@@ -47,15 +47,17 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(10000);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.restrictStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new CostBased<>(config.ranking);
 
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
         return solver.bestValue().get();
     }
 
@@ -64,7 +66,7 @@ public class KSCacheTest {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
-        config.fub = new KSFastUpperBound(problem);
+        config.flb = new KSFastLowerBound(problem);
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>(w);
         config.varh = new DefaultVariableHeuristic<>();
@@ -75,7 +77,7 @@ public class KSCacheTest {
 
         final Solver solverWithCaching = new SequentialSolver<>(config);
 
-        solverWithCaching.maximize();
+        solverWithCaching.minimize();
         return solverWithCaching.bestValue().get();
     }
 

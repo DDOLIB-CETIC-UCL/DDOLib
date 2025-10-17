@@ -34,14 +34,14 @@ final public class NodeSubProblem<T> {
     /**
      * The upper bound associated with this node (if state were the root)
      */
-    public double ub;
+    public double lb;
 
     /**
      * Creates a new instance
      */
-    public NodeSubProblem(final T state, final double ub, final Node node) {
+    public NodeSubProblem(final T state, final double lb, final Node node) {
         this.state = state;
-        this.ub = ub;
+        this.lb = lb;
         this.node = node;
     }
 
@@ -58,13 +58,13 @@ final public class NodeSubProblem<T> {
             e = e.origin == null ? null : e.origin.best;
         }
 
-        double locb = Double.NEGATIVE_INFINITY;
+        double locb = Double.POSITIVE_INFINITY;
         if (node.suffix != null) {
             locb = saturatedAdd(node.value, node.suffix);
         }
-        ub = Math.min(ub, locb);
+        lb = Math.max(lb, locb);
 
-        return new SubProblem<>(state, node.value, ub, path);
+        return new SubProblem<>(state, node.value, lb, path);
     }
 
     public double maxIncidentCost() {
@@ -74,6 +74,6 @@ final public class NodeSubProblem<T> {
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##########");
-        return String.format("%s - ub: %s - value: %s", state, df.format(ub), df.format(node.value));
+        return String.format("%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
     }
 }

@@ -26,7 +26,7 @@ final public class NodeSubProblemComparator<T> implements Comparator<NodeSubProb
     public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
         double cmp = o1.node.value - o2.node.value;
         if (cmp == 0) {
-            return delegate.compare(o1.state, o2.state);
+            return delegate.reversed().compare(o1.state, o2.state);
         } else {
             return Double.compare(o1.node.value, o2.node.value);
         }

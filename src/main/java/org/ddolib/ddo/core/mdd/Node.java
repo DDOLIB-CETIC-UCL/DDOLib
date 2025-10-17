@@ -36,9 +36,9 @@ final class Node {
     public boolean isMarked;
 
     /**
-     * An overapproximation of the longest from this node to a terminal node
+     * An overapproximation of the shortest from this node to a terminal node
      */
-    public double fub = Double.POSITIVE_INFINITY;
+    public double flb = Double.NEGATIVE_INFINITY;
 
     // USED IF WORKING WITH CACHE
 

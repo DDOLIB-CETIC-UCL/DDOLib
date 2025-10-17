@@ -59,7 +59,7 @@ public class SetCoverTest {
         final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.printf("Duration : %.3f seconds%n", duration);
         // System.out.printf("Objective: %d%n", solver.bestValue().get());
@@ -86,7 +86,7 @@ public class SetCoverTest {
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
         final Solver solver = new SequentialSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
 
         // Retrieve solution
         Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -100,7 +100,7 @@ public class SetCoverTest {
         }).get();
 
         Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+        Assertions.assertEquals(optimalCost, solver.bestValue().get());
         Assertions.assertTrue(testValidity(problem, solution));
     }
 
@@ -176,7 +176,7 @@ public class SetCoverTest {
             config.varh = new DefaultVariableHeuristic<>();
             final Solver solver = new SequentialSolver<>(config);
 
-            solver.maximize();
+            solver.minimize();
 
             // Retrieve solution
             Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -190,7 +190,7 @@ public class SetCoverTest {
             }).get();
 
             Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertEquals(optimalCost, solver.bestValue().get());
             Assertions.assertTrue(testValidity(problem, solution));
         }
     }
@@ -220,7 +220,7 @@ public class SetCoverTest {
             config.varh = new DefaultVariableHeuristic<>();
             final Solver solver = new SequentialSolver<>(config);
 
-            solver.maximize();
+            solver.minimize();
 
             // Retrieve solution
             Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -234,7 +234,7 @@ public class SetCoverTest {
             }).get();
 
             Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertEquals(optimalCost, solver.bestValue().get());
             Assertions.assertTrue(testValidity(problem, solution));
         }
     }

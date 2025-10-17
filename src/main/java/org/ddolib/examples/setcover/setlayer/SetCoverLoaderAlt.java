@@ -2,9 +2,8 @@ package org.ddolib.examples.setcover.setlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 
 import java.io.IOException;
 
@@ -25,7 +24,7 @@ public class SetCoverLoaderAlt {
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         config.varh = new SetCoverHeuristics.FocusClosingElements(problem);
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new SetCoverDistanceWeighted(problem);
         config.coordinates = new SetCoverCoordinates(problem);

@@ -40,7 +40,7 @@ public class GRMain {
         final SequentialSolver<GRState, Integer> solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        System.out.println(solver.maximize());
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.bestSolution()

@@ -55,7 +55,7 @@ public class PDPTests {
             config.problem = problem;
             config.relax = new PDPRelax(problem);
             config.ranking = new PDPRanking();
-            config.fub = new PDPFastUpperBound(problem);
+            config.flb = new PDPFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
@@ -70,7 +70,7 @@ public class PDPTests {
     public Stream<DynamicTest> testPDP() {
         var bench = new PDPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         bench.minWidth = 45;
         bench.maxWidth = 50;
         return bench.generateTests();

@@ -1,11 +1,12 @@
 package org.ddolib.examples.lcs;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ParallelSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -42,7 +43,7 @@ public final class LCSMain {
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
+        if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
@@ -103,7 +104,8 @@ public final class LCSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_26_50-60_test.txt" : args[0];
+        final String file = args.length == 0 ? "src/test/resources/LCS/LCS_3_3_10_test.txt" :
+                args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
         SolverConfig<LCSState, NullType> config = new SolverConfig<>();
@@ -111,7 +113,7 @@ public final class LCSMain {
         config.problem = problem;
         config.relax = new LCSRelax(problem);
         config.ranking = new LCSRanking();
-        config.fub = new LCSFastUpperBound(problem);
+        config.flb = new LCSFastLowerBound(problem);
 
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
@@ -119,10 +121,10 @@ public final class LCSMain {
 
         config.verbosityLevel = 1;
 
-        final ParallelSolver<LCSState, NullType> solver = new ParallelSolver<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         int[] solution = solver.constructBestSolution(problem.nbVars());
@@ -134,9 +136,6 @@ public final class LCSMain {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %f%n", solver.bestValue().orElse(Double.NEGATIVE_INFINITY));
-        System.out.printf("Upper Bnd : %s%n", solver.upperBound());
-        System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
-        System.out.printf("Explored : %s%n", solver.explored());
         System.out.printf("Max width : %d%n", maxWidth);
         System.out.printf("Solution : %s%n", Arrays.toString(charNbSolution));
     }

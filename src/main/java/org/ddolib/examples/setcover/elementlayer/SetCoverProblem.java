@@ -103,7 +103,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     @Override
     public double transitionCost(SetCoverState state, Decision decision) {
         if (decision.val() != -1) { // a set is added to the solution
-            return -weights.get(decision.val());
+            return weights.get(decision.val());
         } else { // no set is added to the solution
             return 0;
         }

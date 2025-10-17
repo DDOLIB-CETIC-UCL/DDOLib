@@ -1,6 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.util.TSPLowerBound;
 
 import java.util.Comparator;
@@ -9,13 +9,13 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the PSP.
+ * Implementation of a fast lower bound for the PSP.
  */
-public class PSFastUpperBound implements FastUpperBound<PSState> {
+public class PSFastLowerBound implements FastLowerBound<PSState> {
     private final PSInstance instance;
     private final int[] tspLb;
 
-    public PSFastUpperBound(PSInstance instance) {
+    public PSFastLowerBound(PSInstance instance) {
         this.instance = instance;
         tspLb = TSPLowerBound.lowerBoundForAllSubsets(instance.changeoverCost);
     }
@@ -56,7 +56,7 @@ public class PSFastUpperBound implements FastUpperBound<PSState> {
      * @return
      */
     @Override
-    public double fastUpperBound(PSState state, Set<Integer> variables) {
+    public double fastLowerBound(PSState state, Set<Integer> variables) {
         // Convert to bitset-like index
         int idx = members(state).stream().
                 mapToInt(Integer::intValue).
@@ -79,7 +79,7 @@ public class PSFastUpperBound implements FastUpperBound<PSState> {
                 stockingCostLb += item.cost() * (time - item.deadLine());
             }
         }
-        return -changeOverLb - stockingCostLb;
+        return changeOverLb + stockingCostLb;
     }
 
     private record ItemDemand(int cost, int deadLine) {

@@ -48,10 +48,10 @@ public class MCPRelax implements Relaxation<MCPState> {
 
     @Override
     public double relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, double cost) {
-        double toReturn = cost;
+        double toReturn = -cost;
         for (int i = d.var() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
-        return toReturn;
+        return -toReturn;
     }
 }

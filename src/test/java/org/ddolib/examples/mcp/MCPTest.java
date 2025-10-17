@@ -54,7 +54,7 @@ public class MCPTest {
             config.problem = problem;
             config.relax = new MCPRelax(problem);
             config.ranking = new MCPRanking();
-            config.fub = new MCPFastUpperBound(problem);
+            config.flb = new MCPFastLowerBound(problem);
             config.restrictStrategy = new CostBased<>(config.ranking);
             config.relaxStrategy = new CostBased<>(config.ranking);
             config.width = new FixedWidth<>(10);
@@ -71,7 +71,7 @@ public class MCPTest {
     public Stream<DynamicTest> testMCP() {
         var bench = new MCPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

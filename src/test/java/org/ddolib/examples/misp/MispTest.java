@@ -54,7 +54,7 @@ public class MispTest {
             config.problem = problem;
             config.relax = new MispRelax(problem);
             config.ranking = new MispRanking();
-            config.fub = new MispFastUpperBound(problem);
+            config.flb = new MispFastLowerBound(problem);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.restrictStrategy = new CostBased<>(config.ranking);
@@ -69,7 +69,8 @@ public class MispTest {
     public Stream<DynamicTest> testMISP() {
         var bench = new MispBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
+        bench.testDominance = true;
         bench.testCache = true;
         return bench.generateTests();
     }

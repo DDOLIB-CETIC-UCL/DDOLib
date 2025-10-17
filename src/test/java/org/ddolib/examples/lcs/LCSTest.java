@@ -53,7 +53,7 @@ public class LCSTest {
             config.problem = problem;
             config.relax = new LCSRelax(problem);
             config.ranking = new LCSRanking();
-            config.fub = new LCSFastUpperBound(problem);
+            config.flb = new LCSFastLowerBound(problem);
             config.restrictStrategy = new CostBased<>(config.ranking);
             config.relaxStrategy = new CostBased<>(config.ranking);
             config.width = new FixedWidth<>(maxWidth);
@@ -68,7 +68,7 @@ public class LCSTest {
     public Stream<DynamicTest> testLCS() {
         var bench = new LCSBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 

@@ -10,7 +10,7 @@ public class SMICDominance implements Dominance<SMICState, Integer> {
 
     @Override
     public boolean isDominatedOrEqual(SMICState state1, SMICState state2) {
-        if (state1.getRemainingJobs().equals(state2.getRemainingJobs()) && state2.getCurrentTime() <= state1.getCurrentTime()) {
+        if (state1.remainingJobs().equals(state2.remainingJobs()) && state2.currentTime() <= state1.currentTime()) {
             return true;
         }
         return false;

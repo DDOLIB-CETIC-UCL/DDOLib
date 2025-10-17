@@ -4,7 +4,7 @@ import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ public class MKSLoader {
         config.ranking = new MKSRanking();
         config.width = new FixedWidth<>((int) Math.ceil(widthFactor*problem.nbVars()));
         config.varh = new DefaultVariableHeuristic<>();
-        config.fub = new DefaultFastUpperBound<>();
+        config.flb = new DefaultFastLowerBound<>();
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new MKSDistance();
         config.coordinates = new MKSCoordinates();

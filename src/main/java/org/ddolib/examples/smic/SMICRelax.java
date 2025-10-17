@@ -13,23 +13,25 @@ public class SMICRelax implements Relaxation<SMICState> {
     public SMICRelax(SMICProblem problem) {
         this.problem = problem;
     }
-
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-//        final SMICState s = states.next();
-//        Set<Integer> intersectionJobs = new HashSet<>(s.getRemainingJobs());
-        Set<Integer> intersectionJobs = new HashSet<>();
+
+//        SMICState state = states.next();
+        Set<Integer> unionJobs = new HashSet<>(/*state.remainingJobs()*/);
         int minCurrentTime = Integer.MAX_VALUE;
         int minCurrentInventory = Integer.MIN_VALUE;
         int maxCurrentInventory = Integer.MAX_VALUE;
+
         while (states.hasNext()) {
             final SMICState state = states.next();
-            intersectionJobs.addAll(state.getRemainingJobs());
-            minCurrentTime = Math.min(minCurrentTime, state.getCurrentTime());
-            minCurrentInventory = Math.max(minCurrentInventory, state.getMinCurrentInventory());
-            maxCurrentInventory = Math.min(maxCurrentInventory, state.getMaxCurrentInventory());
+            unionJobs.addAll(state.remainingJobs());
+            minCurrentTime = Math.min(minCurrentTime, state.currentTime());
+            minCurrentInventory = Math.max(minCurrentInventory, state.minCurrentInventory());
+            maxCurrentInventory = Math.min(maxCurrentInventory, state.maxCurrentInventory());
         }
-        return new SMICState(intersectionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
+        if (minCurrentInventory <= maxCurrentInventory)
+            return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
+        return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, minCurrentInventory);
     }
 
     @Override

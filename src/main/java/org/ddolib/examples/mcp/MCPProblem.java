@@ -65,7 +65,7 @@ public class MCPProblem implements Problem<MCPState> {
                 val += negativeOrNull(graph.weightOf(i, j));
             }
         }
-        return val;
+        return -val;
     }
 
     @Override
@@ -98,13 +98,13 @@ public class MCPProblem implements Problem<MCPState> {
     @Override
     public double transitionCost(MCPState state, Decision decision) {
         if (state.depth() == 0) return 0;
-        else if (decision.val() == S) return branchOnS(state, decision.var());
-        else return branchOnT(state, decision.var());
+        else if (decision.val() == S) return -branchOnS(state, decision.var());
+        else return -branchOnT(state, decision.var());
     }
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 
     private int branchOnS(MCPState state, int k) {

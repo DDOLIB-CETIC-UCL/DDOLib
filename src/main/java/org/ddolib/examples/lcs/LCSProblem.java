@@ -134,6 +134,6 @@ public class LCSProblem implements Problem<LCSState> {
     @Override
     public double transitionCost(LCSState state, Decision decision) {
         if (decision.val() == GO_TO_END_OF_STRINGS) return 0;
-        return 1;
+        return -1;
     }
 }

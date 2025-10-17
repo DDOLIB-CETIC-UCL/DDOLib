@@ -18,7 +18,7 @@ import org.ddolib.examples.misp.MispLoader;
 import org.ddolib.examples.mks.MKSLoader;
 import org.ddolib.examples.setcover.elementlayer.SetCoverLoader;
 import org.ddolib.examples.setcover.setlayer.SetCoverLoaderAlt;
-import org.ddolib.modeling.DefaultFastUpperBound;
+import org.ddolib.modeling.DefaultFastLowerBound;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -241,7 +241,7 @@ public class LaunchInterface {
             case RESTRI -> solver = new RestrictionSolver<>(config);
         }
 
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
 
         System.out.printf("Duration : %d%n", stats.runTimeMS());
         System.out.printf("Objective: %s%n", solver.bestValue().get());
@@ -260,8 +260,8 @@ public class LaunchInterface {
             statsString.append(widthFactor).append(";"); // widthFactor
             statsString.append(kmeansIter).append(";");
 
-            boolean useFUB = !(config.fub instanceof DefaultFastUpperBound);
-            statsString.append(useFUB).append(";");
+            boolean useFLB = !(config.flb instanceof DefaultFastLowerBound<?>);
+            statsString.append(useFLB).append(";");
             boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
             statsString.append(useDominance).append(";");
             statsString.append(config.problem.optimalValue().orElse(-1)).append(";");

@@ -53,7 +53,7 @@ public class SetCoverTest {
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize();
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -104,9 +104,9 @@ public class SetCoverTest {
         config.varh = new MinCentralityDynamic(problem);
         final Solver solver = new RestrictionSolver<>(config);
 
-        solver.maximize();
+        solver.minimize();
         Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertTrue(solver.bestValue().get() <= -2);
+        Assertions.assertTrue(solver.bestValue().get() <= 2);
 
     }
 
@@ -140,9 +140,9 @@ public class SetCoverTest {
         config.relaxStrategy  = new CostBased<>(config.ranking);
         config.varh = new MinCentralityDynamic(problem);
         final Solver solver = new RelaxationSolver<>(config);
-        solver.maximize();
+        solver.minimize();
         Assertions.assertTrue(solver.bestValue().isPresent());
-        Assertions.assertTrue(-solver.bestValue().get() <= 2);
+        Assertions.assertTrue(solver.bestValue().get() <= 2);
 
     }
 
@@ -176,7 +176,7 @@ public class SetCoverTest {
             config.varh = new MinCentralityDynamic(problem);
             final Solver solver = new SequentialSolver<>(config);
 
-            solver.maximize();
+            solver.minimize();
 
             // Retrieve solution
             Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -190,7 +190,7 @@ public class SetCoverTest {
             }).get();
 
             Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertEquals(optimalCost, solver.bestValue().get());
             Assertions.assertTrue(testValidity(problem, solution));
         }
     }
@@ -219,7 +219,7 @@ public class SetCoverTest {
             config.varh = new MinCentralityDynamic(problem);
             final Solver solver = new SequentialSolver<>(config);
 
-            solver.maximize();
+            solver.minimize();
 
             // Retrieve solution
             Set<Integer> solution = solver.bestSolution().map(decisions -> {
@@ -233,7 +233,7 @@ public class SetCoverTest {
             }).get();
 
             Assertions.assertTrue(solver.bestValue().isPresent());
-            Assertions.assertEquals(optimalCost, -solver.bestValue().get());
+            Assertions.assertEquals(optimalCost, solver.bestValue().get());
             Assertions.assertTrue(testValidity(problem, solution));
         }
     }

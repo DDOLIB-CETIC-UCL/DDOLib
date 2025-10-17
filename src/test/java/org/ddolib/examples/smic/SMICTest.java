@@ -10,6 +10,9 @@ import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +56,7 @@ public class SMICTest {
             config.ranking = new SMICRanking();
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
+            config.flb = new SMICFastLowerBound(problem);
             config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             config.restrictStrategy = new CostBased<>(config.ranking);
@@ -67,12 +71,13 @@ public class SMICTest {
         }
     }
 
-    /*@DisplayName("SMIC")
+    @DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench();
         bench.testRelaxation = true;
+        bench.testFLB = true;
         bench.testDominance = true;
         return bench.generateTests();
-    }*/
+    }
 }

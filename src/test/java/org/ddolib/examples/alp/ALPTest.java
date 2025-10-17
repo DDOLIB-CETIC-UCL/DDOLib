@@ -52,9 +52,10 @@ public class ALPTest {
             config.problem = problem;
             config.relax = new ALPRelax(problem);
             config.ranking = new ALPRanking();
-            config.fub = new ALPFastUpperBound(problem);
             config.restrictStrategy = new CostBased<>(config.ranking);
             config.relaxStrategy = new CostBased<>(config.ranking);
+            config.flb = new ALPFastLowerBound(problem);
+
             config.width = new FixedWidth<>(100);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
@@ -70,7 +71,7 @@ public class ALPTest {
     public Stream<DynamicTest> testALP() {
         var bench = new ALPTest.AlpBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

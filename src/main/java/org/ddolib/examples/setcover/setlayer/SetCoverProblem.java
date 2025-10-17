@@ -120,6 +120,6 @@ public class SetCoverProblem implements Problem<SetCoverState> {
 
     @Override
     public double transitionCost(SetCoverState state, Decision decision) {
-        return -decision.val()*weights.get(decision.var());
+        return decision.val()*weights.get(decision.var());
     }
 }
