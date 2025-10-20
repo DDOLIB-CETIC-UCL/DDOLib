@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
@@ -52,7 +53,7 @@ public class KSDdoMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
+        final String instance = args.length == 0 ? Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override

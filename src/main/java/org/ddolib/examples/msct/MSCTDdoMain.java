@@ -15,6 +15,7 @@ import org.ddolib.modeling.Solvers;
 
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * ################ Minimum Sum Completion Time (MSCT) #####################
@@ -22,8 +23,8 @@ import java.io.IOException;
 public class MSCTDdoMain {
 
     public static void main(final String[] args) throws IOException {
-        final String file = "data/MSCT/msct1.txt";
-        final MSCTProblem problem = new MSCTProblem(file);
+        final String instance = args.length == 0 ? Path.of("data","MSCT","msct1.txt").toString() : args[0];
+        final MSCTProblem problem = new MSCTProblem(instance);
         DdoModel<MSCTState> model = new DdoModel<>() {
             @Override
             public Problem<MSCTState> problem() {

@@ -12,8 +12,8 @@ import java.nio.file.Paths;
  */
 public class TSAcsMain {
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
-        final TSProblem problem = new TSProblem(file);
+        String instance = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        final TSProblem problem = new TSProblem(instance);
         AcsModel<TSState> model = new AcsModel<>() {
             @Override
             public Problem<TSState> problem() {

@@ -13,8 +13,8 @@ import java.nio.file.Paths;
  */
 public class TSDdoMain {
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
-        final TSProblem problem = new TSProblem(file);
+        String instance = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        final TSProblem problem = new TSProblem(instance);
         DdoModel<TSState> model = new DdoModel<>() {
             @Override
             public Problem<TSState> problem() {

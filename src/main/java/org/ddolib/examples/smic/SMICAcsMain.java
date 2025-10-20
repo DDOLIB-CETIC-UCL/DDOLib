@@ -10,6 +10,7 @@ import org.ddolib.modeling.Solvers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -19,8 +20,8 @@ import java.util.Scanner;
 
 public class SMICAcsMain {
     public static void main(String[] args) throws IOException {
-        final String file = "data/SMIC/data10_2.txt";
-        final SMICProblem problem = new SMICProblem(file);
+        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_2.txt").toString() : args[0];
+        final SMICProblem problem = new SMICProblem(instance);
         AcsModel<SMICState> model = new AcsModel<>() {
             @Override
             public Problem<SMICState> problem() {

@@ -5,6 +5,7 @@ import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -30,8 +31,8 @@ import java.nio.file.Paths;
 public final class ALPAcsMain {
 
     public static void main(final String[] args) throws IOException {
-        final String fileStr = Paths.get("data", "alp", "alp_n50_r1_c2_std10_s0").toString();
-        final ALPProblem problem = new ALPProblem(fileStr);
+        final String instance = args.length == 0 ? Path.of("data", "alp", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final ALPProblem problem = new ALPProblem(instance);
         AcsModel<ALPState> model = new AcsModel<>() {
             @Override
             public ALPProblem problem() {

@@ -7,6 +7,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class Max2SatAstarMain {
@@ -14,8 +15,8 @@ public final class Max2SatAstarMain {
      * ******* Maximum 2-Satisfiability Problem (MAX2SAT) *******
      */
     public static void main(String[] args) throws IOException {
-        String file = Paths.get("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString();
-        final Max2SatProblem problem = new Max2SatProblem(file);
+        String instance = args.length == 0 ? Path.of("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString() : args[0];
+        final Max2SatProblem problem = new Max2SatProblem(instance);
         Model<Max2SatState> model = new Model<>() {
             @Override
             public Problem<Max2SatState> problem() {

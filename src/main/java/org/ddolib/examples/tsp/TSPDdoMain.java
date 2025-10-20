@@ -14,8 +14,8 @@ import java.nio.file.Paths;
 public class TSPDdoMain {
 
     public static void main(final String[] args) throws IOException {
-        String file = Paths.get("data", "TSP", "instance_18_0.xml").toString();
-        final TSPProblem problem = new TSPProblem(file);
+        String instance = args.length == 0 ? Paths.get("data", "TSP", "instance_18_0.xml").toString() : args[0];
+        final TSPProblem problem = new TSPProblem(instance);
         DdoModel<TSPState> model = new DdoModel<TSPState>() {
             @Override
             public Problem<TSPState> problem() {
