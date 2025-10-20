@@ -90,7 +90,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
 
-        Model<T> testModel = () -> problem;
+        DdoModel<T> testModel = model(problem);
         Double best = Solvers.minimizeExact(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
