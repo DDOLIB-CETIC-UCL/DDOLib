@@ -10,10 +10,8 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+
 /**
  * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
  * <p>
@@ -36,7 +34,7 @@ import java.io.IOException;
  *             <li>Verbose output level ({@link VerbosityLevel}).</li>
  *         </ul>
  *     </li>
- *     <li>Creates a {@link Solver} and runs the DDO algorithm.</li>
+ *     <li>Creates a {@link Solvers} and runs the DDO algorithm.</li>
  *     <li>Prints updates when a new incumbent solution is found and stops after 10 seconds of runtime.</li>
  *     <li>Outputs the final search statistics.</li>
  * </ol>

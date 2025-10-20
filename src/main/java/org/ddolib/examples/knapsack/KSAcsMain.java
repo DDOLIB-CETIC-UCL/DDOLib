@@ -9,6 +9,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+
 /**
  * ######### Knapsack Problem (KS) - ACS Example #############
  * <p>
@@ -21,7 +22,7 @@ import java.io.IOException;
  * <ol>
  *     <li>Loads a knapsack instance from a data file.</li>
  *     <li>Defines an {@link AcsModel} with a fast lower bound and dominance checker.</li>
- *     <li>Creates a {@link Solver} and runs the ACS algorithm.</li>
+ *     <li>Creates a {@link Solvers} and runs the ACS algorithm.</li>
  *     <li>Prints updates when a new incumbent solution is found.</li>
  *     <li>Outputs the final search statistics.</li>
  * </ol>
