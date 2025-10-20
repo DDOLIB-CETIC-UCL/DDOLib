@@ -4,7 +4,6 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -146,54 +145,26 @@ public final class SequentialSolver<T> implements Solver {
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link SolverConfig}<br><br>
+     * {@link DdoModel}
      *
-     * <b>Mandatory parameters:</b>
-     * <ul>
-     *     <li>An implementation of {@link Problem}</li>
-     *     <li>An implementation of {@link Relaxation}</li>
-     *     <li>An implementation of {@link StateRanking}</li>
-     *     <li>An implementation of {@link VariableHeuristic}</li>
-     *     <li>An implementation of {@link WidthHeuristic}</li>
-     *     <li>An implementation of {@link Frontier}</li>
-     * </ul>
-     * <br>
-     * <b>Optional parameters: </b>
-     * <ul>
-     *     <li>An implementation of {@link FastLowerBound}</li>
-     *     <li>An implementation of {@link DominanceChecker}</li>
-     *     <li>A time limit</li>
-     *     <li>A gap limit</li>
-     *     <li>A verbosity level</li>
-     *     <li>A boolean to export some mdd as .dot file</li>
-     *     <li>A debug level:
-     *          <ul>
-     *               <li>0: no additional tests (default)</li>
-     *               <li>1: checks if the upper bound is well-defined and if the hash code
-     *               of the states are coherent</li>
-     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     *             </ul>
-     *     </li>
-     * </ul>
-     *
-     * @param config All the parameters needed to configure the solver.
+     * @param model All the parameters needed to configure the solver.
      */
-    public SequentialSolver(SolverConfig<T> config) {
-        this.problem = config.problem;
-        this.relax = config.relax;
-        this.varh = config.varh;
-        this.ranking = config.ranking;
-        this.width = config.width;
-        this.flb = config.flb;
-        this.dominance = config.dominance;
-        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
-        this.frontier = config.frontier;
+    public SequentialSolver(DdoModel<T> model) {
+        this.problem = model.problem();
+        this.relax = model.relaxation();
+        this.varh = model.variableHeuristic();
+        this.ranking = model.ranking();
+        this.width = model.widthHeuristic();
+        this.flb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
+        this.frontier = model.frontier();
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
-        this.verbosityLevel = config.verbosityLevel;
+        this.verbosityLevel = model.verbosityLevel();
         this.verbosityPrinter = new VerbosityPrinter(verbosityLevel, 500L);
-        this.exportAsDot = config.exportAsDot;
-        this.debugLevel = config.debugLevel;
+        this.exportAsDot = model.exportDot();
+        this.debugLevel = model.debugMode();
     }
 
     @Override
@@ -216,7 +187,7 @@ public final class SequentialSolver<T> implements Solver {
 
             long end = System.currentTimeMillis();
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, gap());
-            if  (bestUB != Double.POSITIVE_INFINITY)
+            if (bestUB != Double.POSITIVE_INFINITY)
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
 
             if (limit.test(stats)) {

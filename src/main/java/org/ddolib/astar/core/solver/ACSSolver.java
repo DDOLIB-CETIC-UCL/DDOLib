@@ -4,14 +4,10 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.DebugLevel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.DebugUtil;
 
 import java.util.*;
@@ -73,7 +69,7 @@ public final class ACSSolver<T> implements Solver {
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link SolverConfig}<br><br>
+     * {@link org.ddolib.modeling.AcsModel}<br><br>
      *
      * <b>Mandatory parameters:</b>
      * <ul>
@@ -88,18 +84,16 @@ public final class ACSSolver<T> implements Solver {
      *     <li>A verbosity level</li>
      * </ul>
      *
-     * @param config All the parameters needed to configure the solver.
+     * @param model All the parameters needed to configure the solver.
      */
-    public ACSSolver(
-            SolverConfig<T> config,
-            final int columnWidth) {
-        this.problem = config.problem;
-        this.varh = config.varh;
-        this.lb = config.flb;
-        this.dominance = config.dominance;
+    public ACSSolver(AcsModel<T> model) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
         this.bestUB = Integer.MAX_VALUE;
         this.bestSol = Optional.empty();
-        this.columnWidth = columnWidth;
+        this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
         this.present = new HashMap<>();
@@ -110,10 +104,10 @@ public final class ACSSolver<T> implements Solver {
             open[i] = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f));
         }
 
-        this.verbosityLevel = config.verbosityLevel;
+        this.verbosityLevel = model.verbosityLevel();
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-        if (config.debugLevel != DebugLevel.OFF) {
+        if (model.debugMode() != DebugLevel.OFF) {
             throw new IllegalArgumentException("The debug mode for this solver is not available " +
                     "for the moment.");
         }

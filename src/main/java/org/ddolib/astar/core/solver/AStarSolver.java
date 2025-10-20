@@ -4,14 +4,10 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.DebugLevel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.DebugUtil;
 import org.ddolib.util.VerbosityPrinter;
 
@@ -98,19 +94,18 @@ public final class AStarSolver<T> implements Solver {
      */
     private final DebugLevel debugLevel;
 
-    public AStarSolver(
-            SolverConfig<T> config) {
-        this.problem = config.problem;
-        this.varh = config.varh;
-        this.lb = config.flb;
-        this.dominance = config.dominance;
-        this.bestUB = Integer.MAX_VALUE;
+    public AStarSolver(Model<T> model) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.verbosityLevel = config.verbosityLevel;
-        this.verbosityPrinter = new VerbosityPrinter(config.verbosityLevel, 500L);
-        this.debugLevel = config.debugLevel;
+        this.verbosityLevel = model.verbosityLevel();
+        this.verbosityPrinter = new VerbosityPrinter(this.verbosityLevel, 500L);
+        this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
     }
@@ -120,24 +115,24 @@ public final class AStarSolver<T> implements Solver {
      * search. For testing purpose, this constructor assumes that the path to the given node has
      * 0 length.
      *
-     * @param config  All parameters needed ton configure the solver
+     * @param model   All parameters needed ton configure the solver.
      * @param rootKey The state and the depth from which start the search.
      */
     private AStarSolver(
-            SolverConfig<T> config,
+            Model<T> model,
             AstarKey<T> rootKey
     ) {
-        this.problem = config.problem;
-        this.varh = config.varh;
-        this.lb = config.flb;
-        this.dominance = config.dominance;
-        this.bestUB = Integer.MIN_VALUE;
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.verbosityLevel = config.verbosityLevel;
+        this.verbosityLevel = VerbosityLevel.SILENT;
         this.verbosityPrinter = new VerbosityPrinter(VerbosityLevel.SILENT, 0);
-        this.debugLevel = config.debugLevel;
+        this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
 
@@ -197,10 +192,11 @@ public final class AStarSolver<T> implements Solver {
                 verbosityPrinter.newBest(bestUB);
 
                 if (!negativeTransitionCosts) {
-                    // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    // with A*, the first complete solution is  guaranteed optimal only if there is
+                    // no negative transition cost
                     break;
                 }
-                if (open.peek().f() >= bestUB - 0.00001) {
+                if (open.isEmpty() || open.peek().f() + 1e-10 >= bestUB) {
                     // gap is 0%
                     break;
                 }
@@ -241,7 +237,7 @@ public final class AStarSolver<T> implements Solver {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
         Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
-        if (debugLevel != DebugLevel.OFF) {
+        if (depth != 0) {
             for (int i = 0; i < depth; i++) {
                 nullDecisions.add(new Decision(i, 0));
             }
@@ -321,21 +317,37 @@ public final class AStarSolver<T> implements Solver {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        SolverConfig<T> config = new SolverConfig<>();
-        config.problem = this.problem;
-        config.varh = this.varh;
-        config.flb = this.lb;
-        config.dominance = this.dominance;
+        Model<T> model = new Model<T>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return dominance;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return debugLevel;
+            }
+        };
 
         for (AstarKey<T> current : toCheck) {
-            AStarSolver<T> internalSolver = new AStarSolver<>(config, current);
+            AStarSolver<T> internalSolver = new AStarSolver<>(model, current);
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 
             internalSolver.minimize(s -> false, (sol, stats) -> {
             });
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
-            if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
+            if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your lower bound is not admissible.\n" +
                         "State: " + current.state.toString() + "\n" +

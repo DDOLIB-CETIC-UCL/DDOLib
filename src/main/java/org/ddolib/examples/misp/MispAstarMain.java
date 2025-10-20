@@ -3,6 +3,7 @@ package org.ddolib.examples.misp;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -33,6 +34,11 @@ public final class MispAstarMain {
             @Override
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
         };
 
