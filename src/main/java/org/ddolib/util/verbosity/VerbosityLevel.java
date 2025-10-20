@@ -20,5 +20,7 @@ public enum VerbosityLevel {
      *     <li>Every developed sub-problem.</li>
      * </ul>
      */
-    LARGE
+    LARGE,
+
+    EXPORT,
 }
