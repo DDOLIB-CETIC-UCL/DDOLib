@@ -48,7 +48,7 @@ public class TSPTests {
             config.problem = problem;
             config.relax = new TSPRelax(problem);
             config.ranking = new TSPRanking();
-            config.fub = new TSPFastUpperBound(problem);
+            config.flb = new TSPFastLowerBound(problem);
             config.width = new FixedWidth<>(500);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
@@ -62,7 +62,7 @@ public class TSPTests {
     public Stream<DynamicTest> testTSP() {
         var bench = new TSPBench();
         bench.testRelaxation = true;
-        bench.testFUB = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 }

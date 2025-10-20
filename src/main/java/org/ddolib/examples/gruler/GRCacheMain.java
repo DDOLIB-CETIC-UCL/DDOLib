@@ -35,17 +35,18 @@ public class GRCacheMain {
 
     public static void main(final String[] args) throws IOException {
         SolverConfig<GRState, NullType> config = new SolverConfig<>();
-        GRProblem problem = new GRProblem(8);
+        GRProblem problem = new GRProblem(9);
+        config.problem = problem;
         config.relax = new GRRelax();
         config.ranking = new GRRanking();
         config.width = new FixedWidth<>(10);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        SearchStatistics stats = solver.maximize();
+        SearchStatistics stats = solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
         System.out.println(stats);
 

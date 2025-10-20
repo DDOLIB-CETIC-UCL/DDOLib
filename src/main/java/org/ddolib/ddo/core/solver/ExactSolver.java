@@ -13,7 +13,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.modeling.FastUpperBound;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
@@ -39,12 +39,12 @@ import java.util.Set;
 public final class ExactSolver<T, K> implements Solver {
 
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
 
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable relaxation for the problem we want to minimize
      */
     private final Relaxation<T> relax;
 
@@ -59,9 +59,9 @@ public final class ExactSolver<T, K> implements Solver {
     private final VariableHeuristic<T> varh;
 
     /**
-     * The heuristic defining a very rough estimation (upper bound) of the optimal value.
+     * The heuristic defining a lower bound of the optimal value.
      */
-    private final FastUpperBound<T> fub;
+    private final FastLowerBound<T> flb;
 
     /**
      * The dominance object that will be used to prune the search space.
@@ -119,7 +119,7 @@ public final class ExactSolver<T, K> implements Solver {
      * <br>
      * <b>Optional parameters: </b>
      * <ul>
-     *     <li>An implementation of {@link FastUpperBound}</li>
+     *     <li>An implementation of {@link FastLowerBound}</li>
      *     <li>An implementation of {@link DominanceChecker}</li>
      *     <li>A time limit</li>
      *     <li>A gap limit</li>
@@ -142,7 +142,7 @@ public final class ExactSolver<T, K> implements Solver {
         this.relax = config.relax;
         this.ranking = config.ranking;
         this.varh = config.varh;
-        this.fub = config.fub;
+        this.flb = config.flb;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
         this.bestSol = Optional.empty();
@@ -152,7 +152,7 @@ public final class ExactSolver<T, K> implements Solver {
     }
 
     @Override
-    public SearchStatistics maximize() {
+    public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -169,10 +169,10 @@ public final class ExactSolver<T, K> implements Solver {
         compilation.stateRanking = this.ranking;
         compilation.residual = root;
         compilation.maxWidth = Integer.MAX_VALUE;
-        compilation.fub = fub;
+        compilation.flb = flb;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
-        compilation.bestLB = Double.NEGATIVE_INFINITY;
+        compilation.bestUB = Double.POSITIVE_INFINITY;
         compilation.cutSetType = CutSetType.LastExactLayer;
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;

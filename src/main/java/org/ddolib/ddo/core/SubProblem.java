@@ -21,9 +21,9 @@ public final class SubProblem<T> {
      */
     final double value;
     /**
-     * An upper bound on the objective reachable in this subproblem
+     * A lower bound on the objective reachable in this subproblem
      */
-    final double ub;
+    final double lb;
     /**
      * The path to traverse to reach this subproblem from the root of the original
      * problem
@@ -35,18 +35,18 @@ public final class SubProblem<T> {
      *
      * @param state the root state of this subproblem
      * @param value the value of the longest path to this subproblem
-     * @param ub    an upper bound on the optimal value reachable when solving the global
+     * @param lb    a lower bound on the optimal value reachable when solving the global
      *              problem through this subproblem
      * @param path  the partial assignment leading to this subproblem from the root
      */
     public SubProblem(
             final T state,
             final double value,
-            final double ub,
+            final double lb,
             final Set<Decision> path) {
         this.state = state;
         this.value = value;
-        this.ub = ub;
+        this.lb = lb;
         this.path = path;
     }
 
@@ -72,18 +72,18 @@ public final class SubProblem<T> {
     }
 
     /**
-     * @return an upper bound on the global objective if solved using this subproblem
+     * @return a lower bound on the global objective if solved using this subproblem
      */
-    public double getUpperBound() {
-        return this.ub;
+    public double getLowerBound() {
+        return this.lb;
     }
 
     /**
-     * @return the f-value of this subproblem, i.e., the value of the longest path to this
-     * subproblem plus the upper bound on the objective reachable in this subproblem
+     * @return the f-value of this subproblem, i.e., the value of the shortest path to this
+     * subproblem plus the lower bound on the objective reachable in this subproblem
      */
     public double f() {
-        return this.value + this.ub;
+        return this.value + this.lb;
     }
 
     /**
@@ -94,13 +94,13 @@ public final class SubProblem<T> {
     }
 
     public String statistics() {
-        return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, ub, (value - ub), this.getPath().size());
+        return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, lb, (value - lb), this.getPath().size());
     }
 
     @Override
     public String toString() {
-        return String.format("SubProblem(val: %.0f - ub: %.0f - f: %.0f - depth: %d - state: %s",
-                value, ub, f(), this.getPath().size(), state);
+        return String.format("SubProblem(val: %.0f - lb: %.0f - f: %.0f - depth: %d - state: %s",
+                value, lb, f(), this.getPath().size(), state);
     }
 
     @Override

@@ -1,23 +1,15 @@
 package org.ddolib.examples.gruler;
 
-//import org.ddolib.ddosolver.examples.Golomb;
 
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
 
+
 public class GRState {
     private BitSet marks;         // Set of marks already placed
     private BitSet distances;     // Set of pairwise distances already present
-    private int lastMark;         // Location of last mark
-
-    /*
-    public GRState() {
-        this.marks = new BitSet();
-        marks.set(0);
-        this.distances = new BitSet();
-        this.lastMark = 0;
-    }*/
+    private int lastMark;
 
     public GRState(BitSet marks, BitSet distances, int lastMark) {
         this.marks = (BitSet) marks.clone();
@@ -40,22 +32,6 @@ public class GRState {
     public int getLastMark() {
         return lastMark;
     }
-    /*
-    public void addMark(int mark) {
-        assert(mark >= lastMark);
-        lastMark = mark;
-        marks.set(mark);
-    }
-
-    public void addDistance(int distance) {
-        assert !distances.get(distance);
-        distances.set(distance);
-    }
-    */
-    /*
-    public void setLastMark(int mark) {
-        lastMark = mark;
-    }*/
 
     public GRState copy() {
         return new GRState(marks, distances, lastMark);
@@ -69,5 +45,13 @@ public class GRState {
     @Override
     public String toString() {
         return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
+    }
+    @Override
+    public boolean equals(Object obj) {
+        GRState other = (GRState) obj;
+        if (this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark) {
+            return true;
+        }
+        return false;
     }
 }

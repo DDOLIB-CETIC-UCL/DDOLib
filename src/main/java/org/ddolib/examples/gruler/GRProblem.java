@@ -35,7 +35,7 @@ public class GRProblem implements Problem<GRState> {
 
     @Override
     public int nbVars() {
-        return n-1;
+        return n - 1;
     }
 
     @Override
@@ -84,37 +84,6 @@ public class GRProblem implements Problem<GRState> {
 
     @Override
     public double transitionCost(GRState state, Decision decision) {
-        return -(decision.val() - state.getLastMark()); // put a minus to turn objective into maximization (ddosolver requirement
+        return decision.val() - state.getLastMark();
     }
-
-    /*
-    public boolean isValidMark(GRState state, int mark) {
-        BitSet distances = state.getDistances();
-        for (int i = state.getMarks().nextSetBit(0); i >= 0; i = state.getMarks().nextSetBit(i + 1)) {
-            int distance = Math.abs(mark - i);
-            if (distances.get(distance)) {
-                return false; // Distance already exists
-            }
-        }
-        return true;
-    }
-
-    public GRState transition(GRState state, int newMark) {
-        GRState newState = state.copy();
-        BitSet newDistances = new BitSet();
-        for (int i = state.getMarks().nextSetBit(0); i >= 0; i = state.getMarks().nextSetBit(i + 1)) {
-            int distance = Math.abs(newMark - i);
-            assert !newDistances.get(distance);
-            newDistances.set(distance);
-        }
-        assert newMark >= newState.getLastMark();
-        newState.getMarks().set(newMark);
-        newState.getDistances().or(newDistances);
-        return new GRState(newState.getMarks(), newState.getDistances(), newMark);
-    }
-
-    public int transitionCost(GRState state, int newMark) {
-        return -(newMark - state.getLastMark()); // Negative for maximization
-    }
-    */
 }
