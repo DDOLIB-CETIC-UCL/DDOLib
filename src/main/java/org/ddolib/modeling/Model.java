@@ -5,6 +5,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 public interface Model<T> {
 

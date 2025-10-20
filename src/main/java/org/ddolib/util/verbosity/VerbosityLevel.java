@@ -1,4 +1,4 @@
-package org.ddolib.modeling;
+package org.ddolib.util.verbosity;
 
 /**
  * Defines verbosity level

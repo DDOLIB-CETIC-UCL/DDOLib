@@ -10,10 +10,10 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 /**
  * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
@@ -55,7 +55,7 @@ public class KSDdoMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
@@ -105,7 +105,7 @@ public class KSDdoMain {
         };
 
         SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
 
         System.out.println(stats);

@@ -1,12 +1,11 @@
-package org.ddolib.util;
+package org.ddolib.util.verbosity;
 
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.modeling.VerbosityLevel;
 
 /**
  * Class that print details about the search given a {@link VerbosityLevel}.
  */
-public class VerbosityPrinter {
+public class VerboseMode {
 
 
     private final VerbosityLevel verbosityLevel;
@@ -18,7 +17,7 @@ public class VerbosityPrinter {
      * @param verbosityLevel The level of details to print.
      * @param printInterval  The delay between two prints of statistics about the frontier
      */
-    public VerbosityPrinter(VerbosityLevel verbosityLevel, long printInterval) {
+    public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {
         this.verbosityLevel = verbosityLevel;
         this.printInterval = printInterval;
         nextPrint = System.currentTimeMillis() + printInterval;
