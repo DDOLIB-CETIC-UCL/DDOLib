@@ -4,7 +4,6 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -81,19 +80,6 @@ public final class ExactSolver<T> implements Solver {
     private Optional<Double> bestValue = Optional.empty();
 
 
-    /**
-     * <ul>
-     *     <li>0: no verbosity</li>
-     *     <li>1: display newBest whenever there is a newBest</li>
-     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
-     *     <li>3: 2 + every developed sub-problem</li>
-     *     <li>4: 3 + details about the developed state</li>
-     * </ul>
-     * <p>
-     * <p>
-     * 3: 2 + every developed sub-problem
-     * 4: 3 + details about the developed state
-     */
     private final VerbosityLevel verbosityLevel;
 
     /**
@@ -109,49 +95,23 @@ public final class ExactSolver<T> implements Solver {
 
 
     /**
-     * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link SolverConfig}<br><br>
+     * Creates a fully qualified instance.
      *
-     * <b>Mandatory parameters:</b>
-     * <ul>
-     *     <li>An implementation of {@link Problem}</li>
-     *     <li>An implementation of {@link Relaxation}</li>
-     *     <li>An implementation of {@link StateRanking}</li>
-     *     <li>An implementation of {@link VariableHeuristic}</li>
-     * </ul>
-     * <br>
-     * <b>Optional parameters: </b>
-     * <ul>
-     *     <li>An implementation of {@link FastLowerBound}</li>
-     *     <li>An implementation of {@link DominanceChecker}</li>
-     *     <li>A time limit</li>
-     *     <li>A gap limit</li>
-     *     <li>A verbosity level</li>
-     *     <li>A boolean to export some mdd as .dot file</li>
-     *     <li>A debug level:
-     *          <ul>
-     *               <li>0: no additional tests (default)</li>
-     *               <li>1: checks if the upper bound is well-defined and if the hash code
-     *               of the states are coherent</li>
-     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     *           </ul>
-     *     </li>
-     * </ul>
+     * @param model All parameters needed ton configure the solver.
      *
-     * @param config All the parameters needed to configure the solver.
      */
-    public ExactSolver(SolverConfig<T> config) {
-        this.problem = config.problem;
-        this.relax = config.relax;
-        this.ranking = config.ranking;
-        this.varh = config.varh;
-        this.flb = config.flb;
-        this.dominance = config.dominance;
-        this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
+    public ExactSolver(DdoModel<T> model) {
+        this.problem = model.problem();
+        this.relax = model.relaxation();
+        this.ranking = model.ranking();
+        this.varh = model.variableHeuristic();
+        this.flb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.bestSol = Optional.empty();
-        this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
-        this.debugLevel = config.debugLevel;
+        this.verbosityLevel = model.verbosityLevel();
+        this.exportAsDot = model.exportDot();
+        this.debugLevel = model.debugMode();
     }
 
     @Override

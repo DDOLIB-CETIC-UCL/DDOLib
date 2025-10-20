@@ -26,6 +26,7 @@ public final class Decision {
 
     /**
      * The variable involves in the decision
+     *
      * @return the identifier of the affected variable
      */
     public int var() {
@@ -34,6 +35,7 @@ public final class Decision {
 
     /**
      * the value involves in the decision
+     *
      * @return the value affected to the given variable
      */
     public int val() {

@@ -3,15 +3,14 @@ package org.ddolib.modeling;
 import org.ddolib.astar.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+
 /**
  * The {@code Solvers} class acts as a unified entry point for running different
  * optimization algorithms within the Decision Diagram Optimization (DDO) framework.
@@ -36,7 +35,6 @@ import java.util.function.Predicate;
  * </p>
  *
  * @param <T> the type representing the problem's state
- *
  * @see DdoModel
  * @see AcsModel
  * @see Model
@@ -61,6 +59,7 @@ public class Solvers<T> {
         return minimizeDdo(model, stats -> false, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using DDO, stopping when the provided limit condition becomes true.
      *
@@ -73,10 +72,11 @@ public class Solvers<T> {
         return minimizeDdo(model, limit, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using DDO and triggers a callback each time a new incumbent solution is found.
      *
-     * @param model the DDO model to solve
+     * @param model      the DDO model to solve
      * @param onSolution callback executed when a new best solution is discovered
      * @return search statistics summarizing the solver's execution
      */
@@ -84,6 +84,7 @@ public class Solvers<T> {
     public final SearchStatistics minimizeDdo(DdoModel<T> model, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         return minimizeDdo(model, s -> false, onSolution);
     }
+
     /**
      * Core method for solving a DDO model with a custom stop condition and a solution callback.
      * <p>
@@ -98,18 +99,7 @@ public class Solvers<T> {
      */
 
     public final SearchStatistics minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
-        SolverConfig<T> config = new SolverConfig<>();
-        config.problem = model.problem();
-        config.relax = model.relaxation();
-        config.ranking = model.ranking();
-        config.width = model.widthHeuristic();
-        config.varh = model.variableHeuristic();
-        config.flb = model.lowerBound();
-        config.dominance = model.dominance();
-        config.frontier = model.frontier();
-        config.cache = (model.useCache()) ? new SimpleCache<>() : null;
-        config.verbosityLevel = model.verbosityLevel();
-        return new SequentialSolver<>(config).minimize(limit, onSolution);
+        return new SequentialSolver<>(model).minimize(limit, onSolution);
     }
     // =============================================================
     // A* Solver Methods
@@ -126,6 +116,7 @@ public class Solvers<T> {
         return minimizeAstar(model, s -> false, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using A* with a specified stop condition.
      *
@@ -138,10 +129,11 @@ public class Solvers<T> {
         return minimizeAstar(model, limit, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using A* and calls back when new incumbent solutions are found.
      *
-     * @param model the model to solve
+     * @param model      the model to solve
      * @param onSolution callback triggered for each new best solution
      * @return search statistics summarizing the A* execution
      */
@@ -149,6 +141,7 @@ public class Solvers<T> {
     public final SearchStatistics minimizeAstar(Model<T> model, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         return minimizeAstar(model, s -> false, onSolution);
     }
+
     /**
      * Core method for solving a model with the A* search algorithm, with custom limit and callback.
      *
@@ -159,14 +152,7 @@ public class Solvers<T> {
      */
 
     public final SearchStatistics minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
-        SolverConfig<T> config = new SolverConfig<>();
-        config.problem = model.problem();
-        config.dominance = model.dominance();
-        config.flb = model.lowerBound();
-        config.varh = model.variableHeuristic();
-        config.verbosityLevel = model.verbosityLevel();
-
-        return new AStarSolver<>(config).minimize(limit, onSolution);
+        return new AStarSolver<>(model).minimize(limit, onSolution);
     }
     // =============================================================
     // Anytime Column Search (ACS) Solver Methods
@@ -183,6 +169,7 @@ public class Solvers<T> {
         return minimizeAcs(model, s -> false, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using ACS, stopping when the limit condition is satisfied.
      *
@@ -195,10 +182,11 @@ public class Solvers<T> {
         return minimizeAcs(model, limit, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using ACS and calls the callback when a new incumbent is found.
      *
-     * @param model the ACS model to solve
+     * @param model      the ACS model to solve
      * @param onSolution callback executed on discovery of a new best solution
      * @return search statistics summarizing the ACS execution
      */
@@ -206,6 +194,7 @@ public class Solvers<T> {
     public SearchStatistics minimizeAcs(AcsModel<T> model, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
         return minimizeAcs(model, s -> false, onSolution);
     }
+
     /**
      * Core method for solving an ACS model with custom stopping condition and solution callback.
      * <p>
@@ -219,24 +208,13 @@ public class Solvers<T> {
      */
 
     public SearchStatistics minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
-        SolverConfig<T> config = new SolverConfig<>();
-        config.problem = model.problem();
-        config.dominance = model.dominance();
-        config.flb = model.lowerBound();
-        config.varh = model.variableHeuristic();
-        config.verbosityLevel = model.verbosityLevel();
 
-        return new ACSSolver<>(config, model.columnWidth()).minimize(limit, onSolution);
+        return new ACSSolver<>(model).minimize(limit, onSolution);
     }
 
-    public SearchStatistics minimizeExact(Model<T> model) {
-        SolverConfig<T> config = new SolverConfig<>();
-        config.problem = model.problem();
-        config.dominance = model.dominance();
-        config.flb = model.lowerBound();
-        config.varh = model.variableHeuristic();
-        config.verbosityLevel = model.verbosityLevel();
-        return new ExactSolver<>(config).minimize(s -> false, (sol, s) -> {
+    public SearchStatistics minimizeExact(DdoModel<T> model) {
+
+        return new ExactSolver<>(model).minimize(s -> false, (sol, s) -> {
         });
     }
 }

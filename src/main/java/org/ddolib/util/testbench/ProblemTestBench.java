@@ -1,7 +1,6 @@
 package org.ddolib.util.testbench;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -17,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
- * generator and a {@link SolverConfig}.
+ * generator and a {@link DdoModel} containing all the problem specific components.
  *
  * @param <T> The type of states.
  * @param <P> The type of problem to test.
@@ -91,7 +90,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) {
 
-        Model<T> testModel = () -> problem;
+        DdoModel<T> testModel = model(problem);
 
 
         Solvers<T> solver = new Solvers<>();
