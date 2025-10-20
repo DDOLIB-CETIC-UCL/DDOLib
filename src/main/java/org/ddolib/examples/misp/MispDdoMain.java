@@ -45,9 +45,7 @@ public final class MispDdoMain {
             }
         };
 
-        Solvers<BitSet> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
     }

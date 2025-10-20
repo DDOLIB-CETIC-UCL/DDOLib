@@ -35,9 +35,7 @@ public final class MispAcsMain {
             }
         };
 
-        Solvers<BitSet> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model);
+        SearchStatistics stats = Solvers.minimizeAcs(model);
 
         System.out.println(stats);
     }

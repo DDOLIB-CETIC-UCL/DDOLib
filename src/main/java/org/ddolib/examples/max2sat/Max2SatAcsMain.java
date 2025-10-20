@@ -27,9 +27,7 @@ public final class Max2SatAcsMain {
             }
         };
 
-        Solvers<Max2SatState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model);
+        SearchStatistics stats = Solvers.minimizeAcs(model);
 
         System.out.println(stats);
 

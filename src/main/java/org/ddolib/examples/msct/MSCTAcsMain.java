@@ -35,9 +35,7 @@ public class MSCTAcsMain {
             }
         };
 
-        Solvers<MSCTState> solver = new Solvers<>();
-
-        final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
+        final SearchStatistics stats = Solvers.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

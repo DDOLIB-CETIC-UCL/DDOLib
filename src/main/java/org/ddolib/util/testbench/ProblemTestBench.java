@@ -92,10 +92,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
     protected void testTransitionModel(P problem) {
 
         Model<T> testModel = () -> problem;
-
-
-        Solvers<T> solver = new Solvers<>();
-        Double best = solver.minimizeExact(testModel).incumbent();
+        Double best = Solvers.minimizeExact(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
@@ -127,9 +124,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-
-        Solvers<T> solver = new Solvers<>();
-        Double best = solver.minimizeExact(testModel).incumbent();
+        Double best = Solvers.minimizeExact(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
 
@@ -164,8 +159,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
 
-                Solvers<T> solver = new Solvers<>();
-                Double best = solver.minimizeExact(testModel).incumbent();
+                Double best = Solvers.minimizeExact(testModel).incumbent();
                 Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
                 assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
             } catch (Exception e) {
@@ -217,8 +211,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
 
-                Solvers<T> solver = new Solvers<>();
-                Double best = solver.minimizeExact(testModel).incumbent();
+                Double best = Solvers.minimizeExact(testModel).incumbent();
                 Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
                 assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
             } catch (Exception e) {
@@ -237,8 +230,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
 
         Model<T> testModel = model(problem);
 
-        Solvers<T> solver = new Solvers<>();
-        Double best = solver.minimizeAstar(testModel).incumbent();
+        Double best = Solvers.minimizeAstar(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
@@ -270,8 +262,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solvers<T> solver = new Solvers<>();
-        Double best = solver.minimizeAcs(testModel).incumbent();
+        Double best = Solvers.minimizeAcs(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
@@ -309,8 +300,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
 
-                Solvers<T> solver = new Solvers<>();
-                Double best = solver.minimizeExact(testModel).incumbent();
+                Double best = Solvers.minimizeExact(testModel).incumbent();
                 Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
                 assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
             } catch (Exception e) {
@@ -346,8 +336,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         };
 
 
-        Solvers<T> solver = new Solvers<>();
-        Double best = solver.minimizeExact(testModel).incumbent();
+        Double best = Solvers.minimizeExact(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }

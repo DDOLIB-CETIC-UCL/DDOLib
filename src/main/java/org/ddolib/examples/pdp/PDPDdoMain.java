@@ -60,9 +60,7 @@ public final class PDPDdoMain {
             }
         };
 
-        Solvers<PDPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
     }

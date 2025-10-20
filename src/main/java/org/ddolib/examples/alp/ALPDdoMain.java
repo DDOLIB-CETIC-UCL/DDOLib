@@ -64,9 +64,7 @@ public final class ALPDdoMain {
             }
         };
 
-        Solvers<ALPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

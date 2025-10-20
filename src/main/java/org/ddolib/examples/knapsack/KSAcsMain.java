@@ -65,9 +65,7 @@ public class KSAcsMain {
 
         };
 
-        Solvers<Integer> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model,
+        SearchStatistics stats = Solvers.minimizeAcs(model,
                 // stop afer 10 iterations
                 s -> s.nbIterations() > 10,
                 (sol, s) -> {

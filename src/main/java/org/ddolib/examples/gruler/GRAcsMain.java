@@ -48,10 +48,8 @@ public class GRAcsMain {
                 return 20;
             }
         };
-        // Create the solver instance
-        Solvers<GRState> solver = new Solvers<>();
         // Run the ACS optimization process
-        final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
+        final SearchStatistics stats = Solvers.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

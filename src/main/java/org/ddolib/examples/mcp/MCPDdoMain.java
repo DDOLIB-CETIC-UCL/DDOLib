@@ -43,9 +43,7 @@ public final class MCPDdoMain {
             }
         };
 
-        Solvers<MCPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
 

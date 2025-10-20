@@ -28,9 +28,7 @@ public final class Max2SatAstarMain {
             }
         };
 
-        Solvers<Max2SatState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAstar(model);
+        SearchStatistics stats = Solvers.minimizeAstar(model);
 
         System.out.println(stats);
 

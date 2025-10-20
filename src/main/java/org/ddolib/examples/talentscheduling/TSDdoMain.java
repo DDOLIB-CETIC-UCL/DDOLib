@@ -37,9 +37,7 @@ public class TSDdoMain {
             }
         };
 
-        Solvers<TSState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
     }

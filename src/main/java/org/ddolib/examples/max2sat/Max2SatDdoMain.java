@@ -38,9 +38,7 @@ public final class Max2SatDdoMain {
             }
         };
 
-        Solvers<Max2SatState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
 

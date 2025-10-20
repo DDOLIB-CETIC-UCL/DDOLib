@@ -101,9 +101,7 @@ public class KSDdoMain {
             }
         };
 
-        Solvers<Integer> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

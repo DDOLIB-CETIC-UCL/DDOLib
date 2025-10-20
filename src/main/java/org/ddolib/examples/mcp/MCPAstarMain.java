@@ -31,9 +31,7 @@ public final class MCPAstarMain {
             }
         };
 
-        Solvers<MCPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAstar(model);
+        SearchStatistics stats = Solvers.minimizeAstar(model);
 
         System.out.println(stats);
 

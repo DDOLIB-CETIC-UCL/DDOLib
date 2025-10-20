@@ -26,9 +26,7 @@ public class TSAcsMain {
             }
         };
 
-        Solvers<TSState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model);
+        SearchStatistics stats = Solvers.minimizeAcs(model);
 
         System.out.println(stats);
     }

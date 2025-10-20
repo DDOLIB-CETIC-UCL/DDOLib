@@ -25,9 +25,7 @@ public class TSPAstarMain {
             }
         };
 
-        Solvers<TSPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAstar(model);
+        SearchStatistics stats = Solvers.minimizeAstar(model);
 
         System.out.println(stats);
 

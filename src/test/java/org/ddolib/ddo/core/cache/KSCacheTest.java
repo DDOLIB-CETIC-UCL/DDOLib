@@ -86,9 +86,7 @@ public class KSCacheTest {
             }
         };
 
-        Solvers<Integer> solver = new Solvers<>();
-
-        SearchStatistics stat = solver.minimizeDdo(model);
+        SearchStatistics stat = Solvers.minimizeDdo(model);
 
 
         return stat.incumbent();
@@ -140,9 +138,7 @@ public class KSCacheTest {
             }
         };
 
-        Solvers<Integer> solver = new Solvers<>();
-
-        SearchStatistics stat = solver.minimizeDdo(model);
+        SearchStatistics stat = Solvers.minimizeDdo(model);
 
 
         return stat.incumbent();
