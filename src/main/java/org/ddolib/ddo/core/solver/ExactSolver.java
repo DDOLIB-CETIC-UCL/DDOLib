@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
@@ -82,9 +81,6 @@ public final class ExactSolver<T, K> implements Solver {
 
     private Optional<Double> bestValue = Optional.empty();
 
-    private final ReductionStrategy<T> relaxStrategy;
-    private final ReductionStrategy<T> restrictStrategy;
-
 
     /**
      * <ul>
@@ -152,8 +148,6 @@ public final class ExactSolver<T, K> implements Solver {
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
-        this.restrictStrategy = config.restrictStrategy;
-        this.relaxStrategy = config.relaxStrategy;
         this.debugLevel = config.debugLevel;
     }
 

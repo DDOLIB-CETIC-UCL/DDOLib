@@ -156,16 +156,6 @@ public final class SequentialSolver<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
-     * Strategy to select which nodes should be merged together on a relaxed DD.
-     */
-    private final ReductionStrategy<T> relaxStrategy;
-
-    /**
-     * Strategy to select which nodes should be dropped on a restricted DD.
-     */
-    private final ReductionStrategy<T> restrictStrategy;
-
-    /**
      * <ul>
      *     <li>0: no additional tests</li>
      *     <li>1: checks if the lower bound is well-defined</li>
@@ -184,6 +174,16 @@ public final class SequentialSolver<T, K> implements Solver {
             </ul>
           </li>
      */
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    private final ReductionStrategy<T> relaxStrategy;
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    private final ReductionStrategy<T> restrictStrategy;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -235,9 +235,9 @@ public final class SequentialSolver<T, K> implements Solver {
         this.gapLimit = config.gapLimit;
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
+        this.debugLevel = config.debugLevel;
         this.relaxStrategy = config.relaxStrategy;
         this.restrictStrategy = config.restrictStrategy;
-        this.debugLevel = config.debugLevel;
     }
 
 

@@ -1,22 +1,30 @@
 package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.ddolib.examples.knapsack.KSMain.readInstance;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class KSTest {
     private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
@@ -38,7 +46,7 @@ public class KSTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            KSProblem problem = KSMain.readInstance(filePath.toString());
+                            KSProblem problem = readInstance(filePath.toString());
                             problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {

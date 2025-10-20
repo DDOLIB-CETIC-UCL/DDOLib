@@ -18,7 +18,7 @@ public class KSProblem implements Problem<Integer> {
     public final int capa;
     final int[] profit;
     final int[] weight;
-    private Optional<Double> optimal = Optional.empty();
+    Optional<Double> optimal = Optional.empty();
 
     private Optional<String> name = Optional.empty();
 

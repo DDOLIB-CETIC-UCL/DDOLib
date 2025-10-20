@@ -76,4 +76,9 @@ final public class NodeSubProblem<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
         return String.format("%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
     }
+
+    public double getValue() {
+        return node.value;
+    }
+
 }

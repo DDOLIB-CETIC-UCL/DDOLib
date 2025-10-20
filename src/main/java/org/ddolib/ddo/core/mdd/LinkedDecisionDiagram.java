@@ -523,11 +523,12 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
         // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
-        for (List<NodeSubProblem<T>> cluster: clusters) {
+        for (List<NodeSubProblem<T>> cluster : clusters) {
             if (cluster.isEmpty()) continue;
 
             cluster.sort(ranking);
             currentLayer.add(cluster.getFirst());
+            cluster.clear();
         }
     }
 
@@ -542,6 +543,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
+            }
 
             if (cluster.isEmpty()) {
                 continue;
@@ -550,11 +555,10 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
             // System.out.println(merged);
             NodeSubProblem<T> node = null;
-            boolean fresh = true;
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
                     node = n;
-                    fresh = false;
+                    node.node.type = NodeType.RELAXED;
                     break;
                 }
             }
@@ -563,18 +567,18 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 Node newNode = new Node(Double.POSITIVE_INFINITY);
                 newNode.type = NodeType.RELAXED;
                 node = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
+                currentLayer.add(node);
             }
 
-            // redirect and relax all arcs entering the merged node
-            for (NodeSubProblem<T> drop: cluster) {
-                node.lb = Math.min(node.lb, drop.lb);
+        // redirect and relax all arcs entering the merged node
+        for (NodeSubProblem<T> drop : cluster) {
+            node.lb = Math.min(node.lb, drop.lb);
 
                 for (Edge e : drop.node.edges) {
                     double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
                     double value = saturatedAdd(e.origin.value, rcost);
                     e.weight  = rcost;
-
                     // if there exists an entring arc with relaxed origin, set the merged node to relaxed
                     if (e.origin.type == NodeType.RELAXED) {
                         node.node.type = NodeType.RELAXED;
@@ -586,10 +590,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                         node.node.best  = e;
                     }
                 }
-            }
-
-            if (fresh) {
-                currentLayer.add(node);
             }
         }
     }
