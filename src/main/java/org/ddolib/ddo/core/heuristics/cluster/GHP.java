@@ -1,6 +1,5 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
 
 import java.util.*;
@@ -14,21 +13,10 @@ public class GHP<T> implements ReductionStrategy<T> {
 
     final private StateDistance<T> distance;
     final private Random rnd;
-    private boolean mostDistantPivot;
 
     public GHP(StateDistance<T> distance) {
         this.distance = distance;
         rnd = new Random();
-        mostDistantPivot = true;
-    }
-
-    /**
-     * Defines if the two selected pivot for partitioning must be the most distant in the cluster.
-     * Default is true.
-     * @param mostDistantPivot
-     */
-    public void setMostDistantPivot(boolean mostDistantPivot) {
-        this.mostDistantPivot = mostDistantPivot;
     }
 
     /**
@@ -37,7 +25,6 @@ public class GHP<T> implements ReductionStrategy<T> {
     public void setSeed(int seed) {
         this.rnd.setSeed(seed);
     }
-
 
     /**
      * Computes maxWidth clusters using Generalized Hyperplan Partitioning.
@@ -49,8 +36,18 @@ public class GHP<T> implements ReductionStrategy<T> {
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
+        Map<T, Double> distanceWithPivot = new HashMap<>(layer.size());
+
+        Collections.shuffle(layer, rnd);
+        NodeSubProblem<T> pivotA = layer.getFirst();
+        NodeSubProblem<T> pivotB = selectFurthest(pivotA, layer);
+        pivotA = selectFurthest(pivotB, layer);
+        for (NodeSubProblem<T> node: layer) {
+            distanceWithPivot.put(node.state, distance.distance(pivotA.state, node.state));
+        }
+
         PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
-        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer)));
+        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer), pivotA, pivotB));
 
         while (pqClusters.size() < maxWidth) {
 
@@ -58,57 +55,52 @@ public class GHP<T> implements ReductionStrategy<T> {
             ClusterNode nodeCurrent = pqClusters.poll();
             assert nodeCurrent != null;
             List<NodeSubProblem<T>> current = nodeCurrent.cluster;
-
-            // Selection of the two pivot
-            Collections.shuffle(current, rnd);
-            NodeSubProblem<T> pivotA = current.getFirst();
-            assert pivotA != null;
-            NodeSubProblem<T> pivotB;
-            if (!mostDistantPivot) {
-                pivotB = current.get(1);
-            } else {
-                pivotB = selectFarthest(pivotA, current);
-                assert pivotB != null;
-                for (int i = 0; i < 5; i++) {
-                    pivotA = selectFarthest(pivotB, current);
-                    pivotB = selectFarthest(pivotA, current);
-                }
-            }
-
+            pivotA = nodeCurrent.pivot;
+            pivotB = nodeCurrent.furthestFromPivot;
 
             // Generates the two clusters
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
+            NodeSubProblem<T> furthestFromA = pivotA;
+            double maxDistanceA = 0.0;
+            NodeSubProblem<T> furthestFromB = pivotB;
+            double maxDistanceB = 0.0;
+
             newClusterA.add(pivotA);
             newClusterB.add(pivotB);
-
-            double maxDistA = 0;
-            double maxDistB = 0;
+            distanceWithPivot.put(pivotB.state, 0.0);
 
             for (NodeSubProblem<T> node : current) {
                 if (node.state.equals(pivotA.state) || node.state.equals(pivotB.state)) {
                     continue;
                 }
 
-                double distWithA = distance.distance(node.state, pivotA.state);
+                double distWithA = distanceWithPivot.get(node.state);
                 double distWithB = distance.distance(node.state, pivotB.state);
 
                 if (distWithA < distWithB) {
-                    maxDistA = Math.max(distWithA, maxDistA);
                     newClusterA.add(node);
+                    if (distWithA > maxDistanceA) {
+                        furthestFromA = node;
+                        maxDistanceA = distWithA;
+                    }
                 } else {
-                    maxDistB = Math.max(distWithB, maxDistB);
                     newClusterB.add(node);
+                    distanceWithPivot.put(node.state, distWithB);
+                    if (distWithB > maxDistanceB) {
+                        furthestFromB = node;
+                        maxDistanceB = distWithB;
+                    }
                 }
             }
 
-            assert !newClusterA.isEmpty();
-            assert !newClusterB.isEmpty();
+            double priorityA = newClusterA.size() == 1 ? 0.0 : maxDistanceA;
+            double priorityB = newClusterB.size() == 1 ? 0.0 : maxDistanceB;
 
             // Add the two clusters to the queue
-            pqClusters.add(new ClusterNode(maxDistA, newClusterA));
-            pqClusters.add(new ClusterNode(maxDistB, newClusterB));
+            pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA));
+            pqClusters.add(new ClusterNode(priorityB, newClusterB, pivotB, furthestFromB));
         }
 
         // Retrieve the clusters from the queue
@@ -127,26 +119,30 @@ public class GHP<T> implements ReductionStrategy<T> {
      * @param nodes a cluster
      * @return the node in the given cluster that is the most distant of the given reference
      */
-    private NodeSubProblem<T> selectFarthest(NodeSubProblem<T> ref, List<NodeSubProblem<T>> nodes) {
+    private NodeSubProblem<T> selectFurthest(NodeSubProblem<T> ref, List<NodeSubProblem<T>> nodes) {
         double maxDistance = -1;
-        NodeSubProblem<T> farthest = null;
+        NodeSubProblem<T> furthest = null;
         for (NodeSubProblem<T> node : nodes) {
             double currentDistance = distance.distance(node.state, ref.state);
             if (currentDistance > maxDistance && !node.state.equals(ref.state)) {
                 maxDistance = currentDistance;
-                farthest = node;
+                furthest = node;
             }
         }
-        return farthest;
+        return furthest;
     }
 
     private class ClusterNode implements Comparable<ClusterNode> {
         final double priority;
         final List<NodeSubProblem<T>> cluster;
+        final NodeSubProblem<T> pivot;
+        final NodeSubProblem<T> furthestFromPivot;
 
-        public ClusterNode(double priority, List<NodeSubProblem<T>> cluster) {
+        public ClusterNode(double priority, List<NodeSubProblem<T>> cluster, NodeSubProblem<T> pivot, NodeSubProblem<T> furthestFromPivot) {
             this.priority = priority;
             this.cluster = cluster;
+            this.pivot = pivot;
+            this.furthestFromPivot = furthestFromPivot;
         }
 
         @Override
@@ -158,4 +154,5 @@ public class GHP<T> implements ReductionStrategy<T> {
             }
         }
     }
+
 }

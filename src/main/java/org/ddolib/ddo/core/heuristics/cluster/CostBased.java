@@ -28,7 +28,7 @@ public class CostBased<T> implements ReductionStrategy<T> {
      * @return
      */
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
-        layer.sort(ranking.reversed());
+        layer.sort(ranking);
 
         List<NodeSubProblem<T>>[] cluster = new List[1];
         cluster[0] = new ArrayList<>(layer.subList(maxWidth-1, layer.size()));

@@ -520,16 +520,13 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
 
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
-        // this.currentLayer.sort(ranking);
-        // this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
-
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
         // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
         for (List<NodeSubProblem<T>> cluster : clusters) {
             if (cluster.isEmpty()) continue;
 
-            cluster.sort(ranking.reversed());
+            cluster.sort(ranking);
             currentLayer.add(cluster.getFirst());
             cluster.clear();
         }
