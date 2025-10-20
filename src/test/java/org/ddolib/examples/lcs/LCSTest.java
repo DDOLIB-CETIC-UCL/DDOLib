@@ -1,10 +1,5 @@
 package org.ddolib.examples.lcs;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Problem;
@@ -49,20 +44,6 @@ public class LCSTest {
                     }).toList();
         }
 
-        @Override
-        protected SolverConfig<LCSState> configSolver(LCSProblem problem) {
-            SolverConfig<LCSState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new LCSRelax(problem);
-            config.ranking = new LCSRanking();
-            config.flb = new LCSFastLowerBound(problem);
-
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-            return config;
-        }
 
         @Override
         protected DdoModel<LCSState> model(LCSProblem problem) {

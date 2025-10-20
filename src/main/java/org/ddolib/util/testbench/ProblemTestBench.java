@@ -1,12 +1,9 @@
 package org.ddolib.util.testbench;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.modeling.*;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -69,28 +66,14 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     abstract protected List<P> generateProblems();
 
+
     /**
-     * Given a problem, returns the solver's inputs (relaxation, dominance, frontier,...).
+     * Given a problem instance returns the whole model used to solve this problem.
      *
-     * @param problem A problem to solve during the tests.
-     * @return The solver's inputs (relaxation, dominance, frontier,...).
+     * @param problem The problem to solve.
+     * @return A model containing all the component to solve it.
      */
-    abstract protected SolverConfig<T> configSolver(P problem);
-
-
-    protected DdoModel<T> model(P problem) {
-        return new DdoModel<T>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return null;
-            }
-
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
-        };
-    }
+    abstract protected DdoModel<T> model(P problem);
 
     /**
      * Instantiate a test bench.
@@ -99,34 +82,10 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         problems = generateProblems();
     }
 
-    /**
-     * Instantiate a solver used for tests not based on the relaxation. By default, it
-     * returns an {@link ExactSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForTests(SolverConfig<T> config) {
-        return new ExactSolver<>(config);
-    }
-
-    /**
-     * Instantiates a solver used for tests based on the relaxation. By default, it returns a
-     * {@link SequentialSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForRelaxation(SolverConfig<T> config) {
-        return new SequentialSolver<>(config);
-    }
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default, the tests here disable the fast lower bound. If one of the two
-     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
-     * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
      */

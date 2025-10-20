@@ -2,11 +2,6 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Problem;
@@ -48,21 +43,6 @@ public class MispTest {
                             throw new RuntimeException(e);
                         }
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<BitSet> configSolver(MispProblem problem) {
-            SolverConfig<BitSet> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MispRelax(problem);
-            config.ranking = new MispRanking();
-            config.flb = new MispFastLowerBound(problem);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-            return config;
         }
 
         @Override

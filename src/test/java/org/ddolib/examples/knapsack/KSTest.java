@@ -2,11 +2,6 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -44,22 +39,6 @@ public class KSTest {
                             throw new RuntimeException(e);
                         }
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<Integer> configSolver(KSProblem problem) {
-            SolverConfig<Integer> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new KSRelax();
-            config.ranking = new KSRanking();
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new KSFastLowerBound(problem);
-            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
         }
 
         @Override

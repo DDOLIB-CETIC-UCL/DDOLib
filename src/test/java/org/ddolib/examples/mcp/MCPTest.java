@@ -1,10 +1,5 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -43,23 +38,6 @@ public class MCPTest {
                             throw new RuntimeException(e);
                         }
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<MCPState> configSolver(MCPProblem problem) {
-            SolverConfig<MCPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MCPRelax(problem);
-            config.ranking = new MCPRanking();
-            config.flb = new MCPFastLowerBound(problem);
-
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-
-            return config;
         }
 
         @Override

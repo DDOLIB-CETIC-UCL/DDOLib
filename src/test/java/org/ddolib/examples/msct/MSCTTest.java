@@ -2,11 +2,6 @@ package org.ddolib.examples.msct;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Problem;
@@ -41,20 +36,6 @@ class MSCTTest {
             return Stream.concat(problemWithFixedRelease(), problemWithUnfixedRelease()).toList();
         }
 
-        @Override
-        protected SolverConfig<MSCTState> configSolver(MSCTProblem problem) {
-            SolverConfig<MSCTState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MSCTRelax(problem);
-            config.ranking = new MSCTRanking();
-            config.width = new FixedWidth<>(100);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
-        }
 
         private Stream<MSCTProblem> problemWithFixedRelease() {
             int release = 15;

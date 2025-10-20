@@ -1,10 +1,5 @@
 package org.ddolib.examples.max2sat;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -38,22 +33,6 @@ public class Max2SatTest {
                             throw new RuntimeException(e);
                         }
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<Max2SatState> configSolver(Max2SatProblem problem) {
-            SolverConfig<Max2SatState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new Max2SatRelax(problem);
-            config.ranking = new Max2SatRanking();
-            config.flb = new Max2SatFastLowerBound(problem);
-
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
         }
 
         @Override

@@ -1,10 +1,5 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.VerbosityLevel;
@@ -42,21 +37,6 @@ class PSTest {
                         problem.setName(filePath.getFileName().toString());
                         return problem;
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<PSState> configSolver(PSProblem problem) {
-            SolverConfig<PSState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new PSRelax(problem.instance);
-            config.ranking = new PSRanking();
-            config.flb = new PSFastLowerBound(problem.instance);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
         }
 
         @Override

@@ -1,15 +1,10 @@
 package org.ddolib.examples.tsp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -46,21 +41,6 @@ public class TSPTests {
                             throw new RuntimeException(e);
                         }
                     }).toList();
-        }
-
-        @Override
-        protected SolverConfig<TSPState> configSolver(TSPProblem problem) {
-            SolverConfig<TSPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new TSPRelax(problem);
-            config.ranking = new TSPRanking();
-            config.flb = new TSPFastLowerBound(problem);
-            config.width = new FixedWidth<>(500);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
         }
 
         @Override
