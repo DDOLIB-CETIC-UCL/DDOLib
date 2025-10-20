@@ -1,11 +1,8 @@
 package org.ddolib.examples.alp;
 
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -45,23 +42,41 @@ public class ALPTest {
         }
 
         @Override
-        protected SolverConfig<ALPState> configSolver(ALPProblem problem) {
-            SolverConfig<ALPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new ALPRelax(problem);
-            config.ranking = new ALPRanking();
-            config.flb = new ALPFastLowerBound(problem);
+        protected DdoModel<ALPState> model(ALPProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public ALPProblem problem() {
+                    return problem;
+                }
 
-            config.width = new FixedWidth<>(100);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+                @Override
+                public ALPRelax relaxation() {
+                    return new ALPRelax(problem);
+                }
 
+                @Override
+                public ALPRanking ranking() {
+                    return new ALPRanking();
+                }
 
-            return config;
+                @Override
+                public ALPFastLowerBound lowerBound() {
+                    return new ALPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
-
     }
+
 
     @DisplayName("ALP")
     @TestFactory

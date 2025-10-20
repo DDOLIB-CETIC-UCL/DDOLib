@@ -6,7 +6,7 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.File;
 import java.util.Random;
@@ -36,7 +36,7 @@ public class MSCTAstarMain {
             }
         };
 
-        Solver<MSCTState> solver = new Solver<>();
+        Solvers<MSCTState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

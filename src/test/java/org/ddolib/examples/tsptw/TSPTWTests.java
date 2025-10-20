@@ -1,11 +1,13 @@
 package org.ddolib.examples.tsptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -46,19 +48,49 @@ public class TSPTWTests {
         }
 
         @Override
-        protected SolverConfig<TSPTWState> configSolver(TSPTWProblem problem) {
-            SolverConfig<TSPTWState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new TSPTWRelax(problem);
-            config.ranking = new TSPTWRanking();
-            config.flb = new TSPTWFastLowerBound(problem);
+        protected DdoModel<TSPTWState> model(TSPTWProblem problem) {
+            return new DdoModel<>() {
 
-            config.width = new FixedWidth<>(20);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.dominance = new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-            return config;
+                @Override
+                public Problem<TSPTWState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public TSPTWRelax relaxation() {
+                    return new TSPTWRelax(problem);
+                }
+
+                @Override
+                public TSPTWRanking ranking() {
+                    return new TSPTWRanking();
+                }
+
+                @Override
+                public TSPTWFastLowerBound lowerBound() {
+                    return new TSPTWFastLowerBound(problem);
+                }
+
+                @Override
+                public DominanceChecker<TSPTWState> dominance() {
+                    return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+                }
+
+                @Override
+                public Frontier<TSPTWState> frontier() {
+                    return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 

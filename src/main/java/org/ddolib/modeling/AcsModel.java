@@ -13,9 +13,8 @@ package org.ddolib.modeling;
  * </p>
  *
  * @param <T> the type representing the state of the problem
- *
  * @see Model
- * @see Solver
+ * @see Solvers
  */
 
 public interface AcsModel<T> extends Model<T> {

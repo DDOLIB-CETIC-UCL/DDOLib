@@ -5,7 +5,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -35,7 +35,7 @@ public final class MispAcsMain {
             }
         };
 
-        Solver<BitSet> solver = new Solver<>();
+        Solvers<BitSet> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAcs(model);
 

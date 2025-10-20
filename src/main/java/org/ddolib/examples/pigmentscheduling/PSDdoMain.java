@@ -2,7 +2,7 @@ package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 /**
@@ -35,7 +35,7 @@ public class PSDdoMain {
             }
         };
 
-        Solver<PSState> solver = new Solver<>();
+        Solvers<PSState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

@@ -1,11 +1,6 @@
 package org.ddolib.examples.max2sat;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -41,19 +36,39 @@ public class Max2SatTest {
         }
 
         @Override
-        protected SolverConfig<Max2SatState> configSolver(Max2SatProblem problem) {
-            SolverConfig<Max2SatState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new Max2SatRelax(problem);
-            config.ranking = new Max2SatRanking();
-            config.flb = new Max2SatFastLowerBound(problem);
+        protected DdoModel<Max2SatState> model(Max2SatProblem problem) {
+            return new DdoModel<>() {
 
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+                @Override
+                public Problem<Max2SatState> problem() {
+                    return problem;
+                }
 
-            return config;
+                @Override
+                public Relaxation<Max2SatState> relaxation() {
+                    return new Max2SatRelax(problem);
+                }
+
+                @Override
+                public Max2SatRanking ranking() {
+                    return new Max2SatRanking();
+                }
+
+                @Override
+                public Max2SatFastLowerBound lowerBound() {
+                    return new Max2SatFastLowerBound(problem);
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 

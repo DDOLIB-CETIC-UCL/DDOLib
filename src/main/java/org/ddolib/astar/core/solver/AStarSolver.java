@@ -1,13 +1,13 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -164,7 +164,7 @@ public final class AStarSolver<T> implements Solver {
                     nbIter,
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
-                    bestUB,
+                    bestValue().orElse(Double.POSITIVE_INFINITY),
                     0);
 
             if (limit.test(statistics)) {
@@ -210,7 +210,8 @@ public final class AStarSolver<T> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, 0);
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
     }
 
     @Override
@@ -331,7 +332,8 @@ public final class AStarSolver<T> implements Solver {
             Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
             double currentFLB = lb.fastLowerBound(current.state, vars);
 
-            internalSolver.minimize(s -> false, (sol, stats) -> {});
+            internalSolver.minimize(s -> false, (sol, stats) -> {
+            });
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
             if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");

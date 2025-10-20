@@ -1,11 +1,10 @@
 package org.ddolib.examples.tsp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -45,18 +44,39 @@ public class TSPTests {
         }
 
         @Override
-        protected SolverConfig<TSPState> configSolver(TSPProblem problem) {
-            SolverConfig<TSPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new TSPRelax(problem);
-            config.ranking = new TSPRanking();
-            config.flb = new TSPFastLowerBound(problem);
-            config.width = new FixedWidth<>(500);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+        protected DdoModel<TSPState> model(TSPProblem problem) {
+            return new DdoModel<>() {
 
-            return config;
+                @Override
+                public Problem<TSPState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<TSPState> relaxation() {
+                    return new TSPRelax(problem);
+                }
+
+                @Override
+                public TSPRanking ranking() {
+                    return new TSPRanking();
+                }
+
+                @Override
+                public TSPFastLowerBound lowerBound() {
+                    return new TSPFastLowerBound(problem);
+                }
+
+                @Override
+                public boolean useCache() {
+                    return true;
+                }
+
+                @Override
+                public WidthHeuristic<TSPState> widthHeuristic() {
+                    return new FixedWidth<>(500);
+                }
+            };
         }
     }
 

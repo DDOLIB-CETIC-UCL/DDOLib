@@ -1,13 +1,14 @@
 package org.ddolib.examples.alp;
 
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+
 /**
  * ######### Aircraft Landing Problem (ALP) #############
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
@@ -19,15 +20,16 @@ import java.nio.file.Paths;
  *   <li>Load an ALP instance from a data file.</li>
  *   <li>Define a {@link DdoModel} for the problem, including relaxation, ranking,
  *       width heuristic, and fast lower bound.</li>
- *   <li>Solve the problem using the {@link Solver} with the DDO algorithm.</li>
+ *   <li>Solve the problem using the {@link Solvers} with the DDO algorithm.</li>
  *   <li>Monitor and print intermediate incumbent solutions found during the search.</li>
  * </ul>
+ *
  * @see ALPProblem
  * @see ALPState
  * @see ALPRelax
  * @see ALPRanking
  * @see ALPFastLowerBound
- * @see Solver
+ * @see Solvers
  * @see DdoModel
  */
 public final class ALPDdoMain {
@@ -62,7 +64,7 @@ public final class ALPDdoMain {
             }
         };
 
-        Solver<ALPState> solver = new Solver<>();
+        Solvers<ALPState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

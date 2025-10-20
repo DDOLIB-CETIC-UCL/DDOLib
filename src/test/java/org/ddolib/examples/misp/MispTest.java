@@ -1,10 +1,10 @@
 package org.ddolib.examples.misp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -46,18 +46,44 @@ public class MispTest {
         }
 
         @Override
-        protected SolverConfig<BitSet> configSolver(MispProblem problem) {
-            SolverConfig<BitSet> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MispRelax(problem);
-            config.ranking = new MispRanking();
-            config.flb = new MispFastLowerBound(problem);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
+        protected DdoModel<BitSet> model(MispProblem problem) {
+            return new DdoModel<>() {
 
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
-            return config;
+                @Override
+                public Problem<BitSet> problem() {
+                    return problem;
+                }
+
+                @Override
+                public MispRelax relaxation() {
+                    return new MispRelax(problem);
+                }
+
+                @Override
+                public MispRanking ranking() {
+                    return new MispRanking();
+                }
+
+                @Override
+                public DominanceChecker<BitSet> dominance() {
+                    return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                }
+
+                @Override
+                public MispFastLowerBound lowerBound() {
+                    return new MispFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 

@@ -1,11 +1,10 @@
 package org.ddolib.examples.msct;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -37,20 +36,6 @@ class MSCTTest {
             return Stream.concat(problemWithFixedRelease(), problemWithUnfixedRelease()).toList();
         }
 
-        @Override
-        protected SolverConfig<MSCTState> configSolver(MSCTProblem problem) {
-            SolverConfig<MSCTState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MSCTRelax(problem);
-            config.ranking = new MSCTRanking();
-            config.width = new FixedWidth<>(100);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.dominance = new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
-            config.verbosityLevel = VerbosityLevel.SILENT;
-
-            return config;
-        }
 
         private Stream<MSCTProblem> problemWithFixedRelease() {
             int release = 15;
@@ -131,6 +116,41 @@ class MSCTTest {
             return bestSolutionValue;
         }
 
+        @Override
+        protected DdoModel<MSCTState> model(MSCTProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<MSCTState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public MSCTRelax relaxation() {
+                    return new MSCTRelax(problem);
+                }
+
+                @Override
+                public MSCTRanking ranking() {
+                    return new MSCTRanking();
+                }
+
+                @Override
+                public DominanceChecker<MSCTState> dominance() {
+                    return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
+        }
     }
 
     @DisplayName("MSCT")

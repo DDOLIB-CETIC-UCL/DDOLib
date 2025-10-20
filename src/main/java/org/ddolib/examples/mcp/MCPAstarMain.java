@@ -3,7 +3,7 @@ package org.ddolib.examples.mcp;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -31,7 +31,7 @@ public final class MCPAstarMain {
             }
         };
 
-        Solver<MCPState> solver = new Solver<>();
+        Solvers<MCPState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model);
 

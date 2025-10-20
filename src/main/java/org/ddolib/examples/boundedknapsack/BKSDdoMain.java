@@ -2,13 +2,13 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 /**
  * ######### Bounded Knapsack Problem (BKS) #############
@@ -59,7 +59,7 @@ public class BKSDdoMain {
             }
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         final SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

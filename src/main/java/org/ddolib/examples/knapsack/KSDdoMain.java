@@ -2,18 +2,16 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+
 /**
  * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
  * <p>
@@ -36,7 +34,7 @@ import java.io.IOException;
  *             <li>Verbose output level ({@link VerbosityLevel}).</li>
  *         </ul>
  *     </li>
- *     <li>Creates a {@link Solver} and runs the DDO algorithm.</li>
+ *     <li>Creates a {@link Solvers} and runs the DDO algorithm.</li>
  *     <li>Prints updates when a new incumbent solution is found and stops after 10 seconds of runtime.</li>
  *     <li>Outputs the final search statistics.</li>
  * </ol>
@@ -103,7 +101,7 @@ public class KSDdoMain {
             }
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeDdo(model, s -> s.runTimeMs() >= 10000, (sol, s) -> {
             System.out.println("--------------------");

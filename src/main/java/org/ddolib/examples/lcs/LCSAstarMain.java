@@ -3,7 +3,7 @@ package org.ddolib.examples.lcs;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
  * <ul>
  *     <li>Load an LCS problem instance from a file.</li>
  *     <li>Instantiate a {@link Model} with a fast lower bound heuristic.</li>
- *     <li>Use the {@link Solver} to minimize the objective function via A* search.</li>
+ *     <li>Use the {@link Solvers} to minimize the objective function via A* search.</li>
  *     <li>Track and print new incumbent solutions and search statistics.</li>
  * </ul>
  *
@@ -50,7 +50,7 @@ public final class LCSAstarMain {
             }
         };
 
-        Solver<LCSState> solver = new Solver<>();
+        Solvers<LCSState> solver = new Solvers<>();
         SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());

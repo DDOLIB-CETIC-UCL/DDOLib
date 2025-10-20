@@ -1,11 +1,6 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -46,20 +41,40 @@ public class MCPTest {
         }
 
         @Override
-        protected SolverConfig<MCPState> configSolver(MCPProblem problem) {
-            SolverConfig<MCPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MCPRelax(problem);
-            config.ranking = new MCPRanking();
-            config.flb = new MCPFastLowerBound(problem);
+        protected DdoModel<MCPState> model(MCPProblem problem) {
+            return new DdoModel<>() {
 
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+                @Override
+                public Problem<MCPState> problem() {
+                    return problem;
+                }
 
+                @Override
+                public Relaxation<MCPState> relaxation() {
+                    return new MCPRelax(problem);
+                }
 
-            return config;
+                @Override
+                public MCPRanking ranking() {
+                    return new MCPRanking();
+                }
+
+                @Override
+                public MCPFastLowerBound lowerBound() {
+                    return new MCPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
+
         }
     }
 

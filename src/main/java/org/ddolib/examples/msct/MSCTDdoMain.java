@@ -11,7 +11,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 
 import java.io.IOException;
@@ -64,7 +64,7 @@ public class MSCTDdoMain {
             }
         };
 
-        Solver<MSCTState> solver = new Solver<>();
+        Solvers<MSCTState> solver = new Solvers<>();
 
         final SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

@@ -5,7 +5,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,7 +38,7 @@ public class SMICAcsMain {
             }
         };
 
-        Solver<SMICState> solver = new Solver<>();
+        Solvers<SMICState> solver = new Solvers<>();
 
         final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

@@ -1,10 +1,8 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -46,18 +44,38 @@ public class PDPTests {
         }
 
         @Override
-        protected SolverConfig<PDPState> configSolver(PDPProblem problem) {
-            SolverConfig<PDPState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new PDPRelax(problem);
-            config.ranking = new PDPRanking();
-            config.flb = new PDPFastLowerBound(problem);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+        protected DdoModel<PDPState> model(PDPProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public Problem<PDPState> problem() {
+                    return problem;
+                }
 
-            return config;
+                @Override
+                public PDPRelax relaxation() {
+                    return new PDPRelax(problem);
+                }
+
+                @Override
+                public PDPRanking ranking() {
+                    return new PDPRanking();
+                }
+
+                @Override
+                public PDPFastLowerBound lowerBound() {
+                    return new PDPFastLowerBound(problem);
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 

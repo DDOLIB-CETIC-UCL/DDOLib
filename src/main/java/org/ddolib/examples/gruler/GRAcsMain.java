@@ -3,7 +3,7 @@ package org.ddolib.examples.gruler;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ import java.io.IOException;
  * <ul>
  *   <li>Build a specific instance of the {@link GRProblem} (Golomb Ruler problem);</li>
  *   <li>Wrap it into an {@link AcsModel} to define the optimization model used by the ACS algorithm;</li>
- *   <li>Invoke the {@link Solver} to perform the search via the {@code minimizeAcs()} method;</li>
+ *   <li>Invoke the {@link Solvers} to perform the search via the {@code minimizeAcs()} method;</li>
  *   <li>Monitor the search progress by printing incumbent (best found) solutions;</li>
  *   <li>Display final search statistics at the end of execution.</li>
  * </ul>
@@ -26,7 +26,7 @@ public class GRAcsMain {
      * Main entry point of the program.
      * <p>
      * Creates and solves a {@link GRProblem} instance using the ACS
-     * algorithm implemented by the {@link Solver} class.
+     * algorithm implemented by the {@link Solvers} class.
      * </p>
      *
      * @param args command-line arguments (not used)
@@ -49,7 +49,7 @@ public class GRAcsMain {
             }
         };
         // Create the solver instance
-        Solver<GRState> solver = new Solver<>();
+        Solvers<GRState> solver = new Solvers<>();
         // Run the ACS optimization process
         final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

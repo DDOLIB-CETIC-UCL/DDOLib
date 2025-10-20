@@ -3,7 +3,7 @@ package org.ddolib.examples.gruler;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public class GRAstarMain {
 
         };
 
-        Solver<GRState> solver = new Solver<>();
+        Solvers<GRState> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");

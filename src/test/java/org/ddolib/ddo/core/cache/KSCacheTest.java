@@ -1,16 +1,13 @@
 package org.ddolib.ddo.core.cache;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.examples.knapsack.KSFastLowerBound;
-import org.ddolib.examples.knapsack.KSProblem;
-import org.ddolib.examples.knapsack.KSRanking;
-import org.ddolib.examples.knapsack.KSRelax;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.knapsack.*;
+import org.ddolib.modeling.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -43,40 +40,112 @@ public class KSCacheTest {
     }
 
     private static double optimalSolutionNoCaching(KSProblem problem) {
-        SolverConfig<Integer> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new KSRelax();
-        config.flb = new KSFastLowerBound(problem);
-        config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(10000);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolver<>(config);
 
-        solver.minimize(s -> false, (sol, s) -> {
-        });
-        return solver.bestValue().get();
+        final DdoModel<Integer> model = new DdoModel<>() {
+            ;
+
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
+
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public boolean useCache() {
+                return false;
+            }
+
+            @Override
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(10_000);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+        };
+
+        Solvers<Integer> solver = new Solvers<>();
+
+        SearchStatistics stat = solver.minimizeDdo(model);
+
+
+        return stat.incumbent();
     }
 
 
     private double optimalSolutionWithCache(KSProblem problem, int w, CutSetType cutSetType) {
-        SolverConfig<Integer> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new KSRelax();
-        config.flb = new KSFastLowerBound(problem);
-        config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(w);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.cache = new SimpleCache<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
+        final DdoModel<Integer> model = new DdoModel<>() {
+            ;
+
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
+
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
+
+            @Override
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(10_000);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+        };
+
+        Solvers<Integer> solver = new Solvers<>();
+
+        SearchStatistics stat = solver.minimizeDdo(model);
 
 
-        final Solver solverWithCaching = new SequentialSolver<>(config);
-
-        solverWithCaching.minimize(s -> false, (sol, s) -> {
-        });
-        return solverWithCaching.bestValue().get();
+        return stat.incumbent();
     }
 
     @ParameterizedTest

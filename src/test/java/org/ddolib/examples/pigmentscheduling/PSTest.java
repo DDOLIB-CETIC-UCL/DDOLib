@@ -1,11 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.DdoModel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -35,26 +30,28 @@ class PSTest {
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
-                    .map(filePath -> {
-//                        PSProblem problem = new PSProblem(new PSProblem(filePath.toString()));
-//                        problem.setName(filePath.getFileName().toString());
-                        return new PSProblem(filePath.toString());
-                    }).toList();
+                    .map(filePath -> new PSProblem(filePath.toString())).toList();
         }
 
         @Override
-        protected SolverConfig<PSState> configSolver(PSProblem problem) {
-            SolverConfig<PSState> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new PSRelax(problem);
-            config.ranking = new PSRanking();
-            config.flb = new PSFastLowerBound(problem);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.verbosityLevel = VerbosityLevel.SILENT;
+        protected DdoModel<PSState> model(PSProblem problem) {
+            return new DdoModel<>() {
 
-            return config;
+                @Override
+                public PSProblem problem() {
+                    return problem;
+                }
+
+                @Override
+                public PSRelax relaxation() {
+                    return new PSRelax(problem);
+                }
+
+                @Override
+                public PSRanking ranking() {
+                    return new PSRanking();
+                }
+            };
         }
     }
 

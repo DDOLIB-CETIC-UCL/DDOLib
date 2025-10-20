@@ -6,14 +6,9 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
-import org.w3c.dom.ls.LSOutput;
+import org.ddolib.modeling.Solvers;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.SQLOutput;
-import java.util.Random;
-import java.util.Scanner;
 
 /**
  * ################ Minimum Sum Completion Time (MSCT) #####################
@@ -28,22 +23,23 @@ public class MSCTAcsMain {
             public Problem<MSCTState> problem() {
                 return problem;
             }
+
             @Override
             public DominanceChecker<MSCTState> dominance() {
                 return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
             }
+
             @Override
             public FastLowerBound<MSCTState> lowerBound() {
                 return new MSCTFastLowerBound(problem);
             }
         };
 
-        Solver<MSCTState> solver = new Solver<>();
-//        SearchStatistics stats = solver.minimizeAcs(model);
+        Solvers<MSCTState> solver = new Solvers<>();
 
         final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
-            System.out.println("new incumbent found "+ s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
         });
 

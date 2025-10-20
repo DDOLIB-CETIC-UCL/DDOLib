@@ -6,9 +6,10 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solver;
+import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+
 /**
  * ######### Knapsack Problem (KS) - A* Example #############
  * <p>
@@ -21,7 +22,7 @@ import java.io.IOException;
  * <ol>
  *     <li>Loads a knapsack instance from a data file.</li>
  *     <li>Defines a {@link Model} with a fast lower bound and a dominance checker.</li>
- *     <li>Creates a {@link Solver} and runs the A* algorithm.</li>
+ *     <li>Creates a {@link Solvers} and runs the A* algorithm.</li>
  *     <li>Prints updates when a new incumbent solution is found.</li>
  *     <li>Outputs the final search statistics.</li>
  * </ol>
@@ -58,11 +59,11 @@ public class KSAstarMain {
             }
         };
 
-        Solver<Integer> solver = new Solver<>();
+        Solvers<Integer> solver = new Solvers<>();
 
         SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
-            System.out.println("new incumbent found "+ s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
         });
 
