@@ -1,6 +1,7 @@
 package org.ddolib.examples.mcp;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -16,7 +17,7 @@ public final class MCPAstarMain {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        final String filename = Paths.get("data", "MCP", "mcp_5_2.txt").toString();
+        final String filename = Paths.get("data", "MCP", "mcp_4.txt").toString();
         final MCPProblem problem = new MCPProblem(filename);
         Model<MCPState> model = new Model<MCPState>() {
 
@@ -28,6 +29,11 @@ public final class MCPAstarMain {
             @Override
             public MCPFastLowerBound lowerBound() {
                 return new MCPFastLowerBound(problem);
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
         };
 

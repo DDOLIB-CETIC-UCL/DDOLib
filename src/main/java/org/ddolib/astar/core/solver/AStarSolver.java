@@ -192,10 +192,11 @@ public final class AStarSolver<T> implements Solver {
                 verbosityPrinter.newBest(bestUB);
 
                 if (!negativeTransitionCosts) {
-                    // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    // with A*, the first complete solution is  guaranteed optimal only if there is
+                    // no negative transition cost
                     break;
                 }
-                if (open.peek().f() >= bestUB - 0.00001) {
+                if (open.isEmpty() || open.peek().f() + 1e-10 >= bestUB) {
                     // gap is 0%
                     break;
                 }
@@ -236,7 +237,7 @@ public final class AStarSolver<T> implements Solver {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
         Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
-        if (debugLevel != DebugLevel.OFF) {
+        if (depth != 0) {
             for (int i = 0; i < depth; i++) {
                 nullDecisions.add(new Decision(i, 0));
             }
@@ -346,7 +347,7 @@ public final class AStarSolver<T> implements Solver {
             internalSolver.minimize(s -> false, (sol, stats) -> {
             });
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
-            if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
+            if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your lower bound is not admissible.\n" +
                         "State: " + current.state.toString() + "\n" +
