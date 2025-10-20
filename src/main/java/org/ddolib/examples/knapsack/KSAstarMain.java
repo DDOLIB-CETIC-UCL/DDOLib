@@ -7,9 +7,11 @@ import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
  * ######### Knapsack Problem (KS) - A* Example #############
@@ -60,10 +62,8 @@ public class KSAstarMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, s -> false, (sol, s) -> {
-            System.out.println("--------------------");
-            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
-            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
         });
 
         System.out.println(stats);

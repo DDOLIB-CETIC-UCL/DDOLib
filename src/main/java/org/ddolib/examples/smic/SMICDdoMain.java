@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -64,10 +65,8 @@ public class SMICDdoMain {
             }
         };
 
-        final SearchStatistics stats = Solvers.minimizeDdo(model, s -> false, (sol, s) -> {
-            System.out.println("--------------------");
-            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
-            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
         });
 
         System.out.println(stats);

@@ -5,6 +5,7 @@ import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -37,8 +38,9 @@ public class TSDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model);
-
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
+        });
         System.out.println(stats);
     }
 }

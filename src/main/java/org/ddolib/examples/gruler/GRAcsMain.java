@@ -4,6 +4,7 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 
@@ -48,13 +49,11 @@ public class GRAcsMain {
                 return 20;
             }
         };
-        // Run the ACS optimization process
-        final SearchStatistics stats = Solvers.minimizeAcs(model, s -> false, (sol, s) -> {
-            System.out.println("--------------------");
-            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
-            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+
+        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
         });
-        // Print final search statistics
+
         System.out.println(stats);
     }
 }

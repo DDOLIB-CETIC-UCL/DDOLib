@@ -168,7 +168,7 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -227,7 +227,7 @@ public final class SequentialSolver<T> implements Solver {
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
-                onSolution.accept(bestSol.get(), stats);
+                onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
                 exportDot(restrictedMdd.exportAsDot(),
@@ -262,7 +262,7 @@ public final class SequentialSolver<T> implements Solver {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
                     stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
-                    onSolution.accept(bestSol.get(), stats);
+                    onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             } else {
                 enqueueCutset(relaxedMdd);

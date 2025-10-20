@@ -8,17 +8,7 @@ public record SearchStatistics(
         double incumbent,
         double gap) {
 
-//    @Override
-//    public String toString() {
-//        return "SearchStatistics{" +
-//                "status=" + status +
-//                ", nbIterations=" + nbIterations +
-//                ", queueMaxSize=" + queueMaxSize +
-//                ", runTimeMs=" + runTimeMs +
-//                ", incumbent=" + (incumbent == Double.POSITIVE_INFINITY || incumbent == Double.NEGATIVE_INFINITY ? "+-∞" : incumbent) +
-//                ", gap=" + (gap == Double.POSITIVE_INFINITY ? "∞" : gap) +
-//                '}';
-//    }
+
     @Override
     public String toString() {
         return "\n\tstatus = " + status +

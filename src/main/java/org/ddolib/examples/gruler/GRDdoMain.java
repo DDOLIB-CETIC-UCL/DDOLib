@@ -2,6 +2,7 @@ package org.ddolib.examples.gruler;
 
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.*;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 
@@ -29,10 +30,8 @@ public class GRDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, s -> false, (sol, s) -> {
-            System.out.println("--------------------");
-            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
-            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
         });
 
         System.out.println(stats);

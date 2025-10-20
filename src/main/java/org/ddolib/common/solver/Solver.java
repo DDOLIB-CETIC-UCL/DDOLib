@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 public interface Solver {
 
     SearchStatistics minimize(Predicate<SearchStatistics> limit,
-                              BiConsumer<Set<Decision>, SearchStatistics> onSolution);
+                              BiConsumer<int[], SearchStatistics> onSolution);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one
@@ -29,17 +29,14 @@ public interface Solver {
     /**
      * Constructs an array containing the values assigned to each variable from the taken decisions.
      *
-     * @param numVar The number of variables in the solved problem.
      * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
      * {@code i}. Or empty array if the solution does not exist.
      */
-    default int[] constructSolution(int numVar) {
-        return bestSolution().map(decisions -> {
-            int[] toReturn = new int[numVar];
-            for (Decision d : decisions) {
-                toReturn[d.var()] = d.val();
-            }
-            return toReturn;
-        }).orElse(new int[0]);
+    default int[] constructSolution(Set<Decision> decisions) {
+        int[] toReturn = new int[decisions.size()];
+        for (Decision d : decisions) {
+            toReturn[d.var()] = d.val();
+        }
+        return toReturn;
     }
 }

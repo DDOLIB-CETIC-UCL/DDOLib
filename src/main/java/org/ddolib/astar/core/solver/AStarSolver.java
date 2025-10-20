@@ -137,7 +137,7 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         long ti = System.currentTimeMillis();
         int nbIter = 0;
@@ -186,7 +186,7 @@ public final class AStarSolver<T> implements Solver {
                         bestUB,
                         0);
 
-                onSolution.accept(bestSol.get(), statistics);
+                onSolution.accept(constructSolution(bestSol.get()), statistics);
 
 
                 verbosityPrinter.newBest(bestUB);

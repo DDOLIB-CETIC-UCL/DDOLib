@@ -7,9 +7,11 @@ import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
  * ######### Knapsack Problem (KS) - ACS Example #############
@@ -41,7 +43,9 @@ public class KSAcsMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ?
+                Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() :
+                args[0];
         final KSProblem problem = new KSProblem(instance);
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
@@ -66,14 +70,9 @@ public class KSAcsMain {
 
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model,
-                // stop afer 10 iterations
-                s -> s.nbIterations() > 10,
-                (sol, s) -> {
-                    System.out.println("------");
-                    System.out.println("new incumbent :" + s.incumbent() + " found  at iteration " + s.nbIterations());
-                    System.out.println("New solution: " + sol);
-                });
+        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
+        });
 
         System.out.println(stats);
 

@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.util.Random;
@@ -60,8 +61,9 @@ public final class PDPDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model);
-
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
+        });
         System.out.println(stats);
     }
 }

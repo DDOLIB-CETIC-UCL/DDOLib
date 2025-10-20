@@ -4,6 +4,7 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,9 +53,7 @@ public final class LCSAstarMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAstar(model, s -> false, (sol, s) -> {
-            System.out.println("--------------------");
-            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
-            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+            SolutionPrinter.printSolution(s,sol);
         });
         System.out.println(stats);
 

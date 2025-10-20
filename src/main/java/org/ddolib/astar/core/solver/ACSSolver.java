@@ -124,7 +124,7 @@ public final class ACSSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<Set<Decision>, SearchStatistics> onSolution) {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -169,7 +169,7 @@ public final class ACSSolver<T> implements Solver {
                         double gap = 0; // TODO compute the gap when we have a valid LB
                         stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                                 System.currentTimeMillis() - t0, bestUB, gap);
-                        onSolution.accept(bestSol.get(), stats);
+                        onSolution.accept(constructSolution(bestSol.get()), stats);
                     } else {
                         addChildren(sub, i + 1);
                     }
