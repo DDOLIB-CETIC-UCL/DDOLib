@@ -16,7 +16,7 @@ import org.ddolib.modeling.Solver;
 public class BKSDdoMain {
 
     public static void main(String[] args) {
-        final BKSProblem problem = new BKSProblem(10, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
+        final BKSProblem problem = new BKSProblem(100, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
         DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public BKSProblem problem() {
