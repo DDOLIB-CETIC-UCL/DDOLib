@@ -13,6 +13,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -31,9 +32,8 @@ public class TSPTWDdoMain {
      * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
      */
     public static void main(String[] args) throws IOException {
-
-        final String file = Paths.get("data", "TSPTW", "AFG", "rbg010a.tw").toString();
-        final TSPTWProblem problem = new TSPTWProblem(file);
+        final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];
+        final TSPTWProblem problem = new TSPTWProblem(instance);
         DdoModel<TSPTWState> model = new DdoModel<>() {
             @Override
             public Problem<TSPTWState> problem() {
@@ -76,9 +76,7 @@ public class TSPTWDdoMain {
             }
         };
 
-        Solvers<TSPTWState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
     }

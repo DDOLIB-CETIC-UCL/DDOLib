@@ -7,6 +7,7 @@ import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class Max2SatDdoMain {
@@ -14,8 +15,8 @@ public final class Max2SatDdoMain {
      * ******* Maximum 2-Satisfiability Problem (MAX2SAT) *******
      */
     public static void main(String[] args) throws IOException {
-        String file = Paths.get("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString();
-        final Max2SatProblem problem = new Max2SatProblem(file);
+        String instance = args.length == 0 ? Path.of("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString() : args[0];
+        final Max2SatProblem problem = new Max2SatProblem(instance);
         DdoModel<Max2SatState> model = new DdoModel<>() {
             @Override
             public Problem<Max2SatState> problem() {
@@ -38,9 +39,7 @@ public final class Max2SatDdoMain {
             }
         };
 
-        Solvers<Max2SatState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
 

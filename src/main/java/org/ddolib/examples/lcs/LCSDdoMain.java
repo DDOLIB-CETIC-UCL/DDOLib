@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -42,8 +43,8 @@ import java.util.stream.IntStream;
 public final class LCSDdoMain {
 
     public static void main(String[] args) throws IOException {
-        final String file = "src/test/resources/LCS/LCS_3_3_10_test.txt";
-        final LCSProblem problem = new LCSProblem(file);
+        final String instance = args.length == 0 ? Path.of("src", "test", "resources", "LCS", "LCS_3_3_10_test.txt").toString() : args[0];
+        final LCSProblem problem = new LCSProblem(instance);
         DdoModel<LCSState> model = new DdoModel<>() {
             @Override
             public Problem<LCSState> problem() {
@@ -66,8 +67,7 @@ public final class LCSDdoMain {
             }
         };
 
-        Solvers<LCSState> solver = new Solvers<>();
-        SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

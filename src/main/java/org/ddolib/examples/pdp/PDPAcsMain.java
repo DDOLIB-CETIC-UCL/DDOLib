@@ -34,9 +34,7 @@ public final class PDPAcsMain {
             }
         };
 
-        Solvers<PDPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model, s -> s.runTimeMs() > 1000);
+        SearchStatistics stats = Solvers.minimizeAcs(model, s -> s.runTimeMs() > 1000);
 
         System.out.println(stats);
     }

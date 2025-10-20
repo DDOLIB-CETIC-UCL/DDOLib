@@ -9,6 +9,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.BitSet;
 
@@ -17,8 +18,8 @@ public final class MispAstarMain {
      * ***** The Maximum Independent Set Problem (MISP) *****
      */
     public static void main(String[] args) throws IOException {
-        final String file = Paths.get("data", "MISP", "tadpole_4_2.dot").toString();
-        final MispProblem problem = new MispProblem(file);
+        final String instance = args.length == 0 ? Path.of("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
+        final MispProblem problem = new MispProblem(instance);
         Model<BitSet> model = new Model<>() {
             @Override
             public Problem<BitSet> problem() {
@@ -41,9 +42,7 @@ public final class MispAstarMain {
             }
         };
 
-        Solvers<BitSet> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAstar(model);
+        SearchStatistics stats = Solvers.minimizeAstar(model);
 
         System.out.println(stats);
     }

@@ -7,6 +7,7 @@ import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class MCPDdoMain {
@@ -18,9 +19,8 @@ public final class MCPDdoMain {
      */
 
     public static void main(String[] args) throws IOException {
-
-        final String filename = Paths.get("data", "MCP", "mcp_5_2.txt").toString();
-        final MCPProblem problem = new MCPProblem(filename);
+        final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
+        final MCPProblem problem = new MCPProblem(instance);
         DdoModel<MCPState> model = new DdoModel<MCPState>() {
             @Override
             public Problem<MCPState> problem() {
@@ -43,9 +43,7 @@ public final class MCPDdoMain {
             }
         };
 
-        Solvers<MCPState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = Solvers.minimizeDdo(model);
 
         System.out.println(stats);
 

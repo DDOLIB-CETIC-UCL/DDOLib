@@ -9,6 +9,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * ################ Minimum Sum Completion Time (MSCT) #####################
@@ -16,8 +17,8 @@ import java.io.IOException;
 public class MSCTAcsMain {
 
     public static void main(final String[] args) throws IOException {
-        final String file = "data/MSCT/msct1.txt";
-        final MSCTProblem problem = new MSCTProblem(file);
+        final String instance = args.length == 0 ? Path.of("data","MSCT","msct1.txt").toString() : args[0];
+        final MSCTProblem problem = new MSCTProblem(instance);
         AcsModel<MSCTState> model = new AcsModel<>() {
             @Override
             public Problem<MSCTState> problem() {
@@ -35,9 +36,7 @@ public class MSCTAcsMain {
             }
         };
 
-        Solvers<MSCTState> solver = new Solvers<>();
-
-        final SearchStatistics stats = solver.minimizeAcs(model, s -> false, (sol, s) -> {
+        final SearchStatistics stats = Solvers.minimizeAcs(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

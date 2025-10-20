@@ -9,6 +9,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * ######### Knapsack Problem (KS) - ACS Example #############
@@ -40,7 +41,7 @@ public class KSAcsMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
+        final String instance = args.length == 0 ? Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
@@ -65,9 +66,7 @@ public class KSAcsMain {
 
         };
 
-        Solvers<Integer> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAcs(model,
+        SearchStatistics stats = Solvers.minimizeAcs(model,
                 // stop afer 10 iterations
                 s -> s.nbIterations() > 10,
                 (sol, s) -> {

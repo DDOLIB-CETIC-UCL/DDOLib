@@ -9,6 +9,7 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -18,8 +19,8 @@ import java.util.Scanner;
 public class MSCTAstarMain {
 
     public static void main(final String[] args) throws Exception {
-        final String file = "data/MSCT/msct1.txt";
-        final MSCTProblem problem = new MSCTProblem(file);
+        final String instance = args.length == 0 ? Path.of("data","MSCT","msct1.txt").toString() : args[0];
+        final MSCTProblem problem = new MSCTProblem(instance);
         Model<MSCTState> model = new Model<>() {
             @Override
             public Problem<MSCTState> problem() {
@@ -36,9 +37,7 @@ public class MSCTAstarMain {
             }
         };
 
-        Solvers<MSCTState> solver = new Solvers<>();
-
-        SearchStatistics stats = solver.minimizeAstar(model, s -> false, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeAstar(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found "+ s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());

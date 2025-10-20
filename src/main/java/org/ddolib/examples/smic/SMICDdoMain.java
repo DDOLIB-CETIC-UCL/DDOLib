@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
@@ -24,8 +25,8 @@ import java.util.Scanner;
  */
 public class SMICDdoMain {
     public static void main(String[] args) throws IOException {
-        final String file = "data/SMIC/data10_2.txt";
-        final SMICProblem problem = new SMICProblem(file);
+        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_2.txt").toString() : args[0];
+        final SMICProblem problem = new SMICProblem(instance);
         DdoModel<SMICState> model = new DdoModel<>() {
             @Override
             public Problem<SMICState> problem() {
@@ -63,9 +64,7 @@ public class SMICDdoMain {
             }
         };
 
-        Solvers<SMICState> solver = new Solvers<>();
-
-        final SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
+        final SearchStatistics stats = Solvers.minimizeDdo(model, s -> false, (sol, s) -> {
             System.out.println("--------------------");
             System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
