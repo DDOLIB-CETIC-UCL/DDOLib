@@ -1,13 +1,13 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -16,7 +16,6 @@ import org.ddolib.util.DebugUtil;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -142,7 +141,7 @@ public final class ACSSolver<T> implements Solver {
         while (!allEmpty()) {
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestUB, 0);
+                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
             if (limit.test(stats)) {
                 return stats;
@@ -185,7 +184,8 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, 0);
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
     }
 
     @Override
