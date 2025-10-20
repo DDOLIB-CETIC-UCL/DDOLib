@@ -1,4 +1,4 @@
-package org.ddolib.modeling;
+package org.ddolib.util.verbosity;
 
 /**
  * Defines verbosity level
@@ -20,5 +20,7 @@ public enum VerbosityLevel {
      *     <li>Every developed sub-problem.</li>
      * </ul>
      */
-    LARGE
+    LARGE,
+
+    EXPORT,
 }

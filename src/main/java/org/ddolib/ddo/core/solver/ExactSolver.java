@@ -14,6 +14,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
