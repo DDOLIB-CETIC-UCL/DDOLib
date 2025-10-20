@@ -1,5 +1,5 @@
-![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)
-![Coverage](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
+[![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
+![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
 <!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
 
 # DDOLib
