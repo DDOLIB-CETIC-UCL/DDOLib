@@ -1,8 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.DebugLevel;
-import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -32,11 +30,7 @@ class PSTest {
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
-                    .map(filePath -> {
-                        PSProblem problem = new PSProblem(new PSInstance(filePath.toString()));
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
-                    }).toList();
+                    .map(filePath -> new PSProblem(filePath.toString())).toList();
         }
 
         @Override
@@ -50,27 +44,12 @@ class PSTest {
 
                 @Override
                 public PSRelax relaxation() {
-                    return new PSRelax(problem.instance);
+                    return new PSRelax(problem);
                 }
 
                 @Override
                 public PSRanking ranking() {
                     return new PSRanking();
-                }
-
-                @Override
-                public PSFastLowerBound lowerBound() {
-                    return new PSFastLowerBound(problem.instance);
-                }
-
-                @Override
-                public VerbosityLevel verbosityLevel() {
-                    return VerbosityLevel.SILENT;
-                }
-
-                @Override
-                public DebugLevel debugMode() {
-                    return DebugLevel.ON;
                 }
             };
         }
