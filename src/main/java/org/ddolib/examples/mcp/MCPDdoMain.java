@@ -26,7 +26,7 @@ public final class MCPDdoMain {
     public static void main(String[] args) throws IOException {
 
         final String filename = Paths.get("data", "MCP", "mcp_5_2.txt").toString();
-        DdoModel<MCPState> model = new DdoModel<MCPState>() {
+        DdoModel<MCPState> model = new DdoModel<>() {
             private MCPProblem problem;
 
             @Override

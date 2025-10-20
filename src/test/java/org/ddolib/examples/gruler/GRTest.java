@@ -5,8 +5,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastLowerBound;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -43,6 +42,31 @@ public class GRTest {
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             config.verbosityLevel = VerbosityLevel.SILENT;
             return config;
+        }
+
+        @Override
+        protected DdoModel<GRState> model(GRProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public Problem<GRState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<GRState> relaxation() {
+                    return new GRRelax();
+                }
+
+                @Override
+                public StateRanking<GRState> ranking() {
+                    return new GRRanking();
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 

@@ -5,6 +5,10 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +61,42 @@ public class TSPTests {
             config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
+        }
+
+        @Override
+        protected DdoModel<TSPState> model(TSPProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<TSPState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<TSPState> relaxation() {
+                    return new TSPRelax(problem);
+                }
+
+                @Override
+                public TSPRanking ranking() {
+                    return new TSPRanking();
+                }
+
+                @Override
+                public TSPFastLowerBound lowerBound() {
+                    return new TSPFastLowerBound(problem);
+                }
+
+                @Override
+                public boolean useCache() {
+                    return true;
+                }
+
+                @Override
+                public WidthHeuristic<TSPState> widthHeuristic() {
+                    return new FixedWidth<>(500);
+                }
+            };
         }
     }
 

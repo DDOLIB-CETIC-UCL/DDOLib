@@ -6,6 +6,8 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -62,7 +64,42 @@ public class ALPTest {
             return config;
         }
 
+        @Override
+        protected DdoModel<ALPState> model(ALPProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public ALPProblem problem() {
+                    return problem;
+                }
+
+                @Override
+                public ALPRelax relaxation() {
+                    return new ALPRelax(problem);
+                }
+
+                @Override
+                public ALPRanking ranking() {
+                    return new ALPRanking();
+                }
+
+                @Override
+                public ALPFastLowerBound lowerBound() {
+                    return new ALPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
+        }
     }
+
 
     @DisplayName("ALP")
     @TestFactory

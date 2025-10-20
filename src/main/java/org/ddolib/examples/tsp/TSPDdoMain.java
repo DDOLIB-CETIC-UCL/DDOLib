@@ -17,7 +17,7 @@ public class TSPDdoMain {
 
         String file = Paths.get("data", "TSP", "instance_18_0.xml").toString();
 
-        DdoModel<TSPState> model = new DdoModel<TSPState>() {
+        DdoModel<TSPState> model = new DdoModel<>() {
             private TSPProblem problem;
 
             @Override

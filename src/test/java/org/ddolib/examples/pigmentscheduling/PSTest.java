@@ -5,6 +5,8 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +57,42 @@ class PSTest {
             config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
+        }
+
+        @Override
+        protected DdoModel<PSState> model(PSProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public PSProblem problem() {
+                    return problem;
+                }
+
+                @Override
+                public PSRelax relaxation() {
+                    return new PSRelax(problem.instance);
+                }
+
+                @Override
+                public PSRanking ranking() {
+                    return new PSRanking();
+                }
+
+                @Override
+                public PSFastLowerBound lowerBound() {
+                    return new PSFastLowerBound(problem.instance);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 

@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -60,6 +60,43 @@ public class MCPTest {
 
 
             return config;
+        }
+
+        @Override
+        protected DdoModel<MCPState> model(MCPProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<MCPState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<MCPState> relaxation() {
+                    return new MCPRelax(problem);
+                }
+
+                @Override
+                public MCPRanking ranking() {
+                    return new MCPRanking();
+                }
+
+                @Override
+                public MCPFastLowerBound lowerBound() {
+                    return new MCPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
+
         }
     }
 

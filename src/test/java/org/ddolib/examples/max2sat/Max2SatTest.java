@@ -5,7 +5,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -54,6 +54,42 @@ public class Max2SatTest {
             config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
+        }
+
+        @Override
+        protected DdoModel<Max2SatState> model(Max2SatProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<Max2SatState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<Max2SatState> relaxation() {
+                    return new Max2SatRelax(problem);
+                }
+
+                @Override
+                public Max2SatRanking ranking() {
+                    return new Max2SatRanking();
+                }
+
+                @Override
+                public Max2SatFastLowerBound lowerBound() {
+                    return new Max2SatFastLowerBound(problem);
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 

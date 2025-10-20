@@ -5,6 +5,9 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +62,42 @@ public class LCSTest {
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             config.verbosityLevel = VerbosityLevel.SILENT;
             return config;
+        }
+
+        @Override
+        protected DdoModel<LCSState> model(LCSProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<LCSState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public LCSRelax relaxation() {
+                    return new LCSRelax(problem);
+                }
+
+                @Override
+                public LCSRanking ranking() {
+                    return new LCSRanking();
+                }
+
+                @Override
+                public LCSFastLowerBound lowerBound() {
+                    return new LCSFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 

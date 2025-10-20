@@ -1,12 +1,13 @@
 package org.ddolib.examples.knapsack;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -59,6 +60,47 @@ public class KSTest {
             config.verbosityLevel = VerbosityLevel.SILENT;
 
             return config;
+        }
+
+        @Override
+        protected DdoModel<Integer> model(KSProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public Problem<Integer> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<Integer> relaxation() {
+                    return new KSRelax();
+                }
+
+                @Override
+                public KSRanking ranking() {
+                    return new KSRanking();
+                }
+
+                @Override
+                public FastLowerBound<Integer> lowerBound() {
+                    return new KSFastLowerBound(problem);
+                }
+
+                @Override
+                public DominanceChecker<Integer> dominance() {
+                    return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 
