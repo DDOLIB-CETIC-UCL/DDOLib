@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.util.Random;
 
 import static org.ddolib.examples.pdp.PDPGenerator.genInstance;
-
+/**
+ * ############# Single Vehicle Pick-up and Delivery Problem (PDP)
+ */
 public final class PDPAstarMain {
 
 
     public static void main(final String[] args) throws IOException {
-
         final PDPProblem problem = genInstance(18, 2, 3, new Random(1));
         Model<PDPState> model = new Model<>() {
             @Override

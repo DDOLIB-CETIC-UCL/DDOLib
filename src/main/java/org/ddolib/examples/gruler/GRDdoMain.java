@@ -6,19 +6,7 @@ import org.ddolib.modeling.*;
 import java.io.IOException;
 
 /**
- * This class demonstrates how to implement a solver for the Golomb ruler problem.
- * For more information on this problem, see
- * <a href="https://en.wikipedia.org/wiki/Golomb_ruler">Golomb Ruler - Wikipedia</a>.
- * <p>
- * This model was introduced by Willem-Jan van Hoeve.
- * In this model:
- * - Each variable/layer represents the position of the next mark to be placed.
- * - The domain of each variable is the set of all possible positions for the next mark.
- * - A mark can only be added if the distance between the new mark and all previous marks
- * is not already present in the set of distances between marks.
- * <p>
- * The cost of a transition is defined as the distance between the new mark and the
- * previous last mark. Consequently, the cost of a solution is the position of the last mark.
+ * ########## Golomb Rule Problem (GRP) ################
  */
 public class GRDdoMain {
 
@@ -43,7 +31,11 @@ public class GRDdoMain {
 
         Solvers<GRState> solver = new Solvers<>();
 
-        SearchStatistics stats = solver.minimizeDdo(model);
+        SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
+            System.out.println("--------------------");
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        });
 
         System.out.println(stats);
     }

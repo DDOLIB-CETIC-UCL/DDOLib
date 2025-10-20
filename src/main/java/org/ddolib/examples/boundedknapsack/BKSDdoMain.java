@@ -11,26 +11,16 @@ import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Solvers;
 
 /**
- * Bounded Knapsack Problem (BKS)
- * A bounded knapsack problem is a variation of the classic knapsack problem
- * where each item can be included in the knapsack a limited number of times.
+ * ######### Bounded Knapsack Problem (BKS) #############
  */
 public class BKSDdoMain {
 
     public static void main(String[] args) {
-        BoundedKnapsackGenerator generator = new BoundedKnapsackGenerator(10, 1000, BoundedKnapsackGenerator.InstanceType.STRONGLY_CORRELATED, 0);
-
+        final BKSProblem problem = new BKSProblem(100, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
         DdoModel<Integer> model = new DdoModel<>() {
-            private BKSProblem problem;
-
             @Override
             public BKSProblem problem() {
-                try {
-                    problem = new BKSProblem(generator.generate());
-                    return problem;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override
@@ -71,7 +61,11 @@ public class BKSDdoMain {
 
         Solvers<Integer> solver = new Solvers<>();
 
-        SearchStatistics stats = solver.minimizeDdo(model);
+        final SearchStatistics stats = solver.minimizeDdo(model, s -> false, (sol, s) -> {
+            System.out.println("--------------------");
+            System.out.println("new incumbent found " + s.incumbent() + " at iteration " + s.nbIterations());
+            System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
+        });
 
         System.out.println(stats);
     }

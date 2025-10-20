@@ -14,16 +14,49 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
+/**
+ * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
+ * <p>
+ * This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP)
+ * using a decision diagram-based approach (DDO).
+ * </p>
+ * <p>
+ * The program performs the following steps:
+ * </p>
+ * <ol>
+ *     <li>Loads a knapsack instance from a data file.</li>
+ *     <li>Defines a {@link DdoModel} with:
+ *         <ul>
+ *             <li>A relaxation function for merging states ({@link KSRelax}).</li>
+ *             <li>A state ranking heuristic ({@link KSRanking}).</li>
+ *             <li>A fast lower bound heuristic ({@link KSFastLowerBound}).</li>
+ *             <li>A dominance checker ({@link KSDominance}).</li>
+ *             <li>A frontier of type {@link CutSetType#Frontier} ({@link SimpleFrontier}).</li>
+ *             <li>A width heuristic ({@link FixedWidth}) and cache usage.</li>
+ *             <li>Verbose output level ({@link VerbosityLevel}).</li>
+ *         </ul>
+ *     </li>
+ *     <li>Creates a {@link Solver} and runs the DDO algorithm.</li>
+ *     <li>Prints updates when a new incumbent solution is found and stops after 10 seconds of runtime.</li>
+ *     <li>Outputs the final search statistics.</li>
+ * </ol>
+ *
+ * <p>
+ * The DDO solver leverages relaxed decision diagrams, caching, and state ranking to
+ * efficiently explore the search space for high-quality solutions.
+ * </p>
+ */
 public class KSDdoMain {
+    /**
+     * Entry point of the DDO demonstration for the Knapsack Problem.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if the instance file cannot be read
+     */
     public static void main(final String[] args) throws IOException {
-
         final String instance = "data/Knapsack/instance_n1000_c1000_10_5_10_5_0";
+        final KSProblem problem = new KSProblem(instance);
         final DdoModel<Integer> model = new DdoModel<>() {
-
-            private KSProblem problem = new KSProblem(instance);
-            ;
-
             @Override
             public Problem<Integer> problem() {
                 return problem;
@@ -78,50 +111,8 @@ public class KSDdoMain {
             System.out.println("New solution: " + sol + " at iteration " + s.nbIterations());
         });
 
+        System.out.println(stats);
 
-    }
 
-
-    public static KSProblem readInstance(final String fname) throws IOException {
-        final File f = new File(fname);
-        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
-            final PinReadContext context = new PinReadContext();
-
-            bf.lines().forEachOrdered((String s) -> {
-                if (context.isFirst) {
-                    context.isFirst = false;
-                    String[] tokens = s.split("\\s");
-                    context.n = Integer.parseInt(tokens[0]);
-                    context.capa = Integer.parseInt(tokens[1]);
-
-                    if (tokens.length == 3) {
-                        context.optimal = Integer.parseInt(tokens[2]);
-                    }
-
-                    context.profit = new int[context.n];
-                    context.weight = new int[context.n];
-                } else {
-                    if (context.count < context.n) {
-                        String[] tokens = s.split("\\s");
-                        context.profit[context.count] = Integer.parseInt(tokens[0]);
-                        context.weight[context.count] = Integer.parseInt(tokens[1]);
-
-                        context.count++;
-                    }
-                }
-            });
-
-            return new KSProblem(context.capa, context.profit, context.weight, context.optimal);
-        }
-    }
-
-    private static class PinReadContext {
-        boolean isFirst = true;
-        int n = 0;
-        int count = 0;
-        int capa = 0;
-        int[] profit = new int[0];
-        int[] weight = new int[0];
-        Integer optimal = null;
     }
 }

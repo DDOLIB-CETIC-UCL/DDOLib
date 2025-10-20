@@ -215,9 +215,10 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            int[] sol = new int[problem.nbVars()];
-            Optional<Double> solVal = Optional.empty();
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, gap());
+            if  (bestUB != Double.POSITIVE_INFINITY)
+                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
+
             if (limit.test(stats)) {
                 return stats;
             }
@@ -226,7 +227,6 @@ public final class SequentialSolver<T> implements Solver {
             verbosityPrinter.currentSubProblem(nbIter, sub);
 
             if (nodeLB >= bestUB) {
-                double gap = gap();
                 frontier.clear();
                 end = System.currentTimeMillis();
                 return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, end - start, bestUB, 0);

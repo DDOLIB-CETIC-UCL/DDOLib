@@ -11,20 +11,12 @@ import java.nio.file.Paths;
 public class TSPAstarMain {
 
     public static void main(final String[] args) throws IOException {
-
         String file = Paths.get("data", "TSP", "instance_18_0.xml").toString();
-
+        final TSPProblem problem = new TSPProblem(file);
         Model<TSPState> model = new Model<TSPState>() {
-            private TSPProblem problem;
-
             @Override
             public Problem<TSPState> problem() {
-                try {
-                    problem = new TSPProblem(file);
-                    return problem;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                return problem;
             }
 
             @Override
