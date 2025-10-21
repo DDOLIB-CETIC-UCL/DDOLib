@@ -28,6 +28,7 @@ org.ddolib.examples.msct
 org.ddolib.examples.pdp
 org.ddolib.examples.pigmentscheduling
 org.ddolib.examples.smic
+org.ddolib.examples.srflp
 org.ddolib.examples.talentscheduling
 org.ddolib.examples.tsp
 org.ddolib.examples.tsptw
