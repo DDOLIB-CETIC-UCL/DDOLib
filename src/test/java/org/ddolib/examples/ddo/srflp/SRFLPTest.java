@@ -1,16 +1,11 @@
 package org.ddolib.examples.ddo.srflp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +15,7 @@ import java.util.stream.Stream;
 public class SRFLPTest {
 
 
-    private static class SRFLPBench extends ProblemTestBench<SRFLPState, NullType, SRFLPProblem> {
+    private static class SRFLPBench extends ProblemTestBench<SRFLPState, SRFLPProblem> {
 
         @Override
         protected List<SRFLPProblem> generateProblems() {
@@ -41,17 +36,33 @@ public class SRFLPTest {
         }
 
         @Override
-        protected SolverConfig<SRFLPState, NullType> configSolver(SRFLPProblem problem) {
-            SolverConfig<SRFLPState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new SRFLPRelax(problem);
-            config.flb = new SRFLPFastLowerBound(problem);
-            config.ranking = new SRFLPRanking();
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        protected DdoModel<SRFLPState> model(SRFLPProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public Problem<SRFLPState> problem() {
+                    return problem;
+                }
 
-            return config;
+                @Override
+                public Relaxation<SRFLPState> relaxation() {
+                    return new SRFLPRelax(problem);
+                }
+
+                @Override
+                public StateRanking<SRFLPState> ranking() {
+                    return new SRFLPRanking();
+                }
+
+                @Override
+                public FastLowerBound<SRFLPState> lowerBound() {
+                    return new SRFLPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 
