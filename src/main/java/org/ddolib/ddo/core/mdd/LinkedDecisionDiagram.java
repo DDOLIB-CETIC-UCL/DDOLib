@@ -513,10 +513,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             LinkedDecisionDiagram<T> mdd = compileSubMdd(node);
             Optional<Double> bestWithNode = mdd.bestValue();
             Optional<Set<Decision>> bestSol = mdd.bestSolution();
+            String failureMsg = "";
             if (bestWithRelaxed.isPresent()
                     && bestWithNode.isPresent()
                     && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
-                String failureMsg = String.format("Found relaxed node that lead to worst solution" +
+                failureMsg = String.format("Found relaxed node that lead to worst solution" +
                                 " (%s) than one of the merged nodes (%s).\n",
                         df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
 
@@ -525,14 +526,33 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
                 failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
                         relaxedNode.state, df.format(bestWithRelaxed.get()));
-                failureMsg += detailedPath(bestRelaxedSol.get());
+                failureMsg += describePath(bestRelaxedSol.get());
 
                 failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
                         node.state, df.format(bestWithNode.get()));
-                failureMsg += detailedPath(bestSol.get());
+                failureMsg += describePath(bestSol.get());
 
+            } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
+                failureMsg = "Found relaxed node that lead to no solution but not the " +
+                        "merged ones.\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state;
+                failureMsg += "\nMerged states state:\n\t" + nodesToMerge
+                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
+            }
+
+            if (!failureMsg.isEmpty()) {
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    String dot = exportAsDot();
+                    try (BufferedWriter bw =
+                                 new BufferedWriter(new FileWriter(Paths.get("output",
+                                         "failed.dot").toString()))) {
+                        bw.write(dot);
+                        failureMsg += "\nMDD saved in output/failed.dot\n";
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 throw new RuntimeException(failureMsg);
-
             }
         }
 
