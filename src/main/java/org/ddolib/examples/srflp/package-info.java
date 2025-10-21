@@ -15,4 +15,4 @@
  *     <li>The domain of each variable is the set of the remaining not placed department.</li>
  * </ul>
  */
-package org.ddolib.examples.ddo.srflp;
+package org.ddolib.examples.srflp;

@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.srflp;
+package org.ddolib.examples.srflp;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;

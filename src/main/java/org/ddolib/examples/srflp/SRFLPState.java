@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.srflp;
+package org.ddolib.examples.srflp;
 
 import java.util.Arrays;
 import java.util.BitSet;

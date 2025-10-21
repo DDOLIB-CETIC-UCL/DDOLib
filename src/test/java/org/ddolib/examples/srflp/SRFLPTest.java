@@ -1,4 +1,4 @@
-package org.ddolib.examples.ddo.srflp;
+package org.ddolib.examples.srflp;
 
 import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;

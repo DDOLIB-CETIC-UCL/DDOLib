@@ -1,44 +1,27 @@
-package org.ddolib.examples.ddo.srflp;
+package org.ddolib.examples.srflp;
 
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-
-public final class SRFLPDdoMain {
-
+public class SRFLPAstarMain {
     public static void main(String[] args) throws IOException {
         final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :
                 args[0];
-        final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
         final SRFLPProblem problem = new SRFLPProblem(filename);
 
-        DdoModel<SRFLPState> model = new DdoModel<>() {
+        Model<SRFLPState> model = new Model<>() {
             @Override
             public Problem<SRFLPState> problem() {
                 return problem;
-            }
-
-            @Override
-            public Relaxation<SRFLPState> relaxation() {
-                return new SRFLPRelax(problem);
-            }
-
-            @Override
-            public StateRanking<SRFLPState> ranking() {
-                return new SRFLPRanking();
-            }
-
-            @Override
-            public WidthHeuristic<SRFLPState> widthHeuristic() {
-                return new FixedWidth<>(maxWidth);
             }
 
             @Override
@@ -49,7 +32,7 @@ public final class SRFLPDdoMain {
 
         int[] bestSolution = new int[problem.nbVars()];
 
-        SearchStatistics finalStats = Solvers.minimizeDdo(model, (sol, stat) -> {
+        SearchStatistics finalStats = Solvers.minimizeAstar(model, (sol, stat) -> {
             SolutionPrinter.printSolution(stat, sol);
             System.arraycopy(sol, 0, bestSolution, 0, sol.length);
         });
