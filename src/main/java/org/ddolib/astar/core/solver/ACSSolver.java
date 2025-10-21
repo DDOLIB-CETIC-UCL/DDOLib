@@ -96,7 +96,7 @@ public final class ACSSolver<T> implements Solver {
         this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
-        this.present = new HashMap<>();
+         this.present = new HashMap<>();
 
 
         this.open = new PriorityQueue[problem.nbVars() + 1];
@@ -133,7 +133,6 @@ public final class ACSSolver<T> implements Solver {
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
@@ -166,9 +165,9 @@ public final class ACSSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                         }
-                        double gap = 0; // TODO compute the gap when we have a valid LB
-                        stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                                System.currentTimeMillis() - t0, bestUB, gap);
+                        double gap = Math.abs((bestUB + sub.f())/(bestUB*100.0)); // TODO compute the gap when we have a valid LB
+                        stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
+                                System.currentTimeMillis() - t0, bestUB, gap());
                         onSolution.accept(constructSolution(bestSol.get()), stats);
                     } else {
                         addChildren(sub, i + 1);
@@ -179,7 +178,7 @@ public final class ACSSolver<T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
     }
 
     @Override
@@ -277,5 +276,18 @@ public final class ACSSolver<T> implements Solver {
      * @param <T>   The type of the state.
      */
     private record ACSKey<T>(T state, int depth) {
+    }
+
+    private double gap() {
+        double minLb = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < problem.nbVars(); i++) {
+            if (!open[i].isEmpty()) {
+                minLb = Math.min(minLb, Math.abs(open[i].peek().f()));
+            }
+        }
+        if (minLb == Double.POSITIVE_INFINITY) {
+            return 0.0;
+        }
+        return Math.abs(100.0 *(Math.abs(bestUB) - minLb)/bestUB);
     }
 }
