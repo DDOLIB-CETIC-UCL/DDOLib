@@ -386,6 +386,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
+    // ------ METHODS FOR DEBUG ------
+
+
     /**
      * Given a node, returns the list of decisions taken from the root to reach this node.
      *
@@ -506,31 +509,39 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                  NodeSubProblem<T> relaxedNode) {
         DecimalFormat df = new DecimalFormat("#.##########");
 
-        LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedNode);
+        SubProblem<T> relaxedSub = relaxedNode.toSubProblem(constructPathToRoot(relaxedNode.node));
+        int relaxationDepth = relaxedSub.getDepth();
+        LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedSub);
         Optional<Double> bestWithRelaxed = relaxedMdd.bestValue();
         Optional<Set<Decision>> bestRelaxedSol = relaxedMdd.bestSolution();
+        Optional<Double> bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);
+
         for (NodeSubProblem<T> node : nodesToMerge) {
-            LinkedDecisionDiagram<T> mdd = compileSubMdd(node);
+            SubProblem<T> sub = node.toSubProblem(constructPathToRoot(node.node));
+            LinkedDecisionDiagram<T> mdd = compileSubMdd(sub);
             Optional<Double> bestWithNode = mdd.bestValue();
             Optional<Set<Decision>> bestSol = mdd.bestSolution();
             String failureMsg = "";
             if (bestWithRelaxed.isPresent()
                     && bestWithNode.isPresent()
                     && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
+
                 failureMsg = String.format("Found relaxed node that lead to worst solution" +
                                 " (%s) than one of the merged nodes (%s).\n",
                         df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
 
-                failureMsg += "Relaxed state: " + relaxedNode.state;
-                failureMsg += "\nMerged states state:\n\t" + nodesToMerge
+                failureMsg += "Relaxed state: " + relaxedNode.state + " - depth: " + relaxationDepth + "\n";
+                failureMsg += "Merged states state:\n\t" + nodesToMerge
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
                 failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
                         relaxedNode.state, df.format(bestWithRelaxed.get()));
-                failureMsg += describePath(bestRelaxedSol.get());
+                failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
+                        Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
 
                 failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
                         node.state, df.format(bestWithNode.get()));
-                failureMsg += describePath(bestSol.get());
+                failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
+                        Optional.empty());
 
             } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
                 failureMsg = "Found relaxed node that lead to no solution but not the " +
@@ -541,13 +552,14 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             if (!failureMsg.isEmpty()) {
+                failureMsg += "\n";
                 if (debugLevel == DebugLevel.EXTENDED) {
                     String dot = exportAsDot();
                     try (BufferedWriter bw =
                                  new BufferedWriter(new FileWriter(Paths.get("output",
                                          "failed.dot").toString()))) {
                         bw.write(dot);
-                        failureMsg += "\nMDD saved in output/failed.dot\n";
+                        failureMsg += "MDD saved in output/failed.dot\n";
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -555,20 +567,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 throw new RuntimeException(failureMsg);
             }
         }
-
     }
 
     /**
      * Given a node sub-problem compiles the associated mdd and returns it.
      */
-    private LinkedDecisionDiagram<T> compileSubMdd(NodeSubProblem<T> sub) {
+    private LinkedDecisionDiagram<T> compileSubMdd(SubProblem<T> sub) {
         CompilationConfig<T> compilation = config.copy();
-        compilation.residual = sub.toSubProblem(constructPathToRoot(sub.node));
+        compilation.residual = sub;
         compilation.exportAsDot = false;
 
         LinkedDecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
-
         return mdd;
     }
 
@@ -595,7 +605,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * the path.
      *
      */
-    private String describePath(Set<Decision> pathFromRoot) {
+    private String describePath(Set<Decision> pathFromRoot, Optional<Integer> relaxationDepth,
+                                Optional<T> relaxedState, Optional<Double> relaxedCost) {
         List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::var)).toList();
         T current = config.problem.initialState();
         int depth = 0;
@@ -605,9 +616,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             msg.append(decision);
             msg.append("\n");
             depth++;
-            msg.append(String.format("\t\t%-20s - ",
-                    depth + ". cost: " + config.problem.transitionCost(current, decision)));
-            current = config.problem.transition(current, decision);
+
+            double cost;
+            if (relaxationDepth.isPresent() && depth == relaxationDepth.get()) {
+                cost = relaxedCost.get();
+                current = relaxedState.get();
+            } else {
+                cost = config.problem.transitionCost(current, decision);
+                current = config.problem.transition(current, decision);
+            }
+
+            msg.append(String.format("\t\t%-20s - ", depth + ". cost: " + cost));
+
         }
         msg.append(current);
         return msg.toString();
