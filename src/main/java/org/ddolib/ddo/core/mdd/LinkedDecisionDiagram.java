@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -30,9 +31,8 @@ import static org.ddolib.util.MathUtil.saturatedDiff;
  * This class implements the decision diagram as a linked structure.
  *
  * @param <T> the type of state
- * @param <K> the type of key
  */
-public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> {
+public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * The list of decisions that have led to the root of this DD
      */
@@ -84,25 +84,22 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
     /**
-     * <ul>
-     *     <li>0: no debug</li>
-     *     <li>1: checks the coherence of the fub</li>
-     *     <li>2: 1 + export failing mdd as .dot</li>
-     * </ul>
+     * The debug level of the compilation to add additional checks (see
+     * {@link org.ddolib.modeling.DebugLevel for details}
      */
-    private final int debugLevel;
+    private final DebugLevel debugLevel;
 
     /**
      * The parameter used to tweak the compilation
      */
-    private final CompilationConfig<T, K> config;
+    private final CompilationConfig<T> config;
 
     /**
      * Creates an all new MDD
      *
      * @param config The set of parameters used by the compilation.
      */
-    public LinkedDecisionDiagram(CompilationConfig<T, K> config) {
+    public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
         final Node root = new Node(residual.getValue());
         this.pathToRoot = residual.getPath();
@@ -126,7 +123,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         final Relaxation<T> relax = config.relaxation;
         final VariableHeuristic<T> var = config.variableHeuristic;
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
-        final DominanceChecker<T, K> dominance = config.dominance;
+        final DominanceChecker<T> dominance = config.dominance;
         final Optional<SimpleCache<T>> cache = config.cache;
         double bestUb = config.bestUB;
 
@@ -232,7 +229,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (config.exportAsDot || config.debugLevel >= 2) {
+                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
                     dotStr.append(generateDotStr(n, false));
                 }
                 if (n.lb >= config.bestUB) {
@@ -288,7 +285,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
         }
 
-        if (config.exportAsDot || debugLevel >= 2) {
+        if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
             for (Entry<T, Node> entry : nextLayer.entrySet()) {
                 T state = entry.getKey();
                 Node node = entry.getValue();
@@ -319,7 +316,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
         }
 
 
-        if (debugLevel >= 1 && config.compilationType != CompilationType.Relaxed) {
+        if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed) {
             checkFlb(config.problem);
         }
     }
@@ -403,7 +400,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             currentLength += eb.weight;
             PathInfo info = new PathInfo(eb.decision, eb.origin.flb, currentLength);
             path.addFirst(info);
-            if (debugLevel >= 2) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(eb.hashCode(), "#ff0000");
             eb = eb.origin == null ? null : eb.origin.best;
 
         }
@@ -476,7 +473,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                             df.format(current.getValue()));
                     failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
                     failureMsg += String.format("Failing state: %s\n", failedState.getLast());
-                    if (debugLevel >= 2) {
+                    if (debugLevel == DebugLevel.EXTENDED) {
                         String dot = exportAsDot();
                         try (BufferedWriter bw =
                                      new BufferedWriter(new FileWriter(Paths.get("output",
@@ -500,7 +497,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     }
 
     // UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationConfig<T, K> input) {
+    private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < config.problem.nbVars(); i++) {
             set.add(i);
@@ -598,7 +595,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
     private void branchOn(final NodeSubProblem<T> node,
                           final Decision decision,
                           final Problem<T> problem) {
-        if (debugLevel >= 1)
+        if (debugLevel != DebugLevel.OFF)
             DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
 
         T state = problem.transition(node.state, decision);

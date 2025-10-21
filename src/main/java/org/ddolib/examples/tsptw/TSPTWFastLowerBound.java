@@ -17,14 +17,12 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
 
     private final int numVar;
     private final TSPTWProblem problem;
-    private final TSPTWInstance instance;
     private final int[] cheapestEdges;
 
 
     public TSPTWFastLowerBound(TSPTWProblem problem) {
         this.problem = problem;
-        this.instance = problem.instance;
-        this.numVar = instance.distance.length;
+        this.numVar = problem.distance.length;
         cheapestEdges = precomputeCheapestEdges();
     }
 
@@ -49,7 +47,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
             if (!problem.reachable(state, i)) return INFINITY;
             completeTour--;
             mandatory += cheapestEdges[i];
-            backToDepot = min(backToDepot, instance.distance[i][0]);
+            backToDepot = min(backToDepot, problem.distance[i][0]);
         }
 
 
@@ -62,7 +60,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
             while (possiblyIt.hasNext()) {
                 int i = possiblyIt.nextInt();
                 candidatesToCompleteTour.add(cheapestEdges[i]);
-                backToDepot = min(backToDepot, instance.distance[i][0]);
+                backToDepot = min(backToDepot, problem.distance[i][0]);
                 if (!problem.reachable(state, i)) violation++;
             }
             if (candidatesToCompleteTour.size() - violation < completeTour) return INFINITY;
@@ -82,7 +80,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
         }
 
         int total = start + mandatory + backToDepot;
-        if (state.time() + total > instance.timeWindows[0].end()) return INFINITY;
+        if (state.time() + total > problem.timeWindows[0].end()) return INFINITY;
         else return total;
     }
 
@@ -92,7 +90,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
             int cheapest = INFINITY;
             for (int j = 0; j < numVar; j++) {
                 if (j != i) {
-                    cheapest = Integer.min(cheapest, instance.distance[i][j]);
+                    cheapest = Integer.min(cheapest, problem.distance[i][j]);
                 }
             }
             toReturn[i] = cheapest;

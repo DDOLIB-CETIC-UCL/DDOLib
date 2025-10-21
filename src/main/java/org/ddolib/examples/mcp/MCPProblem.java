@@ -3,6 +3,9 @@ package org.ddolib.examples.mcp;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Integer.max;
@@ -36,6 +39,46 @@ public class MCPProblem implements Problem<MCPState> {
     public MCPProblem(Graph graph, Double optimal) {
         this.graph = graph;
         this.optimal = Optional.of(optimal);
+    }
+
+    /**
+     * Read a file containing an instance of MCP.
+     *
+     * @param fname The path to the file containing the instance
+     * @throws IOException If something goes wring while reading file.
+     */
+    public MCPProblem(String fname) throws IOException {
+        int[][] matrix = new int[0][0];
+        Optional<Double> optimal = Optional.empty();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
+            int linesCount = 0;
+            int skip = 0;
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.isEmpty()) {
+                    skip++;
+                } else if (linesCount == 0) {
+                    String[] tokens = line.split("\\s+");
+                    int n = Integer.parseInt(tokens[1]);
+                    matrix = new int[n][n];
+                    if (tokens.length >= 4) {
+                        optimal = Optional.of(Double.parseDouble(tokens[3]));
+                    }
+                } else {
+                    int node = linesCount - skip - 1;
+                    String[] tokens = line.split("\\s+");
+                    int[] row = Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
+                    matrix[node] = row;
+                }
+                linesCount++;
+            }
+        }
+        Graph g = new Graph(matrix);
+        this.graph = g;
+        this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
 

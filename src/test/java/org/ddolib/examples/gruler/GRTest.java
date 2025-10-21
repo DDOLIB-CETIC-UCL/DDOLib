@@ -1,24 +1,18 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastLowerBound;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GRTest {
 
-    private static class GRBench extends ProblemTestBench<GRState, NullType, GRProblem> {
+    private static class GRBench extends ProblemTestBench<GRState, GRProblem> {
 
         public GRBench() {
             super();
@@ -31,17 +25,30 @@ public class GRTest {
             return IntStream.range(1, 7).mapToObj(i -> new GRProblem(i, -solutions[i - 1])).toList();
         }
 
+
         @Override
-        protected SolverConfig<GRState, NullType> configSolver(GRProblem problem) {
-            SolverConfig<GRState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new GRRelax();
-            config.ranking = new GRRanking();
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new DefaultFastLowerBound<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            return config;
+        protected DdoModel<GRState> model(GRProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public Problem<GRState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<GRState> relaxation() {
+                    return new GRRelax();
+                }
+
+                @Override
+                public StateRanking<GRState> ranking() {
+                    return new GRRanking();
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+            };
         }
     }
 

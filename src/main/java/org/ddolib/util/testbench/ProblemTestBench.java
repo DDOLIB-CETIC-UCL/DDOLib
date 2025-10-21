@@ -1,20 +1,14 @@
 package org.ddolib.util.testbench;
 
-import org.ddolib.astar.core.solver.ACSSolver;
-import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.modeling.DefaultFastLowerBound;
-import org.ddolib.modeling.Problem;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.*;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,13 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
- * generator and a {@link SolverConfig}.
+ * generator and a {@link DdoModel} containing all the problem specific components.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  * @param <P> The type of problem to test.
  */
-public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
+public abstract class ProblemTestBench<T, P extends Problem<T>> {
 
     /**
      * List of problems used for tests.
@@ -72,14 +65,14 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      */
     abstract protected List<P> generateProblems();
 
-    /**
-     * Given a problem, returns the solver's inputs (relaxation, dominance, frontier,...).
-     *
-     * @param problem A problem to solve during the tests.
-     * @return The solver's inputs (relaxation, dominance, frontier,...).
-     */
-    abstract protected SolverConfig<T, K> configSolver(P problem);
 
+    /**
+     * Given a problem instance returns the whole model used to solve this problem.
+     *
+     * @param problem The problem to solve.
+     * @return A model containing all the component to solve it.
+     */
+    abstract protected DdoModel<T> model(P problem);
 
     /**
      * Instantiate a test bench.
@@ -88,45 +81,19 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
         problems = generateProblems();
     }
 
-    /**
-     * Instantiate a solver used for tests not based on the relaxation. By default, it
-     * returns an {@link ExactSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForTests(SolverConfig<T, K> config) {
-        return new ExactSolver<>(config);
-    }
-
-    /**
-     * Instantiates a solver used for tests based on the relaxation. By default, it returns a
-     * {@link SequentialSolver}.
-     *
-     * @param config The configuration of the solver.
-     * @return A solver using the given config to solve the input problem.
-     */
-    protected Solver solverForRelaxation(SolverConfig<T, K> config) {
-        return new SequentialSolver<>(config);
-    }
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
-     * <b>Note:</b> By default, the tests here disable the fast lower bound. If one of the two
-     * mechanisms is needed (e.g. for A* solver), be sure to configure by overriding the
-     * {@link #solverForTests(SolverConfig)} method.
      *
      * @param problem The instance to test.
      */
     protected void testTransitionModel(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.flb = new DefaultFastLowerBound<>();
-        config.dominance = new DefaultDominanceChecker<>();
 
-        Solver solver = solverForTests(config);
-        solver.minimize();
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+        DdoModel<T> testModel = model(problem);
+        Double best = Solvers.minimizeExact(testModel).incumbent();
+        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
 
     /**
@@ -136,13 +103,31 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testFlb(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.dominance = new DefaultDominanceChecker<>();
-        config.debugLevel = 1;
-        Solver solver = solverForTests(config);
 
-        solver.minimize();
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+        DdoModel<T> globalModel = model(problem);
+
+        DdoModel<T> testModel = new DdoModel<>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
+
+            @Override
+            public Problem<T> problem() {
+                return globalModel.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+        };
+
+        Double best = Solvers.minimizeExact(testModel).incumbent();
+        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
+
+
     }
 
     /**
@@ -151,16 +136,31 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testRelaxation(P problem) {
+
+        DdoModel<T> globalModel = model(problem);
+        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
+
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(w);
+            }
+        };
         for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
-            config.dominance = new DefaultDominanceChecker<>();
-            config.flb = new DefaultFastLowerBound<>();
-            config.width = new FixedWidth<>(w);
-            config.debugLevel = 1;
-            Solver solver = solverForRelaxation(config);
             try {
-                solver.minimize();
-                assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+                DdoModel<T> testModel = getModel.apply(w);
+
+                Double best = Solvers.minimizeExact(testModel).incumbent();
+                Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+                assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
                 throw new RuntimeException(msg);
@@ -174,14 +174,49 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testCache(P problem) {
-        for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
-            config.width = new FixedWidth<>(w);
-            config.cache = new SimpleCache<>();
-            Solver solver = solverForRelaxation(config);
+        DdoModel<T> globalModel = model(problem);
+        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
 
-            solver.minimize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(w);
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+        };
+        for (int w = minWidth; w <= maxWidth; w++) {
+            try {
+                DdoModel<T> testModel = getModel.apply(w);
+
+                Double best = Solvers.minimizeExact(testModel).incumbent();
+                Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+                assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
+            } catch (Exception e) {
+                String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
+                throw new RuntimeException(msg);
+            }
         }
     }
 
@@ -191,11 +226,12 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testAStarSolver(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = new AStarSolver<>(config);
 
-        solver.minimize();
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+        Model<T> testModel = model(problem);
+
+        Double best = Solvers.minimizeAstar(testModel).incumbent();
+        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
 
 
@@ -205,11 +241,29 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testACSSolver(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        Solver solver = new ACSSolver<>(config, 4);
 
-        solver.minimize();
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+        Model<T> globalModel = model(problem);
+
+        AcsModel<T> testModel = new AcsModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+        };
+
+        Double best = Solvers.minimizeAcs(testModel).incumbent();
+        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
 
     /**
@@ -219,15 +273,39 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testFlbOnRelaxedNodes(P problem) {
-        for (int w = minWidth; w <= maxWidth; w++) {
-            SolverConfig<T, K> config = configSolver(problem);
-            config.dominance = new DefaultDominanceChecker<>();
-            config.debugLevel = 1;
-            config.width = new FixedWidth<>(w);
-            Solver solver = solverForRelaxation(config);
+        DdoModel<T> globalModel = model(problem);
+        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
 
-            solver.minimize();
-            assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10, w);
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(w);
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+        };
+        for (int w = minWidth; w <= maxWidth; w++) {
+            try {
+                DdoModel<T> testModel = getModel.apply(w);
+
+                Double best = Solvers.minimizeExact(testModel).incumbent();
+                Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+                assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
+            } catch (Exception e) {
+                String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
+                throw new RuntimeException(msg);
+            }
         }
     }
 
@@ -237,12 +315,29 @@ public abstract class ProblemTestBench<T, K, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testDominance(P problem) {
-        SolverConfig<T, K> config = configSolver(problem);
-        config.flb = new DefaultFastLowerBound<>();
-        Solver solver = solverForTests(config);
+        DdoModel<T> globalModel = model(problem);
 
-        solver.minimize();
-        assertOptionalDoubleEqual(problem.optimalValue(), solver.bestValue(), 1e-10);
+        DdoModel<T> testModel = new DdoModel<>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
+
+            @Override
+            public Problem<T> problem() {
+                return globalModel.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+        };
+
+
+        Double best = Solvers.minimizeExact(testModel).incumbent();
+        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
     }
 
     /**

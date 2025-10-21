@@ -4,7 +4,7 @@ import org.ddolib.modeling.Dominance;
 
 import java.util.BitSet;
 
-public class MispDominance implements Dominance<BitSet, Integer> {
+public class MispDominance implements Dominance<BitSet> {
     @Override
     public Integer getKey(BitSet state) {
         return 0;

@@ -1,17 +1,14 @@
 package org.ddolib.examples.alp;
 
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.VerbosityLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +17,7 @@ import java.util.stream.Stream;
 
 public class ALPTest {
 
-    public static class AlpBench extends ProblemTestBench<ALPState, NullType, ALPProblem> {
+    public static class AlpBench extends ProblemTestBench<ALPState, ALPProblem> {
 
         @Override
         protected List<ALPProblem> generateProblems() {
@@ -35,8 +32,7 @@ public class ALPTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            ALPInstance instance = new ALPInstance(filePath.toString());
-                            ALPProblem problem = new ALPProblem(instance);
+                            ALPProblem problem = new ALPProblem(filePath.toString());
                             problem.setName(filePath.getFileName().toString());
                             return problem;
                         } catch (IOException e) {
@@ -46,22 +42,41 @@ public class ALPTest {
         }
 
         @Override
-        protected SolverConfig<ALPState, NullType> configSolver(ALPProblem problem) {
-            SolverConfig<ALPState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new ALPRelax(problem);
-            config.ranking = new ALPRanking();
-            config.flb = new ALPFastLowerBound(problem);
+        protected DdoModel<ALPState> model(ALPProblem problem) {
+            return new DdoModel<>() {
+                @Override
+                public ALPProblem problem() {
+                    return problem;
+                }
 
-            config.width = new FixedWidth<>(100);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+                @Override
+                public ALPRelax relaxation() {
+                    return new ALPRelax(problem);
+                }
 
+                @Override
+                public ALPRanking ranking() {
+                    return new ALPRanking();
+                }
 
-            return config;
+                @Override
+                public ALPFastLowerBound lowerBound() {
+                    return new ALPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
-
     }
+
 
     @DisplayName("ALP")
     @TestFactory

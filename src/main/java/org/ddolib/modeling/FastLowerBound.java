@@ -1,11 +1,13 @@
 package org.ddolib.modeling;
 
+
 import java.util.Set;
 
 /**
+ * Interface for the fast lower bound method
  * Heuristic defining a fast lower bound for states
  *
- * @param <T> The type of the states
+ * @param <T> The type of the state
  */
 public interface FastLowerBound<T> {
 
