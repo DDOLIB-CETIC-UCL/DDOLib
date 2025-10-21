@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.*;
 
 import java.util.Optional;
+
 /**
  * Represents the configuration parameters used during the compilation
  * of a Multi-valued Decision Diagram (MDD) or similar decision structure.
@@ -123,10 +124,36 @@ public class CompilationConfig<T> {
      * Returns a human-readable string representation of this configuration.
      *
      * @return a formatted string containing the compilation type,
-     *         residual problem, and best known upper bound
+     * residual problem, and best known upper bound
      */
     @Override
     public String toString() {
         return String.format("Compilation: %s - Sub problem: %s - bestUB: %f", compilationType, residual, bestUB);
+    }
+
+    /**
+     * Returns a copy of this configuration.
+     *
+     * @return a copy of this configuration.
+     */
+    public CompilationConfig<T> copy() {
+        CompilationConfig<T> compilation = new CompilationConfig<>();
+
+        compilation.compilationType = this.compilationType;
+        compilation.problem = this.problem;
+        compilation.relaxation = this.relaxation;
+        compilation.variableHeuristic = this.variableHeuristic;
+        compilation.stateRanking = this.stateRanking;
+        compilation.residual = this.residual;
+        compilation.maxWidth = this.maxWidth;
+        compilation.flb = this.flb;
+        compilation.dominance = this.dominance;
+        compilation.cache = this.cache;
+        compilation.bestUB = this.bestUB;
+        compilation.cutSetType = this.cutSetType;
+        compilation.exportAsDot = this.exportAsDot;
+        compilation.debugLevel = this.debugLevel;
+
+        return compilation;
     }
 }
