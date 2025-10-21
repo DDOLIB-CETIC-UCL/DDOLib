@@ -22,5 +22,8 @@ public enum VerbosityLevel {
      */
     LARGE,
 
+    /**
+     * Same that {@code LARGE} but save the logs into {@code logs.txt} files.
+     */
     EXPORT,
 }

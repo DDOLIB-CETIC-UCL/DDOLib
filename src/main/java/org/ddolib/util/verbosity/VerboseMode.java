@@ -15,6 +15,7 @@ public class VerboseMode {
     private final long printInterval;
 
     /**
+     * Instantiate the verbose mode
      *
      * @param verbosityLevel The level of details to print.
      * @param printInterval  The delay between two prints of statistics about the frontier
@@ -89,6 +90,13 @@ public class VerboseMode {
         }
     }
 
+    /**
+     * Returns a writer depending on the verbosity level.
+     *
+     * @return If the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
+     * saving logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs
+     * in the console.
+     */
     public Writer getWriter() {
         if (verbosityLevel == VerbosityLevel.EXPORT) {
             try {
@@ -97,14 +105,18 @@ public class VerboseMode {
                 throw new RuntimeException(e);
             }
         } else {
-            return new NonClosingWriter(new PrintWriter(System.out));
+            return new NonClosingPrintWriter(new PrintWriter(System.out));
         }
     }
 
 
-    private static class NonClosingWriter extends FilterWriter {
+    /**
+     * Class encapsulating a {@link PrintWriter} ensuring that {@code System.out} will not be
+     * closed.
+     */
+    private static class NonClosingPrintWriter extends FilterWriter {
 
-        public NonClosingWriter(Writer out) {
+        public NonClosingPrintWriter(PrintWriter out) {
             super(out);
         }
 
@@ -112,14 +124,5 @@ public class VerboseMode {
         public void close() throws IOException {
         }
 
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            out.write(cbuf, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            out.flush();
-        }
     }
 }
