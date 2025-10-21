@@ -497,6 +497,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
+    /**
+     * Checks whether the relaxation is coherent. This method compiles mdd starting from a
+     * relaxed node and each merged nodes. Then, it compares the best values if each solution.
+     *
+     */
     private void checkRelaxation(List<NodeSubProblem<T>> nodesToMerge,
                                  NodeSubProblem<T> relaxedNode) {
         DecimalFormat df = new DecimalFormat("#.##########");
@@ -533,6 +538,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
     }
 
+    /**
+     * Given a node sub-problem compiles the associated mdd and returns it.
+     */
     private LinkedDecisionDiagram<T> compileSubMdd(NodeSubProblem<T> sub) {
         CompilationConfig<T> compilation = config.copy();
         compilation.residual = sub.toSubProblem(constructPathToRoot(sub.node));
@@ -562,7 +570,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return path;
     }
 
-    private String detailedPath(Set<Decision> pathFromRoot) {
+    /**
+     * Given a set of decision going from the root to a terminal node, returns a description of
+     * the path.
+     *
+     */
+    private String describePath(Set<Decision> pathFromRoot) {
         List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::var)).toList();
         T current = config.problem.initialState();
         int depth = 0;
