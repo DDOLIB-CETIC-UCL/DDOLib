@@ -15,3 +15,13 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           maven-version: ${{ matrix.maven }}
+      - name: Generate coverage
+        id: coverage
+        run: |
+          mvn compile
+          mvn test
+          mvn jacoco:report
+          display=`sed -nE 's/^.*<td>Total<([^>]+>){4}([^<]*).*$/\2/p' target/site/jacoco/index.html`
+          echo "display=$display" >> $GITHUB_OUTPUT    # with the "%"
+          coverage=${display%"%"}
+          echo "coverage=$coverage" >> $GITHUB_OUTPUT  # without "%", treated as a number​
