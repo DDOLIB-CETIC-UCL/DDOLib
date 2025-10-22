@@ -673,13 +673,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         if (lastLayer) {
-            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
+            node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
 
         String nodeStr = String.format(
                 "\"%s\nflb: %s - value: %s\"",
                 node.state,
-                df.format(node.node.flb),
+                df.format(node.lb),
                 df.format(node.node.value)
         );
 
