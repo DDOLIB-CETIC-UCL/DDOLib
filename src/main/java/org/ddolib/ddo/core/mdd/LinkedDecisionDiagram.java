@@ -530,7 +530,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 " (%s) than one of the merged nodes (%s).\n",
                         df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
 
-                failureMsg += "Relaxed state: " + relaxedNode.state + " - depth: " + relaxationDepth + "\n";
+                failureMsg += "Depth: " + relaxationDepth + "\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
                 failureMsg += "Merged states state:\n\t" + nodesToMerge
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
                 failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
@@ -554,6 +555,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (!failureMsg.isEmpty()) {
                 failureMsg += "\n";
                 if (debugLevel == DebugLevel.EXTENDED) {
+                    dotStr.append(generateDotStr(relaxedNode, false));
                     String dot = exportAsDot();
                     try (BufferedWriter bw =
                                  new BufferedWriter(new FileWriter(Paths.get("output",
