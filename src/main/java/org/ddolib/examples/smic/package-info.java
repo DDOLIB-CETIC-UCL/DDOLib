@@ -1,5 +1,5 @@
 /**
- * ################## The Single Machine with Inventory Constraint (SMIC) ##################
+ * This package implements the acs, astar and ddo models for the Single Machine with Inventory Constraint (SMIC).
  * Given a set J of n jobs, partitioned into a set J1
  * of n1 loading jobs and set J2 of n2 unloading jobs. Each job j ∈ J has a
  * processing time p ∈ R+, a release date r ∈ R+ and a positive (resp. negative) inventory

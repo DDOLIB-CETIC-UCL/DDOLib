@@ -1,5 +1,5 @@
 /**
- * ##########   Bounded Knapsack Problem (BKS) ##########
+ * This package implements the acs, astar and ddo models for the Bounded Knapsack Problem (BKS).
  * A bounded knapsack problem is a variation of the classic knapsack problem
  * where each item can be included in the knapsack a limited number of times.
  * Given a knapsack having a maximum (weight) capacity,  a set of items {1, ... ,n} where all items of type i have

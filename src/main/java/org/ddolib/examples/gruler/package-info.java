@@ -1,6 +1,5 @@
 /**
- * ########## Golomb Rule Problem (GRP) ################
- * This package contains the implementation of the golomb ruler problem
+ * This package implements the acs, astar and ddo models for the Golomb Rule Problem (GRP).
  * In a Golomb rule problem, a set of marks at integer positions along a ruler are
  * posted such that no two pairs of marks are the same distance apart.
  * The number of marks on the ruler is its order, and the largest distance between two of its marks is its length.

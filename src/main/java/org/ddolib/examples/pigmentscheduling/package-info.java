@@ -1,5 +1,5 @@
 /**
- * ################  The Pigment Sequencing Problem (PSP)  ######################
+ * This package implements the acs, astar and ddo models for the Pigment Sequencing Problem (PSP).
  * The Pigment Sequencing Problem (PSP) is a single-machine production planning problem
  * that aims to minimize the stocking and changeover costs while satisfying a set of orders.
  * There are different item types I = {0,...,𝑛−1}.

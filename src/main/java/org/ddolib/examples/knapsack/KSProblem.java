@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Represents an instance of the Knapsack Problem (KP).
+ * Represents an instance of the Knapsack Problem (KS).
  * <p>
  * The state of the problem is the remaining capacity of the knapsack (represented as an {@link Integer}).
  * Decisions correspond to selecting or not selecting a specific item (1 for selected, 0 for not selected).

@@ -2,16 +2,38 @@ package org.ddolib.util;
 
 import java.util.HashSet;
 import java.util.Set;
-
+/**
+ * Utility class to compute lower bounds for the Traveling Salesman Problem (TSP).
+ * <p>
+ * This class provides methods to compute a simple yet effective lower bound on the
+ * cost of visiting subsets of nodes in a TSP instance, based on the minimum incident
+ * edges for each node in the subset.
+ * </p>
+ *
+ * <p>
+ * The lower bound is used in more complex problems (like Production Scheduling Problem)
+ * where the TSP component appears in the calculation of minimum changeover costs.
+ * </p>
+ */
 public class TSPLowerBound {
 
     /**
-     * Given a nxn cost matrix,
-     * compute a lower-bound for all possible subsets of {0,...,n-1}.
+     * Computes a lower-bound for all subsets of a set of nodes based on the given cost matrix.
+     * <p>
+     * For a given cost matrix, this method calculates a lower bound for each subset of nodes
+     * {0, ..., n-1}, where n is the size of the matrix. The lower bound is computed by
+     * summing the minimum incident edge of each node in the subset, considering only edges
+     * connecting nodes within the subset.
+     * </p>
      *
-     * @param costMatrix
-     * @return an array of integers, where the i-th element is lower-bound
-     * for the subset corresponding to the binary representation of i.
+     * <p>
+     * Each subset of nodes is represented by an integer using its binary representation:
+     * the i-th bit is 1 if node i is included in the subset, 0 otherwise.
+     * </p>
+     *
+     * @param costMatrix a square matrix of size n x n representing the cost between nodes
+     * @return an array of integers where the i-th element represents the lower bound
+     *         for the subset corresponding to the binary representation of i
      */
     public static int[] lowerBoundForAllSubsets(int[][] costMatrix) {
         int nItems = costMatrix.length;
@@ -23,7 +45,18 @@ public class TSPLowerBound {
         }
         return result;
     }
-
+    /**
+     * Computes the sum of the minimum incident edges for a given subset of nodes.
+     * <p>
+     * For each node in the subset, find the smallest edge connecting it to another node
+     * in the subset and sum these minimum edges. Each node is counted at most once
+     * to avoid double-counting edges.
+     * </p>
+     *
+     * @param members a set of node indices representing the subset
+     * @param changeover a square cost matrix
+     * @return the sum of the minimum incident edges for the subset
+     */
     private static int sumMinIncident(Set<Integer> members, int[][] changeover) {
         if (members.size() <= 1) {
             return 0;
@@ -52,7 +85,17 @@ public class TSPLowerBound {
         }
         return total;
     }
-
+    /**
+     * Converts an integer representation of a subset to a set of node indices.
+     * <p>
+     * Each bit in the integer represents whether the corresponding node is included
+     * in the subset (1) or not (0).
+     * </p>
+     *
+     * @param num an integer representing the subset in binary
+     * @param size the total number of nodes
+     * @return a set of integers corresponding to the indices of nodes in the subset
+     */
     private static Set<Integer> intToSet(int num, int size) {
         Set<Integer> set = new HashSet<>();
         for (int i = 0; i < size; i++) {

@@ -7,7 +7,7 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 
 /**
- * ########## Golomb Rule Problem (GRP) ################
+ * Golomb Rule Problem (GRP) with Ddo.
  */
 public class GRDdoMain {
 

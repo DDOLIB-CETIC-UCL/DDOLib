@@ -1,5 +1,5 @@
 /**
- * ################ Minimum Sum Completion Time (MSCT) #####################
+ * This package implements the acs, astar and ddo models for the Minimum Sum Completion Time (MSCT).
  * The problem is to sequence n jobs such that:
  * - each job is scheduled after its release time
  * - the sum of completion time is minimized

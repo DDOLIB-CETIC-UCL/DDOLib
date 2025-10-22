@@ -25,6 +25,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
  *   <li>Specify how to maintain and update the frontier ({@link #frontier()}).</li>
  *   <li>Indicate optional behaviors like caching ({@link #useCache()}) or exporting the structure ({@link #exportDot()}).</li>
  * </ul>
+ * @param <T> the state type
  */
 public interface DdoModel<T> extends Model<T> {
     /**

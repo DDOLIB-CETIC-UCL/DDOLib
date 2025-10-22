@@ -1,5 +1,5 @@
 /**
- * ******* Maximum Cut Problem (MCP) *******
+ * This package implements the acs, astar and ddo models for the Maximum Cut Problem (MCP).
  * Given an undirected weighted graph 𝐺 = (𝑉,𝐸) in which the weight of
  * the edge (𝑖,𝑗) ∈ 𝐸 is denoted 𝑤_{i,j} the MCP consists in finding a bi-partition (𝑆,𝑇)
  * of the vertices of some given graph that maximizes the total weight of edges whose endpoints are in different partitions.

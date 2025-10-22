@@ -8,7 +8,7 @@ import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 /**
- * ############   Bounded Knapsack Problem (BKS) #############
+ * Bounded Knapsack Problem (BKS) with AsTar.
  */
 public class BKSAstarMain {
 

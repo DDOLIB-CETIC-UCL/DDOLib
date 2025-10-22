@@ -1,6 +1,5 @@
 /**
- * This package contains the implementation of the Maximum Independent Set Problem (MISP)
- * ***** The Maximum Independent Set Problem (MISP) *****
+ * This package implements the acs, astar and ddo models for the Maximum Independent Set Problem (MISP).
  * Given a weighted graph 𝐺 = (𝑉,𝐸,𝑤) where 𝑉= {1,...,𝑛}
  * is a set of vertices, 𝐸 \subset 𝑉 ×𝑉 the set of edges connecting those vertices and
  * 𝑤 = {𝑤1,𝑤2,...,𝑤𝑛} is a set of weights s.t. 𝑤𝑖 is the weight of node 𝑖.

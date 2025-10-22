@@ -10,10 +10,32 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * ################  The Pigment Sequencing Problem (PSP)  ######################
+ * The Pigment Sequencing Problem (PSP) with Acs.
+ * Main class for solving a Precedence-constrained Scheduling Problem (PSP)
+ * using the Anytime Column Search (ACS) algorithm.
+ * <p>
+ * This class reads a problem instance from a file (or uses a default instance if none
+ * is provided), builds an ACS model, and runs the solver to minimize the schedule cost.
+ * </p>
+ * <p>
+ * The solution and search statistics are printed to the console.
+ * </p>
+ * <p>
+ * Usage:
+ * </p>
+ * <pre>
+ * java PSAcsMain [instanceFile]
+ * </pre>
+ * If no {@code instanceFile} is provided, a default instance located at
+ * {@code data/PSP/instancesWith2items/10} is used.
  */
 public class PSAcsMain {
-
+    /**
+     * Entry point of the program.
+     *
+     * @param args optional command-line argument specifying the path to a PSP instance file
+     * @throws IOException if there is an error reading the problem instance file
+     */
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith2items","10").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
