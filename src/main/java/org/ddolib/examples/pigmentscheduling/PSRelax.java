@@ -91,18 +91,21 @@ public class PSRelax implements Relaxation<PSState> {
      */
     @Override
     public PSState mergeStates(final Iterator<PSState> states) {
-        PSState currState = states.next();
-        int[] prevDemands = Arrays.copyOf(currState.previousDemands, currState.previousDemands.length);
-        int time = currState.t;
+        PSState state = states.next();
+        int[] prevDemands = Arrays.copyOf(state.previousDemands, state.previousDemands.length);
+        int time = state.t;
+        int nextItem = state.next;
+        boolean disagreeOnNext = false; // becomes true if not all states agree on nextItem
         while (states.hasNext()) {
-            PSState state = states.next();
-            time = Math.min(time, state.t);
+            state = states.next();
+            disagreeOnNext = disagreeOnNext || (state.next != nextItem);
+            assert(state.t == time); // all states must be at the same time, as this is the variable/layer
+            // for each item type, take the earliest prevDemand
             for (int i = 0; i < prevDemands.length; i++) {
                 prevDemands[i] = Math.min(prevDemands[i], state.previousDemands[i]);
             }
         }
-        return new PSState(time, IDLE, prevDemands);
-
+        return new PSState(time, disagreeOnNext ? IDLE : nextItem, prevDemands);
     }
     /**
      * Returns the relaxed transition cost between two PSP states.
