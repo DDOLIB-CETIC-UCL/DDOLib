@@ -32,7 +32,7 @@ final class NodeSubProblem<T> {
      */
     public final Node node;
     /**
-     * The upper bound associated with this node (if state were the root)
+     * The lower bound associated with this node (if state were the root)
      */
     public double lb;
 
