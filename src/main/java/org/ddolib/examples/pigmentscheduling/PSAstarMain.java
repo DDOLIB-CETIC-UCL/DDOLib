@@ -40,7 +40,7 @@ public class PSAstarMain {
      * @throws IOException if an error occurs while reading the problem instance
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith2items","10").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith5items","3").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
         Model<PSState> model = new Model<>() {
             @Override

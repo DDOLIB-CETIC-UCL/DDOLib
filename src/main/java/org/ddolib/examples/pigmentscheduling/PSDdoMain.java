@@ -73,7 +73,7 @@ public class PSDdoMain {
 
             @Override
             public WidthHeuristic<PSState> widthHeuristic() {
-                return new FixedWidth<>(120);
+                return new FixedWidth<>(100);
             }
         };
 

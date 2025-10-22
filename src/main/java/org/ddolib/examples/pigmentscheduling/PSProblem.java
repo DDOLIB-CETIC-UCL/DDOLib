@@ -305,7 +305,7 @@ public class PSProblem implements Problem<PSState> {
             int t = (horizon - decision.var() - 1);
             int duration = state.previousDemands[item] - t;
             int stocking = stockingCost[item] * duration;
-            int changeover = state.next != -1 ? changeoverCost[item][state.next] : 0;
+            int changeover = state.next != IDLE ? changeoverCost[item][state.next] : 0;
             // stocking cost + changeover cost
             return changeover + stocking;
         }
