@@ -1,4 +1,6 @@
 org.ddolib
+org.ddolib.acs.core
+org.ddolib.acs.core.solver
 org.ddolib.astar
 org.ddolib.astar.core.solver
 org.ddolib.common
