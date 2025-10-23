@@ -72,7 +72,7 @@ public class Threshold implements Comparable<Threshold> {
     /**
      * Compares this threshold to another threshold.
      * <p>
-     * Thresholds are compared first by value (ascending), and then by exploration status (false < true)
+     * Thresholds are compared first by value (ascending), and then by exploration status (false then true)
      * if the values are equal.
      * </p>
      *
