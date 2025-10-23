@@ -11,7 +11,7 @@ import java.nio.file.Path;
 /**
  * The Pigment Sequencing Problem (PSP) with Ddo.
  * Main class for solving a Precedence-constrained Scheduling Problem (PSP)
- * using the Decision Dynamic Optimization (DDO) algorithm.
+ * using the Decision Diagram Optimization (DDO) algorithm.
  * <p>
  * This program loads a PSP instance (from a file or a default path),
  * constructs a {@link DdoModel} that defines the problem structure,

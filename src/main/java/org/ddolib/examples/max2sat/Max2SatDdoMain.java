@@ -14,14 +14,7 @@ import java.nio.file.Paths;
 /**
  * Maximum 2-Satisfiability (MAX2SAT) (MAX2SAT) problem with Ddo.
  * Entry point for solving the <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem
- * using the <b>Dynamic Decision Diagram Optimization (DDO)</b> approach.
- * <p>
- * The MAX2SAT problem aims to find an assignment of Boolean variables that
- * maximizes the number (or total weight) of satisfied clauses, where each clause
- * contains at most two literals. This class demonstrates how to configure and
- * execute the DDO search algorithm for this optimization problem.
- * </p>
- *
+ * using the <b>Decision Diagram Optimization (DDO)</b> algorithm.
  * <p>
  * The <b>DDO algorithm</b> incrementally constructs and explores a
  * decision diagram that represents all feasible partial assignments.

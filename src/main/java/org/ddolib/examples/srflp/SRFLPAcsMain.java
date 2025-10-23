@@ -10,7 +10,44 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
-
+/**
+ * The Single-Row Facility Layout Problem (SRFLP) with Acs.
+ * Entry point for solving the Single-Row Facility Layout Problem (SRFLP)
+ * using the Anytime Column Search (ACS) algorithm.
+ *
+ * <p>
+ * <strong>Usage:</strong>
+ * </p>
+ * <pre>{@code
+ * java SRFLPAcsMain [instanceFile]
+ * }</pre>
+ * If no instance file is provided as an argument, a default instance located at
+ * {@code data/SRFLP/simple} will be used.
+ *
+ *
+ * <p>
+ * The ACS model requires the following components:
+ * </p>
+ * <ul>
+ *     <li>{@link SRFLPProblem} – the problem definition (distance/cost matrix, number of facilities, etc.),</li>
+ *     <li>{@link SRFLPFastLowerBound} – a fast lower-bound estimator for pruning or ranking states,</li>
+ *     <li>Optional column width for solution display formatting.</li>
+ * </ul>
+ *
+ * <p>
+ * After the search is completed, the program prints:
+ * </p>
+ * <ul>
+ *     <li>Search statistics returned by {@link Solvers#minimizeAstar},</li>
+ *     <li>The best solution found as an array of facility indices.</li>
+ * </ul>
+ *
+ * @see SRFLPProblem
+ * @see SRFLPState
+ * @see SRFLPFastLowerBound
+ * @see AcsModel
+ * @see Solvers
+ */
 public class SRFLPAcsMain {
     public static void main(String[] args) throws IOException {
         final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :

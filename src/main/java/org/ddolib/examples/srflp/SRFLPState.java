@@ -5,14 +5,21 @@ import java.util.BitSet;
 import java.util.Objects;
 
 /**
- * Represents a state for a SRFLP instance.
+ * Represents a state in a Single Row Facility Layout Problem (SRFLP) instance.
  *
- * @param must  The set of the remaining department that must be placed.
- * @param maybe Used by merged nodes. Contains department that must be placed for some of the merged nodes but that
- *              has already been placed for other ones.
- * @param cut   For each free department, contains the sum of all traffic intensities from the fixed departments and
- *              the free department.
- * @param depth The depth of the state in the associated MDD.
+ * <p>
+ * Each state keeps track of which departments must still be placed, which departments
+ * are optional (in case of merged nodes), the cumulative cut values, and the depth
+ * in the decision diagram or search tree.
+ * </p>
+ *
+ * @param must  The set of departments that must still be placed in all possible completions
+ *              of the current state. Represented as a {@link BitSet}.
+ * @param maybe The set of departments that must be placed for some of the merged states,
+ *              but may have already been placed in others. Used primarily in relaxed/merged states.
+ * @param cut   An array containing, for each free department, the sum of all traffic intensities
+ *              from the fixed departments to that department.
+ * @param depth The depth of the state in the associated decision diagram or search tree.
  */
 public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {
 

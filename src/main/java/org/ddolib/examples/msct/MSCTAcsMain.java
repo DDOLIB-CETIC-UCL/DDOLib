@@ -15,7 +15,7 @@ import java.nio.file.Path;
 /**
  * Minimum Sum Completion Time (MSCT) with Acs.
  * Main class to solve an instance of the Maximum Sum of Compatible Tasks (MSCT) problem
- * using the ACS (Approximate Cost Search) algorithm.
+ * using the ACS (Anytime Column Search) algorithm.
  * <p>
  * This class reads an MSCT instance from a file (default or specified via command-line argument),
  * sets up an ACS model including dominance checking and a fast lower bound, and then

@@ -11,23 +11,50 @@ import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
 /**
- * Implementation of the relaxation for the SRFLP.
+ * Implementation of a relaxation for the Single Row Facility Layout Problem (SRFLP).
+ *
+ * <p>
+ * In this relaxation, multiple SRFLP states can be merged into a single state
+ * to reduce the search space. The merged state over-approximates the possible
+ * states by combining the "must" and "maybe" sets and taking minimal cut values.
+ * </p>
+ *
+ * <p>
+ * This class implements the {@link Relaxation} interface and is typically used
+ * in decision diagram or DDO-based algorithms for SRFLP to enable state merging
+ * and efficient pruning.
+ * </p>
  */
 public class SRFLPRelax implements Relaxation<SRFLPState> {
 
     private final SRFLPProblem problem;
 
     /**
-     * Constructs a new instance of a relaxation for the SRFLP.
+     * Constructs a new relaxation instance for a given SRFLP problem.
      *
-     * @param problem The problem instance that must be solved.
+     * @param problem The SRFLP problem instance to which this relaxation applies.
      */
     public SRFLPRelax(SRFLPProblem problem) {
         this.problem = problem;
 
     }
 
-
+    /**
+     * Merges multiple SRFLP states into a single relaxed state.
+     *
+     * <p>
+     * The merged state:
+     * </p>
+     * <ul>
+     *     <li>Intersects the "must" sets of all input states.</li>
+     *     <li>Unites the "must" and "maybe" sets into the merged "maybe" set.</li>
+     *     <li>Takes the minimal cut values for each department.</li>
+     *     <li>Uses the maximum depth among all merged states.</li>
+     * </ul>
+     *
+     * @param states An iterator over the states to merge.
+     * @return A new SRFLPState representing the merged relaxation of the input states.
+     */
     @Override
     public SRFLPState mergeStates(Iterator<SRFLPState> states) {
         BitSet mergedMust = new BitSet(problem.nbVars());
@@ -57,7 +84,21 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
 
         return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);
     }
-
+    /**
+     * Relaxation of an edge cost between two states.
+     *
+     * <p>
+     * In this implementation, the edge cost is not modified by the relaxation and
+     * is returned as-is.
+     * </p>
+     *
+     * @param from   The source state.
+     * @param to     The target state.
+     * @param merged The merged state containing this edge.
+     * @param d      The decision taken to move from {@code from} to {@code to}.
+     * @param cost   The original cost of the edge.
+     * @return The relaxed cost of the edge, which in this case is equal to {@code cost}.
+     */
     @Override
     public double relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d,
                             double cost) {

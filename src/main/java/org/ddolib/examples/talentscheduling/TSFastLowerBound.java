@@ -9,18 +9,48 @@ import java.util.BitSet;
 import java.util.Set;
 
 /**
- * Implementation of a fast upper bound for the Talent Scheduling problem.
+ * Implementation of a fast lower bound for the Talent Scheduling Problem (TSP).
+ * <p>
+ * This class computes a heuristic lower bound on the total cost of a partially scheduled solution,
+ * based on the method described in
+ * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378">Garcia et al.</a>.
+ * It takes into account both the duration of scenes and the actor costs for scenes that are not yet scheduled.
+ * </p>
+ *
+ * <p>
+ * The bound is computed in two main steps:
+ * </p>
+ * <ol>
+ *     <li>Compute a contribution for each unscheduled scene based on actors present and their costs.</li>
+ *     <li>Adjust for cumulative actor contributions using ratios and sort actors to estimate the remaining cost.</li>
+ * </ol>
+ * The result is rounded up to handle floating-point errors.
+ *
+ * <p>
+ * This lower bound is intended for use with search algorithms (e.g., ACS, A*, DDO)
+ * to prune suboptimal branches efficiently.
+ * </p>
  */
 public class TSFastLowerBound implements FastLowerBound<TSState> {
+    /** The TSP instance associated with this lower bound computation. */
     private final TSProblem problem;
+
+    /**
+     * Constructs a fast lower bound calculator for a given TSP problem.
+     *
+     * @param problem The Talent Scheduling Problem instance.
+     */
 
     public TSFastLowerBound(TSProblem problem) {
         this.problem = problem;
     }
 
     /**
-     * Based on the lower bound of
-     * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378"> Garcia et al.</a>
+     * Computes a fast lower bound on the total cost from the given partial state.
+     *
+     * @param state     The current state of the scheduling problem.
+     * @param variables The set of variables (scenes) still to be scheduled.
+     * @return The computed lower bound on the total cost, rounded up.
      */
     @Override
     public double fastLowerBound(TSState state, Set<Integer> variables) {
@@ -70,9 +100,14 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
         return Math.ceil(bd.doubleValue());
     }
 
-
+    /**
+     * Helper class that stores a ratio and the corresponding actor index.
+     * Used for sorting actors when computing the lower bound.
+     */
     private static class RatioAndActor implements Comparable<RatioAndActor> {
+        /** The ratio associated with this actor. */
         public double ratio;
+        /** The index of the actor. */
         public int actor;
 
         public RatioAndActor(double ratio, int actor) {

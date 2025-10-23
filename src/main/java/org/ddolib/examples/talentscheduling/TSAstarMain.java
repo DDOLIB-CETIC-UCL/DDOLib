@@ -9,7 +9,25 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Paths;
 /**
- * ################  The talent scheduling problem (tsp) ####################
+ * The talent scheduling problem (tsp) with AsTar.
+ * Entry point for solving instances of the Talent Scheduling Problem (TSP)
+ * using an A* search algorithm.
+ *
+ * <p>
+ * This class reads a TSP instance from a file, initializes the corresponding
+ * {@link TSProblem}, and creates a {@link Model} for {@link TSState}.
+ * It then runs the A* solver to find a (near-)optimal schedule and prints
+ * both the solution and search statistics.
+ * </p>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ * <pre>
+ * java TSAstarMain [instanceFile]
+ * </pre>
+ * If no {@code instanceFile} argument is provided, the default instance
+ * {@code data/TalentScheduling/film-12} will be used.
  */
 public class TSAstarMain {
     public static void main(String[] args) throws IOException {

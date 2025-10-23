@@ -11,12 +11,7 @@ import java.nio.file.Path;
 /**
  * Maximum 2-Satisfiability (MAX2SAT) (MAX2SAT) problem with Acs.
  * Entry point for solving the <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem
- * using the <b>Ant Colony System (ACS)</b> metaheuristic.
- * <p>
- * The MAX2SAT problem consists in finding an assignment of Boolean variables
- * that maximizes the number (or total weight) of satisfied clauses,
- * where each clause involves at most two literals.
- * </p>
+ * using the <b>Anytime Column Search (ACS)</b> algorithm.
  *
  * <p>
  * This class demonstrates how to set up and run an ACS-based solver using

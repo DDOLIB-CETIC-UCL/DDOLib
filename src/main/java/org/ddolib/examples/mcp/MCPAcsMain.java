@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 /**
  * Maximum Cut Problem (MCP) with Acs.
- * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using an Ant Colony System (ACS) approach.
+ * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using an Anytime Column Search (ACS) approach.
  * <p>
  * This class demonstrates how to set up an ACS model for the MCP, run the search, and print
  * the resulting solution and statistics.

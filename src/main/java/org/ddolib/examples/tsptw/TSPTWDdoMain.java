@@ -18,19 +18,56 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * ############### TSPTW (TSP with Time Windows) #################
+ * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Ddo.
+ * Main class for solving the Traveling Salesman Problem with Time Windows (TSPTW)
+ * using a Decision Diagram Optimization (DDO) approach.
+ * <p>
+ * This class demonstrates how to load a TSPTW problem instance, define a DDO model with relaxation, ranking,
+ * lower bound, dominance, frontier, width heuristic, and caching, and solve the problem using
+ * {@link Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)}.
+ * The solution and search statistics are printed to the console.
+ * </p>
+ * <p>
+ * Default data files come from
+ * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
+ * </p>
  */
 public class TSPTWDdoMain {
 
     /**
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain"} in your terminal to execute
-     * default instance. <br>
+     * Entry point of the application.
      * <p>
-     * Run {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain -Dexec.args="<your file>
-     * <maximum width of the mdd>"} to specify an instance and optionally the maximum width of the mdd.<br>
+     * Execution examples:
+     * </p>
+     * <ul>
+     *     <li>Run the default instance:
+     *     {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain"}</li>
+     *     <li>Run a specific instance with optional maximum MDD width:
+     *     {@code mvn exec:java -Dexec.mainClass="org.ddolib.ddosolver.examples.tsptw.TSPTWMain" -Dexec.args="<your file> <max width>"}</li>
+     * </ul>
+     *
      * <p>
-     * Given Data files comes from
-     * <a href="https://lopez-ibanez.eu/tsptw-instances#makespan">López-Ibáñes and Blum benchmark instances</a>.
+     * The method performs the following steps:
+     * </p>
+     * <ol>
+     *     <li>Loads the TSPTW problem instance from a file (default or provided via arguments).</li>
+     *     <li>Defines a DDO model including:
+     *         <ul>
+     *             <li>Relaxation using {@link TSPTWRelax}</li>
+     *             <li>Ranking using {@link TSPTWRanking}</li>
+     *             <li>Lower bound using {@link TSPTWFastLowerBound}</li>
+     *             <li>Dominance using {@link TSPTWDominance} and {@link SimpleDominanceChecker}</li>
+     *             <li>Frontier using {@link SimpleFrontier} and {@link CutSetType#Frontier}</li>
+     *             <li>Width heuristic using {@link FixedWidth}</li>
+     *             <li>Caching enabled</li>
+     *         </ul>
+     *     </li>
+     *     <li>Solves the problem using the DDO solver.</li>
+     *     <li>Prints the solution and search statistics to the console.</li>
+     * </ol>
+     *
+     * @param args optional command-line arguments specifying the instance file and maximum width
+     * @throws IOException if an I/O error occurs while reading the instance file or printing the solution
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];

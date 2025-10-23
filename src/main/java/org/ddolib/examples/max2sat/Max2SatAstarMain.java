@@ -15,12 +15,6 @@ import java.nio.file.Paths;
  * Maximum 2-Satisfiability (MAX2SAT) (MAX2SAT) problem with AsTar.
  * Entry point for solving the <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem
  * using the <b>A*</b> search algorithm.
- * <p>
- * The MAX2SAT problem consists in finding an assignment of Boolean variables
- * that maximizes the number (or total weight) of satisfied clauses, where
- * each clause contains at most two literals. This class demonstrates how to
- * configure and execute an A* search for this combinatorial optimization problem.
- * </p>
  *
  * <p>
  * The <b>A*</b> algorithm explores the search space by expanding states in order
