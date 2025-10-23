@@ -37,7 +37,7 @@ public class PSAcsMain {
      * @throws IOException if there is an error reading the problem instance file
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith2items","10").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith5items","3").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
         AcsModel<PSState> model = new AcsModel<>() {
             @Override
@@ -48,6 +48,11 @@ public class PSAcsMain {
             @Override
             public PSFastLowerBound lowerBound() {
                 return new PSFastLowerBound(problem);
+            }
+
+            @Override
+            public int columnWidth() {
+                return 1000;
             }
         };
 
