@@ -6,9 +6,13 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
@@ -20,7 +24,7 @@ public class TSPMain {
     public static void main(final String[] args) throws IOException {
 
         //TSPInstance instance = new TSPInstance("data/TSP/gr21.xml");
-        TSPInstance instance = new TSPInstance("data/TSP/instance_18_0.xml");
+        TSPInstance instance = new TSPInstance("data/TSP/instance_8_0.xml");
 
         //data/TSP/instance_18_0.xml
         //sans cache
@@ -64,12 +68,17 @@ public class TSPMain {
         config.relax = new TSPRelax(problem);
         config.ranking = new TSPRanking();
         config.flb = new TSPFastLowerBound(problem);
-        config.width = new FixedWidth<>(500);
+        config.width = new FixedWidth<>(75);
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        // config.relaxStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new GHP<>(new TSPDistance(problem));
+        // config.relaxStrategy = new Kmeans<>(new TSPCoordinates(problem));
+        config.restrictStrategy = config.relaxStrategy;
 
         config.verbosityLevel = 2;
+        config.exportAsDot = true;
         final Solver solver = new SequentialSolver<>(config);
 
         SearchStatistics stats = solver.minimize();
