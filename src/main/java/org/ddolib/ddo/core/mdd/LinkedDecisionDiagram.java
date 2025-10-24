@@ -570,9 +570,9 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 currentLayer.add(node);
             }
 
-        // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : cluster) {
-            node.lb = Math.min(node.lb, drop.lb);
+            // redirect and relax all arcs entering the merged node
+            for (NodeSubProblem<T> drop : cluster) {
+                node.lb = Math.min(node.lb, drop.lb);
 
                 for (Edge e : drop.node.edges) {
                     double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);

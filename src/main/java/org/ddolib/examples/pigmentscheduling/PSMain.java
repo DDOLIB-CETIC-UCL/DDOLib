@@ -5,9 +5,13 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
@@ -29,7 +33,7 @@ import java.util.Arrays;
 public class PSMain {
 
     public static void main(final String[] args) throws IOException {
-        PSInstance instance = new PSInstance("data/PSP/instancesWith2items/10");
+        PSInstance instance = new PSInstance("data/PSP/instancesWith2items/2");
 
         SolverConfig<PSState, NullType> config = new SolverConfig<>();
         PSProblem problem = new PSProblem(instance);
@@ -37,9 +41,14 @@ public class PSMain {
         config.relax = new PSRelax(instance);
         config.ranking = new PSRanking();
         config.flb = new PSFastLowerBound(instance);
-        config.width = new FixedWidth<>(10);
+        config.width = new FixedWidth<>(4);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        // config.relaxStrategy = new CostBased<>(config.ranking);
+        // config.relaxStrategy = new Kmeans<>(new PSCoordinates());
+        config.relaxStrategy = new GHP<>(new PSDistance());
+        config.restrictStrategy = config.relaxStrategy;
+        config.exportAsDot = true;
         final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
