@@ -9,7 +9,8 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.DebugUtil;
-import org.ddolib.util.VerbosityPrinter;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -86,7 +87,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private final VerbosityLevel verbosityLevel;
 
-    private final VerbosityPrinter verbosityPrinter;
+    private final VerboseMode verboseMode;
 
     /**
      * The debug level of the compilation to add additional checks (see
@@ -105,7 +106,7 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = model.verbosityLevel();
-        this.verbosityPrinter = new VerbosityPrinter(this.verbosityLevel, 500L);
+        this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
         this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
@@ -132,7 +133,7 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = VerbosityLevel.SILENT;
-        this.verbosityPrinter = new VerbosityPrinter(VerbosityLevel.SILENT, 0);
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 0);
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
@@ -146,8 +147,8 @@ public final class AStarSolver<T> implements Solver {
         open.add(root);
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            verbosityPrinter.detailedSearchState(nbIter, open.size(), bestUB,
-                    open.peek().getLowerBound(), 100*gap());
+            verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
+                    open.peek().getLowerBound(), 100 * gap());
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.size());
@@ -189,7 +190,7 @@ public final class AStarSolver<T> implements Solver {
                         gap()
                 ));
 
-                verbosityPrinter.newBest(bestUB);
+                verboseMode.newBest(bestUB);
 
                 if (!negativeTransitionCosts) {
                     // with A*, the first complete solution is  guaranteed optimal only if there is
@@ -201,7 +202,7 @@ public final class AStarSolver<T> implements Solver {
                     break;
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
-                verbosityPrinter.currentSubProblem(nbIter, sub);
+                verboseMode.currentSubProblem(nbIter, sub);
                 addChildren(sub, debugLevel);
                 closed.put(subKey, sub.f());
             }

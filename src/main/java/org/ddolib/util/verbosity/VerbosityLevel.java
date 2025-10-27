@@ -1,4 +1,4 @@
-package org.ddolib.modeling;
+package org.ddolib.util.verbosity;
 
 /**
  * Defines the different verbosity levels controlling the amount of information
@@ -45,5 +45,10 @@ public enum VerbosityLevel {
      * This mode provides the highest level of detail and is useful for
      * performance analysis and algorithmic tuning.
      */
-    LARGE
+    LARGE,
+
+    /**
+     * Same that {@code LARGE} but save the logs into {@code logs.txt} files.
+     */
+    EXPORT,
 }

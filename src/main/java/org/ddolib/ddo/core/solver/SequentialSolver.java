@@ -16,7 +16,8 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.VerbosityPrinter;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -145,7 +146,7 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final VerbosityLevel verbosityLevel;
 
-    private final VerbosityPrinter verbosityPrinter;
+    private final VerboseMode verboseMode;
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
@@ -196,7 +197,7 @@ public final class SequentialSolver<T> implements Solver {
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
-        this.verbosityPrinter = new VerbosityPrinter(verbosityLevel, 500L);
+        this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
     }
@@ -211,7 +212,7 @@ public final class SequentialSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             nbIter++;
-            verbosityPrinter.detailedSearchState(nbIter, frontier.size(), bestUB,
+            verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -229,7 +230,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            verbosityPrinter.currentSubProblem(nbIter, sub);
+            verboseMode.currentSubProblem(nbIter, sub);
 
             if (nodeLB >= bestUB) {
                 frontier.clear();
@@ -341,7 +342,7 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            verbosityPrinter.newBest(bestUB);
+            verboseMode.newBest(bestUB);
             return true;
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
