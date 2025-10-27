@@ -175,9 +175,7 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
-                if (debugLevel != DebugLevel.OFF) {
-                    checkFLBAdmissibility();
-                }
+
                 if (sub.getValue() >= bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
@@ -208,6 +206,9 @@ public final class AStarSolver<T> implements Solver {
                 addChildren(sub, debugLevel);
                 closed.put(subKey, sub.f());
             }
+        }
+        if (debugLevel != DebugLevel.OFF) {
+            checkFLBAdmissibility();
         }
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
