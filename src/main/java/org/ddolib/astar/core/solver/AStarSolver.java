@@ -7,7 +7,10 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.DebugLevel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
 import org.ddolib.util.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
@@ -133,7 +136,7 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verbosityLevel = VerbosityLevel.SILENT;
-        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 0);
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state, 0, rootKey.depth);
     }
@@ -141,7 +144,6 @@ public final class AStarSolver<T> implements Solver {
     @Override
     public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
-        long ti = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         open.add(root);
@@ -332,11 +334,6 @@ public final class AStarSolver<T> implements Solver {
             @Override
             public DominanceChecker<T> dominance() {
                 return dominance;
-            }
-
-            @Override
-            public DebugLevel debugMode() {
-                return debugLevel;
             }
         };
 
