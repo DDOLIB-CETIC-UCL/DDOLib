@@ -8,11 +8,10 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
-import org.ddolib.util.DebugUtil;
-import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;

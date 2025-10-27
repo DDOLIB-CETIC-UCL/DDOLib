@@ -1,8 +1,8 @@
 package org.ddolib.examples.lcs;
 
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;

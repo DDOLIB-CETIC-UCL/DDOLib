@@ -1,4 +1,4 @@
-package org.ddolib.util;
+package org.ddolib.util.debug;
 
 import org.ddolib.ddo.core.Decision;
 
