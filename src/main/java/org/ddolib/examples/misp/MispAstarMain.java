@@ -3,16 +3,16 @@ package org.ddolib.examples.misp;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.BitSet;
+
 /**
  * The Maximum Independent Set Problem (MISP) with AsTar.
  * Entry point for solving the Maximum Independent Set Problem (MISP) using an A* solver.
@@ -68,7 +68,7 @@ public final class MispAstarMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
 
         System.out.println(stats);

@@ -16,6 +16,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
@@ -75,7 +76,6 @@ import java.util.function.Predicate;
  * </ul>
  *
  * @param <T> The type representing a problem state.
- *
  * @see ExactSolver
  * @see DdoModel
  * @see Problem
@@ -153,7 +153,7 @@ public final class SequentialSolver<T> implements Solver {
     private final boolean exportAsDot;
     /**
      * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.modeling.DebugLevel for details}
+     * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
     /**

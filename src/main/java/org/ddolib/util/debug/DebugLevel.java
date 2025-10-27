@@ -1,4 +1,4 @@
-package org.ddolib.modeling;
+package org.ddolib.util.debug;
 
 /**
  * Defines the different levels of debugging information and validation

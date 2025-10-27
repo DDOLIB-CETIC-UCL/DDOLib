@@ -14,6 +14,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
@@ -45,44 +46,69 @@ import java.util.function.Predicate;
  *     <li>Extracts the best solution and value from the compiled MDD.</li>
  *     <li>Can export the MDD in DOT format if enabled.</li>
  * </ul>
+ *
  * @param <T> the type of state used by the problem
  */
 public final class ExactSolver<T> implements Solver {
 
-    /** The problem instance to be minimized. */
+    /**
+     * The problem instance to be minimized.
+     */
     private final Problem<T> problem;
 
-    /** A relaxation of the problem (used internally, e.g., for fast lower bounds). */
+    /**
+     * A relaxation of the problem (used internally, e.g., for fast lower bounds).
+     */
     private final Relaxation<T> relax;
 
-    /** Heuristic used to rank states and identify the most promising nodes. */
+    /**
+     * Heuristic used to rank states and identify the most promising nodes.
+     */
     private final StateRanking<T> ranking;
 
-    /** Heuristic used to select the next variable to branch on during MDD compilation. */
+    /**
+     * Heuristic used to select the next variable to branch on during MDD compilation.
+     */
     private final VariableHeuristic<T> varh;
 
-    /** Heuristic providing a lower bound of the optimal value. */
+    /**
+     * Heuristic providing a lower bound of the optimal value.
+     */
     private final FastLowerBound<T> flb;
 
-    /** Dominance checker used to prune the search space. */
+    /**
+     * Dominance checker used to prune the search space.
+     */
     private final DominanceChecker<T> dominance;
 
-    /** Optional cache for pruning repeated subproblems. */
+    /**
+     * Optional cache for pruning repeated subproblems.
+     */
     private final Optional<SimpleCache<T>> cache;
 
 
-    /** Optional set containing the best solution found so far. */
+    /**
+     * Optional set containing the best solution found so far.
+     */
     private Optional<Set<Decision>> bestSol;
-    /** Optional value of the best solution found so far. */
+    /**
+     * Optional value of the best solution found so far.
+     */
     private Optional<Double> bestValue = Optional.empty();
 
-    /** Verbosity level controlling output during the solving process. */
+    /**
+     * Verbosity level controlling output during the solving process.
+     */
     private final VerbosityLevel verbosityLevel;
 
-    /** Flag to indicate whether the compiled MDD should be exported as a DOT file. */
+    /**
+     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
+     */
     private final boolean exportAsDot;
 
-    /** Debug level controlling additional consistency checks during compilation. */
+    /**
+     * Debug level controlling additional consistency checks during compilation.
+     */
     private final DebugLevel debugLevel;
 
 
@@ -106,6 +132,7 @@ public final class ExactSolver<T> implements Solver {
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
     }
+
     /**
      * Minimizes the problem by compiling an exact decision diagram (MDD).
      * <p>
@@ -176,6 +203,7 @@ public final class ExactSolver<T> implements Solver {
     public Optional<Double> bestValue() {
         return bestValue;
     }
+
     /**
      * Returns the best solution found so far as a set of decisions.
      *
@@ -201,6 +229,7 @@ public final class ExactSolver<T> implements Solver {
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));
         }
     }
+
     /**
      * Exports a DOT representation of the MDD to a file.
      *

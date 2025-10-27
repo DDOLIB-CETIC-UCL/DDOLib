@@ -8,10 +8,10 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
-import org.ddolib.util.DebugUtil;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
+
 /**
  * Implementation of an Anytime Column Search (ACS) solver for decision diagram-based optimization problems.
  * <p>
@@ -40,9 +41,7 @@ import static java.lang.Math.min;
  *     <li>Can report search statistics and provide the best solution found at any time.</li>
  * </ul>
  *
- *
  * @param <T> The type representing a state in the problem.
- *
  * @see Solver
  * @see Problem
  * @see FastLowerBound
@@ -115,6 +114,7 @@ public final class ACSSolver<T> implements Solver {
      *     <li>{@link DominanceChecker} implementation</li>
      *     <li>{@link VerbosityLevel} for debug/logging</li>
      * </ul>
+     *
      * @param model Provides all parameters needed to configure the solver
      * @throws IllegalArgumentException if the debug mode is enabled (not supported)
      */
@@ -128,7 +128,7 @@ public final class ACSSolver<T> implements Solver {
         this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
-         this.present = new HashMap<>();
+        this.present = new HashMap<>();
 
 
         this.open = new PriorityQueue[problem.nbVars() + 1];
@@ -145,6 +145,7 @@ public final class ACSSolver<T> implements Solver {
         }
 
     }
+
     /**
      * Checks if all columns are empty, i.e., no open subproblems remain.
      *
@@ -158,10 +159,11 @@ public final class ACSSolver<T> implements Solver {
         }
         return true;
     }
+
     /**
      * Minimizes the problem using the ACS strategy.
      *
-     * @param limit a predicate to stop the search based on current {@link SearchStatistics}
+     * @param limit      a predicate to stop the search based on current {@link SearchStatistics}
      * @param onSolution a consumer invoked on each new solution found (solution array and statistics)
      * @return final {@link SearchStatistics} of the search
      */
@@ -207,7 +209,7 @@ public final class ACSSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                         }
-                        double gap = Math.abs((bestUB + sub.f())/(bestUB*100.0)); // TODO compute the gap when we have a valid LB
+                        double gap = Math.abs((bestUB + sub.f()) / (bestUB * 100.0)); // TODO compute the gap when we have a valid LB
                         stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
                                 System.currentTimeMillis() - t0, bestUB, gap());
                         onSolution.accept(constructSolution(bestSol.get()), stats);
@@ -222,6 +224,7 @@ public final class ACSSolver<T> implements Solver {
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
     }
+
     /**
      * Returns the value of the best solution found, if any.
      *
@@ -235,6 +238,7 @@ public final class ACSSolver<T> implements Solver {
             return Optional.empty();
         }
     }
+
     /**
      * Returns the set of decisions corresponding to the best solution found, if any.
      *
@@ -334,6 +338,7 @@ public final class ACSSolver<T> implements Solver {
      */
     private record ACSKey<T>(T state, int depth) {
     }
+
     /**
      * Computes the gap (percentage difference) between the best known upper bound and the lowest
      * f-value in the open nodes, for anytime search reporting.
@@ -350,6 +355,6 @@ public final class ACSSolver<T> implements Solver {
         if (minLb == Double.POSITIVE_INFINITY) {
             return 0.0;
         }
-        return Math.abs(100.0 *(Math.abs(bestUB) - minLb)/bestUB);
+        return Math.abs(100.0 * (Math.abs(bestUB) - minLb) / bestUB);
     }
 }
