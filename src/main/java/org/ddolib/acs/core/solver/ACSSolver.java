@@ -1,5 +1,6 @@
 package org.ddolib.acs.core.solver;
 
+import org.ddolib.astar.core.solver.AstarKey;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
@@ -81,13 +82,13 @@ public final class ACSSolver<T> implements Solver {
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
-    private final HashMap<ACSKey<T>, Double> closed;
+    private final HashMap<AstarKey<T>, Double> closed;
 
     /**
      * HashMap mapping (state,depth) to the f value.
      * Open nodes are the ones in the frontier.
      */
-    private final HashMap<ACSKey<T>, Double> present;
+    private final HashMap<AstarKey<T>, Double> present;
 
 
     private final List<PriorityQueue<SubProblem<T>>> open;
@@ -97,6 +98,8 @@ public final class ACSSolver<T> implements Solver {
     private final SubProblem<T> root;
 
     private final VerboseMode verboseMode;
+
+    private final DebugLevel debugLevel;
 
 
     /**
@@ -138,12 +141,31 @@ public final class ACSSolver<T> implements Solver {
         }
 
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);
+        this.debugLevel = model.debugMode();
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-        if (model.debugMode() != DebugLevel.OFF) {
-            throw new IllegalArgumentException("The debug mode for this solver is not available " +
-                    "for the moment.");
+
+    }
+
+    private ACSSolver(AcsModel<T> model, AstarKey<T> rootKey) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestSol = Optional.empty();
+        this.columnWidth = model.columnWidth();
+
+        this.closed = new HashMap<>();
+        this.present = new HashMap<>();
+        this.open = new ArrayList<>(problem.nbVars() + 1);
+        for (int i = 0; i < problem.nbVars() + 1; i++) {
+            this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
         }
+
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
+        this.debugLevel = DebugLevel.OFF;
+        this.root = constructRoot(problem.initialState(), 0, rootKey.depth());
 
     }
 
@@ -174,7 +196,7 @@ public final class ACSSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         open.getFirst().add(root);
-        present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
+        present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
@@ -199,7 +221,7 @@ public final class ACSSolver<T> implements Solver {
                 int l = min(columnWidth, open.get(i).size());
                 for (int j = 0; j < l; j++) {
                     SubProblem<T> sub = open.get(i).poll();
-                    ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
+                    AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
@@ -211,7 +233,7 @@ public final class ACSSolver<T> implements Solver {
                 }
                 for (SubProblem<T> sub : candidates) {
                     nbIter++;
-                    ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
+                    AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // new incumbent
@@ -233,6 +255,11 @@ public final class ACSSolver<T> implements Solver {
             }
             queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
         }
+
+        if (debugLevel != DebugLevel.OFF) {
+            checkAdmissibility();
+        }
+
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
     }
@@ -272,11 +299,18 @@ public final class ACSSolver<T> implements Solver {
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+
+        Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
+        if (depth != 0) {
+            for (int i = 0; i < depth; i++) {
+                nullDecisions.add(new Decision(i, 0));
+            }
+        }
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                Collections.EMPTY_SET);
+                nullDecisions);
     }
 
     /**
@@ -305,7 +339,7 @@ public final class ACSSolver<T> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                ACSKey<T> newKey = new ACSKey<>(newState, newSub.getDepth());
+                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
                     open.get(newSub.getDepth()).add(newSub);
@@ -343,12 +377,37 @@ public final class ACSSolver<T> implements Solver {
         return set;
     }
 
-    /**
-     * Internal key for mapping a state and its depth in open/closed lists.
-     *
-     * @param <T> type of the state
-     */
-    private record ACSKey<T>(T state, int depth) {
+
+    private void checkAdmissibility() {
+        Set<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        AcsModel<T> model = new AcsModel<>() {
+
+
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public int columnWidth() {
+                return columnWidth;
+            }
+
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return dominance;
+            }
+        };
+
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new ACSSolver<>(model, key));
     }
 
     /**

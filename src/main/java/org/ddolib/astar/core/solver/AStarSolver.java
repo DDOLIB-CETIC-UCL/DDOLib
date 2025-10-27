@@ -15,7 +15,6 @@ import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -138,7 +137,7 @@ public final class AStarSolver<T> implements Solver {
         this.verbosityLevel = VerbosityLevel.SILENT;
         this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
-        this.root = constructRoot(rootKey.state, 0, rootKey.depth);
+        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
     }
 
     @Override
@@ -321,7 +320,7 @@ public final class AStarSolver<T> implements Solver {
 
         HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        Model<T> model = new Model<T>() {
+        Model<T> model = new Model<>() {
             @Override
             public Problem<T> problem() {
                 return problem;
@@ -338,25 +337,7 @@ public final class AStarSolver<T> implements Solver {
             }
         };
 
-        for (AstarKey<T> current : toCheck) {
-            AStarSolver<T> internalSolver = new AStarSolver<>(model, current);
-            Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-            double currentFLB = lb.fastLowerBound(current.state, vars);
-
-            internalSolver.minimize(s -> false, (sol, stats) -> {
-            });
-            Optional<Double> shortestFromCurrent = internalSolver.bestValue();
-            if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
-                DecimalFormat df = new DecimalFormat("#.#########");
-                String failureMsg = "Your lower bound is not admissible.\n" +
-                        "State: " + current.state.toString() + "\n" +
-                        "Depth: " + current.depth + "\n" +
-                        "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Longest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
-
-                throw new RuntimeException(failureMsg);
-            }
-        }
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AStarSolver<>(model, key));
     }
 
     /**
@@ -391,14 +372,5 @@ public final class AStarSolver<T> implements Solver {
         }
     }
 
-    /**
-     * Class containing a state and its depth in the main search.
-     *
-     * @param state A state of the solved problem.
-     * @param depth The depth of the input state in the main search.
-     * @param <T>   The type of the state.
-     */
-    private record AstarKey<T>(T state, int depth) {
-    }
 
 }

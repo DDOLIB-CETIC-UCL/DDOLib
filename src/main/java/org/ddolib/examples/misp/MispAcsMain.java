@@ -6,12 +6,13 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.BitSet;
+
 /**
  * The Maximum Independent Set Problem (MISP) with Acs.
  * Entry point for solving the Maximum Independent Set Problem (MISP) using an Anytime Column Search (ACS) solver.
@@ -57,10 +58,15 @@ public final class MispAcsMain {
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
         };
 
         SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
 
         System.out.println(stats);

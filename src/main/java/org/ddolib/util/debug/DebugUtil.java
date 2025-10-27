@@ -1,8 +1,17 @@
 package org.ddolib.util.debug;
 
+import org.ddolib.astar.core.solver.AstarKey;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Model;
 
+import java.text.DecimalFormat;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Utility class providing methods useful for debugging state transitions.
@@ -48,5 +57,33 @@ public class DebugUtil {
             failureMsg += transitionDescription;
             throw new RuntimeException(failureMsg);
         }
+    }
+
+    public static <T> void checkFlbAdmissibility(Set<AstarKey<T>> toCheck,
+                                                 Model<T> model,
+                                                 Function<AstarKey<T>, Solver> solver) {
+
+        for (AstarKey<T> current : toCheck) {
+            Solver internalSolver = solver.apply(current);
+            Set<Integer> vars =
+                    IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());
+            double currentFLB = model.lowerBound().fastLowerBound(current.state(), vars);
+
+            internalSolver.minimize(s -> false, (sol, stats) -> {
+            });
+            Optional<Double> shortestFromCurrent = internalSolver.bestValue();
+            if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
+                DecimalFormat df = new DecimalFormat("#.#########");
+                String failureMsg = "Your lower bound is not admissible.\n" +
+                        "State: " + current.state().toString() + "\n" +
+                        "Depth: " + current.depth() + "\n" +
+                        "Path estimation: " + df.format(currentFLB) + "\n" +
+                        "Longest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
+
+                throw new RuntimeException(failureMsg);
+            }
+        }
+
+
     }
 }
