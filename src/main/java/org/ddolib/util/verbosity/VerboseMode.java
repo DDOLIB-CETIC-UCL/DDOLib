@@ -5,7 +5,16 @@ import org.ddolib.ddo.core.SubProblem;
 import java.io.*;
 
 /**
- * Class that print details about the search given a {@link VerbosityLevel}.
+ * Utility class for printing detailed information about the search process
+ * based on a specified {@link VerbosityLevel}.
+ * <p>
+ * Depending on the verbosity level, this class can print:
+ * <ul>
+ *     <li>No output (SILENT)</li>
+ *     <li>New best solution values (NORMAL)</li>
+ *     <li>New best solution values, frontier statistics, and details about
+ *     each explored subproblem (LARGE)</li>
+ * </ul>
  */
 public class VerboseMode {
 
@@ -15,10 +24,12 @@ public class VerboseMode {
     private final long printInterval;
 
     /**
-     * Instantiate the verbose mode
+     * Creates a {@code VerboseMode} instance with a given verbosity level
+     * and interval for printing frontier statistics.
      *
      * @param verbosityLevel The level of details to print.
-     * @param printInterval  The delay between two prints of statistics about the frontier
+     * @param printInterval  The minimum delay (in milliseconds) between
+     *                       consecutive prints of frontier statistics.
      */
     public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {
         this.verbosityLevel = verbosityLevel;
