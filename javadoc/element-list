@@ -36,6 +36,7 @@ org.ddolib.examples.tsp
 org.ddolib.examples.tsptw
 org.ddolib.modeling
 org.ddolib.util
+org.ddolib.util.debug
 org.ddolib.util.io
 org.ddolib.util.testbench
 org.ddolib.util.verbosity
