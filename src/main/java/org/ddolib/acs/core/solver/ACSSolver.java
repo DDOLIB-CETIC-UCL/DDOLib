@@ -90,7 +90,7 @@ public final class ACSSolver<T> implements Solver {
     private final HashMap<ACSKey<T>, Double> present;
 
 
-    private PriorityQueue<SubProblem<T>>[] open;
+    private final List<PriorityQueue<SubProblem<T>>> open;
 
     private final int columnWidth;
 
@@ -132,9 +132,9 @@ public final class ACSSolver<T> implements Solver {
         this.present = new HashMap<>();
 
 
-        this.open = new PriorityQueue[problem.nbVars() + 1];
+        this.open = new ArrayList<>(problem.nbVars() + 1);
         for (int i = 0; i < problem.nbVars() + 1; i++) {
-            open[i] = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f));
+            this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
         }
 
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);
@@ -173,15 +173,15 @@ public final class ACSSolver<T> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        open[0].add(root);
+        open.getFirst().add(root);
         present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             verboseMode.detailedSearchState(nbIter,
-                    Arrays.stream(open).map(PriorityQueue::size).mapToInt(x -> x).sum(),
+                    open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
                     bestUB,
-                    Arrays.stream(open)
+                    open.stream()
                             .map(pq -> pq.peek() != null ? pq.peek().getLowerBound() : 0)
                             .mapToDouble(x -> x).min().orElse(Double.POSITIVE_INFINITY),
                     100 * gap());
@@ -196,16 +196,16 @@ public final class ACSSolver<T> implements Solver {
 
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
-                int l = min(columnWidth, open[i].size());
+                int l = min(columnWidth, open.get(i).size());
                 for (int j = 0; j < l; j++) {
-                    SubProblem<T> sub = open[i].poll();
+                    SubProblem<T> sub = open.get(i).poll();
                     ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
                     } else {
                         // all the next ones will be worse since f is a lower-bound
-                        open[i].clear();
+                        open.get(i).clear();
                         break;
                     }
                 }
@@ -231,7 +231,7 @@ public final class ACSSolver<T> implements Solver {
                 }
 
             }
-            queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
+            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
         }
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
@@ -308,16 +308,16 @@ public final class ACSSolver<T> implements Solver {
                 ACSKey<T> newKey = new ACSKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
-                    open[newSub.getDepth()].add(newSub);
+                    open.get(newSub.getDepth()).add(newSub);
                     present.put(newKey, newSub.f());
                 } else {
                     Double closedValue = closed.get(newKey);
                     if (closedValue != null && closedValue > newSub.f()) {
-                        open[newSub.getDepth()].add(newSub);
+                        open.get(newSub.getDepth()).add(newSub);
                         closed.remove(newKey);
                         present.put(newKey, newSub.f());
                     } else {
-                        open[newSub.getDepth()].add(newSub);
+                        open.get(newSub.getDepth()).add(newSub);
                         present.put(newKey, newSub.f());
                     }
                 }
@@ -360,8 +360,8 @@ public final class ACSSolver<T> implements Solver {
     private double gap() {
         double minLb = Double.POSITIVE_INFINITY;
         for (int i = 0; i < problem.nbVars(); i++) {
-            if (!open[i].isEmpty()) {
-                minLb = min(minLb, Math.abs(open[i].peek().f()));
+            if (!open.get(i).isEmpty()) {
+                minLb = min(minLb, Math.abs(open.get(i).peek().f()));
             }
         }
         if (minLb == Double.POSITIVE_INFINITY) {
