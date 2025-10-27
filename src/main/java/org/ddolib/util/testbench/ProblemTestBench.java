@@ -121,6 +121,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             public FastLowerBound<T> lowerBound() {
                 return globalModel.lowerBound();
             }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
         };
 
         Double best = Solvers.minimizeExact(testModel).incumbent();
@@ -152,6 +157,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             @Override
             public WidthHeuristic<T> widthHeuristic() {
                 return new FixedWidth<>(w);
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
         };
         for (int w = minWidth; w <= maxWidth; w++) {
@@ -205,6 +215,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             public FastLowerBound<T> lowerBound() {
                 return globalModel.lowerBound();
             }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
         };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
@@ -227,7 +242,29 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testAStarSolver(P problem) {
 
-        Model<T> testModel = model(problem);
+        DdoModel<T> globalModel = model(problem);
+
+        Model<T> testModel = new Model<T>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+        };
 
         Double best = Solvers.minimizeAstar(testModel).incumbent();
         Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
