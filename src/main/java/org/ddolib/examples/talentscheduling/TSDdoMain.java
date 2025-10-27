@@ -10,7 +10,27 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Paths;
 /**
- * ################  The talent scheduling problem (tsp) ####################
+ * The talent scheduling problem (tsp) with Ddo.
+ * Entry point for solving instances of the Talent Scheduling Problem (TSP)
+ * using a Decision Diagram Optimization (Ddo) approach.
+ *
+ * <p>
+ * This class reads a TSP instance from a file, initializes the corresponding
+ * {@link TSProblem}, and creates a {@link DdoModel} for {@link TSState}.
+ * The model uses a {@link TSRelax} relaxation, a {@link TSRanking} state ranking,
+ * and {@link TSFastLowerBound} for efficient lower-bound computations.
+ * The solver then minimizes the objective function using the Ddo algorithm,
+ * printing both the solution and search statistics.
+ * </p>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ * <pre>
+ * java TSDdoMain [instanceFile]
+ * </pre>
+ * If no {@code instanceFile} argument is provided, the default instance
+ * {@code data/TalentScheduling/film-12} will be used.
  */
 public class TSDdoMain {
     public static void main(String[] args) throws IOException {

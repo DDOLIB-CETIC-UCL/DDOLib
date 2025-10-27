@@ -28,76 +28,74 @@ import static org.ddolib.util.MathUtil.saturatedAdd;
 import static org.ddolib.util.MathUtil.saturatedDiff;
 
 /**
- * This class implements the decision diagram as a linked structure.
+ * This class implements a decision diagram as a linked structure (linked MDD).
+ * <p>
+ * Each node in the diagram is represented by a {@link Node} object, and edges
+ * between nodes represent decisions made during the problem-solving process.
+ * This class supports the compilation of exact, relaxed, and restricted decision
+ * diagrams using various heuristics and dominance rules.
+ * </p>
  *
- * @param <T> the type of state
+ * <p>
+ * The main responsibilities of this class include:
+ * </p>
+ * <ul>
+ *     <li>Building the decision diagram layer by layer from an initial state.</li>
+ *     <li>Managing exact and relaxed cutsets of nodes.</li>
+ *     <li>Applying restrictions and relaxations to limit layer width.</li>
+ *     <li>Computing local bounds and fast lower bounds.</li>
+ *     <li>Exporting the decision diagram to DOT format for visualization.</li>
+ *     <li>Interfacing with caches to optimize repeated computations.</li>
+ * </ul>
+ *
+ *
+ * @param <T> the type of state used in the problem modeled by this decision diagram
  */
 public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
-     * The list of decisions that have led to the root of this DD
+     * The set of decisions that led to the root of this decision diagram.
      */
     private final Set<Decision> pathToRoot;
 
-    /**
-     * All the nodes from the previous layer
-     */
+    /** Nodes from the previous layer, mapped to their associated subproblems. */
     private final HashMap<Node, NodeSubProblem<T>> prevLayer = new HashMap<>();
 
-    /**
-     * All the (subproblems) nodes from the previous layer -- That is, all nodes that will be expanded
-     */
+    /** Nodes to expand in the current layer. */
     private final List<NodeSubProblem<T>> currentLayer = new ArrayList<>();
 
-    /**
-     * All the nodes from the next layer
-     */
+    /** Nodes in the next layer. */
     private final HashMap<T, Node> nextLayer = new HashMap<>();
 
-    /**
-     * All the nodes from the last exact layer cutset or the frontier cutset
-     */
+    /** Nodes in the last exact cutset or frontier cutset. */
     private final List<NodeSubProblem<T>> cutset = new ArrayList<>();
 
-    /**
-     * A flag to keep track of the fact the MDD was relaxed (some merged occurred) or restricted  (some states were dropped)
-     */
+    /** Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false). */
     private boolean exact = true;
 
-    /**
-     * The best node in the terminal layer (if it exists at all)
-     */
+    /** The best node in the terminal layer, if one exists. */
     private Node best = null;
 
-    /**
-     * Depth of the last exact layer
-     */
+    /** Depth of the last exact layer. */
     private int depthLEL = -1;
 
-
-    /**
-     * Used to build the .dot file displaying the compiled mdd.
-     */
+    /** String builder used for generating DOT representation of the MDD. */
     private final StringBuilder dotStr = new StringBuilder();
-    /**
-     * Given the hashcode of an edge, save its .dot representation
-     */
+
+    /** Maps edge hash codes to their DOT representation. */
     private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
 
-    /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.modeling.DebugLevel for details}
-     */
+    /** Debug level for additional checks and information during compilation. */
     private final DebugLevel debugLevel;
 
-    /**
-     * The parameter used to tweak the compilation
-     */
+    /** Configuration and parameters for compiling the decision diagram. */
     private final CompilationConfig<T> config;
 
+
     /**
-     * Creates an all new MDD
+     * Creates a new linked decision diagram.
      *
-     * @param config The set of parameters used by the compilation.
+     * @param config The configuration object containing problem parameters, heuristics,
+     *               relaxation operators, dominance checkers, and compilation settings.
      */
     public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
@@ -108,7 +106,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.config = config;
 
     }
-
+    /**
+     * Compiles the decision diagram according to the configuration:
+     * <ul>
+     *     <li>Exact, relaxed, or restricted compilation type.</li>
+     *     <li>Layer-wise variable ordering and heuristics.</li>
+     *     <li>Application of relaxations or restrictions based on width limits.</li>
+     *     <li>Construction of the DOT graph if export or debugging is enabled.</li>
+     *     <li>Optional caching of thresholds for faster branch-and-bound computations.</li>
+     * </ul>
+     */
     @Override
     public void compile() {
 
@@ -320,12 +327,20 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             checkFlb(config.problem);
         }
     }
-
+    /**
+     * Returns whether the decision diagram is exact.
+     *
+     * @return {@code true} if the MDD is exact, {@code false} if relaxed/restricted nodes exist
+     */
     @Override
     public boolean isExact() {
         return exact;
     }
-
+    /**
+     * Returns the value of the best solution found in this decision diagram, if any.
+     *
+     * @return an {@link Optional} containing the best value or empty if no solution exists
+     */
     @Override
     public Optional<Double> bestValue() {
         if (best == null) {
@@ -334,7 +349,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             return Optional.of(best.value);
         }
     }
-
+    /**
+     * Returns the set of decisions representing the best solution found in this MDD.
+     *
+     * @return an {@link Optional} containing the set of decisions in the best solution,
+     *         or empty if no solution exists
+     */
     @Override
     public Optional<Set<Decision>> bestSolution() {
         if (best == null) {
@@ -351,12 +371,20 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             return Optional.of(sol);
         }
     }
-
+    /**
+     * Returns an iterator over the nodes in the exact cutset, transformed into subproblems.
+     *
+     * @return iterator of subproblems in the exact cutset
+     */
     @Override
     public Iterator<SubProblem<T>> exactCutset() {
         return new NodeSubProblemsAsSubProblemsIterator<>(cutset.iterator(), pathToRoot);
     }
-
+    /**
+     * Checks whether the best path found in a relaxed MDD consists entirely of exact nodes.
+     *
+     * @return {@code true} if the best path contains only exact nodes, {@code false} otherwise
+     */
     @Override
     public boolean relaxedBestPathIsExact() {
         if (best == null) {
@@ -371,7 +399,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             return true;
         }
     }
-
+    /**
+     * Exports the compiled decision diagram in DOT format.
+     *
+     * @return a string containing the DOT representation of the MDD
+     */
     @Override
     public String exportAsDot() {
         for (String e : edgesDotStr.values()) {
@@ -673,13 +705,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         if (lastLayer) {
-            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
+            node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
 
         String nodeStr = String.format(
                 "\"%s\nflb: %s - value: %s\"",
                 node.state,
-                df.format(node.node.flb),
+                df.format(node.lb),
                 df.format(node.node.value)
         );
 

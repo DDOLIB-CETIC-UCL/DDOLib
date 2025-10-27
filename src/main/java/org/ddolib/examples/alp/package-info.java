@@ -1,4 +1,5 @@
 /**
+ * This package implements the acs, astar and ddo models for the Aircraft Landing Problem (ALP).
  * The Aircraft Landing Problem (ALP) requires to schedule the landing of a set
  * of aircraft 𝑁= {0,...,𝑛−1} on a set of runways 𝑅 = {0,...,𝑟−1}. The
  * aircraft have a target time 𝑇_𝑖 that gives the earliest landing time, and latest

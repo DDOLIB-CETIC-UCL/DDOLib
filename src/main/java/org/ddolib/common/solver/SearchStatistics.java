@@ -8,7 +8,6 @@ public record SearchStatistics(
         double incumbent,
         double gap) {
 
-
     @Override
     public String toString() {
         return "\n\tstatus = " + status +

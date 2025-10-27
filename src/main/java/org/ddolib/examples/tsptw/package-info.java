@@ -1,6 +1,6 @@
 
 /**
- * ############### TSPTW #####################
+ * This package implements the acs, astar and ddo models for the Traveling Salesman Problem with Time Window (TSPTW).
  * The TSPTW (TSP with Time Windows) is
  * to find the shortest possible route for a salesman to visit
  * a set of customers (or nodes) exactly once

@@ -12,9 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * ######### Aircraft Landing Problem (ALP) #############
+ * Aircraft Landing Problem (ALP) with Ddo.
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
- * the Dynamic Decision Diagram (DDO) approach.
+ * the Decision Diagram Optimization (DDO) algorithm.
  * <p>
  * This class demonstrates how to:
  * </p>

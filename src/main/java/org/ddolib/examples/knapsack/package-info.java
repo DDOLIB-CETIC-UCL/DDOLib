@@ -1,7 +1,5 @@
 /**
- * ######### Knapsack Problem (KS) #############
- * This package contains the implementation of the knapsack problem.
- *
+ * This package implements the acs, astar and ddo models for the Knapsack Problem (KS).
  * The Knapsack problem is a classic optimization problem
  * where the goal is to maximize the total value of items
  * while staying within a given weight limit.

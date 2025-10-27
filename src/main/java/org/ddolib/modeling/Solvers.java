@@ -1,14 +1,11 @@
 package org.ddolib.modeling;
 
-import org.ddolib.astar.core.solver.ACSSolver;
+import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 

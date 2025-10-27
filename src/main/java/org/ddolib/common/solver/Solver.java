@@ -8,11 +8,32 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * This defines the expected behavior of a solver: an object able to find a solution
- * that minimizes the objective value of some underlying optimization problem.
+ * Interface representing a generic solver for decision diagram based optimization problems.
+ * <p>
+ * A solver explores the search space defined by a decision diagram, applies bounds and relaxations,
+ * and can return the best solution found along with its value.
+ * </p>
+ *
+ * <p>
+ * Implementations of this interface typically provide algorithms such as:
+ * </p>
+ * <ul>
+ *     <li>Dynamic programming on decision diagrams</li>
+ *     <li>A* search</li>
+ *     <li>Branch-and-bound or anytime search strategies</li>
+ * </ul>
+ * @see SearchStatistics
+ * @see Decision
  */
 public interface Solver {
-
+    /**
+     * Minimizes the objective function according to the solver strategy.
+     *
+     * @param limit a {@link Predicate} that can limit or stop the search based on current {@link SearchStatistics}
+     * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the solution array and
+     *                   current statistics
+     * @return the statistics of the search after completion
+     */
     SearchStatistics minimize(Predicate<SearchStatistics> limit,
                               BiConsumer<int[], SearchStatistics> onSolution);
 
@@ -22,15 +43,19 @@ public interface Solver {
     Optional<Double> bestValue();
 
     /**
-     * @return the solution leading to the best solution in this decision diagram (if it exists)
+     * Returns the set of decisions that lead to the best solution found by this solver, if any.
+     *
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
+     *         or empty if no solution exists
      */
     Optional<Set<Decision>> bestSolution();
 
     /**
-     * Constructs an array containing the values assigned to each variable from the taken decisions.
+     * Constructs an array representing the values assigned to each variable from a set of decisions.
      *
-     * @return An array {@code t} such that {@code t[i]} is the assigned value to the variable
-     * {@code i}. Or empty array if the solution does not exist.
+     * @param decisions a set of {@link Decision} objects representing variable assignments
+     * @return an array {@code t} such that {@code t[i]} is the assigned value of variable {@code i},
+     *         or an empty array if the solution does not exist
      */
     default int[] constructSolution(Set<Decision> decisions) {
         int[] toReturn = new int[decisions.size()];

@@ -5,18 +5,28 @@ import org.ddolib.ddo.core.Decision;
 import java.util.function.BiFunction;
 
 /**
- * Contains methods helpful for debug.
+ * Utility class providing methods useful for debugging state transitions.
+ * <p>
+ * This class helps to verify the correctness of the state transition function by
+ * checking that states generated from the same origin with the same decision
+ * are both equal and have the same hash code.
  */
 public class DebugUtil {
 
     /**
-     * Given a state, generates two copies a new state based on the transition model and checks
-     * if the two copies have the same hash code and are equal.
+     * Checks the consistency of a transition function by generating two states
+     * from the same origin state and decision, then verifying that they are equal
+     * and have the same hash code.
+     * <p>
+     * If the generated states either differ in hash code or are not equal, a
+     * {@link RuntimeException} is thrown with detailed information about the
+     * origin state, decision, and resulting states.
      *
-     * @param state      A state used to generate two other states.
-     * @param decision   The decision used to generates the new states.
-     * @param transition The transition function used to generate new states.
-     * @param <T>        The type of the states.
+     * @param state      the original state from which the new states are generated
+     * @param decision   the decision applied to the original state
+     * @param transition the transition function that generates a new state from a state and a decision
+     * @param <T>        the type of the states
+     * @throws RuntimeException if the generated states are not equal or have different hash codes
      */
     public static <T> void checkHashCodeAndEquality(T state, Decision decision,
                                                     BiFunction<T, Decision, T> transition) {

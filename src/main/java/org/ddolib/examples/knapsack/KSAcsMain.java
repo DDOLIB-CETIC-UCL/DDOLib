@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
- * ######### Knapsack Problem (KS) - ACS Example #############
+ * Knapsack Problem (KS) with Acs.
  * <p>
  * This class demonstrates how to solve an instance of the Knapsack Problem (KS)
  * using the Anytime Column Search (ACS) algorithm.

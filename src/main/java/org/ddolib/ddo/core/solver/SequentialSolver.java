@@ -31,26 +31,60 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * From the lecture, you should have a good grasp on what a branch-and-bound
- * with mdd solver does even though you haven't looked into concrete code
- * yet.
- * <p>
- * One of the tasks from this assignment is for you to implement the vanilla
- * algorithm (sequentially) as it has been explained during the lecture.
- * <p>
- * To help you, we provide you with a well documented framework that defines
- * and implements all the abstractions you will need in order to implement
- * a generic solver. Additionally, and because the BaB-MDD framework parallelizes
- * *VERY* well, we provide you with a parallel implementation of the algorithm
- * (@see ParallelSolver). Digging into that code, understanding it, and stripping
- * away all the parallel-related concerns should finalize to give you a thorough
- * understanding of the sequential algo.
- * <p>
- * # Note
- * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
- * EASY TO COMPLETE.
+ * A sequential implementation of a Branch-and-Bound solver based on
+ * Multi-valued Decision Diagrams (MDDs).
  *
- * @param <T> The type of states.
+ * <p>
+ * This solver follows the vanilla version of the algorithm introduced in lecture.
+ * It explores subproblems sequentially (one at a time), combining restricted and
+ * relaxed MDD compilations to progressively tighten the upper and lower bounds
+ * of the optimization problem.
+ * </p>
+ *
+ * <p>
+ * The solver maintains a frontier (priority queue) of unexplored subproblems,
+ * ordered by their lower bounds, and stops as soon as the optimality condition
+ * is met (i.e., when the best known upper bound is equal to the minimum lower
+ * bound in the frontier).
+ * </p>
+ *
+ * <p>
+ * <b>Key ideas:</b>
+ * </p>
+ * <ul>
+ *   <li>Each subproblem corresponds to a partial decision sequence and a state.</li>
+ *   <li>The solver compiles a restricted MDD to approximate the feasible region
+ *       and update the current best solution (upper bound).</li>
+ *   <li>It then compiles a relaxed MDD to estimate lower bounds and determine
+ *       which subproblems should be explored next.</li>
+ *   <li>Subproblems are pruned if their lower bounds exceed the current best
+ *       solution (upper bound), or if they are dominated according to the provided
+ *       {@link DominanceChecker}.</li>
+ * </ul>
+ *
+ *
+ * <p>
+ * This sequential solver serves as a reference or baseline implementation.
+ * </p>
+ *
+ * <p><b>Usage Notes:</b></p>
+ * <ul>
+ *   <li>This solver is designed for correctness and clarity, not scalability.</li>
+ *   <li>It is best suited for debugging, small instances, and educational purposes.</li>
+ *   <li>Set the verbosity level in {@link DdoModel} for detailed runtime logging.</li>
+ * </ul>
+ *
+ * @param <T> The type representing a problem state.
+ *
+ * @see ExactSolver
+ * @see DdoModel
+ * @see Problem
+ * @see Relaxation
+ * @see StateRanking
+ * @see VariableHeuristic
+ * @see WidthHeuristic
+ * @see FastLowerBound
+ * @see DominanceChecker
  */
 public final class SequentialSolver<T> implements Solver {
     /**

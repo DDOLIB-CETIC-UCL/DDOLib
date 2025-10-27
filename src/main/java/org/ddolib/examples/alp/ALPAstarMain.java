@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * ######### Aircraft Landing Problem (ALP) #############
+ * Aircraft Landing Problem (ALP) with AsTar.
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
  * the A* search algorithm.
  * <p>

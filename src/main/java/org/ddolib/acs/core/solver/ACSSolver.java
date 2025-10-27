@@ -1,4 +1,4 @@
-package org.ddolib.astar.core.solver;
+package org.ddolib.acs.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
@@ -21,7 +21,35 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
-
+/**
+ * Implementation of an Anytime Column Search (ACS) solver for decision diagram-based optimization problems.
+ * <p>
+ * The solver uses a combination of a lower bound, dominance rules, and variable heuristics to explore the
+ * search space efficiently. It maintains open and closed lists of subproblems organized by depth (columns)
+ * and attempts to minimize the objective function while keeping track of the best known solution (incumbent).
+ * </p>
+ *
+ * <p>
+ * Features:
+ * </p>
+ * <ul>
+ *     <li>Maintains a frontier of subproblems using a priority queue at each column.</li>
+ *     <li>Applies a {@link FastLowerBound} to prune subproblems unlikely to improve the incumbent.</li>
+ *     <li>Optionally uses {@link DominanceChecker} to avoid exploring dominated states.</li>
+ *     <li>Supports variable selection heuristics through {@link VariableHeuristic}.</li>
+ *     <li>Can report search statistics and provide the best solution found at any time.</li>
+ * </ul>
+ *
+ *
+ * @param <T> The type representing a state in the problem.
+ *
+ * @see Solver
+ * @see Problem
+ * @see FastLowerBound
+ * @see VariableHeuristic
+ * @see DominanceChecker
+ * @see AcsModel
+ */
 public final class ACSSolver<T> implements Solver {
 
     /**
@@ -72,23 +100,23 @@ public final class ACSSolver<T> implements Solver {
 
 
     /**
-     * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link org.ddolib.modeling.AcsModel}<br><br>
+     * Constructs an ACS solver with all required and optional components provided via an {@link AcsModel}.
      *
-     * <b>Mandatory parameters:</b>
+     * <p>
+     * Mandatory parameters:
+     * </p>
      * <ul>
-     *     <li>An implementation of {@link Problem}</li>
-     *         <li>An implementation of {@link FastLowerBound}</li>
-     *     <li>An implementation of {@link VariableHeuristic}</li>
+     *     <li>{@link Problem} implementation</li>
+     *     <li>{@link FastLowerBound} implementation</li>
+     *     <li>{@link VariableHeuristic} implementation</li>
      * </ul>
-     * <br>
-     * <b>Optional parameters: </b>
+     * Optional parameters:
      * <ul>
-     *     <li>An implementation of {@link DominanceChecker}</li>
-     *     <li>A verbosity level</li>
+     *     <li>{@link DominanceChecker} implementation</li>
+     *     <li>{@link VerbosityLevel} for debug/logging</li>
      * </ul>
-     *
-     * @param model All the parameters needed to configure the solver.
+     * @param model Provides all parameters needed to configure the solver
+     * @throws IllegalArgumentException if the debug mode is enabled (not supported)
      */
     public ACSSolver(AcsModel<T> model) {
         this.problem = model.problem();
@@ -100,7 +128,7 @@ public final class ACSSolver<T> implements Solver {
         this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
-        this.present = new HashMap<>();
+         this.present = new HashMap<>();
 
 
         this.open = new PriorityQueue[problem.nbVars() + 1];
@@ -117,7 +145,11 @@ public final class ACSSolver<T> implements Solver {
         }
 
     }
-
+    /**
+     * Checks if all columns are empty, i.e., no open subproblems remain.
+     *
+     * @return true if all open queues are empty, false otherwise
+     */
     private boolean allEmpty() {
         for (PriorityQueue<SubProblem<T>> q : open) {
             if (!q.isEmpty()) {
@@ -126,7 +158,13 @@ public final class ACSSolver<T> implements Solver {
         }
         return true;
     }
-
+    /**
+     * Minimizes the problem using the ACS strategy.
+     *
+     * @param limit a predicate to stop the search based on current {@link SearchStatistics}
+     * @param onSolution a consumer invoked on each new solution found (solution array and statistics)
+     * @return final {@link SearchStatistics} of the search
+     */
     @Override
     public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
@@ -137,7 +175,6 @@ public final class ACSSolver<T> implements Solver {
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
@@ -170,9 +207,9 @@ public final class ACSSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                         }
-                        double gap = 0; // TODO compute the gap when we have a valid LB
-                        stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                                System.currentTimeMillis() - t0, bestUB, gap);
+                        double gap = Math.abs((bestUB + sub.f())/(bestUB*100.0)); // TODO compute the gap when we have a valid LB
+                        stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
+                                System.currentTimeMillis() - t0, bestUB, gap());
                         onSolution.accept(constructSolution(bestSol.get()), stats);
                     } else {
                         addChildren(sub, i + 1);
@@ -183,9 +220,13 @@ public final class ACSSolver<T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
         }
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
     }
-
+    /**
+     * Returns the value of the best solution found, if any.
+     *
+     * @return {@link Optional} containing the value of the best solution or empty if none found
+     */
     @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
@@ -194,20 +235,23 @@ public final class ACSSolver<T> implements Solver {
             return Optional.empty();
         }
     }
-
+    /**
+     * Returns the set of decisions corresponding to the best solution found, if any.
+     *
+     * @return {@link Optional} containing the set of {@link Decision} objects or empty if none found
+     */
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
 
     /**
-     * Construct the root of a problem given the state, the value and the depth of the root node.
-     * A non-zero depth is used for debug. For debug, the value of root is 0.
+     * Constructs the root subproblem from a given state, value, and depth.
      *
-     * @param state The states of the current root.
-     * @param value The value of the current root.
-     * @param depth Used only for debug. The depth of the subproblem root in the main search.
-     * @return the root subproblem
+     * @param state the initial state
+     * @param value the initial value
+     * @param depth depth of the root (used for debugging)
+     * @return a {@link SubProblem} representing the root
      */
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
@@ -219,7 +263,12 @@ public final class ACSSolver<T> implements Solver {
                 Collections.EMPTY_SET);
     }
 
-
+    /**
+     * Adds children of a subproblem to the open queues, applying lower bounds and dominance checks.
+     *
+     * @param subProblem the parent subproblem
+     * @param debugLevel used for debug checking
+     */
     private void addChildren(SubProblem<T> subProblem, int debugLevel) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
@@ -261,7 +310,12 @@ public final class ACSSolver<T> implements Solver {
         }
     }
 
-
+    /**
+     * Returns the set of variables not yet assigned in a given path.
+     *
+     * @param path set of decisions already taken
+     * @return set of remaining variable indices
+     */
     private Set<Integer> varSet(Set<Decision> path) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < problem.nbVars(); i++) {
@@ -274,12 +328,28 @@ public final class ACSSolver<T> implements Solver {
     }
 
     /**
-     * Class containing a state and its depth in the main search.
+     * Internal key for mapping a state and its depth in open/closed lists.
      *
-     * @param state A state of the solved problem.
-     * @param depth The depth of the input state in the main search.
-     * @param <T>   The type of the state.
+     * @param <T> type of the state
      */
     private record ACSKey<T>(T state, int depth) {
+    }
+    /**
+     * Computes the gap (percentage difference) between the best known upper bound and the lowest
+     * f-value in the open nodes, for anytime search reporting.
+     *
+     * @return gap as a percentage
+     */
+    private double gap() {
+        double minLb = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < problem.nbVars(); i++) {
+            if (!open[i].isEmpty()) {
+                minLb = Math.min(minLb, Math.abs(open[i].peek().f()));
+            }
+        }
+        if (minLb == Double.POSITIVE_INFINITY) {
+            return 0.0;
+        }
+        return Math.abs(100.0 *(Math.abs(bestUB) - minLb)/bestUB);
     }
 }

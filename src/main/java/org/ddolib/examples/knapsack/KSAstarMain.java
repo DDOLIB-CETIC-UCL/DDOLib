@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
- * ######### Knapsack Problem (KS) - A* Example #############
+ * Knapsack Problem (KS) with AsTar.
  * <p>
  * This class demonstrates how to solve an instance of the Knapsack Problem (KS)
  * using the A* search algorithm.

@@ -17,13 +17,50 @@ import java.io.OutputStream;
 import java.util.Random;
 
 /**
- * Author: Pierre Schaus
- * Class to read and generate TSP instance instances
+ * Class to generate and handle instances of the Traveling Salesman Problem (TSP).
+ *
+ * <p>
+ * This class provides functionality to:
+ * </p>
+ * <ul>
+ *     <li>Create TSP instances from a distance matrix (int[][] or double[][]).</li>
+ *     <li>Create Euclidean TSP instances by sampling coordinates within a square.</li>
+ *     <li>Create Euclidean TSP instances from given x/y coordinates.</li>
+ *     <li>Access distances between cities and the number of cities.</li>
+ *     <li>Save a TSP instance in XML format following the XML-TSPLIB standard.</li>
+ * </ul>
+ *
+ * <p>
+ * The class maintains an internal distance matrix representing the cost between cities
+ * and optionally stores the objective value (best known solution).
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * </p>
+ * <pre>
+ *     // Generate a Euclidean TSP instance with 10 cities
+ *     TSPGenerator tsp = new TSPGenerator(10, 42, 100);
+ *     double dist = tsp.distance(0, 1);
+ *     tsp.saveXml("instance.xml", 1234);
+ * </pre>
+ * @author Pierre Schaus
  */
 public class TSPGenerator {
+    /** Distance matrix between cities */
     public double[][] distanceMatrix;
+
+    /** Number of cities */
     public int n;
+
+    /** Best known objective value (optional, -1 if unknown) */
     public final double objective;
+
+    /**
+     * Constructs a TSP instance from a double[][] distance matrix.
+     *
+     * @param distanceMatrix the distance matrix
+     */
 
     public TSPGenerator(double[][] distanceMatrix) {
         n = distanceMatrix.length;
@@ -35,7 +72,11 @@ public class TSPGenerator {
         }
         this.objective = -1;
     }
-
+    /**
+     * Constructs a TSP instance from an int[][] distance matrix.
+     *
+     * @param distanceMatrix the distance matrix
+     */
     public TSPGenerator(int[][] distanceMatrix) {
         n = distanceMatrix.length;
         this.distanceMatrix = new double[n][n];
@@ -48,11 +89,11 @@ public class TSPGenerator {
     }
 
     /**
-     * Create a Euclidean TSP Instance by sampling coordinate on a square
+     * Constructs a Euclidean TSP instance by randomly sampling coordinates in a square.
      *
-     * @param n            number of nodes
-     * @param seed         for the random number generator
-     * @param squareLength the square length for the sampling of x/y coordinates of nodes
+     * @param n            number of cities
+     * @param seed         random seed for reproducibility
+     * @param squareLength length of the square in which coordinates are sampled
      */
     public TSPGenerator(int n, int seed, int squareLength) {
         this.n = n;
@@ -75,10 +116,10 @@ public class TSPGenerator {
 
 
     /**
-     * Create a Euclidean TSP Instance from x/y coordinates
+     * Constructs a Euclidean TSP instance from given x/y coordinates.
      *
-     * @param xCoord
-     * @param yCoord
+     * @param xCoord array of x-coordinates
+     * @param yCoord array of y-coordinates
      */
     public TSPGenerator(int[] xCoord, int[] yCoord) {
         this.n = xCoord.length;
@@ -93,7 +134,7 @@ public class TSPGenerator {
     }
 
     /**
-     * Number of cities
+     * Returns the number of cities in the instance.
      *
      * @return the number of cities
      */
@@ -102,11 +143,11 @@ public class TSPGenerator {
     }
 
     /**
-     * Distance between two cities
+     * Returns the distance between two cities.
      *
-     * @param city1
-     * @param city2
-     * @return the distance between city1 and city2
+     * @param city1 first city index
+     * @param city2 second city index
+     * @return distance between city1 and city2
      */
     public double distance(int city1, int city2) {
         return distanceMatrix[city1][city2];
@@ -114,13 +155,13 @@ public class TSPGenerator {
 
 
     /**
-     * Euclidean distance between two points
+     * Computes the Euclidean distance between two points.
      *
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
-     * @return the Euclidean distance between (x1,y1) and (x2,y2)
+     * @param x1 x-coordinate of first point
+     * @param y1 y-coordinate of first point
+     * @param x2 x-coordinate of second point
+     * @param y2 y-coordinate of second point
+     * @return Euclidean distance between the points
      */
     public double dist(double x1, double y1, double x2, double y2) {
         double dx = x1 - x2;
@@ -129,12 +170,10 @@ public class TSPGenerator {
     }
 
     /**
-     * Save TSP Instance to xml format
-     * See <a href="http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf">
-     * "http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf"</a>
+     * Saves the TSP instance in XML format following XML-TSPLIB standards.
      *
-     * @param path      to the xml file
-     * @param objective of the best known solution
+     * @param path      path to the XML file
+     * @param objective best known solution value
      */
     public void saveXml(String path, int objective) {
         try {
@@ -178,8 +217,13 @@ public class TSPGenerator {
         }
     }
 
-    // write doc to output stream
-
+    /**
+     * Writes an XML Document to an OutputStream.
+     *
+     * @param doc    the XML document
+     * @param output the output stream
+     * @throws TransformerException if an error occurs during transformation
+     */
     private static void writeXml(Document doc,
                                  OutputStream output)
             throws TransformerException {

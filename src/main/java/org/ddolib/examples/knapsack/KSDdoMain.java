@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * ######### Knapsack Problem (KS) - Decision Diagram Optimization Example #############
+ * Knapsack Problem (KS) with Ddo.
  * <p>
  * This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP)
- * using a decision diagram-based approach (DDO).
+ * using a Decision Diagram Optimization (DDO) algorithm.
  * </p>
  * <p>
  * The program performs the following steps:

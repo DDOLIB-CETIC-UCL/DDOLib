@@ -8,7 +8,25 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-
+/**
+ * The Traveling Salesman Problem (TSP) with Acs.
+ * Main class to solve a Traveling Salesman Problem (TSP) instance using the ACS (Anytime Column Search) algorithm.
+ *
+ * <p>
+ * This class reads a problem instance from a file (XML format), initializes a {@link TSPProblem} and an
+ * {@link AcsModel} with a fast lower bound ({@link TSPFastLowerBound}), and then solves the problem using
+ * the ACS solver. The solution and search statistics are printed to the console.
+ * </p>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ * <pre>
+ * java TSPAcsMain [instanceFile]
+ * </pre>
+ * If no {@code instanceFile} argument is provided, a default instance
+ * ("data/TSP/instance_18_0.xml") is used.
+ */
 public class TSPAcsMain {
 
     public static void main(final String[] args) throws IOException {

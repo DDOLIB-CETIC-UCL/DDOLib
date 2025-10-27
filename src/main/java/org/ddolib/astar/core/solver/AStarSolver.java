@@ -7,10 +7,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.DebugLevel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.*;
 import org.ddolib.util.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
@@ -98,6 +95,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private final DebugLevel debugLevel;
 
+
     public AStarSolver(Model<T> model) {
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
@@ -150,7 +148,7 @@ public final class AStarSolver<T> implements Solver {
         present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
             verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
-                    open.peek().getLowerBound(), gap());
+                    open.peek().getLowerBound(), 100 * gap());
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.size());
@@ -158,7 +156,7 @@ public final class AStarSolver<T> implements Solver {
             SubProblem<T> sub = open.poll();
             AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
 
-            SearchStatistics statistics = new SearchStatistics(
+            SearchStatistics stats = new SearchStatistics(
                     SearchStatus.UNKNOWN,
                     nbIter,
                     queueMaxSize,
@@ -166,8 +164,8 @@ public final class AStarSolver<T> implements Solver {
                     bestValue().orElse(Double.POSITIVE_INFINITY),
                     0);
 
-            if (limit.test(statistics)) {
-                return statistics;
+            if (limit.test(stats)) {
+                return stats;
             }
 
             present.remove(subKey);
@@ -178,20 +176,19 @@ public final class AStarSolver<T> implements Solver {
                 if (debugLevel != DebugLevel.OFF) {
                     checkFLBAdmissibility();
                 }
-                if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
+                if (sub.getValue() >= bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
 
-                SearchStatistics stats = new SearchStatistics(
+
+                onSolution.accept(constructSolution(bestSol.get()), new SearchStatistics(
                         SearchStatus.UNKNOWN,
                         nbIter,
                         queueMaxSize,
                         System.currentTimeMillis() - t0,
                         bestUB,
-                        0);
-
-                onSolution.accept(constructSolution(bestSol.get()), statistics);
-
+                        gap()
+                ));
 
                 verboseMode.newBest(bestUB);
 
@@ -392,7 +389,7 @@ public final class AStarSolver<T> implements Solver {
             return 0.0;
         } else {
             double bestInFrontier = open.peek().getLowerBound();
-            return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
+            return (bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 
