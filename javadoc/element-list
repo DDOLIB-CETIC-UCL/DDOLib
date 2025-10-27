@@ -38,3 +38,4 @@ org.ddolib.modeling
 org.ddolib.util
 org.ddolib.util.io
 org.ddolib.util.testbench
+org.ddolib.util.verbosity
