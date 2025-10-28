@@ -5,6 +5,8 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 /**
  * Defines the core model interface for describing an optimization problem to be
@@ -34,6 +36,7 @@ public interface Model<T> {
      * and objective function of the optimization task
      */
     Problem<T> problem();
+
     /**
      * Returns a heuristic that estimates a lower bound on the objective value
      * for a given state.
@@ -47,6 +50,7 @@ public interface Model<T> {
     default FastLowerBound<T> lowerBound() {
         return new DefaultFastLowerBound<>();
     }
+
     /**
      * Returns the dominance checker used to prune dominated states from the search space.
      * <p>
@@ -59,6 +63,7 @@ public interface Model<T> {
     default DominanceChecker<T> dominance() {
         return new DefaultDominanceChecker<>();
     }
+
     /**
      * Callback invoked when a new solution is found during the search process.
      * <p>
@@ -69,6 +74,7 @@ public interface Model<T> {
      */
     default void onSolution(SearchStatistics statistics) {
     }
+
     /**
      * Returns the heuristic used to determine the next variable to branch on
      * during decision diagram compilation.
@@ -81,6 +87,7 @@ public interface Model<T> {
     default VariableHeuristic<T> variableHeuristic() {
         return new DefaultVariableHeuristic<>();
     }
+
     /**
      * Returns the verbosity level of the solver when this model is executed.
      * <p>
@@ -92,6 +99,7 @@ public interface Model<T> {
     default VerbosityLevel verbosityLevel() {
         return VerbosityLevel.SILENT;
     }
+
     /**
      * Returns the debugging level to apply during the compilation and solving phases.
      * <p>

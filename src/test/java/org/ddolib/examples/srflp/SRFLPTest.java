@@ -2,6 +2,7 @@ package org.ddolib.examples.srflp;
 
 import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;

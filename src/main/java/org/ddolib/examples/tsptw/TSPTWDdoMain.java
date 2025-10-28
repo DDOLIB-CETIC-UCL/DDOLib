@@ -15,7 +15,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Ddo.
@@ -112,11 +111,13 @@ public class TSPTWDdoMain {
             public WidthHeuristic<TSPTWState> widthHeuristic() {
                 return new FixedWidth<>(20);
             }
+
         };
 
         SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
+
         System.out.println(stats);
     }
 }

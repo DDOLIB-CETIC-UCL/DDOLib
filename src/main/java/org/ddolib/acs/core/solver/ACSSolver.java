@@ -7,8 +7,14 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.*;
-import org.ddolib.util.DebugUtil;
+import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.util.StateAndDepth;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -17,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
+
 /**
  * Implementation of an Anytime Column Search (ACS) solver for decision diagram-based optimization problems.
  * <p>
@@ -36,9 +43,7 @@ import static java.lang.Math.min;
  *     <li>Can report search statistics and provide the best solution found at any time.</li>
  * </ul>
  *
- *
  * @param <T> The type representing a state in the problem.
- *
  * @see Solver
  * @see Problem
  * @see FastLowerBound
@@ -77,22 +82,24 @@ public final class ACSSolver<T> implements Solver {
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
-    private final HashMap<ACSKey<T>, Double> closed;
+    private final HashMap<StateAndDepth<T>, Double> closed;
 
     /**
      * HashMap mapping (state,depth) to the f value.
      * Open nodes are the ones in the frontier.
      */
-    private final HashMap<ACSKey<T>, Double> present;
+    private final HashMap<StateAndDepth<T>, Double> present;
 
 
-    private PriorityQueue<SubProblem<T>>[] open;
+    private final List<PriorityQueue<SubProblem<T>>> open;
 
     private final int columnWidth;
 
     private final SubProblem<T> root;
 
-    private final VerbosityLevel verbosityLevel;
+    private final VerboseMode verboseMode;
+
+    private final DebugLevel debugLevel;
 
 
     /**
@@ -111,6 +118,7 @@ public final class ACSSolver<T> implements Solver {
      *     <li>{@link DominanceChecker} implementation</li>
      *     <li>{@link VerbosityLevel} for debug/logging</li>
      * </ul>
+     *
      * @param model Provides all parameters needed to configure the solver
      * @throws IllegalArgumentException if the debug mode is enabled (not supported)
      */
@@ -124,23 +132,42 @@ public final class ACSSolver<T> implements Solver {
         this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
-         this.present = new HashMap<>();
+        this.present = new HashMap<>();
 
 
-        this.open = new PriorityQueue[problem.nbVars() + 1];
+        this.open = new ArrayList<>(problem.nbVars() + 1);
         for (int i = 0; i < problem.nbVars() + 1; i++) {
-            open[i] = new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f));
+            this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
         }
 
-        this.verbosityLevel = model.verbosityLevel();
+        this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);
+        this.debugLevel = model.debugMode();
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-        if (model.debugMode() != DebugLevel.OFF) {
-            throw new IllegalArgumentException("The debug mode for this solver is not available " +
-                    "for the moment.");
-        }
 
     }
+
+    private ACSSolver(AcsModel<T> model, StateAndDepth<T> rootKey) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestSol = Optional.empty();
+        this.columnWidth = model.columnWidth();
+
+        this.closed = new HashMap<>();
+        this.present = new HashMap<>();
+        this.open = new ArrayList<>(problem.nbVars() + 1);
+        for (int i = 0; i < problem.nbVars() + 1; i++) {
+            this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
+        }
+
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
+        this.debugLevel = DebugLevel.OFF;
+        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+    }
+
     /**
      * Checks if all columns are empty, i.e., no open subproblems remain.
      *
@@ -154,10 +181,11 @@ public final class ACSSolver<T> implements Solver {
         }
         return true;
     }
+
     /**
      * Minimizes the problem using the ACS strategy.
      *
-     * @param limit a predicate to stop the search based on current {@link SearchStatistics}
+     * @param limit      a predicate to stop the search based on current {@link SearchStatistics}
      * @param onSolution a consumer invoked on each new solution found (solution array and statistics)
      * @return final {@link SearchStatistics} of the search
      */
@@ -166,11 +194,20 @@ public final class ACSSolver<T> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        open[0].add(root);
-        present.put(new ACSKey<>(root.getState(), root.getDepth()), root.f());
+        open.getFirst().add(root);
+        present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
+            verboseMode.detailedSearchState(nbIter,
+                    open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
+                    bestUB,
+                    open.stream()
+                            .map(pq -> pq.peek() != null ? pq.peek().getLowerBound() : 0)
+                            .mapToDouble(x -> x).min().orElse(Double.POSITIVE_INFINITY),
+                    100 * gap());
+
+
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
@@ -180,22 +217,22 @@ public final class ACSSolver<T> implements Solver {
 
             for (int i = 0; i < problem.nbVars() + 1; i++) {
                 candidates.clear();
-                int l = min(columnWidth, open[i].size());
+                int l = min(columnWidth, open.get(i).size());
                 for (int j = 0; j < l; j++) {
-                    SubProblem<T> sub = open[i].poll();
-                    ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
+                    SubProblem<T> sub = open.get(i).poll();
+                    StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
                     } else {
                         // all the next ones will be worse since f is a lower-bound
-                        open[i].clear();
+                        open.get(i).clear();
                         break;
                     }
                 }
                 for (SubProblem<T> sub : candidates) {
                     nbIter++;
-                    ACSKey<T> subKey = new ACSKey<>(sub.getState(), sub.getDepth());
+                    StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // new incumbent
@@ -207,17 +244,32 @@ public final class ACSSolver<T> implements Solver {
                                     System.currentTimeMillis() - t0, bestUB, gap());
                             onSolution.accept(constructSolution(bestSol.get()), stats);
                         }
+<<<<<<< HEAD
+=======
+
+                        stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
+                                System.currentTimeMillis() - t0, bestUB, gap());
+                        onSolution.accept(constructSolution(bestSol.get()), stats);
+                        verboseMode.newBest(bestUB);
+>>>>>>> 19cb57142d5742ac4dc221813af5056e0a7df59d
                     } else {
-                        addChildren(sub, i + 1);
+                        verboseMode.currentSubProblem(nbIter, sub);
+                        addChildren(sub);
                     }
                 }
 
             }
-            queueMaxSize = Math.max(queueMaxSize, Arrays.stream(open).mapToInt(q -> q.size()).sum());
+            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
         }
+
+        if (debugLevel != DebugLevel.OFF) {
+            checkAdmissibility();
+        }
+
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
     }
+
     /**
      * Returns the value of the best solution found, if any.
      *
@@ -231,6 +283,7 @@ public final class ACSSolver<T> implements Solver {
             return Optional.empty();
         }
     }
+
     /**
      * Returns the set of decisions corresponding to the best solution found, if any.
      *
@@ -252,27 +305,34 @@ public final class ACSSolver<T> implements Solver {
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+
+        Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
+        if (depth != 0) {
+            for (int i = 0; i < depth; i++) {
+                nullDecisions.add(new Decision(i, 0));
+            }
+        }
+
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                Collections.EMPTY_SET);
+                nullDecisions);
     }
 
     /**
      * Adds children of a subproblem to the open queues, applying lower bounds and dominance checks.
      *
      * @param subProblem the parent subproblem
-     * @param debugLevel used for debug checking
      */
-    private void addChildren(SubProblem<T> subProblem, int debugLevel) {
+    private void addChildren(SubProblem<T> subProblem) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel >= 1)
+            if (debugLevel != DebugLevel.OFF)
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
@@ -285,19 +345,22 @@ public final class ACSSolver<T> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                ACSKey<T> newKey = new ACSKey<>(newState, newSub.getDepth());
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
+                }
+                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
-                    open[newSub.getDepth()].add(newSub);
+                    open.get(newSub.getDepth()).add(newSub);
                     present.put(newKey, newSub.f());
                 } else {
                     Double closedValue = closed.get(newKey);
                     if (closedValue != null && closedValue > newSub.f()) {
-                        open[newSub.getDepth()].add(newSub);
+                        open.get(newSub.getDepth()).add(newSub);
                         closed.remove(newKey);
                         present.put(newKey, newSub.f());
                     } else {
-                        open[newSub.getDepth()].add(newSub);
+                        open.get(newSub.getDepth()).add(newSub);
                         present.put(newKey, newSub.f());
                     }
                 }
@@ -323,13 +386,39 @@ public final class ACSSolver<T> implements Solver {
         return set;
     }
 
-    /**
-     * Internal key for mapping a state and its depth in open/closed lists.
-     *
-     * @param <T> type of the state
-     */
-    private record ACSKey<T>(T state, int depth) {
+
+    private void checkAdmissibility() {
+        Set<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        AcsModel<T> model = new AcsModel<>() {
+
+
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public int columnWidth() {
+                return columnWidth;
+            }
+
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return dominance;
+            }
+        };
+
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new ACSSolver<>(model, key));
     }
+
     /**
      * Computes the gap (percentage difference) between the best known upper bound and the lowest
      * f-value in the open nodes, for anytime search reporting.
@@ -339,13 +428,13 @@ public final class ACSSolver<T> implements Solver {
     private double gap() {
         double minLb = Double.POSITIVE_INFINITY;
         for (int i = 0; i < problem.nbVars(); i++) {
-            if (!open[i].isEmpty()) {
-                minLb = Math.min(minLb, Math.abs(open[i].peek().f()));
+            if (!open.get(i).isEmpty()) {
+                minLb = min(minLb, Math.abs(open.get(i).peek().f()));
             }
         }
         if (minLb == Double.POSITIVE_INFINITY) {
             return 0.0;
         }
-        return Math.abs(100.0 *(Math.abs(bestUB) - minLb)/bestUB);
+        return Math.abs(100.0 * (Math.abs(bestUB) - minLb) / bestUB);
     }
 }

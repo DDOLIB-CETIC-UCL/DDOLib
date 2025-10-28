@@ -16,7 +16,9 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.VerbosityPrinter;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -74,7 +76,6 @@ import java.util.function.Predicate;
  * </ul>
  *
  * @param <T> The type representing a problem state.
- *
  * @see ExactSolver
  * @see DdoModel
  * @see Problem
@@ -145,14 +146,14 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final VerbosityLevel verbosityLevel;
 
-    private final VerbosityPrinter verbosityPrinter;
+    private final VerboseMode verboseMode;
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
     /**
      * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.modeling.DebugLevel for details}
+     * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
     /**
@@ -196,7 +197,7 @@ public final class SequentialSolver<T> implements Solver {
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
-        this.verbosityPrinter = new VerbosityPrinter(verbosityLevel, 500L);
+        this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
     }
@@ -211,7 +212,7 @@ public final class SequentialSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             nbIter++;
-            verbosityPrinter.detailedSearchState(nbIter, frontier.size(), bestUB,
+            verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -229,7 +230,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            verbosityPrinter.currentSubProblem(nbIter, sub);
+            verboseMode.currentSubProblem(nbIter, sub);
 
             if (nodeLB >= bestUB) {
                 frontier.clear();
@@ -345,7 +346,7 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            verbosityPrinter.newBest(bestUB);
+            verboseMode.newBest(bestUB);
             return true;
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.

@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.modeling.*;
 import org.junit.jupiter.api.Test;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
