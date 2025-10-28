@@ -18,6 +18,7 @@ public class MispFastLowerBound implements FastLowerBound<BitSet> {
      * The MISP problem instance for which the lower bound is computed.
      */
     private final MispProblem problem;
+
     /**
      * Constructs a fast lower bound calculator for a given MISP problem.
      *
@@ -27,6 +28,7 @@ public class MispFastLowerBound implements FastLowerBound<BitSet> {
     public MispFastLowerBound(MispProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a fast lower bound for the given state and set of remaining variables.
      * <p>

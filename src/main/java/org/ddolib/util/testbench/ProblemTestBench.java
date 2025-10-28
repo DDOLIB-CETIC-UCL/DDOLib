@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;
@@ -175,7 +176,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testCache(P problem) {
         DdoModel<T> globalModel = model(problem);
-        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
+        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<>() {
             @Override
             public Relaxation<T> relaxation() {
                 return globalModel.relaxation();
@@ -244,7 +245,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
 
         Model<T> globalModel = model(problem);
 
-        AcsModel<T> testModel = new AcsModel<T>() {
+        AcsModel<T> testModel = new AcsModel<>() {
             @Override
             public Problem<T> problem() {
                 return problem;
@@ -258,6 +259,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             @Override
             public FastLowerBound<T> lowerBound() {
                 return globalModel.lowerBound();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
         };
 

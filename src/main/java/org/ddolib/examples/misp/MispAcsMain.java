@@ -10,8 +10,8 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.BitSet;
+
 /**
  * The Maximum Independent Set Problem (MISP) with Acs.
  * Entry point for solving the Maximum Independent Set Problem (MISP) using an Anytime Column Search (ACS) solver.
@@ -60,7 +60,7 @@ public final class MispAcsMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
 
         System.out.println(stats);

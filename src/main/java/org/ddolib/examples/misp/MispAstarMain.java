@@ -60,11 +60,6 @@ public final class MispAstarMain {
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
-
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
         };
 
         SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
