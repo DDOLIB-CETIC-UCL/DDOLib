@@ -220,7 +220,7 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, gap());
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100);
             if (bestUB != Double.POSITIVE_INFINITY)
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
 
@@ -283,7 +283,11 @@ public final class SequentialSolver<T> implements Solver {
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
-                maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+                newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+                if (newbest) {
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+                    onSolution.accept(constructSolution(bestSol.get()), stats);
+                }
             }
             if (exportAsDot && firstRelaxed) {
                 if (!relaxedMdd.isExact())
@@ -373,10 +377,10 @@ public final class SequentialSolver<T> implements Solver {
 
     private double gap() {
         if (frontier.isEmpty()) {
-            return 0.0;
+            return 100.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
+            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
         }
     }
 }

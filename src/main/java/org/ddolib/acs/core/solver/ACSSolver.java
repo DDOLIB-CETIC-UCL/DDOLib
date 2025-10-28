@@ -202,11 +202,11 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
+                            // TODO compute the gap when we have a valid LB
+                            stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
+                                    System.currentTimeMillis() - t0, bestUB, gap());
+                            onSolution.accept(constructSolution(bestSol.get()), stats);
                         }
-                        double gap = Math.abs((bestUB + sub.f())/(bestUB*100.0)); // TODO compute the gap when we have a valid LB
-                        stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
-                                System.currentTimeMillis() - t0, bestUB, gap());
-                        onSolution.accept(constructSolution(bestSol.get()), stats);
                     } else {
                         addChildren(sub, i + 1);
                     }
