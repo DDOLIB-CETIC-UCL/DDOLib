@@ -3,6 +3,7 @@ package org.ddolib.util.debug;
 import org.ddolib.astar.core.solver.AstarKey;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.modeling.Model;
 
 import java.text.DecimalFormat;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -59,6 +61,18 @@ public class DebugUtil {
         }
     }
 
+    /**
+     * Given a set of states check if the {@link org.ddolib.modeling.FastLowerBound} is
+     * admissible, i.e., whether the bound does not overestimate the path from the states to a
+     * terminal node.
+     * <p>
+     * The checks are performed by running solvers starting for the tested states.
+     *
+     * @param toCheck The states to check.
+     * @param model   A model used to initialize solvers ran during the tests.
+     * @param solver  Returns a solver given a root state.
+     * @param <T>     The type of the states.
+     */
     public static <T> void checkFlbAdmissibility(Set<AstarKey<T>> toCheck,
                                                  Model<T> model,
                                                  Function<AstarKey<T>, Solver> solver) {
@@ -83,7 +97,29 @@ public class DebugUtil {
                 throw new RuntimeException(failureMsg);
             }
         }
+    }
 
+    /**
+     * Given the current node and one of its successor. Checks if the lower bound is consistent.
+     *
+     * @param current        The current node.
+     * @param next           A successor of the current node.
+     * @param transitionCost The transition cost from {@code current} to {@code next}.
+     * @param <T>            The type of the states.
+     */
+    public static <T> void checkFlbConsistency(
+            SubProblem<T> current,
+            SubProblem<T> next,
+            double transitionCost
+    ) {
+        Logger logger = Logger.getLogger("Debug Mode");
+        if (current.getLowerBound() - 1e-10 > next.getLowerBound() + transitionCost) {
+            String warningMsg = "Your lower bound is not consistent. You may lose performance.\n" +
+                    "Current state " + current + "\n" +
+                    "Next state: " + next + "\n" +
+                    "Transition cost: " + transitionCost + "\n";
+            logger.warning(warningMsg);
+        }
 
     }
 }

@@ -248,7 +248,7 @@ public final class ACSSolver<T> implements Solver {
                         verboseMode.newBest(bestUB);
                     } else {
                         verboseMode.currentSubProblem(nbIter, sub);
-                        addChildren(sub, i + 1);
+                        addChildren(sub);
                     }
                 }
 
@@ -317,16 +317,15 @@ public final class ACSSolver<T> implements Solver {
      * Adds children of a subproblem to the open queues, applying lower bounds and dominance checks.
      *
      * @param subProblem the parent subproblem
-     * @param debugLevel used for debug checking
      */
-    private void addChildren(SubProblem<T> subProblem, int debugLevel) {
+    private void addChildren(SubProblem<T> subProblem) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel >= 1)
+            if (debugLevel != DebugLevel.OFF)
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
@@ -339,6 +338,9 @@ public final class ACSSolver<T> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
+                }
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {

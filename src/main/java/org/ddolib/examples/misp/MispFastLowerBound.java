@@ -43,6 +43,6 @@ public class MispFastLowerBound implements FastLowerBound<BitSet> {
     @Override
     public double fastLowerBound(BitSet state, Set<Integer> variables) {
         // We select all the remaining nodes
-        return -state.stream().map(i -> problem.weight[i]).sum() + 100;
+        return -state.stream().map(i -> problem.weight[i]).sum();
     }
 }

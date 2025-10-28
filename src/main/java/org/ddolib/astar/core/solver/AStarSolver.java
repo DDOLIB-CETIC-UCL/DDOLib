@@ -18,7 +18,6 @@ import org.ddolib.util.verbosity.VerbosityLevel;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -202,7 +201,7 @@ public final class AStarSolver<T> implements Solver {
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(nbIter, sub);
-                addChildren(sub, debugLevel);
+                addChildren(sub);
                 closed.put(subKey, sub.f());
             }
         }
@@ -253,7 +252,7 @@ public final class AStarSolver<T> implements Solver {
     }
 
 
-    private void addChildren(SubProblem<T> subProblem, DebugLevel debugLevel) {
+    private void addChildren(SubProblem<T> subProblem) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
 
@@ -262,8 +261,9 @@ public final class AStarSolver<T> implements Solver {
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel != DebugLevel.OFF)
+            if (debugLevel != DebugLevel.OFF) {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
+            }
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             if (cost < 0) {
@@ -279,7 +279,7 @@ public final class AStarSolver<T> implements Solver {
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
                 if (debugLevel == DebugLevel.EXTENDED) {
-                    checkFLBConsistency(subProblem, newSub, cost);
+                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
                 }
                 AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
@@ -340,28 +340,6 @@ public final class AStarSolver<T> implements Solver {
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AStarSolver<>(model, key));
     }
 
-    /**
-     * Given the current node and one of its successor. Checks if the lower bound is consistent.
-     *
-     * @param current        The current node.
-     * @param next           A successor of the current node.
-     * @param transitionCost The transition cost from {@code current} to {@code next}.
-     */
-    private void checkFLBConsistency(
-            SubProblem<T> current,
-            SubProblem<T> next,
-            double transitionCost
-    ) {
-        Logger logger = Logger.getLogger(AStarSolver.class.getName());
-        if (current.getLowerBound() - 1e-10 > next.getLowerBound() + transitionCost) {
-            String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
-                    "Current state " + current + "\n" +
-                    "Next state: " + next + "\n" +
-                    "Transition cost: " + transitionCost + "\n";
-            logger.warning(warningMsg);
-        }
-
-    }
 
     private double gap() {
         if (open.isEmpty()) {

@@ -6,7 +6,6 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
-import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -57,11 +56,6 @@ public final class MispAcsMain {
             @Override
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
-            }
-
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
             }
         };
 
