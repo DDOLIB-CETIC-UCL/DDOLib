@@ -165,8 +165,7 @@ public final class ACSSolver<T> implements Solver {
 
         this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
-        this.root = constructRoot(problem.initialState(), 0, rootKey.depth());
-
+        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
     }
 
     /**
@@ -306,6 +305,7 @@ public final class ACSSolver<T> implements Solver {
                 nullDecisions.add(new Decision(i, 0));
             }
         }
+
         return new SubProblem<>(
                 state,
                 value,
