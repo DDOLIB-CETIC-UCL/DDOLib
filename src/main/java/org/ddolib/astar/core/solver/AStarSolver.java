@@ -10,6 +10,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
@@ -45,12 +46,12 @@ public final class AStarSolver<T> implements Solver {
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
-    private final HashMap<AstarKey<T>, Double> closed;
+    private final HashMap<StateAndDepth<T>, Double> closed;
 
     /**
      * HashMap mapping (state,depth) open nodes to the f value.
      */
-    private final HashMap<AstarKey<T>, Double> present;
+    private final HashMap<StateAndDepth<T>, Double> present;
 
     /**
      * If set, this keeps the info about the best solution so far.
@@ -123,7 +124,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private AStarSolver(
             Model<T> model,
-            AstarKey<T> rootKey
+            StateAndDepth<T> rootKey
     ) {
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
@@ -145,7 +146,7 @@ public final class AStarSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         open.add(root);
-        present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
+        present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
             verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
                     open.peek().getLowerBound(), 100 * gap());
@@ -154,7 +155,7 @@ public final class AStarSolver<T> implements Solver {
             queueMaxSize = Math.max(queueMaxSize, open.size());
 
             SubProblem<T> sub = open.poll();
-            AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+            StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
 
             SearchStatistics stats = new SearchStatistics(
                     SearchStatus.UNKNOWN,
@@ -281,7 +282,7 @@ public final class AStarSolver<T> implements Solver {
                 if (debugLevel == DebugLevel.EXTENDED) {
                     DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
                 }
-                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
                     open.add(newSub);
@@ -318,7 +319,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private void checkFLBAdmissibility() {
 
-        HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
+        HashSet<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
         Model<T> model = new Model<>() {
             @Override

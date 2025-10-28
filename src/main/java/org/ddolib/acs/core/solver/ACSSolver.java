@@ -1,6 +1,5 @@
 package org.ddolib.acs.core.solver;
 
-import org.ddolib.astar.core.solver.AstarKey;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
@@ -11,6 +10,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
@@ -82,13 +82,13 @@ public final class ACSSolver<T> implements Solver {
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
-    private final HashMap<AstarKey<T>, Double> closed;
+    private final HashMap<StateAndDepth<T>, Double> closed;
 
     /**
      * HashMap mapping (state,depth) to the f value.
      * Open nodes are the ones in the frontier.
      */
-    private final HashMap<AstarKey<T>, Double> present;
+    private final HashMap<StateAndDepth<T>, Double> present;
 
 
     private final List<PriorityQueue<SubProblem<T>>> open;
@@ -147,7 +147,7 @@ public final class ACSSolver<T> implements Solver {
 
     }
 
-    private ACSSolver(AcsModel<T> model, AstarKey<T> rootKey) {
+    private ACSSolver(AcsModel<T> model, StateAndDepth<T> rootKey) {
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
@@ -196,7 +196,7 @@ public final class ACSSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         open.getFirst().add(root);
-        present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
+        present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
@@ -221,7 +221,7 @@ public final class ACSSolver<T> implements Solver {
                 int l = min(columnWidth, open.get(i).size());
                 for (int j = 0; j < l; j++) {
                     SubProblem<T> sub = open.get(i).poll();
-                    AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+                    StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
@@ -233,7 +233,7 @@ public final class ACSSolver<T> implements Solver {
                 }
                 for (SubProblem<T> sub : candidates) {
                     nbIter++;
-                    AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+                    StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
                     if (sub.getPath().size() == problem.nbVars()) {
                         // new incumbent
@@ -341,7 +341,7 @@ public final class ACSSolver<T> implements Solver {
                 if (debugLevel == DebugLevel.EXTENDED) {
                     DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
                 }
-                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
                     open.get(newSub.getDepth()).add(newSub);
@@ -381,7 +381,7 @@ public final class ACSSolver<T> implements Solver {
 
 
     private void checkAdmissibility() {
-        Set<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
+        Set<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
 
         AcsModel<T> model = new AcsModel<>() {

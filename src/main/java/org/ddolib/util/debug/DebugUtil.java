@@ -1,10 +1,10 @@
 package org.ddolib.util.debug;
 
-import org.ddolib.astar.core.solver.AstarKey;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.modeling.Model;
+import org.ddolib.util.StateAndDepth;
 
 import java.text.DecimalFormat;
 import java.util.Optional;
@@ -73,11 +73,11 @@ public class DebugUtil {
      * @param solver  Returns a solver given a root state.
      * @param <T>     The type of the states.
      */
-    public static <T> void checkFlbAdmissibility(Set<AstarKey<T>> toCheck,
+    public static <T> void checkFlbAdmissibility(Set<StateAndDepth<T>> toCheck,
                                                  Model<T> model,
-                                                 Function<AstarKey<T>, Solver> solver) {
+                                                 Function<StateAndDepth<T>, Solver> solver) {
 
-        for (AstarKey<T> current : toCheck) {
+        for (StateAndDepth<T> current : toCheck) {
             Solver internalSolver = solver.apply(current);
             Set<Integer> vars =
                     IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());
