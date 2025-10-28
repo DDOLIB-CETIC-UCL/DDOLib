@@ -239,19 +239,11 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
-                            // TODO compute the gap when we have a valid LB
                             stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
                                     System.currentTimeMillis() - t0, bestUB, gap());
                             onSolution.accept(constructSolution(bestSol.get()), stats);
                         }
-<<<<<<< HEAD
-=======
-
-                        stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
-                                System.currentTimeMillis() - t0, bestUB, gap());
-                        onSolution.accept(constructSolution(bestSol.get()), stats);
                         verboseMode.newBest(bestUB);
->>>>>>> 19cb57142d5742ac4dc221813af5056e0a7df59d
                     } else {
                         verboseMode.currentSubProblem(nbIter, sub);
                         addChildren(sub);
