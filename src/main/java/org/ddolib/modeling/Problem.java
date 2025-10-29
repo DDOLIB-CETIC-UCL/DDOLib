@@ -98,5 +98,8 @@ public interface Problem<T> {
      * respect the problem's constraints.
      */
     class InvalidSolutionException extends Exception {
+        public InvalidSolutionException(String message) {
+            super(message);
+        }
     }
 }
