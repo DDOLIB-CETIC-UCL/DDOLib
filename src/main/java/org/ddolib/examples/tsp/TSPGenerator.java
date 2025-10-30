@@ -44,16 +44,23 @@ import java.util.Random;
  *     double dist = tsp.distance(0, 1);
  *     tsp.saveXml("instance.xml", 1234);
  * </pre>
+ *
  * @author Pierre Schaus
  */
 public class TSPGenerator {
-    /** Distance matrix between cities */
+    /**
+     * Distance matrix between cities
+     */
     public double[][] distanceMatrix;
 
-    /** Number of cities */
+    /**
+     * Number of cities
+     */
     public int n;
 
-    /** Best known objective value (optional, -1 if unknown) */
+    /**
+     * Best known objective value (optional, -1 if unknown)
+     */
     public final double objective;
 
     /**
@@ -72,6 +79,7 @@ public class TSPGenerator {
         }
         this.objective = -1;
     }
+
     /**
      * Constructs a TSP instance from an int[][] distance matrix.
      *

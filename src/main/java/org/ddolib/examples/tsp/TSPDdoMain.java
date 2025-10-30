@@ -11,6 +11,7 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+
 /**
  * Main class to solve a Traveling Salesman Problem (TSP) instance using the Decision Diagram Optimization (DDO) method.
  *
@@ -72,7 +73,7 @@ public class TSPDdoMain {
         };
 
         SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(stats);
 
