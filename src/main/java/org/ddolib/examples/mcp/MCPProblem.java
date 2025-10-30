@@ -11,6 +11,7 @@ import java.util.*;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.Math.abs;
+
 /**
  * Represents an instance of the <b>Maximum Cut Problem (MCP)</b>.
  * <p>
@@ -75,10 +76,11 @@ public class MCPProblem implements Problem<MCPState> {
     public MCPProblem(Graph graph) {
         this.graph = graph;
     }
+
     /**
      * Constructs an MCP problem from a given graph and known optimal value.
      *
-     * @param graph the graph representing the instance
+     * @param graph   the graph representing the instance
      * @param optimal the known optimal value of the instance
      */
     public MCPProblem(Graph graph, Double optimal) {
@@ -203,11 +205,37 @@ public class MCPProblem implements Problem<MCPState> {
     public Optional<Double> optimalValue() {
         return optimal.map(x -> -x);
     }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        BitSet s = new BitSet(nbVars());
+        BitSet t = new BitSet(nbVars());
+
+        for (int i = 0; i < solution.length; i++) {
+            if (solution[i] == 0) s.set(i);
+            else t.set(i);
+        }
+
+        double value = 0.0;
+        for (int i = s.nextSetBit(0); i >= 0; i = s.nextSetBit(i + 1)) {
+            for (int j = t.nextSetBit(0); j >= 0; j = t.nextSetBit(j + 1)) {
+                value += graph.weightOf(i, j);
+            }
+        }
+
+        return value;
+    }
+
     /**
      * Computes the transition cost when placing node {@code k} in partition S.
      *
      * @param state the current state
-     * @param k the node index
+     * @param k     the node index
      * @return the estimated cost
      */
     private int branchOnS(MCPState state, int k) {
@@ -223,11 +251,12 @@ public class MCPProblem implements Problem<MCPState> {
 
         return cost;
     }
+
     /**
      * Computes the transition cost when placing node {@code k} in partition T.
      *
      * @param state the current state
-     * @param k the node index
+     * @param k     the node index
      * @return the estimated cost
      */
     private int branchOnT(MCPState state, int k) {
@@ -243,6 +272,7 @@ public class MCPProblem implements Problem<MCPState> {
 
         return cost;
     }
+
     /**
      * Returns the positive part of a value, or zero if negative.
      *
@@ -252,6 +282,7 @@ public class MCPProblem implements Problem<MCPState> {
     private int positiveOrNull(int x) {
         return max(x, 0);
     }
+
     /**
      * Returns the negative part of a value, or zero if positive.
      *

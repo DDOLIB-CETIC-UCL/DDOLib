@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
 /**
  * Represents a <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem instance.
  * <p>
@@ -33,22 +34,34 @@ import java.util.*;
  */
 public class Max2SatProblem implements Problem<Max2SatState> {
 
-    /** Value representing a decision of TRUE. */
+    /**
+     * Value representing a decision of TRUE.
+     */
     final static int T = 1;
 
-    /** Value representing a decision of FALSE. */
+    /**
+     * Value representing a decision of FALSE.
+     */
     final static int F = 0;
 
-    /** Number of decision variables in this MAX2SAT instance. */
+    /**
+     * Number of decision variables in this MAX2SAT instance.
+     */
     private final int numVar;
 
-    /** Map storing the weight of each binary clause. */
+    /**
+     * Map storing the weight of each binary clause.
+     */
     final HashMap<BinaryClause, Integer> weights;
 
-    /** Optional value of the known optimal solution. */
+    /**
+     * Optional value of the known optimal solution.
+     */
     private final Optional<Double> optimal;
 
-    /** Optional name of the instance (e.g., filename). */
+    /**
+     * Optional name of the instance (e.g., filename).
+     */
     private Optional<String> name = Optional.empty();
 
     /**
@@ -76,6 +89,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         this.weights = weights;
         this.optimal = Optional.empty();
     }
+
     /**
      * Constructs a MAX2SAT problem instance from a file.
      * <p>
@@ -277,5 +291,25 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     @Override
     public Optional<Double> optimalValue() {
         return optimal.map(x -> -x);
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        int value = 0;
+        for (Map.Entry<BinaryClause, Integer> entry : weights.entrySet()) {
+            BinaryClause bc = entry.getKey();
+            int w = entry.getValue();
+            int a = solution[Math.abs(bc.i) - 1];
+            int b = solution[Math.abs(bc.j) - 1];
+            value += bc.eval(a, b) * w;
+
+        }
+
+        return value;
     }
 }

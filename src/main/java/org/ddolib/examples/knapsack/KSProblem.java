@@ -33,26 +33,37 @@ import java.util.Optional;
  */
 public class KSProblem implements Problem<Integer> {
 
-    /** Maximum capacity of the knapsack. */
+    /**
+     * Maximum capacity of the knapsack.
+     */
     public final int capa;
 
-    /** Profits of the items. */
+    /**
+     * Profits of the items.
+     */
     public final int[] profit;
 
-    /** Weights of the items. */
+    /**
+     * Weights of the items.
+     */
     public final int[] weight;
 
-    /** Optional known optimal solution value. */
+    /**
+     * Optional known optimal solution value.
+     */
     public final Optional<Double> optimal;
 
-    /** Optional name of the instance (usually the filename). */
+    /**
+     * Optional name of the instance (usually the filename).
+     */
     public final Optional<String> name;
+
     /**
      * Constructs a Knapsack problem with given capacity, profits, weights, and known optimal value.
      *
-     * @param capa maximum capacity of the knapsack
-     * @param profit array of item profits
-     * @param weight array of item weights
+     * @param capa    maximum capacity of the knapsack
+     * @param profit  array of item profits
+     * @param weight  array of item weights
      * @param optimal known optimal value
      */
     public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
@@ -62,11 +73,12 @@ public class KSProblem implements Problem<Integer> {
         this.optimal = Optional.of(optimal);
         this.name = Optional.empty();
     }
+
     /**
      * Constructs a Knapsack problem with given capacity, profits, and weights.
      * No optimal value is provided.
      *
-     * @param capa maximum capacity of the knapsack
+     * @param capa   maximum capacity of the knapsack
      * @param profit array of item profits
      * @param weight array of item weights
      */
@@ -77,6 +89,7 @@ public class KSProblem implements Problem<Integer> {
         this.optimal = Optional.empty();
         this.name = Optional.empty();
     }
+
     /**
      * Constructs a Knapsack problem from a file.
      * <p>
@@ -96,8 +109,8 @@ public class KSProblem implements Problem<Integer> {
         final File f = new File(fname);
         String line;
         int c = 0;
-        int [] profit = new int[0];
-        int [] weight = new int[0];
+        int[] profit = new int[0];
+        int[] weight = new int[0];
         Optional<Double> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             while ((line = bf.readLine()) != null) {
@@ -179,6 +192,29 @@ public class KSProblem implements Problem<Integer> {
     @Override
     public Optional<Double> optimalValue() {
         return optimal.map(x -> -x);
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        int totalProfit = 0;
+        int totalWeight = 0;
+        for (int i = 0; i < solution.length; i++) {
+            totalProfit += profit[i] * solution[i];
+            totalWeight += weight[i] * solution[i];
+        }
+
+        if (totalWeight > capa) {
+            String msg = String.format("The weight of %s (%d) exceeds the capatity of the " +
+                    "knapsack (%d)", Arrays.toString(solution), totalWeight, capa);
+            throw new InvalidSolutionException(msg);
+        }
+
+        return totalProfit;
     }
 }
 
