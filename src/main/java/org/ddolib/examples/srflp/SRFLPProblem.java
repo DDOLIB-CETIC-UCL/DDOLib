@@ -1,6 +1,7 @@
 package org.ddolib.examples.srflp;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -8,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.ddolib.modeling.FastLowerBound;
 
 /**
  * A Single-Row Facility Layout Problem (SRFLP) instance.
@@ -41,19 +41,29 @@ import org.ddolib.modeling.FastLowerBound;
  */
 public class SRFLPProblem implements Problem<SRFLPState> {
 
-    /** Length of each department to place. */
+    /**
+     * Length of each department to place.
+     */
     final int[] lengths;
 
-    /** Traffic flow between each pair of departments (symmetric matrix). */
+    /**
+     * Traffic flow between each pair of departments (symmetric matrix).
+     */
     final int[][] flows;
 
-    /** The optimal solution of this instance if known (used for tests). */
+    /**
+     * The optimal solution of this instance if known (used for tests).
+     */
     private Optional<Double> optimal;
 
-    /** Optional descriptive name of the instance. */
+    /**
+     * Optional descriptive name of the instance.
+     */
     private Optional<String> name = Optional.empty();
 
-    /** Cached initial value for the root state. */
+    /**
+     * Cached initial value for the root state.
+     */
     private Double rootValue;
 
     /**
@@ -153,6 +163,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     public int nbVars() {
         return lengths.length;
     }
+
     /**
      * Computes a constant initial value accounting for half the contribution of each
      * department pair.
@@ -271,5 +282,34 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        int[] pos = new int[nbVars()];
+        for (int i = 0; i < nbVars(); i++) {
+            pos[solution[i]] = i;
+        }
+
+        double value = rootValue;
+        for (int i = 0; i < nbVars(); i++) {
+            for (int j = i + 1; j < nbVars(); j++) {
+                int from = solution[i];
+                int to = solution[j];
+                int dist = 0;
+                for (int k = pos[from] + 1; k < pos[to]; k++) {
+                    int dep = solution[k];
+                    dist += lengths[dep];
+                }
+                value += flows[from][to] * dist;
+            }
+        }
+
+        return value;
     }
 }
