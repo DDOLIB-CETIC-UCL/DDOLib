@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * A fast lower bound implementation for the {@link BKSProblem} (Bounded Knapsack Problem).
  * <p>
@@ -32,8 +33,11 @@ import java.util.Set;
  * @see FastLowerBound
  */
 public class BKSFastLowerBound implements FastLowerBound<Integer> {
-    /** The bounded knapsack problem instance for which this lower bound is computed. */
+    /**
+     * The bounded knapsack problem instance for which this lower bound is computed.
+     */
     private final BKSProblem problem;
+
     /**
      * Constructs a fast lower bound evaluator for the given bounded knapsack problem.
      *
@@ -42,6 +46,7 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
     public BKSFastLowerBound(BKSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a fast lower bound for the given state and remaining variables.
      * <p>
@@ -82,7 +87,7 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
         while (itemIterator.hasNext()) {
             int item = itemIterator.next();
             if (currentTotalWeight + problem.weights[item] < capacity) {
-                int x = Math.min(problem.quantity[item], (capacity - currentTotalWeight)/problem.weights[item]);
+                int x = Math.min(problem.quantities[item], (capacity - currentTotalWeight) / problem.weights[item]);
                 currentSolutionValue += x * problem.weights[item];
                 currentSolutionValue += x * problem.values[item];
             }
