@@ -38,27 +38,35 @@ import java.util.Objects;
  * @see GRRanking
  */
 public class GRState {
-    /** Set of marks already placed on the ruler. */
+    /**
+     * Set of marks already placed on the ruler.
+     */
     private BitSet marks;
-    /** Set of pairwise distances already covered by the placed marks. */
+    /**
+     * Set of pairwise distances already covered by the placed marks.
+     */
     private BitSet distances;
-    /** The position of the last placed mark on the ruler. */
+    /**
+     * The position of the last placed mark on the ruler.
+     */
     private int lastMark;
+
     /**
      * Constructs a new {@link GRState} from given sets of marks and distances.
      * <p>
      * Defensive copies of the bitsets are made to ensure immutability of the internal state.
      * </p>
      *
-     * @param marks      the set of marks already placed.
-     * @param distances  the set of pairwise distances already covered.
-     * @param lastMark   the position of the last placed mark.
+     * @param marks     the set of marks already placed.
+     * @param distances the set of pairwise distances already covered.
+     * @param lastMark  the position of the last placed mark.
      */
     public GRState(BitSet marks, BitSet distances, int lastMark) {
         this.marks = (BitSet) marks.clone();
         this.distances = (BitSet) distances.clone();
         this.lastMark = lastMark;
     }
+
     /**
      * Returns the set of marks already placed.
      *
@@ -67,6 +75,7 @@ public class GRState {
     public BitSet getMarks() {
         return marks;
     }
+
     /**
      * Returns the set of pairwise distances already covered.
      *
@@ -75,6 +84,7 @@ public class GRState {
     public BitSet getDistances() {
         return distances;
     }
+
     /**
      * Returns the number of marks currently placed.
      *
@@ -83,6 +93,7 @@ public class GRState {
     public int getNumberOfMarks() {
         return marks.size();
     }
+
     /**
      * Returns the position of the last placed mark.
      *
@@ -91,6 +102,7 @@ public class GRState {
     public int getLastMark() {
         return lastMark;
     }
+
     /**
      * Creates and returns a deep copy of this state.
      *
@@ -99,6 +111,7 @@ public class GRState {
     public GRState copy() {
         return new GRState(marks, distances, lastMark);
     }
+
     /**
      * Computes the hash code for this state based on marks, distances, and the last mark.
      *
@@ -108,6 +121,7 @@ public class GRState {
     public int hashCode() {
         return Objects.hash(marks, distances, lastMark);
     }
+
     /**
      * Returns a human-readable string representation of this state.
      * <p>
@@ -120,6 +134,7 @@ public class GRState {
     public String toString() {
         return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
     }
+
     /**
      * Compares this state to another for equality.
      * Two states are equal if they have identical marks, identical distances,
@@ -130,9 +145,8 @@ public class GRState {
      */
     @Override
     public boolean equals(Object obj) {
-        GRState other = (GRState) obj;
-        if (this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark) {
-            return true;
+        if (obj instanceof GRState other) {
+            return this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark;
         }
         return false;
     }

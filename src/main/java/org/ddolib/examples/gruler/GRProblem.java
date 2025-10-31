@@ -3,11 +3,9 @@ package org.ddolib.examples.gruler;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
+
 /**
  * Represents an instance of the Golomb Ruler (GR) problem.
  * <p>
@@ -35,10 +33,15 @@ import java.util.stream.IntStream;
  * @see Problem
  */
 public class GRProblem implements Problem<GRState> {
-    /** The desired number of marks on the ruler. */
+    /**
+     * The desired number of marks on the ruler.
+     */
     final int n;
-    /** The known optimal value for the instance, if available. */
+    /**
+     * The known optimal value for the instance, if available.
+     */
     private Optional<Double> optimal = Optional.empty();
+
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and no known optimal value.
      *
@@ -47,6 +50,7 @@ public class GRProblem implements Problem<GRState> {
     public GRProblem(int n) {
         this.n = n;
     }
+
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and a known optimal length.
      *
@@ -55,18 +59,20 @@ public class GRProblem implements Problem<GRState> {
      */
     public GRProblem(int n, double optimal) {
         this.n = n;
-        this.optimal = Optional.of(-optimal);
+        this.optimal = Optional.of(-optimal); //TODO remove -
     }
+
     /**
      * Returns the known optimal value of the problem, if available.
      *
      * @return an {@link Optional} containing the optimal value (negated),
-     *         or empty if the optimal value is unknown.
+     * or empty if the optimal value is unknown.
      */
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
     }
+
     /**
      * Returns a human-readable representation of the problem instance.
      *
@@ -76,6 +82,7 @@ public class GRProblem implements Problem<GRState> {
     public String toString() {
         return String.format("GRuler: %d", n);
     }
+
     /**
      * Returns the number of variables in the problem.
      * For a ruler with {@code n} marks, there are {@code n - 1} decision variables.
@@ -86,6 +93,7 @@ public class GRProblem implements Problem<GRState> {
     public int nbVars() {
         return n - 1;
     }
+
     /**
      * Returns the initial cost (always 0).
      *
@@ -95,6 +103,7 @@ public class GRProblem implements Problem<GRState> {
     public double initialValue() {
         return 0;
     }
+
     /**
      * Returns the initial state of the problem, containing only the first mark at position 0.
      *
@@ -107,6 +116,7 @@ public class GRProblem implements Problem<GRState> {
         mark.set(0);
         return new GRState(mark, new BitSet(), 0);
     }
+
     /**
      * Returns the possible domain values for the next decision (i.e., possible positions for the next mark).
      * <p>
@@ -120,16 +130,14 @@ public class GRProblem implements Problem<GRState> {
      */
     @Override
     public Iterator<Integer> domain(GRState state, int var) {
-        ArrayList<Integer> domain = new ArrayList<>();
         int nextMark = state.getLastMark() + 1;
         int n2 = n * n;
-        domain.addAll(
-                IntStream.range(nextMark, n2)
-                        .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
-                        .boxed()
-                        .toList());
-        return domain.iterator();
+        return IntStream.range(nextMark, n2)
+                .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
+                .boxed()
+                .iterator();
     }
+
     /**
      * Computes the next state resulting from applying a decision (adding a new mark).
      * <p>
@@ -157,6 +165,7 @@ public class GRProblem implements Problem<GRState> {
         newState.getDistances().or(newDistances);
         return new GRState(newState.getMarks(), newState.getDistances(), newMark);
     }
+
     /**
      * Computes the cost associated with a transition between states.
      * <p>
@@ -171,5 +180,39 @@ public class GRProblem implements Problem<GRState> {
     @Override
     public double transitionCost(GRState state, Decision decision) {
         return decision.val() - state.getLastMark();
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        Map<Integer, Integer[]> distance = new HashMap<>();
+
+        for (int j = 0; j < solution.length; j++) {
+            distance.put(solution[j], new Integer[]{0, j + 1});
+        }
+        System.out.println(distance.entrySet().stream().map(entry -> entry.getKey() +
+                " -> " + Arrays.toString(entry.getValue())).toList());
+        for (int i = 1; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                int from = solution[i - 1];
+                int to = solution[j - 1];
+                int d = to - from;
+                if (distance.containsKey(d)) {
+                    Integer[] pair = distance.get(d);
+                    String msg = String.format("The marks %d & %d have the same distance (%d) " +
+                            "than the marks %d & %d", i, j, d, pair[0], pair[1]);
+                    throw new InvalidSolutionException(msg);
+                }
+
+                distance.put(d, new Integer[]{i, j});
+                System.out.println(distance.entrySet().stream().map(entry -> entry.getKey() +
+                        " -> " + Arrays.toString(entry.getValue())).toList());
+            }
+        }
+        return solution[solution.length - 1];
     }
 }
