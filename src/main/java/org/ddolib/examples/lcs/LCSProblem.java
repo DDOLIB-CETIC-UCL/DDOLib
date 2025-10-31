@@ -165,6 +165,7 @@ public class LCSProblem implements Problem<LCSState> {
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
         if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
+            //TODO remove -
         else optimal = Optional.empty();
 
 

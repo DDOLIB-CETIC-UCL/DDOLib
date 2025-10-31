@@ -5,7 +5,10 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.util.io.InputReader;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 /**
  * Represents an instance of the Pigment Sequencing Problem (PSP)
  * used within a Decision Diagram Optimization (DDO) framework.
@@ -37,17 +40,26 @@ import java.util.stream.IntStream;
  */
 public class PSProblem implements Problem<PSState> {
 
-    /** Number of distinct item types. */
+    /**
+     * Number of distinct item types.
+     */
     final int nItems;
 
-    /** Total number of discrete time periods in the planning horizon. */
+    /**
+     * Total number of discrete time periods in the planning horizon.
+     */
     final int horizon;
 
-    /** Stocking cost for each item type (per unit time of early production). */
+    /**
+     * Stocking cost for each item type (per unit time of early production).
+     */
     final int[] stockingCost;
 
-    /** Changeover cost matrix: cost of switching from item {@code i} to item {@code j}. */
+    /**
+     * Changeover cost matrix: cost of switching from item {@code i} to item {@code j}.
+     */
     final int[][] changeoverCost;
+
 
     /**
      * For each item {@code i} and time {@code t}, gives the latest time slot before {@code t}
@@ -64,23 +76,30 @@ public class PSProblem implements Problem<PSState> {
      */
     int[][] remainingDemands;
 
-    /** Optional known optimal objective value for benchmarking or validation purposes. */
+    /**
+     * Optional known optimal objective value for benchmarking or validation purposes.
+     */
     private Optional<Double> optimal;
 
-    /** Represents the idle state of the machine (no production). */
+    /**
+     * Represents the idle state of the machine (no production).
+     */
     public static final int IDLE = -1;
 
-    /** Optional name of the problem instance. */
+    /**
+     * Optional name of the problem instance.
+     */
     private Optional<String> name = Optional.empty();
+
     /**
      * Constructs a PSP instance from explicit data arrays and a known optimal value.
      *
-     * @param nItems           number of item types
-     * @param horizon          number of time periods
-     * @param stockingCost     array of stocking costs for each item type
-     * @param changeoverCost   matrix of changeover costs between item types
-     * @param previousDemands  matrix of previous demand indices for each item and time
-     * @param optimal           known optimal objective value (if available)
+     * @param nItems          number of item types
+     * @param horizon         number of time periods
+     * @param stockingCost    array of stocking costs for each item type
+     * @param changeoverCost  matrix of changeover costs between item types
+     * @param previousDemands matrix of previous demand indices for each item and time
+     * @param optimal         known optimal objective value (if available)
      */
     public PSProblem(final int nItems, final int horizon, final int[] stockingCost, final int[][] changeoverCost, final int[][] previousDemands, final Optional<Double> optimal) {
         this.nItems = nItems;
@@ -90,14 +109,15 @@ public class PSProblem implements Problem<PSState> {
         this.previousDemands = previousDemands;
         this.optimal = optimal;
     }
+
     /**
      * Constructs a PSP instance from explicit data arrays without a known optimal value.
      *
-     * @param nItems           number of item types
-     * @param horizon          number of time periods
-     * @param stockingCost     array of stocking costs for each item type
-     * @param changeoverCost   matrix of changeover costs between item types
-     * @param previousDemands  matrix of previous demand indices for each item and time
+     * @param nItems          number of item types
+     * @param horizon         number of time periods
+     * @param stockingCost    array of stocking costs for each item type
+     * @param changeoverCost  matrix of changeover costs between item types
+     * @param previousDemands matrix of previous demand indices for each item and time
      */
     public PSProblem(final int nItems, final int horizon, final int[] stockingCost, final int[][] changeoverCost, final int[][] previousDemands) {
         this.nItems = nItems;
@@ -107,6 +127,7 @@ public class PSProblem implements Problem<PSState> {
         this.previousDemands = previousDemands;
         this.optimal = Optional.empty();
     }
+
     /**
      * Constructs a PSP instance from a data file.
      * <p>
@@ -184,26 +205,39 @@ public class PSProblem implements Problem<PSState> {
     public void setName(String name) {
         this.name = Optional.of(name);
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return name.orElse(super.toString());
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int nbVars() {
         return horizon;
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double initialValue() {
         return 0;
     }
+
     /**
      * Builds the initial problem state, where no items have been produced
      * and the machine is idle.
@@ -263,6 +297,7 @@ public class PSProblem implements Problem<PSState> {
             return dom.iterator();
         }
     }
+
     /**
      * Applies a production decision to the current state and returns the resulting new state.
      *
@@ -280,6 +315,7 @@ public class PSProblem implements Problem<PSState> {
         }
         return ret;
     }
+
     /**
      * Computes the cost incurred by executing a given decision from the current state.
      * <p>
@@ -309,6 +345,44 @@ public class PSProblem implements Problem<PSState> {
             // stocking cost + changeover cost
             return changeover + stocking;
         }
+    }
+
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        // For each item, contains the time slots of the demands
+        List<LinkedList<Integer>> nextDemand = Stream.generate(LinkedList<Integer>::new)
+                .limit(nItems)
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        for (int i = 0; i < nItems; i++) {
+            for (int t = 0; t < horizon; t++) {
+                int demand = t == 0 ? remainingDemands[i][t] : remainingDemands[i][t] - remainingDemands[i][t - 1];
+
+                if (demand != 0) nextDemand.get(i).add(t);
+            }
+        }
+
+        System.out.println(nextDemand);
+
+        int value = 0;
+        int prevItem = solution[solution.length - 1];
+        for (int t = 0; t < horizon; t++) {
+            //The solution starts with the last time slots
+            int item = solution[solution.length - 1 - t];
+            int demand = nextDemand.get(item).remove();
+            int duration = demand - t;
+            value += duration * stockingCost[item];
+            if (prevItem != item) value += changeoverCost[prevItem][item];
+            prevItem = item;
+        }
+
+        return value;
     }
 }
 
