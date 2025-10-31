@@ -208,7 +208,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
-            String msg = "The solution has duplicated nodes and does reached each node";
+            String msg = "The solution has duplicated nodes and does not reach each node";
             throw new InvalidSolutionException(msg);
         }
 
@@ -228,7 +228,6 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             }
             value += Math.max(0, timeWindows[to].start() - value);
         }
-
 
         return value;
     }

@@ -296,7 +296,7 @@ public class TSPProblem implements Problem<TSPState> {
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
-            String msg = "The solution has duplicated nodes and does reached each node";
+            String msg = "The solution has duplicated nodes and does not reache each node";
             throw new InvalidSolutionException(msg);
         }
 
