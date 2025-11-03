@@ -347,7 +347,7 @@ public class SMICProblem implements Problem<SMICState> {
         }
 
         int time = 0;
-        int capa = capaInventory;
+        int capa = initInventory;
         for (int job : solution) {
             time = Math.max(time, release[job]) + processing[job];
             capa += type[job] == 0 ? -inventory[job] : inventory[job];
@@ -355,8 +355,9 @@ public class SMICProblem implements Problem<SMICState> {
                 String msg = String.format("The inventory for solution %s goes below zero", Arrays.toString(solution));
                 throw new InvalidSolutionException(msg);
             } else if (capa > capaInventory) {
-                String msg = String.format("The inventory for solution %s exceeds the max " +
-                        "capacity %d", Arrays.toString(solution), capaInventory);
+                String msg = String.format("The inventory for solution %s (%d) exceeds the max " +
+                                "capacity (%d) when performing job %d", Arrays.toString(solution), capa,
+                        capaInventory, job);
                 throw new InvalidSolutionException(msg);
             }
         }
