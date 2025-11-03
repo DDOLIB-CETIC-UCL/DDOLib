@@ -91,13 +91,4 @@ public interface Problem<T> {
      */
     double evaluate(final int[] solution) throws InvalidSolutionException;
 
-    /**
-     * Exception thrown by {@link Problem#evaluate(int[])} method if its input solution does not
-     * respect the problem's constraints.
-     */
-    class InvalidSolutionException extends Exception {
-        public InvalidSolutionException(String message) {
-            super(message);
-        }
-    }
 }

@@ -2,6 +2,7 @@ package org.ddolib.examples.tsp;
 
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

@@ -1,6 +1,7 @@
 package org.ddolib.examples.gruler;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.util.*;

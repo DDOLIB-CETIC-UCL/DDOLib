@@ -1,6 +1,7 @@
 package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.io.InputReader;
 

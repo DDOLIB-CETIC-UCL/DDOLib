@@ -1,6 +1,7 @@
 package org.ddolib.examples.misp;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -233,7 +234,7 @@ public class MispProblem implements Problem<BitSet> {
                 }
             }
         }
-        
+
         return value;
     }
 }
