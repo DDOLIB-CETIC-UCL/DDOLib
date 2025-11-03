@@ -235,6 +235,6 @@ public class MispProblem implements Problem<BitSet> {
             }
         }
 
-        return value;
+        return -value;
     }
 }

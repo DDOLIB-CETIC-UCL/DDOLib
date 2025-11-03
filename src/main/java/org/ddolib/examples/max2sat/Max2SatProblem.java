@@ -311,6 +311,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
         }
 
-        return value;
+        return -value;
     }
 }

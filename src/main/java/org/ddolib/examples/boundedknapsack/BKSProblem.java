@@ -220,7 +220,7 @@ public class BKSProblem implements Problem<Integer> {
                     "knapsack (%d)", Arrays.toString(solution), weight, capacity);
             throw new InvalidSolutionException(msg);
         }
-        return value;
+        return -value;
     }
 
     /**

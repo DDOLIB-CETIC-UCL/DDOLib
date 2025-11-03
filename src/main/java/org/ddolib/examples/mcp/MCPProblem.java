@@ -229,7 +229,7 @@ public class MCPProblem implements Problem<MCPState> {
             }
         }
 
-        return value;
+        return -value;
     }
 
     /**

@@ -368,6 +368,6 @@ public class LCSProblem implements Problem<LCSState> {
             throw new InvalidSolutionException(msg);
         }
 
-        return solution.length - end.length;
+        return -(solution.length - end.length);
     }
 }

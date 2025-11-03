@@ -215,7 +215,7 @@ public class KSProblem implements Problem<Integer> {
             throw new InvalidSolutionException(msg);
         }
 
-        return totalProfit;
+        return -totalProfit;
     }
 }
 
