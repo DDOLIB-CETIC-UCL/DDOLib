@@ -89,9 +89,7 @@ public interface Problem<T> {
      * @return The value of the input solution
      * @throws InvalidSolutionException If the solution does not respect problem's constraints.
      */
-    default double evaluate(final int[] solution) throws InvalidSolutionException {
-        return 0.0;
-    }
+    double evaluate(final int[] solution) throws InvalidSolutionException;
 
     /**
      * Exception thrown by {@link Problem#evaluate(int[])} method if its input solution does not
