@@ -189,14 +189,14 @@ public class GRProblem implements Problem<GRState> {
             throw new InvalidSolutionException(String.format("The solution %s does not match " +
                     "the number %d variables", Arrays.toString(solution), nbVars()));
         }
+        if (nbVars() == 0) return 0;
 
         Map<Integer, Integer[]> distance = new HashMap<>();
 
         for (int j = 0; j < solution.length; j++) {
             distance.put(solution[j], new Integer[]{0, j + 1});
         }
-        System.out.println(distance.entrySet().stream().map(entry -> entry.getKey() +
-                " -> " + Arrays.toString(entry.getValue())).toList());
+
         for (int i = 1; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 int from = solution[i - 1];
@@ -210,8 +210,6 @@ public class GRProblem implements Problem<GRState> {
                 }
 
                 distance.put(d, new Integer[]{i, j});
-                System.out.println(distance.entrySet().stream().map(entry -> entry.getKey() +
-                        " -> " + Arrays.toString(entry.getValue())).toList());
             }
         }
         return solution[solution.length - 1];
