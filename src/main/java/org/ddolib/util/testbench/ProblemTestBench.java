@@ -7,6 +7,7 @@ import org.ddolib.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.DynamicTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -89,12 +90,20 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testTransitionModel(P problem) {
+    protected void testTransitionModel(P problem) throws InvalidSolutionException {
 
         DdoModel<T> testModel = model(problem);
-        Double best = Solvers.minimizeExact(testModel).incumbent();
-        Optional<Double> returned = best.isInfinite() ? Optional.empty() : Optional.of(best);
+        int[] bestSolution = new int[problem.nbVars()];
+        double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
+            Arrays.setAll(bestSolution, i -> sol[i]);
+        }).incumbent();
+        Optional<Double> returned = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), returned, 1e-10);
+        System.out.println("Best solution: " + Arrays.toString(bestSolution));
+
+        if (problem.optimalValue().isPresent()) {
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+        }
     }
 
     /**

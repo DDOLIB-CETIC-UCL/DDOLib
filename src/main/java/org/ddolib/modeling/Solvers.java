@@ -218,7 +218,7 @@ public class Solvers {
 
 
     /**
-     * Core method for solving an DDO model with custom stopping condition and solution callback.
+     * Core method for solving an DDO model with solution callback.
      * <p>
      * The method configures and delegates the solving process to an {@link ExactSolver}.
      * </p>
@@ -229,13 +229,11 @@ public class Solvers {
      * </p>
      *
      * @param model      the DDO model to solve
-     * @param limit      predicate defining the stopping condition
      * @param onSolution callback invoked when new incumbent solutions are found
      * @return search statistics summarizing the ACS execution
      */
     public static <T> SearchStatistics minimizeExact(DdoModel<T> model,
-                                                     Predicate<SearchStatistics> limit,
                                                      BiConsumer<int[], SearchStatistics> onSolution) {
-        return new ExactSolver<>(model).minimize(limit, onSolution);
+        return new ExactSolver<>(model).minimize(s -> false, onSolution);
     }
 }
