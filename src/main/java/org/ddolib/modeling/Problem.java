@@ -72,7 +72,7 @@ public interface Problem<T> {
      * Returns the known optimal value of the problem, if available.
      * <p>
      * <b>Note:</b> This value should correspond to the expected output
-     * of the solver. For minimization problems, be careful with negative values.
+     * of the solver. For maximization problems, be careful with negative values.
      *
      * @return an {@code Optional} containing the known optimal value, or empty if unknown
      */
@@ -84,6 +84,8 @@ public interface Problem<T> {
      * Given a solution such that {@code solution[i]} is the value of the variable {@code x_i},
      * returns the value of this solution and checks if the solution respects the problem's
      * constraints.
+     * <p>
+     * <b>Note:</b> For maximization problems, the returned value is minus the computed value.
      *
      * @param solution A solution of the problem.
      * @return The value of the input solution
