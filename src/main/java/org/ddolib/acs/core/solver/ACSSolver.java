@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 /**
@@ -100,6 +101,10 @@ public final class ACSSolver<T> implements Solver {
     private final VerboseMode verboseMode;
 
     private final DebugLevel debugLevel;
+
+    private boolean negativeTransitionCosts = false;
+
+    private boolean defaultLowerBoundValue = false;
 
 
     /**
@@ -197,6 +202,10 @@ public final class ACSSolver<T> implements Solver {
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
+        if (root.f() == Integer.MIN_VALUE) {
+            defaultLowerBoundValue = true;
+        }
+
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             verboseMode.detailedSearchState(nbIter,
@@ -209,7 +218,7 @@ public final class ACSSolver<T> implements Solver {
 
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
 
             if (limit.test(stats)) {
                 return stats;
@@ -251,7 +260,7 @@ public final class ACSSolver<T> implements Solver {
                 }
 
             }
-            queueMaxSize = Math.max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
+            queueMaxSize = max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -259,7 +268,7 @@ public final class ACSSolver<T> implements Solver {
         }
 
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), gap());
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
     }
 
     /**
@@ -328,6 +337,9 @@ public final class ACSSolver<T> implements Solver {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
+            if (cost < 0) {
+                negativeTransitionCosts = true;
+            }
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
@@ -418,15 +430,20 @@ public final class ACSSolver<T> implements Solver {
      * @return gap as a percentage
      */
     private double gap() {
-        double minLb = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < problem.nbVars(); i++) {
-            if (!open.get(i).isEmpty()) {
-                minLb = min(minLb, Math.abs(open.get(i).peek().f()));
+        if (defaultLowerBoundValue) {
+            return Double.NaN;
+        } else {
+            double maxLB = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < problem.nbVars(); i++) {
+                if (!open.get(i).isEmpty()) {
+                    if (negativeTransitionCosts) {
+                        maxLB = Math.max(maxLB, Math.abs(open.get(i).peek().f()));
+                    } else {
+                        maxLB = Math.max(maxLB, open.get(i).peek().f());
+                    }
+                }
             }
+            return Math.abs(100.0 * (bestUB - maxLB) / Math.abs(bestUB));
         }
-        if (minLb == Double.POSITIVE_INFINITY) {
-            return 0.0;
-        }
-        return Math.abs(100.0 * (Math.abs(bestUB) - minLb) / bestUB);
     }
 }

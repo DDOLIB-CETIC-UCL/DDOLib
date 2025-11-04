@@ -52,7 +52,7 @@ public class TSPProblem implements Problem<TSPState> {
     /**
      * Distance matrix between nodes
      */
-    final double[][] distanceMatrix;
+   public final double[][] distanceMatrix;
 
     /**
      * Optional value of the known optimal solution
