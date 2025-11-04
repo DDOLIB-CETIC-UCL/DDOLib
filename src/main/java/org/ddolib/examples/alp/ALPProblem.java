@@ -379,28 +379,29 @@ public class ALPProblem implements Problem<ALPState> {
         for (ALPSchedule a : alpSol) {
             int target = aircraftTarget[a.aircraft()];
             int deadline = aircraftDeadline[a.aircraft()];
-            if (a.arrivalTime() < target || a.arrivalTime() > deadline) {
+            if (a.landingTime() < target || a.landingTime() > deadline) {
                 String msg = String.format("Aircraft %d is landing at %d outside its time window " +
-                        "[%d , %d]", a.aircraft(), a.arrivalTime(), target, deadline);
+                        "[%d , %d]", a.aircraft(), a.landingTime(), target, deadline);
                 throw new InvalidSolutionException(msg);
             }
             int allowedTime = lastTime[a.runway()] + classTransitionCost[lastClass[a.runway()]][a.aircraftClass()];
-            if (a.arrivalTime() < allowedTime) {
+            if (a.landingTime() < allowedTime) {
                 String msg = String.format(
-                        "Aircraft %d of class %d is landing on runway %d at %d. " +
-                                "The previous aircraft using this runway was class %d. " +
-                                "The next landing should be at least at %d",
+                        "Aircraft %d of class %d is landing on runway %d at %d.\n" +
+                                "The previous aircraft using this runway was class %d landing at " +
+                                "%d. The next landing should be at least at %d",
                         a.aircraft(),
                         a.aircraftClass(),
                         a.runway(),
-                        a.arrivalTime(),
+                        a.landingTime(),
                         lastClass[a.runway()],
+                        lastTime[a.runway()],
                         allowedTime
                 );
                 throw new InvalidSolutionException(msg);
             }
-            value += a.arrivalTime() - target;
-            lastTime[a.runway()] = a.runway();
+            value += a.landingTime() - target;
+            lastTime[a.runway()] = a.landingTime();
             lastClass[a.runway()] = a.aircraftClass();
         }
 

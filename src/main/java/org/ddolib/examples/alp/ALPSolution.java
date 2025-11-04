@@ -28,7 +28,9 @@ class ALPSolution implements Iterable<ALPSchedule> {
             RunwayState[] runwayStates = curState.runwayStates;
             Decision d = new Decision(i, solution[i]);
             ALPDecision alpD = problem.fromDecision(d.val());
-            int aircraft = problem.latestToEarliestAircraftByClass.get(alpD.aircraftClass).get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
+            int aircraft = problem.latestToEarliestAircraftByClass
+                    .get(alpD.aircraftClass)
+                    .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
             int arrivalTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
             curState = problem.transition(curState, d);
             this.solution[i] = new ALPSchedule(aircraft, problem.aircraftClass[aircraft], arrivalTime, alpD.runway);
@@ -41,7 +43,7 @@ class ALPSolution implements Iterable<ALPSchedule> {
     public String toString() {
         return Arrays.stream(solution).map(s -> String.format(
                 "Aircraft: %3d - Class: %3d - Landing time: %5d - Runway: %3d",
-                s.aircraft(), s.aircraftClass(), s.arrivalTime(), s.runway())).collect(Collectors.joining("\n"));
+                s.aircraft(), s.aircraftClass(), s.landingTime(), s.runway())).collect(Collectors.joining("\n"));
     }
 
     @Override
@@ -57,9 +59,9 @@ class ALPSolution implements Iterable<ALPSchedule> {
  *
  * @param aircraft      The id of the aircraft.
  * @param aircraftClass The class of the aircraft.
- * @param arrivalTime   When the aircraft is landing.
+ * @param landingTime   When the aircraft is landing.
  * @param runway        The runway on which the aircraft is landing.
  */
-record ALPSchedule(int aircraft, int aircraftClass, int arrivalTime, int runway) {
+record ALPSchedule(int aircraft, int aircraftClass, int landingTime, int runway) {
 }
 
