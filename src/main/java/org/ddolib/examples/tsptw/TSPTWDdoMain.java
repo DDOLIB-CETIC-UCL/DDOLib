@@ -15,9 +15,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Ddo.
@@ -72,8 +69,7 @@ public class TSPTWDdoMain {
      * @throws IOException if an I/O error occurs while reading the instance file or printing the solution
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ?
-                Path.of("data", "TSPTW", "nbNodes_4_1.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];
         final TSPTWProblem problem = new TSPTWProblem(instance);
         DdoModel<TSPTWState> model = new DdoModel<>() {
             @Override
@@ -118,19 +114,10 @@ public class TSPTWDdoMain {
 
         };
 
-        int[] bestSol = new int[problem.nbVars()];
-
         SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
-            System.out.println("Optimal solution found");
-            Arrays.setAll(bestSol, i -> sol[i]);
         });
 
         System.out.println(stats);
-        String str = "0 -> " +
-                Arrays.stream(bestSol).mapToObj(Objects::toString).collect(Collectors.joining(" " +
-                        "-> "));
-
-        System.out.println(str);
     }
 }
