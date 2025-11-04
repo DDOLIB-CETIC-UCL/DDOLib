@@ -31,9 +31,9 @@ class ALPSolution implements Iterable<ALPSchedule> {
             int aircraft = problem.latestToEarliestAircraftByClass
                     .get(alpD.aircraftClass)
                     .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
-            int arrivalTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
+            int landingTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
             curState = problem.transition(curState, d);
-            this.solution[i] = new ALPSchedule(aircraft, problem.aircraftClass[aircraft], arrivalTime, alpD.runway);
+            this.solution[i] = new ALPSchedule(aircraft, problem.aircraftClass[aircraft], landingTime, alpD.runway);
         }
 
     }

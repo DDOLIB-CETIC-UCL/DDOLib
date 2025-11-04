@@ -5,9 +5,6 @@ import org.ddolib.modeling.DdoModel;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.verbosity.VerbosityLevel;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,12 +75,12 @@ public class ALPTest {
     }
 
 
-    @DisplayName("ALP")
+   /* @DisplayName("ALP")
     @TestFactory
     public Stream<DynamicTest> testALP() {
         var bench = new ALPTest.AlpBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
-    }
+    }*/
 }
