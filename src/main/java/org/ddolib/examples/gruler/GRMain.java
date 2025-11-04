@@ -1,11 +1,15 @@
 package org.ddolib.examples.gruler;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.IOException;
@@ -30,14 +34,19 @@ public class GRMain {
 
     public static void main(final String[] args) throws IOException {
         SolverConfig<GRState, Integer> config = new SolverConfig<>();
-        GRProblem problem = new GRProblem(9);
+        GRProblem problem = new GRProblem(5);
         config.problem = problem;
         config.relax = new GRRelax();
         config.ranking = new GRRanking();
-        config.width = new FixedWidth<>(10);
+        config.width = new FixedWidth<>(4);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-        final SequentialSolver<GRState, Integer> solver = new SequentialSolver<>(config);
+        config.verbosityLevel = 3;
+        config.exportAsDot = true;
+        // config.relaxStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new GHP<>(new GRDistance());
+        config.restrictStrategy = config.relaxStrategy;
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();
