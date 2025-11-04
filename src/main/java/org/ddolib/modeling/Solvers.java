@@ -203,10 +203,10 @@ public class Solvers {
 
     /**
      * Solves the given model using the Exact DDO algorithm.
+     * <p>
      * <b>Warning:</b> Using only exact MDDs can consume a significant amount of memory.
      * It is recommended to use this solver for small instances or for testing your model.
      * For larger instances or more advanced strategies, consider using {@link Solvers#minimizeDdo(DdoModel)}.
-     * </p>
      *
      * @param model the DDO model to solve
      * @return search statistics summarizing the ACS execution
@@ -221,12 +221,11 @@ public class Solvers {
      * Core method for solving an DDO model with solution callback.
      * <p>
      * The method configures and delegates the solving process to an {@link ExactSolver}.
-     * </p>
+     * <p>
      * <b>Warning:</b> Using only exact MDDs can consume a significant amount of memory.
      * It is recommended to use this solver for small instances or for testing your model.
      * For larger instances or more advanced strategies, consider using
      * {@link Solvers#minimizeDdo(DdoModel, Predicate, BiConsumer)} )}.
-     * </p>
      *
      * @param model      the DDO model to solve
      * @param onSolution callback invoked when new incumbent solutions are found
