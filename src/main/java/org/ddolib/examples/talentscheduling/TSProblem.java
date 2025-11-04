@@ -280,6 +280,7 @@ public class TSProblem implements Problem<TSState> {
         // For each actor, return the position in the solution of the last scene in which he is
         // present.
         int[] lastScenePos = new int[nbActors];
+        Arrays.fill(lastScenePos, -1);
         for (int i = 0; i < nbVars(); i++) {
             int scene = solution[i];
             BitSet neededActors = actors[scene];
@@ -287,7 +288,9 @@ public class TSProblem implements Problem<TSState> {
                 if (firstScenePos[actor] == -1) {
                     firstScenePos[actor] = i;
                 }
-                lastScenePos[actor] = i;
+                if (firstScenePos[actor] != -1) {
+                    lastScenePos[actor] = i;
+                }
             }
         }
 
@@ -300,7 +303,6 @@ public class TSProblem implements Problem<TSState> {
                 }
             }
         }
-
 
         return value;
     }

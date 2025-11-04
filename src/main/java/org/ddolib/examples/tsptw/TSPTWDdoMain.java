@@ -106,10 +106,10 @@ public class TSPTWDdoMain {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
 
-           /* @Override
+            @Override
             public boolean useCache() {
                 return true;
-            }*/
+            }
 
             @Override
             public WidthHeuristic<TSPTWState> widthHeuristic() {
