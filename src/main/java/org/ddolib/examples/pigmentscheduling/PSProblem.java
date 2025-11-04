@@ -196,6 +196,8 @@ public class PSProblem implements Problem<PSState> {
                 }
             }
         }
+
+        this.name = Optional.of(filename);
     }
 
     /**
@@ -368,8 +370,6 @@ public class PSProblem implements Problem<PSState> {
                 if (demand != 0) nextDemand.get(i).add(t);
             }
         }
-
-        System.out.println(nextDemand);
 
         int value = 0;
         int prevItem = solution[solution.length - 1];
