@@ -1,6 +1,7 @@
 package org.ddolib.examples.tsptw;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
 /**
  * Class representing an instance of the Traveling Salesman Problem with Time Windows (TSPTW).
  *
@@ -35,16 +37,24 @@ import java.util.stream.Collectors;
  */
 public class TSPTWProblem implements Problem<TSPTWState> {
 
-    /** Distance matrix between nodes. distance[i][j] is the travel time from node i to node j. */
+    /**
+     * Distance matrix between nodes. distance[i][j] is the travel time from node i to node j.
+     */
     public final int[][] distance;
 
-    /** Time windows for each node. */
+    /**
+     * Time windows for each node.
+     */
     public final TimeWindow[] timeWindows;
 
-    /** Optional known optimal value for the instance. */
+    /**
+     * Optional known optimal value for the instance.
+     */
     public final Optional<Double> optimal;
 
-    /** Optional name of the instance, typically the file path. */
+    /**
+     * Optional name of the instance, typically the file path.
+     */
     private final Optional<String> name;
 
 
@@ -187,11 +197,47 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     }
 
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        Map<Integer, Long> count = Arrays.stream(solution)
+                .boxed()
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+
+        if (count.values().stream().anyMatch(x -> x != 1)) {
+            String msg = "The solution has duplicated nodes and does not reach each node";
+            throw new InvalidSolutionException(msg);
+        }
+
+        double value = distance[0][solution[0]]; //Start from the depot.
+        value += Math.max(0, timeWindows[solution[0]].start() - value);
+
+
+        for (int i = 1; i < nbVars(); i++) {
+            int from = solution[i - 1];
+            int to = solution[i];
+            value += distance[from][to];
+            if (value > timeWindows[to].end()) {
+                String msg = String.format("This solution does not respect time windows. \nYou " +
+                                "arrive at node %d at time %f. Its time window is %s", to, value,
+                        timeWindows[to]);
+                throw new InvalidSolutionException(msg);
+            }
+            value += Math.max(0, timeWindows[to].start() - value);
+        }
+
+        return value;
+    }
+
     /**
      * Checks if a target node is reachable from the given state within its time window.
      *
      * @param from Current state.
-     * @param to Target node.
+     * @param to   Target node.
      * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise.
      */
     boolean reachable(TSPTWState from, Integer to) {
@@ -203,7 +249,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * Computes the minimal duration to reach a target node from the current state.
      *
      * @param from Current state.
-     * @param to Target node.
+     * @param to   Target node.
      * @return Minimum travel time to reach node {@code to}.
      */
     int minDuration(TSPTWState from, Integer to) {
@@ -219,7 +265,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * until the time window opens.
      *
      * @param from Current state.
-     * @param to Target node.
+     * @param to   Target node.
      * @return Arrival time at node {@code to}.
      */
     int arrivalTime(TSPTWState from, Integer to) {

@@ -1,11 +1,11 @@
 package org.ddolib.modeling;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.util.Iterator;
 import java.util.Optional;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 
 /**
  * Represents an optimization problem formulated as a labeled transition
@@ -72,11 +72,25 @@ public interface Problem<T> {
      * Returns the known optimal value of the problem, if available.
      * <p>
      * <b>Note:</b> This value should correspond to the expected output
-     * of the solver. For minimization problems, be careful with negative values.
+     * of the solver. For maximization problems, be careful with negative values.
      *
      * @return an {@code Optional} containing the known optimal value, or empty if unknown
      */
     default Optional<Double> optimalValue() {
         return Optional.empty();
     }
+
+    /**
+     * Given a solution such that {@code solution[i]} is the value of the variable {@code x_i},
+     * returns the value of this solution and checks if the solution respects the problem's
+     * constraints.
+     * <p>
+     * <b>Note:</b> For maximization problems, the returned value is minus the computed value.
+     *
+     * @param solution A solution of the problem.
+     * @return The value of the input solution
+     * @throws InvalidSolutionException If the solution does not respect problem's constraints.
+     */
+    double evaluate(final int[] solution) throws InvalidSolutionException;
+
 }

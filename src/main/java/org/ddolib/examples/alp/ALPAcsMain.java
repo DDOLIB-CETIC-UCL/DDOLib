@@ -7,7 +7,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Aircraft Landing Problem (ALP) with Acs.
@@ -48,7 +47,8 @@ public final class ALPAcsMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
+            System.out.println(new ALPSolution(problem, sol));
         });
 
         System.out.println(stats);

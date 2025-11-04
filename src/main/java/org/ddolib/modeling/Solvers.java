@@ -48,6 +48,7 @@ public class Solvers {
         return minimizeDdo(model, stats -> false, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using DDO, stopping when the provided limit condition becomes true.
      *
@@ -60,6 +61,7 @@ public class Solvers {
         return minimizeDdo(model, limit, (sol, s) -> {
         });
     }
+
     /**
      * Solves the given model using DDO and triggers a callback each time a new incumbent solution is found.
      *
@@ -120,7 +122,7 @@ public class Solvers {
     /**
      * Solves the given model using A* and calls back when new incumbent solutions are found.
      *
-     * @param model the model to solve
+     * @param model      the model to solve
      * @param onSolution callback triggered for each new best solution
      * @return search statistics summarizing the A* execution
      */
@@ -194,14 +196,44 @@ public class Solvers {
      * @param onSolution callback invoked when new incumbent solutions are found
      * @return search statistics summarizing the ACS execution
      */
-
     public static <T> SearchStatistics minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
 
         return new ACSSolver<>(model).minimize(limit, onSolution);
     }
 
+    /**
+     * Solves the given model using the Exact DDO algorithm.
+     * <b>Warning:</b> Using only exact MDDs can consume a significant amount of memory.
+     * It is recommended to use this solver for small instances or for testing your model.
+     * For larger instances or more advanced strategies, consider using {@link Solvers#minimizeDdo(DdoModel)}.
+     * </p>
+     *
+     * @param model the DDO model to solve
+     * @return search statistics summarizing the ACS execution
+     */
     public static <T> SearchStatistics minimizeExact(DdoModel<T> model) {
         return new ExactSolver<>(model).minimize(s -> false, (sol, s) -> {
         });
+    }
+
+
+    /**
+     * Core method for solving an DDO model with solution callback.
+     * <p>
+     * The method configures and delegates the solving process to an {@link ExactSolver}.
+     * </p>
+     * <b>Warning:</b> Using only exact MDDs can consume a significant amount of memory.
+     * It is recommended to use this solver for small instances or for testing your model.
+     * For larger instances or more advanced strategies, consider using
+     * {@link Solvers#minimizeDdo(DdoModel, Predicate, BiConsumer)} )}.
+     * </p>
+     *
+     * @param model      the DDO model to solve
+     * @param onSolution callback invoked when new incumbent solutions are found
+     * @return search statistics summarizing the ACS execution
+     */
+    public static <T> SearchStatistics minimizeExact(DdoModel<T> model,
+                                                     BiConsumer<int[], SearchStatistics> onSolution) {
+        return new ExactSolver<>(model).minimize(s -> false, onSolution);
     }
 }

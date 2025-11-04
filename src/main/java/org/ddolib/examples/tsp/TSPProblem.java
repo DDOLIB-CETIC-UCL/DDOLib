@@ -2,6 +2,7 @@ package org.ddolib.examples.tsp;
 
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,6 +15,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Class representing an instance of the Traveling Salesman Problem (TSP).
  *
@@ -37,20 +40,28 @@ import java.util.*;
  * </pre>
  *
  * @see <a href="http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf">
- *      XML-TSPLIB specification</a>
+ * XML-TSPLIB specification</a>
  */
 public class TSPProblem implements Problem<TSPState> {
 
-    /** Number of nodes (cities) */
+    /**
+     * Number of nodes (cities)
+     */
     final int n;
 
-    /** Distance matrix between nodes */
-    public final double[][] distanceMatrix;
+    /**
+     * Distance matrix between nodes
+     */
+   public final double[][] distanceMatrix;
 
-    /** Optional value of the known optimal solution */
+    /**
+     * Optional value of the known optimal solution
+     */
     private Optional<Double> optimal = Optional.empty();
 
-    /** Optional name for easier readability of tests */
+    /**
+     * Optional name for easier readability of tests
+     */
     private Optional<String> name = Optional.empty();
 
     /**
@@ -67,6 +78,7 @@ public class TSPProblem implements Problem<TSPState> {
         toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
         return toReturn;
     }
+
     /**
      * Constructs a TSP instance from a given distance matrix.
      *
@@ -76,6 +88,7 @@ public class TSPProblem implements Problem<TSPState> {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
     }
+
     /**
      * Constructs a TSP instance from a given distance matrix and known optimal value.
      *
@@ -147,6 +160,7 @@ public class TSPProblem implements Problem<TSPState> {
         this.name = Optional.of(fname);
 
     }
+
     /**
      * Returns the number of decision variables in the problem.
      *
@@ -156,6 +170,7 @@ public class TSPProblem implements Problem<TSPState> {
     public int nbVars() {
         return n; //the last decision will be to come back to point zero
     }
+
     /**
      * Returns the initial state for a search algorithm.
      * The initial state starts at node 0, with all other nodes unvisited.
@@ -169,6 +184,7 @@ public class TSPProblem implements Problem<TSPState> {
 
         return new TSPState(singleton(0), toVisit);
     }
+
     /**
      * Creates a BitSet containing only a single node.
      *
@@ -180,6 +196,7 @@ public class TSPProblem implements Problem<TSPState> {
         toReturn.set(singletonValue);
         return toReturn;
     }
+
     /**
      * Returns the initial cost of the problem, which is 0.
      *
@@ -189,6 +206,7 @@ public class TSPProblem implements Problem<TSPState> {
     public double initialValue() {
         return 0;
     }
+
     /**
      * Returns the domain of possible decisions for a given state and variable index.
      * The last variable represents returning to the starting node.
@@ -207,6 +225,7 @@ public class TSPProblem implements Problem<TSPState> {
             return domain.iterator();
         }
     }
+
     /**
      * Computes the next state after making a decision from the current state.
      *
@@ -224,6 +243,7 @@ public class TSPProblem implements Problem<TSPState> {
 
         return new TSPState(state.singleton(node), newToVisit);
     }
+
     /**
      * Computes the transition cost of moving from the current state to the next state
      * by visiting a given node.
@@ -240,6 +260,7 @@ public class TSPProblem implements Problem<TSPState> {
                 .min()
                 .getAsDouble();
     }
+
     /**
      * Returns the optimal value of the instance if known.
      *
@@ -249,6 +270,7 @@ public class TSPProblem implements Problem<TSPState> {
     public Optional<Double> optimalValue() {
         return optimal;
     }
+
     /**
      * Returns a string representation of the instance.
      * If a name is set, it returns the name; otherwise, it prints the size and distance matrix.
@@ -260,5 +282,31 @@ public class TSPProblem implements Problem<TSPState> {
         String defaultStr = "TSP(n:" + n + "\n" +
                 "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
         return name.orElse(defaultStr);
+    }
+
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        Map<Integer, Long> count = Arrays.stream(solution)
+                .boxed()
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+
+        if (count.values().stream().anyMatch(x -> x != 1)) {
+            String msg = "The solution has duplicated nodes and does not reache each node";
+            throw new InvalidSolutionException(msg);
+        }
+
+        double value = distanceMatrix[0][solution[0]]; //Start from the depot.
+        for (int i = 1; i < nbVars(); i++) {
+            value += distanceMatrix[solution[i - 1]][solution[i]];
+        }
+
+
+        return value;
     }
 }

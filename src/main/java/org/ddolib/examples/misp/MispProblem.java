@@ -1,12 +1,14 @@
 package org.ddolib.examples.misp;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
 /**
  * Represents an instance of the Maximum Independent Set Problem (MISP) as a {@link Problem}.
  * <p>
@@ -203,5 +205,36 @@ public class MispProblem implements Problem<BitSet> {
     @Override
     public double transitionCost(BitSet state, Decision decision) {
         return -weight[decision.var()] * decision.val();
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        List<Integer> independentSet = new ArrayList<>();
+        int value = 0;
+        for (int i = 0; i < solution.length; i++) {
+            if (solution[i] == 1) {
+                independentSet.add(i);
+                value += weight[i];
+            }
+        }
+
+        for (int i = 0; i < independentSet.size(); i++) {
+            for (int j = i + 1; j < independentSet.size(); j++) {
+                int from = independentSet.get(i);
+                int to = independentSet.get(j);
+                if (neighbors[from].get(to)) {
+                    String msg = String.format("The solution %s is not an independant set. Nodes " +
+                            "%d and %d are adjacent", independentSet, from, to);
+                    throw new InvalidSolutionException(msg);
+                }
+            }
+        }
+
+        return -value;
     }
 }

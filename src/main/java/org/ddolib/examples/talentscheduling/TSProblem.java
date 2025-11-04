@@ -1,6 +1,7 @@
 package org.ddolib.examples.talentscheduling;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -36,25 +37,39 @@ import java.util.Optional;
  */
 public class TSProblem implements Problem<TSState> {
 
-    /** Number of scenes in the instance. */
+    /**
+     * Number of scenes in the instance.
+     */
     final int nbScene;
 
-    /** Number of actors in the instance. */
+    /**
+     * Number of actors in the instance.
+     */
     final int nbActors;
 
-    /** Cost for each actor per day. */
+    /**
+     * Cost for each actor per day.
+     */
     final int[] costs;
 
-    /** Duration of each scene. */
+    /**
+     * Duration of each scene.
+     */
     final int[] duration;
 
-    /** For each scene, the set of actors required to perform that scene. */
+    /**
+     * For each scene, the set of actors required to perform that scene.
+     */
     final BitSet[] actors;
 
-    /** The optimal solution value if known (optional, used for testing and benchmarking). */
+    /**
+     * The optimal solution value if known (optional, used for testing and benchmarking).
+     */
     public final Optional<Double> optimal;
 
-    /** Optional descriptive name for the instance. */
+    /**
+     * Optional descriptive name for the instance.
+     */
     private Optional<String> name = Optional.empty();
 
     /**
@@ -250,5 +265,45 @@ public class TSProblem implements Problem<TSState> {
 
             return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
         }
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        // For each actor, return the position in the solution of the first scene in which he is present.
+        int[] firstScenePos = new int[nbActors];
+        Arrays.fill(firstScenePos, -1);
+        // For each actor, return the position in the solution of the last scene in which he is
+        // present.
+        int[] lastScenePos = new int[nbActors];
+        Arrays.fill(lastScenePos, -1);
+        for (int i = 0; i < nbVars(); i++) {
+            int scene = solution[i];
+            BitSet neededActors = actors[scene];
+            for (int actor = neededActors.nextSetBit(0); actor >= 0; actor = neededActors.nextSetBit(actor + 1)) {
+                if (firstScenePos[actor] == -1) {
+                    firstScenePos[actor] = i;
+                }
+                if (firstScenePos[actor] != -1) {
+                    lastScenePos[actor] = i;
+                }
+            }
+        }
+
+        double value = 0;
+        for (int i = 0; i < nbVars(); i++) {
+            int scene = solution[i];
+            for (int actor = 0; actor < nbActors; actor++) {
+                if (firstScenePos[actor] <= i && i <= lastScenePos[actor]) { //The actor is present
+                    value += costs[actor] * duration[scene];
+                }
+            }
+        }
+
+        return value;
     }
 }

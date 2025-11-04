@@ -1,6 +1,7 @@
 package org.ddolib.examples.lcs;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
+
 /**
  * Definition of the Longest Common Subsequence (LCS) problem.
  * <p>
@@ -27,62 +29,89 @@ import java.util.stream.IntStream;
  * </ul>
  */
 public class LCSProblem implements Problem<LCSState> {
-    /** Name or identifier of the instance. */
+    /**
+     * Name or identifier of the instance.
+     */
     String instance;
 
-    /** Number of strings in the problem. */
+    /**
+     * Number of strings in the problem.
+     */
     int stringNb;
 
-    /** Number of different characters in the input strings. */
+    /**
+     * Number of different characters in the input strings.
+     */
     int diffCharNb;
 
-    /** Input strings converted to integer IDs per character. */
+    /**
+     * Input strings converted to integer IDs per character.
+     */
     int[][] stringsAsInt;
 
-    /** Length of each string. */
+    /**
+     * Length of each string.
+     */
     int[] stringsLength;
 
-    /** Minimal string length among all strings. */
+    /**
+     * Minimal string length among all strings.
+     */
     int minLength;
 
-    /** Next occurrence of a character after a given position for each string. */
+    /**
+     * Next occurrence of a character after a given position for each string.
+     */
     int[][][] nextCharPos;
 
-    /** Number of remaining occurrences of a character after a given position in each string. */
+    /**
+     * Number of remaining occurrences of a character after a given position in each string.
+     */
     int[][][] remChar;
 
-    /** Mapping from character to integer ID. */
+    /**
+     * Mapping from character to integer ID.
+     */
     HashMap<Character, Integer> charToId = new HashMap<>();
 
-    /** Mapping from integer ID to original character. */
+    /**
+     * Mapping from integer ID to original character.
+     */
     Character[] idToChar;
 
-    /** Precomputed dynamic programming tables for pairwise string LCS. */
+    /**
+     * Precomputed dynamic programming tables for pairwise string LCS.
+     */
     int[][][] tables;
 
-    /** Known optimal solution, if available. */
+    /**
+     * Known optimal solution, if available.
+     */
     Optional<Double> optimal;
 
-    /** Special value indicating no more characters to select. */
+    /**
+     * Special value indicating no more characters to select.
+     */
     final int GO_TO_END_OF_STRINGS = -1;
 
     private Optional<String> name = Optional.empty();
+
     /**
      * Constructs an LCS problem instance with all precomputed structures.
      *
-     * @param instance The instance name or path.
-     * @param stringNb Number of strings.
-     * @param diffCharNb Number of distinct characters.
-     * @param stringsAsInt Input strings encoded as integer arrays.
+     * @param instance      The instance name or path.
+     * @param stringNb      Number of strings.
+     * @param diffCharNb    Number of distinct characters.
+     * @param stringsAsInt  Input strings encoded as integer arrays.
      * @param stringsLength Length of each string.
-     * @param nextCharPos Next occurrence of each character after each position.
-     * @param remChar Remaining occurrences of each character after each position.
-     * @param charToId Mapping from character to ID.
-     * @param idToChar Mapping from ID to character.
-     * @param optimal Optional optimal solution value.
+     * @param nextCharPos   Next occurrence of each character after each position.
+     * @param remChar       Remaining occurrences of each character after each position.
+     * @param charToId      Mapping from character to ID.
+     * @param idToChar      Mapping from ID to character.
+     * @param optimal       Optional optimal solution value.
      */
     public LCSProblem(String instance, int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
-               int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Double> optimal) {
+                      int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Double> optimal) {
         this.instance = instance;
         this.stringNb = stringNb;
         this.diffCharNb = diffCharNb;
@@ -103,6 +132,7 @@ public class LCSProblem implements Problem<LCSState> {
             tables[s] = dp.solve();
         }
     }
+
     /**
      * Constructs an LCS problem instance from a file.
      * <p>
@@ -136,6 +166,7 @@ public class LCSProblem implements Problem<LCSState> {
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
         if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
+            //TODO remove -
         else optimal = Optional.empty();
 
 
@@ -210,6 +241,7 @@ public class LCSProblem implements Problem<LCSState> {
             tables[s] = dp.solve();
         }
     }
+
     /**
      * Sets a human-readable name for this problem instance.
      *
@@ -245,6 +277,7 @@ public class LCSProblem implements Problem<LCSState> {
     public double initialValue() {
         return 0;
     }
+
     /**
      * Computes the domain of possible next decisions (characters) for a given state.
      * <p>
@@ -253,7 +286,7 @@ public class LCSProblem implements Problem<LCSState> {
      * </p>
      *
      * @param state The current LCS state.
-     * @param var Index of the variable to decide (unused, all positions considered).
+     * @param var   Index of the variable to decide (unused, all positions considered).
      * @return An iterator over valid next character IDs.
      */
     @Override
@@ -281,10 +314,11 @@ public class LCSProblem implements Problem<LCSState> {
         if (foundChar) return domain.iterator();
         else return List.of(GO_TO_END_OF_STRINGS).iterator();
     }
+
     /**
      * Computes the next state resulting from applying a decision at the current state.
      *
-     * @param state The current LCS state.
+     * @param state    The current LCS state.
      * @param decision The decision applied.
      * @return The next LCS state after the decision.
      */
@@ -301,6 +335,7 @@ public class LCSProblem implements Problem<LCSState> {
         }
         return new LCSState(position);
     }
+
     /**
      * Computes the transition cost of a decision from the current state.
      * <p>
@@ -308,7 +343,7 @@ public class LCSProblem implements Problem<LCSState> {
      * if no character is selected (end of strings).
      * </p>
      *
-     * @param state The current LCS state.
+     * @param state    The current LCS state.
      * @param decision The decision applied.
      * @return The cost associated with the transition.
      */
@@ -316,5 +351,23 @@ public class LCSProblem implements Problem<LCSState> {
     public double transitionCost(LCSState state, Decision decision) {
         if (decision.val() == GO_TO_END_OF_STRINGS) return 0;
         return -1;
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+
+        int[] end = Arrays.stream(solution).dropWhile(x -> x != -1).toArray();
+        if (Arrays.stream(end).anyMatch(x -> x != -1)) {
+            String msg = String.format("The %d characters of %s are not all at the end.", -1,
+                    Arrays.toString(solution));
+            throw new InvalidSolutionException(msg);
+        }
+
+        return -(solution.length - end.length);
     }
 }

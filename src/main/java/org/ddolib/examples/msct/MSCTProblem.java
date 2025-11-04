@@ -2,13 +2,14 @@ package org.ddolib.examples.msct;
 
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
 /**
  * Represents an instance of the **Maximum Sum of Completion Times (MSCT)** problem.
  * <p>
@@ -87,9 +88,9 @@ public class MSCTProblem implements Problem<MSCTState> {
      * Constructs an MSCT problem from explicit arrays of release and processing times,
      * with an optional known optimal value.
      *
-     * @param release  an array of release times for each job.
-     * @param processing  an array of processing times for each job.
-     * @param optimal  an {@link Optional} containing the known optimal solution value.
+     * @param release    an array of release times for each job.
+     * @param processing an array of processing times for each job.
+     * @param optimal    an {@link Optional} containing the known optimal solution value.
      */
 
     public MSCTProblem(final int[] release, final int[] processing, Optional<Double> optimal) {
@@ -97,18 +98,20 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.processing = processing;
         this.optimal = optimal;
     }
+
     /**
      * Constructs an MSCT problem from explicit arrays of release and processing times,
      * without specifying an optimal value.
      *
-     * @param release  an array of release times for each job.
-     * @param processing  an array of processing times for each job.
+     * @param release    an array of release times for each job.
+     * @param processing an array of processing times for each job.
      */
     public MSCTProblem(final int[] release, final int[] processing) {
         this.release = release;
         this.processing = processing;
         this.optimal = Optional.empty();
     }
+
     /**
      * Constructs an MSCT problem by reading data from a text file.
      * <p>
@@ -152,6 +155,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.processing = proces;
         this.optimal = optimal;
     }
+
     /**
      * Constructs a randomly generated MSCT problem instance for testing purposes.
      *
@@ -170,6 +174,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.optimal = Optional.empty();
 
     }
+
     /**
      * Returns the known optimal value of this instance, if available.
      *
@@ -189,6 +194,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     public int nbVars() {
         return release.length;
     }
+
     /**
      * Returns the initial state of the problem, where all jobs are unscheduled.
      *
@@ -202,6 +208,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         }
         return new MSCTState(jobs, 0);
     }
+
     /**
      * Returns the initial cost value of the problem (always 0 at the start).
      *
@@ -211,6 +218,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     public double initialValue() {
         return 0;
     }
+
     /**
      * Returns the domain of possible decisions at the current state.
      * <p>
@@ -229,6 +237,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         }
         return domain.iterator();
     }
+
     /**
      * Computes the next state resulting from scheduling a given job.
      *
@@ -243,6 +252,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         int currentTime = Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
         return new MSCTState(remaining, currentTime);
     }
+
     /**
      * Returns the cost of scheduling a given job from the current state.
      * <p>
@@ -257,6 +267,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     public double transitionCost(MSCTState state, Decision decision) {
         return Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
     }
+
     /**
      * Returns a string representation of this MSCT instance for debugging purposes.
      *
@@ -265,5 +276,22 @@ public class MSCTProblem implements Problem<MSCTState> {
     @Override
     public String toString() {
         return String.format("release: %s - processing: %s", Arrays.toString(release), Arrays.toString(processing));
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        int t = 0;
+        int value = 0;
+        for (int job : solution) {
+            t = Math.max(t, release[job]) + processing[job];
+            value += t;
+        }
+
+        return value;
     }
 }
