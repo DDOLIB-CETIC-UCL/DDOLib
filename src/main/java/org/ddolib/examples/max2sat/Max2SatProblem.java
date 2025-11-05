@@ -308,7 +308,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
             int a = solution[Math.abs(bc.i) - 1];
             int b = solution[Math.abs(bc.j) - 1];
             value += bc.eval(a, b) * w;
-
         }
 
         return -value;

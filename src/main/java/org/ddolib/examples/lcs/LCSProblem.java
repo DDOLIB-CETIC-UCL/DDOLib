@@ -165,8 +165,7 @@ public class LCSProblem implements Problem<LCSState> {
         int[] stringsLength = new int[stringNb];
         Character[] idToChar = new Character[diffCharNb];
         Optional<Double> optimal;
-        if (splitFirst.length == 3) optimal = Optional.of(-Double.parseDouble(splitFirst[2]));
-            //TODO remove -
+        if (splitFirst.length == 3) optimal = Optional.of(Double.parseDouble(splitFirst[2]));
         else optimal = Optional.empty();
 
 
@@ -240,15 +239,7 @@ public class LCSProblem implements Problem<LCSState> {
             LCSDp dp = new LCSDp(diffCharNb, stringsAsInt[s], stringsAsInt[s + 1]);
             tables[s] = dp.solve();
         }
-    }
-
-    /**
-     * Sets a human-readable name for this problem instance.
-     *
-     * @param name The name to assign.
-     */
-    public void setName(String name) {
-        this.name = Optional.of(name);
+        this.name = Optional.of(filename);
     }
 
     @Override
@@ -258,7 +249,7 @@ public class LCSProblem implements Problem<LCSState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x);
     }
 
     @Override

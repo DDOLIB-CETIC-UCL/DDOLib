@@ -89,6 +89,17 @@ public class ALPProblem implements Problem<ALPState> {
     public final Optional<Double> optimal;
 
     /**
+     * Used to know which aircraft of each class will be next to land.
+     */
+    public ArrayList<ArrayList<Integer>> latestToEarliestAircraftByClass;
+    /**
+     * Minimal time between a "no_class" aircraft and "class" aircraft.
+     */
+    int[] minSeparationTo;
+
+    private Optional<String> name = Optional.empty();
+
+    /**
      * Constructs an ALP problem with the specified parameters.
      *
      * @param nbClasses           Number of aircraft classes
@@ -133,12 +144,12 @@ public class ALPProblem implements Problem<ALPState> {
      * optionally the known optimal value, aircraft target and deadline times, and class separation costs.
      * </p>
      *
-     * @param fName Path to the input file
+     * @param fname Path to the input file
      * @throws IOException if the file cannot be read
      */
 
-    public ALPProblem(final String fName) throws IOException {
-        final File f = new File(fName);
+    public ALPProblem(final String fname) throws IOException {
+        final File f = new File(fname);
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             int lineCounter = 0;
             List<String> linesList = bf.lines().toList();
@@ -196,22 +207,12 @@ public class ALPProblem implements Problem<ALPState> {
                     minSeparationTo[j] = Math.min(minSeparationTo[j], classTransitionCost[i][j]);
                 }
             }
+            this.name = Optional.of(fname);
         }
     }
 
-    // Used to know which aircraft of each class will be next to land.
-    public ArrayList<ArrayList<Integer>> latestToEarliestAircraftByClass;
-    // Minimal time between a "no_class" aircraft and "class" aircraft.
-    int[] minSeparationTo;
-
-    private Optional<String> name = Optional.empty();
-
     // When no plane has yet landed the previous class is -1.
     public static final int DUMMY = -1;
-
-    public void setName(String name) {
-        this.name = Optional.of(name);
-    }
 
     @Override
     public Optional<Double> optimalValue() {

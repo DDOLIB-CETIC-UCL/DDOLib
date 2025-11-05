@@ -29,9 +29,7 @@ public class ALPTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            ALPProblem problem = new ALPProblem(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new ALPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

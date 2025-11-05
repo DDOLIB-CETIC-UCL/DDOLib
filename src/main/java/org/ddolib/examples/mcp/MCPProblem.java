@@ -133,15 +133,6 @@ public class MCPProblem implements Problem<MCPState> {
         this.name = Optional.of(fname);
     }
 
-    /**
-     * Sets a human-readable name for this problem instance.
-     *
-     * @param name the name to assign
-     */
-    public void setName(String name) {
-        this.name = Optional.of(name);
-    }
-
     @Override
     public String toString() {
         return name.orElseGet(graph::toString);

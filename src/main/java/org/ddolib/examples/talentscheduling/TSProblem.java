@@ -134,7 +134,6 @@ public class TSProblem implements Problem<TSState> {
                     String[] tokens = line.split("\\s+");
                     cost[actor] = Integer.parseInt(tokens[nbScenes]);
                     for (int i = 0; i < nbScenes; i++) {
-                        int x = Integer.parseInt(tokens[i]);
                         if (Integer.parseInt(tokens[i]) == 1) {
                             actors[i].set(actor);
                         }
@@ -214,7 +213,7 @@ public class TSProblem implements Problem<TSState> {
         int scene = decision.val();
 
         // All the already present actors (playing for this scene or waiting)
-        // Actors not longer needed are discarded from this BitSet.
+        // Actors no longer needed are discarded from this BitSet.
         BitSet toPay = onLocationActors(state);
         toPay.andNot(actors[scene]); // Add new actors
 
