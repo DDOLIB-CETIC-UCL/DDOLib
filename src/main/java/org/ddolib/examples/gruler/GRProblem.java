@@ -60,7 +60,7 @@ public class GRProblem implements Problem<GRState> {
      */
     public GRProblem(int n, double optimal) {
         this.n = n;
-        this.optimal = Optional.of(-optimal); //TODO remove -
+        this.optimal = Optional.of(optimal);
     }
 
     /**

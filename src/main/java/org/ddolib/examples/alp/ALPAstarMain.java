@@ -32,7 +32,8 @@ import java.nio.file.Path;
 public final class ALPAstarMain {
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {
-        final String fileStr = args.length == 0 ? Path.of("data", "alp", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final String fileStr = args.length == 0 ?
+                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
         final ALPProblem problem = new ALPProblem("src/test/resources/ALP/ALP_10_2_2_test.txt");
         Model<ALPState> model = new Model<>() {
             @Override

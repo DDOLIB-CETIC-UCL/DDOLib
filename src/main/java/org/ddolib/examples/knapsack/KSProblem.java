@@ -144,14 +144,10 @@ public class KSProblem implements Problem<Integer> {
 
     @Override
     public String toString() {
-        if (name.isPresent()) {
-            return name.get();
-        } else {
-            return String.format("Max capacity: %d\nProfits: %s\nWeights: %s",
-                    capa,
-                    Arrays.toString(profit),
-                    Arrays.toString(weight));
-        }
+        return name.orElse(String.format("Max capacity: %d\nProfits: %s\nWeights: %s",
+                capa,
+                Arrays.toString(profit),
+                Arrays.toString(weight)));
     }
 
     @Override

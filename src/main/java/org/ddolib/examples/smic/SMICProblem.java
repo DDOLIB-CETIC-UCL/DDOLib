@@ -187,14 +187,14 @@ public class SMICProblem implements Problem<SMICState> {
      */
     public SMICProblem(String filename) throws IOException {
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        int nbJob = 0;
-        int initInventory = 0;
-        int capaInventory = 0;
-        int[] type = new int[0];
-        int[] processing = new int[0];
-        int[] weight = new int[0];
-        int[] release = new int[0];
-        int[] inventory = new int[0];
+        int nbJob;
+        int initInventory;
+        int capaInventory;
+        int[] type;
+        int[] processing;
+        int[] weight;
+        int[] release;
+        int[] inventory;
         this.name = filename;
         while (!s.hasNextLine()) {
             s.nextLine();

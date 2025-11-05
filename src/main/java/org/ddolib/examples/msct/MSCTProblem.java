@@ -84,6 +84,8 @@ public class MSCTProblem implements Problem<MSCTState> {
      */
     final Optional<Double> optimal;
 
+    private Optional<String> name = Optional.empty();
+
     /**
      * Constructs an MSCT problem from explicit arrays of release and processing times,
      * with an optional known optimal value.
@@ -92,7 +94,6 @@ public class MSCTProblem implements Problem<MSCTState> {
      * @param processing an array of processing times for each job.
      * @param optimal    an {@link Optional} containing the known optimal solution value.
      */
-
     public MSCTProblem(final int[] release, final int[] processing, Optional<Double> optimal) {
         this.release = release;
         this.processing = processing;
@@ -119,10 +120,10 @@ public class MSCTProblem implements Problem<MSCTState> {
      * and then one line per job with its release and processing times.
      * </p>
      *
-     * @param file the path to the file containing the problem instance.
+     * @param fname the path to the file containing the problem instance.
      * @throws IOException if an error occurs while reading the file.
      */
-    public MSCTProblem(final String file) throws IOException {
+    public MSCTProblem(final String fname) throws IOException {
         boolean isFirst = true;
         String line;
         int count = 0;
@@ -130,7 +131,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         int[] releas = new int[0];
         int[] proces = new int[0];
         Optional<Double> optimal = Optional.empty();
-        try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
+        try (final BufferedReader bf = new BufferedReader(new FileReader(fname))) {
             while ((line = bf.readLine()) != null) {
                 if (isFirst) {
                     isFirst = false;
@@ -154,6 +155,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.release = releas;
         this.processing = proces;
         this.optimal = optimal;
+        this.name = Optional.of(fname);
     }
 
     /**
@@ -231,11 +233,7 @@ public class MSCTProblem implements Problem<MSCTState> {
      */
     @Override
     public Iterator<Integer> domain(MSCTState state, int var) {
-        ArrayList<Integer> domain = new ArrayList<>();
-        for (Integer job : state.remainingJobs()) {
-            domain.add(job);
-        }
-        return domain.iterator();
+        return state.remainingJobs().iterator();
     }
 
     /**
@@ -275,7 +273,8 @@ public class MSCTProblem implements Problem<MSCTState> {
      */
     @Override
     public String toString() {
-        return String.format("release: %s - processing: %s", Arrays.toString(release), Arrays.toString(processing));
+        return name.orElse(String.format("release: %s - processing: %s", Arrays.toString(release),
+                Arrays.toString(processing)));
     }
 
     @Override

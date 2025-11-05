@@ -150,15 +150,6 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         this.name = Optional.of(fname);
     }
 
-    /**
-     * Sets a descriptive name for this instance to replace the default {@code toString()} output.
-     *
-     * @param name The descriptive name of the instance.
-     */
-    public void setName(String name) {
-        this.name = Optional.of(name);
-    }
-
 
     @Override
     public int nbVars() {
