@@ -150,6 +150,7 @@ public class PSProblem implements Problem<PSState> {
         InputReader reader = new InputReader(filename);
         horizon = reader.getInt();
         nItems = reader.getInt();
+        reader.getInt(); // to skip the order
 
         changeoverCost = new int[nItems][nItems];
         for (int i = 0; i < nItems; i++) {
