@@ -502,7 +502,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
     /**
      * Checks whether the relaxation is coherent. This method compiles mdd starting from a
-     * relaxed node and each merged nodes. Then, it compares the best values if each solution.
+     * relaxed node and each merged nodes. Then, it compares the best values of each solution.
+     * The path passing through the relaxed node must be a lower bound.
      *
      */
     private void checkRelaxation(List<NodeSubProblem<T>> nodesToMerge,
