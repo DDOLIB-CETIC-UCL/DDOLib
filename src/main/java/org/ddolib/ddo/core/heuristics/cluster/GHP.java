@@ -63,9 +63,15 @@ public class GHP<T> implements ReductionStrategy<T> {
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
             NodeSubProblem<T> furthestFromA = pivotA;
-            double maxDistanceA = 0.0;
+            double maxDistanceA = -1;
             NodeSubProblem<T> furthestFromB = pivotB;
-            double maxDistanceB = 0.0;
+            double maxDistanceB = -1;
+
+            System.out.println(pivotA);
+            System.out.println(pivotB);
+
+            System.out.println(pivotA.equals(pivotB));
+            System.out.println(distance.distance(pivotA.state, pivotB.state));
 
             newClusterA.add(pivotA);
             newClusterB.add(pivotB);
@@ -95,8 +101,8 @@ public class GHP<T> implements ReductionStrategy<T> {
                 }
             }
 
-            double priorityA = newClusterA.size() == 1 ? 0.0 : maxDistanceA;
-            double priorityB = newClusterB.size() == 1 ? 0.0 : maxDistanceB;
+            double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;
+            double priorityB = newClusterB.size() == 1 ? -1 : maxDistanceB;
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA));

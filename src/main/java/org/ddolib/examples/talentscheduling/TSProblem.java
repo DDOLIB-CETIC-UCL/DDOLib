@@ -117,6 +117,14 @@ public class TSProblem implements Problem<TSState> {
         return cost;
     }
 
+    public int sceneCost(int scene) {
+        int sum = 0;
+        for (int actor = this.actors[scene].nextSetBit(0); actor >= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {
+            sum += costs[actor];
+        }
+        return sum;
+    }
+
 
     /**
      * Given a state, returns which actors are already in location, i.e. actors needed for past scenes

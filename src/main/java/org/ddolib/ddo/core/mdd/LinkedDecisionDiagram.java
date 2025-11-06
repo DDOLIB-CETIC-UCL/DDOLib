@@ -553,7 +553,6 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
-            // System.out.println(merged);
             NodeSubProblem<T> node = null;
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {

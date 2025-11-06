@@ -12,7 +12,12 @@ import java.util.BitSet;
 public record TSState(BitSet remainingScenes, BitSet maybeScenes) {
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TSState && remainingScenes.equals(((TSState) obj).remainingScenes) && maybeScenes.equals(((TSState) obj).maybeScenes);
+    }
+
+    @Override
     public String toString() {
-        return String.format("Remaining: %s - Maybe: %s", remainingScenes.toString(), maybeScenes.toString());
+            return String.format("Remaining: %s - Maybe: %s", remainingScenes.toString(), maybeScenes.toString());
     }
 }

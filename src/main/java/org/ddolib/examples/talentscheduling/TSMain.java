@@ -4,9 +4,13 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
+import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
@@ -84,8 +88,8 @@ public class TSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
-        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 50;
+        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "small").toString() : args[0];
+        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 10;
 
         SolverConfig<TSState, NullType> config = new SolverConfig<>();
         final TSProblem problem = readFile(file);
@@ -98,7 +102,14 @@ public class TSMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        final Solver solver = new SequentialSolver<>(config);
+        // config.relaxStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new GHP<>(new TSDistance(problem));
+        config.restrictStrategy = config.relaxStrategy;
+
+        config.verbosityLevel = 4;
+        config.exportAsDot = true;
+
+        final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.minimize();
