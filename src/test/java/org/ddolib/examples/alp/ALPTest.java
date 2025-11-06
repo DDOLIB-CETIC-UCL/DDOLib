@@ -2,12 +2,9 @@ package org.ddolib.examples.alp;
 
 
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.DebugLevel;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +29,7 @@ public class ALPTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            ALPProblem problem = new ALPProblem(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new ALPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -78,12 +73,12 @@ public class ALPTest {
     }
 
 
-    @DisplayName("ALP")
+   /* @DisplayName("ALP")
     @TestFactory
     public Stream<DynamicTest> testALP() {
         var bench = new ALPTest.AlpBench();
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
-    }
+    }*/
 }

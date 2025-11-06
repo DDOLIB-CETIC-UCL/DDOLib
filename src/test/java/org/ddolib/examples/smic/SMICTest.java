@@ -3,10 +3,10 @@ package org.ddolib.examples.smic;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.DebugLevel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.VerbosityLevel;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -38,7 +38,7 @@ public class SMICTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            return  new SMICProblem(filePath.toString());
+                            return new SMICProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

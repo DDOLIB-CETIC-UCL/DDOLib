@@ -1,7 +1,11 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.modeling.StateRanking;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -22,7 +26,7 @@ public class GRTest {
         protected List<GRProblem> generateProblems() {
             // Known solutions
             int[] solutions = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
-            return IntStream.range(1, 7).mapToObj(i -> new GRProblem(i, -solutions[i - 1])).toList();
+            return IntStream.range(1, 7).mapToObj(i -> new GRProblem(i, solutions[i - 1])).toList();
         }
 
 

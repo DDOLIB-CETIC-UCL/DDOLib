@@ -1,16 +1,16 @@
 package org.ddolib.examples.alp;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
- * ######### Aircraft Landing Problem (ALP) #############
+ * Aircraft Landing Problem (ALP) with AsTar.
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
  * the A* search algorithm.
  * <p>
@@ -31,9 +31,10 @@ import java.nio.file.Paths;
  */
 public final class ALPAstarMain {
 
-    public static void main(final String[] args) throws IOException {
-        final String fileStr = args.length == 0 ? Path.of("data", "alp", "alp_n50_r1_c2_std10_s0").toString() : args[0];
-        final ALPProblem problem = new ALPProblem(fileStr);
+    public static void main(final String[] args) throws IOException, InvalidSolutionException {
+        final String fileStr = args.length == 0 ?
+                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final ALPProblem problem = new ALPProblem("src/test/resources/ALP/ALP_10_2_2_test.txt");
         Model<ALPState> model = new Model<>() {
             @Override
             public ALPProblem problem() {
@@ -48,7 +49,8 @@ public final class ALPAstarMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
+            System.out.println(new ALPSolution(problem, sol));
         });
 
         System.out.println(stats);

@@ -1,6 +1,7 @@
 package org.ddolib.examples.alp;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Represents the <b>Aircraft Landing Problem (ALP)</b>.
@@ -46,40 +48,68 @@ import java.util.*;
  * @see ALPDecision
  */
 public class ALPProblem implements Problem<ALPState> {
-    /** Number of aircraft classes. */
+    /**
+     * Number of aircraft classes.
+     */
     public final int nbClasses;
 
-    /** Total number of aircraft. */
+    /**
+     * Total number of aircraft.
+     */
     public final int nbAircraft;
 
-    /** Number of available runways. */
+    /**
+     * Number of available runways.
+     */
     public final int nbRunways;
 
-    /** Mapping of each aircraft to its class. */
+    /**
+     * Mapping of each aircraft to its class.
+     */
     public final int[] aircraftClass;
 
-    /** Target landing time for each aircraft. */
+    /**
+     * Target landing time for each aircraft.
+     */
     public final int[] aircraftTarget;
 
-    /** Deadline for each aircraft. */
+    /**
+     * Deadline for each aircraft.
+     */
     public final int[] aircraftDeadline;
 
-    /** Minimum separation times between aircraft classes. */
+    /**
+     * Minimum separation times between aircraft classes.
+     */
     public final int[][] classTransitionCost;
 
-    /** Known optimal value, if available. */
+    /**
+     * Known optimal value, if available.
+     */
     public final Optional<Double> optimal;
+
+    /**
+     * Used to know which aircraft of each class will be next to land.
+     */
+    public ArrayList<ArrayList<Integer>> latestToEarliestAircraftByClass;
+    /**
+     * Minimal time between a "no_class" aircraft and "class" aircraft.
+     */
+    int[] minSeparationTo;
+
+    private Optional<String> name = Optional.empty();
+
     /**
      * Constructs an ALP problem with the specified parameters.
      *
-     * @param nbClasses Number of aircraft classes
-     * @param nbAircraft Total number of aircraft
-     * @param nbRunways Number of runways
-     * @param aircraftClass Array mapping aircraft to class
-     * @param aircraftTarget Target landing times
-     * @param aircraftDeadline Deadline times
+     * @param nbClasses           Number of aircraft classes
+     * @param nbAircraft          Total number of aircraft
+     * @param nbRunways           Number of runways
+     * @param aircraftClass       Array mapping aircraft to class
+     * @param aircraftTarget      Target landing times
+     * @param aircraftDeadline    Deadline times
      * @param classTransitionCost Minimum separation times between classes
-     * @param optimal Optional optimal value
+     * @param optimal             Optional optimal value
      */
     public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost, final Optional<Double> optimal) {
         this.nbClasses = nbClasses;
@@ -91,20 +121,22 @@ public class ALPProblem implements Problem<ALPState> {
         this.classTransitionCost = classTransitionCost;
         this.optimal = optimal;
     }
+
     /**
      * Constructs an ALP problem without specifying an optimal value.
      *
-     * @param nbClasses Number of aircraft classes
-     * @param nbAircraft Total number of aircraft
-     * @param nbRunways Number of runways
-     * @param aircraftClass Array mapping aircraft to class
-     * @param aircraftTarget Target landing times
-     * @param aircraftDeadline Deadline times
+     * @param nbClasses           Number of aircraft classes
+     * @param nbAircraft          Total number of aircraft
+     * @param nbRunways           Number of runways
+     * @param aircraftClass       Array mapping aircraft to class
+     * @param aircraftTarget      Target landing times
+     * @param aircraftDeadline    Deadline times
      * @param classTransitionCost Minimum separation times between classes
      */
     public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost) {
-        this(nbClasses,nbAircraft,nbRunways,aircraftClass,aircraftTarget,aircraftDeadline,classTransitionCost,Optional.empty());
+        this(nbClasses, nbAircraft, nbRunways, aircraftClass, aircraftTarget, aircraftDeadline, classTransitionCost, Optional.empty());
     }
+
     /**
      * Constructs an ALP problem by reading from a file.
      * <p>
@@ -112,12 +144,12 @@ public class ALPProblem implements Problem<ALPState> {
      * optionally the known optimal value, aircraft target and deadline times, and class separation costs.
      * </p>
      *
-     * @param fName Path to the input file
+     * @param fname Path to the input file
      * @throws IOException if the file cannot be read
      */
 
-    public ALPProblem(final String fName) throws IOException {
-        final File f = new File(fName);
+    public ALPProblem(final String fname) throws IOException {
+        final File f = new File(fname);
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             int lineCounter = 0;
             List<String> linesList = bf.lines().toList();
@@ -157,7 +189,7 @@ public class ALPProblem implements Problem<ALPState> {
             this.aircraftTarget = aircraftTarget;
             this.aircraftDeadline = aircraftDeadline;
             this.classTransitionCost = classTransitionCost;
-            this.optimal =  optimal;
+            this.optimal = optimal;
 
             latestToEarliestAircraftByClass = new ArrayList<>();
             minSeparationTo = new int[nbClasses];
@@ -175,21 +207,12 @@ public class ALPProblem implements Problem<ALPState> {
                     minSeparationTo[j] = Math.min(minSeparationTo[j], classTransitionCost[i][j]);
                 }
             }
+            this.name = Optional.of(fname);
         }
     }
-    // Used to know which aircraft of each class will be next to land.
-    public ArrayList<ArrayList<Integer>> latestToEarliestAircraftByClass;
-    // Minimal time between a "no_class" aircraft and "class" aircraft.
-    int[] minSeparationTo;
-
-    private Optional<String> name = Optional.empty();
 
     // When no plane has yet landed the previous class is -1.
     public static final int DUMMY = -1;
-
-    public void setName(String name) {
-        this.name = Optional.of(name);
-    }
 
     @Override
     public Optional<Double> optimalValue() {
@@ -200,8 +223,8 @@ public class ALPProblem implements Problem<ALPState> {
      * Computes the arrival time of an aircraft on a given runway.
      *
      * @param runwayStates The current state of each runway
-     * @param aircraft The aircraft to land
-     * @param runway The runway index
+     * @param aircraft     The aircraft to land
+     * @param runway       The runway index
      * @return The computed landing time
      */
     public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway) {
@@ -338,6 +361,52 @@ public class ALPProblem implements Problem<ALPState> {
         String out = String.format("ALP problem with %d aircrafts, %d classes and %d runways",
                 nbAircraft, nbClasses, nbRunways);
         return name.orElse(out);
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        // For each runway, the last time, it was used.
+        int[] lastTime = IntStream.range(0, nbRunways).map(r -> Integer.MAX_VALUE).toArray();
+        // For each runway, the class of the last aircraft landing to it.
+        int[] lastClass = new int[nbRunways];
+
+        ALPSolution alpSol = new ALPSolution(this, solution);
+        int value = 0;
+        for (ALPSchedule a : alpSol) {
+            int target = aircraftTarget[a.aircraft()];
+            int deadline = aircraftDeadline[a.aircraft()];
+            if (a.landingTime() < target || a.landingTime() > deadline) {
+                String msg = String.format("Aircraft %d is landing at %d outside its time window " +
+                        "[%d , %d]", a.aircraft(), a.landingTime(), target, deadline);
+                throw new InvalidSolutionException(msg);
+            }
+            int allowedTime = lastTime[a.runway()] + classTransitionCost[lastClass[a.runway()]][a.aircraftClass()];
+            if (a.landingTime() < allowedTime) {
+                String msg = String.format(
+                        "Aircraft %d of class %d is landing on runway %d at %d.\n" +
+                                "The previous aircraft using this runway was class %d landing at " +
+                                "%d. The next landing should be at least at %d",
+                        a.aircraft(),
+                        a.aircraftClass(),
+                        a.runway(),
+                        a.landingTime(),
+                        lastClass[a.runway()],
+                        lastTime[a.runway()],
+                        allowedTime
+                );
+                throw new InvalidSolutionException(msg);
+            }
+            value += a.landingTime() - target;
+            lastTime[a.runway()] = a.landingTime();
+            lastClass[a.runway()] = a.aircraftClass();
+        }
+
+        return value;
     }
 }
 

@@ -7,10 +7,9 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
- * ######### Aircraft Landing Problem (ALP) #############
+ * Aircraft Landing Problem (ALP) with Acs.
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
  * the Anytime Column Search (ACS) algorithm.
  * <p>
@@ -32,7 +31,8 @@ import java.nio.file.Paths;
 public final class ALPAcsMain {
 
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "alp", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final String instance = args.length == 0 ?
+                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
         final ALPProblem problem = new ALPProblem(instance);
         AcsModel<ALPState> model = new AcsModel<>() {
             @Override
@@ -48,7 +48,8 @@ public final class ALPAcsMain {
         };
 
         SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
+            System.out.println(new ALPSolution(problem, sol));
         });
 
         System.out.println(stats);

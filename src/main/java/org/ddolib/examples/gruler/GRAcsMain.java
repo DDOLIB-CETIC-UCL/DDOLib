@@ -9,7 +9,7 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 
 /**
- * ########## Golomb Rule Problem (GRP) ################
+ * Golomb Rule Problem (GRP) with Acs.
 
  * <p>
  * This program demonstrates how to:

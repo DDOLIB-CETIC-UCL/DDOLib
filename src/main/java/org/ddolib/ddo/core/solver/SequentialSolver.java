@@ -16,7 +16,9 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.VerbosityPrinter;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -30,26 +32,59 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * From the lecture, you should have a good grasp on what a branch-and-bound
- * with mdd solver does even though you haven't looked into concrete code
- * yet.
- * <p>
- * One of the tasks from this assignment is for you to implement the vanilla
- * algorithm (sequentially) as it has been explained during the lecture.
- * <p>
- * To help you, we provide you with a well documented framework that defines
- * and implements all the abstractions you will need in order to implement
- * a generic solver. Additionally, and because the BaB-MDD framework parallelizes
- * *VERY* well, we provide you with a parallel implementation of the algorithm
- * (@see ParallelSolver). Digging into that code, understanding it, and stripping
- * away all the parallel-related concerns should finalize to give you a thorough
- * understanding of the sequential algo.
- * <p>
- * # Note
- * ONCE YOU HAVE A CLEAR IDEA OF HOW THE CODE WORKS, THIS TASK SHOULD BE EXTREMELY
- * EASY TO COMPLETE.
+ * A sequential implementation of a Branch-and-Bound solver based on
+ * Multi-valued Decision Diagrams (MDDs).
  *
- * @param <T> The type of states.
+ * <p>
+ * This solver follows the vanilla version of the algorithm introduced in lecture.
+ * It explores subproblems sequentially (one at a time), combining restricted and
+ * relaxed MDD compilations to progressively tighten the upper and lower bounds
+ * of the optimization problem.
+ * </p>
+ *
+ * <p>
+ * The solver maintains a frontier (priority queue) of unexplored subproblems,
+ * ordered by their lower bounds, and stops as soon as the optimality condition
+ * is met (i.e., when the best known upper bound is equal to the minimum lower
+ * bound in the frontier).
+ * </p>
+ *
+ * <p>
+ * <b>Key ideas:</b>
+ * </p>
+ * <ul>
+ *   <li>Each subproblem corresponds to a partial decision sequence and a state.</li>
+ *   <li>The solver compiles a restricted MDD to approximate the feasible region
+ *       and update the current best solution (upper bound).</li>
+ *   <li>It then compiles a relaxed MDD to estimate lower bounds and determine
+ *       which subproblems should be explored next.</li>
+ *   <li>Subproblems are pruned if their lower bounds exceed the current best
+ *       solution (upper bound), or if they are dominated according to the provided
+ *       {@link DominanceChecker}.</li>
+ * </ul>
+ *
+ *
+ * <p>
+ * This sequential solver serves as a reference or baseline implementation.
+ * </p>
+ *
+ * <p><b>Usage Notes:</b></p>
+ * <ul>
+ *   <li>This solver is designed for correctness and clarity, not scalability.</li>
+ *   <li>It is best suited for debugging, small instances, and educational purposes.</li>
+ *   <li>Set the verbosity level in {@link DdoModel} for detailed runtime logging.</li>
+ * </ul>
+ *
+ * @param <T> The type representing a problem state.
+ * @see ExactSolver
+ * @see DdoModel
+ * @see Problem
+ * @see Relaxation
+ * @see StateRanking
+ * @see VariableHeuristic
+ * @see WidthHeuristic
+ * @see FastLowerBound
+ * @see DominanceChecker
  */
 public final class SequentialSolver<T> implements Solver {
     /**
@@ -111,14 +146,14 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final VerbosityLevel verbosityLevel;
 
-    private final VerbosityPrinter verbosityPrinter;
+    private final VerboseMode verboseMode;
     /**
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
     /**
      * The debug level of the compilation to add additional checks (see
-     * {@link org.ddolib.modeling.DebugLevel for details}
+     * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
     /**
@@ -162,7 +197,7 @@ public final class SequentialSolver<T> implements Solver {
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
-        this.verbosityPrinter = new VerbosityPrinter(verbosityLevel, 500L);
+        this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
     }
@@ -177,7 +212,7 @@ public final class SequentialSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             nbIter++;
-            verbosityPrinter.detailedSearchState(nbIter, frontier.size(), bestUB,
+            verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
             queueMaxSize = Math.max(queueMaxSize, frontier.size());
@@ -186,7 +221,7 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, gap());
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100);
             if (bestUB != Double.POSITIVE_INFINITY)
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
 
@@ -195,7 +230,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            verbosityPrinter.currentSubProblem(nbIter, sub);
+            verboseMode.currentSubProblem(nbIter, sub);
 
             if (nodeLB >= bestUB) {
                 frontier.clear();
@@ -249,7 +284,11 @@ public final class SequentialSolver<T> implements Solver {
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
-                maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+                newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+                if (newbest) {
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+                    onSolution.accept(constructSolution(bestSol.get()), stats);
+                }
             }
             if (exportAsDot && firstRelaxed) {
                 if (!relaxedMdd.isExact())
@@ -307,7 +346,7 @@ public final class SequentialSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            verbosityPrinter.newBest(bestUB);
+            verboseMode.newBest(bestUB);
             return true;
         } else if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
@@ -339,10 +378,10 @@ public final class SequentialSolver<T> implements Solver {
 
     private double gap() {
         if (frontier.isEmpty()) {
-            return 0.0;
+            return 100.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return Math.abs(100 * (bestUB - bestInFrontier) / bestUB);
+            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
         }
     }
 }

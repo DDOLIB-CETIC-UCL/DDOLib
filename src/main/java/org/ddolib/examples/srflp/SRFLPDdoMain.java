@@ -10,7 +10,47 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-
+/**
+ * The Single-Row Facility Layout Problem (SRFLP) with Ddo.
+ * Entry point for solving the Single-Row Facility Layout Problem (SRFLP)
+ * using the Decision Diagram Optimization (DDO) algorithm.
+ * <p>
+ * <strong>Usage:</strong>
+ * </p>
+ * <pre>{@code
+ * java SRFLPDdoMain [instanceFile] [maxWidth]
+ * }</pre>
+ * - {@code instanceFile} (optional): Path to the SRFLP instance file. Defaults to {@code data/SRFLP/simple}.
+ * - {@code maxWidth} (optional): Maximum width of the relaxed decision diagram. Defaults to 50.
+ *
+ * <p>
+ * The DDO model requires the following components:
+ * </p>
+ * <ul>
+ *     <li>{@link SRFLPProblem} – the problem definition (distance/cost matrix, number of facilities, etc.),</li>
+ *     <li>{@link SRFLPRelax} – relaxation method used to merge states in the diagram,</li>
+ *     <li>{@link SRFLPRanking} – state ranking used for node prioritization,</li>
+ *     <li>{@link FixedWidth} – width control heuristic for the relaxed diagram,</li>
+ *     <li>{@link SRFLPFastLowerBound} – fast lower-bound estimator for pruning.</li>
+ * </ul>
+ *
+ * <p>
+ * After the search is completed, the program prints:
+ * </p>
+ * <ul>
+ *     <li>Search statistics returned by {@link Solvers#minimizeDdo},</li>
+ *     <li>The best solution found as an array of facility indices.</li>
+ * </ul>
+ *
+ * @see SRFLPProblem
+ * @see SRFLPState
+ * @see SRFLPRelax
+ * @see SRFLPRanking
+ * @see FixedWidth
+ * @see SRFLPFastLowerBound
+ * @see DdoModel
+ * @see Solvers
+ */
 public final class SRFLPDdoMain {
 
     public static void main(String[] args) throws IOException {

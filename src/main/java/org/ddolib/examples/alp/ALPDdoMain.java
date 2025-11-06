@@ -9,12 +9,11 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
- * ######### Aircraft Landing Problem (ALP) #############
+ * Aircraft Landing Problem (ALP) with Ddo.
  * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
- * the Dynamic Decision Diagram (DDO) approach.
+ * the Decision Diagram Optimization (DDO) algorithm.
  * <p>
  * This class demonstrates how to:
  * </p>
@@ -37,7 +36,8 @@ import java.nio.file.Paths;
 public final class ALPDdoMain {
 
     public static void main(final String[] args) throws IOException {
-        final String fileStr = args.length == 0 ? Path.of("data", "alp", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final String fileStr = args.length == 0 ?
+                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
         final ALPProblem problem = new ALPProblem(fileStr);
         DdoModel<ALPState> model = new DdoModel<>() {
             @Override
@@ -61,13 +61,14 @@ public final class ALPDdoMain {
             }
 
             @Override
-            public WidthHeuristic widthHeuristic() {
+            public WidthHeuristic<ALPState> widthHeuristic() {
                 return new FixedWidth<>(100);
             }
         };
 
         SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
+            System.out.println(new ALPSolution(problem, sol));
         });
 
         System.out.println(stats);

@@ -5,18 +5,50 @@ import org.ddolib.modeling.FastLowerBound;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
-
+/**
+ * Provides a fast lower-bound estimation for the Single-Row Facility Layout Problem (SRFLP)
+ * based on the current state of the solution.
+ *
+ * <p>
+ * The lower bound is decomposed into two components:
+ * </p>
+ * <ul>
+ *     <li><b>Free lower bound:</b> under-approximates the traffic between departments
+ *     that must still be placed (free departments).</li>
+ *     <li><b>Fixed lower bound:</b> accounts for the traffic between already placed
+ *     (fixed) departments and the remaining free ones.</li>
+ * </ul>
+ *
+ * <p>
+ * Internally, the class precomputes:
+ * </p>
+ * <ul>
+ *     <li>Pairs of departments sorted by their flow in decreasing order,</li>
+ *     <li>Departments sorted by their lengths in increasing order.</li>
+ * </ul>
+ *
+ * <p>
+ * The class implements {@link FastLowerBound} and can be used in
+ * A* or decision diagram-based solvers to prune suboptimal branches efficiently.
+ * </p>
+ *
+ * @see SRFLPProblem
+ * @see SRFLPState
+ */
 public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     private final SRFLPProblem problem;
 
-    /**
-     * Pairs of departments sorted by their flow in decreasing order.
-     */
+    /** Pairs of departments sorted by their flow in decreasing order. */
     private final ArrayList<PairAndFlow> pairsSortedByFlow = new ArrayList<>();
-    /**
-     * Departments sorted by their length in increasing order.
-     */
+
+    /** Departments sorted by their length in increasing order. */
     private final ArrayList<DepartmentAndLength> departmentsSortedByLength = new ArrayList<>();
+
+    /**
+     * Constructs a fast lower-bound estimator for the given SRFLP problem.
+     *
+     * @param problem the SRFLP problem instance
+     */
 
     public SRFLPFastLowerBound(SRFLPProblem problem) {
         this.problem = problem;
@@ -32,7 +64,13 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
         Collections.reverse(pairsSortedByFlow);
         Collections.sort(departmentsSortedByLength);
     }
-
+    /**
+     * Computes a fast lower bound for a given state and a set of variables.
+     *
+     * @param state     the current SRFLP state
+     * @param variables the set of variables to consider
+     * @return a lower bound on the cost of completing the solution from the current state
+     */
 
     @Override
     public double fastLowerBound(SRFLPState state, Set<Integer> variables) {

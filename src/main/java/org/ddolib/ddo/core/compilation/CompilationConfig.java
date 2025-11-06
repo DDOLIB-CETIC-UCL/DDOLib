@@ -5,7 +5,11 @@ import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.modeling.StateRanking;
+import org.ddolib.util.debug.DebugLevel;
 
 import java.util.Optional;
 
@@ -116,7 +120,7 @@ public class CompilationConfig<T> {
      * <p>Higher levels include more internal consistency checks
      * and detailed logging, at the cost of runtime performance.</p>
      *
-     * @see org.ddolib.modeling.DebugLevel
+     * @see DebugLevel
      */
     public DebugLevel debugLevel = null;
 

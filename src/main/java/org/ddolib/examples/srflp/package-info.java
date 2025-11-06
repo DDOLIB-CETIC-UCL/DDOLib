@@ -1,6 +1,5 @@
 /**
- * This package demonstrates how to implement a solver for the Single Row Facility Layout
- * Problem (SRFLP).
+ * This package implements the acs, astar and ddo models for the Single Row Facility Layout Problem (SRFLP).
  * For more details and this problem and its model see
  * <a href= https://drops.dagstuhl.de/storage/00lipics/lipics-vol235-cp2022/LIPIcs.CP.2022.14/LIPIcs.CP.2022.14.pdf>
  * Coppé, V., Gillard, X., and Schaus, P. (2022).

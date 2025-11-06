@@ -9,13 +9,41 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+/**
+ * Maximum Cut Problem (MCP) with AsTar.
+ * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using an A* search approach.
+ * <p>
+ * This class demonstrates how to set up an A* model for the MCP, run the search, and print
+ * the resulting solution and statistics.
+ * </p>
+ *
+ * <p>
+ * The problem instance can be provided as a command-line argument. If no argument is provided,
+ * a default instance located at <code>data/MCP/mcp_5_2.txt</code> is used.
+ * </p>
+ *
+ * <p>
+ * The model uses {@link MCPFastLowerBound} to compute a fast lower bound of the solution quality,
+ * and the {@link Model} framework handles the search process using the A* algorithm.
+ * </p>
+ *
+ * @see MCPProblem
+ * @see MCPState
+ * @see Model
+ * @see MCPFastLowerBound
+ * @see Solvers
+ */
 public final class MCPAstarMain {
     /**
-     * ******* Maximum Cut Problem (MCP) *******
+     * Entry point of the application.
+     * <p>
+     * Initializes the MCP problem, builds an A* model, and runs the search to find
+     * a maximum cut. The resulting solution is printed incrementally via
+     * {@link SolutionPrinter} and a final {@link SearchStatistics} summary is displayed.
+     * </p>
      *
-     * @param args
-     * @throws IOException
+     * @param args optional command-line arguments; args[0] can specify the path to an MCP instance file
+     * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];

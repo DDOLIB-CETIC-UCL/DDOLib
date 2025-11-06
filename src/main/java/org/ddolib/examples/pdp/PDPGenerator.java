@@ -10,19 +10,39 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
-
+/**
+ * Utility class for generating instances of the <b>Pickup and Delivery Problem (PDP)</b>
+ * with a single vehicle.
+ * <p>
+ * This generator creates a TSP-like problem where nodes are grouped into pickup-delivery pairs.
+ * In each pair, the pickup node must be visited before its associated delivery node.
+ * Additionally, the problem can include "unrelated nodes" that are not part of any pickup-delivery pair.
+ * </p>
+ *
+ * <p><b>Features:</b></p>
+ * <ul>
+ *     <li>Generates random coordinates for all nodes and computes Euclidean distances between them.</li>
+ *     <li>Automatically creates pickup-delivery pairs based on the number of unrelated nodes.</li>
+ *     <li>Supports defining a vehicle capacity for the PDP instance.</li>
+ *     <li>Can write generated instances to a file in a human-readable format.</li>
+ * </ul>
+ *
+ * @see PDPProblem
+ */
 public class PDPGenerator {
     /**
-     * Generates a PDP problem with a single vehicle:
-     * a TSP problem such that
-     * nodes are grouped by pair: (pickup node; delivery node)
-     * in a pair, the pickup node must be reached before the delivery node
-     * the problem can also have "unrelated nodes" that are not involved in such a pair
+     * Generates a random PDP instance with the given parameters.
+     * <p>
+     * Nodes are grouped into pickup-delivery pairs. Any remaining nodes are treated as unrelated nodes.
+     * The distance between nodes is computed using Euclidean distance.
+     * </p>
      *
-     * @param n         the number of nodes of the PDP problem
-     * @param unrelated the number of nodes that are not involved in a pickup-delivery pair.
-     *                  there might be one more unrelated node than specified here
-     * @return a PDP problem
+     * @param n         the total number of nodes in the PDP instance
+     * @param unrelated the number of nodes that are not part of any pickup-delivery pair
+     *                  (there may be one more unrelated node than specified)
+     * @param maxCapa   the maximum capacity of the vehicle
+     * @param random    a {@link Random} object used for generating coordinates
+     * @return a {@link PDPProblem} instance representing the generated PDP
      */
     public static PDPProblem genInstance(int n, int unrelated, int maxCapa, Random random) {
 
@@ -52,11 +72,34 @@ public class PDPGenerator {
 
         return new PDPProblem(distance, pickupToAssociatedDelivery, maxCapa);
     }
-
+    /**
+     * Computes the Euclidean distance between two points.
+     *
+     * @param dx the difference in x-coordinates
+     * @param dy the difference in y-coordinates
+     * @return the Euclidean distance as an integer
+     */
     public static int dist(int dx, int dy) {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
-
+    /**
+     * Generates a PDP instance and writes it to a file in a human-readable format.
+     * <p>
+     * The file includes:
+     * </p>
+     * <ul>
+     *     <li>The total number of nodes.</li>
+     *     <li>The distance matrix between all nodes.</li>
+     *     <li>The mapping of pickup nodes to their associated delivery nodes.</li>
+     * </ul>
+     *
+     * @param fileName  the path to the output file
+     * @param n         the total number of nodes in the PDP instance
+     * @param unrelated the number of nodes not involved in any pickup-delivery pair
+     * @param maxCapa   the maximum vehicle capacity
+     * @param random    a {@link Random} object used for generating coordinates
+     * @throws IOException if an I/O error occurs while writing the file
+     */
     public void writeInstance(String fileName, int n, int unrelated, int maxCapa, Random random) throws IOException {
 
         PDPProblem problem = genInstance(n, unrelated, maxCapa, random);

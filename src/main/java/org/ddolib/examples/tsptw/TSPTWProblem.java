@@ -1,6 +1,7 @@
 package org.ddolib.examples.tsptw;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.BufferedReader;
@@ -9,34 +10,59 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class representing an instance of the Traveling Salesman Problem with Time Windows (TSPTW).
+ *
+ * <p>
+ * Each node has a time window during which it must be visited, and travel between nodes
+ * is defined by a distance matrix. This class implements the {@link Problem} interface
+ * for use in decision diagram solvers.
+ * </p>
+ *
+ * <p>
+ * The problem instance can optionally provide the known optimal solution.
+ * </p>
+ *
+ * <h2>Data file format</h2>
+ * <ul>
+ *     <li>First line: number of nodes (variables). Optionally, a second value may be provided for the optimal objective.</li>
+ *     <li>Next lines: the distance matrix, one row per node.</li>
+ *     <li>Following lines: time windows for each node, specified as two integers (start and end) per line.</li>
+ * </ul>
+ *
+ * <p>
+ * The distance matrix defines the travel times between nodes, and the {@link TimeWindow} array defines
+ * the allowed visit times for each node.
+ * </p>
+ */
 public class TSPTWProblem implements Problem<TSPTWState> {
 
+    /**
+     * Distance matrix between nodes. distance[i][j] is the travel time from node i to node j.
+     */
     public final int[][] distance;
+
+    /**
+     * Time windows for each node.
+     */
     public final TimeWindow[] timeWindows;
+
+    /**
+     * Optional known optimal value for the instance.
+     */
     public final Optional<Double> optimal;
 
+    /**
+     * Optional name of the instance, typically the file path.
+     */
     private final Optional<String> name;
 
 
     /**
-     * Creates instance from data files.<br>
-     * <p>
-     * The expected format is the following:
-     * <ul>
-     *     <li>
-     *         The first line must contain the number of variable. A second  optional value can be
-     *         given: the expected objective value for an optimal solution.
-     *     </li>
-     *     <li>
-     *         The time matrix.
-     *     </li>
-     *     <li>
-     *         A time window for each node.
-     *     </li>
-     * </ul>
+     * Constructs a TSPTW problem instance from a data file.
      *
-     * @param fname The path to the input file.
-     * @throws IOException If something goes wrong while reading input file.
+     * @param fname Path to the input file containing the TSPTW instance.
+     * @throws IOException If an error occurs while reading the file.
      */
     public TSPTWProblem(String fname) throws IOException {
         int numVar = 0;
@@ -171,11 +197,48 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     }
 
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        Map<Integer, Long> count = Arrays.stream(solution)
+                .boxed()
+                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+
+        if (count.values().stream().anyMatch(x -> x != 1)) {
+            String msg = "The solution has duplicated nodes and does not reach each node";
+            throw new InvalidSolutionException(msg);
+        }
+
+        double value = distance[0][solution[0]]; //Start from the depot.
+        value += Math.max(0, timeWindows[solution[0]].start() - value);
+
+
+        for (int i = 1; i < nbVars(); i++) {
+            int from = solution[i - 1];
+            int to = solution[i];
+            value += distance[from][to];
+            if (value > timeWindows[to].end()) {
+                String msg = String.format("This solution does not respect time windows. \nYou " +
+                                "arrive at node %d at time %f. Its time window is %s", to, value,
+                        timeWindows[to]);
+                throw new InvalidSolutionException(msg);
+            }
+            value += Math.max(0, timeWindows[to].start() - value);
+        }
+
+        return value;
+    }
+
     /**
-     * @param from The current state of the mdd.
-     * @param to   The target node.
-     * @return Whether we can reach the node {@code to} before the end of its time window starting from state {@code
-     * from}.
+     * Checks if a target node is reachable from the given state within its time window.
+     *
+     * @param from Current state.
+     * @param to   Target node.
+     * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise.
      */
     boolean reachable(TSPTWState from, Integer to) {
         int duration = minDuration(from, to);
@@ -183,9 +246,11 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     /**
-     * @param from The current state of the mdd.
-     * @param to   The target node.
-     * @return The minimal duration to reach the node {@code to} starting from state {@code from}.
+     * Computes the minimal duration to reach a target node from the current state.
+     *
+     * @param from Current state.
+     * @param to   Target node.
+     * @return Minimum travel time to reach node {@code to}.
      */
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
@@ -196,12 +261,12 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     /**
-     * Computes the arrival time starting at {@code from.time()} given the travel time and the start of the time
-     * window of
+     * Computes the arrival time at a target node, accounting for travel time and waiting
+     * until the time window opens.
      *
-     * @param from The current state of the mdd.
-     * @param to   The target node.
-     * @return The arrival time at {@code to} starting at {@code from.time()}.
+     * @param from Current state.
+     * @param to   Target node.
+     * @return Arrival time at node {@code to}.
      */
     int arrivalTime(TSPTWState from, Integer to) {
         int time = from.time() + minDuration(from, to);
