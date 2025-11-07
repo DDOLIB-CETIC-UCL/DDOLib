@@ -161,7 +161,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
                 }
             }
 
-            if (state.mustVisit().length() < nbVars() - state.depth()) {
+            if (state.mustVisit().cardinality() < nbVars() - state.depth()) {
                 // The state is a merged state. Its mustVisit set can be too small. In that case, we can take decision
                 // from the possiblyVisit state.
                 var possiblyIt = state.possiblyVisit().stream().iterator();
