@@ -67,12 +67,6 @@ public class GHP<T> implements ReductionStrategy<T> {
             NodeSubProblem<T> furthestFromB = pivotB;
             double maxDistanceB = -1;
 
-            System.out.println(pivotA);
-            System.out.println(pivotB);
-
-            System.out.println(pivotA.equals(pivotB));
-            System.out.println(distance.distance(pivotA.state, pivotB.state));
-
             newClusterA.add(pivotA);
             newClusterB.add(pivotB);
             distanceWithPivot.put(pivotB.state, 0.0);
