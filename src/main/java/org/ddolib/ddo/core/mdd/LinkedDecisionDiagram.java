@@ -580,8 +580,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         Optional<Set<Decision>> bestRelaxedSol = relaxedMdd.bestSolution();
         Optional<Double> bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);
 
-        for (NodeSubProblem<T> node : nodesToMerge) {
-            SubProblem<T> sub = node.toSubProblem(constructPathToRoot(node.node));
+        for (NodeSubProblem<T> node :
+                nodesToMerge.stream().filter(n -> n.node.type == NodeType.EXACT).toList()) {
+            Set<Decision> pathFromCurrentToRoot = constructPathToRoot(node.node);
+            pathFromCurrentToRoot.addAll(pathToRoot);
+            SubProblem<T> sub = new SubProblem<>(node.state, node.node.value, node.lb, pathFromCurrentToRoot);
             LinkedDecisionDiagram<T> mdd = compileSubMdd(sub);
             Optional<Double> bestWithNode = mdd.bestValue();
             Optional<Set<Decision>> bestSol = mdd.bestSolution();
