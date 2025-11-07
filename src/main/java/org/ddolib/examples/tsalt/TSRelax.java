@@ -17,12 +17,12 @@ public class TSRelax implements Relaxation<TSState> {
     public TSState mergeStates(Iterator<TSState> states) {
         BitSet mergedRemaining = new BitSet(problem.nbVars());
         BitSet mergedActors = new BitSet(problem.nbActors);
-        mergedActors.set(0, problem.nbActors, true);
+        // mergedActors.set(0, problem.nbActors, true);
 
         while (states.hasNext()) {
             TSState state = states.next();
             mergedRemaining.or(state.remainingScenes());
-            mergedActors.or(state.onLocationActors());
+            mergedActors.and(state.onLocationActors());
         }
 
         return new TSState(mergedRemaining, mergedActors);
