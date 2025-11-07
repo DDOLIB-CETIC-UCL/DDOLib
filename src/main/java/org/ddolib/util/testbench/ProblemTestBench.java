@@ -189,10 +189,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
                     Arrays.setAll(bestSolution, i -> sol[i]);
                 }).incumbent();
                 Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
+                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, w);
 
                 if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution),
+                            1e-10, "Max width of the mdd:  " + w);
                 }
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();

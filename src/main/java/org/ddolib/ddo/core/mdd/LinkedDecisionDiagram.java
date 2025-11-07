@@ -570,7 +570,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                  NodeSubProblem<T> relaxedNode) {
         DecimalFormat df = new DecimalFormat("#.##########");
 
-        SubProblem<T> relaxedSub = relaxedNode.toSubProblem(constructPathToRoot(relaxedNode.node));
+        Set<Decision> pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);
+        SubProblem<T> relaxedSub = new SubProblem<>(relaxedNode.state, relaxedNode.node.value,
+                relaxedNode.lb, pathFromRelaxedToRoot);
+
         int relaxationDepth = relaxedSub.getDepth();
         LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedSub);
         Optional<Double> bestWithRelaxed = relaxedMdd.bestValue();
@@ -775,6 +778,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
         }
+
 
         if (debugLevel != DebugLevel.OFF) {
             checkRelaxation(merge, mergedNode);
