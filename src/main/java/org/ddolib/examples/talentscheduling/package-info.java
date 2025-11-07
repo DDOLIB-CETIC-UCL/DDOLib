@@ -1,6 +1,6 @@
 /**
  * This package implements the acs, astar and ddo models for the talent scheduling problem (tsp).
- * The talent scheduling problem (tsp) is define by the given oa a set
+ * The talent scheduling problem (tsp) is define by the given of a set
  * S= {s1, s2, . . . , sn} of n scenes and A = {a1,a2, . . . , am} a
  * set of m actors. All scenes are assumed to be shot on a given location.
  * Each scene sj ∈ S requires a subset a(sj) ⊆ A of actors and has a duration d(sj)
