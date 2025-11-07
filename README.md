@@ -157,8 +157,3 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 This project is funded by the Walloon Region (Belgium) as part of the Win4Collective project Convention 2410118.
 We are grateful for their support and contribution to the development of this project.
-
-## Known bugs
-
-- The solutions of the ALP does not respect transition constraints.
-
