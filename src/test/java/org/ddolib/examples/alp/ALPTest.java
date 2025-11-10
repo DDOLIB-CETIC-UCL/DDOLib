@@ -4,6 +4,7 @@ package org.ddolib.examples.alp;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -51,6 +52,8 @@ public class ALPTest {
             config.problem = problem;
             config.relax = new ALPRelax(problem);
             config.ranking = new ALPRanking();
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.flb = new ALPFastLowerBound(problem);
 
             config.width = new FixedWidth<>(100);

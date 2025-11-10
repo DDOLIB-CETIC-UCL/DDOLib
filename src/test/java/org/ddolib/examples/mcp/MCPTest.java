@@ -3,6 +3,7 @@ package org.ddolib.examples.mcp;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -54,7 +55,8 @@ public class MCPTest {
             config.relax = new MCPRelax(problem);
             config.ranking = new MCPRanking();
             config.flb = new MCPFastLowerBound(problem);
-
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);

@@ -64,6 +64,8 @@ public class KSTest {
             config.width = new FixedWidth<>(10);
             config.varh = new DefaultVariableHeuristic<>();
             config.flb = new KSFastLowerBound(problem);
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 

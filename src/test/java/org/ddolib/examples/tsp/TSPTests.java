@@ -3,6 +3,7 @@ package org.ddolib.examples.tsp;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -52,7 +53,8 @@ public class TSPTests {
             config.width = new FixedWidth<>(500);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             return config;
         }
     }

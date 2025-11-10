@@ -92,6 +92,7 @@ public class CompilationConfig<T, K> {
      */
     public Integer debugLevel = null;
 
+
     /**
      * The Reduction Strategy that should be used to select nodes to merge/drop
      */

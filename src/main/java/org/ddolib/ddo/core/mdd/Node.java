@@ -65,6 +65,14 @@ final class Node {
         this.isMarked = false;
     }
 
+    public double maxIncidentCost() {
+        double maxCost = Double.NEGATIVE_INFINITY;
+        for (Edge edge : edges) {
+            maxCost = Math.max(maxCost, edge.weight);
+        }
+        return maxCost;
+    }
+
 
     @Override
     public String toString() {

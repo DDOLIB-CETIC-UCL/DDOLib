@@ -3,6 +3,7 @@ package org.ddolib.examples.max2sat;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -49,7 +50,8 @@ public class Max2SatTest {
             config.relax = new Max2SatRelax(problem);
             config.ranking = new Max2SatRanking();
             config.flb = new Max2SatFastLowerBound(problem);
-
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);

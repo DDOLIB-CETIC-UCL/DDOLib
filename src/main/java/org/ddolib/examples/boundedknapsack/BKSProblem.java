@@ -5,6 +5,7 @@ import org.ddolib.modeling.Problem;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class BKSProblem implements Problem<Integer> {
 
@@ -12,12 +13,18 @@ public class BKSProblem implements Problem<Integer> {
     final int[] values;
     final int[] weights;
     final int[] quantity;
+    final Optional<Double> optimal = Optional.empty();
 
     public BKSProblem(int capacity, int[] values, int[] weights, int[] quantity) {
         this.capacity = capacity;
         this.values = values;
         this.weights = weights;
         this.quantity = quantity;
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override

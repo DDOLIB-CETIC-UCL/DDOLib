@@ -4,6 +4,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -51,6 +52,8 @@ public class KSCacheTest {
         config.width = new FixedWidth<>(10000);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        config.restrictStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new CostBased<>(config.ranking);
 
         final Solver solver = new SequentialSolver<>(config);
 
@@ -69,7 +72,8 @@ public class KSCacheTest {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
-
+        config.restrictStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new CostBased<>(config.ranking);
 
         final Solver solverWithCaching = new SequentialSolver<>(config);
 

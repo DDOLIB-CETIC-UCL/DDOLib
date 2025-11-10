@@ -3,9 +3,9 @@ package org.ddolib.examples.gruler;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
@@ -38,8 +38,9 @@ public class GRTest {
             config.relax = new GRRelax();
             config.ranking = new GRRanking();
             config.width = new FixedWidth<>(10);
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new DefaultFastLowerBound<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
             return config;
         }

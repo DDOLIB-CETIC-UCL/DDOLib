@@ -6,6 +6,8 @@ import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateCoordinates;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -124,16 +126,6 @@ public class SolverConfig<T, K> {
      */
     public Boolean exportAsDot = false;
 
-    /**
-     * Strategy to select which nodes should be merged together on a relaxed DD.
-     */
-    public ReductionStrategy<T> relaxStrategy = new CostBased<>(this.ranking);
-
-    /**
-     * Strategy to select which nodes should be dropped on a restricted DD.
-     */
-    public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
-
 
     /**
      * <ul>
@@ -143,5 +135,25 @@ public class SolverConfig<T, K> {
      * </ul>
      */
     public Integer debugLevel = 0;
+
+    /**
+     * Distance function to compute the distance between two states.
+     */
+    public StateDistance<T> distance = null;
+
+    /**
+     * Distance function to compute the coordinates of a state.
+     */
+    public StateCoordinates<T> coordinates = null;
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    public ReductionStrategy<T> relaxStrategy = new CostBased<>(this.ranking);
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
 
 }

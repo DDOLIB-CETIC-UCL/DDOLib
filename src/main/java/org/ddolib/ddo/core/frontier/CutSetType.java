@@ -5,5 +5,6 @@ package org.ddolib.ddo.core.frontier;
  */
 public enum CutSetType {
     LastExactLayer,
-    Frontier;
+    Frontier,
+    None // used in RelaxationSolver and RestrictionSolver
 }

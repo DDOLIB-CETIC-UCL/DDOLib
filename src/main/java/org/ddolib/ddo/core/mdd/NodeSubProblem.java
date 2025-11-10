@@ -22,7 +22,7 @@ import static org.ddolib.util.MathUtil.saturatedAdd;
  * - turn an MDD node from the exact cutset into a subproblem which is used
  * by the API.
  */
-public final class NodeSubProblem<T> {
+final public class NodeSubProblem<T> {
     /**
      * The state associated to this node
      */
@@ -65,6 +65,10 @@ public final class NodeSubProblem<T> {
         lb = Math.max(lb, locb);
 
         return new SubProblem<>(state, node.value, lb, path);
+    }
+
+    public double maxIncidentCost() {
+        return node.maxIncidentCost();
     }
 
     @Override

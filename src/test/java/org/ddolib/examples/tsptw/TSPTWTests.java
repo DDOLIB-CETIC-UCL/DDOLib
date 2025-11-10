@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.util.testbench.ProblemTestBench;
@@ -52,6 +53,8 @@ public class TSPTWTests {
             config.problem = problem;
             config.relax = new TSPTWRelax(problem);
             config.ranking = new TSPTWRanking();
+            config.restrictStrategy = new CostBased<>(config.ranking);
+            config.relaxStrategy = new CostBased<>(config.ranking);
             config.flb = new TSPTWFastLowerBound(problem);
 
             config.width = new FixedWidth<>(20);
