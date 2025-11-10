@@ -66,8 +66,8 @@ public class TalenSchedTest {
     @TestFactory
     public Stream<DynamicTest> testTS() {
         var bench = new TSBench();
-        bench.testRelaxation = false;
-        bench.testFLB = false;
+        bench.testRelaxation = true;
+        bench.testFLB = true;
         return bench.generateTests();
     }
 

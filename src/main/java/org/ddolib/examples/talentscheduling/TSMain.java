@@ -88,8 +88,9 @@ public class TSMain {
     }
 
     public static void main(String[] args) throws IOException {
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "small").toString() : args[0];
-        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 10;
+        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film103.dat").toString() : args[0];
+        // String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "small").toString() : args[0];
+        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 100;
 
         SolverConfig<TSState, NullType> config = new SolverConfig<>();
         final TSProblem problem = readFile(file);
@@ -102,14 +103,14 @@ public class TSMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        // config.relaxStrategy = new CostBased<>(config.ranking);
-        config.relaxStrategy = new GHP<>(new TSDistance(problem));
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        // config.relaxStrategy = new GHP<>(new TSDistance(problem));
         config.restrictStrategy = config.relaxStrategy;
 
-        config.verbosityLevel = 4;
+        config.verbosityLevel = 2;
         config.exportAsDot = true;
 
-        final Solver solver = new RelaxationSolver<>(config);
+        final Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.minimize();

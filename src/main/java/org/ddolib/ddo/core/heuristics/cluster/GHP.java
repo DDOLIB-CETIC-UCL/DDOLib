@@ -110,6 +110,11 @@ public class GHP<T> implements ReductionStrategy<T> {
             clusters[index] = cluster.cluster;
             index++;
         }
+        System.out.println("@@@@@@@@@@@@@@@@@@@");
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            System.out.println(cluster);
+        }
+        System.out.println("@@@@@@@@@@@@@@@@@@@");
         layer.clear();
         return clusters;
     }

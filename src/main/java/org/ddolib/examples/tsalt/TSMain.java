@@ -4,11 +4,14 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -107,7 +110,7 @@ public class TSMain {
         config.verbosityLevel = 2;
         config.exportAsDot = true;
 
-        final Solver solver = new ExactSolver<>(config);
+        final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();
         SearchStatistics stat = solver.minimize();

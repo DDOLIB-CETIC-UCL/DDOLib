@@ -16,14 +16,11 @@ public class TSDistance implements StateDistance<TSState> {
 
     private double distanceOnActors(TSState a, TSState b) {
         double distance = 0;
-        BitSet presentActors = (BitSet) a.onLocationActors().clone();
-        BitSet presentActors2 = (BitSet) b.onLocationActors().clone();
-        presentActors.andNot(b.onLocationActors());
-        presentActors2.andNot(a.onLocationActors());
-        presentActors.or(presentActors2);
 
-        for (int i = presentActors.nextSetBit(0); i >= 0; i = presentActors.nextSetBit(i + 1)) {
-            distance += problem.costs[i];
+        for (int i = 0; i < problem.nbActors; i++) {
+            if (a.onLocationActors().get(i) != b.onLocationActors().get(i)) {
+                distance += problem.costs[i];
+            }
         }
 
         return distance;

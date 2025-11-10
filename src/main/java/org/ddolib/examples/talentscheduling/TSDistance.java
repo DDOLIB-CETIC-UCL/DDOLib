@@ -52,7 +52,9 @@ public class TSDistance implements StateDistance<TSState> {
 
     @Override
     public double distance(TSState a, TSState b) {
-        return distanceOnActors(a, b);
+        // if (distanceOnMaybe(a,b) > 0)
+        //     return 1000000;
+        return distanceOnRemaining(a, b);
     }
 
 }

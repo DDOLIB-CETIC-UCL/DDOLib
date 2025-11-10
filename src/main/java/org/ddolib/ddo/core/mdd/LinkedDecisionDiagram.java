@@ -539,10 +539,14 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
      * @param relax    the relaxation operators which we will use to merge nodes
      */
     private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
+        System.out.println("*************");
+        System.out.println(currentLayer.size());
+        System.out.println(currentLayer);
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
+            System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
                 continue;
@@ -553,6 +557,7 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
             }
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            System.out.println(merged);
             NodeSubProblem<T> node = null;
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
@@ -591,6 +596,8 @@ public final class LinkedDecisionDiagram<T, K> implements DecisionDiagram<T, K> 
                 }
             }
         }
+        System.out.println(currentLayer.size());
+        System.out.println(currentLayer);
     }
 
     /**
