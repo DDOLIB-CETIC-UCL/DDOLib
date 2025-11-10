@@ -20,6 +20,11 @@ public class CostBased<T> implements ReductionStrategy<T> {
         this.ranking = new NodeSubroblemComparator<>(ranking);
     }
 
+    @Override
+    public void setSeed(long seed) {
+        return;
+    }
+
     /**
      * Select the layer.size() - maxWidth - 1 nodes with the worst cost on the layer.
      * Add the end the maxWidth - 1 unselected nodes are still in the layer
