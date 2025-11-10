@@ -18,6 +18,7 @@ import org.ddolib.examples.misp.MispLoader;
 import org.ddolib.examples.mks.MKSLoader;
 import org.ddolib.examples.setcover.elementlayer.SetCoverLoader;
 import org.ddolib.examples.setcover.setlayer.SetCoverLoaderAlt;
+import org.ddolib.examples.tsalt.TSLoader;
 import org.ddolib.modeling.DefaultFastLowerBound;
 
 import java.io.FileWriter;
@@ -184,6 +185,7 @@ public class LaunchInterface {
             case WSCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, true);
             case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
             case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
+            case TS -> config = TSLoader.loadProblem(instancePath, widthFactor);
         }
 
         assert config != null;
@@ -280,7 +282,8 @@ public class LaunchInterface {
         SC, // set cover problem
         WSC, // weighted set cover problem
         WSCS,// weighted set cover with set layer model
-        SCS // set cover with set layer model
+        SCS, // set cover with set layer model
+        TS // talent scheduling problem
     }
 
     private final static HashMap<String, ProblemType> problemMap = new HashMap() {
@@ -292,6 +295,7 @@ public class LaunchInterface {
             put("wsc", ProblemType.WSC);
             put("scs", ProblemType.SCS);
             put("wscs", ProblemType.WSCS);
+            put("ts", ProblemType.TS);
         }
     };
 
