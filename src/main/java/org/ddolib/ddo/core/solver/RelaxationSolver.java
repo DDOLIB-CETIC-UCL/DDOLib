@@ -96,15 +96,6 @@ public final class RelaxationSolver<T, K> implements Solver {
      */
     private Optional<SimpleCache<T>> cache;
 
-    /**
-     * Only the first restricted mdd can be exported to a .dot file
-     */
-    private boolean firstRestricted = true;
-    /**
-     * Only the first relaxed mdd can be exported to a .dot file
-     */
-    private boolean firstRelaxed = true;
-
 
     /**
      * <ul>
@@ -233,7 +224,7 @@ public final class RelaxationSolver<T, K> implements Solver {
         compilation.cache = this.cache;
         compilation.bestUB = this.bestUB;
         compilation.cutSetType = frontier.cutSetType();
-        compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
+        compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
         compilation.reductionStrategy = relaxStrategy;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
@@ -241,21 +232,16 @@ public final class RelaxationSolver<T, K> implements Solver {
         relaxedMdd.compile();
         if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                 && frontier.cutSetType() == CutSetType.Frontier) {
-            maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+            maybeUpdateBest(relaxedMdd, exportAsDot);
         }
-        if (exportAsDot && firstRelaxed) {
+        if (exportAsDot) {
             if (!relaxedMdd.isExact())
                 relaxedMdd.bestSolution(); // to update the best edges' color
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(relaxedMdd.exportAsDot(),
                     Paths.get("output", problemName + "_relaxed.dot").toString());
         }
-        firstRelaxed = false;
-        if (relaxedMdd.isExact()) {
-            maybeUpdateBest(relaxedMdd, false);
-        } else {
-            enqueueCutset(relaxedMdd);
-        }
+        maybeUpdateBest(relaxedMdd, false);
 
         long end = System.currentTimeMillis();
         return new SearchStatistics(nbIter, queueMaxSize, end - start,
@@ -304,48 +290,11 @@ public final class RelaxationSolver<T, K> implements Solver {
         }
     }
 
-    /**
-     * If necessary, tightens the bound of nodes in the cutset of `mdd` and
-     * then add the relevant nodes to the shared fringe.
-     */
-    private void enqueueCutset(DecisionDiagram<T, K> currentMdd) {
-        Iterator<SubProblem<T>> cutset = currentMdd.exactCutset();
-        while (cutset.hasNext()) {
-            SubProblem<T> cutsetNode = cutset.next();
-            if (cutsetNode.getLowerBound() < bestUB) {
-                frontier.push(cutsetNode);
-            }
-        }
-    }
-
     private void exportDot(String dot, String fileName) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(dot);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private SearchStatistics.SearchStatus currentSearchStatus(double gap) {
-        if (bestSol.isEmpty()) {
-            if (bestUB == Double.POSITIVE_INFINITY) {
-                return SearchStatistics.SearchStatus.UNKNOWN;
-            } else {
-                return SearchStatistics.SearchStatus.UNSAT;
-            }
-        } else {
-            if (gap > 0.0)
-                return SearchStatistics.SearchStatus.SAT;
-            else return SearchStatistics.SearchStatus.OPTIMAL;
-        }
-    }
-
-    private double gap() {
-        if (frontier.isEmpty()) {
-            return 0.0;
-        } else {
-            double bestInFrontier = frontier.bestInFrontier();
-            return 100 * (bestUB - bestInFrontier) / bestUB;
         }
     }
 }

@@ -97,16 +97,6 @@ public final class RestrictionSolver<T, K> implements Solver {
     private Optional<SimpleCache<T>> cache;
 
     /**
-     * Only the first restricted mdd can be exported to a .dot file
-     */
-    private boolean firstRestricted = true;
-    /**
-     * Only the first relaxed mdd can be exported to a .dot file
-     */
-    private boolean firstRelaxed = true;
-
-
-    /**
      * <ul>
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
@@ -233,7 +223,7 @@ public final class RestrictionSolver<T, K> implements Solver {
         compilation.cache = this.cache;
         compilation.bestUB = this.bestUB;
         compilation.cutSetType = frontier.cutSetType();
-        compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
+        compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
         compilation.reductionStrategy = restrictStrategy;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
@@ -241,21 +231,16 @@ public final class RestrictionSolver<T, K> implements Solver {
         relaxedMdd.compile();
         if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                 && frontier.cutSetType() == CutSetType.Frontier) {
-            maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
+            maybeUpdateBest(relaxedMdd, exportAsDot);
         }
-        if (exportAsDot && firstRelaxed) {
+        if (exportAsDot) {
             if (!relaxedMdd.isExact())
                 relaxedMdd.bestSolution(); // to update the best edges' color
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(relaxedMdd.exportAsDot(),
                     Paths.get("output", problemName + "_relaxed.dot").toString());
         }
-        firstRelaxed = false;
-        if (relaxedMdd.isExact()) {
-            maybeUpdateBest(relaxedMdd, false);
-        } else {
-            enqueueCutset(relaxedMdd);
-        }
+        maybeUpdateBest(relaxedMdd, false);
 
         long end = System.currentTimeMillis();
         return new SearchStatistics(nbIter, queueMaxSize, end - start,
