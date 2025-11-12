@@ -571,6 +571,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         Set<Decision> pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);
+        pathFromRelaxedToRoot.addAll(pathToRoot);
         SubProblem<T> relaxedSub = new SubProblem<>(relaxedNode.state, relaxedNode.node.value,
                 relaxedNode.lb, pathFromRelaxedToRoot);
 
@@ -614,6 +615,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
                 failureMsg = "Found relaxed node that lead to no solution but not the " +
                         "merged ones.\n";
+                failureMsg += "Depth: " + relaxationDepth + "\n";
                 failureMsg += "Relaxed state: " + relaxedNode.state;
                 failureMsg += "\nMerged states state:\n\t" + nodesToMerge
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
