@@ -100,20 +100,22 @@ public class SALBPProblem implements Problem<SALBPState> {
 
     @Override
     public SALBPState initialState() {
-        BitSet stations = new BitSet(nbTasks);
+        BitSet remainingTasks = new BitSet(nbTasks);
+        for (int i = 0; i < nbTasks; i++) {
+            remainingTasks.set(i);
+        }
         BitSet currentStation = new BitSet(nbTasks);
-        return new SALBPState(stations, currentStation, cycleTime);
+        return new SALBPState(remainingTasks, currentStation, cycleTime);
     }
 
     @Override
     public Iterator<Integer> domain(SALBPState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        BitSet remainingTasks = (BitSet) state.currentStation().clone();
-        remainingTasks.or(state.stations());
-        BitSet scheduleTasks = (BitSet) remainingTasks.clone();
-        remainingTasks.flip(0, nbTasks);
+        BitSet scheduledTasks = (BitSet) state.remainingTasks().clone();
+        scheduledTasks.flip(0, nbTasks-1);
+        BitSet remainingTasks = (BitSet) state.remainingTasks().clone();
         for (int i = remainingTasks.nextSetBit(0); i >= 0; i = remainingTasks.nextSetBit(i+1)) {
-            if (isIncluded(predecessors[i], scheduleTasks)) {
+            if (isIncluded(predecessors[i], scheduledTasks)) {
                 domain.add(i);
             }
         }
@@ -125,22 +127,25 @@ public class SALBPProblem implements Problem<SALBPState> {
         int val = decision.val();
         BitSet currentStation = (BitSet) state.currentStation().clone();
         BitSet current  = new BitSet(nbTasks);
-        BitSet stations = (BitSet) state.stations().clone();
+        BitSet remainingTasks = (BitSet) state.remainingTasks().clone();
         if (state.remainingDuration() >= durations[val]) {
             currentStation.set(val, true);
-            return new SALBPState(stations, currentStation, state.remainingDuration() - durations[val]);
+            remainingTasks.clear(val);
+            return new SALBPState(remainingTasks, currentStation, state.remainingDuration() - durations[val]);
         } else {
             current.set(val, true);
-            stations.or(state.currentStation());
-            return new SALBPState(stations, current, cycleTime - durations[val]);
+            remainingTasks.clear(val);
+            return new SALBPState(remainingTasks, current, cycleTime - durations[val]);
         }
     }
 
     @Override
     public double transitionCost(SALBPState state, Decision decision) {
         int val = decision.val();
+        BitSet scheduledTasks = (BitSet) state.remainingTasks().clone();
+        scheduledTasks.flip(0, nbTasks-1);
         if (state.remainingDuration() >= durations[val]) {
-            if (state.stations().cardinality() + state.currentStation().cardinality() == nbTasks-1) {
+            if (scheduledTasks.cardinality() == nbTasks - 1) {
                 return 1;
             } else {
                 return 0;
