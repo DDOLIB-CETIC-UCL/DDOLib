@@ -6,6 +6,7 @@ import org.ddolib.modeling.Relaxation;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * The {@code SMICRelax} class implements a relaxation operator for the
  * {@link SMICProblem}, used in Decision Diagram Optimization (DDO)-based solvers.
@@ -41,7 +42,9 @@ import java.util.Set;
  * @see Relaxation
  */
 public class SMICRelax implements Relaxation<SMICState> {
-    /** The underlying problem instance associated with this relaxation. */
+    /**
+     * The underlying problem instance associated with this relaxation.
+     */
     final SMICProblem problem;
 
     /**
@@ -53,6 +56,7 @@ public class SMICRelax implements Relaxation<SMICState> {
     public SMICRelax(SMICProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges several {@link SMICState} objects into a single relaxed state.
      * <p>
@@ -67,23 +71,23 @@ public class SMICRelax implements Relaxation<SMICState> {
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
 
-//        SMICState state = states.next();
-        Set<Integer> unionJobs = new HashSet<>(/*state.remainingJobs()*/);
+        Set<Integer> unionJobs = new HashSet<>();
         int minCurrentTime = Integer.MAX_VALUE;
-        int minCurrentInventory = Integer.MIN_VALUE;
-        int maxCurrentInventory = Integer.MAX_VALUE;
+        int minCurrentInventory = Integer.MAX_VALUE;
+        int maxCurrentInventory = Integer.MIN_VALUE;
 
         while (states.hasNext()) {
             final SMICState state = states.next();
             unionJobs.addAll(state.remainingJobs());
             minCurrentTime = Math.min(minCurrentTime, state.currentTime());
-            minCurrentInventory = Math.max(minCurrentInventory, state.minCurrentInventory());
-            maxCurrentInventory = Math.min(maxCurrentInventory, state.maxCurrentInventory());
+            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
+            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }
         if (minCurrentInventory <= maxCurrentInventory)
             return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
         return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, minCurrentInventory);
     }
+
     /**
      * Relaxes the cost of an edge between two states.
      * <p>
