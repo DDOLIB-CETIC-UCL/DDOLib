@@ -26,18 +26,16 @@ public class SALBPRelax implements Relaxation<SALBPState> {
         for (int i = unionCurrentStation.nextSetBit(0); i >= 0; i = unionCurrentStation.nextSetBit(i + 1)) {
             remainingDuration -= problem.durations[i];
         }
-        if (remainingDuration <= 0) {
-            return new SALBPState(intersectionRemainingTasks, new BitSet(problem.nbTasks), problem.cycleTime);
-        } else {
-            return new SALBPState(intersectionRemainingTasks, unionCurrentStation, remainingDuration);
-        }
+        return new SALBPState(intersectionRemainingTasks, unionCurrentStation, remainingDuration);
+//        if (remainingDuration <= 0) {
+//            return new SALBPState(intersectionRemainingTasks, new BitSet(problem.nbTasks), problem.cycleTime);
+//        } else {
+//            return new SALBPState(intersectionRemainingTasks, unionCurrentStation, remainingDuration);
+//        }
     }
 
     @Override
     public double relaxEdge(SALBPState from, SALBPState to, SALBPState merged, Decision d, double cost) {
-//        if (merged.currentStation().isEmpty())
-//            return cost + 1;
-//        else return cost;
         return  cost;
     }
 }

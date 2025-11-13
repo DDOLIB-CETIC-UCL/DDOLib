@@ -1,6 +1,8 @@
 package org.ddolib.examples.salbp1;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -13,6 +15,7 @@ public class SALBPDdoMain {
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_18.alb").toString() : args[0];
         final SALBPProblem problem = new SALBPProblem(instance);
+        System.out.println(problem);
         final DdoModel<SALBPState> model = new DdoModel<>() {
             @Override
             public Problem<SALBPState> problem() {
@@ -29,10 +32,12 @@ public class SALBPDdoMain {
                 return new SALBPRanking();
             }
 
-            @Override
-            public FastLowerBound<SALBPState> lowerBound() {
-                return new SALBPFastLowerBound(problem);
-            }
+
+
+//            @Override
+//            public FastLowerBound<SALBPState> lowerBound() {
+//                return new SALBPFastLowerBound(problem);
+//            }
 
             @Override
             public WidthHeuristic<SALBPState> widthHeuristic() {

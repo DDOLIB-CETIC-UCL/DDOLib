@@ -1,4 +1,4 @@
-package org.ddolib.examples.salbp1;
+package org.ddolib.examples.salbp2;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
@@ -8,56 +8,53 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public class SALBPProblem implements Problem<SALBPState> {
+public class SALBP2Problem implements Problem<SALBP2State> {
     public final int nbTasks;
-    public final int cycleTime;
+    public final int nbStations;
     public final int[] durations;
     public final BitSet[] predecessors;
     public final BitSet[] successors;
     public final Optional<String> name;
     public Optional<Double> optimal;
-    public SALBPProblem(Optional<String> name, int nbTasks, int cycleTime, int[] durations, BitSet[] predecessors, BitSet[] successors, Optional<Double> optimal) {
+    public SALBP2Problem(Optional<String> name, int nbTasks, int nbStations, int[] durations, BitSet[] predecessors, BitSet[] successors, Optional<Double> optimal) {
         this.name = name;
         this.nbTasks = nbTasks;
-        this.cycleTime = cycleTime;
+        this.nbStations = nbStations;
         this.durations = durations;
         this.predecessors = predecessors;
         this.successors = successors;
         this.optimal = optimal;
     }
-
-    public SALBPProblem(int nbTasks, int cycleTime, int[] durations, BitSet[] predecessors, BitSet[] successors, Optional<Double> optimal) {
+    public SALBP2Problem(int nbTasks, int nbStations, int[] durations, BitSet[] predecessors, BitSet[] successors, Optional<Double> optimal) {
         this.name = Optional.empty();
         this.nbTasks = nbTasks;
-        this.cycleTime = cycleTime;
+        this.nbStations = nbStations;
         this.durations = durations;
         this.predecessors = predecessors;
         this.successors = successors;
         this.optimal = optimal;
     }
-    public SALBPProblem(int nbTasks, int cycleTime, int[] durations, BitSet[] predecessors, BitSet[] successors) {
+    public SALBP2Problem(int nbTasks, int nbStations, int[] durations, BitSet[] predecessors, BitSet[] successors) {
         this.name = Optional.empty();
         this.nbTasks = nbTasks;
-        this.cycleTime = cycleTime;
+        this.nbStations = nbStations;
         this.durations = durations;
         this.predecessors = predecessors;
         this.successors = successors;
         this.optimal = Optional.empty();
     }
 
-    public SALBPProblem(final String file) throws IOException {
-
+    public SALBP2Problem(final String file) throws IOException {
         Scanner scanner = new Scanner(new File(file));
         scanner.nextLine();
         int n = scanner.nextInt();
         scanner.nextLine();
         scanner.nextLine();
         scanner.nextLine();
-        int cycle = scanner.nextInt();
+        int m = scanner.nextInt();
         int[] durations = new int[n];
         BitSet[] predecessors = new BitSet[n];
         BitSet[] successors = new BitSet[n];
-        scanner.nextLine();
         scanner.nextLine();
         scanner.nextLine();
         scanner.nextLine();
@@ -89,63 +86,59 @@ public class SALBPProblem implements Problem<SALBPState> {
         this.durations = durations;
         this.predecessors = predecessors;
         this.successors = successors;
-        this.cycleTime = cycle;
+        this.nbStations = m;
     }
 
     @Override
     public int nbVars() {return nbTasks;}
 
     @Override
-    public double initialValue() {return 1;}
+    public double initialValue() {return 0;}
 
     @Override
-    public SALBPState initialState() {
-        BitSet remainingTasks = new BitSet(nbTasks);
-        for (int i = 0; i < nbTasks; i++) {
-            remainingTasks.set(i);
+    public SALBP2State initialState() {
+        BitSet[] stations = new BitSet[nbStations];
+        for (int i = 0; i < nbStations; i++) {
+            stations[i] = new BitSet(nbTasks);
         }
-        BitSet currentStation = new BitSet(nbTasks);
-        return new SALBPState(remainingTasks, currentStation, cycleTime);
+        double[] cyclePerStation = new double[nbStations];
+        return new SALBP2State(stations, cyclePerStation, 0);
     }
 
     @Override
-    public Iterator<Integer> domain(SALBPState state, int var) {
+    public Iterator<Integer> domain(SALBP2State state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        BitSet scheduledTasks = (BitSet) state.remainingTasks().clone();
-        scheduledTasks.flip(0, nbTasks);
-        BitSet remainingTasks = (BitSet) state.remainingTasks().clone();
-        for (int i = remainingTasks.nextSetBit(0); i >= 0; i = remainingTasks.nextSetBit(i + 1)) {
-            if (isIncluded(predecessors[i], scheduledTasks)) {
+        for (int i = 0; i < nbStations; i++) {
+            if (isIncluded(predecessors[var], state.stations()[i])) {
                 domain.add(i);
             }
         }
+//        System.out.println(Arrays.toString(domain.toArray()));
         return domain.iterator();
     }
 
     @Override
-    public SALBPState transition(SALBPState state, Decision decision) {
+    public SALBP2State transition(SALBP2State state, Decision decision) {
         int val = decision.val();
-        BitSet currentStation = (BitSet) state.currentStation().clone();
-        currentStation.set(val, true);
-        BitSet current  = new BitSet(nbTasks);
-        current.set(val, true);
-        BitSet remainingTasks = (BitSet) state.remainingTasks().clone();
-        remainingTasks.clear(val);
-        if (state.remainingDuration() >= durations[val]) {
-            return new SALBPState(remainingTasks, currentStation, state.remainingDuration() - durations[val]);
-        } else {
-            return new SALBPState(remainingTasks, current, cycleTime - durations[val]);
+        int var = decision.var();
+        BitSet[] stations = new BitSet[nbStations];
+        double[] cyclePerStation = new double[nbStations];
+        for (int i = 0; i < nbStations; i++) {
+            stations[i] = (BitSet) state.stations()[i].clone();
+            cyclePerStation[i] = state.cyclePerStation()[i];
         }
+        stations[val].set(var, true);
+        cyclePerStation[val] += durations[var];
+        double cycle = Math.max(cyclePerStation[val], state.cycle());
+        return new SALBP2State(stations, cyclePerStation, cycle);
     }
 
     @Override
-    public double transitionCost(SALBPState state, Decision decision) {
+    public double transitionCost(SALBP2State state, Decision decision) {
         int val = decision.val();
-        if (state.remainingDuration() >= durations[val]) {
-            return 0;
-        } else {
-            return 1;
-        }
+        int var = decision.var();
+        double varCycle = state.cyclePerStation()[val] + durations[var];
+        return (varCycle > state.cycle()) ? (varCycle - state.cycle()) : 0;
     }
 
     @Override
@@ -169,6 +162,6 @@ public class SALBPProblem implements Problem<SALBPState> {
     }
     @Override
     public String toString() {
-        return name + " , " + nbTasks + " , " + cycleTime + " , " + Arrays.toString(durations) + " , " + Arrays.toString(predecessors);
+        return name + " , " + nbTasks + " , " + nbStations + " , " + Arrays.toString(durations) + " , " + Arrays.toString(predecessors);
     }
 }
