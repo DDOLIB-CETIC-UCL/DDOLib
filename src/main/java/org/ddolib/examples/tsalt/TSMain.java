@@ -90,7 +90,7 @@ public class TSMain {
     public static void main(String[] args) throws IOException {
         // String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film103.dat").toString() : args[0];
         String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "small").toString() : args[0];
-        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 5;
+        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 10;
 
         SolverConfig<TSState, NullType> config = new SolverConfig<>();
         final TSProblem problem = readFile(file);
@@ -108,7 +108,7 @@ public class TSMain {
         //config.relaxStrategy.setSeed(65464864);
         config.restrictStrategy = config.relaxStrategy;
 
-        config.verbosityLevel = 2;
+        config.verbosityLevel = 0;
         config.exportAsDot = true;
 
         final Solver solver = new RelaxationSolver<>(config);
