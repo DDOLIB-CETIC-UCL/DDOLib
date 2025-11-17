@@ -83,6 +83,14 @@ public class SALBPProblem implements Problem<SALBPState> {
                 break;
             }
         }
+        String line = scanner.nextLine();
+        System.out.println(line);
+        double optimal = -1;
+        if (!line.equals("<end>") ) {
+            line = scanner.useDelimiter("\\s").nextLine();
+            optimal = Double.parseDouble(line);
+            System.out.println(optimal);
+        }
         scanner.close();
         this.name = Optional.of(file);
         this.nbTasks = n;
@@ -90,6 +98,7 @@ public class SALBPProblem implements Problem<SALBPState> {
         this.predecessors = predecessors;
         this.successors = successors;
         this.cycleTime = cycle;
+        this.optimal = Optional.of(optimal);
     }
 
     @Override
