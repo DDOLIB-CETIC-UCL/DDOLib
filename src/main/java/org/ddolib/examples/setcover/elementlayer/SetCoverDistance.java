@@ -29,10 +29,11 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
         double intersectionSize = 0;
         double unionSize = 0;
         for (int elem = 0; elem < instance.nElem; elem++) {
-            if (a.contains(elem) && b.contains(elem)) {
-                intersectionSize++;
-            } else if (a.contains(elem) || b.contains(elem)) {
+            if (a.contains(elem) || b.contains(elem)) {
                 unionSize++;
+                if (a.contains(elem) && b.contains(elem)) {
+                    intersectionSize++;
+                }
             }
         }
 
@@ -62,7 +63,7 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      */
     @Override
     public double distance(SetCoverState a, SetCoverState b) {
-         return jaccardDistance(a.uncoveredElements, b.uncoveredElements);
+        return jaccardDistance(a.uncoveredElements, b.uncoveredElements);
         // return symmetricDifference(a.uncoveredElements, b.uncoveredElements);
     }
 
