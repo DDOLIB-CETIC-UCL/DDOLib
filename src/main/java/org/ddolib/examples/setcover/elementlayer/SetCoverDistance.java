@@ -13,6 +13,46 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
         this.instance = instance;
     }
 
+    private double symmetricDifference(Set<Integer> a, Set<Integer> b) {
+        int intersectionSize = 0;
+        Set<Integer> smaller = a.size() < b.size() ? a : b;
+        Set<Integer> larger = a.size() < b.size() ? b : a;
+        for (int elem: smaller) {
+            if(larger.contains(elem)) {
+                intersectionSize++;
+            }
+        }
+        return a.size() + b.size() - 2 * intersectionSize;
+    }
+
+    private double jaccardDistance(Set<Integer> a, Set<Integer> b) {
+        double intersectionSize = 0;
+        double unionSize = 0;
+        for (int elem = 0; elem < instance.nElem; elem++) {
+            if (a.contains(elem) && b.contains(elem)) {
+                intersectionSize++;
+            } else if (a.contains(elem) || b.contains(elem)) {
+                unionSize++;
+            }
+        }
+
+        return 1 - (intersectionSize / unionSize);
+    }
+
+    private double diceDistance(Set<Integer> a, Set<Integer> b) {
+        double intersectionSize = 0;
+        Set<Integer> smaller = a.size() < b.size() ? a : b;
+        Set<Integer> larger = a.size() < b.size() ? b : a;
+        for (int elem: smaller) {
+            if(larger.contains(elem)) {
+                intersectionSize++;
+            }
+        }
+
+        return 1 - 2*intersectionSize/(a.size() + b.size());
+    }
+
+
     /**
      * The distance between two states in the set cover problem is the
      * size of the symmetric difference between the two sets of uncovered elements
@@ -22,38 +62,9 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
      */
     @Override
     public double distance(SetCoverState a, SetCoverState b) {
-        int intersectionSize = 0;
-        SetCoverState smaller = a.uncoveredElements.size() < b.uncoveredElements.size() ? a : b;
-        SetCoverState larger = a.uncoveredElements.size() < b.uncoveredElements.size() ? b : a;
-        for (int elem: smaller.uncoveredElements) {
-            if(larger.uncoveredElements.contains(elem)) {
-                intersectionSize++;
-            }
-        }
-        return a.uncoveredElements.size() + b.uncoveredElements.size() - 2 * intersectionSize;
+         return jaccardDistance(a.uncoveredElements, b.uncoveredElements);
+        // return symmetricDifference(a.uncoveredElements, b.uncoveredElements);
     }
-
-    /**
-     * The distance between two states in the set cover problem is the
-     * size of the symmetric difference between the two sets of uncovered elements
-     * @param a the first state
-     * @param b the second state
-     * @return
-     */
-    /*@Override
-    public double distance(SetCoverState a, SetCoverState b) {
-        double distance = 0.0;
-        // Set<Integer> union = new HashSet<>(a.uncoveredElements);
-        // union.addAll(b.uncoveredElements);
-
-        for (int i = 0; i < instance.nElem; i++) {
-            if (a.uncoveredElements.contains(i) != b.uncoveredElements.contains(i)) {
-                distance += instance.constraints.get(i).size();
-            }
-        }
-
-        return distance;
-    }*/
 
 
 }
