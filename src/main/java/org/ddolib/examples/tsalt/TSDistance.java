@@ -20,7 +20,6 @@ public class TSDistance implements StateDistance<TSState> {
         int maxIndex = max(a.length(), b.length());
         for (int i = 0; i < maxIndex; i++) {
             if (a.get(i) != b.get(i)) {
-                // distance += problem.costs[i];
                 distance++;
             }
         }
@@ -60,6 +59,18 @@ public class TSDistance implements StateDistance<TSState> {
         }
 
         return 1 - intersectionSize / unionSize;
+    }
+
+    private double weightedHammingDistance(BitSet a, BitSet b) {
+        double distance = 0;
+        int maxIndex = max(a.length(), b.length());
+        for (int i = 0; i < maxIndex; i++) {
+            if (a.get(i) != b.get(i)) {
+                distance += problem.costs[i];
+            }
+        }
+
+        return distance;
     }
 
     private double diceDistance(BitSet a, BitSet b) {
