@@ -19,7 +19,6 @@ public class GHP<T> implements ReductionStrategy<T> {
         rnd = new Random();
     }
 
-    @Override
     public void setSeed(long seed) {
         this.rnd.setSeed(seed);
     }

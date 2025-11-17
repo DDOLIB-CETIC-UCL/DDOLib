@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class SetCover {
         config.distance = new SetCoverDistance(problem);
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new DefaultDominanceChecker<>();
-        final Solver solver = new SequentialSolver<>(config);
+        final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();
         solver.minimize();

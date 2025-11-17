@@ -34,6 +34,7 @@ public class LaunchInterface {
     static final String DEFAULT_SOLVER = "sequential";
     static final String DEFAULT_CUTSET = "layer";
     static final String DEFAULT_CLUSTER = "Cost";
+    static final String DEFAULT_DIST = "jac";
     static final int DEFAULT_KMEANS_ITER = 50;
 
     public static void main(String[] args) {
@@ -50,6 +51,9 @@ public class LaunchInterface {
                 .collect(Collectors.joining(",\n"));
 
         String quotedValidCutSet = cutSetMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
+                .collect(Collectors.joining(",\n"));
+
+        String quotedValidDistance = distanceMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
                 .collect(Collectors.joining(",\n"));
 
         Options options = new Options();
@@ -71,6 +75,9 @@ public class LaunchInterface {
 
         options.addOption(Option.builder().longOpt("restrict").argName("CLUSTERTYPE").hasArg()
                 .desc("type of clustering for restriction. \nValid clustering are " + quotedValidClusterRestrict).build());
+
+        options.addOption(Option.builder().longOpt("distance").argName("DISTANCETYPE").hasArg()
+                .desc("type of distance (for set cover only). \nValid distances are: " + quotedValidDistance).build());
 
         options.addOption(Option.builder("t").longOpt("time-limit").argName("TIMELIMIT").hasArg()
                 .desc("Time limit in seconds.").build());
@@ -112,6 +119,7 @@ public class LaunchInterface {
         String cutSetStr = DEFAULT_CUTSET;
         String relaxStratStr = DEFAULT_CLUSTER;
         String restrictStratStr = DEFAULT_CLUSTER;
+        String distanceTypeStr = DEFAULT_DIST;
         String problemStr = null;
         boolean exportGraph = false;
 
@@ -146,6 +154,12 @@ public class LaunchInterface {
                     throw new IllegalArgumentException("Unknown restrict strat: " + restrictStratStr + "\nValid restrict strats are:" + quotedValidClusterRestrict);
             }
 
+            if (cmd.hasOption("distance")) {
+                distanceTypeStr = cmd.getOptionValue("distance");
+                if (!distanceMap.containsKey(distanceTypeStr))
+                    throw new IllegalArgumentException("Unknown distance: " + restrictStratStr + "\nValid distance are:" + quotedValidClusterRestrict);
+            }
+
             if (cmd.hasOption("time-limit")) {
                 timeLimit = Integer.parseInt(cmd.getOptionValue("time-limit"));
             }
@@ -175,12 +189,13 @@ public class LaunchInterface {
         ProblemType problemType = problemMap.get(problemStr);
         ClusterStrat relaxStrat = clusteringRelaxMap.get(relaxStratStr);
         ClusterStrat restrictionStrat = clusteringRestrictMap.get(restrictStratStr);
+        DistanceType distanceType = distanceMap.get(distanceTypeStr);
 
         SolverConfig config = null ;
         switch (problemType) {
             case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
-            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, false);
-            case WSC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, true);
+            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, false, distanceType);
+            case WSC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, true, distanceType);
             case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, false);
             case WSCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, true);
             case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
@@ -261,7 +276,8 @@ public class LaunchInterface {
             statsString.append(stats.runTimeMS()).append(";"); // runtime
             statsString.append(stats.Gap()).append(";"); // Gap
             statsString.append(stats.nbIterations()).append(";"); // nbIterations
-            statsString.append(stats.SearchStatus()).append("\n"); // searchStatus
+            statsString.append(stats.SearchStatus()).append(";"); // searchStatus
+            statsString.append(distanceTypeStr).append("\n");
 
             try {
                 FileWriter statsFile = new FileWriter(cmd.getOptionValue("csv"), true);
@@ -296,6 +312,24 @@ public class LaunchInterface {
             put("scs", ProblemType.SCS);
             put("wscs", ProblemType.WSCS);
             put("ts", ProblemType.TS);
+        }
+    };
+
+    public enum DistanceType {
+        SYM, // symmetric difference
+        JAC, // jaccard distance
+        DICE, // dice distance
+        WSYM, // weighted symmetric difference
+        WJAC // weighted jaccard distance
+    }
+
+    private final static HashMap<String, DistanceType> distanceMap = new HashMap() {
+        {
+            put("jac", DistanceType.JAC);
+            put("dice", DistanceType.DICE);
+            put("sym", DistanceType.SYM);
+            put("wsym", DistanceType.WSYM);
+            put("wjac", DistanceType.WJAC);
         }
     };
 
