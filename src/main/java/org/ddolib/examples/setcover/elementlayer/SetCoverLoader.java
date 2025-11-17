@@ -84,7 +84,7 @@ public class SetCoverLoader {
         if (cmd.hasOption("csv")) {
 
             StringBuilder statsCsv = defaultStatsCsv(config, solver, stats, input, "sc");
-            statsCsv.append(";").append(distanceTypeStr).append(";");
+            statsCsv.append(";").append(distanceTypeStr).append("\n");
             try {
                 FileWriter statsFile = new FileWriter(cmd.getOptionValue("csv"), true);
                 statsFile.write(statsCsv.toString());
