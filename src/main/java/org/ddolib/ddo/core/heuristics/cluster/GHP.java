@@ -19,10 +19,7 @@ public class GHP<T> implements ReductionStrategy<T> {
         rnd = new Random();
     }
 
-    /**
-     * @param seed
-     */
-    public void setSeed(int seed) {
+    public void setSeed(long seed) {
         this.rnd.setSeed(seed);
     }
 
@@ -42,6 +39,10 @@ public class GHP<T> implements ReductionStrategy<T> {
         NodeSubProblem<T> pivotA = layer.getFirst();
         NodeSubProblem<T> pivotB = selectFurthest(pivotA, layer);
         pivotA = selectFurthest(pivotB, layer);
+        pivotB = selectFurthest(pivotA, layer);
+        pivotA = selectFurthest(pivotB, layer);
+        pivotB = selectFurthest(pivotA, layer);
+        // System.out.printf("%s, %s, %f %n", pivotA, pivotB, distance.distance(pivotA.state, pivotB.state));
         for (NodeSubProblem<T> node: layer) {
             distanceWithPivot.put(node.state, distance.distance(pivotA.state, node.state));
         }
@@ -63,9 +64,9 @@ public class GHP<T> implements ReductionStrategy<T> {
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
             NodeSubProblem<T> furthestFromA = pivotA;
-            double maxDistanceA = 0.0;
+            double maxDistanceA = -1;
             NodeSubProblem<T> furthestFromB = pivotB;
-            double maxDistanceB = 0.0;
+            double maxDistanceB = -1;
 
             newClusterA.add(pivotA);
             newClusterB.add(pivotB);
@@ -95,8 +96,8 @@ public class GHP<T> implements ReductionStrategy<T> {
                 }
             }
 
-            double priorityA = newClusterA.size() == 1 ? 0.0 : maxDistanceA;
-            double priorityB = newClusterB.size() == 1 ? 0.0 : maxDistanceB;
+            double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;
+            double priorityB = newClusterB.size() == 1 ? -1 : maxDistanceB;
 
             // Add the two clusters to the queue
             pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA));
@@ -110,6 +111,11 @@ public class GHP<T> implements ReductionStrategy<T> {
             clusters[index] = cluster.cluster;
             index++;
         }
+        /*System.out.println("@@@@@@@@@@@@@@@@@@@");
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            System.out.println(cluster);
+        }
+        System.out.println("@@@@@@@@@@@@@@@@@@@");*/
         layer.clear();
         return clusters;
     }
