@@ -26,22 +26,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
 /**
- * Solver to only compute a relaxed DD from the root
- *
+ * Solver that compile a unique relaxed MDD
  * @param <T> The type of states.
  * @param <K> The type of dominance keys.
  */
 public final class RelaxationSolver<T, K> implements Solver {
     /**
-     * The problem we want to maximize
+     * The problem we want to minimize
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to maximize
+     * A suitable relaxation for the problem we want to minimize
      */
     private final Relaxation<T> relax;
     /**
@@ -56,6 +56,21 @@ public final class RelaxationSolver<T, K> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
+
+    /**
+     * Set of nodes that must still be explored before
+     * the problem can be considered 'solved'.
+     * <p>
+     * # Note:
+     * This fringe orders the nodes by lower bound (so the lowest lower bound is going
+     * to pop first). So, it is guaranteed that the lower-bound of the first
+     * node being popped is a lower bound on the value reachable by exploring
+     * any of the nodes remaining on the fringe. As a consequence, the
+     * exploration can be stopped as soon as a node with an lb &#8804; current best
+     * lower bound is popped.
+     */
+    private final Frontier<T> frontier;
+
 
     /**
      * Value of the best known upper bound.
@@ -81,15 +96,6 @@ public final class RelaxationSolver<T, K> implements Solver {
      */
     private Optional<SimpleCache<T>> cache;
 
-    /**
-     * Only the first restricted mdd can be exported to a .dot file
-     */
-    private boolean firstRestricted = true;
-    /**
-     * Only the first relaxed mdd can be exported to a .dot file
-     */
-    private boolean firstRelaxed = true;
-
 
     /**
      * <ul>
@@ -112,18 +118,34 @@ public final class RelaxationSolver<T, K> implements Solver {
     private final boolean exportAsDot;
 
     /**
+     * <ul>
+     *     <li>0: no additional tests</li>
+     *     <li>1: checks if the lower bound is well-defined</li>
+     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     * </ul>
+     */
+    private final int debugLevel;
+
+
+    /*
+
+    <ul>
+                <li>0: no additional tests (default)</li>
+                <li>1: checks if the lower bound is well-defined</li>
+                <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+            </ul>
+          </li>
+     */
+
+    /**
      * Strategy to select which nodes should be merged together on a relaxed DD.
      */
     private final ReductionStrategy<T> relaxStrategy;
 
     /**
-     * <ul>
-     *     <li>0: no additional tests</li>
-     *     <li>1: checks if the upper bound is well-defined</li>
-     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     * </ul>
+     * Strategy to select which nodes should be dropped on a restricted DD.
      */
-    private final int debugLevel;
+    private final ReductionStrategy<T> restrictStrategy;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -147,6 +169,14 @@ public final class RelaxationSolver<T, K> implements Solver {
      *     <li>A gap limit</li>
      *     <li>A verbosity level</li>
      *     <li>A boolean to export some mdd as .dot file</li>
+     *     <li>A debug level:
+     *          <ul>
+     *               <li>0: no additional tests (default)</li>
+     *               <li>1: checks if the upper bound is well-defined and if the hash code
+     *               of the states are coherent</li>
+     *               <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
+     *             </ul>
+     *     </li>
      * </ul>
      *
      * @param config All the parameters needed to configure the solver.
@@ -160,51 +190,63 @@ public final class RelaxationSolver<T, K> implements Solver {
         this.flb = config.flb;
         this.dominance = config.dominance;
         this.cache = config.cache == null ? Optional.empty() : Optional.of(config.cache);
+        this.frontier = config.frontier;
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = config.verbosityLevel;
         this.exportAsDot = config.exportAsDot;
-        this.relaxStrategy = config.relaxStrategy;
         this.debugLevel = config.debugLevel;
+        this.relaxStrategy = config.relaxStrategy;
+        this.restrictStrategy = config.restrictStrategy;
     }
 
 
     @Override
     public SearchStatistics minimize() {
         long start = System.currentTimeMillis();
-        SubProblem<T> root = root();
-        int maxWidth = width.maximumWidth(root.getState());
-        // 2. RELAXATION
-        CompilationConfig<T,K> compilation = new CompilationConfig<>();
+        int printInterval = 500; //ms; half a second
+        long nextPrint = start + printInterval;
+        int nbIter = 0;
+        int queueMaxSize = 0;
+
+        SubProblem<T> sub = root();
+        int maxWidth = width.maximumWidth(sub.getState());
+        CompilationConfig<T, K> compilation = new CompilationConfig<>();
         compilation.compilationType = CompilationType.Relaxed;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
         compilation.variableHeuristic = this.varh;
         compilation.stateRanking = this.ranking;
-        compilation.residual = root;
+        compilation.residual = sub;
         compilation.maxWidth = maxWidth;
         compilation.flb = flb;
         compilation.dominance = this.dominance;
         compilation.cache = this.cache;
         compilation.bestUB = this.bestUB;
-        compilation.cutSetType = CutSetType.None;
-        compilation.reductionStrategy = this.relaxStrategy;
-        compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
+        compilation.cutSetType = frontier.cutSetType();
+        compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
-
+        compilation.reductionStrategy = relaxStrategy;
         DecisionDiagram<T, K> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+
         relaxedMdd.compile();
-        String problemName = problem.getClass().getSimpleName().replace("Problem", "");
-        maybeUpdateBest(relaxedMdd, exportAsDot);
+        if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
+                && frontier.cutSetType() == CutSetType.Frontier) {
+            maybeUpdateBest(relaxedMdd, exportAsDot);
+        }
         if (exportAsDot) {
-            if (!relaxedMdd.isExact()) relaxedMdd.bestSolution(); // to update the best edges' color
+            if (!relaxedMdd.isExact())
+                relaxedMdd.bestSolution(); // to update the best edges' color
+            String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             exportDot(relaxedMdd.exportAsDot(),
                     Paths.get("output", problemName + "_relaxed.dot").toString());
         }
-
+        maybeUpdateBest(relaxedMdd, false);
 
         long end = System.currentTimeMillis();
-        return new SearchStatistics(1, 0,end-start, SearchStatistics.SearchStatus.UNKNOWN, 0.0);
+        return new SearchStatistics(nbIter, queueMaxSize, end - start,
+                SearchStatistics.SearchStatus.OPTIMAL, 0.0,
+                cache.map(SimpleCache::stats).orElse("noCache"));
     }
 
     @Override
@@ -233,7 +275,7 @@ public final class RelaxationSolver<T, K> implements Solver {
     }
 
     /**
-     * This private method updates the best known node and lower bound in
+     * Updates the best known node and upper bound in
      * case the best value of the current `mdd` expansion improves the current
      * bounds.
      */
@@ -255,5 +297,4 @@ public final class RelaxationSolver<T, K> implements Solver {
             throw new RuntimeException(e);
         }
     }
-
 }
