@@ -28,6 +28,23 @@ public class TSDistance implements StateDistance<TSState> {
         return distance;
     }
 
+    private double weightedJaccardDistance(BitSet a, BitSet b) {
+        double intersectionSize =0;
+        double unionSize = 0;
+
+        int maxIndex = max(a.length(), b.length());
+        for (int i = 0; i < maxIndex; i++) {
+            if (a.get(i) || b.get(i)) {
+                unionSize += problem.costs[i];
+            }
+            if (a.get(i) && b.get(i)) {
+                intersectionSize += problem.costs[i];
+            }
+        }
+
+        return 1 - intersectionSize / unionSize;
+    }
+
     private double jaccardDistance(BitSet a, BitSet b) {
         double intersectionSize =0;
         double unionSize = 0;
@@ -36,9 +53,9 @@ public class TSDistance implements StateDistance<TSState> {
         for (int i = 0; i < maxIndex; i++) {
             if (a.get(i) || b.get(i)) {
                 unionSize++;
-            }
-            if (a.get(i) && b.get(i)) {
-                intersectionSize++;
+                if (a.get(i) && b.get(i)) {
+                    intersectionSize++;
+                }
             }
         }
 
@@ -63,9 +80,9 @@ public class TSDistance implements StateDistance<TSState> {
 
     @Override
     public double distance(TSState a, TSState b) {
-        double distanceOnActors = diceDistance(a.onLocationActors(),b.onLocationActors());
-        double distanceOnRemainingScenes = diceDistance(a.remainingScenes(), b.remainingScenes());
-        double alpha = 0.5;
+        double distanceOnActors = jaccardDistance(a.onLocationActors(),b.onLocationActors());
+        double distanceOnRemainingScenes = jaccardDistance(a.remainingScenes(), b.remainingScenes());
+        double alpha = 0.75;
         return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
     }
 
