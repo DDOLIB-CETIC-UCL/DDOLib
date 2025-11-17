@@ -161,4 +161,9 @@ public class GHP<T> implements ReductionStrategy<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "GHP";
+    }
+
 }

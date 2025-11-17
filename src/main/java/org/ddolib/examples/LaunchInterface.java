@@ -5,6 +5,7 @@ import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -34,13 +35,9 @@ public class LaunchInterface {
     static final String DEFAULT_SOLVER = "sequential";
     static final String DEFAULT_CUTSET = "layer";
     static final String DEFAULT_CLUSTER = "Cost";
-    static final String DEFAULT_DIST = "jac";
     static final int DEFAULT_KMEANS_ITER = 50;
 
-    public static void main(String[] args) {
-        String quotedValidProblem = problemMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
-                .collect(Collectors.joining(",\n"));
-
+    public static Options defaultOptions() {
         String quotedValidSolver = solverMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
                 .collect(Collectors.joining(",\n"));
 
@@ -53,13 +50,7 @@ public class LaunchInterface {
         String quotedValidCutSet = cutSetMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
                 .collect(Collectors.joining(",\n"));
 
-        String quotedValidDistance = distanceMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
-                .collect(Collectors.joining(",\n"));
-
         Options options = new Options();
-
-        options.addOption(Option.builder("p").longOpt("problem").argName("PROBLEM").hasArg().required()
-                .desc("problem to solve.\nValid problems are: " + quotedValidProblem).build());
 
         options.addOption(Option.builder("i").longOpt("input").argName("INSTANCE_FILE").hasArg().required()
                 .desc("Input instance file.").build());
@@ -75,9 +66,6 @@ public class LaunchInterface {
 
         options.addOption(Option.builder().longOpt("restrict").argName("CLUSTERTYPE").hasArg()
                 .desc("type of clustering for restriction. \nValid clustering are " + quotedValidClusterRestrict).build());
-
-        options.addOption(Option.builder().longOpt("distance").argName("DISTANCETYPE").hasArg()
-                .desc("type of distance (for set cover only). \nValid distances are: " + quotedValidDistance).build());
 
         options.addOption(Option.builder("t").longOpt("time-limit").argName("TIMELIMIT").hasArg()
                 .desc("Time limit in seconds.").build());
@@ -99,84 +87,118 @@ public class LaunchInterface {
 
         options.addOption(Option.builder().longOpt("export-graph").build());
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = null;
+        return options;
+    }
+
+    public static StringBuilder defaultStatsCsv(
+            SolverConfig config,
+            Solver solver,
+            SearchStatistics stats,
+            CmdInput input,
+            String problem
+            ) {
+        StringBuilder statsString = new StringBuilder();
+        statsString.append(input.instancePath).append(";"); // Name
+        statsString.append(problem).append(";"); // Problem
+        statsString.append(input.solverStr).append(";"); // Solver
+        statsString.append(input.cutSetStr).append(";"); // Cutset
+        statsString.append(config.relaxStrategy).append(";"); // RelaxStrat
+        statsString.append(config.restrictStrategy).append(";"); // RestrictionStrat
+        statsString.append(config.timeLimit).append(";"); // timelimit
+        statsString.append(input.widthFactor).append(";"); // widthFactor
+        statsString.append(input.kmeansIter).append(";");
+
+        boolean useFLB = !(config.flb instanceof DefaultFastLowerBound<?>);
+        statsString.append(useFLB).append(";");
+        boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
+        statsString.append(useDominance).append(";");
+        statsString.append(config.problem.optimalValue().orElse(-1)).append(";");
+        statsString.append(solver.bestValue().get()).append(";"); // objective
+        statsString.append(stats.runTimeMS()).append(";"); // runtime
+        statsString.append(stats.Gap()).append(";"); // Gap
+        statsString.append(stats.nbIterations()).append(";"); // nbIterations
+        statsString.append(stats.SearchStatus()); // searchStatus
+
+        return statsString;
+    }
+
+    public static class CmdInput {
+        public String instancePath = null;
+        public int timeLimit = DEFAULT_TIME_LIMIT;
+        public double widthFactor = DEFAULT_WIDTH_FACTOR;
+        public int widthLimit = -1;
+        public int seed = DEFAULT_SEED;
+        public int kmeansIter = DEFAULT_KMEANS_ITER;
+        public String solverStr = DEFAULT_SOLVER;
+        public String cutSetStr = DEFAULT_CUTSET;
+        public String relaxStratStr = DEFAULT_CLUSTER;
+        public String restrictStratStr = DEFAULT_CLUSTER;
+        public boolean exportGraph = false;
+    }
+
+    public static CmdInput parseDefaultCommandLine(CommandLine cmd, Options options) {
+        String quotedValidSolver = solverMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
+                .collect(Collectors.joining(",\n"));
+
+        String quotedValidClusterRelax = clusteringRelaxMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
+                .collect(Collectors.joining(",\n"));
+
+        String quotedValidClusterRestrict = clusteringRestrictMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
+                .collect(Collectors.joining(",\n"));
+
+        String quotedValidCutSet = cutSetMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
+                .collect(Collectors.joining(",\n"));
+
+        CmdInput input = new CmdInput();
+
         try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException exp) {
-            System.err.println(exp.getMessage());
-            new HelpFormatter().printHelp("use ddolib", options);
-            System.exit(1);
-        }
-
-        String instancePath = null;
-        int timeLimit = DEFAULT_TIME_LIMIT;
-        double widthFactor = DEFAULT_WIDTH_FACTOR;
-        int widthLimit = -1;
-        int seed = DEFAULT_SEED;
-        int kmeansIter = DEFAULT_KMEANS_ITER;
-        String solverStr = DEFAULT_SOLVER;
-        String cutSetStr = DEFAULT_CUTSET;
-        String relaxStratStr = DEFAULT_CLUSTER;
-        String restrictStratStr = DEFAULT_CLUSTER;
-        String distanceTypeStr = DEFAULT_DIST;
-        String problemStr = null;
-        boolean exportGraph = false;
-
-        try {
-            instancePath = cmd.getOptionValue("input");
-
-            problemStr = cmd.getOptionValue("problem");
-            if(!problemMap.containsKey(problemStr))
-                throw new IllegalArgumentException("Unknown problem: " + problemStr + "\nValid problems are: " + quotedValidProblem);
+            input.instancePath = cmd.getOptionValue("input");
 
             if (cmd.hasOption("solver")) {
-                solverStr = cmd.getOptionValue("solver");
-                if (!solverMap.containsKey(solverStr))
-                    throw new IllegalArgumentException("Unknown solver: " + solverStr + "\nValid solvers are: " + quotedValidSolver);
+                input.solverStr = cmd.getOptionValue("solver");
+                if (!solverMap.containsKey(input.solverStr))
+                    throw new IllegalArgumentException("Unknown solver: " + input.solverStr + "\nValid solvers are: " + quotedValidSolver);
             }
 
             if (cmd.hasOption("cutset")) {
-                cutSetStr = cmd.getOptionValue("cutset");
-                if (!cutSetMap.containsKey(cutSetStr))
-                    throw new IllegalArgumentException("Unknown cutset: " + cutSetStr + "\nValid cutsets are:" + quotedValidCutSet);
+                input.cutSetStr = cmd.getOptionValue("cutset");
+                if (!cutSetMap.containsKey(input.cutSetStr))
+                    throw new IllegalArgumentException("Unknown cutset: " + input.cutSetStr + "\nValid cutsets are:" + quotedValidCutSet);
             }
 
             if (cmd.hasOption("relax")) {
-               relaxStratStr = cmd.getOptionValue("relax");
-                if (!clusteringRelaxMap.containsKey(relaxStratStr))
-                    throw new IllegalArgumentException("Unknown relax strat: " + relaxStratStr + "\nValid relax strats are:" + quotedValidClusterRelax);
+                input.relaxStratStr = cmd.getOptionValue("relax");
+                if (!clusteringRelaxMap.containsKey(input.relaxStratStr))
+                    throw new IllegalArgumentException("Unknown relax strat: " + input.relaxStratStr + "\nValid relax strats are:" + quotedValidClusterRelax);
             }
 
             if (cmd.hasOption("restrict")) {
-                restrictStratStr = cmd.getOptionValue("restrict");
-                if (!clusteringRestrictMap.containsKey(restrictStratStr))
-                    throw new IllegalArgumentException("Unknown restrict strat: " + restrictStratStr + "\nValid restrict strats are:" + quotedValidClusterRestrict);
-            }
-
-            if (cmd.hasOption("distance")) {
-                distanceTypeStr = cmd.getOptionValue("distance");
-                if (!distanceMap.containsKey(distanceTypeStr))
-                    throw new IllegalArgumentException("Unknown distance: " + distanceTypeStr + "\nValid distance are:" + distanceTypeStr);
+                input.restrictStratStr = cmd.getOptionValue("restrict");
+                if (!clusteringRestrictMap.containsKey(input.restrictStratStr))
+                    throw new IllegalArgumentException("Unknown restrict strat: " + input.restrictStratStr + "\nValid restrict strats are:" + quotedValidClusterRestrict);
             }
 
             if (cmd.hasOption("time-limit")) {
-                timeLimit = Integer.parseInt(cmd.getOptionValue("time-limit"));
+                input.timeLimit = Integer.parseInt(cmd.getOptionValue("time-limit"));
             }
 
             if (cmd.hasOption("width-factor")) {
-                widthFactor = Double.parseDouble(cmd.getOptionValue("width-factor"));
+                input.widthFactor = Double.parseDouble(cmd.getOptionValue("width-factor"));
             }
 
             if (cmd.hasOption("width-limit")) {
-                widthLimit = Integer.parseInt(cmd.getOptionValue("width-limit"));
+                input.widthLimit = Integer.parseInt(cmd.getOptionValue("width-limit"));
             }
 
             if (cmd.hasOption("kmeans-iter")) {
-                kmeansIter = Integer.parseInt(cmd.getOptionValue("kmeans-iter"));
+                input.kmeansIter = Integer.parseInt(cmd.getOptionValue("kmeans-iter"));
             }
 
-            exportGraph = cmd.hasOption("export-graph");
+            if (cmd.hasOption("seed")) {
+                input.seed = Integer.parseInt(cmd.getOptionValue("seed"));
+            }
+
+            input.exportGraph = cmd.hasOption("export-graph");
 
         } catch (IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());
@@ -185,153 +207,45 @@ public class LaunchInterface {
             System.exit(-1);
         }
 
+        return input;
+    }
+
+    public static Frontier getFrontier(String cutSetStr, SolverConfig config) {
+        return new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
+    }
+
+    public static ReductionStrategy getReductionStrategy(String stratStr, SolverConfig config) {
+        ClusterStrat strat = clusteringRelaxMap.get(stratStr);
+        ReductionStrategy reductionStrategy = null;
+        switch (strat) {
+            case Cost -> reductionStrategy = new CostBased(config.ranking);
+            case Kmeans -> {
+                Kmeans reduc = new Kmeans(config.coordinates);
+                reduc.setMaxIterations(config.kMeansIter);
+                reductionStrategy = reduc;
+            }
+            case GHP -> {
+                GHP reduc = new GHP(config.distance);
+                reduc.setSeed(config.seed);
+                reductionStrategy = reduc;
+            }
+        }
+        return reductionStrategy;
+    }
+
+    public static Solver getSolver(String solverStr, SolverConfig config) {
         SolverType solverType = solverMap.get(solverStr);
-        ProblemType problemType = problemMap.get(problemStr);
-        ClusterStrat relaxStrat = clusteringRelaxMap.get(relaxStratStr);
-        ClusterStrat restrictionStrat = clusteringRestrictMap.get(restrictStratStr);
-        DistanceType distanceType = distanceMap.get(distanceTypeStr);
-
-        SolverConfig config = null ;
-        switch (problemType) {
-            case KS -> config = KSLoader.loadProblem(instancePath, widthFactor);
-            case SC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, false, distanceType);
-            case WSC -> config = SetCoverLoader.loadProblem(instancePath, widthFactor, true, distanceType);
-            case SCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, false);
-            case WSCS -> config = SetCoverLoaderAlt.loadProblem(instancePath, widthFactor, true);
-            case MKS -> config = MKSLoader.loadProblem(instancePath, widthFactor);
-            case MISP -> config = MispLoader.loadProblem(instancePath, widthFactor);
-            case TS -> config = TSLoader.loadProblem(instancePath, widthFactor);
-        }
-
-        assert config != null;
-        config.exportAsDot = exportGraph;
-        config.frontier = new SimpleFrontier<>(config.ranking, cutSetMap.get(cutSetStr));
-        config.timeLimit = timeLimit;
-        config.gapLimit = 0.0; // TODO add it to the interface
-        config.verbosityLevel = 2;
-        if (widthLimit > 0) config.width = new FixedWidth(widthLimit);
-
-        switch (relaxStrat) {
-            case Cost -> config.relaxStrategy = new CostBased(config.ranking);
-            case Kmeans -> {
-                Kmeans relaxStrategy = new Kmeans(config.coordinates);
-                relaxStrategy.setMaxIterations(kmeansIter);
-                config.relaxStrategy = relaxStrategy;
-            }
-            case GHP -> {
-                GHP relaxStrategy = new GHP(config.distance);
-                relaxStrategy.setSeed(seed);
-                config.relaxStrategy = relaxStrategy;
-            }
-        }
-
-        switch (restrictionStrat) {
-            case Cost -> config.restrictStrategy = new CostBased(config.ranking);
-            case Kmeans -> {
-                Kmeans restrictStrategy = new Kmeans(config.coordinates);
-                restrictStrategy.setMaxIterations(kmeansIter);
-                config.restrictStrategy = restrictStrategy;
-            }
-            case GHP -> {
-                GHP restrictStrategy = new GHP(config.distance);
-                restrictStrategy.setSeed(seed);
-                config.restrictStrategy = restrictStrategy;
-            }
-        }
-
         Solver solver = null;
-
         switch (solverType) {
             case EXACT -> solver = new ExactSolver<>(config);
             case SEQ -> solver = new SequentialSolver<>(config);
             case RELAX -> solver = new RelaxationSolver<>(config);
             case RESTRI -> solver = new RestrictionSolver<>(config);
         }
-
-        SearchStatistics stats = solver.minimize();
-
-        System.out.printf("Duration : %d%n", stats.runTimeMS());
-        System.out.printf("Objective: %s%n", solver.bestValue().get());
-        System.out.printf("Status : %s%n", stats.SearchStatus());
-        System.out.printf("Iteration: %d%n", stats.nbIterations());
-
-        if (cmd.hasOption("csv")) {
-            StringBuilder statsString = new StringBuilder();
-            statsString.append(instancePath).append(";"); // Name
-            statsString.append(problemStr).append(";"); // Problem
-            statsString.append(solverStr).append(";"); // Solver
-            statsString.append(cutSetStr).append(";"); // Cutset
-            statsString.append(relaxStratStr).append(";"); // RelaxStrat
-            statsString.append(restrictStratStr).append(";"); // RestrictionStrat
-            statsString.append(timeLimit).append(";"); // timelimit
-            statsString.append(widthFactor).append(";"); // widthFactor
-            statsString.append(kmeansIter).append(";");
-
-            boolean useFLB = !(config.flb instanceof DefaultFastLowerBound<?>);
-            statsString.append(useFLB).append(";");
-            boolean useDominance = !(config.dominance instanceof DefaultDominanceChecker);
-            statsString.append(useDominance).append(";");
-            statsString.append(config.problem.optimalValue().orElse(-1)).append(";");
-            statsString.append(solver.bestValue().get()).append(";"); // objective
-            statsString.append(stats.runTimeMS()).append(";"); // runtime
-            statsString.append(stats.Gap()).append(";"); // Gap
-            statsString.append(stats.nbIterations()).append(";"); // nbIterations
-            statsString.append(stats.SearchStatus()).append(";"); // searchStatus
-            statsString.append(distanceTypeStr).append("\n");
-
-            try {
-                FileWriter statsFile = new FileWriter(cmd.getOptionValue("csv"), true);
-                statsFile.write(statsString.toString());
-                statsFile.close();
-
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.exit(-1);
-            }
-        }
+        return solver;
     }
 
-    private enum ProblemType {
-        MKS, // multidimensional knapsack
-        KS, // knapsack
-        MISP, // minimum independent set problem,
-        SC, // set cover problem
-        WSC, // weighted set cover problem
-        WSCS,// weighted set cover with set layer model
-        SCS, // set cover with set layer model
-        TS // talent scheduling problem
-    }
 
-    private final static HashMap<String, ProblemType> problemMap = new HashMap() {
-        {
-            put("mks", ProblemType.MKS);
-            put("ks", ProblemType.KS);
-            put("misp", ProblemType.MISP);
-            put("sc", ProblemType.SC);
-            put("wsc", ProblemType.WSC);
-            put("scs", ProblemType.SCS);
-            put("wscs", ProblemType.WSCS);
-            put("ts", ProblemType.TS);
-        }
-    };
-
-    public enum DistanceType {
-        SYM, // symmetric difference
-        JAC, // jaccard distance
-        DICE, // dice distance
-        WSYM, // weighted symmetric difference
-        WJAC // weighted jaccard distance
-    }
-
-    private final static HashMap<String, DistanceType> distanceMap = new HashMap() {
-        {
-            put("jac", DistanceType.JAC);
-            put("dice", DistanceType.DICE);
-            put("sym", DistanceType.SYM);
-            put("wsym", DistanceType.WSYM);
-            put("wjac", DistanceType.WJAC);
-        }
-    };
 
     public enum SolverType {
         SEQ, // sequential solver

@@ -61,6 +61,7 @@ public class SolverConfig<T, K> {
      */
     public WidthHeuristic<T> width = null;
 
+
     /**
      * The set of nodes that must still be explored before
      * the problem can be considered 'solved' ({@code null} by default).
@@ -155,5 +156,9 @@ public class SolverConfig<T, K> {
      * Strategy to select which nodes should be dropped on a restricted DD.
      */
     public ReductionStrategy<T> restrictStrategy = new CostBased<>(this.ranking);
+
+    public int seed = 6354864;
+
+    public int kMeansIter = 50;
 
 }

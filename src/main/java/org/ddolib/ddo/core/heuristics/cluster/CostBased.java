@@ -43,4 +43,9 @@ public class CostBased<T> implements ReductionStrategy<T> {
         return cluster;
     }
 
+    @Override
+    public String toString() {
+        return "Cost";
+    }
+
 }

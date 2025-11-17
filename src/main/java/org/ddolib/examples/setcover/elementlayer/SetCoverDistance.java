@@ -6,7 +6,7 @@ import org.ddolib.examples.LaunchInterface;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.ddolib.examples.LaunchInterface.DistanceType;
+import static org.ddolib.examples.setcover.elementlayer.SetCoverLoader.DistanceType;
 
 public class SetCoverDistance implements StateDistance<SetCoverState> {
 
