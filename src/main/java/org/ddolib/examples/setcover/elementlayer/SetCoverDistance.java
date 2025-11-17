@@ -40,6 +40,33 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
         return 1 - (intersectionSize / unionSize);
     }
 
+    private double weightedSymmetricDifference(Set<Integer> a, Set<Integer> b) {
+        double distance = 0.0;
+
+        for (int i = 0; i < instance.nElem; i++) {
+            if (a.contains(i) != b.contains(i)) {
+                distance += instance.elemMinWeights.get(i);
+            }
+        }
+
+        return distance;
+    }
+
+    private double weightedJaccardDistance(Set<Integer> a, Set<Integer> b) {
+        double intersectionSize = 0;
+        double unionSize = 0;
+        for (int elem = 0; elem < instance.nElem; elem++) {
+            if (a.contains(elem) || b.contains(elem)) {
+                unionSize += instance.elemMinWeights.get(elem);
+                if (a.contains(elem) && b.contains(elem)) {
+                    intersectionSize += instance.elemMinWeights.get(elem);
+                }
+            }
+        }
+
+        return 1 - (intersectionSize / unionSize);
+    }
+
     private double diceDistance(Set<Integer> a, Set<Integer> b) {
         double intersectionSize = 0;
         Set<Integer> smaller = a.size() < b.size() ? a : b;
