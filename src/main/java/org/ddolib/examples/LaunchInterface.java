@@ -157,7 +157,7 @@ public class LaunchInterface {
             if (cmd.hasOption("distance")) {
                 distanceTypeStr = cmd.getOptionValue("distance");
                 if (!distanceMap.containsKey(distanceTypeStr))
-                    throw new IllegalArgumentException("Unknown distance: " + restrictStratStr + "\nValid distance are:" + quotedValidClusterRestrict);
+                    throw new IllegalArgumentException("Unknown distance: " + distanceTypeStr + "\nValid distance are:" + distanceTypeStr);
             }
 
             if (cmd.hasOption("time-limit")) {
