@@ -1,5 +1,8 @@
 package org.ddolib.ddo.core.heuristics.variable;
 
+import org.ddolib.examples.salbp2.SALBP2Problem;
+import org.ddolib.modeling.Problem;
+
 import java.util.Iterator;
 import java.util.Set;
 

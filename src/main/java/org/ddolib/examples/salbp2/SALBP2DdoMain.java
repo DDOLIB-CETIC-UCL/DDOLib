@@ -16,6 +16,7 @@ public class SALBP2DdoMain {
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SALBP2", "n20", "n_20-m_2-id_1.alb").toString() : args[0];
         final SALBP2Problem problem = new SALBP2Problem(instance);
+        System.out.println(problem);
         final DdoModel<SALBP2State> model = new DdoModel<>() {
             @Override
             public Problem<SALBP2State> problem() {return problem;}
@@ -32,7 +33,7 @@ public class SALBP2DdoMain {
 
             @Override
             public WidthHeuristic<SALBP2State> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(10);
             }
 
             @Override

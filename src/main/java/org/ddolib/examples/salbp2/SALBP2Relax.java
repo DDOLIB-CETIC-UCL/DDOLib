@@ -14,21 +14,22 @@ public class SALBP2Relax implements Relaxation<SALBP2State> {
 
     @Override
     public SALBP2State mergeStates(final Iterator<SALBP2State> states) {
+        SALBP2State state = states.next();
         BitSet[] stations = new BitSet[problem.nbStations];
         for (int i = 0; i < problem.nbStations; i++) {
-            stations[i] = new BitSet(problem.nbTasks);
+            stations[i] = (BitSet) state.stations()[i].clone();
         }
         double[] cyclePerStation = new double[problem.nbStations];
         double cycle = Double.MIN_VALUE;
         while (states.hasNext()) {
-            SALBP2State state = states.next();
+            state = states.next();
             for (int i = 0; i < problem.nbStations; i++) {
-                stations[i].or(state.stations()[i]);
+                stations[i].and(state.stations()[i]);
             }
         }
         for (int i = 0; i < problem.nbStations; i++) {
             for (int j = stations[i].nextSetBit(0); j < stations[i].nextSetBit(0); j++) {
-                cyclePerStation[j] += problem.durations[j];
+                cyclePerStation[i] += problem.durations[j];
             }
             cycle = Math.max(cycle, cyclePerStation[i]);
         }

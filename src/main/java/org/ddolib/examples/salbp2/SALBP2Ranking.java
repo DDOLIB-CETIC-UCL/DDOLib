@@ -8,3 +8,4 @@ public class SALBP2Ranking implements StateRanking<SALBP2State> {
         return Double.compare(s1.cycle(), s2.cycle());
     }
 }
+// 05 au 16

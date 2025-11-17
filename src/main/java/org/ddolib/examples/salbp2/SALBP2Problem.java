@@ -81,10 +81,17 @@ public class SALBP2Problem implements Problem<SALBP2State> {
             }
         }
         scanner.close();
+        Integer[] order = topologicalOrder(n, predecessors);
+        this.durations = new int[n];
+        this.predecessors = new BitSet[n];
+        for (int i = 0; i < n; i++) {
+            this.durations[i] = durations[order[i]];
+            this.predecessors[i] = predecessors[order[i]];
+        }
         this.name = Optional.of(file);
         this.nbTasks = n;
-        this.durations = durations;
-        this.predecessors = predecessors;
+//        this.durations = durations;
+//        this.predecessors = predecessors;
         this.successors = successors;
         this.nbStations = m;
     }
@@ -108,12 +115,13 @@ public class SALBP2Problem implements Problem<SALBP2State> {
     @Override
     public Iterator<Integer> domain(SALBP2State state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
+        BitSet station = (BitSet) state.stations()[0].clone();
         for (int i = 0; i < nbStations; i++) {
-            if (isIncluded(predecessors[var], state.stations()[i])) {
+            station.or(state.stations()[i]);
+            if (isIncluded(predecessors[var], station)) {
                 domain.add(i);
             }
         }
-//        System.out.println(Arrays.toString(domain.toArray()));
         return domain.iterator();
     }
 
@@ -152,7 +160,16 @@ public class SALBP2Problem implements Problem<SALBP2State> {
             throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
                     "the %d variables", Arrays.toString(solution), nbVars()));
         }
-        return 0;
+        double[] cyclePerStation = new double[nbStations];
+        double cycleTime = Double.MAX_VALUE;
+        for (int i = 0; i < nbTasks; i++) {
+            int j = solution[i];
+            cyclePerStation[j] += durations[i];
+        }
+        for (int i = 0; i < nbStations; i++) {
+            cycleTime = Math.max(cycleTime, cyclePerStation[i]);
+        }
+        return cycleTime;
     }
 
     private boolean isIncluded(BitSet A, BitSet B) {
@@ -160,6 +177,38 @@ public class SALBP2Problem implements Problem<SALBP2State> {
         clone.andNot(B);
         return clone.isEmpty();
     }
+
+    private Integer[] topologicalOrder(int nbTasks, BitSet[] predecessors) {
+        BitSet[] remaining = new BitSet[nbTasks];
+        for (int i = 0; i < nbTasks; i++) {
+            remaining[i] = (BitSet) predecessors[i].clone();
+        }
+        List<Integer> result = new ArrayList<>();
+        Queue<Integer> ready = new ArrayDeque<>();
+        for (int i = 0; i < nbTasks; i++) {
+            if (remaining[i].isEmpty()) {
+                ready.add(i);
+            }
+        }
+        while (!ready.isEmpty()) {
+            int current = ready.poll();
+            result.add(current);
+
+            for (int j = 0; j < nbTasks; j++) {
+                if (remaining[j].get(current)) {
+                    remaining[j].clear(current);
+                    if (remaining[j].isEmpty()) {
+                        ready.add(j);
+                    }
+                }
+            }
+        }
+        if (result.size() != nbTasks) {
+            throw new IllegalArgumentException("Error : the graph contains a cycle !!" );
+        }
+        return result.toArray(new Integer[0]);
+    }
+
     @Override
     public String toString() {
         return name + " , " + nbTasks + " , " + nbStations + " , " + Arrays.toString(durations) + " , " + Arrays.toString(predecessors);
