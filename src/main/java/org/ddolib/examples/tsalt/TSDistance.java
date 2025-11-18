@@ -2,6 +2,9 @@ package org.ddolib.examples.tsalt;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.pow;
 
 import java.util.BitSet;
 
@@ -89,12 +92,21 @@ public class TSDistance implements StateDistance<TSState> {
         return distance;
     }
 
+    private double convexCombination(double distanceOnRemainingScenes, double distanceOnActors) {
+        double alpha = 0.75;
+        return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
+    }
+
+    private double euclideanDistance(double distanceOnRemainingScenes, double distanceOnActors) {
+        return sqrt(pow(distanceOnRemainingScenes, 2) + pow(distanceOnActors, 2));
+    }
+
     @Override
     public double distance(TSState a, TSState b) {
         double distanceOnActors = jaccardDistance(a.onLocationActors(),b.onLocationActors());
         double distanceOnRemainingScenes = jaccardDistance(a.remainingScenes(), b.remainingScenes());
-        double alpha = 0.75;
-        return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
+        // return convexCombination(distanceOnRemainingScenes, distanceOnActors);
+        return euclideanDistance(distanceOnActors, distanceOnRemainingScenes);
     }
 
 }
