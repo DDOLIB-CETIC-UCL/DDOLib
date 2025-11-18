@@ -2,6 +2,7 @@ package org.ddolib.examples.maxcoverage;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.examples.smic.SMICState;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import javax.xml.XMLConstants;
@@ -91,10 +92,6 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         return optimal;
     }
 
-    @Override
-    public String toString() {
-        return name.get();
-    }
 
     @Override
     public int nbVars() {
@@ -103,8 +100,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
 
     @Override
     public MaxCoverState initialState() {
-        BitSet coveredItems = new BitSet(nbItems);
-        return new MaxCoverState(coveredItems);
+        return new MaxCoverState(new BitSet(nbItems));
     }
 
     @Override
@@ -116,7 +112,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public Iterator<Integer> domain(MaxCoverState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
         for (int i = 0; i < nbSubSets; i++) {
-            if (!isInclude(subSets[i], state.coveredItems())) {
+            BitSet ss = (BitSet) subSets[i].clone();
+            if (!isInclude(ss, state.coveredItems())) {
                 domain.add(i);
             }
         }
@@ -126,7 +123,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     @Override
     public MaxCoverState transition(MaxCoverState state, Decision decision) {
         int val = decision.val();
-        BitSet coveredItems = state.coveredItems();
+        BitSet coveredItems = (BitSet) state.coveredItems().clone();
         coveredItems.or(subSets[val]);
         return new MaxCoverState(coveredItems);
     }
@@ -134,19 +131,25 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     @Override
     public double transitionCost(MaxCoverState state, Decision decision) {
         int val = decision.val();
-        BitSet coveredItems = state.coveredItems();
+        BitSet coveredItems = (BitSet) state.coveredItems().clone();
         coveredItems.or(subSets[val]);
         coveredItems.andNot(state.coveredItems());
-        return coveredItems.cardinality();
+        return -coveredItems.cardinality();
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+        return 0;
     }
 
     private boolean isInclude(BitSet A, BitSet B) {
         BitSet temp = (BitSet) A.clone();
         temp.andNot(B);
-        if (temp.isEmpty()) {
-            return true;
-        }
-        return false;
+        return temp.isEmpty();
     }
 
     private double distance(double[] x, double[] y, int i, int j) {
@@ -174,6 +177,11 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
             }
         }
         return min;
+    }
+
+    @Override
+    public String toString() {
+        return name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
     }
 }
 

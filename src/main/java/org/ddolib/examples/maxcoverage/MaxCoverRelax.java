@@ -6,9 +6,9 @@ import org.ddolib.modeling.Relaxation;
 import java.util.BitSet;
 import java.util.Iterator;
 
-public class MaxCoverRealx implements Relaxation<MaxCoverState> {
+public class MaxCoverRelax implements Relaxation<MaxCoverState> {
     final MaxCoverProblem problem;
-    public MaxCoverRealx(MaxCoverProblem problem) {
+    public MaxCoverRelax(MaxCoverProblem problem) {
         this.problem = problem;
     }
     @Override
@@ -16,6 +16,7 @@ public class MaxCoverRealx implements Relaxation<MaxCoverState> {
         MaxCoverState state = states.next();
         BitSet intersectionCoveredItems = (BitSet) state.coveredItems().clone();
         while (states.hasNext()) {
+            state = states.next();
             intersectionCoveredItems.and(state.coveredItems());
         }
         return new MaxCoverState(intersectionCoveredItems);

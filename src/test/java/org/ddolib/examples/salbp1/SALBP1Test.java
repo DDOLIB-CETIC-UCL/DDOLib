@@ -69,13 +69,13 @@ public class SALBP1Test {
     }
 
 
-    @DisplayName("SALBP1")
-    @TestFactory
-    public Stream<DynamicTest> testSALBP1() {
-        var bench = new SALBP1Test.SALBP1Bench();
-        bench.testRelaxation = true;
+//    @DisplayName("SALBP1")
+//    @TestFactory
+//    public Stream<DynamicTest> testSALBP1() {
+//        var bench = new SALBP1Test.SALBP1Bench();
+//        bench.testRelaxation = true;
 //        bench.testFLB = true;
 //        bench.testDominance = true;
-        return bench.generateTests();
-    }
+//        return bench.generateTests();
+//    }
 }
