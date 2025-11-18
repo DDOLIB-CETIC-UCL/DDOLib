@@ -229,6 +229,11 @@ public class LaunchInterface {
                 reduc.setSeed(config.seed);
                 reductionStrategy = reduc;
             }
+            case Hybrid -> {
+                Hybrid reduc = new Hybrid<>(config.ranking, config.distance);
+                reduc.setSeed(config.seed);
+                reductionStrategy = reduc;
+            }
         }
         return reductionStrategy;
     }
@@ -267,6 +272,7 @@ public class LaunchInterface {
         Cost,
         Kmeans,
         GHP,
+        Hybrid
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
@@ -274,6 +280,7 @@ public class LaunchInterface {
             put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
+            put("Hybrid", ClusterStrat.Hybrid);
         }
     };
 
@@ -282,6 +289,7 @@ public class LaunchInterface {
             put("Cost", ClusterStrat.Cost);
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
+            put("Hybrid", ClusterStrat.Hybrid);
         }
     };
 

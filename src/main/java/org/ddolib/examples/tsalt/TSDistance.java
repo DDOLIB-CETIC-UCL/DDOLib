@@ -2,6 +2,9 @@ package org.ddolib.examples.tsalt;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.pow;
 
 import java.util.BitSet;
 
@@ -20,12 +23,28 @@ public class TSDistance implements StateDistance<TSState> {
         int maxIndex = max(a.length(), b.length());
         for (int i = 0; i < maxIndex; i++) {
             if (a.get(i) != b.get(i)) {
-                // distance += problem.costs[i];
                 distance++;
             }
         }
 
         return distance;
+    }
+
+    private double weightedJaccardDistance(BitSet a, BitSet b) {
+        double intersectionSize =0;
+        double unionSize = 0;
+
+        int maxIndex = max(a.length(), b.length());
+        for (int i = 0; i < maxIndex; i++) {
+            if (a.get(i) || b.get(i)) {
+                unionSize += problem.costs[i];
+            }
+            if (a.get(i) && b.get(i)) {
+                intersectionSize += problem.costs[i];
+            }
+        }
+
+        return 1 - intersectionSize / unionSize;
     }
 
     private double jaccardDistance(BitSet a, BitSet b) {
@@ -36,13 +55,25 @@ public class TSDistance implements StateDistance<TSState> {
         for (int i = 0; i < maxIndex; i++) {
             if (a.get(i) || b.get(i)) {
                 unionSize++;
-            }
-            if (a.get(i) && b.get(i)) {
-                intersectionSize++;
+                if (a.get(i) && b.get(i)) {
+                    intersectionSize++;
+                }
             }
         }
 
         return 1 - intersectionSize / unionSize;
+    }
+
+    private double weightedHammingDistance(BitSet a, BitSet b) {
+        double distance = 0;
+        int maxIndex = max(a.length(), b.length());
+        for (int i = 0; i < maxIndex; i++) {
+            if (a.get(i) != b.get(i)) {
+                distance += problem.costs[i];
+            }
+        }
+
+        return distance;
     }
 
     private double diceDistance(BitSet a, BitSet b) {
@@ -61,12 +92,21 @@ public class TSDistance implements StateDistance<TSState> {
         return distance;
     }
 
+    private double convexCombination(double distanceOnRemainingScenes, double distanceOnActors) {
+        double alpha = 0.75;
+        return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
+    }
+
+    private double euclideanDistance(double distanceOnRemainingScenes, double distanceOnActors) {
+        return sqrt(pow(distanceOnRemainingScenes, 2) + pow(distanceOnActors, 2));
+    }
+
     @Override
     public double distance(TSState a, TSState b) {
-        double distanceOnActors = diceDistance(a.onLocationActors(),b.onLocationActors());
-        double distanceOnRemainingScenes = diceDistance(a.remainingScenes(), b.remainingScenes());
-        double alpha = 0.5;
-        return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
+        double distanceOnActors = jaccardDistance(a.onLocationActors(),b.onLocationActors());
+        double distanceOnRemainingScenes = jaccardDistance(a.remainingScenes(), b.remainingScenes());
+        return convexCombination(distanceOnRemainingScenes, distanceOnActors);
+        // return euclideanDistance(distanceOnActors, distanceOnRemainingScenes);
     }
 
 }
