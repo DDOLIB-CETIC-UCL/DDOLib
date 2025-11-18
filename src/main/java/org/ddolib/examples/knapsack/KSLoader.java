@@ -48,6 +48,7 @@ public class KSLoader {
 
         final SolverConfig <Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
+        config.timeLimit = input.timeLimit;
         config.relax = new KSRelax();
         config.ranking = new KSRanking();
         config.width = new FixedWidth<>((int) Math.ceil(input.widthFactor*problem.nbVars()));

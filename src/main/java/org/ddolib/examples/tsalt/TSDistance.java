@@ -93,7 +93,7 @@ public class TSDistance implements StateDistance<TSState> {
     }
 
     private double convexCombination(double distanceOnRemainingScenes, double distanceOnActors) {
-        double alpha = 0.75;
+        double alpha = 0.5;
         return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
     }
 

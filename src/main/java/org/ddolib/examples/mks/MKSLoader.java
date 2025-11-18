@@ -47,6 +47,7 @@ public class MKSLoader {
 
         final SolverConfig<MKSState, Integer> config = new SolverConfig<>();
         config.problem = problem;
+        config.timeLimit = input.timeLimit;
         config.relax = new MKSRelax();
         config.ranking = new MKSRanking();
         config.width = new FixedWidth<>((int) Math.ceil(input.widthFactor * problem.nbVars()));

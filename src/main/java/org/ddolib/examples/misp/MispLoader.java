@@ -47,6 +47,7 @@ public class MispLoader {
 
         final SolverConfig<BitSet, Integer> config = new SolverConfig<>();
         config.problem = problem;
+        config.timeLimit = input.timeLimit;
         config.relax = new MispRelax(problem);
         config.ranking = new MispRanking();
         config.width = new FixedWidth<>((int) Math.ceil(input.widthFactor*problem.nbVars()));

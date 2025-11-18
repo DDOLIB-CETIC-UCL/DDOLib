@@ -48,6 +48,7 @@ public class TSLoader {
 
         final SolverConfig <TSState, Integer> config = new SolverConfig<>();
         config.problem = problem;
+        config.timeLimit = input.timeLimit;
         config.relax = new TSRelax(problem);
         config.ranking = new TSRanking();
         config.width = new FixedWidth<>((int) Math.ceil(input.widthFactor*problem.nbVars()));
@@ -55,6 +56,7 @@ public class TSLoader {
         config.flb = new TSFastLowerBound(problem);
         config.distance = new TSDistance(problem);
         config.hybridFactor = input.hybridFactor;
+        // config.verbosityLevel = 2;
         // config.coordinates = new TSCoordinates();
 
         config.frontier = getFrontier(input.cutSetStr, config);

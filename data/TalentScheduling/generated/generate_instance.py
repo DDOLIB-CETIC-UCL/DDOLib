@@ -22,19 +22,19 @@ def generate_instance(n: int, m: int, p: float, k: int):
 
 def instance_string(n: int, m:int, requirements: list, costs: list, name:str) -> str:
     output = f"{name}\n"
-    output += f"{n} \n"
-    output += f"{m} \n\n"
-    for scene in requirements:
-        for actor in range(m):
+    output += f"{n}\n"
+    output += f"{m}\n\n"
+    for actor in range(m):
+        for scene in requirements:
             if actor in scene:
                 output += "1 "
             else:
                 output += "0 "
-        output += f"     {len(scene)}\n"
+        output += f"     {costs[actor]}\n"
 
     output += "\n"
-    for cost in costs:
-        output += f"{cost} "
+    for i in range(n):
+        output += f"{len(requirements[i])} "
     output += "\n"
     return output
 

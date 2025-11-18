@@ -64,6 +64,7 @@ public class SetCoverLoader {
 
         final SolverConfig <SetCoverState, Integer> config = new SolverConfig<>();
         config.problem = problem;
+        config.timeLimit = input.timeLimit;
         config.relax = new SetCoverRelax();
         config.ranking = new SetCoverRanking();
         config.width = new FixedWidth<>((int) Math.ceil(input.widthFactor*problem.nbVars()));
