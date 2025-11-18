@@ -105,7 +105,7 @@ public class TSMain {
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
         config.relaxStrategy = new CostBased<>(config.ranking);
-        // config.relaxStrategy = new GHP<>(new TSDistance(problem));
+        config.relaxStrategy = new GHP<>(new TSDistance(problem));
         config.relaxStrategy = new Hybrid<>(config.ranking, new TSDistance(problem), 0.5);
         //config.relaxStrategy.setSeed(65464864);
         config.restrictStrategy = config.relaxStrategy;
