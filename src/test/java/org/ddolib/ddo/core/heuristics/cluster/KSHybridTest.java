@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class KSGHPTest {
+public class KSHybridTest {
 
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
@@ -56,7 +56,7 @@ public class KSGHPTest {
     }
 
 
-    private double optimalSolutionGHPClustering(KSProblem problem, int w, CutSetType cutSetType) {
+    private double optimalSolutionHybridClustering(KSProblem problem, int w, CutSetType cutSetType) {
         SolverConfig<Integer, Integer> config = new SolverConfig<>();
         config.problem = problem;
         config.relax = new KSRelax();
@@ -66,8 +66,8 @@ public class KSGHPTest {
         config.varh = new DefaultVariableHeuristic<>();
         config.cache = new SimpleCache<>();
         config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
-        config.relaxStrategy = new GHP<>(new KSDistance());
-        config.restrictStrategy = new GHP<>(new KSDistance());
+        config.relaxStrategy = new Hybrid<>(new KSRanking(), new KSDistance());
+        config.restrictStrategy = new Hybrid<>(new KSRanking(), new KSDistance());
 
         final Solver solver = new SequentialSolver<>(config);
 
@@ -81,7 +81,7 @@ public class KSGHPTest {
         CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionGHPClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionHybridClustering(problem, wid, ct));
             }
         }
     }
