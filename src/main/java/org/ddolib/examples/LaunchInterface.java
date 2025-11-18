@@ -111,6 +111,7 @@ public class LaunchInterface {
         statsString.append(config.timeLimit).append(";"); // timelimit
         statsString.append(input.widthFactor).append(";"); // widthFactor
         statsString.append(input.kmeansIter).append(";");
+        statsString.append(input.hybridFactor).append(";");
 
         boolean useFLB = !(config.flb instanceof DefaultFastLowerBound<?>);
         statsString.append(useFLB).append(";");
