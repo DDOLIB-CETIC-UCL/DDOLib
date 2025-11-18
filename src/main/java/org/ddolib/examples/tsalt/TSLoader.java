@@ -56,7 +56,7 @@ public class TSLoader {
         config.flb = new TSFastLowerBound(problem);
         config.distance = new TSDistance(problem);
         config.hybridFactor = input.hybridFactor;
-        // config.verbosityLevel = 2;
+        config.verbosityLevel = 2;
         // config.coordinates = new TSCoordinates();
 
         config.frontier = getFrontier(input.cutSetStr, config);

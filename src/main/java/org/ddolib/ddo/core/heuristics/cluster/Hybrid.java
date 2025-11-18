@@ -45,4 +45,9 @@ public class Hybrid<T> implements ReductionStrategy<T> {
         return clusters;
     }
 
+    @Override
+    public String toString() {
+        return "Hybrid";
+    }
+
 }

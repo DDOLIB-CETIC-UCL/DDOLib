@@ -70,4 +70,9 @@ public class CostBased<T> implements ReductionStrategy<T> {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "CostBased";
+    }
 }
