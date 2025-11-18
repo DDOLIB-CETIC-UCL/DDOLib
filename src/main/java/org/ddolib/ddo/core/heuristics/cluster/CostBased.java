@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class CostBased<T> implements ReductionStrategy<T> {
 
-    private NodeSubroblemComparator<T> ranking;
+    final private NodeSubroblemComparator<T> ranking;
 
     public CostBased(final StateRanking<T> ranking) {
         this.ranking = new NodeSubroblemComparator<>(ranking);

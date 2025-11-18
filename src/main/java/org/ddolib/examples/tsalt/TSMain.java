@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Hybrid;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.profiling.SearchStatistics;
@@ -103,8 +104,9 @@ public class TSMain {
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
 
-        // config.relaxStrategy = new CostBased<>(config.ranking);
-        config.relaxStrategy = new GHP<>(new TSDistance(problem));
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        // config.relaxStrategy = new GHP<>(new TSDistance(problem));
+        config.relaxStrategy = new Hybrid<>(config.ranking, new TSDistance(problem), 0.5);
         //config.relaxStrategy.setSeed(65464864);
         config.restrictStrategy = config.relaxStrategy;
 
