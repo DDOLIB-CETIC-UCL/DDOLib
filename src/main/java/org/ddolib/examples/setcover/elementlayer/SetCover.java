@@ -6,6 +6,9 @@ import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Hybrid;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
@@ -32,6 +35,9 @@ public class SetCover {
         config.distance = new SetCoverDistance(problem);
         config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.Frontier);
         config.dominance = new DefaultDominanceChecker<>();
+        config.relaxStrategy = new CostBased<>(config.ranking);
+        config.relaxStrategy = new Hybrid<>(config.ranking, config.distance);
+        config.relaxStrategy = new GHP<>(config.distance);
         final Solver solver = new RelaxationSolver<>(config);
 
         long start = System.currentTimeMillis();

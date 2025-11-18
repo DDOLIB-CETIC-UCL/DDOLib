@@ -211,6 +211,11 @@ public class LaunchInterface {
                 relaxStrategy.setSeed(seed);
                 config.relaxStrategy = relaxStrategy;
             }
+            case Hybrid -> {
+                Hybrid relaxStrategy = new Hybrid(config.ranking, config.distance, 0.9);
+                relaxStrategy.setSeed(seed);
+                config.relaxStrategy = relaxStrategy;
+            }
         }
 
         switch (restrictionStrat) {
@@ -227,6 +232,11 @@ public class LaunchInterface {
             }
             case GHPAlt -> {
                 GHPAlt restrictStrategy = new GHPAlt(config.distance, config.relax, config.problem.initialState());
+                restrictStrategy.setSeed(seed);
+                config.restrictStrategy = restrictStrategy;
+            }
+            case Hybrid -> {
+                Hybrid restrictStrategy = new Hybrid(config.ranking, config.distance);
                 restrictStrategy.setSeed(seed);
                 config.restrictStrategy = restrictStrategy;
             }
@@ -326,6 +336,7 @@ public class LaunchInterface {
         Kmeans,
         GHP,
         GHPAlt,
+        Hybrid
     }
 
     private final static HashMap<String, ClusterStrat> clusteringRelaxMap = new HashMap() {
@@ -334,6 +345,7 @@ public class LaunchInterface {
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPA", ClusterStrat.GHPAlt);
+            put("Hybrid", ClusterStrat.Hybrid);
         }
     };
 
@@ -343,6 +355,7 @@ public class LaunchInterface {
             put("Kmeans", ClusterStrat.Kmeans);
             put("GHP", ClusterStrat.GHP);
             put("GHPA", ClusterStrat.GHPAlt);
+            put("Hybrid", ClusterStrat.Hybrid);
         }
     };
 

@@ -1,7 +1,6 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.ddo.core.mdd.NodeSubProblemComparator;
 import org.ddolib.modeling.StateRanking;
 
 import java.util.ArrayList;
@@ -15,10 +14,10 @@ import java.util.List;
  */
 public class CostBased<T> implements ReductionStrategy<T> {
 
-    private NodeSubProblemComparator<T> ranking;
+    final private NodeSubroblemComparator<T> ranking;
 
     public CostBased(final StateRanking<T> ranking) {
-        this.ranking = new NodeSubProblemComparator<>(ranking);
+        this.ranking = new NodeSubroblemComparator<>(ranking);
     }
 
     /**
@@ -38,4 +37,32 @@ public class CostBased<T> implements ReductionStrategy<T> {
         return cluster;
     }
 
+    /**
+     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
+     */
+    private static final class NodeSubroblemComparator<T> implements Comparator<NodeSubProblem<T>> {
+        /**
+         * This is the decorated ranking
+         */
+        private final StateRanking<T> delegate;
+
+        /**
+         * Creates a new instance
+         *
+         * @param delegate the decorated ranking
+         */
+        public NodeSubroblemComparator(final StateRanking<T> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
+            double cmp = o1.getValue() - o2.getValue();
+            if (cmp == 0 && delegate != null) {
+                return delegate.compare(o1.state, o2.state);
+            } else {
+                return Double.compare(o1.getValue(), o2.getValue());
+            }
+        }
+    }
 }
