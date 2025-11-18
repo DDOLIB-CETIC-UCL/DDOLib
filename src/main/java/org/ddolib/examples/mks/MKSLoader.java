@@ -55,6 +55,7 @@ public class MKSLoader {
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new MKSDistance();
         config.coordinates = new MKSCoordinates();
+        config.hybridFactor = input.hybridFactor;
 
         config.frontier = getFrontier(input.cutSetStr, config);
         config.relaxStrategy = getReductionStrategy(input.relaxStratStr, config);

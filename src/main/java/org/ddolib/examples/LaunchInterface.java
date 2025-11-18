@@ -36,6 +36,7 @@ public class LaunchInterface {
     static final String DEFAULT_CUTSET = "layer";
     static final String DEFAULT_CLUSTER = "Cost";
     static final int DEFAULT_KMEANS_ITER = 50;
+    static final double DEFAULT_HYBRID_FACTOR = 0.5;
 
     public static Options defaultOptions() {
         String quotedValidSolver = solverMap.keySet().stream().sorted().map(x -> "\"" + x + "\"")
@@ -85,6 +86,9 @@ public class LaunchInterface {
         options.addOption(Option.builder().longOpt("kmeans-iter").argName("NBR_ITERATION").hasArg()
                 .desc("Maximal number of iterations for the kmean algorithm (default is 50)").build());
 
+        options.addOption(Option.builder().longOpt("hybrid-factor").argName("HYBRIDFACTOR").hasArg()
+                .desc("Proportion of preserved nodes on each reduced layer").build());
+
         options.addOption(Option.builder().longOpt("export-graph").build());
 
         return options;
@@ -133,6 +137,7 @@ public class LaunchInterface {
         public String cutSetStr = DEFAULT_CUTSET;
         public String relaxStratStr = DEFAULT_CLUSTER;
         public String restrictStratStr = DEFAULT_CLUSTER;
+        public double hybridFactor = DEFAULT_HYBRID_FACTOR;
         public boolean exportGraph = false;
     }
 
@@ -198,6 +203,10 @@ public class LaunchInterface {
                 input.seed = Integer.parseInt(cmd.getOptionValue("seed"));
             }
 
+            if (cmd.hasOption("hybrid-factor")) {
+                input.hybridFactor = Double.parseDouble(cmd.getOptionValue("hybrid-factor"));
+            }
+
             input.exportGraph = cmd.hasOption("export-graph");
 
         } catch (IllegalArgumentException e) {
@@ -230,7 +239,7 @@ public class LaunchInterface {
                 reductionStrategy = reduc;
             }
             case Hybrid -> {
-                Hybrid reduc = new Hybrid<>(config.ranking, config.distance);
+                Hybrid reduc = new Hybrid<>(config.ranking, config.distance, config.hybridFactor);
                 reduc.setSeed(config.seed);
                 reductionStrategy = reduc;
             }

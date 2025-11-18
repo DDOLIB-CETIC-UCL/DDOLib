@@ -54,6 +54,7 @@ public class TSLoader {
         config.varh = new DefaultVariableHeuristic<TSState>();
         config.flb = new TSFastLowerBound(problem);
         config.distance = new TSDistance(problem);
+        config.hybridFactor = input.hybridFactor;
         // config.coordinates = new TSCoordinates();
 
         config.frontier = getFrontier(input.cutSetStr, config);

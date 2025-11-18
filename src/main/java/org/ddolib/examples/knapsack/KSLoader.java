@@ -56,6 +56,7 @@ public class KSLoader {
         config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
         config.distance = new KSDistance();
         config.coordinates = new KSCoordinates();
+        config.hybridFactor = input.hybridFactor;
 
         config.frontier = getFrontier(input.cutSetStr, config);
         config.relaxStrategy = getReductionStrategy(input.relaxStratStr, config);

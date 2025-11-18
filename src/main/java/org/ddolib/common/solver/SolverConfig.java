@@ -161,4 +161,6 @@ public class SolverConfig<T, K> {
 
     public int kMeansIter = 50;
 
+    public double hybridFactor = 0.5;
+
 }

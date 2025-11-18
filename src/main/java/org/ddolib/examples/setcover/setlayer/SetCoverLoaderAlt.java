@@ -59,6 +59,7 @@ public class SetCoverLoaderAlt {
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new SetCoverDistanceWeighted(problem);
         config.coordinates = new SetCoverCoordinates(problem);
+        config.hybridFactor = input.hybridFactor;
 
         Solver solver = getSolver(input.solverStr, config);
 

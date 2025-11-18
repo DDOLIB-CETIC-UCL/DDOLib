@@ -54,6 +54,7 @@ public class MispLoader {
         config.flb = new MispFastLowerBound(problem);
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new MispDistance();
+        config.hybridFactor = input.hybridFactor;
 
         config.frontier = getFrontier(input.cutSetStr, config);
         config.relaxStrategy = getReductionStrategy(input.relaxStratStr, config);

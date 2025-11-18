@@ -72,6 +72,7 @@ public class SetCoverLoader {
         config.dominance = new DefaultDominanceChecker<>();
         config.distance = new SetCoverDistance(problem, distanceType);
         config.coordinates = new SetCoverCoordinates(problem);
+        config.hybridFactor = input.hybridFactor;
 
         config.frontier = getFrontier(input.cutSetStr, config);
         config.relaxStrategy = getReductionStrategy(input.relaxStratStr, config);
