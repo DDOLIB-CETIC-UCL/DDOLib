@@ -1,33 +1,26 @@
 package org.ddolib.examples.knapsack;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.*;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.examples.knapsack.KSMain.readInstance;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class KSTest {
-    private static class KSBench extends ProblemTestBench<Integer, Integer, KSProblem> {
+    private static class KSBench extends ProblemTestBench<Integer, KSProblem> {
 
         public KSBench() {
             super();
@@ -46,9 +39,7 @@ public class KSTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            KSProblem problem = readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new KSProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -56,18 +47,44 @@ public class KSTest {
         }
 
         @Override
-        protected SolverConfig<Integer, Integer> configSolver(KSProblem problem) {
-            SolverConfig<Integer, Integer> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new KSRelax();
-            config.ranking = new KSRanking();
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new KSFastLowerBound(problem);
-            config.dominance = new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        protected DdoModel<Integer> model(KSProblem problem) {
+            return new DdoModel<>() {
 
-            return config;
+                @Override
+                public Problem<Integer> problem() {
+                    return problem;
+                }
+
+                @Override
+                public Relaxation<Integer> relaxation() {
+                    return new KSRelax();
+                }
+
+                @Override
+                public KSRanking ranking() {
+                    return new KSRanking();
+                }
+
+                @Override
+                public FastLowerBound<Integer> lowerBound() {
+                    return new KSFastLowerBound(problem);
+                }
+
+                @Override
+                public DominanceChecker<Integer> dominance() {
+                    return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 

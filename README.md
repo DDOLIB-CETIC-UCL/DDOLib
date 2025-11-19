@@ -1,5 +1,5 @@
-![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/publish.yml/badge.svg)
-![Coverage](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
+[![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
+![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
 <!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
 
 # DDOLib
@@ -157,6 +157,3 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 This project is funded by the Walloon Region (Belgium) as part of the Win4Collective project Convention 2410118.
 We are grateful for their support and contribution to the development of this project.
-
-
-

@@ -1,0 +1,139 @@
+package org.ddolib.util.verbosity;
+
+import org.ddolib.ddo.core.SubProblem;
+
+import java.io.*;
+
+/**
+ * Utility class for printing detailed information about the search process
+ * based on a specified {@link VerbosityLevel}.
+ * <p>
+ * Depending on the verbosity level, this class can print:
+ * <ul>
+ *     <li>No output (SILENT)</li>
+ *     <li>New best solution values (NORMAL)</li>
+ *     <li>New best solution values, frontier statistics, and details about
+ *     each explored subproblem (LARGE)</li>
+ * </ul>
+ */
+public class VerboseMode {
+
+
+    private final VerbosityLevel verbosityLevel;
+    private long nextPrint;
+    private final long printInterval;
+
+    /**
+     * Creates a {@code VerboseMode} instance with a given verbosity level
+     * and interval for printing frontier statistics.
+     *
+     * @param verbosityLevel The level of details to print.
+     * @param printInterval  The minimum delay (in milliseconds) between
+     *                       consecutive prints of frontier statistics.
+     */
+    public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {
+        this.verbosityLevel = verbosityLevel;
+        this.printInterval = printInterval;
+        nextPrint = System.currentTimeMillis() + printInterval;
+    }
+
+    /**
+     * Prints message when a new best solution is found.
+     *
+     * @param best The value of the new best solution.
+     */
+    public void newBest(double best) {
+        if (verbosityLevel != VerbosityLevel.SILENT) {
+            try (Writer writer = getWriter()) {
+                writer.append(String.format("new best: %g\n", best));
+                writer.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Prints message describing the current explored sub problem.
+     *
+     * @param nbIter The current iteration number.
+     * @param sub    The current sub problem to explore.
+     * @param <T>    The type of the state.
+     */
+    public <T> void currentSubProblem(int nbIter, SubProblem<T> sub) {
+        if (verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) {
+            try (Writer writer = getWriter()) {
+                writer.append(String.format("\tit: %d\n\t\t%s\n", nbIter, sub));
+                writer.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    }
+
+    /**
+     * Prints statistics about the frontier after every half second.
+     *
+     * @param nbIter         The current iteration number.
+     * @param frontierSize   The current size of the frontier.
+     * @param bestObj        The current best objective value.
+     * @param bestInFrontier The best value in the frontier
+     * @param gap            The current gap0
+     */
+    public void detailedSearchState(int nbIter, int frontierSize, double bestObj,
+                                    double bestInFrontier, double gap) {
+        long now = System.currentTimeMillis();
+        if ((verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) && now >= nextPrint) {
+
+            try (Writer writer = getWriter()) {
+                String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
+                                "best in frontier: %g - gap: %g\n", nbIter, frontierSize,
+                        bestObj, bestInFrontier, gap);
+
+                writer.append(msg);
+                writer.flush();
+                nextPrint = now + printInterval;
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Returns a writer depending on the verbosity level.
+     *
+     * @return If the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
+     * saving logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs
+     * in the console.
+     */
+    public Writer getWriter() {
+        if (verbosityLevel == VerbosityLevel.EXPORT) {
+            try {
+                return new BufferedWriter(new FileWriter("logs.txt", true));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return new NonClosingPrintWriter(new PrintWriter(System.out));
+        }
+    }
+
+
+    /**
+     * Class encapsulating a {@link PrintWriter} ensuring that {@code System.out} will not be
+     * closed.
+     */
+    private static class NonClosingPrintWriter extends FilterWriter {
+
+        public NonClosingPrintWriter(PrintWriter out) {
+            super(out);
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+
+    }
+}

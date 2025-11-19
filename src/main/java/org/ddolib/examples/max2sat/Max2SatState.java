@@ -16,8 +16,8 @@ import java.util.ArrayList;
  *     assigned in previous layer and cannot influence the objective anymore.</li>
  * </ul>
  *
- * @param netBenefit
- * @param depth
+ * @param netBenefit the net benefits by setting the variable
+ * @param depth the depth of the DD
  */
 public record Max2SatState(ArrayList<Integer> netBenefit, int depth) {
 

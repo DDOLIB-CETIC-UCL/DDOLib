@@ -1,14 +1,12 @@
 package org.ddolib.examples.smic;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -21,7 +19,7 @@ import java.util.stream.Stream;
 
 public class SMICTest {
 
-    private static class SMICBench extends ProblemTestBench<SMICState, Integer, SMICProblem> {
+    private static class SMICBench extends ProblemTestBench<SMICState, SMICProblem> {
 
         public SMICBench() {
             super();
@@ -34,13 +32,13 @@ public class SMICTest {
             File[] files = new File(dir).listFiles();
             assert files != null;
             Stream<File> stream = Stream.of(files);
-
+//            SMICProblem problem = new SMICProblem(filePath.toString());
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            return SMICMain.readProblem(filePath.toString());
+                            return new SMICProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -48,24 +46,45 @@ public class SMICTest {
         }
 
         @Override
-        protected SolverConfig<SMICState, Integer> configSolver(SMICProblem problem) {
-            SolverConfig<SMICState, Integer> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new SMICRelax(problem);
-            config.ranking = new SMICRanking();
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.flb = new SMICFastLowerBound(problem);
-            config.dominance = new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        protected DdoModel<SMICState> model(SMICProblem problem) {
+            return new DdoModel<>() {
 
-            return config;
-        }
+                @Override
+                public Problem<SMICState> problem() {
+                    return problem;
+                }
 
-        @Override
-        protected Solver solverForTests(SolverConfig<SMICState, Integer> config) {
-            config.width = new FixedWidth<>(100);
-            return new SequentialSolver<>(config);
+                @Override
+                public SMICRelax relaxation() {
+                    return new SMICRelax(problem);
+                }
+
+                @Override
+                public SMICRanking ranking() {
+                    return new SMICRanking();
+                }
+
+                @Override
+                public SMICFastLowerBound lowerBound() {
+                    return new SMICFastLowerBound(problem);
+                }
+
+                @Override
+                public DominanceChecker<SMICState> dominance() {
+                    return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+                }
+
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 
