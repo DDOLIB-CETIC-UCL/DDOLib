@@ -1,4 +1,4 @@
-package org.ddolib.examples.misp;
+package org.ddolib.examples.maximumcoverage;
 
 import org.apache.commons.cli.*;
 import org.ddolib.common.solver.SearchStatistics;
@@ -7,17 +7,14 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.misp.*;
-import org.ddolib.examples.mks.*;
 import org.ddolib.modeling.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.BitSet;
 
 import static org.ddolib.examples.LaunchInterface.*;
 
-public class MispLauncher {
+public class MaxCoverLauncher {
 
     public static void main(String[] args) throws IOException {
         Options options = defaultOptions();
@@ -34,60 +31,60 @@ public class MispLauncher {
 
         final CmdInput input = parseDefaultCommandLine(cmd, options);
 
-        final MispProblem problem = new MispProblem(input.instancePath);
+        final MaxCoverProblem problem = new MaxCoverProblem(input.instancePath);
 
-        DdoModel<BitSet> model = new DdoModel<>() {
+        DdoModel<MaxCoverState> model = new DdoModel<>() {
             @Override
-            public Problem<BitSet> problem() {
+            public Problem<MaxCoverState> problem() {
                 return problem;
             }
 
             @Override
-            public Relaxation<BitSet> relaxation() {
-                return new MispRelax(problem);
+            public Relaxation<MaxCoverState> relaxation() {
+                return new MaxCoverRelax(problem);
             }
 
             @Override
-            public StateRanking<BitSet> ranking() {
-                return new MispRanking();
+            public MaxCoverRanking ranking() {
+                return new MaxCoverRanking();
             }
 
             @Override
-            public FastLowerBound<BitSet> lowerBound() {
-                return new MispFastLowerBound(problem);
+            public FastLowerBound<MaxCoverState> lowerBound() {
+                return new DefaultFastLowerBound<>();
             }
 
             @Override
-            public WidthHeuristic<BitSet> widthHeuristic() {
+            public WidthHeuristic<MaxCoverState> widthHeuristic() {
                 return new FixedWidth<>((int) Math.ceil(input.widthFactor*problem.nbVars()));
             }
 
             @Override
-            public ReductionStrategy<BitSet> relaxStrategy() {
-                ReductionStrategy<BitSet> relaxStrat = null;
+            public ReductionStrategy<MaxCoverState> relaxStrategy() {
+                ReductionStrategy<MaxCoverState> relaxStrat = null;
                 switch (input.relaxStrat) {
                     case Cost -> relaxStrat = new CostBased<>(ranking());
-                    case GHP -> relaxStrat = new GHP<>(new MispDistance(), input.seed);
-                    case Hybrid -> relaxStrat = new Hybrid<>(ranking(), new MispDistance(), input.hybridFactor, input.seed);
+                    case GHP -> relaxStrat = new GHP<>(new MaxCoverDistance(), input.seed);
+                    case Hybrid -> relaxStrat = new Hybrid<>(ranking(), new MaxCoverDistance(), input.hybridFactor, input.seed);
                     case Kmeans -> relaxStrat = new Kmeans<>(stateCoordinates());
                 }
                 return relaxStrat;
             }
 
             @Override
-            public ReductionStrategy<BitSet> restrictStrategy() {
-                ReductionStrategy<BitSet> restrictStrat = null;
+            public ReductionStrategy<MaxCoverState> restrictStrategy() {
+                ReductionStrategy<MaxCoverState> restrictStrat = null;
                 switch (input.restrictStrat) {
                     case Cost -> restrictStrat = new CostBased<>(ranking());
-                    case GHP -> restrictStrat = new GHP<>(new MispDistance(), input.seed);
-                    case Hybrid -> restrictStrat = new Hybrid<>(ranking(), new MispDistance(), input.hybridFactor, input.seed);
+                    case GHP -> restrictStrat = new GHP<>(new MaxCoverDistance(), input.seed);
+                    case Hybrid -> restrictStrat = new Hybrid<>(ranking(), new MaxCoverDistance(), input.hybridFactor, input.seed);
                     case Kmeans -> restrictStrat = new Kmeans<>(stateCoordinates());
                 }
                 return restrictStrat;
             }
 
             @Override
-            public Frontier<BitSet> frontier() {
+            public Frontier<MaxCoverState> frontier() {
                 return new SimpleFrontier<>(ranking(), input.cutSetType);
             }
 

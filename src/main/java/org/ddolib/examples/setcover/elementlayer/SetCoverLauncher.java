@@ -120,9 +120,9 @@ public class SetCoverLauncher {
         switch (input.solverType) {
             case RELAX -> stats = Solvers.relaxedDdo(model);
             case RESTRI -> stats = Solvers.restrictedDdo(model);
-            case SEQ -> Solvers.minimizeDdo(model,
+            case SEQ -> stats = Solvers.minimizeDdo(model,
                     i -> (System.currentTimeMillis() - startTime >= input.timeLimit*1000.0));
-            case EXACT -> Solvers.minimizeExact(model);
+            case EXACT -> stats = Solvers.minimizeExact(model);
         }
 
         assert stats != null;
