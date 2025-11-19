@@ -6,6 +6,10 @@ import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import javax.xml.XMLConstants;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -37,6 +41,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.subSets = subSets;
         this.optimal = optimal;
     }
+
+
 
     public MaxCoverProblem(int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets, Optional<Double> optimal) {
         this.name = Optional.empty();
@@ -85,11 +91,27 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSets = m;
         this.nbSubSetsToChoose = k;
         this.subSets = subSets;
+        this.optimal = Optional.empty();
+    }
+
+    public String instanceFormat() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%d%n%d%n%d%n", nbItems, nbSubSets, nbSubSetsToChoose));
+        optimal.ifPresent(aDouble -> sb.append(String.format("%d%n", (int) Math.ceil(aDouble))));
+        sb.append("\n");
+        for (int i = 0; i < nbSubSets; i++) {
+            for (int j = subSets[i].nextSetBit(0); j >= 0; j = subSets[i].nextSetBit(j + 1)) {
+                sb.append(String.format("%d ", j));
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x );
     }
 
 
@@ -143,7 +165,12 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
             throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
                     "the %d variables", Arrays.toString(solution), nbVars()));
         }
-        return 0;
+        BitSet coveredItems = new BitSet(nbItems);
+        for (int selected: solution) {
+            coveredItems.or(subSets[selected]);
+        }
+
+        return -coveredItems.cardinality();
     }
 
     private boolean isInclude(BitSet A, BitSet B) {
@@ -173,15 +200,85 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         for (int i = 0; i < subSets.length; i++) {
             double dist = distance(x, y, i, j);
             if (dist < minDistance) {
+                minDistance = dist;
                 min = i;
             }
         }
         return min;
     }
 
+    
+
     @Override
     public String toString() {
         return name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+    }
+
+    /**
+     * Load the MaxCoverProblem from a file
+     * @param fname the path to the file describing the instance
+     * @return a MaxCoverProblem representing the instance
+     * @throws IOException if the file cannot be found or is not readable
+     */
+    public MaxCoverProblem(final String fname) throws IOException{
+        final File f = new File(fname);
+        int context = 0;
+        int nElem = 0;
+        int nSet = 0;
+        int budget = 0;
+        Optional<Double> optimal = Optional.empty();
+        BitSet[] sets = null;
+        int setCount = 0;
+        String s;
+        try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
+            while ((s = br.readLine()) != null) {
+                if (context == 0) {
+                    context++;
+
+                    String[] tokens = s.split("\\s");
+                    nElem = Integer.parseInt(tokens[0]);
+
+                } else if (context == 1) {
+                   context++;
+
+                    String[] tokens = s.split("\\s");
+                    nSet = Integer.parseInt(tokens[0]);
+                    sets = new BitSet[nSet];
+
+                } else if (context == 2) {
+                    context++;
+                    String[] tokens = s.split("\\s");
+                    budget  = Integer.parseInt(tokens[0]);
+                } else if (context == 3) {
+                    context++;
+                    if (!s.isBlank()) {
+                        String[] tokens = s.split("\\s");
+                        optimal = Optional.of(Double.parseDouble(tokens[0]));
+                        System.out.println(optimal);
+                    }
+                }
+                else {
+                    if (setCount< nSet) {
+                        if (!s.isBlank()) {
+                            String[] tokens = s.split("\\s");
+
+                            sets[setCount] = new BitSet(nElem);
+                            for (String token : tokens) {
+                                sets[setCount].set(Integer.parseInt(token));
+                            }
+                            setCount++;
+                        }
+                    }
+                }
+            }
+        }
+        this.name = Optional.of("maxCoverage_" + nElem + "_" + nSet + "_" + budget);
+        this.nbItems = nElem;
+        this.nbSubSets = nSet;
+        this.nbSubSetsToChoose = budget;
+        this.subSets = sets;
+        this.optimal = optimal;
+        System.out.println(optimal);
     }
 }
 
