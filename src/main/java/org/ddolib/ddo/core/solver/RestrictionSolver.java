@@ -160,8 +160,6 @@ public final class RestrictionSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         nbIter++;
-        verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
-                frontier.bestInFrontier(), gap());
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());

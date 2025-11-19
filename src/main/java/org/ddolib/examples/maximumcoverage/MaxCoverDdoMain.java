@@ -1,6 +1,9 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.smic.SMICRanking;
@@ -59,9 +62,20 @@ public class MaxCoverDdoMain {
             public boolean exportDot() {
                 return true;
             }
+
+            @Override
+            public ReductionStrategy<MaxCoverState> relaxStrategy() {
+                // return new GHP<>(new MaxCoverDistance());
+                return new CostBased<>(new MaxCoverRanking());
+            }
+
+            @Override
+            public ReductionStrategy<MaxCoverState> restrictStrategy() {
+                return new GHP<>(new MaxCoverDistance());
+            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        SearchStatistics stats = Solvers.relaxedDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
         System.out.println();
