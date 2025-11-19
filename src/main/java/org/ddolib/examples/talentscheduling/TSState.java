@@ -21,10 +21,15 @@ import java.util.BitSet;
  * to represent both definite and potential decisions in a relaxed or merged state.
  * </p>
  */
-public record TSState(BitSet remainingScenes, BitSet maybeScenes) {
+public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocationActors) {
+
+    /*@Override
+    public boolean equals(Object obj) {
+        return obj instanceof TSState && remainingScenes.equals(((TSState) obj).remainingScenes) && maybeScenes.equals(((TSState) obj).maybeScenes);
+    }*/
 
     @Override
     public String toString() {
-        return String.format("Remaining: %s - Maybe: %s", remainingScenes.toString(), maybeScenes.toString());
+            return String.format("Remaining: %s - Maybe: %s - On location actors: %s", remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());
     }
 }
