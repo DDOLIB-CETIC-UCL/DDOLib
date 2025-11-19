@@ -3,6 +3,7 @@ package org.ddolib.examples.maximumcoverage;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -66,12 +67,12 @@ public class MaxCoverDdoMain {
             @Override
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
                 // return new GHP<>(new MaxCoverDistance());
-                return new CostBased<>(new MaxCoverRanking());
+                return new Kmeans<>(new MaxCoverCoordinates(problem));
             }
 
             @Override
             public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                return new GHP<>(new MaxCoverDistance());
+                return new Kmeans<>(new MaxCoverCoordinates(problem));
             }
         };
 
