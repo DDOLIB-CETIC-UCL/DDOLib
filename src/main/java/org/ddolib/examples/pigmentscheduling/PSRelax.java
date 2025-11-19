@@ -9,18 +9,59 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static org.ddolib.examples.pigmentscheduling.PSProblem.IDLE;
-
+/**
+ * Implements the relaxation mechanism used in the DDO framework
+ * for the Pigment Scheduling Problem (PSP).
+ * <p>
+ * The {@code PSRelax} class defines how multiple {@link PSState} objects
+ * can be merged into a single relaxed state during the search process.
+ * Relaxation is a key component of the DDO algorithm, enabling the merging
+ * of similar or compatible states to reduce the size of the search graph
+ * while preserving admissibility.
+ * </p>
+ *
+ * <p>
+ * In this implementation, the relaxation rule merges states by:
+ * </p>
+ * <ul>
+ *     <li>Taking the earliest time index among all merged states;</li>
+ *     <li>Taking the minimum value of {@code previousDemands} for each item type,
+ *         effectively under-approximating remaining demands;</li>
+ *     <li>Setting the machine to the {@link PSProblem#IDLE} state, as the
+ *         specific pigment context is lost during merging.</li>
+ * </ul>
+ * <p>
+ * The resulting relaxed state is less constrained (hence "relaxed"),
+ * which allows the solver to reason over fewer states while maintaining
+ * lower-bound consistency.
+ * </p>
+ *
+ * @see PSProblem
+ * @see PSState
+ * @see Relaxation
+ * @see PSDdoMain
+ */
 public class PSRelax implements Relaxation<PSState> {
+    /** Reference to the Pigment Scheduling problem definition. */
+    PSProblem problem;
 
-
-    PSInstance instance;
-
-    public PSRelax(PSInstance instance) {
-        this.instance = instance;
+    /**
+     * Constructs a relaxation operator associated with a given PSP problem.
+     *
+     * @param problem the {@link PSProblem} instance that defines
+     *                the scheduling parameters, costs, and demands.
+     */
+    public PSRelax(PSProblem problem) {
+        this.problem = problem;
     }
 
-    // Set of item types that have an unsatisfied demand,
-    // plus the next item type produced if any
+    /**
+     * Computes the set of item types that still have unsatisfied demands,
+     * along with the currently produced item type (if any).
+     *
+     * @param state the {@link PSState} for which to extract the set of active items
+     * @return a set of integers representing the indices of active or pending item types
+     */
     private static Set<Integer> members(PSState state) {
         Set<Integer> mem = new HashSet<>();
         for (int i = 0; i < state.previousDemands.length; i++) {
@@ -33,23 +74,55 @@ public class PSRelax implements Relaxation<PSState> {
         }
         return mem;
     }
-
+    /**
+     * Merges multiple PSP states into a single relaxed state.
+     * <p>
+     * The merging process:
+     * </p>
+     * <ul>
+     *     <li>Takes the minimum time index among the given states;</li>
+     *     <li>For each item type, takes the smallest (earliest) previous demand index;</li>
+     *     <li>Sets the resulting state to the idle production mode.</li>
+     * </ul>
+     * This method effectively creates an under-approximation of the merged states,
+     * representing a superset of their feasible continuations.
+     * @param states an iterator over the {@link PSState} instances to be merged
+     * @return a new relaxed {@link PSState} representing the merged configuration
+     */
     @Override
     public PSState mergeStates(final Iterator<PSState> states) {
-        PSState currState = states.next();
-        int[] prevDemands = Arrays.copyOf(currState.previousDemands, currState.previousDemands.length);
-        int time = currState.t;
+        PSState state = states.next();
+        int[] prevDemands = Arrays.copyOf(state.previousDemands, state.previousDemands.length);
+        int time = state.t;
+        int nextItem = state.next;
+        boolean disagreeOnNext = false; // becomes true if not all states agree on nextItem
         while (states.hasNext()) {
-            PSState state = states.next();
-            time = Math.min(time, state.t);
+            state = states.next();
+            disagreeOnNext = disagreeOnNext || (state.next != nextItem);
+            assert(state.t == time); // all states must be at the same time, as this is the variable/layer
+            // for each item type, take the earliest prevDemand
             for (int i = 0; i < prevDemands.length; i++) {
                 prevDemands[i] = Math.min(prevDemands[i], state.previousDemands[i]);
             }
         }
-        return new PSState(time, IDLE, prevDemands);
-
+        return new PSState(time, disagreeOnNext ? IDLE : nextItem, prevDemands);
     }
-
+    /**
+     * Returns the relaxed transition cost between two PSP states.
+     * <p>
+     * In this simple implementation, the relaxation does not alter
+     * the transition cost and simply returns the original value.
+     * More advanced relaxations could, however, modify this cost
+     * to tighten the lower bounds.
+     * </p>
+     *
+     * @param from    the originating state
+     * @param to      the destination state
+     * @param merged  the merged (relaxed) state
+     * @param d       the decision leading to the transition
+     * @param cost    the original transition cost
+     * @return the (possibly modified) transition cost after relaxation
+     */
 
     @Override
     public double relaxEdge(PSState from, PSState to, PSState merged, Decision d, double cost) {

@@ -1,17 +1,15 @@
 package org.ddolib.examples.mcp;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -20,7 +18,7 @@ import java.util.stream.Stream;
 
 public class MCPTest {
 
-    private static class MCPBench extends ProblemTestBench<MCPState, NullType, MCPProblem> {
+    private static class MCPBench extends ProblemTestBench<MCPState, MCPProblem> {
 
         public MCPBench() {
             super();
@@ -39,9 +37,7 @@ public class MCPTest {
                     .map(fileName -> Paths.get(dir, fileName))
                     .map(filePath -> {
                         try {
-                            MCPProblem problem = MCPIO.readInstance(filePath.toString());
-                            problem.setName(filePath.getFileName().toString());
-                            return problem;
+                            return new MCPProblem(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -49,20 +45,40 @@ public class MCPTest {
         }
 
         @Override
-        protected SolverConfig<MCPState, NullType> configSolver(MCPProblem problem) {
-            SolverConfig<MCPState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new MCPRelax(problem);
-            config.ranking = new MCPRanking();
-            config.flb = new MCPFastLowerBound(problem);
-            config.restrictStrategy = new CostBased<>(config.ranking);
-            config.relaxStrategy = new CostBased<>(config.ranking);
-            config.width = new FixedWidth<>(10);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        protected DdoModel<MCPState> model(MCPProblem problem) {
+            return new DdoModel<>() {
 
+                @Override
+                public Problem<MCPState> problem() {
+                    return problem;
+                }
 
-            return config;
+                @Override
+                public Relaxation<MCPState> relaxation() {
+                    return new MCPRelax(problem);
+                }
+
+                @Override
+                public MCPRanking ranking() {
+                    return new MCPRanking();
+                }
+
+                @Override
+                public MCPFastLowerBound lowerBound() {
+                    return new MCPFastLowerBound(problem);
+                }
+
+                @Override
+                public VerbosityLevel verbosityLevel() {
+                    return VerbosityLevel.SILENT;
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
+
         }
     }
 

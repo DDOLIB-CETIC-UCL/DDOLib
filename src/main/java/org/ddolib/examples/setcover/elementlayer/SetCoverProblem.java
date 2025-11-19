@@ -1,9 +1,14 @@
 package org.ddolib.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public class SetCoverProblem implements Problem<SetCoverState> {
@@ -34,6 +39,28 @@ public class SetCoverProblem implements Problem<SetCoverState> {
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+        double cost = 0;
+        Set<Integer> coveredElements = new HashSet<>();
+        for (int decision: solution) {
+            if (decision != -1) {
+                cost += weights.get(decision);
+                coveredElements.addAll(getSetDefinition(decision));
+            }
+        }
+        if (coveredElements.size() != nElem) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all the elements",
+                    Arrays.toString(solution)));
+        }
+
+        return -cost;
     }
 
     @Override
@@ -131,5 +158,104 @@ public class SetCoverProblem implements Problem<SetCoverState> {
         builder.append("nSet: ").append(nSet).append("\n");
         builder.append("constraints: ").append(constraints).append("\n");
         return builder.toString();
+    }
+
+    /**
+     * The instance file contains the definition of each set, i.e. the element that it covers.
+     * For this model we instead need, for each element, a description of the collection of
+     * sets that cover it, i.e. the description of each constraint.
+     * This method makes the required conversion.
+     * @param sets the collection of sets from the instance file
+     * @param nElem the number of element in the universe
+     * @return the collection of constraints
+     */
+    private static List<Set<Integer>> convertSetsToConstraints(List<Set<Integer>> sets, int nElem) {
+        List<Set<Integer>> constraints = new ArrayList<>(nElem);
+        for (int elem = 0; elem < nElem; elem++) {
+            constraints.add(new HashSet<>());
+            for (int set = 0; set < sets.size(); set++) {
+                if (sets.get(set).contains(elem)) {
+                    constraints.get(elem).add(set);
+                }
+            }
+        }
+        return constraints;
+    }
+
+    /**
+     * Load the SetCoverProblem from a file
+     * @param fname the path to the file describing the instance
+     * @return a SetCoverProblem representing the instance
+     * @throws IOException if the file cannot be found or is not readable
+     */
+    public SetCoverProblem(final String fname) throws IOException {
+        this(fname, false);
+    }
+
+    /**
+     * Load the SetCoverProblem from a file
+     * @param fname the path to the file describing the instance
+     * @param weighted true if the instance has cost for the set, false otherwise
+     * @return a SetCoverProblem representing the instance
+     * @throws IOException if the file cannot be found or is not readable
+     */
+    public SetCoverProblem(final String fname, final boolean weighted) throws IOException {
+        final File f = new File(fname);
+        int context = 0;
+        int nElem = 0;
+        int nSet = 0;
+        List<Set<Integer>> sets = null;
+        List<Double> weights = null;
+        int setCount = 0;
+        String s;
+        try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
+            while ((s = br.readLine()) != null) {
+                if (context == 0) {
+                    context++;
+
+                    String[] tokens = s.split("\\s");
+                    nElem = Integer.parseInt(tokens[0]);
+                    nSet = Integer.parseInt(tokens[1]);
+
+                    sets = new ArrayList<>(nSet);
+                } else if (context == 1 && weighted) {
+                    context++;
+                    String[] tokens = s.split("\\s");
+                    weights = new ArrayList<>(nSet);
+                    for (int i = 0; i < nSet; i++) {
+                        weights.add(Double.parseDouble(tokens[i]));
+                    }
+                }
+                else {
+                    if (setCount < nSet) {
+                        String[] tokens = s.split("\\s");
+                        sets.add(new HashSet<>(tokens.length));
+                        for (String token : tokens) {
+                            sets.get(setCount).add(Integer.parseInt(token));
+                        }
+                        setCount++;
+                    }
+                }
+            }
+            if (!weighted) {
+                weights = new ArrayList<>(nSet);
+                for (int i = 0; i < nSet; i++) {
+                    weights.add(1.0);
+                }
+            }
+            this.nElem = nElem;
+            this.nSet = nSet;
+            this.constraints = convertSetsToConstraints(sets, nElem);
+            this.weights = weights;
+
+            this.elemMinWeights = new ArrayList<>(nElem);
+            for (int i = 0; i < nElem; i++) {
+                double minWeight = Double.MAX_VALUE;
+                for (int set : constraints.get(i)) {
+                    minWeight = Math.min(minWeight, weights.get(set));
+                }
+                elemMinWeights.add(minWeight);
+            }
+        }
     }
 }

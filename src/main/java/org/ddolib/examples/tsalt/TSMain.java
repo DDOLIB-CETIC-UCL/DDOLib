@@ -1,133 +1,66 @@
 package org.ddolib.examples.tsalt;
 
-import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Hybrid;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.RelaxationSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.modeling.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
 
-import javax.lang.model.type.NullType;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Optional;
-
+/**
+ * The talent scheduling problem (tsp) with Ddo.
+ * Entry point for solving instances of the Talent Scheduling Problem (TSP)
+ * using a Decision Diagram Optimization (Ddo) approach.
+ *
+ * <p>
+ * This class reads a TSP instance from a file, initializes the corresponding
+ * {@link TSProblem}, and creates a {@link DdoModel} for {@link TSState}.
+ * The model uses a {@link TSRelax} relaxation, a {@link TSRanking} state ranking,
+ * and {@link TSFastLowerBound} for efficient lower-bound computations.
+ * The solver then minimizes the objective function using the Ddo algorithm,
+ * printing both the solution and search statistics.
+ * </p>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ * <pre>
+ * java TSDdoMain [instanceFile]
+ * </pre>
+ * If no {@code instanceFile} argument is provided, the default instance
+ * {@code data/TalentScheduling/film-12} will be used.
+ */
 public class TSMain {
-
-
-    /**
-     * Read data file following the format of
-     * <a href="https://people.eng.unimelb.edu.au/pstuckey/talent/">https://people.eng.unimelb.edu.au/pstuckey/talent/</a>
-     *
-     * @param fileName The name of the file.
-     * @return An instance the talent scheduling problem.
-     * @throws IOException If something goes wrong while reading input file.
-     */
-    public static TSProblem readFile(String fileName) throws IOException {
-        int nbScenes = 0;
-        int nbActors = 0;
-        int[] cost = new int[0];
-        int[] duration = new int[0];
-        BitSet[] actors = new BitSet[0];
-        Optional<Double> opti = Optional.empty();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-
-            int lineCount = 0;
-            int skip = 0;
-            while ((line = br.readLine()) != null) {
-                if (line.isEmpty()) {
-                    skip++;
-                } else if (lineCount == 0) {
-                    String[] tokens = line.split("\\s+");
-                    if (tokens.length == 3) {
-                        opti = Optional.of(Double.parseDouble(tokens[2]));
-                    }
-                } else if (lineCount == 1) {
-                    nbScenes = Integer.parseInt(line);
-                    duration = new int[nbScenes];
-                } else if (lineCount == 2) {
-                    nbActors = Integer.parseInt(line);
-                    cost = new int[nbActors];
-                    actors = new BitSet[nbScenes];
-                    for (int i = 0; i < nbScenes; i++) {
-                        actors[i] = new BitSet(nbActors);
-                    }
-                } else if (lineCount - skip - 3 < nbActors) {
-                    int actor = lineCount - skip - 3;
-                    String[] tokens = line.split("\\s+");
-                    cost[actor] = Integer.parseInt(tokens[nbScenes]);
-                    for (int i = 0; i < nbScenes; i++) {
-                        int x = Integer.parseInt(tokens[i]);
-                        if (Integer.parseInt(tokens[i]) == 1) {
-                            actors[i].set(actor);
-                        }
-                    }
-                } else {
-                    String[] tokens = line.split("\\s+");
-                    for (int i = 0; i < nbScenes; i++) {
-                        duration[i] = Integer.parseInt(tokens[i]);
-                    }
-                }
-                lineCount++;
+    public static void main(String[] args) throws IOException {
+        String instance = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
+        final TSProblem problem = new TSProblem(instance);
+        DdoModel<TSState> model = new DdoModel<>() {
+            @Override
+            public Problem<TSState> problem() {
+                return problem;
             }
 
-            return new TSProblem(nbScenes, nbActors, cost, duration, actors, opti);
-        }
-    }
+            @Override
+            public Relaxation<TSState> relaxation() {
+                return new TSRelax(problem);
+            }
 
-    public static void main(String[] args) throws IOException {
-        // String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "film103.dat").toString() : args[0];
-        String file = args.length == 0 ? Paths.get("data", "TalentScheduling", "small").toString() : args[0];
-        int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 10;
+            @Override
+            public TSRanking ranking() {
+                return new TSRanking();
+            }
 
-        SolverConfig<TSState, NullType> config = new SolverConfig<>();
-        final TSProblem problem = readFile(file);
-        config.problem = problem;
-        config.relax = new TSRelax(problem);
-        config.ranking = new TSRanking();
-        config.flb = new TSFastLowerBound(problem);
+            @Override
+            public TSFastLowerBound lowerBound() {
+                return new TSFastLowerBound(problem);
+            }
+        };
 
-        config.width = new FixedWidth<>(maxWidth);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-
-        config.relaxStrategy = new CostBased<>(config.ranking);
-        // config.relaxStrategy = new GHP<>(new TSDistance(problem));
-        config.relaxStrategy = new Hybrid<>(config.ranking, new TSDistance(problem), 0.5);
-        //config.relaxStrategy.setSeed(65464864);
-        config.restrictStrategy = config.relaxStrategy;
-
-        config.verbosityLevel = 0;
-        config.exportAsDot = true;
-
-        final Solver solver = new RelaxationSolver<>(config);
-
-        long start = System.currentTimeMillis();
-        SearchStatistics stat = solver.minimize();
-        double duration = (System.currentTimeMillis() - start) / 1000.0;
-
-        int[] solution = solver.constructBestSolution(problem.nbVars());
-
-        String bestStr = solver.bestValue().isPresent() ? "" + solver.bestValue().get() : "No value";
-
-
-        System.out.printf("Instance : %s%n", file);
-        System.out.printf("Duration : %.3f seconds%n", duration);
-        System.out.printf("Objective: %s%n", bestStr);
-        System.out.printf("Solution : %s%n", Arrays.toString(solution));
-        System.out.println(stat);
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s,sol);
+        });
+        System.out.println(stats);
     }
 }

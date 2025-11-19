@@ -1,10 +1,13 @@
 package org.ddolib.examples.tsalt;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
+import static java.lang.Math.abs;
 
 import java.util.BitSet;
 
@@ -15,8 +18,6 @@ public class TSDistance implements StateDistance<TSState> {
     public TSDistance(TSProblem problem) {
         this.problem = problem;
     }
-
-
 
     private double hammingDistance(BitSet a, BitSet b) {
         double distance = 0;
@@ -97,6 +98,13 @@ public class TSDistance implements StateDistance<TSState> {
         return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
     }
 
+    private double convexCombination(double distanceOnRemainingScenes, double distanceOnActors, double distanceOnCost) {
+        double alpha = 0.15;
+        double beta = 0.10;
+        double gamma = 0.75;
+        return alpha * distanceOnActors + beta * distanceOnRemainingScenes + gamma*distanceOnCost;
+    }
+
     private double euclideanDistance(double distanceOnRemainingScenes, double distanceOnActors) {
         return sqrt(pow(distanceOnRemainingScenes, 2) + pow(distanceOnActors, 2));
     }
@@ -107,6 +115,15 @@ public class TSDistance implements StateDistance<TSState> {
         double distanceOnRemainingScenes = jaccardDistance(a.remainingScenes(), b.remainingScenes());
         return convexCombination(distanceOnRemainingScenes, distanceOnActors);
         // return euclideanDistance(distanceOnActors, distanceOnRemainingScenes);
+    }
+
+    @Override
+    public double distance(NodeSubProblem<TSState> a, NodeSubProblem<TSState> b) {
+        double distanceOnActors = jaccardDistance(a.state.onLocationActors(),b.state.onLocationActors());
+        double distanceOnRemainingScenes = jaccardDistance(a.state.remainingScenes(), b.state.remainingScenes());
+        double distanceOnCost = abs(a.getValue() - b.getValue());
+
+        return convexCombination(distanceOnRemainingScenes, distanceOnActors, distanceOnCost);
     }
 
 }

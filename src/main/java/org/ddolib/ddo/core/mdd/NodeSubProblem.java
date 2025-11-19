@@ -10,34 +10,35 @@ import java.util.Set;
 import static org.ddolib.util.MathUtil.saturatedAdd;
 
 /**
- * This class encapsulates the association of a node with its state and
- * associated rough upper bound.
+ * Encapsulates the association of a node in a decision diagram with its corresponding state
+ * and an associated rough lower bound.
  * <p>
- * This class essentially serves two purposes:
- * <p>
- * - associate a node with a state during the compilation (and allow to
- * eagerly forget about the given state, which allows to save substantial
- * amounts of RAM while compiling the DD).
- * <p>
- * - turn an MDD node from the exact cutset into a subproblem which is used
- * by the API.
+ * This class serves two main purposes:
+ * <ul>
+ *     <li>Associates a node with a state during decision diagram compilation, allowing the state
+ *         to be discarded afterward to save memory.</li>
+ *     <li>Converts an exact MDD node into a {@link SubProblem}, which can then be used in the API
+ *         for search or optimization.</li>
+ * </ul>
+ *
+ * @param <T> the type of state associated with the node
  */
-final public class NodeSubProblem<T> {
-    /**
-     * The state associated to this node
-     */
+public final class NodeSubProblem<T> {
+    /** The state associated with this node. */
     public final T state;
-    /**
-     * The actual node from the graph of decision diagrams
-     */
+
+    /** The actual node from the decision diagram graph. */
     public final Node node;
-    /**
-     * The upper bound associated with this node (if state were the root)
-     */
+
+    /** The lower bound associated with this node (if the state were the root). */
     public double lb;
 
     /**
-     * Creates a new instance
+     * Creates a new NodeSubProblem associating a state with a node and a lower bound.
+     *
+     * @param state the state associated with the node
+     * @param lb    the rough lower bound associated with the state-node pair
+     * @param node  the node in the decision diagram
      */
     public NodeSubProblem(final T state, final double lb, final Node node) {
         this.state = state;
@@ -46,7 +47,15 @@ final public class NodeSubProblem<T> {
     }
 
     /**
-     * @return Turns this association into an actual subproblem
+     * Converts this node-state association into an actual {@link SubProblem}.
+     * <p>
+     * The resulting {@link SubProblem} incorporates the path of decisions from the root to this node,
+     * updates the lower bound based on the node's value and suffix, and can be used directly
+     * in search or optimization routines.
+     * </p>
+     *
+     * @param pathToRoot the set of decisions forming the path from the root to this node
+     * @return a {@link SubProblem} representing this node-state association
      */
     public SubProblem<T> toSubProblem(final Set<Decision> pathToRoot) {
         HashSet<Decision> path = new HashSet<>();
@@ -65,10 +74,6 @@ final public class NodeSubProblem<T> {
         lb = Math.max(lb, locb);
 
         return new SubProblem<>(state, node.value, lb, path);
-    }
-
-    public double maxIncidentCost() {
-        return node.maxIncidentCost();
     }
 
     @Override

@@ -63,9 +63,4 @@ public class Kmeans<T> implements ReductionStrategy<T> {
     public String toString() {
         return "Kmeans";
     }
-
-    @Override
-    public void setSeed(long seed) {
-        return;
-    }
 }

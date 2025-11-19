@@ -1,17 +1,11 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SolverConfig;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.DdoModel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -19,7 +13,7 @@ import java.util.stream.Stream;
 
 class PSTest {
 
-    private static class PSPBench extends ProblemTestBench<PSState, NullType, PSProblem> {
+    private static class PSPBench extends ProblemTestBench<PSState, PSProblem> {
 
         public PSPBench() {
             super();
@@ -36,26 +30,28 @@ class PSTest {
             return stream.filter(file -> !file.isDirectory())
                     .map(File::getName)
                     .map(fileName -> Paths.get(dir, fileName))
-                    .map(filePath -> {
-                        PSProblem problem = new PSProblem(new PSInstance(filePath.toString()));
-                        problem.setName(filePath.getFileName().toString());
-                        return problem;
-                    }).toList();
+                    .map(filePath -> new PSProblem(filePath.toString())).toList();
         }
 
         @Override
-        protected SolverConfig<PSState, NullType> configSolver(PSProblem problem) {
-            SolverConfig<PSState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new PSRelax(problem.instance);
-            config.ranking = new PSRanking();
-            config.flb = new PSFastLowerBound(problem.instance);
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            config.restrictStrategy = new CostBased<>(config.ranking);
-            config.relaxStrategy = new CostBased<>(config.ranking);
-            return config;
+        protected DdoModel<PSState> model(PSProblem problem) {
+            return new DdoModel<>() {
+
+                @Override
+                public PSProblem problem() {
+                    return problem;
+                }
+
+                @Override
+                public PSRelax relaxation() {
+                    return new PSRelax(problem);
+                }
+
+                @Override
+                public PSRanking ranking() {
+                    return new PSRanking();
+                }
+            };
         }
     }
 

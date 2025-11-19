@@ -1,12 +1,10 @@
 package org.ddolib.examples.setcover.elementlayer;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
-import org.ddolib.examples.LaunchInterface;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import static org.ddolib.examples.setcover.elementlayer.SetCoverLoader.DistanceType;
+import static org.ddolib.examples.setcover.elementlayer.SetCoverLauncher.DistanceType;
 
 public class SetCoverDistance implements StateDistance<SetCoverState> {
 

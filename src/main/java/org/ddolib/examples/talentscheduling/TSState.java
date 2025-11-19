@@ -3,11 +3,23 @@ package org.ddolib.examples.talentscheduling;
 import java.util.BitSet;
 
 /**
- * Represent a state for a talent scheduling instance
+ * Represents a state in the Talent Scheduling Problem (TSP).
  *
- * @param remainingScenes Set containing all the remaining scenes that must planned.
- * @param maybeScenes     Used by merged states. Contains scenes that must be planned for some of
- *                        the merged states but has already been planned for other ones.
+ * <p>
+ * A state keeps track of which scenes still need to be scheduled and which scenes are
+ * partially scheduled in the context of merged states. It is used in decision diagrams,
+ * branch-and-bound, or relaxation-based solvers for the TSP.
+ * </p>
+ *
+ * @param remainingScenes A {@link BitSet} containing all the scenes that must still be scheduled.
+ * @param maybeScenes     A {@link BitSet} used in merged states. It contains scenes that
+ *                        must be scheduled in some of the merged states but have already
+ *                        been scheduled in other ones.
+ *
+ * <p>
+ * The combination of {@code remainingScenes} and {@code maybeScenes} allows the solver
+ * to represent both definite and potential decisions in a relaxed or merged state.
+ * </p>
  */
 public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocationActors) {
 

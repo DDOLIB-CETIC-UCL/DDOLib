@@ -2,7 +2,7 @@ package org.ddolib.examples.mks;
 
 import org.ddolib.modeling.Dominance;
 
-public class MKSDominance implements Dominance<MKSState, Integer> {
+public class MKSDominance implements Dominance<MKSState> {
 
     @Override
     public Integer getKey(MKSState state) {

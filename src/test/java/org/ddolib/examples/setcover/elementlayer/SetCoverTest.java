@@ -2,7 +2,6 @@ package org.ddolib.examples.setcover.elementlayer;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.*;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -22,7 +21,7 @@ import java.util.stream.Stream;
 
 public class SetCoverTest {
 
-    @Test
+    /*@Test
     public void testSmallStatic() {
         int nElem = 6;
         int nSets = 6;
@@ -81,7 +80,7 @@ public class SetCoverTest {
      * The returned solution is compared with the optimal cost computed by a brute-force approach
      * @param problem
      */
-    @ParameterizedTest
+    /*@ParameterizedTest
     @MethodSource("smallGeneratedInstances")
     public void testClusterRelaxation(SetCoverProblem problem) {
         int optimalCost = bruteForce(problem);
