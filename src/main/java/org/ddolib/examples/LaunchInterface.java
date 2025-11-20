@@ -83,7 +83,7 @@ public abstract class LaunchInterface {
         public String toCsv() {
             return this.instancePath + ";" + // Name
                     this.solverType + ";" + // Solver
-                    this.solverType + ";" + // Cutset
+                    this.cutSetType + ";" + // Cutset
                     this.relaxStrat + ";" + // RelaxStrat
                     this.restrictStrat + ";" + // RestrictionStrat
                     this.timeLimit + ";" + // timelimit

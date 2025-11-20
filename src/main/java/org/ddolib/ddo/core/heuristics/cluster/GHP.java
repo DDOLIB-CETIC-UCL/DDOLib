@@ -40,9 +40,9 @@ public class GHP<T> implements ReductionStrategy<T> {
         NodeSubProblem<T> pivotA = layer.getFirst();
         NodeSubProblem<T> pivotB = selectFurthest(pivotA, layer);
         pivotA = selectFurthest(pivotB, layer);
-        pivotB = selectFurthest(pivotA, layer);
-        pivotA = selectFurthest(pivotB, layer);
-        pivotB = selectFurthest(pivotA, layer);
+        // pivotB = selectFurthest(pivotA, layer);
+        // pivotA = selectFurthest(pivotB, layer);
+        // pivotB = selectFurthest(pivotA, layer);
         // System.out.printf("%s, %s, %f %n", pivotA, pivotB, distance.distance(pivotA.state, pivotB.state));
         for (NodeSubProblem<T> node: layer) {
             distanceWithPivot.put(node.state, distance.distance(pivotA.state, node.state));
