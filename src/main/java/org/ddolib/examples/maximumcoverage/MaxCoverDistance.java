@@ -7,6 +7,11 @@ import java.util.BitSet;
 import static java.lang.Math.max;
 
 public class MaxCoverDistance implements StateDistance<MaxCoverState> {
+    final private MaxCoverProblem instance;
+
+    public MaxCoverDistance(MaxCoverProblem instance) {
+        this.instance = instance;
+    }
 
     private double jaccardDistance(BitSet a, BitSet b) {
         double intersectionSize =0;
@@ -18,6 +23,23 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
                 unionSize++;
                 if (a.get(i) && b.get(i)) {
                     intersectionSize++;
+                }
+            }
+        }
+
+        return 1 - intersectionSize / unionSize;
+    }
+
+    private double weightedJaccardDistance(BitSet a, BitSet b) {
+        double intersectionSize =0;
+        double unionSize = 0;
+
+        int maxIndex = max(a.length(), b.length());
+        for (int i = 0; i < maxIndex; i++) {
+            if (a.get(i) || b.get(i)) {
+                unionSize += instance.centralities[i];
+                if (a.get(i) && b.get(i)) {
+                    intersectionSize+= instance.centralities[i];
                 }
             }
         }

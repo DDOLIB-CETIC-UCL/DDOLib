@@ -31,6 +31,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public final int nbSubSets;
     public final int nbSubSetsToChoose;
     public final BitSet[] subSets;
+    public final double[] centralities;
     public Optional<String> name;
     public Optional<Double> optimal;
     public MaxCoverProblem(Optional<String> name, int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets, Optional<Double> optimal) {
@@ -40,6 +41,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = nbSubSetsToChoose;
         this.subSets = subSets;
         this.optimal = optimal;
+        this.centralities = new double[nbItems];
+        computeCentralities();
     }
 
 
@@ -51,6 +54,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = nbSubSetsToChoose;
         this.subSets = subSets;
         this.optimal = optimal;
+        this.centralities = new double[nbItems];
+        computeCentralities();
     }
 
     public MaxCoverProblem(int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets) {
@@ -60,6 +65,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = nbSubSetsToChoose;
         this.subSets = subSets;
         this.optimal = Optional.empty();
+        this.centralities = new double[nbItems];
+        computeCentralities();
     }
 
     public MaxCoverProblem(int n, int m, int k, double maxR) {
@@ -92,6 +99,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = k;
         this.subSets = subSets;
         this.optimal = Optional.empty();
+        this.centralities = new double[nbItems];
+        computeCentralities();
     }
 
     public String instanceFormat() {
@@ -277,6 +286,20 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = budget;
         this.subSets = sets;
         this.optimal = optimal;
+        this.centralities = new double[nbItems];
+        computeCentralities();
+    }
+
+    private void computeCentralities() {
+        for (int i = 0; i < nbItems; i++) {
+            double centrality = 0;
+            for (int j = 0; j < nbSubSets; j++) {
+                if (subSets[j].get(i)) {
+                    centrality++;
+                }
+            }
+            centralities[i] = centrality/nbSubSets;
+        }
     }
 }
 

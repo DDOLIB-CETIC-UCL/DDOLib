@@ -181,9 +181,24 @@ public final class RelaxationSolver<T> implements Solver {
 
         DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
+        String problemName = problem.getClass().getSimpleName().replace("Problem", "");
         maybeUpdateBest(relaxedMdd, exportAsDot);
+        if (exportAsDot) {
+            exportDot(relaxedMdd.exportAsDot(),
+                    Paths.get("output", problemName + "_relaxed.dot").toString());
+        }
+
+
 
         return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+    }
+
+    private void exportDot(String dot, String fileName) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(dot);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -222,7 +237,8 @@ public final class RelaxationSolver<T> implements Solver {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
             verboseMode.newBest(bestUB);
-        } else if (exportDot) {
+        }
+        if (exportDot) {
             currentMdd.exportAsDot(); // to be sure to update the color of the edges.
         }
     }
