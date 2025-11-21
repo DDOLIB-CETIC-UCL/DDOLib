@@ -69,8 +69,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         computeCentralities();
     }
 
-    public MaxCoverProblem(int n, int m, int k, double maxR) {
-        Random rand = new Random();
+    public MaxCoverProblem(int n, int m, int k, double maxR, int seed) {
+        Random rand = new Random(seed);
         double[] xcoord = new double[n];
         double[] ycoord = new double[n];
         for (int i = 0; i < n; i++) {

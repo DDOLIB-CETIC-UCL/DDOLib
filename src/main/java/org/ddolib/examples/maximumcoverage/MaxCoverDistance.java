@@ -14,20 +14,16 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     }
 
     private double jaccardDistance(BitSet a, BitSet b) {
-        double intersectionSize =0;
-        double unionSize = 0;
 
-        int maxIndex = max(a.length(), b.length());
-        for (int i = 0; i < maxIndex; i++) {
-            if (a.get(i) || b.get(i)) {
-                unionSize++;
-                if (a.get(i) && b.get(i)) {
-                    intersectionSize++;
-                }
-            }
-        }
+        BitSet tmp = (BitSet) a.clone();
+        tmp.and(b);
+        int intersectionSize = tmp.cardinality();
 
-        return 1 - intersectionSize / unionSize;
+        tmp = (BitSet) a.clone();
+        tmp.or(b);
+        int unionSize = tmp.cardinality();
+
+        return (1.0 - ((double) intersectionSize) / unionSize);
     }
 
     private double weightedJaccardDistance(BitSet a, BitSet b) {

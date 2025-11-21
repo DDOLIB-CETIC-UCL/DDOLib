@@ -118,7 +118,6 @@ public class GHP<T> implements ReductionStrategy<T> {
             System.out.println(cluster);
         }
         System.out.println("@@@@@@@@@@@@@@@@@@@");*/
-        layer.clear();
         return clusters;
     }
 

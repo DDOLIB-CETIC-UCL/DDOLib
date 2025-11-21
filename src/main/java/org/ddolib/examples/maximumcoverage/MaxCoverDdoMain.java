@@ -1,7 +1,10 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.smic.SMICRanking;
@@ -11,7 +14,6 @@ import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,8 +31,8 @@ public class MaxCoverDdoMain {
         //ss[3] = new BitSet(n);  ss[3].set(3);  ss[3].set(4);
         // MaxCoverProblem problem = new MaxCoverProblem(n, m, k, ss);
 
-        MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
-        // MaxCoverProblem problem = new MaxCoverProblem("data/MaxCover/mc_n100_m50_k10_r20_0.txt");
+        // MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
+        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
         System.out.println(problem);
         DdoModel<MaxCoverState> model = new DdoModel<>() {
             @Override
@@ -50,7 +52,7 @@ public class MaxCoverDdoMain {
 
             @Override
             public WidthHeuristic<MaxCoverState> widthHeuristic() {
-                return new FixedWidth<>(4);
+                return new FixedWidth<>(2);
             }
 
 //            @Override
@@ -65,27 +67,19 @@ public class MaxCoverDdoMain {
 
             @Override
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
-                return new GHP<>(new MaxCoverDistance(problem));
                 // return new CostBased<>(ranking());
-                // return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(), 0.75);
+                return new GHP<>(new MaxCoverDistance(problem));
+                // return new Kmeans<>(new MaxCoverCoordinates(problem));
             }
-
             @Override
             public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem), 0.75);
-            }
-
-            @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
+                return new Kmeans<>(new MaxCoverCoordinates(problem));
             }
         };
 
-        long start = System.currentTimeMillis();
-        SearchStatistics stats = Solvers.relaxedDdo(model, x-> (System.currentTimeMillis() - start >= 60*1000) ,(sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
-        // SearchStatistics stats = Solvers.minimizeExact(model);
         System.out.println();
         System.out.println(stats);
     }

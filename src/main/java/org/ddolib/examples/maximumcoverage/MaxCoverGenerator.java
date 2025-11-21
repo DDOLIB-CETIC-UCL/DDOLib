@@ -4,8 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import static java.lang.Math.ceil;
-import static java.lang.Math.max;
+import static java.lang.Math.*;
 
 public class MaxCoverGenerator {
 
@@ -14,7 +13,7 @@ public class MaxCoverGenerator {
     }
 
     private static void createInstance(int n, int m, int k, double maxR, int index, String dirPath, boolean computeOptimum) {
-        MaxCoverProblem instance = new MaxCoverProblem(n, m, k, maxR);
+        MaxCoverProblem instance = new MaxCoverProblem(n, m, k, maxR, (int) (Math.random()*100000));
         if (computeOptimum) {
             double optimum = bruteForce(instance);
             instance.optimal = Optional.of(optimum);
