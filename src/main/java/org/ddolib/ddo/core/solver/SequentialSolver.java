@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -179,6 +180,16 @@ public final class SequentialSolver<T> implements Solver {
 
 
     /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    private final ReductionStrategy<T> relaxStrategy;
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    private final ReductionStrategy<T> restrictStrategy;
+
+    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
      *
@@ -200,6 +211,8 @@ public final class SequentialSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
+        this.relaxStrategy = model.relaxStrategy();
+        this.restrictStrategy = model.restrictStrategy();
     }
 
     @Override
@@ -254,6 +267,7 @@ public final class SequentialSolver<T> implements Solver {
             compilation.cutSetType = frontier.cutSetType();
             compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
             compilation.debugLevel = this.debugLevel;
+            compilation.reductionStrategy = restrictStrategy;
 
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
@@ -279,6 +293,7 @@ public final class SequentialSolver<T> implements Solver {
             compilation.compilationType = CompilationType.Relaxed;
             compilation.bestUB = this.bestUB;
             compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
+            compilation.reductionStrategy = relaxStrategy;
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();

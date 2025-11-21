@@ -1,0 +1,9 @@
+package org.ddolib.examples.maximumcoverage;
+
+import java.util.BitSet;
+
+public record MaxCoverState (BitSet coveredItems) {
+
+    @Override
+    public String toString() {return "covered items "+this.coveredItems();}
+}
