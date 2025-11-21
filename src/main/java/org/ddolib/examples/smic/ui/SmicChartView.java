@@ -32,55 +32,63 @@ public class SmicChartView extends StackPane {
     public SmicChartView(int initInventory, int maxInventory) {
         this.initInventory = initInventory;
 
-        // 1. Configuration des axes
-        final NumberAxis xAxis = new NumberAxis(0, 75, 1);
+
+        final NumberAxis xAxis = new NumberAxis(0, 45, 5);
         xAxis.setLabel("Time");
 
-        // Calcul dynamique de la borne Y
         final int yLimit = maxInventory + 5 - maxInventory % 5;
         final NumberAxis yAxis = new NumberAxis(0, yLimit, 5);
         yAxis.setLabel("Inventory");
 
-        // 2. Création du Graphique Personnalisé
         lineChart = new TaskLineChart(xAxis, yAxis, maxInventory);
         lineChart.setAnimated(false);
         lineChart.setCreateSymbols(true);
         lineChart.setLegendVisible(false);
 
-        // IMPORTANT : On laisse 50px de vide en bas du graphique pour afficher nos rectangles
         lineChart.setPadding(new Insets(0, 0, 40, 0));
+        setCurveColor(Color.rgb(111, 176, 82));
+
 
         series = new XYChart.Series<>();
         lineChart.getData().add(series);
 
-        // 3. Création de l'Overlay (Calque transparent)
         overlayPane = new Pane();
-        overlayPane.setPickOnBounds(false); // Permet aux clics de traverser vers le graphique
+        overlayPane.setPickOnBounds(false);
         overlayPane.setMouseTransparent(true);
 
-        // 4. Le Callback : Quand le Chart a fini de se dessiner, on dessine l'overlay
         lineChart.setOnLayoutCallback(() -> drawOverlayTasks(lineChart.getTasks()));
 
-        // 5. Assemblage : Chart au fond, Overlay au-dessus
         this.getChildren().addAll(lineChart, overlayPane);
     }
 
     public void refresh(List<SmicTask> tasks) {
         Platform.runLater(() -> {
-            // Mise à jour des données de la courbe
             series.getData().clear();
             ObservableList<XYChart.Data<Number, Number>> list = FXCollections.observableArrayList();
             list.add(new XYChart.Data<>(0, initInventory));
 
+            int prevInventory = initInventory;
+            int prevTime = 0;
+
             for (SmicTask task : tasks) {
+                if (task.start() != prevTime) {
+                    list.add(new XYChart.Data<>(task.start(), prevInventory));
+                }
                 list.add(new XYChart.Data<>(task.end(), task.inventoryAtEnd()));
+                prevTime = task.end();
+                prevInventory = task.inventoryAtEnd();
             }
 
             series.getData().setAll(list);
 
-            // On passe les tâches au graphique (ce qui déclenchera le redessin de l'overlay)
             lineChart.setTasks(tasks);
         });
+    }
+
+    public void setCurveColor(Color color) {
+        String hexColor = toHexString(color);
+
+        lineChart.setStyle("CHART_COLOR_1: " + hexColor + ";");
     }
 
     /**
@@ -92,20 +100,15 @@ public class SmicChartView extends StackPane {
 
         NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
 
-        // Position Y fixe dans l'overlay (dans la zone de padding du bas)
         double yPos = this.getHeight() - 40;
 
         for (SmicTask task : tasks) {
-            // A. Récupérer les coordonnées X dans le monde du Graphique
             double xStartAxis = xAxis.getDisplayPosition(task.start());
             double xEndAxis = xAxis.getDisplayPosition(task.end());
 
-            // B. Convertir ces coordonnées vers le monde de l'Overlay (Scène -> Local)
-            // Cette étape est cruciale car les deux Panes n'ont pas forcément le même repère
             Point2D pStart = xAxis.localToScene(xStartAxis, 0);
             Point2D pEnd = xAxis.localToScene(xEndAxis, 0);
 
-            // Sécurité si la fenêtre n'est pas encore visible
             if (pStart == null || pEnd == null) continue;
 
             Point2D pStartOverlay = overlayPane.sceneToLocal(pStart);
@@ -115,16 +118,13 @@ public class SmicChartView extends StackPane {
             double width = Math.abs(pEndOverlay.getX() - pStartOverlay.getX());
             double height = 20;
 
-            // C. Dessin du Rectangle
             Rectangle rect = new Rectangle(realXStart, yPos, width, height);
             rect.setFill(Color.ORANGE.deriveColor(0, 1, 1, 0.5));
             rect.setStroke(Color.ORANGE);
 
-            // D. Dessin du Texte
             Text text = new Text("" + task.id());
             text.setFont(Font.font("Arial", FontWeight.BOLD, 10));
 
-            // Centrage du texte
             text.setX(realXStart + (width - text.getLayoutBounds().getWidth()) / 2);
             text.setY(yPos + (height / 2) + 4);
 
@@ -132,13 +132,18 @@ public class SmicChartView extends StackPane {
         }
     }
 
+    private String toHexString(Color color) {
+        return String.format("#%02X%02X%02X",
+                (int) (color.getRed() * 255),
+                (int) (color.getGreen() * 255),
+                (int) (color.getBlue() * 255));
+    }
 
-    // --- CLASSE INTERNE : Graphique Personnalisé ---
+
     private static class TaskLineChart extends LineChart<Number, Number> {
         private final int maxInventory;
         private List<SmicTask> tasks = new LinkedList<>();
 
-        // Le Callback pour prévenir l'extérieur
         private Runnable onLayoutCallback;
 
         public TaskLineChart(Axis<Number> xAxis, Axis<Number> yAxis, int maxInventory) {
@@ -146,7 +151,6 @@ public class SmicChartView extends StackPane {
             this.maxInventory = maxInventory;
         }
 
-        // Setter pour définir l'action à effectuer après le layout
         public void setOnLayoutCallback(Runnable callback) {
             this.onLayoutCallback = callback;
         }
@@ -157,18 +161,15 @@ public class SmicChartView extends StackPane {
 
         public void setTasks(List<SmicTask> tasks) {
             this.tasks = tasks;
-            requestChartLayout(); // Demande une mise à jour visuelle
+            requestChartLayout();
         }
 
         @Override
         protected void layoutPlotChildren() {
-            // 1. Laisser JavaFX dessiner la courbe standard
             super.layoutPlotChildren();
 
-            // 2. Dessiner nos éléments internes (Lignes limites)
             drawLimits();
 
-            // 3. Déclencher le dessin externe (Overlay)
             if (onLayoutCallback != null) {
                 onLayoutCallback.run();
             }
@@ -176,7 +177,6 @@ public class SmicChartView extends StackPane {
 
         private void drawLimits() {
             ObservableList<Node> plotChildren = getPlotChildren();
-            // Nettoyage des anciennes lignes limites
             plotChildren.removeIf(node -> "LIMIT_LINE".equals(node.getUserData()));
 
             NumberAxis yAxis = (NumberAxis) getYAxis();
@@ -185,20 +185,23 @@ public class SmicChartView extends StackPane {
             drawHorizontalLine(plotChildren, xAxis, yAxis, maxInventory, Color.RED, "Max inventory");
         }
 
-        private void drawHorizontalLine(ObservableList<Node> children, NumberAxis xAxis, NumberAxis yAxis, int value, Color color, String label) {
+        private void drawHorizontalLine(ObservableList<Node> children,
+                                        NumberAxis xAxis,
+                                        NumberAxis yAxis,
+                                        int value,
+                                        Color color,
+                                        String label) {
             double yPixel = yAxis.getDisplayPosition(value);
             if (Double.isNaN(yPixel)) return;
 
             double xEnd = xAxis.getWidth();
 
-            // Ligne pointillée
             Line line = new Line(0, yPixel, xEnd, yPixel);
             line.setStroke(color);
             line.setStrokeWidth(2);
             line.getStrokeDashArray().addAll(10d, 5d);
             line.setUserData("LIMIT_LINE"); // Tag important pour le nettoyage
 
-            // Label texte à droite
             Text text = new Text(label + " (" + value + ")");
             text.setFont(Font.font("Arial", FontWeight.NORMAL, 10));
             text.setFill(color);

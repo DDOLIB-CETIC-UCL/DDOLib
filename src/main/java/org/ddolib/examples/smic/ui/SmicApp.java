@@ -22,7 +22,7 @@ public class SmicApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        final SMICProblem problem = new SMICProblem("data/SMIC/data10_10.txt");
+        final SMICProblem problem = new SMICProblem("data/SMIC/data10_4.txt");
         final DdoModel<SMICState> model = new DdoModel<>() {
             @Override
             public Relaxation<SMICState> relaxation() {
@@ -64,11 +64,6 @@ public class SmicApp extends Application {
         Thread computation = new Thread(() -> {
             Solvers.minimizeDdo(model, (sol, stat) -> {
                 smicView.refresh(problem.toTasks(sol));
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
             });
         });
 
