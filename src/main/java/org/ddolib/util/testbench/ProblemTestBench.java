@@ -81,6 +81,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected ProblemTestBench() {
         problems = generateProblems();
+        System.out.println(problems.size() + " problems generated");
     }
 
 
@@ -147,8 +148,6 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         if (problem.optimalValue().isPresent()) {
             assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
         }
-
-
     }
 
     /**
@@ -199,6 +198,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
                 throw new RuntimeException(msg);
             }
         }
+        System.out.println("relaxation done");
     }
 
     /**
@@ -459,12 +459,14 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, relaxTests);
         }
+        System.out.println("relaxation");
         if (testFLB) {
             Stream<DynamicTest> flbTests = problems.stream().map(p ->
                     DynamicTest.dynamicTest(String.format("FLB for %s", p.toString()), () -> testFlb(p))
             );
             allTests = Stream.concat(allTests, flbTests);
         }
+        System.out.println("FLB");
 
         if (testRelaxation && testFLB) {
             Stream<DynamicTest> relaxAndFlbTest = problems.stream().map(p ->
@@ -472,6 +474,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, relaxAndFlbTest);
         }
+        System.out.println("both");
 
         if (testDominance) {
             Stream<DynamicTest> dominanceTests = problems.stream().map(p ->
@@ -479,6 +482,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, dominanceTests);
         }
+        System.out.println("dominacne");
 
         if (testCache) {
             Stream<DynamicTest> cacheTests = problems.stream().map(p ->
@@ -486,6 +490,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             );
             allTests = Stream.concat(allTests, cacheTests);
         }
+        System.out.println("cache");
 
         Stream<DynamicTest> aStarTests = problems.stream().map(p ->
                 DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
