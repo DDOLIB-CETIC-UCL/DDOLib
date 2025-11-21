@@ -34,12 +34,28 @@ public class CostBased<T> implements ReductionStrategy<T> {
      */
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
         layer.sort(ranking);
+        int nbClusters = Math.min(layer.size(), maxWidth);
+        List<NodeSubProblem<T>>[] cluster = new List[nbClusters];
+        // take the best min(maxWidth, layerSize) - 1 nodes as individual clusters
+        for (int i = 0; i < nbClusters - 1; i++) {
+            cluster[i] = new ArrayList<>(1);
+            cluster[i].add(layer.get(i));
+        }
+        // put the rest in the last cluster
+        cluster[nbClusters-1] = new ArrayList<>(layer.size()-nbClusters+1);
+        for (int i = nbClusters - 1; i < layer.size(); i++) {
+            cluster[nbClusters-1].add(layer.get(i));
+        }
+        //System.out.println(nbClusters+ "size of last one: "+cluster[nbClusters-1].size());
+        return cluster;
 
+        /*
         List<NodeSubProblem<T>>[] cluster = new List[1];
         cluster[0] = new ArrayList<>(layer.subList(maxWidth-1, layer.size()));
         layer.subList(maxWidth-1, layer.size()).clear();
 
         return cluster;
+        */
     }
 
     /**

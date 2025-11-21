@@ -6,8 +6,10 @@ import org.ddolib.modeling.Relaxation;
 import java.util.BitSet;
 import java.util.Iterator;
 
-public class MaxCoverRelax implements Relaxation<MaxCoverState> {
+public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
     final MaxCoverProblem problem;
+    double totInsersectionSize = 0;
+    int nbMerge = 0;
     public MaxCoverRelax(MaxCoverProblem problem) {
         this.problem = problem;
     }
@@ -18,6 +20,11 @@ public class MaxCoverRelax implements Relaxation<MaxCoverState> {
         while (states.hasNext()) {
             state = states.next();
             intersectionCoveredItems.and(state.coveredItems());
+        }
+        totInsersectionSize = intersectionCoveredItems.cardinality();
+        nbMerge++;
+        if (nbMerge % 100 == 0) {
+            System.out.println("Average intersection size after "+nbMerge+" avg intersection size: "+(totInsersectionSize/nbMerge));
         }
         return new MaxCoverState(intersectionCoveredItems);
     }

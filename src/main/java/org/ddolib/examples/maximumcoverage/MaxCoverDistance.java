@@ -6,7 +6,7 @@ import java.util.BitSet;
 
 import static java.lang.Math.max;
 
-public class MaxCoverDistance implements StateDistance<MaxCoverState> {
+    public class MaxCoverDistance implements StateDistance<MaxCoverState> {
 
     private double jaccardDistance(BitSet a, BitSet b) {
 

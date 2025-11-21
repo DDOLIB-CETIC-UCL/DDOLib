@@ -600,6 +600,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         // System.out.println(currentLayer.size());
         // System.out.println(currentLayer);
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
