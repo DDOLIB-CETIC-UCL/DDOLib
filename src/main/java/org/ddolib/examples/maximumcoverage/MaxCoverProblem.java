@@ -86,6 +86,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                 subSets[f].set(i, true);
             }
         }
+
         this.name = Optional.of("maxCoverage_" + n + "_" + m + "_" + k);
         this.nbItems = n;
         this.nbSubSets = m;

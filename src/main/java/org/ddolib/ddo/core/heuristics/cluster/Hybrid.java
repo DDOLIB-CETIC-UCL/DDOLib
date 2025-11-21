@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.heuristics.cluster;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
 import org.ddolib.modeling.StateRanking;
 
+import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.ceil;
 
@@ -35,14 +36,33 @@ public class Hybrid<T> implements ReductionStrategy<T> {
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
         int nbPreserved = (int) ceil(maxWidth*alpha);
-        int nbClusters = maxWidth - nbPreserved;
+
+        List<List<NodeSubProblem<T>>> clusters = new ArrayList<List<NodeSubProblem<T>>>();
         List<NodeSubProblem<T>>[] costClusters = costBased.defineClusters(layer, nbPreserved+1);
+        for (int i = 0; i < costClusters.length-1; i++) {
+            clusters.add(costClusters[i]);
+        }
+        List<NodeSubProblem<T>> toCluster = costClusters[nbPreserved];
+        int nbClusters = maxWidth - nbPreserved;
+        List<NodeSubProblem<T>>[] ghpClusters = ghp.defineClusters(toCluster, nbClusters);
+        for (int i = 0; i < ghpClusters.length; i++) {
+            clusters.add(ghpClusters[i]);
+        }
+        return clusters.toArray(new List[clusters.size()]);
+
+
+        /*
+        int nbClusters = maxWidth - nbPreserved;
+
+        List<NodeSubProblem<T>>[] costClusters = costBased.defineClusters(layer, nbPreserved+1);
+
+
         assert costClusters.length == 1;
         List<NodeSubProblem<T>>[] clusters = ghp.defineClusters(costClusters[0], nbClusters);
         assert layer.size() == nbPreserved;
         assert clusters.length == nbClusters;
         assert layer.size() + clusters.length == maxWidth;
-        return clusters;
+        return clusters;*/
     }
 
 }

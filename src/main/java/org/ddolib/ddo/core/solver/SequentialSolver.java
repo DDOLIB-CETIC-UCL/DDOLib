@@ -319,13 +319,11 @@ public final class SequentialSolver<T> implements Solver {
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             } else {
-                enqueueCutset(relaxedMdd);
-                /*
                 if (relaxedMdd.bestValue().isPresent() &&  relaxedMdd.bestValue().get() >= bestUB) {
                     continue;
                 } else {
                     enqueueCutset(relaxedMdd);
-                }*/
+                }
             }
         }
         long end = System.currentTimeMillis();

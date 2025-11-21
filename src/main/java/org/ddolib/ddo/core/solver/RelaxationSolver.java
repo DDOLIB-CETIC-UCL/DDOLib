@@ -182,6 +182,7 @@ public final class RelaxationSolver<T> implements Solver {
         DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         maybeUpdateBest(relaxedMdd, exportAsDot);
+        double lb = relaxedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY);
 
         return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
@@ -222,8 +223,9 @@ public final class RelaxationSolver<T> implements Solver {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
             verboseMode.newBest(bestUB);
-        } else if (exportDot) {
-            currentMdd.exportAsDot(); // to be sure to update the color of the edges.
+        }
+        if (exportDot) {
+            System.out.println(currentMdd.exportAsDot()); // to be sure to update the color of the edges.
         }
     }
 
