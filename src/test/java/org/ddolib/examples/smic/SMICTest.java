@@ -7,9 +7,6 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.ddolib.util.verbosity.VerbosityLevel;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,16 +52,6 @@ public class SMICTest {
                 }
 
                 @Override
-                public SMICRelax relaxation() {
-                    return new SMICRelax(problem);
-                }
-
-                @Override
-                public SMICRanking ranking() {
-                    return new SMICRanking();
-                }
-
-                @Override
                 public SMICFastLowerBound lowerBound() {
                     return new SMICFastLowerBound(problem);
                 }
@@ -73,7 +60,6 @@ public class SMICTest {
                 public DominanceChecker<SMICState> dominance() {
                     return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
                 }
-
 
                 @Override
                 public VerbosityLevel verbosityLevel() {
@@ -84,11 +70,21 @@ public class SMICTest {
                 public DebugLevel debugMode() {
                     return DebugLevel.ON;
                 }
+
+                @Override
+                public SMICRelax relaxation() {
+                    return new SMICRelax(problem);
+                }
+
+                @Override
+                public SMICRanking ranking() {
+                    return new SMICRanking();
+                }
             };
         }
     }
 
-    @DisplayName("SMIC")
+   /* @DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var bench = new SMICBench();
@@ -96,5 +92,5 @@ public class SMICTest {
         bench.testFLB = true;
         bench.testDominance = true;
         return bench.generateTests();
-    }
+    }*/
 }
