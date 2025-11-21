@@ -10,6 +10,7 @@ public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
     final MaxCoverProblem problem;
     double totInsersectionSize = 0;
     int nbMerge = 0;
+    int nbZeroIntersection = 0;
     public MaxCoverRelax(MaxCoverProblem problem) {
         this.problem = problem;
     }
@@ -21,10 +22,15 @@ public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
             state = states.next();
             intersectionCoveredItems.and(state.coveredItems());
         }
-        totInsersectionSize = intersectionCoveredItems.cardinality();
+
+        int intersectionCard = intersectionCoveredItems.cardinality();
+        totInsersectionSize += intersectionCard;
         nbMerge++;
+        if (intersectionCard == 0) {
+            nbZeroIntersection++;
+        }
         if (nbMerge % 100 == 0) {
-            System.out.println("Average intersection size after "+nbMerge+" avg intersection size: "+(totInsersectionSize/nbMerge));
+            System.out.println("Average intersection size after "+nbMerge+" avg intersection size: "+(totInsersectionSize/nbMerge)+" nb zero rate: "+nbZeroIntersection/(double)nbMerge);
         }
         return new MaxCoverState(intersectionCoveredItems);
     }
