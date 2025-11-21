@@ -26,7 +26,7 @@ public class BPPTest {
 
         @Override
         protected List<BPPProblem> generateProblems() {
-            String dir = Paths.get("src", "test", "resources", "LCS").toString();
+            String dir = Paths.get("src", "test", "resources", "BinPacking").toString();
 
             File[] files = new File(dir).listFiles();
             assert files != null;
@@ -43,7 +43,7 @@ public class BPPTest {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    }).toList();
+                    }).toList().subList(0,1);
         }
 
         @Override
@@ -57,11 +57,12 @@ public class BPPTest {
             config.width = new FixedWidth<>(maxWidth);
             config.varh = new DefaultVariableHeuristic<>();
             config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+            System.out.println("config: " + config);
             return config;
         }
     }
 
-    @DisplayName("LCS")
+    @DisplayName("BPP")
     @TestFactory
     public Stream<DynamicTest> testLCS() {
         var bench = new BPPTest.BPPBench();

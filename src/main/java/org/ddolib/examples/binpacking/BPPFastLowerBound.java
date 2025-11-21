@@ -4,11 +4,11 @@ import org.ddolib.modeling.FastLowerBound;
 
 import java.util.Set;
 
-public class BPPFastUpperBound implements FastLowerBound<BPPState> {
+public class BPPFastLowerBound implements FastLowerBound<BPPState> {
 
     private final BPPProblem problem;
 
-    public BPPFastUpperBound(BPPProblem problem) {
+    public BPPFastLowerBound(BPPProblem problem) {
         this.problem = problem;
     }
 
