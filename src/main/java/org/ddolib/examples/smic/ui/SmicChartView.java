@@ -3,11 +3,14 @@ package org.ddolib.examples.smic.ui;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -23,142 +26,188 @@ public class SmicChartView extends StackPane {
 
     private final TaskLineChart lineChart;
     private final XYChart.Series<Number, Number> series;
+    private final Pane overlayPane; // Le calque pour dessiner "hors cadre"
     private final int initInventory;
 
     public SmicChartView(int initInventory, int maxInventory) {
         this.initInventory = initInventory;
 
-        final NumberAxis xAxis = new NumberAxis(0, 65, 1);
+        // 1. Configuration des axes
+        final NumberAxis xAxis = new NumberAxis(0, 75, 1);
         xAxis.setLabel("Time");
+
+        // Calcul dynamique de la borne Y
         final int yLimit = maxInventory + 5 - maxInventory % 5;
-        final NumberAxis yAxis = new NumberAxis(-1, yLimit, yLimit / 5.);
+        final NumberAxis yAxis = new NumberAxis(0, yLimit, 5);
         yAxis.setLabel("Inventory");
 
+        // 2. Création du Graphique Personnalisé
         lineChart = new TaskLineChart(xAxis, yAxis, maxInventory);
         lineChart.setAnimated(false);
         lineChart.setCreateSymbols(true);
         lineChart.setLegendVisible(false);
 
+        // IMPORTANT : On laisse 50px de vide en bas du graphique pour afficher nos rectangles
+        lineChart.setPadding(new Insets(0, 0, 40, 0));
+
         series = new XYChart.Series<>();
         lineChart.getData().add(series);
 
-        this.getChildren().add(lineChart);
+        // 3. Création de l'Overlay (Calque transparent)
+        overlayPane = new Pane();
+        overlayPane.setPickOnBounds(false); // Permet aux clics de traverser vers le graphique
+        overlayPane.setMouseTransparent(true);
 
+        // 4. Le Callback : Quand le Chart a fini de se dessiner, on dessine l'overlay
+        lineChart.setOnLayoutCallback(() -> drawOverlayTasks(lineChart.getTasks()));
+
+        // 5. Assemblage : Chart au fond, Overlay au-dessus
+        this.getChildren().addAll(lineChart, overlayPane);
     }
 
     public void refresh(List<SmicTask> tasks) {
         Platform.runLater(() -> {
+            // Mise à jour des données de la courbe
             series.getData().clear();
-            lineChart.getData().clear();
             ObservableList<XYChart.Data<Number, Number>> list = FXCollections.observableArrayList();
             list.add(new XYChart.Data<>(0, initInventory));
-            int prevTime = 0;
-            int prevInventory = initInventory;
+
             for (SmicTask task : tasks) {
-                if (task.start() != prevTime) {
-                    list.add(new XYChart.Data<>(task.start(), prevInventory));
-                }
                 list.add(new XYChart.Data<>(task.end(), task.inventoryAtEnd()));
-                prevTime = task.end();
-                prevInventory = task.inventoryAtEnd();
             }
 
-            series.getData().addAll(list);
-            lineChart.getData().add(series);
-            lineChart.drawTasks(tasks);
+            series.getData().setAll(list);
+
+            // On passe les tâches au graphique (ce qui déclenchera le redessin de l'overlay)
+            lineChart.setTasks(tasks);
         });
     }
 
+    /**
+     * Dessine les rectangles et IDs dans le calque supérieur (Overlay).
+     * Utilise la conversion de coordonnées pour s'aligner avec les axes.
+     */
+    private void drawOverlayTasks(List<SmicTask> tasks) {
+        overlayPane.getChildren().clear();
 
+        NumberAxis xAxis = (NumberAxis) lineChart.getXAxis();
+
+        // Position Y fixe dans l'overlay (dans la zone de padding du bas)
+        double yPos = this.getHeight() - 40;
+
+        for (SmicTask task : tasks) {
+            // A. Récupérer les coordonnées X dans le monde du Graphique
+            double xStartAxis = xAxis.getDisplayPosition(task.start());
+            double xEndAxis = xAxis.getDisplayPosition(task.end());
+
+            // B. Convertir ces coordonnées vers le monde de l'Overlay (Scène -> Local)
+            // Cette étape est cruciale car les deux Panes n'ont pas forcément le même repère
+            Point2D pStart = xAxis.localToScene(xStartAxis, 0);
+            Point2D pEnd = xAxis.localToScene(xEndAxis, 0);
+
+            // Sécurité si la fenêtre n'est pas encore visible
+            if (pStart == null || pEnd == null) continue;
+
+            Point2D pStartOverlay = overlayPane.sceneToLocal(pStart);
+            Point2D pEndOverlay = overlayPane.sceneToLocal(pEnd);
+
+            double realXStart = Math.min(pStartOverlay.getX(), pEndOverlay.getX());
+            double width = Math.abs(pEndOverlay.getX() - pStartOverlay.getX());
+            double height = 20;
+
+            // C. Dessin du Rectangle
+            Rectangle rect = new Rectangle(realXStart, yPos, width, height);
+            rect.setFill(Color.ORANGE.deriveColor(0, 1, 1, 0.5));
+            rect.setStroke(Color.ORANGE);
+
+            // D. Dessin du Texte
+            Text text = new Text("" + task.id());
+            text.setFont(Font.font("Arial", FontWeight.BOLD, 10));
+
+            // Centrage du texte
+            text.setX(realXStart + (width - text.getLayoutBounds().getWidth()) / 2);
+            text.setY(yPos + (height / 2) + 4);
+
+            overlayPane.getChildren().addAll(rect, text);
+        }
+    }
+
+
+    // --- CLASSE INTERNE : Graphique Personnalisé ---
     private static class TaskLineChart extends LineChart<Number, Number> {
-
         private final int maxInventory;
-
         private List<SmicTask> tasks = new LinkedList<>();
 
-        public TaskLineChart(Axis<Number> axis, Axis<Number> axis1, int maxInventory) {
-            super(axis, axis1);
+        // Le Callback pour prévenir l'extérieur
+        private Runnable onLayoutCallback;
+
+        public TaskLineChart(Axis<Number> xAxis, Axis<Number> yAxis, int maxInventory) {
+            super(xAxis, yAxis);
             this.maxInventory = maxInventory;
         }
 
-        public void drawTasks(List<SmicTask> tasks) {
+        // Setter pour définir l'action à effectuer après le layout
+        public void setOnLayoutCallback(Runnable callback) {
+            this.onLayoutCallback = callback;
+        }
+
+        public List<SmicTask> getTasks() {
+            return tasks;
+        }
+
+        public void setTasks(List<SmicTask> tasks) {
             this.tasks = tasks;
-            requestChartLayout();
+            requestChartLayout(); // Demande une mise à jour visuelle
         }
 
         @Override
         protected void layoutPlotChildren() {
+            // 1. Laisser JavaFX dessiner la courbe standard
             super.layoutPlotChildren();
 
-            ObservableList<Node> plotChildren = getPlotChildren();
+            // 2. Dessiner nos éléments internes (Lignes limites)
+            drawLimits();
 
-            plotChildren.removeIf(node -> "TASK_RECT".equals(node.getUserData()) || "LIMIT_LINE".equals(node.getUserData()));
-
-            NumberAxis xAxis = (NumberAxis) getXAxis();
-            NumberAxis yAxis = (NumberAxis) getYAxis();
-
-            double yZeroPixel = yAxis.getDisplayPosition(-1);
-            if (Double.isNaN(yZeroPixel)) return;
-
-            for (SmicTask task : tasks) {
-                double xStart = xAxis.getDisplayPosition(task.start());
-                double xEnd = xAxis.getDisplayPosition(task.end());
-
-                if (Double.isNaN(xStart) || Double.isNaN(xEnd)) continue;
-
-                double width = Math.abs(xEnd - xStart);
-                double realXStart = Math.min(xStart, xEnd);
-                double height = 20;
-                double yPos = yZeroPixel - height;
-
-                Rectangle rect = new Rectangle(realXStart, yPos, width, height);
-                rect.setFill(Color.ORANGE.deriveColor(0, 1, 1, 0.5));
-                rect.setStroke(Color.ORANGE);
-                rect.setUserData("TASK_RECT");
-
-                Text text = new Text("" + task.id());
-                text.setFont(Font.font("Arial", FontWeight.BOLD, 10));
-                text.setUserData("TASK_RECT");
-                text.setX(realXStart + (width - text.getLayoutBounds().getWidth()) / 2);
-                text.setY(yPos + (height / 2) + 4);
-
-                plotChildren.add(rect);
-                plotChildren.add(text);
-
+            // 3. Déclencher le dessin externe (Overlay)
+            if (onLayoutCallback != null) {
+                onLayoutCallback.run();
             }
+        }
+
+        private void drawLimits() {
+            ObservableList<Node> plotChildren = getPlotChildren();
+            // Nettoyage des anciennes lignes limites
+            plotChildren.removeIf(node -> "LIMIT_LINE".equals(node.getUserData()));
+
+            NumberAxis yAxis = (NumberAxis) getYAxis();
+            NumberAxis xAxis = (NumberAxis) getXAxis();
 
             drawHorizontalLine(plotChildren, xAxis, yAxis, maxInventory, Color.RED, "Max inventory");
         }
 
-        private void drawHorizontalLine(ObservableList<Node> children,
-                                        NumberAxis xAxis,
-                                        NumberAxis yAxis,
-                                        int value,
-                                        Color color,
-                                        String label) {
+        private void drawHorizontalLine(ObservableList<Node> children, NumberAxis xAxis, NumberAxis yAxis, int value, Color color, String label) {
             double yPixel = yAxis.getDisplayPosition(value);
             if (Double.isNaN(yPixel)) return;
 
-            double xStart = 0;
             double xEnd = xAxis.getWidth();
 
-            Line line = new Line(xStart, yPixel, xEnd, yPixel);
+            // Ligne pointillée
+            Line line = new Line(0, yPixel, xEnd, yPixel);
             line.setStroke(color);
             line.setStrokeWidth(2);
-            line.getStrokeDashArray().addAll(10d, 5d); // Pattern: 10px line, 5px space
-            line.setUserData("LIMIT_LINE"); // Tag for removal
+            line.getStrokeDashArray().addAll(10d, 5d);
+            line.setUserData("LIMIT_LINE"); // Tag important pour le nettoyage
 
+            // Label texte à droite
             Text text = new Text(label + " (" + value + ")");
             text.setFont(Font.font("Arial", FontWeight.NORMAL, 10));
             text.setFill(color);
-            text.setX(xEnd - 100); // Position on the right side
-            text.setY(yPixel - 5); // Slightly above the line
+            text.setX(xEnd - 100);
+            text.setY(yPixel - 5);
             text.setUserData("LIMIT_LINE");
 
             children.add(line);
             children.add(text);
         }
-
-
     }
 }

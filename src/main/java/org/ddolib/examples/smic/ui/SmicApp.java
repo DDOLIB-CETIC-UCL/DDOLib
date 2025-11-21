@@ -22,7 +22,7 @@ public class SmicApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        final SMICProblem problem = new SMICProblem("data/SMIC/data10_1.txt");
+        final SMICProblem problem = new SMICProblem("data/SMIC/data10_10.txt");
         final DdoModel<SMICState> model = new DdoModel<>() {
             @Override
             public Relaxation<SMICState> relaxation() {
