@@ -26,7 +26,7 @@ public class SmicChartView extends StackPane {
 
     private final TaskLineChart lineChart;
     private final XYChart.Series<Number, Number> series;
-    private final Pane overlayPane; // Le calque pour dessiner "hors cadre"
+    private final Pane overlayPane;
     private final int initInventory;
 
     public SmicChartView(int initInventory, int maxInventory) {
