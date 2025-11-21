@@ -42,10 +42,4 @@ public class BPPRelax implements Relaxation<BPPState> {
     public double relaxEdge(BPPState from, BPPState to, BPPState merged, Decision d, double cost) {
         return -(merged.usedBins-from.usedBins);
     }
-
-    @Override
-    public double fastUpperBound(BPPState state, Set<Integer> variables) {
-
-
-    }
 }

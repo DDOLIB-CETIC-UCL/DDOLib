@@ -1,7 +1,7 @@
 package org.ddolib.examples.binpacking;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Problem;
+import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
@@ -11,17 +11,23 @@ public class BPPProblem implements Problem<BPPState> {
     int binMaxSpace;
     int[] itemWeight;
     // Optimal solution
-    Optional<Integer> optimal;
+    Optional<Double> optimal;
+    Optional<String> name;
 
-    BPPProblem(int nbItems, int binMaxSpace, int[] itemWeight, Optional<Integer> optimal) {
+    BPPProblem(int nbItems, int binMaxSpace, int[] itemWeight, Optional<Double> optimal) {
         this.nbItems = nbItems;
         this.binMaxSpace = binMaxSpace;
         this.itemWeight = itemWeight;
         this.optimal = optimal;
     }
 
-    public Optional<Integer> getOptimal() {
+    @Override
+    public Optional<Double> optimalValue() {
         return optimal;
+    }
+
+    public void setName(String name) {
+        this.name = Optional.of(name);
     }
 
     @Override
@@ -32,7 +38,7 @@ public class BPPProblem implements Problem<BPPState> {
     @Override
     public BPPState initialState() {
         HashSet<Integer> remainingItems = new HashSet<>();
-        for(int i = 0; i<nbItems; i++) {
+        for (int i = 0; i < nbItems; i++) {
             remainingItems.add(i);
         }
         return new BPPState(binMaxSpace, remainingItems, 1);
@@ -41,7 +47,7 @@ public class BPPProblem implements Problem<BPPState> {
     @Override
     public double initialValue() {
         // Starting with one opened bin.
-        return -1;
+        return 1;
     }
 
     @Override
@@ -65,7 +71,7 @@ public class BPPProblem implements Problem<BPPState> {
         int weight = itemWeight[item];
         BPPState newState;
         if (!state.itemFitInBin(weight)) {
-            newState = state.newBin(binMaxSpace).packItem(item,weight);
+            newState = state.newBin(binMaxSpace).packItem(item, weight);
         } else {
             newState = state.packItem(item, weight);
         }
@@ -76,8 +82,8 @@ public class BPPProblem implements Problem<BPPState> {
     public double transitionCost(BPPState state, Decision decision) {
         int item = decision.val();
         int weight = itemWeight[item];
-        // Not enough space ==> new bin ==> -1 else 0
-        if (!state.itemFitInBin(weight)) return -1;
+        // Not enough space ==> new bin ==> 1 else 0
+        if (!state.itemFitInBin(weight)) return 1;
         else return 0;
     }
 }

@@ -1,11 +1,12 @@
 package org.ddolib.examples.binpacking;
 
+import org.ddolib.common.solver.Solver;
 import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
@@ -23,14 +24,14 @@ public class BPP {
         int binMaxSize = 0;
         Integer[] itemWeights = new Integer[1];
         int lineCounter = 0;
-        Optional<Integer> optimal = Optional.empty();
+        Optional<Double> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = bf.readLine()) != null) {
                 if (lineCounter == 0) {
                     String[] splitLine = line.split("\\s+");
                     if(splitLine.length > 1) {
-                        optimal = Optional.of(Integer.parseInt(splitLine[1]));
+                        optimal = Optional.of(Double.parseDouble(splitLine[1]));
                     }
                     nbItems = Integer.parseInt(splitLine[0]);
                     itemWeights = new Integer[nbItems];
@@ -54,19 +55,19 @@ public class BPP {
 
         SolverConfig<BPPState, NullType> config = new SolverConfig<>();
         BPPProblem problem = extractFile(file);
+        config.problem = problem;
         config.relax = new BPPRelax(problem);
-        config.flb = new BPPFastUpperBound(problem);
+        config.flb = new BPPFastLowerBound(problem);
         config.ranking = new BPPRanking();
         config.width = new FixedWidth<>(maxWidth);
         config.varh = new DefaultVariableHeuristic<>();
         config.frontier = new SimpleFrontier<>(config.ranking, org.ddolib.ddo.core.frontier.CutSetType.LastExactLayer);
         config.verbosityLevel = 1;
 
-        ParallelSolver<BPPState,NullType> solver = new ParallelSolver<>(config);
-        solver.
+        Solver solver = new SequentialSolver<>(config);
 
         long start = System.currentTimeMillis();
-        solver.maximize(1,true);
+        solver.minimize();
         double duration = (System.currentTimeMillis() - start) / 1000.0;
 
         Decision[] solution = solver.bestSolution()
@@ -85,9 +86,6 @@ public class BPP {
         System.out.printf("Instance : %s%n", file);
         System.out.printf("Duration : %.3f seconds%n", duration);
         System.out.printf("Objective: %3f%n", solver.bestValue().orElse(Double.MIN_VALUE));
-        System.out.printf("Upper Bnd : %s%n", solver.upperBound());
-        System.out.printf("Lower Bnd : %s%n", solver.lowerBound());
-        System.out.printf("Explored : %s%n", solver.explored());
         System.out.printf("Max width : %d%n", maxWidth);
         System.out.println("Solution : \n############\n");
 
