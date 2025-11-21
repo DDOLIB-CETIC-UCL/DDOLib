@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.binpacking;
+package org.ddolib.examples.binpacking;
 
 import java.util.*;
 import java.util.stream.Collectors;

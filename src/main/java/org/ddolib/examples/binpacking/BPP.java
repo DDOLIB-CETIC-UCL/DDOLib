@@ -1,16 +1,13 @@
-package org.ddolib.ddo.examples.binpacking;
+package org.ddolib.examples.binpacking;
 
-import org.ddolib.ddo.core.CutSetType;
+import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.Frontier;
-import org.ddolib.ddo.heuristics.VariableHeuristic;
-import org.ddolib.ddo.implem.dominance.DominanceChecker;
-import org.ddolib.ddo.implem.frontier.SimpleFrontier;
-import org.ddolib.ddo.implem.heuristics.DefaultVariableHeuristic;
-import org.ddolib.ddo.implem.heuristics.FixedWidth;
-import org.ddolib.ddo.implem.solver.ParallelSolver;
-import org.ddolib.ddo.implem.solver.Solvers;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 
+import javax.lang.model.type.NullType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -55,22 +52,18 @@ public class BPP {
         final String file = args.length == 0 ? "data/BPP/test.txt" : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 250;
 
+        SolverConfig<BPPState, NullType> config = new SolverConfig<>();
         BPPProblem problem = extractFile(file);
-        BPPRelax relax = new BPPRelax(problem);
-        BPPRanking ranking = new BPPRanking();
+        config.relax = new BPPRelax(problem);
+        config.flb = new BPPFastUpperBound(problem);
+        config.ranking = new BPPRanking();
+        config.width = new FixedWidth<>(maxWidth);
+        config.varh = new DefaultVariableHeuristic<>();
+        config.frontier = new SimpleFrontier<>(config.ranking, org.ddolib.ddo.core.frontier.CutSetType.LastExactLayer);
+        config.verbosityLevel = 1;
 
-        final FixedWidth<BPPState> width = new FixedWidth<>(maxWidth);
-        final VariableHeuristic<BPPState> varH = new DefaultVariableHeuristic<>();
-        final Frontier<BPPState> frontier = new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
-
-        ParallelSolver<BPPState,Integer> solver = Solvers.parallelSolver(
-                Runtime.getRuntime().availableProcessors(),
-                problem,
-                relax,
-                varH,
-                ranking,
-                width,
-                frontier);
+        ParallelSolver<BPPState,NullType> solver = new ParallelSolver<>(config);
+        solver.
 
         long start = System.currentTimeMillis();
         solver.maximize(1,true);
