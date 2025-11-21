@@ -1,4 +1,4 @@
-package org.ddolib.ddo.examples.binpacking;
+package org.ddolib.examples.binpacking;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.Problem;

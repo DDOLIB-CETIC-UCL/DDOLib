@@ -1,6 +1,6 @@
-package org.ddolib.ddo.examples.binpacking;
+package org.ddolib.examples.binpacking;
 
-import org.ddolib.ddo.heuristics.StateRanking;
+import org.ddolib.modeling.StateRanking;
 
 public class BPPRanking implements StateRanking<BPPState> {
     @Override
