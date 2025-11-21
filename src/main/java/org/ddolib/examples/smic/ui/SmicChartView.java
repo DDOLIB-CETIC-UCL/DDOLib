@@ -33,7 +33,7 @@ public class SmicChartView extends StackPane {
         this.initInventory = initInventory;
 
 
-        final NumberAxis xAxis = new NumberAxis(0, 45, 5);
+        final NumberAxis xAxis = new NumberAxis(0, 30, 5);
         xAxis.setLabel("Time");
 
         final int yLimit = maxInventory + 5 - maxInventory % 5;
@@ -45,8 +45,7 @@ public class SmicChartView extends StackPane {
         lineChart.setCreateSymbols(true);
         lineChart.setLegendVisible(false);
 
-        lineChart.setPadding(new Insets(0, 0, 40, 0));
-        setCurveColor(Color.rgb(111, 176, 82));
+        lineChart.setPadding(new Insets(20, 20, 50, 20));
 
 
         series = new XYChart.Series<>();
@@ -57,6 +56,10 @@ public class SmicChartView extends StackPane {
         overlayPane.setMouseTransparent(true);
 
         lineChart.setOnLayoutCallback(() -> drawOverlayTasks(lineChart.getTasks()));
+
+        setGlobalBackgroundColor(Color.WHITE);
+        setPlotBackgroundColor(Color.WHITE);
+        setCurveColor(Color.rgb(111, 176, 82));
 
         this.getChildren().addAll(lineChart, overlayPane);
     }
@@ -89,6 +92,22 @@ public class SmicChartView extends StackPane {
         String hexColor = toHexString(color);
 
         lineChart.setStyle("CHART_COLOR_1: " + hexColor + ";");
+    }
+
+    public void setGlobalBackgroundColor(Color color) {
+        String hex = toHexString(color);
+        this.setStyle("-fx-background-color: " + hex + ";");
+        lineChart.setStyle("-fx-background-color: " + hex + ";");
+    }
+
+    public void setPlotBackgroundColor(Color color) {
+        String hex = toHexString(color);
+
+        Node plotArea = lineChart.lookup(".chart-plot-background");
+
+        if (plotArea != null) {
+            plotArea.setStyle("-fx-background-color: " + hex + ";");
+        }
     }
 
     /**
