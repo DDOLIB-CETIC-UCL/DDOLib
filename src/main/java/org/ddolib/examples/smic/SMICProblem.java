@@ -1,6 +1,7 @@
 package org.ddolib.examples.smic;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.examples.smic.ui.SmicTask;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
@@ -64,12 +65,12 @@ public class SMICProblem implements Problem<SMICState> {
     /**
      * Initial inventory level at the beginning of the schedule.
      */
-    final int initInventory;
+    public final int initInventory;
 
     /**
      * Maximum allowed inventory capacity.
      */
-    final int capaInventory;
+    public final int capaInventory;
 
     /**
      * Job types (0 for consumption, 1 for production).
@@ -363,5 +364,21 @@ public class SMICProblem implements Problem<SMICState> {
         }
 
         return time;
+    }
+
+    public List<SmicTask> toTasks(int[] solution){
+        List<SmicTask> tasks = new LinkedList<>();
+        int time = 0;
+        int capa = initInventory;
+
+        for (int job : solution) {
+            time = Math.max(time, release[job]);
+            capa += type[job] == 0 ? -inventory[job] : inventory[job];
+            SmicTask task = new SmicTask(time, processing[job], capa, job);
+            tasks.add(task);
+            time += processing[job];
+        }
+
+        return tasks;
     }
 }
