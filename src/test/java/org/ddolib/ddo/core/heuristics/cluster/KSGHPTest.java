@@ -1,14 +1,19 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.knapsack.*;
+import org.ddolib.modeling.*;
+import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -40,39 +45,124 @@ public class KSGHPTest {
     }
 
     private static double optimalSolutionCostBasedClustering(KSProblem problem) {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new KSRelax();
-        config.flb = new KSFastLowerBound(problem);
-        config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(10000);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
+        final DdoModel<Integer> model = new DdoModel<>() {
+            ;
 
-        final Solver solver = new SequentialSolver<>(config);
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
 
-        solver.minimize();
-        return solver.bestValue().get();
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public boolean useCache() {
+                return false;
+            }
+
+            @Override
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(10_000);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public ReductionStrategy relaxStrategy() {
+                return new CostBased<>(ranking());
+            }
+
+            @Override
+            public ReductionStrategy restrictStrategy() {
+                return new CostBased<>(ranking());
+            }
+        };
+
+        SearchStatistics stat = Solvers.minimizeDdo(model);
+
+        return stat.incumbent();
     }
 
 
     private double optimalSolutionGHPClustering(KSProblem problem, int w, CutSetType cutSetType) {
-        SolverConfig<Integer, Integer> config = new SolverConfig<>();
-        config.problem = problem;
-        config.relax = new KSRelax();
-        config.flb = new KSFastLowerBound(problem);
-        config.ranking = new KSRanking();
-        config.width = new FixedWidth<>(w);
-        config.varh = new DefaultVariableHeuristic<>();
-        config.cache = new SimpleCache<>();
-        config.frontier = new SimpleFrontier<>(config.ranking, cutSetType);
-        config.relaxStrategy = new GHP<>(new KSDistance());
-        config.restrictStrategy = new GHP<>(new KSDistance());
+        final DdoModel<Integer> model = new DdoModel<>() {
+            ;
 
-        final Solver solver = new SequentialSolver<>(config);
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
 
-        solver.minimize();
-        return solver.bestValue().get();
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public boolean useCache() {
+                return false;
+            }
+
+            @Override
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(10_000);
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public ReductionStrategy relaxStrategy() {
+                return new GHP(new KSDistance());
+            }
+
+            @Override
+            public ReductionStrategy restrictStrategy() {
+                return new GHP(new KSDistance());
+            }
+        };
+
+        SearchStatistics stat = Solvers.minimizeDdo(model);
+
+        return stat.incumbent();
     }
 
     @ParameterizedTest

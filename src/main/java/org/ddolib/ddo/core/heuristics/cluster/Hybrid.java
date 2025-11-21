@@ -41,6 +41,7 @@ public class Hybrid<T> implements ReductionStrategy<T> {
         List<NodeSubProblem<T>>[] clusters = ghp.defineClusters(costClusters[0], nbClusters);
         assert layer.size() == nbPreserved;
         assert clusters.length == nbClusters;
+        assert layer.size() + clusters.length == maxWidth;
         return clusters;
     }
 

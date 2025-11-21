@@ -1,5 +1,7 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
+
 /**
  * This abstraction defines the distance function used to constitute the
  * cluster when deciding which nodes on a layer should be merged.
@@ -19,5 +21,9 @@ public interface StateDistance<T> {
      * @return the distance between them
      */
     double distance(T a, T b);
+
+    default double distance(NodeSubProblem<T> a, NodeSubProblem<T> b) {
+        return 0;
+    }
 
 }

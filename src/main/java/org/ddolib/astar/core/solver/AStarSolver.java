@@ -1,23 +1,28 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.ddo.core.profiling.SearchStatistics;
 import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
-import org.ddolib.util.DebugUtil;
+import org.ddolib.util.StateAndDepth;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.text.DecimalFormat;
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public final class AStarSolver<T, K> implements Solver {
+public final class AStarSolver<T> implements Solver {
 
     /**
      * The problem we want to minimize
@@ -41,12 +46,12 @@ public final class AStarSolver<T, K> implements Solver {
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
-    private final HashMap<AstarKey<T>, Double> closed;
+    private final HashMap<StateAndDepth<T>, Double> closed;
 
     /**
      * HashMap mapping (state,depth) open nodes to the f value.
      */
-    private final HashMap<AstarKey<T>, Double> present;
+    private final HashMap<StateAndDepth<T>, Double> present;
 
     /**
      * If set, this keeps the info about the best solution so far.
@@ -56,7 +61,7 @@ public final class AStarSolver<T, K> implements Solver {
     /**
      * The dominance object that will be used to prune the search space.
      */
-    private final DominanceChecker<T, K> dominance;
+    private final DominanceChecker<T> dominance;
     /**
      * The priority queue containing the subproblems to be explored,
      * ordered by decreasing f = value + fastUpperBound
@@ -82,35 +87,29 @@ public final class AStarSolver<T, K> implements Solver {
      * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
-    private final int verbosityLevel;
+    private final VerbosityLevel verbosityLevel;
+
+    private final VerboseMode verboseMode;
 
     /**
-     * Whether to export the first explored restricted and relaxed mdd.
+     * The debug level of the compilation to add additional checks (see
+     * {@link DebugLevel for details}
      */
-    private final boolean exportAsDot;
+    private final DebugLevel debugLevel;
 
-    /**
-     * <ul>
-     *     <li>0: no additional tests</li>
-     *     <li>1: checks if the upper bound is well-defined</li>
-     *     <li>2: 1 + export diagram with failure in {@code output/failure.dot}</li>
-     * </ul>
-     */
-    private final int debugLevel;
 
-    public AStarSolver(
-            SolverConfig<T, K> config) {
-        this.problem = config.problem;
-        this.varh = config.varh;
-        this.lb = config.flb;
-        this.dominance = config.dominance;
-        this.bestUB = Integer.MAX_VALUE;
+    public AStarSolver(Model<T> model) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
-        this.debugLevel = config.debugLevel;
+        this.verbosityLevel = model.verbosityLevel();
+        this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
+        this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
 
     }
@@ -120,85 +119,98 @@ public final class AStarSolver<T, K> implements Solver {
      * search. For testing purpose, this constructor assumes that the path to the given node has
      * 0 length.
      *
-     * @param config  All parameters needed ton configure the solver
+     * @param model   All parameters needed ton configure the solver.
      * @param rootKey The state and the depth from which start the search.
      */
     private AStarSolver(
-            SolverConfig<T, K> config,
-            AstarKey<T> rootKey
+            Model<T> model,
+            StateAndDepth<T> rootKey
     ) {
-        this.problem = config.problem;
-        this.varh = config.varh;
-        this.lb = config.flb;
-        this.dominance = config.dominance;
-        this.bestUB = Integer.MIN_VALUE;
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.verbosityLevel = config.verbosityLevel;
-        this.exportAsDot = config.exportAsDot;
-        this.debugLevel = config.debugLevel;
-        this.root = constructRoot(rootKey.state, 0, rootKey.depth);
+        this.verbosityLevel = VerbosityLevel.SILENT;
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
+        this.debugLevel = DebugLevel.OFF;
+        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
     }
 
     @Override
-    public SearchStatistics minimize() {
+    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
-        long ti = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         open.add(root);
-        present.put(new AstarKey<>(root.getState(), root.getDepth()), root.f());
+        present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            if (verbosityLevel >= 1) {
-                if (System.currentTimeMillis() - ti > 500) {
-                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
-                    ti = System.currentTimeMillis();
-                }
-            }
+            verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
+                    open.peek().getLowerBound(), 100 * gap());
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.size());
 
             SubProblem<T> sub = open.poll();
-            AstarKey<T> subKey = new AstarKey<>(sub.getState(), sub.getDepth());
+            StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
+
+            SearchStatistics stats = new SearchStatistics(
+                    SearchStatus.UNKNOWN,
+                    nbIter,
+                    queueMaxSize,
+                    System.currentTimeMillis() - t0,
+                    bestValue().orElse(Double.POSITIVE_INFINITY),
+                    0);
+
+            if (limit.test(stats)) {
+                return stats;
+            }
+
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
             }
             if (sub.getPath().size() == problem.nbVars()) {
-                if (debugLevel >= 1) {
-                    checkFLBAdmissibility();
-                }
-                if (sub.getValue() > bestUB) continue; // this solution is dominated by best sol
+
+                if (sub.getValue() >= bestUB) continue; // this solution is dominated by best sol
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
 
-                if (verbosityLevel >= 1) {
-                    System.out.println("bestObj:" + bestUB + " lb min:" + open.peek().f());
-                    System.out.println("it " + nbIter + "\t frontier:" + open.size() + "\t " + "bestObj:" + bestUB + " Gap=" + Math.round(100 * Math.abs(open.peek().f() - bestUB) / bestUB) + "%");
-                    ti = System.currentTimeMillis();
-                }
+
+                onSolution.accept(constructSolution(bestSol.get()), new SearchStatistics(
+                        SearchStatus.UNKNOWN,
+                        nbIter,
+                        queueMaxSize,
+                        System.currentTimeMillis() - t0,
+                        bestUB,
+                        gap()
+                ));
+
+                verboseMode.newBest(bestUB);
 
                 if (!negativeTransitionCosts) {
-                    // with A*, the first complete solution is optimal only if there is no negative transition cost
+                    // with A*, the first complete solution is  guaranteed optimal only if there is
+                    // no negative transition cost
                     break;
                 }
-                if (open.peek().f() >= bestUB - 0.00001) {
+                if (open.isEmpty() || open.peek().f() + 1e-10 >= bestUB) {
                     // gap is 0%
                     break;
                 }
             } else if (sub.getPath().size() < problem.nbVars()) {
-                double nodeUB = sub.getLowerBound();
-                if (verbosityLevel >= 2) {
-                    System.out.println("subProblem(ub:" + nodeUB + " val:" + sub.getValue() + " depth:" + sub.getPath().size() + " fastUpperBound:" + (nodeUB - sub.getValue()) + "):" + sub.getState());
-                }
-                addChildren(sub, debugLevel);
+                verboseMode.currentSubProblem(nbIter, sub);
+                addChildren(sub);
                 closed.put(subKey, sub.f());
             }
         }
-        return new SearchStatistics(nbIter, queueMaxSize, System.currentTimeMillis() - t0, SearchStatistics.SearchStatus.OPTIMAL, 0.0);
+        if (debugLevel != DebugLevel.OFF) {
+            checkFLBAdmissibility();
+        }
+        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
     }
 
     @Override
@@ -228,7 +240,7 @@ public final class AStarSolver<T, K> implements Solver {
         Set<Integer> vars =
                 IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
         Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
-        if (debugLevel > 0) {
+        if (depth != 0) {
             for (int i = 0; i < depth; i++) {
                 nullDecisions.add(new Decision(i, 0));
             }
@@ -241,19 +253,18 @@ public final class AStarSolver<T, K> implements Solver {
     }
 
 
-    private void addChildren(SubProblem<T> subProblem, int debugLevel) {
+    private void addChildren(SubProblem<T> subProblem) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
-
-        //int var = varh.nextVariable();
 
 
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel >= 1)
+            if (debugLevel != DebugLevel.OFF) {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
+            }
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             if (cost < 0) {
@@ -268,10 +279,10 @@ public final class AStarSolver<T, K> implements Solver {
             // if the new state is dominated, we skip it
             if (!dominance.updateDominance(newState, path.size(), value)) {
                 SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                if (debugLevel >= 2) {
-                    checkFLBConsistency(subProblem, newSub, cost);
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
                 }
-                AstarKey<T> newKey = new AstarKey<>(newState, newSub.getDepth());
+                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
                 Double presentValue = present.get(newKey);
                 if (presentValue != null && presentValue > newSub.f()) {
                     open.add(newSub);
@@ -308,64 +319,37 @@ public final class AStarSolver<T, K> implements Solver {
      */
     private void checkFLBAdmissibility() {
 
-        HashSet<AstarKey<T>> toCheck = new HashSet<>(closed.keySet());
+        HashSet<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        SolverConfig<T, K> config = new SolverConfig<>();
-        config.problem = this.problem;
-        config.varh = this.varh;
-        config.flb = this.lb;
-        config.dominance = this.dominance;
-
-        for (AstarKey<T> current : toCheck) {
-            AStarSolver<T, K> internalSolver = new AStarSolver<>(config, current);
-            Set<Integer> vars = IntStream.range(current.depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-            double currentFLB = lb.fastLowerBound(current.state, vars);
-
-            internalSolver.minimize();
-            Optional<Double> shortestFromCurrent = internalSolver.bestValue();
-            if (shortestFromCurrent.isPresent() && currentFLB + 1e-10 > shortestFromCurrent.get()) {
-                DecimalFormat df = new DecimalFormat("#.#########");
-                String failureMsg = "Your lower bound is not admissible.\n" +
-                        "State: " + current.state.toString() + "\n" +
-                        "Depth: " + current.depth + "\n" +
-                        "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Longest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
-
-                throw new RuntimeException(failureMsg);
+        Model<T> model = new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
             }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return dominance;
+            }
+        };
+
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AStarSolver<>(model, key));
+    }
+
+
+    private double gap() {
+        if (open.isEmpty()) {
+            return 0.0;
+        } else {
+            double bestInFrontier = open.peek().getLowerBound();
+            return (bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 
-    /**
-     * Given the current node and one of its successor. Checks if the lower bound is consistent.
-     *
-     * @param current        The current node.
-     * @param next           A successor of the current node.
-     * @param transitionCost The transition cost from {@code current} to {@code next}.
-     */
-    private void checkFLBConsistency(
-            SubProblem<T> current,
-            SubProblem<T> next,
-            double transitionCost
-    ) {
-        Logger logger = Logger.getLogger(AStarSolver.class.getName());
-        if (current.getLowerBound() - 1e-10 > next.getLowerBound() + transitionCost) {
-            String warningMsg = "Your upper is not consistent. You may lose performance.\n" +
-                    "Current state " + current + "\n" +
-                    "Next state: " + next + "\n" +
-                    "Transition cost: " + transitionCost + "\n";
-            logger.warning(warningMsg);
-        }
 
-    }
-
-    /**
-     * Class containing a state and its depth in the main search.
-     *
-     * @param state A state of the solved problem.
-     * @param depth The depth of the input state in the main search.
-     * @param <T>   The type of the state.
-     */
-    private record AstarKey<T>(T state, int depth) {
-    }
 }
