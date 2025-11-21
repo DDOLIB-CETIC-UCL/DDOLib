@@ -320,6 +320,12 @@ public final class SequentialSolver<T> implements Solver {
                 }
             } else {
                 enqueueCutset(relaxedMdd);
+                /*
+                if (relaxedMdd.bestValue().isPresent() &&  relaxedMdd.bestValue().get() >= bestUB) {
+                    continue;
+                } else {
+                    enqueueCutset(relaxedMdd);
+                }*/
             }
         }
         long end = System.currentTimeMillis();
