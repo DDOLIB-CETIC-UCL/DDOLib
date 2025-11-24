@@ -58,4 +58,16 @@ public class BPPState {
     public int hashCode() {
         return Objects.hash(remainingItems,remainingSpace,remainingSpaces,usedBins);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj.getClass() == this.getClass()){
+            BPPState other = (BPPState) obj;
+            return other.usedBins == this.usedBins &&
+                    other.remainingSpace == this.remainingSpace &&
+                    other.remainingItems.equals(this.remainingItems) &&
+                    other.remainingSpaces.equals(this.remainingSpaces);
+        }
+        return false;
+    }
 }
