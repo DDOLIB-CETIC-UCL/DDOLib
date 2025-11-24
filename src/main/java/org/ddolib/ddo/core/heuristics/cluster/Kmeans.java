@@ -55,7 +55,6 @@ public class Kmeans<T> implements ReductionStrategy<T> {
             int clusterIndex = clustering.predict(coords);
             clusters[clusterIndex].add(node);
         }
-        layer.clear();
         return clusters;
     }
 
