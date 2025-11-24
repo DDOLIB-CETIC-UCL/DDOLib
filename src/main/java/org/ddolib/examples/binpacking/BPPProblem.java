@@ -1,6 +1,7 @@
 package org.ddolib.examples.binpacking;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.util.*;
@@ -24,6 +25,22 @@ public class BPPProblem implements Problem<BPPState> {
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        int value = 0;
+        int currentSpace = 0;
+        for (int item : solution) {
+            int w = itemWeight[item];
+            if (w <= currentSpace) {
+                currentSpace -= w;
+            } else {
+                value += 1;
+                currentSpace += binMaxSpace - w;
+            }
+        }
+        return value;
     }
 
     public void setName(String name) {

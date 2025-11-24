@@ -1,16 +1,15 @@
 package org.ddolib.examples.binpacking;
 
-import org.ddolib.common.solver.SolverConfig;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import javax.lang.model.type.NullType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class BPPTest {
-    private static class BPPBench extends ProblemTestBench<BPPState, NullType, BPPProblem> {
+    private static class BPPBench extends ProblemTestBench<BPPState, BPPProblem> {
 
         public BPPBench() {
             super();
@@ -47,18 +46,40 @@ public class BPPTest {
         }
 
         @Override
-        protected SolverConfig<BPPState, NullType> configSolver(BPPProblem problem) {
-            SolverConfig<BPPState, NullType> config = new SolverConfig<>();
-            config.problem = problem;
-            config.relax = new BPPRelax(problem);
-            config.ranking = new BPPRanking();
-            config.flb = new BPPFastLowerBound(problem);
+        protected DdoModel<BPPState> model(BPPProblem problem) {
+            return new DdoModel<>() {
+                private final BPPRanking ranking = new BPPRanking();
 
-            config.width = new FixedWidth<>(maxWidth);
-            config.varh = new DefaultVariableHeuristic<>();
-            config.frontier = new SimpleFrontier<>(config.ranking, CutSetType.LastExactLayer);
-            System.out.println("config: " + config);
-            return config;
+                @Override
+                public Relaxation<BPPState> relaxation() {
+                    return new BPPRelax(problem) {};
+                }
+
+                @Override
+                public Problem<BPPState> problem() {
+                    return problem;
+                }
+
+                @Override
+                public FastLowerBound<BPPState> lowerBound() {
+                    return new BPPFastLowerBound(problem);
+                }
+
+                @Override
+                public StateRanking<BPPState> ranking() {
+                    return ranking;
+                }
+
+                @Override
+                public Frontier<BPPState> frontier() {
+                    return new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+                }
+
+                @Override
+                public DebugLevel debugMode() {
+                    return DebugLevel.ON;
+                }
+            };
         }
     }
 
