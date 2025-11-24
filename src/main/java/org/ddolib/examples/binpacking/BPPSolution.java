@@ -24,8 +24,10 @@ public class BPPSolution {
                 currentSpace -= itemWeight;
             } else {
                 b += 1;
-                currentSpace += problem.binMaxSpace - itemWeight;
-                bins.put(b, new ArrayList<>(item));
+                currentSpace = problem.binMaxSpace - itemWeight;
+                ArrayList<Integer> newBin = new ArrayList<>();
+                newBin.add(item);
+                bins.put(b, newBin);
             }
         }
     }
@@ -34,7 +36,7 @@ public class BPPSolution {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int bin = 0; bin < bins.size(); bin++) {
-            int totalWeight = bins.get(bin).stream().mapToInt(Integer::intValue).sum();
+            int totalWeight = bins.get(bin).stream().mapToInt(x -> problem.itemWeight[x]).sum();
             sb.append(String.format("Bin number %d :\tWeight %d/%d\n", bin, totalWeight, problem.binMaxSpace));
             ArrayList<Integer> items = bins.get(bin);
             for (int item : items) {
