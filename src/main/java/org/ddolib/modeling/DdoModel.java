@@ -325,4 +325,113 @@ public interface DdoModel<T> extends Model<T> {
         };
     }
 
+    @Override
+    default DdoModel<T> disableDominance() {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+        };
+    }
+
+    @Override
+    default DdoModel<T> disableLowerBound() {
+        return new DdoModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public DdoModel<T> fixWidth(int width) {
+                return DdoModel.this.fixWidth(width);
+            }
+        };
+    }
 }
