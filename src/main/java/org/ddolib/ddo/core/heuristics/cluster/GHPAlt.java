@@ -1,7 +1,8 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.ddo.core.mdd.NodeType;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
 
 import java.util.*;
 
@@ -10,21 +11,18 @@ import java.util.*;
  * It requires a problem-specific StateDistance function that computes the distance between two states
  * @param <T> the type of state
  */
-public class GHP<T> implements ReductionStrategy<T> {
+public class GHPAlt<T> implements ReductionStrategy<T> {
 
     final private StateDistance<T> distance;
     final private Random rnd;
+    final private Relaxation<T> relaxation;
+    final private Problem<T> instance;
 
-
-
-    public GHP(StateDistance<T> distance) {
+    public GHPAlt(StateDistance<T> distance, Relaxation<T> relaxation, Problem<T> instance) {
         this.distance = distance;
+        this.relaxation = relaxation;
+        this.instance = instance;
         rnd = new Random();
-    }
-
-    public GHP(StateDistance<T> distance, long seed) {
-        this.distance = distance;
-        this.rnd = new Random(seed);
     }
 
     public void setSeed(long seed) {
@@ -41,9 +39,6 @@ public class GHP<T> implements ReductionStrategy<T> {
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
-        // List<Integer> cardinalities = new LinkedList<>();
-        // List<Double> degradations = new LinkedList<>();
-
         Map<T, Double> distanceWithPivot = new HashMap<>(layer.size());
 
         Collections.shuffle(layer, rnd);
@@ -51,22 +46,34 @@ public class GHP<T> implements ReductionStrategy<T> {
         NodeSubProblem<T> pivotB = selectFurthest(pivotA, layer);
         pivotA = selectFurthest(pivotB, layer);
         pivotB = selectFurthest(pivotA, layer);
+        pivotA = selectFurthest(pivotB, layer);
+        pivotB = selectFurthest(pivotA, layer);
         // System.out.printf("%s, %s, %f %n", pivotA, pivotB, distance.distance(pivotA.state, pivotB.state));
         for (NodeSubProblem<T> node: layer) {
             distanceWithPivot.put(node.state, distance.distance(pivotA.state, node.state));
         }
 
-        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
-        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer), pivotA, pivotB));
+        T result = relaxation.mergeStates(layer.stream().map(x-> x.state).iterator());
+        Set<T> resultingLayer = new HashSet<>();
+        resultingLayer.add(result);
 
-        while (pqClusters.size() < maxWidth) {
+        PriorityQueue<ClusterNode> pqClusters = new PriorityQueue<>(Comparator.reverseOrder());
+        pqClusters.add(new ClusterNode(0.0 ,new ArrayList<>(layer), pivotA, pivotB, result));
+
+        while (resultingLayer.size() < maxWidth) {
+            // System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 
             // Poll the next cluster to divide
+            // System.out.println(pqClusters);
             ClusterNode nodeCurrent = pqClusters.poll();
+            // System.out.println(nodeCurrent);
             assert nodeCurrent != null;
             List<NodeSubProblem<T>> current = nodeCurrent.cluster;
             pivotA = nodeCurrent.pivot;
             pivotB = nodeCurrent.furthestFromPivot;
+            // System.out.println(pivotA);
+            // System.out.println(pivotB);
+
             // Generates the two clusters
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
@@ -104,26 +111,50 @@ public class GHP<T> implements ReductionStrategy<T> {
                     }
                 }
             }
+            // System.out.println(newClusterA);
+            // System.out.println(newClusterB);
 
-            double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;
-            double priorityB = newClusterB.size() == 1 ? -1 : maxDistanceB;
+            T mergedA = relaxation.mergeStates(newClusterA.stream().map(x -> x.state).iterator());
+            T mergedB = relaxation.mergeStates(newClusterB.stream().map(x -> x.state).iterator());
+
+            double priorityA = newClusterA.size() == 1 ? -1 :
+                    Math.max(distance.distance(pivotA.state, mergedA), distance.distance(furthestFromA.state, mergedA));
+            double priorityB = newClusterB.size() == 1 ? -1 :
+                    Math.max(distance.distance(pivotB.state, mergedB), distance.distance(furthestFromB.state, mergedB));
+
+            // double priorityA = newClusterA.size() == 1 ? -1 : distance.distance(pivotA, furthestFromA);
+            // double priorityB = newClusterB.size() == 1 ? -1 : distance.distance(pivotB, furthestFromB);
+
+            // double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;
+            // double priorityB = newClusterB.size() == 1 ? -1 : maxDistanceB;
 
             // Add the two clusters to the queue
-            pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA));
-            pqClusters.add(new ClusterNode(priorityB, newClusterB, pivotB, furthestFromB));
+            pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA, mergedA));
+            pqClusters.add(new ClusterNode(priorityB, newClusterB, pivotB, furthestFromB, mergedB));
+
+            resultingLayer.clear();
+            for (ClusterNode node : pqClusters) {
+                resultingLayer.add(node.result);
+            }
         }
 
         // Retrieve the clusters from the queue
         List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
         int index = 0;
-
-
+        // System.out.println("@@@@@@@@@@@@@@@@@@@");
         for (ClusterNode cluster : pqClusters) {
+            // System.out.println(cluster.pivot);
+            // System.out.println(cluster.furthestFromPivot);
+            // System.out.println(cluster.cluster);
             clusters[index] = cluster.cluster;
             index++;
-
         }
-
+        // System.out.println("@@@@@@@@@@@@@@@@@@@");
+        /*System.out.println("@@@@@@@@@@@@@@@@@@@");
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            System.out.println(cluster);
+        }
+        System.out.println("@@@@@@@@@@@@@@@@@@@");*/
         return clusters;
     }
 
@@ -151,12 +182,18 @@ public class GHP<T> implements ReductionStrategy<T> {
         final List<NodeSubProblem<T>> cluster;
         final NodeSubProblem<T> pivot;
         final NodeSubProblem<T> furthestFromPivot;
+        final T result;
 
-        public ClusterNode(double priority, List<NodeSubProblem<T>> cluster, NodeSubProblem<T> pivot, NodeSubProblem<T> furthestFromPivot) {
+        public ClusterNode(double priority,
+                           List<NodeSubProblem<T>> cluster,
+                           NodeSubProblem<T> pivot,
+                           NodeSubProblem<T> furthestFromPivot,
+                           T result) {
             this.priority = priority;
             this.cluster = cluster;
             this.pivot = pivot;
             this.furthestFromPivot = furthestFromPivot;
+            this.result = result;
         }
 
         @Override

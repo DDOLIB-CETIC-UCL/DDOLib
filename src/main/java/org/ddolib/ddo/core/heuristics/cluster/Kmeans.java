@@ -5,6 +5,7 @@ import smile.clustering.CentroidClustering;
 import smile.clustering.KMeans;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -19,6 +20,11 @@ public class Kmeans<T> implements ReductionStrategy<T> {
     public Kmeans(StateCoordinates<T> coordinates) {
         this.coordinates = coordinates;
         this.maxIterations = 50;
+    }
+
+    public Kmeans(StateCoordinates<T> coordinates, int maxIterations) {
+        this.coordinates = coordinates;
+        this.maxIterations = maxIterations;
     }
 
     /**

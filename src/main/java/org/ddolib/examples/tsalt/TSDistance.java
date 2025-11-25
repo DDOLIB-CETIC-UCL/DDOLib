@@ -121,7 +121,7 @@ public class TSDistance implements StateDistance<TSState> {
     public double distance(NodeSubProblem<TSState> a, NodeSubProblem<TSState> b) {
         double distanceOnActors = jaccardDistance(a.state.onLocationActors(),b.state.onLocationActors());
         double distanceOnRemainingScenes = jaccardDistance(a.state.remainingScenes(), b.state.remainingScenes());
-        double distanceOnCost = abs(a.getValue() - b.getValue());
+        double distanceOnCost = abs(a.getValue() - b.getValue()); // TODO normalize this distance
 
         return convexCombination(distanceOnRemainingScenes, distanceOnActors, distanceOnCost);
     }

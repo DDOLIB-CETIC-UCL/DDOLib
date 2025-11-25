@@ -2,6 +2,7 @@ package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -24,7 +25,8 @@ public class MaxCoverDdoMainTestReladedAtRoot {
         DoubleSummaryStatistics statsCost = new DoubleSummaryStatistics();
         DoubleSummaryStatistics statsCluster = new DoubleSummaryStatistics();
 
-        for (int i = 138; i < 139; i++) {
+        // for (int i = 138; i < 139; i++) {
+        for (int i = 0; i < 139; i++) {
             MaxCoverProblem problem = new MaxCoverProblem(10, 6, 4,0.1,i);
 
             System.out.println(problem);
@@ -83,7 +85,8 @@ public class MaxCoverDdoMainTestReladedAtRoot {
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
                 if (cluster) {
                     //return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(), 0.1 );
-                    GHP ghp =  new GHP<>(new MaxCoverDistance());
+                    GHPAlt ghp =  new GHPAlt(new MaxCoverDistance(problem), new MaxCoverRelax(problem), problem);
+                    // GHP ghp = new GHP(new MaxCoverDistance(problem));
                     ghp.setSeed(42);
                     return ghp;
                     //return new GHP<>(new MaxCoverDistance());
@@ -119,7 +122,7 @@ public class MaxCoverDdoMainTestReladedAtRoot {
             }
         };
 
-        SearchStatistics stats = Solvers.relaxedDdo(model, (sol, s) -> {
+        RelaxSearchStatistics stats = Solvers.relaxedDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 

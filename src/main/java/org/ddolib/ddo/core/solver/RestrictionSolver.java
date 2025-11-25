@@ -12,6 +12,7 @@ import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -130,6 +131,8 @@ public final class RestrictionSolver<T> implements Solver {
      */
     private final ReductionStrategy<T> restrictStrategy;
 
+    private final StateDistance<T> stateDistance;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
@@ -152,6 +155,7 @@ public final class RestrictionSolver<T> implements Solver {
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
         this.restrictStrategy = model.restrictStrategy();
+        this.stateDistance = model.stateDistance();
     }
 
     @Override
@@ -178,6 +182,7 @@ public final class RestrictionSolver<T> implements Solver {
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
         compilation.reductionStrategy = restrictStrategy;
+        compilation.stateDistance = this.stateDistance;
 
         DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();

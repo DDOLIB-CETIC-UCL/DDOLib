@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
@@ -12,6 +13,7 @@ import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -46,7 +48,7 @@ import java.util.function.Predicate;
  * @see FastLowerBound
  * @see DominanceChecker
  */
-public final class RelaxationSolver<T> implements Solver {
+public final class RelaxationSolver<T> {
     /**
      * The problem we want to minimize
      */
@@ -130,6 +132,8 @@ public final class RelaxationSolver<T> implements Solver {
      */
     private final ReductionStrategy<T> relaxStrategy;
 
+    private final StateDistance<T> stateDistance;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
@@ -152,10 +156,10 @@ public final class RelaxationSolver<T> implements Solver {
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
         this.relaxStrategy = model.relaxStrategy();
+        this.stateDistance = model.stateDistance();
     }
 
-    @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public RelaxSearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -178,16 +182,23 @@ public final class RelaxationSolver<T> implements Solver {
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = this.debugLevel;
         compilation.reductionStrategy = relaxStrategy;
+        compilation.stateDistance = this.stateDistance;
 
-        DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+        LinkedDecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         maybeUpdateBest(relaxedMdd, exportAsDot);
         double lb = relaxedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY);
 
-        return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+        return new RelaxSearchStatistics(System.currentTimeMillis() - start,
+                relaxedMdd.bestValue().get(),
+                relaxedMdd.nbRelaxations,
+                relaxedMdd.stateCardinalities,
+                relaxedMdd.exactStates,
+                relaxedMdd.stateDegradations,
+                relaxedMdd.isExact());
+        // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
 
-    @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestUB);
@@ -196,7 +207,6 @@ public final class RelaxationSolver<T> implements Solver {
         }
     }
 
-    @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }

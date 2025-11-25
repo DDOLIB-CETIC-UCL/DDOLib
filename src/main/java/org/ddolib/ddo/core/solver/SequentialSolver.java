@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -297,6 +298,7 @@ public final class SequentialSolver<T> implements Solver {
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();
+            double ghpCost = relaxedMdd.bestValue().get();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
@@ -325,6 +327,13 @@ public final class SequentialSolver<T> implements Solver {
                     enqueueCutset(relaxedMdd);
                 }
             }
+
+            compilation.reductionStrategy = new CostBased<>(compilation.stateRanking);
+            DecisionDiagram<T> costBasedMdd = new LinkedDecisionDiagram<>(compilation);
+            costBasedMdd.compile();
+            double costCost = costBasedMdd.bestValue().get();
+            System.out.printf("%f %f %n", ghpCost, costCost);
+
         }
         long end = System.currentTimeMillis();
         return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, end - start, bestUB, 0);
