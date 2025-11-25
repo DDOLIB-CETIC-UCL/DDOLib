@@ -19,14 +19,14 @@ public class Hybrid<T> implements ReductionStrategy<T> {
     final private GHP<T> ghp;
     final private double alpha;
 
-    public Hybrid(final StateRanking<T> ranking, final StateDistance<T> distance, final double alpha) {
+    public Hybrid(final StateRanking<T> ranking, final StateDistance<T> distance, final double alpha, final long seed) {
         this.costBased = new CostBased<>(ranking);
-        this.ghp = new GHP<>(distance);
+        this.ghp = new GHP<>(distance, seed);
         this.alpha = alpha;
     }
 
     public Hybrid(final StateRanking<T> ranking, final StateDistance<T> distance) {
-        this(ranking, distance, 0.5);
+        this(ranking, distance, 0.5, 465465);
     }
 
     public void setSeed(long seed) {

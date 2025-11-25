@@ -2,6 +2,9 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -73,6 +76,16 @@ public class KSTest {
                 @Override
                 public DominanceChecker<Integer> dominance() {
                     return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                }
+
+                @Override
+                public StateDistance<Integer> stateDistance() {
+                    return new KSDistance();
+                }
+
+                @Override
+                public ReductionStrategy<Integer> relaxStrategy() {
+                    return new GHP<>(new KSDistance());
                 }
 
                 @Override

@@ -14,6 +14,4 @@ public interface ReductionStrategy<T> {
      * @return an array of clusters represented as List
      */
     public List<NodeSubProblem<T>>[] defineClusters(final List<NodeSubProblem<T>> layer, final int maxWidth);
-
-    public void setSeed(long seed);
 }

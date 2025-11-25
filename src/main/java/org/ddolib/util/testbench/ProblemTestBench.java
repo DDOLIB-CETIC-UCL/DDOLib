@@ -394,7 +394,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
                 if (problem.optimalValue().isPresent()) {
                     assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
                 }
-            } catch (Exception e) {
+            } catch (InvalidSolutionException e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
                 throw new RuntimeException(msg);
             }

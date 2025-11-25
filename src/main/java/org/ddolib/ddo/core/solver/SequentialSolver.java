@@ -13,6 +13,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -190,6 +191,8 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final ReductionStrategy<T> restrictStrategy;
 
+    private final StateDistance<T> distance;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
@@ -214,6 +217,7 @@ public final class SequentialSolver<T> implements Solver {
         this.debugLevel = model.debugMode();
         this.relaxStrategy = model.relaxStrategy();
         this.restrictStrategy = model.restrictStrategy();
+        this.distance = model.stateDistance();
     }
 
     @Override
@@ -269,6 +273,7 @@ public final class SequentialSolver<T> implements Solver {
             compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
             compilation.debugLevel = this.debugLevel;
             compilation.reductionStrategy = restrictStrategy;
+            compilation.stateDistance = distance;
 
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
@@ -298,7 +303,7 @@ public final class SequentialSolver<T> implements Solver {
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
 
             relaxedMdd.compile();
-            double ghpCost = relaxedMdd.bestValue().get();
+            // double ghpCost = relaxedMdd.bestValue().get();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
@@ -328,11 +333,6 @@ public final class SequentialSolver<T> implements Solver {
                 }
             }
 
-            compilation.reductionStrategy = new CostBased<>(compilation.stateRanking);
-            DecisionDiagram<T> costBasedMdd = new LinkedDecisionDiagram<>(compilation);
-            costBasedMdd.compile();
-            double costCost = costBasedMdd.bestValue().get();
-            System.out.printf("%f %f %n", ghpCost, costCost);
 
         }
         long end = System.currentTimeMillis();

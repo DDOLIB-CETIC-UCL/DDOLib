@@ -9,4 +9,9 @@ public class KSDistance implements StateDistance<Integer> {
         return Math.abs(a - b);
     }
 
+    @Override
+    public double distanceWithRoot(Integer state) {
+        return state;
+    }
+
 }

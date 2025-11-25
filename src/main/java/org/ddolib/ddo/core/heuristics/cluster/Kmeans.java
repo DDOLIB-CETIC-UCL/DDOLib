@@ -63,9 +63,4 @@ public class Kmeans<T> implements ReductionStrategy<T> {
         }
         return clusters;
     }
-
-    @Override
-    public void setSeed(long seed) {
-        return;
-    }
 }

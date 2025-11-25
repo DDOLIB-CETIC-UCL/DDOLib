@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solver;
@@ -47,7 +48,7 @@ import java.util.function.Predicate;
  * @see FastLowerBound
  * @see DominanceChecker
  */
-public final class RestrictionSolver<T> implements Solver {
+public final class RestrictionSolver<T> {
     /**
      * The problem we want to minimize
      */
@@ -158,8 +159,7 @@ public final class RestrictionSolver<T> implements Solver {
         this.stateDistance = model.stateDistance();
     }
 
-    @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public RestrictSearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -184,14 +184,19 @@ public final class RestrictionSolver<T> implements Solver {
         compilation.reductionStrategy = restrictStrategy;
         compilation.stateDistance = this.stateDistance;
 
-        DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
+        LinkedDecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();
         maybeUpdateBest(restrictedMdd, exportAsDot);
 
-        return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+        return new RestrictSearchStatistics(System.currentTimeMillis() - start,
+                restrictedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY),
+                restrictedMdd.nbRestrictions,
+                restrictedMdd.isExact(),
+                restrictedMdd.layerSize
+                );
+        // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
 
-    @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestUB);
@@ -200,7 +205,6 @@ public final class RestrictionSolver<T> implements Solver {
         }
     }
 
-    @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
