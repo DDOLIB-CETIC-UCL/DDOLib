@@ -1,6 +1,7 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
+import org.ddolib.examples.maximumcoverage.MaxCoverState;
 
 /**
  * This abstraction defines the distance function used to constitute the
@@ -23,6 +24,10 @@ public interface StateDistance<T> {
     double distance(T a, T b);
 
     default double distance(NodeSubProblem<T> a, NodeSubProblem<T> b) {
+        return 0;
+    }
+
+    default double distanceWithRoot(T state) {
         return 0;
     }
 

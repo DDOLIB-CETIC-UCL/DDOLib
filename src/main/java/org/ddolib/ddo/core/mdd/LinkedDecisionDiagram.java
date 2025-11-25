@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -112,6 +113,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private final CompilationConfig<T> config;
 
+    public final List<DoubleSummaryStatistics> stateCardinalities = new LinkedList<>();
+    public final IntSummaryStatistics exactStates = new IntSummaryStatistics();
+    public final List<DoubleSummaryStatistics> stateDegradations = new LinkedList<>();
+    public int nbRelaxations;
+    public int nbRestrictions;
 
     /**
      * Creates a new linked decision diagram.
@@ -250,7 +256,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, relax, config.reductionStrategy);
+                        relax(maxWidth, relax, config.reductionStrategy, config.stateDistance);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -577,6 +583,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+        nbRestrictions++;
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
 
         // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
@@ -595,18 +602,23 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param maxWidth the maximum tolerated layer width
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy, final StateDistance<T> distance) {
         // System.out.println("*************");
         // System.out.println(currentLayer.size());
         // System.out.println(currentLayer);
+        nbRelaxations++;
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
+        DoubleSummaryStatistics degradations = new DoubleSummaryStatistics();
+        DoubleSummaryStatistics cardinalities = new DoubleSummaryStatistics();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
             // System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
+                degradations.accept(0.0);
+                cardinalities.accept(distance.distanceWithRoot(cluster.getFirst().state));
                 continue;
             }
 
@@ -615,6 +627,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            cardinalities.accept(distance.distanceWithRoot(merged));
+            double avgDegradations = 0.0;
+            for (NodeSubProblem<T> node : cluster) {
+                avgDegradations += distance.distance(node.state, merged);
+            }
+            avgDegradations = avgDegradations / cluster.size();
+            degradations.accept(avgDegradations);
             // System.out.println(merged);
             NodeSubProblem<T> node = null;
             for (NodeSubProblem<T> n: currentLayer) {
@@ -654,8 +673,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
         }
-        // System.out.println(currentLayer.size());
-        // System.out.println(currentLayer);
+
+        int nbExact = 0;
+        for (NodeSubProblem<T> node : currentLayer) {
+            if (node.node.type == NodeType.EXACT) {
+                nbExact++;
+            }
+        }
+
+        this.exactStates.accept(nbExact);
+        this.stateDegradations.add(degradations);
+        this.stateCardinalities.add(cardinalities);
     }
 
     /**

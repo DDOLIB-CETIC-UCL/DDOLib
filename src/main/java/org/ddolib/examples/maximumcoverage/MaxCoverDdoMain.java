@@ -1,10 +1,7 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.smic.SMICRanking;
@@ -30,8 +27,10 @@ public class MaxCoverDdoMain {
         ss[2] = new BitSet(n);  /*ss[2].set(1);*/  // ss[2].set(3);
         //ss[3] = new BitSet(n);  ss[3].set(3);  ss[3].set(4);
         // MaxCoverProblem problem = new MaxCoverProblem(n, m, k, ss);
+        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
+        // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
 
-        MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
+        // MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
         System.out.println(problem);
         DdoModel<MaxCoverState> model = new DdoModel<>() {
             @Override
@@ -51,7 +50,7 @@ public class MaxCoverDdoMain {
 
             @Override
             public WidthHeuristic<MaxCoverState> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(100);
             }
 
 //            @Override
@@ -66,17 +65,19 @@ public class MaxCoverDdoMain {
 
             @Override
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
-                // return new GHP<>(new MaxCoverDistance());
-                return new Kmeans<>(new MaxCoverCoordinates(problem));
+                return new GHP<>(new MaxCoverDistance(problem));
+                // return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
+                // return new CostBased<>(new MaxCoverRanking());
             }
 
             @Override
             public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                return new Kmeans<>(new MaxCoverCoordinates(problem));
+                return new CostBased<>(new MaxCoverRanking());
+                // return new Kmeans<>(new MaxCoverCoordinates(problem));
             }
         };
 
-        SearchStatistics stats = Solvers.relaxedDdo(model, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
         System.out.println();
