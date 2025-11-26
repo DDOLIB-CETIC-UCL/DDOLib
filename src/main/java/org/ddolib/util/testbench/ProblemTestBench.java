@@ -28,7 +28,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     /**
      * List of problems used for tests.
      */
-    protected final List<P> problems;
+    private final List<P> problems;
     private final Function<P, DdoModel<T>> model;
     /**
      * Whether the relaxation must be tested.
@@ -103,7 +103,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testTransitionModel(P problem) throws InvalidSolutionException {
+    private void testTransitionModel(P problem) throws InvalidSolutionException {
 
         DdoModel<T> testModel = model.apply(problem);
         int[] bestSolution = new int[problem.nbVars()];
@@ -124,7 +124,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testFlb(P problem) throws InvalidSolutionException {
+    private void testFlb(P problem) throws InvalidSolutionException {
 
         DdoModel<T> globalModel = model.apply(problem);
 
@@ -169,7 +169,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testRelaxation(P problem) {
+    private void testRelaxation(P problem) {
 
         DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
@@ -220,7 +220,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testCache(P problem) {
+    private void testCache(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<>() {
             @Override
@@ -284,7 +284,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testAStarSolver(P problem) throws InvalidSolutionException {
+    private void testAStarSolver(P problem) throws InvalidSolutionException {
 
         DdoModel<T> globalModel = model.apply(problem);
 
@@ -327,7 +327,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testACSSolver(P problem) throws InvalidSolutionException {
+    private void testACSSolver(P problem) throws InvalidSolutionException {
 
         Model<T> globalModel = model.apply(problem);
 
@@ -371,7 +371,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testFlbOnRelaxedNodes(P problem) {
+    private void testFlbOnRelaxedNodes(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
             @Override
@@ -419,7 +419,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      *
      * @param problem The instance to test.
      */
-    protected void testDominance(P problem) throws InvalidSolutionException {
+    private void testDominance(P problem) throws InvalidSolutionException {
         DdoModel<T> globalModel = model.apply(problem);
 
         DdoModel<T> testModel = new DdoModel<>() {
