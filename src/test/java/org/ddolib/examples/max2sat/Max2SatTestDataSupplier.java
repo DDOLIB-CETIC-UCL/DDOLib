@@ -1,14 +1,10 @@
-package org.ddolib.examples.tsptw;
+package org.ddolib.examples.max2sat;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -17,16 +13,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TSPTWTestUnit extends TestUnit<TSPTWState, TSPTWProblem> {
+public class Max2SatTestDataSupplier extends TestDataSupplier<Max2SatState, Max2SatProblem> {
 
     private final String dir;
 
-    public TSPTWTestUnit(String dir) {
+    public Max2SatTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<TSPTWProblem> generateProblems() {
+    protected List<Max2SatProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
@@ -35,7 +31,7 @@ public class TSPTWTestUnit extends TestUnit<TSPTWState, TSPTWProblem> {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new TSPTWProblem(filePath.toString());
+                        return new Max2SatProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -43,22 +39,17 @@ public class TSPTWTestUnit extends TestUnit<TSPTWState, TSPTWProblem> {
     }
 
     @Override
-    protected DdoModel<TSPTWState> model(TSPTWProblem problem) {
+    protected DdoModel<Max2SatState> model(Max2SatProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<TSPTWState> problem() {
+            public Problem<Max2SatState> problem() {
                 return problem;
             }
 
             @Override
-            public TSPTWFastLowerBound lowerBound() {
-                return new TSPTWFastLowerBound(problem);
-            }
-
-            @Override
-            public DominanceChecker<TSPTWState> dominance() {
-                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            public Max2SatFastLowerBound lowerBound() {
+                return new Max2SatFastLowerBound(problem);
             }
 
             @Override
@@ -72,18 +63,13 @@ public class TSPTWTestUnit extends TestUnit<TSPTWState, TSPTWProblem> {
             }
 
             @Override
-            public TSPTWRelax relaxation() {
-                return new TSPTWRelax(problem);
+            public Relaxation<Max2SatState> relaxation() {
+                return new Max2SatRelax(problem);
             }
 
             @Override
-            public TSPTWRanking ranking() {
-                return new TSPTWRanking();
-            }
-
-            @Override
-            public Frontier<TSPTWState> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+            public Max2SatRanking ranking() {
+                return new Max2SatRanking();
             }
         };
     }

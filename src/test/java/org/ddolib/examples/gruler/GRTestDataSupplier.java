@@ -4,13 +4,13 @@ import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.modeling.StateRanking;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class GRTestUnit extends TestUnit<GRState, GRProblem> {
+public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
     @Override
     protected List<GRProblem> generateProblems() {
         // Known solutions

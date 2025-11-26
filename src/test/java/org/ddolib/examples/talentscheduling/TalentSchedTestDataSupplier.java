@@ -1,11 +1,11 @@
-package org.ddolib.examples.tsp;
+package org.ddolib.examples.talentscheduling;
 
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.testbench.TestDataSupplier;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,26 +13,25 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TSPTestUnit extends TestUnit<TSPState, TSPProblem> {
+public class TalentSchedTestDataSupplier extends TestDataSupplier<TSState, TSProblem> {
 
     private final String dir;
 
-    public TSPTestUnit(String dir) {
+    public TalentSchedTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<TSPProblem> generateProblems() {
+    protected List<TSProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
-
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new TSPProblem(filePath.toString());
+                        return new TSProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -40,37 +39,37 @@ public class TSPTestUnit extends TestUnit<TSPState, TSPProblem> {
     }
 
     @Override
-    protected DdoModel<TSPState> model(TSPProblem problem) {
+    protected DdoModel<TSState> model(TSProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<TSPState> problem() {
+            public Problem<TSState> problem() {
                 return problem;
             }
 
             @Override
-            public TSPFastLowerBound lowerBound() {
-                return new TSPFastLowerBound(problem);
+            public TSFastLowerBound lowerBound() {
+                return new TSFastLowerBound(problem);
             }
 
             @Override
-            public Relaxation<TSPState> relaxation() {
-                return new TSPRelax(problem);
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
             }
 
             @Override
-            public TSPRanking ranking() {
-                return new TSPRanking();
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
 
             @Override
-            public WidthHeuristic<TSPState> widthHeuristic() {
-                return new FixedWidth<>(500);
+            public Relaxation<TSState> relaxation() {
+                return new TSRelax(problem);
             }
 
             @Override
-            public boolean useCache() {
-                return true;
+            public TSRanking ranking() {
+                return new TSRanking();
             }
         };
     }

@@ -1,13 +1,10 @@
-package org.ddolib.examples.knapsack;
+package org.ddolib.examples.mcp;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -16,16 +13,17 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class KSTestUnit extends TestUnit<Integer, KSProblem> {
+public class MCPTestDataSupplier extends TestDataSupplier<MCPState, MCPProblem> {
 
     private final String dir;
 
-    public KSTestUnit(String dir) {
+    public MCPTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<KSProblem> generateProblems() {
+    protected List<MCPProblem> generateProblems() {
+
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
@@ -35,7 +33,7 @@ public class KSTestUnit extends TestUnit<Integer, KSProblem> {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new KSProblem(filePath.toString());
+                        return new MCPProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -43,22 +41,17 @@ public class KSTestUnit extends TestUnit<Integer, KSProblem> {
     }
 
     @Override
-    protected DdoModel<Integer> model(KSProblem problem) {
+    protected DdoModel<MCPState> model(MCPProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<Integer> problem() {
+            public Problem<MCPState> problem() {
                 return problem;
             }
 
             @Override
-            public FastLowerBound<Integer> lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
-
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            public MCPFastLowerBound lowerBound() {
+                return new MCPFastLowerBound(problem);
             }
 
             @Override
@@ -72,13 +65,13 @@ public class KSTestUnit extends TestUnit<Integer, KSProblem> {
             }
 
             @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
+            public Relaxation<MCPState> relaxation() {
+                return new MCPRelax(problem);
             }
 
             @Override
-            public KSRanking ranking() {
-                return new KSRanking();
+            public MCPRanking ranking() {
+                return new MCPRanking();
             }
         };
     }

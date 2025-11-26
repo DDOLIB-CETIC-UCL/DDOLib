@@ -1,10 +1,14 @@
-package org.ddolib.examples.talentscheduling;
+package org.ddolib.examples.tsptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -13,16 +17,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TalentSchedTestUnit extends TestUnit<TSState, TSProblem> {
+public class TSPTWTestDataSupplier extends TestDataSupplier<TSPTWState, TSPTWProblem> {
 
     private final String dir;
 
-    public TalentSchedTestUnit(String dir) {
+    public TSPTWTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<TSProblem> generateProblems() {
+    protected List<TSPTWProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
@@ -31,7 +35,7 @@ public class TalentSchedTestUnit extends TestUnit<TSState, TSProblem> {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new TSProblem(filePath.toString());
+                        return new TSPTWProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -39,17 +43,22 @@ public class TalentSchedTestUnit extends TestUnit<TSState, TSProblem> {
     }
 
     @Override
-    protected DdoModel<TSState> model(TSProblem problem) {
+    protected DdoModel<TSPTWState> model(TSPTWProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<TSState> problem() {
+            public Problem<TSPTWState> problem() {
                 return problem;
             }
 
             @Override
-            public TSFastLowerBound lowerBound() {
-                return new TSFastLowerBound(problem);
+            public TSPTWFastLowerBound lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             }
 
             @Override
@@ -63,13 +72,18 @@ public class TalentSchedTestUnit extends TestUnit<TSState, TSProblem> {
             }
 
             @Override
-            public Relaxation<TSState> relaxation() {
-                return new TSRelax(problem);
+            public TSPTWRelax relaxation() {
+                return new TSPTWRelax(problem);
             }
 
             @Override
-            public TSRanking ranking() {
-                return new TSRanking();
+            public TSPTWRanking ranking() {
+                return new TSPTWRanking();
+            }
+
+            @Override
+            public Frontier<TSPTWState> frontier() {
+                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
         };
     }

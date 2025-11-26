@@ -1,10 +1,11 @@
-package org.ddolib.examples.mcp;
+package org.ddolib.examples.smic;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -13,27 +14,25 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class MCPTestUnit extends TestUnit<MCPState, MCPProblem> {
+public class SMICTestDataSupplier extends TestDataSupplier<SMICState, SMICProblem> {
 
     private final String dir;
 
-    public MCPTestUnit(String dir) {
+    public SMICTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<MCPProblem> generateProblems() {
-
+    protected List<SMICProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
-
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new MCPProblem(filePath.toString());
+                        return new SMICProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -41,17 +40,22 @@ public class MCPTestUnit extends TestUnit<MCPState, MCPProblem> {
     }
 
     @Override
-    protected DdoModel<MCPState> model(MCPProblem problem) {
+    protected DdoModel<SMICState> model(SMICProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<MCPState> problem() {
+            public Problem<SMICState> problem() {
                 return problem;
             }
 
             @Override
-            public MCPFastLowerBound lowerBound() {
-                return new MCPFastLowerBound(problem);
+            public SMICFastLowerBound lowerBound() {
+                return new SMICFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<SMICState> dominance() {
+                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
             }
 
             @Override
@@ -65,13 +69,13 @@ public class MCPTestUnit extends TestUnit<MCPState, MCPProblem> {
             }
 
             @Override
-            public Relaxation<MCPState> relaxation() {
-                return new MCPRelax(problem);
+            public SMICRelax relaxation() {
+                return new SMICRelax(problem);
             }
 
             @Override
-            public MCPRanking ranking() {
-                return new MCPRanking();
+            public SMICRanking ranking() {
+                return new SMICRanking();
             }
         };
     }

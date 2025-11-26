@@ -11,7 +11,7 @@ import java.util.List;
  * @param <T> The type of states.
  * @param <P> The type of problem to test.
  */
-abstract public class TestUnit<T, P extends Problem<T>> {
+abstract public class TestDataSupplier<T, P extends Problem<T>> {
 
 
     /**

@@ -2,18 +2,18 @@ package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class PSTestUnit extends TestUnit<PSState, PSProblem> {
+public class PSTestDataSupplier extends TestDataSupplier<PSState, PSProblem> {
 
     private final String dir;
 
-    public PSTestUnit(String dir) {
+    public PSTestDataSupplier(String dir) {
         this.dir = dir;
     }
 

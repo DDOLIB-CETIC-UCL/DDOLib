@@ -1,29 +1,31 @@
-package org.ddolib.examples.smic;
+package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class SMICTestUnit extends TestUnit<SMICState, SMICProblem> {
+public class MispTestDataSupplier extends TestDataSupplier<BitSet, MispProblem> {
 
     private final String dir;
 
-    public SMICTestUnit(String dir) {
+    public MispTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
+
     @Override
-    protected List<SMICProblem> generateProblems() {
+    protected List<MispProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
@@ -32,7 +34,7 @@ public class SMICTestUnit extends TestUnit<SMICState, SMICProblem> {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new SMICProblem(filePath.toString());
+                        return new MispProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -40,22 +42,22 @@ public class SMICTestUnit extends TestUnit<SMICState, SMICProblem> {
     }
 
     @Override
-    protected DdoModel<SMICState> model(SMICProblem problem) {
+    protected DdoModel<BitSet> model(MispProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<SMICState> problem() {
+            public Problem<BitSet> problem() {
                 return problem;
             }
 
             @Override
-            public SMICFastLowerBound lowerBound() {
-                return new SMICFastLowerBound(problem);
+            public MispFastLowerBound lowerBound() {
+                return new MispFastLowerBound(problem);
             }
 
             @Override
-            public DominanceChecker<SMICState> dominance() {
-                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+            public DominanceChecker<BitSet> dominance() {
+                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
             }
 
             @Override
@@ -69,13 +71,13 @@ public class SMICTestUnit extends TestUnit<SMICState, SMICProblem> {
             }
 
             @Override
-            public SMICRelax relaxation() {
-                return new SMICRelax(problem);
+            public MispRelax relaxation() {
+                return new MispRelax(problem);
             }
 
             @Override
-            public SMICRanking ranking() {
-                return new SMICRanking();
+            public MispRanking ranking() {
+                return new MispRanking();
             }
         };
     }

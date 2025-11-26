@@ -1,10 +1,11 @@
-package org.ddolib.examples.pdp;
+package org.ddolib.examples.tsp;
 
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.util.testbench.TestDataSupplier;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,17 +13,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class PDPTestUnit extends TestUnit<PDPState, PDPProblem> {
-
+public class TSPTestDataSupplier extends TestDataSupplier<TSPState, TSPProblem> {
 
     private final String dir;
 
-    public PDPTestUnit(String dir) {
+    public TSPTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<PDPProblem> generateProblems() {
+    protected List<TSPProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
@@ -32,7 +32,7 @@ public class PDPTestUnit extends TestUnit<PDPState, PDPProblem> {
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new PDPProblem(filePath.toString());
+                        return new TSPProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -40,36 +40,37 @@ public class PDPTestUnit extends TestUnit<PDPState, PDPProblem> {
     }
 
     @Override
-    protected DdoModel<PDPState> model(PDPProblem problem) {
+    protected DdoModel<TSPState> model(TSPProblem problem) {
         return new DdoModel<>() {
+
             @Override
-            public Problem<PDPState> problem() {
+            public Problem<TSPState> problem() {
                 return problem;
             }
 
             @Override
-            public PDPFastLowerBound lowerBound() {
-                return new PDPFastLowerBound(problem);
+            public TSPFastLowerBound lowerBound() {
+                return new TSPFastLowerBound(problem);
             }
 
             @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.SILENT;
+            public Relaxation<TSPState> relaxation() {
+                return new TSPRelax(problem);
             }
 
             @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
+            public TSPRanking ranking() {
+                return new TSPRanking();
             }
 
             @Override
-            public PDPRelax relaxation() {
-                return new PDPRelax(problem);
+            public WidthHeuristic<TSPState> widthHeuristic() {
+                return new FixedWidth<>(500);
             }
 
             @Override
-            public PDPRanking ranking() {
-                return new PDPRanking();
+            public boolean useCache() {
+                return true;
             }
         };
     }

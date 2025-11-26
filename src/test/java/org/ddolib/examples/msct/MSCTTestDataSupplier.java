@@ -5,14 +5,14 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class MSCTTestUnit extends TestUnit<MSCTState, MSCTProblem> {
+public class MSCTTestDataSupplier extends TestDataSupplier<MSCTState, MSCTProblem> {
     static Random rand = new Random(42);
 
     @Override

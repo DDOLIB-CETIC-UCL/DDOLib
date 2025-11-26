@@ -1,10 +1,9 @@
-package org.ddolib.examples.max2sat;
+package org.ddolib.examples.lcs;
 
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -13,25 +12,27 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Max2SatTestUnit extends TestUnit<Max2SatState, Max2SatProblem> {
+public class LCSTestDataSupplier extends TestDataSupplier<LCSState, LCSProblem> {
 
     private final String dir;
 
-    public Max2SatTestUnit(String dir) {
+    public LCSTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
+
     @Override
-    protected List<Max2SatProblem> generateProblems() {
+    protected List<LCSProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
+
         return stream.filter(file -> !file.isDirectory())
                 .map(File::getName)
                 .map(fileName -> Paths.get(dir, fileName))
                 .map(filePath -> {
                     try {
-                        return new Max2SatProblem(filePath.toString());
+                        return new LCSProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -39,17 +40,17 @@ public class Max2SatTestUnit extends TestUnit<Max2SatState, Max2SatProblem> {
     }
 
     @Override
-    protected DdoModel<Max2SatState> model(Max2SatProblem problem) {
+    protected DdoModel<LCSState> model(LCSProblem problem) {
         return new DdoModel<>() {
 
             @Override
-            public Problem<Max2SatState> problem() {
+            public Problem<LCSState> problem() {
                 return problem;
             }
 
             @Override
-            public Max2SatFastLowerBound lowerBound() {
-                return new Max2SatFastLowerBound(problem);
+            public LCSFastLowerBound lowerBound() {
+                return new LCSFastLowerBound(problem);
             }
 
             @Override
@@ -63,13 +64,13 @@ public class Max2SatTestUnit extends TestUnit<Max2SatState, Max2SatProblem> {
             }
 
             @Override
-            public Relaxation<Max2SatState> relaxation() {
-                return new Max2SatRelax(problem);
+            public LCSRelax relaxation() {
+                return new LCSRelax(problem);
             }
 
             @Override
-            public Max2SatRanking ranking() {
-                return new Max2SatRanking();
+            public LCSRanking ranking() {
+                return new LCSRanking();
             }
         };
     }

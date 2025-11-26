@@ -1,8 +1,7 @@
-package org.ddolib.examples.alp;
+package org.ddolib.examples.srflp;
 
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestUnit;
+import org.ddolib.modeling.*;
+import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.File;
@@ -11,27 +10,24 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ALPTestUnit extends TestUnit<ALPState, ALPProblem> {
-
+public class SRFLPTestDataSupplier extends TestDataSupplier<SRFLPState, SRFLPProblem> {
 
     private final String dir;
 
-    public ALPTestUnit(String dir) {
+    public SRFLPTestDataSupplier(String dir) {
         this.dir = dir;
     }
 
     @Override
-    protected List<ALPProblem> generateProblems() {
+    protected List<SRFLPProblem> generateProblems() {
         File[] files = new File(dir).listFiles();
         assert files != null;
         Stream<File> stream = Stream.of(files);
-
         return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
+                .map(file -> Paths.get(dir, file.getName()))
                 .map(filePath -> {
                     try {
-                        return new ALPProblem(filePath.toString());
+                        return new SRFLPProblem(filePath.toString());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -39,16 +35,16 @@ public class ALPTestUnit extends TestUnit<ALPState, ALPProblem> {
     }
 
     @Override
-    protected DdoModel<ALPState> model(ALPProblem problem) {
+    protected DdoModel<SRFLPState> model(SRFLPProblem problem) {
         return new DdoModel<>() {
             @Override
-            public ALPProblem problem() {
+            public Problem<SRFLPState> problem() {
                 return problem;
             }
 
             @Override
-            public ALPFastLowerBound lowerBound() {
-                return new ALPFastLowerBound(problem);
+            public FastLowerBound<SRFLPState> lowerBound() {
+                return new SRFLPFastLowerBound(problem);
             }
 
             @Override
@@ -57,18 +53,13 @@ public class ALPTestUnit extends TestUnit<ALPState, ALPProblem> {
             }
 
             @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
+            public Relaxation<SRFLPState> relaxation() {
+                return new SRFLPRelax(problem);
             }
 
             @Override
-            public ALPRelax relaxation() {
-                return new ALPRelax(problem);
-            }
-
-            @Override
-            public ALPRanking ranking() {
-                return new ALPRanking();
+            public StateRanking<SRFLPState> ranking() {
+                return new SRFLPRanking();
             }
         };
     }
