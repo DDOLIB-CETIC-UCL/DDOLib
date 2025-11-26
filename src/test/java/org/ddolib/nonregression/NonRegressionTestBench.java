@@ -1,5 +1,6 @@
 package org.ddolib.nonregression;
 
+import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.modeling.*;
@@ -40,20 +41,26 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
 
         double aStarVal = solveWithAStar(globalModel.disableDominance());
 
-        double aStarWithDominance = solveWithAStar(globalModel);
-        assertEquals(aStarVal, aStarWithDominance, 1e-10,
-                "A* : adding dominance change the value"
-        );
+        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+            // No dominance rule defined for this problem. No need to test it.
+            double aStarWithDominance = solveWithAStar(globalModel);
+            assertEquals(aStarVal, aStarWithDominance, 1e-10,
+                    "A* : adding dominance change the value"
+            );
+        }
 
         double ddoVal = solveWithDdo(globalModel.disableDominance().fixWidth(500));
         assertEquals(aStarVal, ddoVal, 1e-10,
                 "A* solver and DDO solver do not return the same value."
         );
 
-        double ddoWithDominance = solveWithDdo(globalModel.fixWidth(500));
-        assertEquals(ddoVal, ddoWithDominance, 1e-10,
-                "DDO: adding the dominance changes the value"
-        );
+        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+            // No dominance rule defined for this problem. No need to test it.
+            double ddoWithDominance = solveWithDdo(globalModel.fixWidth(500));
+            assertEquals(ddoVal, ddoWithDominance, 1e-10,
+                    "DDO: adding the dominance changes the value"
+            );
+        }
 
         double ddoWithFrontier =
                 solveWithDdo(globalModel.setCutSetType(CutSetType.Frontier));
@@ -104,10 +111,13 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
                 "A* and ACS do not return the same value"
         );
 
-        double acsWithDominance = solveWithAcs(acsModel);
-        assertEquals(acsVal, acsWithDominance, 1e-10,
-                "ACS: the dominance change the value"
-        );
+        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+            // No dominance rule defined for this problem. No need to test it.
+            double acsWithDominance = solveWithAcs(acsModel);
+            assertEquals(acsVal, acsWithDominance, 1e-10,
+                    "ACS: the dominance change the value"
+            );
+        }
 
         for (int c = 6; c <= 20; c++) {
             double acs = solveWithAcs(acsModel.setColumnWidth(c));
