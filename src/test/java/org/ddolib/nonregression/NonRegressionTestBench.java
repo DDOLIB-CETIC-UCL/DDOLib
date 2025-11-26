@@ -16,8 +16,8 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
 
     protected final List<P> problems;
 
-    protected NonRegressionTestBench(List<P> problems) {
-        this.problems = problems;
+    protected NonRegressionTestBench() {
+        this.problems = generateProblems();
     }
 
     /**
@@ -135,8 +135,9 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
 
     private double solveWithAStar(Model<T> model) {
         int[] solution = new int[model.problem().nbVars()];
-        double value = Solvers.minimizeAstar(model, (sol, s) -> Arrays.setAll(sol, i -> sol[i])).incumbent();
-
+        double value =
+                Solvers.minimizeAstar(model,
+                        (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
         try {
             assertEquals(model.problem().evaluate(solution), value, 1e-10,
                     "A*: The solution has not the same value that the returned value");
@@ -149,7 +150,8 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
 
     private double solveWithDdo(DdoModel<T> model) {
         int[] solution = new int[model.problem().nbVars()];
-        double value = Solvers.minimizeDdo(model, (sol, s) -> Arrays.setAll(sol, i -> sol[i])).incumbent();
+        double value = Solvers.minimizeDdo(model,
+                (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
 
 
         try {
@@ -164,7 +166,8 @@ abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
 
     private double solveWithAcs(AcsModel<T> model) {
         int[] solution = new int[model.problem().nbVars()];
-        double value = Solvers.minimizeAcs(model, (sol, s) -> Arrays.setAll(sol, i -> sol[i])).incumbent();
+        double value = Solvers.minimizeAcs(model,
+                (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
 
 
         try {
