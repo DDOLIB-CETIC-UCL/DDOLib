@@ -28,7 +28,7 @@ public class MKSProblem implements Problem<MKSState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return optimal;
+        return optimal.map(x -> -x );
     }
 
     @Override

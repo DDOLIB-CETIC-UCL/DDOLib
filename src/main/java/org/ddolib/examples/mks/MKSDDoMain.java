@@ -38,11 +38,6 @@ public class MKSDDoMain {
                 return new FixedWidth<>(100);
             }
 
-//            @Override
-//            public MKSFastLowerBound lowerBound() {
-//                return new MKSFastLowerBound(problem);
-//            }
-
             @Override
             public boolean exportDot() {
                 return true;
