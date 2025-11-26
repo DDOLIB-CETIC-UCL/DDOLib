@@ -23,66 +23,79 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @param <T> The type of states.
  * @param <P> The type of problem to test.
  */
-public abstract class ProblemTestBench<T, P extends Problem<T>> {
+public class ProblemTestBench<T, P extends Problem<T>> {
 
     /**
      * List of problems used for tests.
      */
     protected final List<P> problems;
-
+    private final Function<P, DdoModel<T>> model;
     /**
      * Whether the relaxation must be tested.
      */
     public boolean testRelaxation = false;
-
     /**
      * Whether the fast lower bound must be tested.
      */
     public boolean testFLB = false;
-
     /**
      * Whether the dominance must be tested.
      */
     public boolean testDominance = false;
-
     /**
      * Whether the cache has to be tested.
      */
     public boolean testCache = false;
-
     /**
      * The minimum width of mdd to test with the relaxation.
      */
     public int minWidth = 2;
-
     /**
      * The maximum width of mdd to test with the relaxation.
      */
     public int maxWidth = 20;
 
-    /**
-     * Generates {@link Problem} instances to test.
-     *
-     * @return A list of problems used for tests.
-     */
-    abstract protected List<P> generateProblems();
-
-
-    /**
-     * Given a problem instance returns the whole model used to solve this problem.
-     *
-     * @param problem The problem to solve.
-     * @return A model containing all the component to solve it.
-     */
-    abstract protected DdoModel<T> model(P problem);
 
     /**
      * Instantiate a test bench.
      */
-    protected ProblemTestBench() {
-        problems = generateProblems();
+    public ProblemTestBench(TestDataSupplier<T, P> dataSupplier) {
+        problems = dataSupplier.generateProblems();
+        model = dataSupplier::model;
     }
 
+    /**
+     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
+     *
+     * @param expected The expected {@code Optional<Double>}.
+     * @param actual   The actual {@code Optional<Double>}.
+     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     * @param width    The maximum width of mdd used for the tests. Used to display error message.
+     */
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta,
+                                                 int width) {
+        String failureMsg = width > 0 ? String.format("Max width of the MDD: %d", width) : "";
+        if (expected.isPresent() && actual.isPresent()) {
+            assertEquals(expected.get(), actual.get(), delta, failureMsg);
+        } else {
+            assertEquals(expected, actual, failureMsg);
+        }
+    }
+
+    /**
+     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
+     *
+     * @param expected The expected {@code Optional<Double>}.
+     * @param actual   The actual {@code Optional<Double>}.
+     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     */
+    public static void assertOptionalDoubleEqual(Optional<Double> expected,
+                                                 Optional<Double> actual,
+                                                 double delta) {
+        assertOptionalDoubleEqual(expected, actual, delta, -1);
+    }
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
@@ -92,7 +105,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testTransitionModel(P problem) throws InvalidSolutionException {
 
-        DdoModel<T> testModel = model(problem);
+        DdoModel<T> testModel = model.apply(problem);
         int[] bestSolution = new int[problem.nbVars()];
         double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
             Arrays.setAll(bestSolution, i -> sol[i]);
@@ -113,7 +126,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testFlb(P problem) throws InvalidSolutionException {
 
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
 
         DdoModel<T> testModel = new DdoModel<>() {
             @Override
@@ -158,7 +171,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testRelaxation(P problem) {
 
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
             @Override
             public Relaxation<T> relaxation() {
@@ -166,13 +179,13 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
 
             @Override
-            public Problem<T> problem() {
-                return problem;
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(w);
             }
 
             @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(w);
+            public Problem<T> problem() {
+                return problem;
             }
 
             @Override
@@ -208,16 +221,11 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testCache(P problem) {
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<>() {
             @Override
             public Relaxation<T> relaxation() {
                 return globalModel.relaxation();
-            }
-
-            @Override
-            public Problem<T> problem() {
-                return problem;
             }
 
             @Override
@@ -231,13 +239,18 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
 
             @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
+            public Problem<T> problem() {
+                return problem;
             }
 
             @Override
             public FastLowerBound<T> lowerBound() {
                 return globalModel.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
             }
 
             @Override
@@ -273,7 +286,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testAStarSolver(P problem) throws InvalidSolutionException {
 
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
 
         Model<T> testModel = new Model<T>() {
             @Override
@@ -309,7 +322,6 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         }
     }
 
-
     /**
      * Test if the ACS solver reaches the optimal solution.
      *
@@ -317,7 +329,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      */
     protected void testACSSolver(P problem) throws InvalidSolutionException {
 
-        Model<T> globalModel = model(problem);
+        Model<T> globalModel = model.apply(problem);
 
         AcsModel<T> testModel = new AcsModel<>() {
             @Override
@@ -326,13 +338,13 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
 
             @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
             }
 
             @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
             }
 
             @Override
@@ -360,7 +372,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testFlbOnRelaxedNodes(P problem) {
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
         Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
             @Override
             public Relaxation<T> relaxation() {
@@ -368,13 +380,13 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
             }
 
             @Override
-            public Problem<T> problem() {
-                return problem;
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(w);
             }
 
             @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(w);
+            public Problem<T> problem() {
+                return problem;
             }
 
             @Override
@@ -408,7 +420,7 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
      * @param problem The instance to test.
      */
     protected void testDominance(P problem) throws InvalidSolutionException {
-        DdoModel<T> globalModel = model(problem);
+        DdoModel<T> globalModel = model.apply(problem);
 
         DdoModel<T> testModel = new DdoModel<>() {
             @Override
@@ -499,38 +511,5 @@ public abstract class ProblemTestBench<T, P extends Problem<T>> {
         allTests = Stream.concat(allTests, acsTests);
 
         return allTests;
-    }
-
-    /**
-     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
-     *
-     * @param expected The expected {@code Optional<Double>}.
-     * @param actual   The actual {@code Optional<Double>}.
-     * @param delta    The tolerance for the comparison if both optionals contain a value.
-     * @param width    The maximum width of mdd used for the tests. Used to display error message.
-     */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected,
-                                                 Optional<Double> actual,
-                                                 double delta,
-                                                 int width) {
-        String failureMsg = width > 0 ? String.format("Max width of the MDD: %d", width) : "";
-        if (expected.isPresent() && actual.isPresent()) {
-            assertEquals(expected.get(), actual.get(), delta, failureMsg);
-        } else {
-            assertEquals(expected, actual, failureMsg);
-        }
-    }
-
-    /**
-     * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
-     *
-     * @param expected The expected {@code Optional<Double>}.
-     * @param actual   The actual {@code Optional<Double>}.
-     * @param delta    The tolerance for the comparison if both optionals contain a value.
-     */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected,
-                                                 Optional<Double> actual,
-                                                 double delta) {
-        assertOptionalDoubleEqual(expected, actual, delta, -1);
     }
 }
