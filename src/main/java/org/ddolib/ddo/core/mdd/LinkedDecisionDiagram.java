@@ -116,6 +116,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     public final List<DoubleSummaryStatistics> stateCardinalities = new LinkedList<>();
     public final IntSummaryStatistics exactStates = new IntSummaryStatistics();
     public final List<DoubleSummaryStatistics> stateDegradations = new LinkedList<>();
+    public final IntSummaryStatistics layerSize = new IntSummaryStatistics();
     public int nbRelaxations;
     public int nbRestrictions;
 
@@ -242,6 +243,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
+            layerSize.accept(currentLayer.size());
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
                 switch (config.compilationType) {
                     case Restricted:
@@ -264,6 +266,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
 
+            // System.out.println(currentLayer.size());
             for (NodeSubProblem<T> n : currentLayer) {
                 if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
                     dotStr.append(generateDotStr(n, false));
@@ -585,6 +588,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
         nbRestrictions++;
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
 
         // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
         for (List<NodeSubProblem<T>> cluster : clusters) {

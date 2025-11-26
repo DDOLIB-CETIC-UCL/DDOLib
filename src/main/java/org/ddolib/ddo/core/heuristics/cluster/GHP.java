@@ -86,8 +86,8 @@ public class GHP<T> implements ReductionStrategy<T> {
                 }
 
                 double distWithA = distanceWithPivot.get(node.state);
-                // double distWithB = distance.distance(node.state, pivotB.state);
-                double distWithB = distance.distance(node, pivotB);
+                double distWithB = distance.distance(node.state, pivotB.state);
+                // double distWithB = distance.distance(node, pivotB);
 
                 if (distWithA < distWithB) {
                     newClusterA.add(node);
@@ -136,8 +136,8 @@ public class GHP<T> implements ReductionStrategy<T> {
         double maxDistance = -1;
         NodeSubProblem<T> furthest = null;
         for (NodeSubProblem<T> node : nodes) {
-            // double currentDistance = distance.distance(node.state, ref.state);
-            double currentDistance = distance.distance(node, ref);
+            double currentDistance = distance.distance(node.state, ref.state);
+            // double currentDistance = distance.distance(node, ref);
             if (currentDistance > maxDistance && !node.state.equals(ref.state)) {
                 maxDistance = currentDistance;
                 furthest = node;

@@ -85,7 +85,7 @@ public class MaxCoverDdoMainTestReladedAtRoot {
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
                 if (cluster) {
                     //return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(), 0.1 );
-                    GHPAlt ghp =  new GHPAlt(new MaxCoverDistance(problem), new MaxCoverRelax(problem), problem);
+                    GHP ghp =  new GHP(new MaxCoverDistance(problem));
                     // GHP ghp = new GHP(new MaxCoverDistance(problem));
                     ghp.setSeed(42);
                     return ghp;
