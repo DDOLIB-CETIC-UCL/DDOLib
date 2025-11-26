@@ -3,6 +3,7 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.RelaxSearchStatistics;
+import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -81,6 +82,7 @@ public class KSXPs {
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
                     case Kmeans -> strat = new Kmeans<>(new KSCoordinates(), kmeansIter);
                     case Hybrid -> strat = new Hybrid<>(new KSRanking(), stateDistance(), hybridFactor, seed);
+                    case Random -> strat = new RandomBased<>(seed);
                 }
                 return strat;
             }
@@ -93,7 +95,6 @@ public class KSXPs {
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new DefaultDominanceChecker<>();
-                //return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             }
 
             @Override
@@ -160,9 +161,55 @@ public class KSXPs {
         writer.close();
     }
 
+    private static void xpRestriction() throws IOException {
+        KSProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/restrictionKS.csv");
+        writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+                "isExact;RunTime(ms);Incumbent;NbRestrictions;AvgLayerSize\n");
+
+        for (KSProblem problem : instances) {
+            for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+                for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random,}) {// ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                    long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{546351, 87676};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    for (long seed : ghpSeeds) {
+                        for (int kmeansIter : kmeansIters) {
+                            for (double hybridFactor : hybridFactors) {
+                                DdoModel<Integer> model = getModel(problem,
+                                        maxWidth,
+                                        clusterType,
+                                        seed,
+                                        kmeansIter,
+                                        hybridFactor);
+                                assert problem.name.isPresent();
+                                double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                                System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
+                                RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+
+                                writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                        problem.name.get(),
+                                        optimal,
+                                        clusterType,
+                                        maxWidth,
+                                        seed,
+                                        kmeansIter,
+                                        hybridFactor,
+                                        stats
+                                ));
+                                writer.flush();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
     public static void main(String[] args) {
         try {
-            xpRelaxation();
+            xpRestriction();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -174,7 +221,8 @@ public class KSXPs {
         Cost,
         GHP,
         Kmeans,
-        Hybrid
+        Hybrid,
+        Random
     }
 
 

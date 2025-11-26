@@ -3,8 +3,6 @@ import com.gurobi.gurobi.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 public class MaxCoverILP {
     
@@ -65,7 +63,7 @@ public class MaxCoverILP {
     }
 
     public static void main(String[] args) {
-        MaxCoverProblem[] instances = MaxCoverXPs.generateInstances();
+        MaxCoverProblem[] instances = MaxCoverXPs.generateInstancesRestricted();
         StringBuilder outputs = new StringBuilder();
         outputs.append("Instance;Objective\n");
         for (MaxCoverProblem instance : instances) {

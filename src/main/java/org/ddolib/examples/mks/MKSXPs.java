@@ -1,4 +1,4 @@
-package org.ddolib.examples.maximumcoverage;
+package org.ddolib.examples.mks;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
@@ -11,75 +11,37 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static java.lang.Math.ceil;
 
-public class MaxCoverXPs {
+public class MKSXPs {
 
-    public static MaxCoverProblem[] generateInstancesRestricted() {
-        int[] ns = {100, 150, 200};
-        double[] mFactors = {0.5, 0.8};
-        double[] kFactors = {0.1, 0.2};
-        double[] maxRs = {0.1, 0.2};
-        int nbSeeds = 10;
+    public static MKSProblem[] loadInstances() throws IOException {
+        String instancePath = Path.of("data", "MKS", "or-library").toString();
+        System.out.println(instancePath);
+        File instanceDir = new File(instancePath);
+        String pattern = "mknapcb\\d*_\\d*.txt"; // regex
 
-        int nbInstances = ns.length*mFactors.length*kFactors.length*maxRs.length*nbSeeds;
-        MaxCoverProblem[] instances = new MaxCoverProblem[nbInstances];
-        int index = 0;
-        for (int n: ns) {
-            for (double mFactor: mFactors) {
-                int m = (int) ceil(mFactor * n);
-                for (double kFactor: kFactors) {
-                    int k = (int) ceil(kFactor * m);
-                    for (double maxR: maxRs) {
-                        for (int seed = 0; seed < nbSeeds; seed++) {
-                           MaxCoverProblem problem = new MaxCoverProblem(n, m, k, maxR, seed);
-                           instances[index] = problem;
-                           index++;
-                        }
-                    }
-                }
-            }
+        File[] files = instanceDir.listFiles(f -> f.isFile() && f.getName().matches(pattern));
+        MKSProblem[] problems = new MKSProblem[files.length];
+        for (int i = 0; i < files.length; i++) {
+            problems[i] = new MKSProblem(files[i].getAbsolutePath());
         }
-        return instances;
+
+        return problems;
     }
 
-    public static MaxCoverProblem[] generateInstancesBnb() {
-        int[] ns = {100};
-        double[] mFactors = {0.5, 0.8};
-        double[] kFactors = {0.1};
-        double[] maxRs = {0.1};
-        int nbSeeds = 10;
-
-        int nbInstances = ns.length*mFactors.length*kFactors.length*maxRs.length*nbSeeds;
-        MaxCoverProblem[] instances = new MaxCoverProblem[nbInstances];
-        int index = 0;
-        for (int n: ns) {
-            for (double mFactor: mFactors) {
-                int m = (int) ceil(mFactor * n);
-                for (double kFactor: kFactors) {
-                    int k = (int) ceil(kFactor * m);
-                    for (double maxR: maxRs) {
-                        for (int seed = 0; seed < nbSeeds; seed++) {
-                            MaxCoverProblem problem = new MaxCoverProblem(n, m, k, maxR, seed);
-                            instances[index] = problem;
-                            index++;
-                        }
-                    }
-                }
-            }
-        }
-        return instances;
-    }
-
-    private static DdoModel<MaxCoverState> getModel(MaxCoverProblem problem,
+    private static DdoModel<MKSState> getModel(MKSProblem problem,
                                                     int maxWidth,
                                                     ClusterType clusterType,
                                                     long seed,
@@ -88,7 +50,7 @@ public class MaxCoverXPs {
         return getModel(problem, maxWidth, clusterType, clusterType, seed, kmeansIter, hybridFactor);
     }
 
-    private static DdoModel<MaxCoverState> getModel(MaxCoverProblem problem,
+    private static DdoModel<MKSState> getModel(MKSProblem problem,
                                                     int maxWidth,
                                                     ClusterType relaxType,
                                                     ClusterType restrictType,
@@ -97,22 +59,22 @@ public class MaxCoverXPs {
                                                     double hybridFactor) {
         return new DdoModel<>() {
             @Override
-            public Problem<MaxCoverState> problem() {
+            public Problem<MKSState> problem() {
                 return problem;
             }
 
             @Override
-            public MaxCoverRelax relaxation() {
-                return new MaxCoverRelax(problem);
+            public MKSRelax relaxation() {
+                return new MKSRelax();
             }
 
             @Override
-            public MaxCoverRanking ranking() {
-                return new MaxCoverRanking();
+            public MKSRanking ranking() {
+                return new MKSRanking();
             }
 
             @Override
-            public WidthHeuristic<MaxCoverState> widthHeuristic() {
+            public WidthHeuristic<MKSState> widthHeuristic() {
                 return new FixedWidth<>(maxWidth);
             }
 
@@ -122,50 +84,45 @@ public class MaxCoverXPs {
             }
 
             @Override
-            public StateDistance<MaxCoverState> stateDistance() {
-                return new MaxCoverDistance(problem);
+            public StateDistance<MKSState> stateDistance() {
+                return new MKSDistance();
             }
 
             @Override
-            public ReductionStrategy<MaxCoverState> relaxStrategy() {
-                ReductionStrategy<MaxCoverState> strat = null;
+            public ReductionStrategy<MKSState> relaxStrategy() {
+                ReductionStrategy<MKSState> strat = null;
                 switch (relaxType) {
-                    case Cost -> strat = new CostBased<>(new MaxCoverRanking());
+                    case Cost -> strat = new CostBased<>(new MKSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter);
-                    case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
+                    case Kmeans -> strat = new Kmeans<>(new MKSCoordinates(), kmeansIter);
+                    case Hybrid -> strat = new Hybrid<>(new MKSRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
                 return strat;
             }
 
             @Override
-            public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                ReductionStrategy<MaxCoverState> strat = null;
+            public ReductionStrategy<MKSState> restrictStrategy() {
+                ReductionStrategy<MKSState> strat = null;
                 switch (restrictType) {
-                    case Cost -> strat = new CostBased<>(new MaxCoverRanking());
+                    case Cost -> strat = new CostBased<>(new MKSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter);
-                    case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
+                    case Kmeans -> strat = new Kmeans<>(new MKSCoordinates(), kmeansIter);
+                    case Hybrid -> strat = new Hybrid<>(new MKSRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
                 return strat;
             }
 
             @Override
-            public DominanceChecker<MaxCoverState> dominance() {
+            public DominanceChecker<MKSState> dominance() {
                 return new DefaultDominanceChecker<>();
-                //return new SimpleDominanceChecker<>(new MaxCoverDominance(), problem.nbVars());
+                //return new SimpleDominanceChecker<>(new MKSDominance(), problem.nbVars());
             }
 
             @Override
-            public Frontier<MaxCoverState> frontier() {
+            public Frontier<MKSState> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
-            }
-
-            @Override
-            public FastLowerBound<MaxCoverState> lowerBound() {
-                return new MaxCoverFastLowerBound(problem);
             }
 
             @Override
@@ -176,13 +133,13 @@ public class MaxCoverXPs {
     }
 
     private static void xpRelaxation() throws IOException {
-        MaxCoverProblem[] instances = generateInstancesRestricted();
-        FileWriter writer = new FileWriter("xps/relaxationsMaxCover.csv");
+        MKSProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/relaxationsMKS.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
                 "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
 
-        for (MaxCoverProblem problem : instances) {
+        for (MKSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
@@ -191,7 +148,7 @@ public class MaxCoverXPs {
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
-                                DdoModel<MaxCoverState> model = getModel(problem,
+                                DdoModel<MKSState> model = getModel(problem,
                                         maxWidth,
                                         clusterType,
                                         seed,
@@ -221,12 +178,12 @@ public class MaxCoverXPs {
     }
 
     private static void xpRestriction() throws IOException {
-        MaxCoverProblem[] instances = generateInstancesRestricted();
-        FileWriter writer = new FileWriter("xps/restrictionMaxCover.csv");
+        MKSProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/restrictionMKS.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRestrictions;AvgLayerSize\n");
 
-        for (MaxCoverProblem problem : instances) {
+        for (MKSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Random}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 15};
@@ -235,7 +192,7 @@ public class MaxCoverXPs {
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
-                                DdoModel<MaxCoverState> model = getModel(problem,
+                                DdoModel<MKSState> model = getModel(problem,
                                         maxWidth,
                                         clusterType,
                                         seed,
@@ -266,8 +223,8 @@ public class MaxCoverXPs {
 
 
     private static void xpBnB() throws IOException {
-        MaxCoverProblem[] instances = generateInstancesBnb();
-        FileWriter writer = new FileWriter("xps/bnBMaxCover.csv");
+        MKSProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/bnBMKS.csv");
         writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
@@ -277,11 +234,11 @@ public class MaxCoverXPs {
         ClusterType relaxType = ClusterType.Cost;
         ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random};
 
-        for (MaxCoverProblem problem : instances) {
+        for (MKSProblem problem : instances) {
             for (ClusterType restrictType : restrictTypes) {
                 long[] seeds = (restrictType != ClusterType.GHP) && (restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
-                    DdoModel<MaxCoverState> model = getModel(problem,
+                    DdoModel<MKSState> model = getModel(problem,
                             maxWidth,
                             relaxType,
                             restrictType,

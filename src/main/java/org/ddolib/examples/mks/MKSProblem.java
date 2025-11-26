@@ -18,12 +18,14 @@ public class MKSProblem implements Problem<MKSState> {
     final int[] profit;
     final int[][] weights;
     public final Optional<Double> optimal;
+    final Optional<String> name;
 
     public MKSProblem(final double[] capa, final int[] profit, final int[][] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weights = weight;
         this.optimal = Optional.of(optimal);
+        this.name = Optional.empty();
     }
 
     @Override
@@ -154,6 +156,7 @@ public class MKSProblem implements Problem<MKSState> {
             this.profit = context.profit;
             this.weights = context.weights;
             this.optimal = context.optimal;
+            this.name = Optional.of(f.getName());
         }
     }
 
