@@ -53,7 +53,7 @@ public class MKSILP {
         StringBuilder outputs = new StringBuilder();
         outputs.append("Instance;Objective\n");
         for (MKSProblem instance : instances) {
-            System.out.println(instance);
+            System.out.println(instance.name);
             double optimal = solveMultiKnapsack(instance);
             outputs.append(instance.name.get() + ";" + optimal + "\n");
         }

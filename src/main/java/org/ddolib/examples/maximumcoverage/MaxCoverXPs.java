@@ -52,7 +52,7 @@ public class MaxCoverXPs {
     }
 
     public static MaxCoverProblem[] generateInstancesBnb() {
-        int[] ns = {100};
+        int[] ns = {100, 150, 200};
         double[] mFactors = {0.5, 0.8};
         double[] kFactors = {0.1};
         double[] maxRs = {0.1};
@@ -132,7 +132,7 @@ public class MaxCoverXPs {
                 switch (relaxType) {
                     case Cost -> strat = new CostBased<>(new MaxCoverRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter);
+                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
@@ -145,7 +145,7 @@ public class MaxCoverXPs {
                 switch (restrictType) {
                     case Cost -> strat = new CostBased<>(new MaxCoverRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter);
+                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
@@ -266,7 +266,7 @@ public class MaxCoverXPs {
 
 
     private static void xpBnB() throws IOException {
-        MaxCoverProblem[] instances = generateInstancesBnb();
+        MaxCoverProblem[] instances = generateInstancesRestricted();
         FileWriter writer = new FileWriter("xps/bnBMaxCover.csv");
         writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
@@ -290,7 +290,8 @@ public class MaxCoverXPs {
                             hybridFactor);
                     assert problem.name.isPresent();
                     System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
-                    SearchStatistics stats = Solvers.minimizeDdo(model);
+                    long startTime = System.currentTimeMillis();
+                    SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0*60.0));
 
                     writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
                             problem.name.get(),
@@ -310,7 +311,7 @@ public class MaxCoverXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation();
+            xpBnB();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

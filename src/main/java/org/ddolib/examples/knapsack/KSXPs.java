@@ -80,7 +80,7 @@ public class KSXPs {
                 switch (clusterType) {
                     case Cost -> strat = new CostBased<>(new KSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new KSCoordinates(), kmeansIter);
+                    case Kmeans -> strat = new Kmeans<>(new KSCoordinates(), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new KSRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
