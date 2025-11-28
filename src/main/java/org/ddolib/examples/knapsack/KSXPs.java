@@ -237,37 +237,40 @@ public class KSXPs {
         //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
         int maxWidth = 60;
-        int kmeansIter = -1;
+       //  int kmeansIter = -1;
         double hybridFactor = -1;
         ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
         ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
         for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
-                long[] seeds = (relaxType == ClusterType.GHP || restrictType == ClusterType.GHP || restrictType == ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5, 10, 50};
+                long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
-                    DdoModel<Integer> model = getModel(problem,
-                            maxWidth,
-                            relaxType,
-                            restrictType,
-                            seed,
-                            kmeansIter,
-                            hybridFactor);
-                    assert problem.name.isPresent();
-                    System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
-                    long startTime = System.currentTimeMillis();
-                    SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
+                    for (int kmeansIter : kmeansIters) {
+                        DdoModel<Integer> model = getModel(problem,
+                                maxWidth,
+                                relaxType,
+                                restrictType,
+                                seed,
+                                kmeansIter,
+                                hybridFactor);
+                        assert problem.name.isPresent();
+                        System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
+                        long startTime = System.currentTimeMillis();
+                        SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
 
-                    writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
-                            problem.name.get(),
-                            relaxType,
-                            restrictType,
-                            maxWidth,
-                            seed,
-                            kmeansIter,
-                            hybridFactor,
-                            stats.toCSV()
-                    ));
-                    writer.flush();
+                        writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                                problem.name.get(),
+                                relaxType,
+                                restrictType,
+                                maxWidth,
+                                seed,
+                                kmeansIter,
+                                hybridFactor,
+                                stats.toCSV()
+                        ));
+                        writer.flush();
+                    }
                 }
             }
         }
