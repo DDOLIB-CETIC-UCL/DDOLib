@@ -12,6 +12,8 @@ import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.KSProblem;
+import org.ddolib.examples.knapsack.KSXPs;
+import org.ddolib.examples.maximumcoverage.MaxCoverState;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -141,9 +143,9 @@ public class MKSXPs {
                 "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
 
         for (MKSProblem problem : instances) {
-            for (int maxWidth = 100; maxWidth <= 1000; maxWidth+=100) {
+            for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans, ClusterType.Cost, ClusterType.GHP}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
                     double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
                     for (long seed : ghpSeeds) {
@@ -187,9 +189,9 @@ public class MKSXPs {
                 "isExact;RunTime(ms);Incumbent;NbRestrictions;AvgLayerSize\n");
 
         for (MKSProblem problem : instances) {
-            for (int maxWidth = 100; maxWidth <= 1000; maxWidth+=100) {
+            for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{50};
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
                     long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                     double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
                     for (long seed : ghpSeeds) {
@@ -226,45 +228,48 @@ public class MKSXPs {
         writer.close();
     }
 
-
-    private static void xpBnB() throws IOException {
-        MKSProblem[] instances = loadInstances();
-        FileWriter writer = new FileWriter("xps/bnBMKS.csv");
-        writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+    private static void xpBnB(String instance) throws IOException {
+        MKSProblem problem = new MKSProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+        // writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+        //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
         int maxWidth = 60;
-        int kmeansIter = -1;
+        //  int kmeansIter = -1;
         double hybridFactor = -1;
-        ClusterType relaxType = ClusterType.Cost;
-        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random};
-
-        for (MKSProblem problem : instances) {
+        ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
-                long[] seeds = (restrictType != ClusterType.GHP) && (restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5, 10, 50};
+                long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
-                    DdoModel<MKSState> model = getModel(problem,
-                            maxWidth,
-                            relaxType,
-                            restrictType,
-                            seed,
-                            kmeansIter,
-                            hybridFactor);
-                    assert problem.name.isPresent();
-                    System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
-                    SearchStatistics stats = Solvers.minimizeDdo(model);
+                    for (int kmeansIter : kmeansIters) {
+                        DdoModel<MKSState> model = getModel(problem,
+                                maxWidth,
+                                relaxType,
+                                restrictType,
+                                seed,
+                                kmeansIter,
+                                hybridFactor);
+                        assert problem.name.isPresent();
+                        System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
+                        long startTime = System.currentTimeMillis();
+                        SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
 
-                    writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
-                            problem.name.get(),
-                            relaxType,
-                            restrictType,
-                            maxWidth,
-                            seed,
-                            kmeansIter,
-                            hybridFactor,
-                            stats.toCSV()
-                    ));
-                    writer.flush();
+                        writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                                problem.name.get(),
+                                relaxType,
+                                restrictType,
+                                maxWidth,
+                                seed,
+                                kmeansIter,
+                                hybridFactor,
+                                stats.toCSV()
+                        ));
+                        writer.flush();
+                    }
                 }
             }
         }
@@ -272,8 +277,9 @@ public class MKSXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation();
-            xpRestriction();
+            xpBnB(args[0]);
+            // xpRelaxation();
+            // xpRestriction();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
