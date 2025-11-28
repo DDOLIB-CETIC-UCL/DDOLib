@@ -151,12 +151,12 @@ public class KSHybridTest {
 
             @Override
             public ReductionStrategy relaxStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance());
+                return new Hybrid(new KSRanking(), new KSDistance(problem));
             }
 
             @Override
             public ReductionStrategy restrictStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance());
+                return new Hybrid(new KSRanking(), new KSDistance(problem));
             }
         };
 

@@ -4,12 +4,16 @@ import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.RestrictSearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.maximumcoverage.MaxCoverProblem;
+import org.ddolib.examples.maximumcoverage.MaxCoverState;
+import org.ddolib.examples.maximumcoverage.MaxCoverXPs;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -43,6 +47,16 @@ public class KSXPs {
                                                     long seed,
                                                     int kmeansIter,
                                                     double hybridFactor) {
+        return getModel(problem, maxWidth, clusterType, clusterType, seed, kmeansIter, hybridFactor);
+    }
+
+    private static DdoModel<Integer> getModel(KSProblem problem,
+                                                    int maxWidth,
+                                                    ClusterType relaxType,
+                                                    ClusterType restrictType,
+                                                    long seed,
+                                                    int kmeansIter,
+                                                    double hybridFactor) {
         return new DdoModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -71,13 +85,13 @@ public class KSXPs {
 
             @Override
             public StateDistance<Integer> stateDistance() {
-                return new KSDistance();
+                return new KSDistance(problem);
             }
 
             @Override
             public ReductionStrategy<Integer> relaxStrategy() {
                 ReductionStrategy<Integer> strat = null;
-                switch (clusterType) {
+                switch (relaxType) {
                     case Cost -> strat = new CostBased<>(new KSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
                     case Kmeans -> strat = new Kmeans<>(new KSCoordinates(), kmeansIter, false);
@@ -89,7 +103,15 @@ public class KSXPs {
 
             @Override
             public ReductionStrategy<Integer> restrictStrategy() {
-                return relaxStrategy();
+                ReductionStrategy<Integer> strat = null;
+                switch (restrictType) {
+                    case Cost -> strat = new CostBased<>(new KSRanking());
+                    case GHP -> strat = new GHP<>(stateDistance(), seed);
+                    case Kmeans -> strat = new Kmeans<>(new KSCoordinates(), kmeansIter, false);
+                    case Hybrid -> strat = new Hybrid<>(new KSRanking(), stateDistance(), hybridFactor, seed);
+                    case Random -> strat = new RandomBased<>(seed);
+                }
+                return strat;
             }
 
             @Override
@@ -119,7 +141,7 @@ public class KSXPs {
         FileWriter writer = new FileWriter("xps/relaxationsKS.csv");
         writer.write("Instance;Optimal;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
-                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
+                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation;AvgDegradation;MinDegradation;MaxDegradation\n");
 
         for (KSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
@@ -207,9 +229,52 @@ public class KSXPs {
         writer.close();
     }
 
+    private static void xpBnB(String instance) throws IOException {
+        KSProblem problem = new KSProblem(instance);
+        FileWriter writer = new FileWriter("results/");
+        // writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+        //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+
+        int maxWidth = 60;
+        int kmeansIter = -1;
+        double hybridFactor = -1;
+        ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        for (ClusterType relaxType: relaxTypes) {
+            for (ClusterType restrictType : restrictTypes) {
+                long[] seeds = (relaxType == ClusterType.GHP || restrictType == ClusterType.GHP || restrictType == ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                for (long seed : seeds) {
+                    DdoModel<Integer> model = getModel(problem,
+                            maxWidth,
+                            relaxType,
+                            restrictType,
+                            seed,
+                            kmeansIter,
+                            hybridFactor);
+                    assert problem.name.isPresent();
+                    System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
+                    long startTime = System.currentTimeMillis();
+                    SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
+
+                    writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                            problem.name.get(),
+                            relaxType,
+                            restrictType,
+                            maxWidth,
+                            seed,
+                            kmeansIter,
+                            hybridFactor,
+                            stats.toCSV()
+                    ));
+                    writer.flush();
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
         try {
-            xpRestriction();
+            xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
