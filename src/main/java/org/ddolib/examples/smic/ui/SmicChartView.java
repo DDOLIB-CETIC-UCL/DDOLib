@@ -33,7 +33,7 @@ public class SmicChartView extends StackPane {
         this.initInventory = initInventory;
 
 
-        final NumberAxis xAxis = new NumberAxis(0, 30, 5);
+        final NumberAxis xAxis = new NumberAxis(0, 50, 5);
         xAxis.setLabel("Time");
 
         final int yLimit = maxInventory + 5 - maxInventory % 5;
