@@ -75,41 +75,34 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Nodes in the last exact cutset or frontier cutset.
      */
     private final List<NodeSubProblem<T>> cutset = new ArrayList<>();
-
-    /**
-     * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
-     */
-    private boolean exact = true;
-
-    /**
-     * The best node in the terminal layer, if one exists.
-     */
-    private Node best = null;
-
-    /**
-     * Depth of the last exact layer.
-     */
-    private int depthLEL = -1;
-
     /**
      * String builder used for generating DOT representation of the MDD.
      */
     private final StringBuilder dotStr = new StringBuilder();
-
     /**
      * Maps edge hash codes to their DOT representation.
      */
     private final HashMap<Integer, String> edgesDotStr = new HashMap<>();
-
     /**
      * Debug level for additional checks and information during compilation.
      */
     private final DebugLevel debugLevel;
-
     /**
      * Configuration and parameters for compiling the decision diagram.
      */
     private final CompilationConfig<T> config;
+    /**
+     * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
+     */
+    private boolean exact = true;
+    /**
+     * The best node in the terminal layer, if one exists.
+     */
+    private Node best = null;
+    /**
+     * Depth of the last exact layer.
+     */
+    private int depthLEL = -1;
 
 
     /**
@@ -442,13 +435,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return dotStr.toString();
     }
 
-    private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
-    }
-
-
-    // ------ METHODS FOR DEBUG ------
-
-
     /**
      * Given a node, returns the list of decisions taken from the root to reach this node.
      *
@@ -470,6 +456,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return path;
     }
 
+
+    // ------ METHODS FOR DEBUG ------
 
     /**
      * Given a list of decisions returns string describing the states from root.
@@ -523,7 +511,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
                     String lastState = failedState.getLast();
                     lastState =
-                            String.format(" - fub: %6s", current.getKey().flb) + "! - " + lastState;
+                            String.format(" - flb: %6s", current.getKey().flb) + "! - " + lastState;
                     lastState =
                             String.format("length to end: %6s", current.getValue()) + lastState;
                     failedState.removeLast();
@@ -531,7 +519,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     failedState.removeLast();
                     failedState.addLast(lastState);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
-                    String failureMsg = String.format("Found node with upper bound (%s) lower than " +
+                    String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
                                     "its longest path (%s)\n", df.format(current.getKey().flb),
                             df.format(current.getValue()));
                     failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
@@ -558,7 +546,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
     }
-
 
     /**
      * Checks whether the relaxation is coherent. This method compiles mdd starting from a
@@ -654,7 +641,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         mdd.compile();
         return mdd;
     }
-
 
     /**
      * Returns the set of decision leading the root to the input node.
@@ -838,7 +824,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             n.value = value;
         }
     }
-
 
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds
@@ -1026,6 +1011,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
         }
+    }
+
+    private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
     }
 
 
