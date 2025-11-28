@@ -231,7 +231,8 @@ public class KSXPs {
 
     private static void xpBnB(String instance) throws IOException {
         KSProblem problem = new KSProblem(instance);
-        FileWriter writer = new FileWriter("results/");
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
         // writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
         //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
