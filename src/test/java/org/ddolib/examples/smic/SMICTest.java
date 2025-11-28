@@ -1,9 +1,17 @@
 package org.ddolib.examples.smic;
 
+import org.ddolib.util.testbench.ProblemTestBench;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
+
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
 public class SMICTest {
 
 
-    /*@DisplayName("SMIC")
+    @DisplayName("SMIC")
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var dataSupplier =
@@ -13,5 +21,5 @@ public class SMICTest {
         bench.testFLB = true;
         bench.testDominance = true;
         return bench.generateTests();
-    }*/
+    }
 }
