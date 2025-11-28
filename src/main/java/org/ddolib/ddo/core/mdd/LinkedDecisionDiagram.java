@@ -446,6 +446,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
+    // ------ METHODS FOR DEBUG ------
+
+
     /**
      * Given a node, returns the list of decisions taken from the root to reach this node.
      *
@@ -556,6 +559,153 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+
+    /**
+     * Checks whether the relaxation is coherent. This method compiles mdd starting from a
+     * relaxed node and each merged nodes. Then, it compares the best values of each solution.
+     * The path passing through the relaxed node must be a lower bound.
+     *
+     */
+    private void checkRelaxation(List<NodeSubProblem<T>> nodesToMerge,
+                                 NodeSubProblem<T> relaxedNode) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        Set<Decision> pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);
+        pathFromRelaxedToRoot.addAll(pathToRoot);
+        SubProblem<T> relaxedSub = new SubProblem<>(relaxedNode.state, relaxedNode.node.value,
+                relaxedNode.lb, pathFromRelaxedToRoot);
+
+        int relaxationDepth = relaxedSub.getDepth();
+        LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedSub);
+        Optional<Double> bestWithRelaxed = relaxedMdd.bestValue();
+        Optional<Set<Decision>> bestRelaxedSol = relaxedMdd.bestSolution();
+        Optional<Double> bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);
+
+        for (NodeSubProblem<T> node :
+                nodesToMerge.stream().filter(n -> n.node.type == NodeType.EXACT).toList()) {
+            Set<Decision> pathFromCurrentToRoot = constructPathToRoot(node.node);
+            pathFromCurrentToRoot.addAll(pathToRoot);
+            SubProblem<T> sub = new SubProblem<>(node.state, node.node.value, node.lb, pathFromCurrentToRoot);
+            LinkedDecisionDiagram<T> mdd = compileSubMdd(sub);
+            Optional<Double> bestWithNode = mdd.bestValue();
+            Optional<Set<Decision>> bestSol = mdd.bestSolution();
+            String failureMsg = "";
+            if (bestWithRelaxed.isPresent()
+                    && bestWithNode.isPresent()
+                    && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
+
+                failureMsg = String.format("Found relaxed node that lead to worst solution" +
+                                " (%s) than one of the merged nodes (%s).\n",
+                        df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
+
+                failureMsg += "Depth: " + relaxationDepth + "\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
+                failureMsg += "Merged states state:\n\t" + nodesToMerge
+                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
+                failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
+                        relaxedNode.state, df.format(bestWithRelaxed.get()));
+                failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
+                        Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
+
+                failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
+                        node.state, df.format(bestWithNode.get()));
+                failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
+                        Optional.empty());
+
+            } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
+                failureMsg = "Found relaxed node that lead to no solution but not the " +
+                        "merged ones.\n";
+                failureMsg += "Depth: " + relaxationDepth + "\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state;
+                failureMsg += "\nMerged states state:\n\t" + nodesToMerge
+                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
+            }
+
+            if (!failureMsg.isEmpty()) {
+                failureMsg += "\n";
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    dotStr.append(generateDotStr(relaxedNode, false));
+                    String dot = exportAsDot();
+                    try (BufferedWriter bw =
+                                 new BufferedWriter(new FileWriter(Paths.get("output",
+                                         "failed.dot").toString()))) {
+                        bw.write(dot);
+                        failureMsg += "MDD saved in output/failed.dot\n";
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                throw new RuntimeException(failureMsg);
+            }
+        }
+    }
+
+    /**
+     * Given a node sub-problem compiles the associated mdd and returns it.
+     */
+    private LinkedDecisionDiagram<T> compileSubMdd(SubProblem<T> sub) {
+        CompilationConfig<T> compilation = config.copy();
+        compilation.residual = sub;
+        compilation.exportAsDot = false;
+        compilation.debugLevel = DebugLevel.OFF;
+        compilation.compilationType = CompilationType.Exact;
+
+        LinkedDecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
+        mdd.compile();
+        return mdd;
+    }
+
+
+    /**
+     * Returns the set of decision leading the root to the input node.
+     *
+     * @param node The target node.
+     * @return The set of decision leading the root to the input node.
+     */
+    private Set<Decision> constructPathToRoot(Node node) {
+        Edge eb = node.best;
+        Set<Decision> path = new HashSet<>();
+        while (eb != null) {
+            Decision decision = eb.decision;
+            path.add(decision);
+            eb = eb.origin.best;
+        }
+        return path;
+    }
+
+    /**
+     * Given a set of decision going from the root to a terminal node, returns a description of
+     * the path.
+     *
+     */
+    private String describePath(Set<Decision> pathFromRoot, Optional<Integer> relaxationDepth,
+                                Optional<T> relaxedState, Optional<Double> relaxedCost) {
+        List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::var)).toList();
+        T current = config.problem.initialState();
+        int depth = 0;
+        StringBuilder msg = new StringBuilder(String.format("\t\t%-23s", depth + "."));
+        for (Decision decision : path) {
+            msg.append(current).append("\n\t");
+            msg.append(decision);
+            msg.append("\n");
+            depth++;
+
+            double cost;
+            if (relaxationDepth.isPresent() && depth == relaxationDepth.get()) {
+                cost = relaxedCost.get();
+                current = relaxedState.get();
+            } else {
+                cost = config.problem.transitionCost(current, decision);
+                current = config.problem.transition(current, decision);
+            }
+
+            msg.append(String.format("\t\t%-20s - ", depth + ". cost: " + cost));
+
+        }
+        msg.append(current);
+        return msg.toString();
+    }
+
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
@@ -598,25 +748,25 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
 
         // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> node = null;
+        NodeSubProblem<T> mergedNode = null;
         boolean fresh = true;
         for (NodeSubProblem<T> n : keep) {
             if (n.state.equals(merged)) {
-                node = n;
+                mergedNode = n;
                 fresh = false;
                 break;
             }
         }
         // when the merged node is new, set its type to relaxed
-        if (node == null) {
+        if (mergedNode == null) {
             Node newNode = new Node(Double.POSITIVE_INFINITY);
             newNode.type = NodeType.RELAXED;
-            node = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
+            mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
         }
 
         // redirect and relax all arcs entering the merged node
         for (NodeSubProblem<T> drop : merge) {
-            node.lb = Math.min(node.lb, drop.lb);
+            mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
 
             for (Edge e : drop.node.edges) {
                 double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
@@ -625,14 +775,19 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 e.weight = rcost;
                 // if there exists an entring arc with relaxed origin, set the merged node to relaxed
                 if (e.origin.type == NodeType.RELAXED) {
-                    node.node.type = NodeType.RELAXED;
+                    mergedNode.node.type = NodeType.RELAXED;
                 }
-                node.node.edges.add(e);
-                if (value < node.node.value) {
-                    node.node.value = value;
-                    node.node.best = e;
+                mergedNode.node.edges.add(e);
+                if (value < mergedNode.node.value) {
+                    mergedNode.node.value = value;
+                    mergedNode.node.best = e;
                 }
             }
+        }
+
+
+        if (debugLevel != DebugLevel.OFF) {
+            checkRelaxation(merge, mergedNode);
         }
 
 
@@ -640,7 +795,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         merge.clear();
         // append the newly merged node if needed
         if (fresh) {
-            currentLayer.add(node);
+            currentLayer.add(mergedNode);
         }
     }
 
@@ -872,5 +1027,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
     }
+
+
 }
 
