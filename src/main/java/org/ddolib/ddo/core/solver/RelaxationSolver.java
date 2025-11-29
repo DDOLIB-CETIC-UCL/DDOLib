@@ -3,14 +3,10 @@ package org.ddolib.ddo.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
-import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
@@ -23,12 +19,7 @@ import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -194,7 +185,8 @@ public final class RelaxationSolver<T> {
                 relaxedMdd.nbRelaxations,
                 relaxedMdd.stateCardinalities,
                 relaxedMdd.exactStates,
-                relaxedMdd.stateDegradations,
+                relaxedMdd.stateDegradationsPerNode,
+                relaxedMdd.layerSize,
                 relaxedMdd.isExact());
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }

@@ -1,13 +1,14 @@
 package org.ddolib.common.solver;
 
-import java.util.IntSummaryStatistics;
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
+
 
 public record RestrictSearchStatistics (
     long runTimeMs,
     double incumbent,
     int nbRestrictions,
     boolean isExact,
-    IntSummaryStatistics layerSizes
+    SummaryStatistics layerSizes
     ) {
 
     @Override
@@ -17,7 +18,7 @@ public record RestrictSearchStatistics (
                 runTimeMs,
                 incumbent,
                 nbRestrictions,
-                layerSizes.getAverage());
+                layerSizes.getMean());
     }
 
 }

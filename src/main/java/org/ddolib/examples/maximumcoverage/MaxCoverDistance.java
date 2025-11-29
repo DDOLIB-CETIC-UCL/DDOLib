@@ -16,36 +16,36 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
             this.instance = instance;
         }
 
-    private double jaccardDistance(BitSet a, BitSet b) {
+        private double jaccardDistance(BitSet a, BitSet b) {
 
-        BitSet tmp = (BitSet) a.clone();
-        tmp.and(b);
-        int intersectionSize = tmp.cardinality();
+            BitSet tmp = (BitSet) a.clone();
+            tmp.and(b);
+            int intersectionSize = tmp.cardinality();
 
-        tmp = (BitSet) a.clone();
-        tmp.or(b);
-        int unionSize = tmp.cardinality();
+            tmp = (BitSet) a.clone();
+            tmp.or(b);
+            int unionSize = tmp.cardinality();
 
-        return (1.0 - ((double) intersectionSize) / unionSize);
-    }
-
-    private double weightedJaccardDistance(BitSet a, BitSet b) {
-
-        double intersectionSize =0;
-        double unionSize = 0;
-
-        int maxIndex = max(a.length(), b.length());
-        for (int i = 0; i < maxIndex; i++) {
-            if (a.get(i) || b.get(i)) {
-                unionSize += instance.centralities[i];
-                if (a.get(i) && b.get(i)) {
-                    intersectionSize+= instance.centralities[i];
-                }
-            }
+            return (1.0 - ((double) intersectionSize) / unionSize);
         }
 
-        return 1 - intersectionSize / unionSize;
-    }
+        private double weightedJaccardDistance(BitSet a, BitSet b) {
+
+            double intersectionSize =0;
+            double unionSize = 0;
+
+            int maxIndex = max(a.length(), b.length());
+            for (int i = 0; i < maxIndex; i++) {
+                if (a.get(i) || b.get(i)) {
+                    unionSize += instance.centralities[i];
+                    if (a.get(i) && b.get(i)) {
+                        intersectionSize+= instance.centralities[i];
+                    }
+                }
+            }
+
+            return 1 - intersectionSize / unionSize;
+        }
 
     private double diceDistance(BitSet a, BitSet b) {
         double distance = 0;
@@ -93,6 +93,14 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         return alpha * distanceOnCost + (1 - alpha) * distanceOnSet;
     }
 
+    private double euclideanDistance(BitSet a, BitSet b) {
+        BitSet symmetricDifference = (BitSet) a.clone();
+        symmetricDifference.xor(b);
+        double dist = symmetricDifference.cardinality();
+
+        return Math.sqrt(dist);
+    }
+
     @Override
     public double distanceWithRoot(MaxCoverState state) {
             return state.coveredItems().cardinality();
@@ -115,4 +123,6 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         //return diceDistance(a.coveredItems(), b.coveredItems());
         //return rogerDistance(a.coveredItems(),b.coveredItems());
     }
+
+
 }

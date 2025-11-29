@@ -81,7 +81,7 @@ public class MKSTest {
 
                 @Override
                 public ReductionStrategy<MKSState> relaxStrategy() {
-                    return new GHP<>(new MKSDistance());
+                    return new GHP<>(new MKSDistance(problem));
                     // return new Hybrid<>(new MKSRanking(), new MKSDistance(problem));
                     // return new CostBased<>(new MKSRanking());
                 }

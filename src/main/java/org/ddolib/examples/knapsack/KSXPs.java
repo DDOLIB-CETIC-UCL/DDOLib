@@ -139,16 +139,20 @@ public class KSXPs {
     private static void xpRelaxation() throws IOException {
         KSProblem[] instances = loadInstances();
         FileWriter writer = new FileWriter("xps/relaxationsKS.csv");
-        writer.write("Instance;Optimal;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
-                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation;AvgDegradation;MinDegradation;MaxDegradation\n");
+        writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+                "isExact;RunTime(ms);Incumbent;NbRelaxations" +
+                ";avgExactNodes;geoAvgExactNodes;minExactNodes;maxExactNodes;varExactNodes" +
+                ";avgStateCardinalities;geoAvgStateCardinalities;minStateCardinalities;maxStateCardinalities;varStateCardinalities" +
+                ";avgStateDegradation;geoAvgStateDegradation;minStateDegradation;maxStateDegradation;varStateDegradation" +
+                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize" +
+                ";\n");
 
         for (KSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -191,10 +195,10 @@ public class KSXPs {
 
         for (KSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random,}) {// ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
-                    long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random, ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                    long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{546351, 87676, 465465};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -243,7 +247,7 @@ public class KSXPs {
         ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
         for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
-                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5, 10, 50};
+                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5};
                 long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
                     for (int kmeansIter : kmeansIters) {
@@ -278,7 +282,9 @@ public class KSXPs {
 
     public static void main(String[] args) {
         try {
-            xpBnB(args[0]);
+            xpRelaxation();
+            // xpRestriction();
+            // xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

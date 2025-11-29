@@ -88,7 +88,7 @@ public class MKSXPs {
 
             @Override
             public StateDistance<MKSState> stateDistance() {
-                return new MKSDistance();
+                return new MKSDistance(problem);
             }
 
             @Override
@@ -144,10 +144,10 @@ public class MKSXPs {
 
         for (MKSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans, ClusterType.Cost, ClusterType.GHP}) {
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Hybrid}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -190,10 +190,10 @@ public class MKSXPs {
 
         for (MKSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans, ClusterType.Hybrid}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -242,7 +242,7 @@ public class MKSXPs {
         ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
         for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
-                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5, 10, 50};
+                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5};
                 long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
                     for (int kmeansIter : kmeansIters) {
@@ -277,8 +277,8 @@ public class MKSXPs {
 
     public static void main(String[] args) {
         try {
-            xpBnB(args[0]);
-            // xpRelaxation();
+            // xpBnB(args[0]);
+            xpRelaxation();
             // xpRestriction();
         } catch (IOException e) {
             System.err.println(e.getMessage());

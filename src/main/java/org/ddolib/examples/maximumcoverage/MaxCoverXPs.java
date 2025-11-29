@@ -54,8 +54,8 @@ public class MaxCoverXPs {
     public static MaxCoverProblem[] generateInstancesBnb() {
         int[] ns = {100, 150, 200};
         double[] mFactors = {0.5, 0.8};
-        double[] kFactors = {0.1};
-        double[] maxRs = {0.1};
+        double[] kFactors = {0.1, 0.2};
+        double[] maxRs = {0.1, 0.2};
         int nbSeeds = 10;
 
         int nbInstances = ns.length*mFactors.length*kFactors.length*maxRs.length*nbSeeds;
@@ -179,15 +179,19 @@ public class MaxCoverXPs {
         MaxCoverProblem[] instances = generateInstancesRestricted();
         FileWriter writer = new FileWriter("xps/relaxationsMaxCover.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
-                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
+                "isExact;RunTime(ms);Incumbent;NbRelaxations" +
+                ";avgExactNodes;geoAvgExactNodes;minExactNodes;maxExactNodes;varExactNodes" +
+                ";avgStateCardinalities;geoAvgStateCardinalities;minStateCardinalities;maxStateCardinalities;varStateCardinalities" +
+                ";avgStateDegradation;geoAvgStateDegradation;minStateDegradation;maxStateDegradation;varStateDegradation" +
+                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize" +
+                ";\n");
 
         for (MaxCoverProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans}) {
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans, ClusterType.Cost, ClusterType.Hybrid, ClusterType.GHP}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -228,10 +232,10 @@ public class MaxCoverXPs {
 
         for (MaxCoverProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Random}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 15};
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -265,19 +269,19 @@ public class MaxCoverXPs {
     }
 
 
-    private static void xpBnB() throws IOException {
+    private static void xpBnB(int index) throws IOException {
         MaxCoverProblem[] instances = generateInstancesRestricted();
-        FileWriter writer = new FileWriter("xps/bnBMaxCover.csv");
-        writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+        FileWriter writer = new FileWriter("results/" + index +".csv");
+        //writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+        //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
         int maxWidth = 60;
-        int kmeansIter = -1;
+        int kmeansIter = 5;
         double hybridFactor = -1;
-        ClusterType relaxType = ClusterType.Cost;
-        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random};
-
-        for (MaxCoverProblem problem : instances) {
+        ClusterType[] relaxTypes = {ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        MaxCoverProblem problem = instances[index];
+        for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
                 long[] seeds = (restrictType != ClusterType.GHP) && (restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
@@ -311,7 +315,9 @@ public class MaxCoverXPs {
 
     public static void main(String[] args) {
         try {
-            xpBnB();
+            // xpRelaxation();
+            xpRestriction();
+            xpBnB(Integer.parseInt(args[0]));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
