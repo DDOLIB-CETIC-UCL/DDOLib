@@ -2,6 +2,8 @@ package org.ddolib.modeling;
 
 import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.common.solver.RelaxSearchStatistics;
+import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.solver.ExactSolver;
@@ -94,39 +96,39 @@ public class Solvers {
         return new SequentialSolver<>(model).minimize(limit, onSolution);
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model) {
+    public static final <T> RelaxSearchStatistics relaxedDdo(DdoModel<T> model) {
         return relaxedDdo(model, stats -> false, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+    public static final <T> RelaxSearchStatistics relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
         return relaxedDdo(model, limit, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static final <T> RelaxSearchStatistics relaxedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return relaxedDdo(model, s -> false, onSolution);
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static final <T> RelaxSearchStatistics relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new RelaxationSolver<>(model).minimize(limit, onSolution);
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model) {
+    public static final <T> RestrictSearchStatistics restrictedDdo(DdoModel<T> model) {
         return restrictedDdo(model, stats -> false, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+    public static final <T> RestrictSearchStatistics restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
         return restrictedDdo(model, limit, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static final <T> RestrictSearchStatistics restrictedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return restrictedDdo(model, s -> false, onSolution);
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static final <T> RestrictSearchStatistics restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new RestrictionSolver<>(model).minimize(limit, onSolution);
     }
 

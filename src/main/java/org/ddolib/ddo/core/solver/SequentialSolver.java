@@ -382,6 +382,7 @@ public final class SequentialSolver<T> implements Solver {
         compilation.cutSetType = frontier.cutSetType();
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
+        compilation.stateDistance = model.stateDistance();
 
         if (type == CompilationType.Relaxed) {
             compilation.reductionStrategy = model.relaxStrategy();

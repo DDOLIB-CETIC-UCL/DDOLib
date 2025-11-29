@@ -14,8 +14,6 @@ public class SetCoverDistance implements StateDistance<SetCoverState> {
     }
 
 
-
-
     /**
      * The distance between two states in the set cover problem is the
      * size of the symmetric difference between the two sets of uncovered elements

@@ -117,6 +117,8 @@ public class CompilationConfig<T> {
      */
     public ReductionStrategy<T> reductionStrategy = null;
 
+    public StateDistance<T> stateDistance = null;
+
     /**
      * Initialize the parameters of the compilation.
      *
@@ -159,6 +161,8 @@ public class CompilationConfig<T> {
         compilation.cutSetType = this.cutSetType;
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = model.debugMode();
+        compilation.reductionStrategy = this.reductionStrategy;
+        compilation.stateDistance = this.stateDistance;
 
         return compilation;
     }

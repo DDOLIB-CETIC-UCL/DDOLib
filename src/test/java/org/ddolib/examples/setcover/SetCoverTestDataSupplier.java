@@ -3,6 +3,7 @@ package org.ddolib.examples.setcover;
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
@@ -57,6 +58,11 @@ public class SetCoverTestDataSupplier extends TestDataSupplier<SetCoverState, Se
             @Override
             public DominanceChecker<SetCoverState> dominance() {
                 return new SimpleDominanceChecker<>(new SetCoverDominance(), problem.nbVars());
+            }
+
+            @Override
+            public VariableHeuristic<SetCoverState> variableHeuristic() {
+                return new SetCoverHeuristic(problem);
             }
 
             @Override

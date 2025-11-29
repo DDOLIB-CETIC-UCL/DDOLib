@@ -1,9 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.*;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
@@ -117,7 +115,7 @@ public final class RelaxationSolver<T> {
         this.model = model;
     }
 
-    public Solution minimize(Predicate<SearchStatistics> limit,
+    public RelaxSearchStatistics minimize(Predicate<SearchStatistics> limit,
                                           BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
 
@@ -130,9 +128,21 @@ public final class RelaxationSolver<T> {
         maybeUpdateBest(relaxedMdd, exportAsDot);
 
         long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
+        RelaxSearchStatistics stats = new RelaxSearchStatistics(
+                end - start,
+                relaxedMdd.bestValue().get(),
+                relaxedMdd.nbRelaxations,
+                relaxedMdd.stateCardinalities,
+                relaxedMdd.exactStates,
+                relaxedMdd.stateDegradationsPerNode,
+                relaxedMdd.layerSize,
+                relaxedMdd.isExact()
+        );
+
+        return stats;
+        /*SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
                 end - start, bestUB, 0);
-        return new Solution(bestSolution(), stats);
+        return new Solution(bestSolution(), stats);*/
     }
 
     public Optional<Double> bestValue() {
@@ -209,6 +219,7 @@ public final class RelaxationSolver<T> {
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.relaxStrategy();
+        compilation.stateDistance = model.stateDistance();
 
         return compilation;
     }

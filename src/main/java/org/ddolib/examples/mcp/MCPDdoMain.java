@@ -97,7 +97,7 @@ public final class MCPDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.restrictedDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(bestSolution.statistics());

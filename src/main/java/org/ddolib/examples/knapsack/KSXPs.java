@@ -2,6 +2,9 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.RelaxSearchStatistics;
+import org.ddolib.common.solver.RestrictSearchStatistics;
+import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -160,7 +163,7 @@ public class KSXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                Solution solution = Solvers.relaxedDdo(model);
+                                RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
 
                                 writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -170,7 +173,7 @@ public class KSXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        solution
+                                        stats
                                 ));
                                 writer.flush();
                             }
@@ -206,7 +209,7 @@ public class KSXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                Solution solution = Solvers.restrictedDdo(model);
+                                RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
 
                                 writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -216,7 +219,7 @@ public class KSXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        solution
+                                        stats
                                 ));
                                 writer.flush();
                             }
@@ -250,7 +253,7 @@ public class KSXPs {
                             assert problem.name.isPresent();
                             double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                             System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                            Solution solution = Solvers.relaxedDdo(model);
+                            RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
 
                             writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                     problem.name.get(),
@@ -260,7 +263,7 @@ public class KSXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    solution
+                                    stats
                             ));
                             writer.flush();
                         }
@@ -293,7 +296,7 @@ public class KSXPs {
                             assert problem.name.isPresent();
                             double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                             System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                            Solution solution = Solvers.restrictedDdo(model);
+                            RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
 
                             writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                     problem.name.get(),
@@ -303,7 +306,7 @@ public class KSXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    solution
+                                    stats
                             ));
                             writer.flush();
                         }
@@ -352,7 +355,7 @@ public class KSXPs {
                                 seed,
                                 kmeansIter,
                                 hybridFactor,
-                                solution.statistics().toCSV()
+                                solution
                         ));
                         writer.flush();
                     }
@@ -363,8 +366,8 @@ public class KSXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation(args[0]);
-            xpRestriction(args[0]);
+            xpRelaxation();
+            // xpRestriction();
             // xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());

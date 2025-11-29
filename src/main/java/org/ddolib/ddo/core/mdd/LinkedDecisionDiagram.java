@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core.mdd;
 
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -105,6 +106,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
+
+    // public final List<SummaryStatistics> stateCardinalitiesPerLayer = new LinkedList<>();
+    public final SummaryStatistics stateCardinalities = new SummaryStatistics();
+    public final SummaryStatistics exactStates = new SummaryStatistics();
+    // public final List<SummaryStatistics> stateDegradationsPerLayer = new LinkedList<>();
+    public final SummaryStatistics stateDegradationsPerNode = new SummaryStatistics();
+    // public final List<SummaryStatistics> stateDegradationsPerCluster = new LinkedList<>();
+    public final SummaryStatistics layerSize = new SummaryStatistics();
+    public int nbRelaxations;
+    public int nbRestrictions;
 
     /**
      * Creates a new linked decision diagram.
@@ -229,6 +240,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
+            layerSize.addValue(currentLayer.size());
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
                 switch (config.compilationType) {
                     case Restricted:
@@ -243,7 +255,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, relax, config.reductionStrategy);
+                        relax(maxWidth, relax, config.reductionStrategy, config.stateDistance);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -713,6 +725,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+        nbRestrictions++;
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
 
@@ -732,15 +745,28 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param maxWidth the maximum tolerated layer width
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
-        // generates clusters
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy, final StateDistance<T> distance) {
+        // System.out.println("*************");
+        // System.out.println(currentLayer.size());
+        // System.out.println(currentLayer);
+        nbRelaxations++;
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
+        // SummaryStatistics degradationsPerLayer = new SummaryStatistics();
+        // SummaryStatistics cardinalities = new SummaryStatistics();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
+            SummaryStatistics degradationsPerCluster = new SummaryStatistics();
+            // System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
+                stateDegradationsPerNode.addValue(0.0);
+                // degradationsPerLayer.addValue(0.0);
+                degradationsPerCluster.addValue(0.0);
+                // cardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
+                stateCardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
+                // stateDegradationsPerCluster.add(degradationsPerCluster);
                 continue;
             }
 
@@ -749,6 +775,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            // cardinalities.addValue(distance.distanceWithRoot(merged));
+            stateCardinalities.addValue(distance.distanceWithRoot(merged));
+            for (NodeSubProblem<T> node : cluster) {
+                double dist = distance.distance(node.state, merged);
+                stateDegradationsPerNode.addValue(dist);
+                degradationsPerCluster.addValue(dist);
+                // degradationsPerLayer.addValue(dist);
+            }
+            // stateDegradationsPerCluster.add(degradationsPerCluster);
+            // System.out.println(merged);
             NodeSubProblem<T> mergedNode = null;
             for (NodeSubProblem<T> n: currentLayer) {
                 if (n.state.equals(merged)) {
@@ -790,6 +826,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 checkRelaxation(cluster, mergedNode);
             }
         }
+
+        int nbExact = 0;
+        for (NodeSubProblem<T> node : currentLayer) {
+            if (node.node.type == NodeType.EXACT) {
+                nbExact++;
+            }
+        }
+
+        this.exactStates.addValue(nbExact);
+        // this.stateDegradationsPerLayer.add(degradationsPerLayer);
+        // this.stateCardinalitiesPerLayer.add(cardinalities);
     }
 
     /**
@@ -831,6 +878,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             n.value = value;
         }
     }
+
 
     /**
      * Performs a bottom up traversal of the mdd to compute the local bounds

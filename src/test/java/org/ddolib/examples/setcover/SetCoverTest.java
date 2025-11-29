@@ -15,7 +15,7 @@ public class SetCoverTest {
         var dataSupplier = new SetCoverTestDataSupplier(Path.of("src", "test", "resources", "SetCover"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
-        bench.testFLB = false;
+        bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = false;
         return bench.generateTests();

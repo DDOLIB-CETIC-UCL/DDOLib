@@ -126,7 +126,7 @@ public final class RestrictionSolver<T> {
         this.model = model;
     }
 
-    public Solution minimize(Predicate<SearchStatistics> limit,
+    public RestrictSearchStatistics minimize(Predicate<SearchStatistics> limit,
                                              BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
 
@@ -144,9 +144,15 @@ public final class RestrictionSolver<T> {
         }
 
         long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0);
-        return new Solution(bestSolution(), stats);
+        RestrictSearchStatistics stats = new RestrictSearchStatistics(
+                end - start,
+                restrictedMdd.bestValue().get(),
+                restrictedMdd.nbRestrictions,
+                restrictedMdd.isExact(),
+                restrictedMdd.layerSize
+        );
+
+        return stats;
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
 
@@ -223,6 +229,7 @@ public final class RestrictionSolver<T> {
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.restrictStrategy();
+        compilation.stateDistance = model.stateDistance();
 
         return compilation;
     }

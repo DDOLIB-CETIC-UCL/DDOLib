@@ -2,6 +2,8 @@ package org.ddolib.examples.binpacking;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.RelaxSearchStatistics;
+import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -156,9 +158,9 @@ public class BPPXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                Solution solution = Solvers.relaxedDdo(model);
+                                RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
 
-                                writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%f;%d%n",
+                                writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
                                         optimal,
                                         clusterType,
@@ -166,8 +168,7 @@ public class BPPXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        solution.value(),
-                                        solution.statistics().runTimeMs()
+                                        stats
                                 ));
                                 writer.flush();
                             }
@@ -202,9 +203,9 @@ public class BPPXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                Solution solution = Solvers.restrictedDdo(model);
+                                RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
 
-                                writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%f;%d%n",
+                                writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
                                         optimal,
                                         clusterType,
@@ -212,8 +213,7 @@ public class BPPXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        solution.value(),
-                                        solution.statistics().runTimeMs()
+                                        stats
                                 ));
                                 writer.flush();
                             }
