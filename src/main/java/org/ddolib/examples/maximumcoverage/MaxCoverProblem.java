@@ -149,6 +149,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                 domain.add(i);
             }
         }
+        if (domain.isEmpty())
+            domain.add(-1);
         return domain.iterator();
     }
 
@@ -156,13 +158,16 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public MaxCoverState transition(MaxCoverState state, Decision decision) {
         int val = decision.val();
         BitSet coveredItems = (BitSet) state.coveredItems().clone();
-        coveredItems.or(subSets[val]);
+        if (val != -1)
+            coveredItems.or(subSets[val]);
         return new MaxCoverState(coveredItems);
     }
 
     @Override
     public double transitionCost(MaxCoverState state, Decision decision) {
         int val = decision.val();
+        if (val == -1)
+            return 0;
         BitSet coveredItems = (BitSet) state.coveredItems().clone();
         coveredItems.or(subSets[val]);
         coveredItems.andNot(state.coveredItems());
