@@ -3,7 +3,11 @@ on:
   workflow_dispatch: #can be run manually
 
   schedule:
-    - cron: "0 9 * * 1" # 21h utc
+    - cron: "0 21 * * 0" # 21h utc
+
+  push:
+    branches:
+      - '160-implement-pipeline-for-non-regesion-tests'
 
 jobs:
   run-non-regression-tests:
