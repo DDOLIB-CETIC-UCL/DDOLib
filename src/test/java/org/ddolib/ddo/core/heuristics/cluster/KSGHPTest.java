@@ -151,12 +151,12 @@ public class KSGHPTest {
 
             @Override
             public ReductionStrategy relaxStrategy() {
-                return new GHP(new KSDistance());
+                return new GHP(new KSDistance(problem));
             }
 
             @Override
             public ReductionStrategy restrictStrategy() {
-                return new GHP(new KSDistance());
+                return new GHP(new KSDistance(problem));
             }
         };
 

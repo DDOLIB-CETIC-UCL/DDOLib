@@ -18,14 +18,12 @@ import org.ddolib.modeling.Solvers;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static java.lang.Math.ceil;
 
 public class MaxCoverXPs {
 
-    public static MaxCoverProblem[] generateInstances() {
+    public static MaxCoverProblem[] generateInstancesRestricted() {
         int[] ns = {100, 150, 200};
         double[] mFactors = {0.5, 0.8};
         double[] kFactors = {0.1, 0.2};
@@ -53,9 +51,47 @@ public class MaxCoverXPs {
         return instances;
     }
 
+    public static MaxCoverProblem[] generateInstancesBnb() {
+        int[] ns = {100, 150, 200};
+        double[] mFactors = {0.5, 0.8};
+        double[] kFactors = {0.1, 0.2};
+        double[] maxRs = {0.1, 0.2};
+        int nbSeeds = 10;
+
+        int nbInstances = ns.length*mFactors.length*kFactors.length*maxRs.length*nbSeeds;
+        MaxCoverProblem[] instances = new MaxCoverProblem[nbInstances];
+        int index = 0;
+        for (int n: ns) {
+            for (double mFactor: mFactors) {
+                int m = (int) ceil(mFactor * n);
+                for (double kFactor: kFactors) {
+                    int k = (int) ceil(kFactor * m);
+                    for (double maxR: maxRs) {
+                        for (int seed = 0; seed < nbSeeds; seed++) {
+                            MaxCoverProblem problem = new MaxCoverProblem(n, m, k, maxR, seed);
+                            instances[index] = problem;
+                            index++;
+                        }
+                    }
+                }
+            }
+        }
+        return instances;
+    }
+
     private static DdoModel<MaxCoverState> getModel(MaxCoverProblem problem,
                                                     int maxWidth,
                                                     ClusterType clusterType,
+                                                    long seed,
+                                                    int kmeansIter,
+                                                    double hybridFactor) {
+        return getModel(problem, maxWidth, clusterType, clusterType, seed, kmeansIter, hybridFactor);
+    }
+
+    private static DdoModel<MaxCoverState> getModel(MaxCoverProblem problem,
+                                                    int maxWidth,
+                                                    ClusterType relaxType,
+                                                    ClusterType restrictType,
                                                     long seed,
                                                     int kmeansIter,
                                                     double hybridFactor) {
@@ -93,10 +129,10 @@ public class MaxCoverXPs {
             @Override
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
                 ReductionStrategy<MaxCoverState> strat = null;
-                switch (clusterType) {
+                switch (relaxType) {
                     case Cost -> strat = new CostBased<>(new MaxCoverRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter);
+                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
@@ -105,7 +141,15 @@ public class MaxCoverXPs {
 
             @Override
             public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                return relaxStrategy();
+                ReductionStrategy<MaxCoverState> strat = null;
+                switch (restrictType) {
+                    case Cost -> strat = new CostBased<>(new MaxCoverRanking());
+                    case GHP -> strat = new GHP<>(stateDistance(), seed);
+                    case Kmeans -> strat = new Kmeans<>(new MaxCoverCoordinates(problem), kmeansIter, false);
+                    case Hybrid -> strat = new Hybrid<>(new MaxCoverRanking(), stateDistance(), hybridFactor, seed);
+                    case Random -> strat = new RandomBased<>(seed);
+                }
+                return strat;
             }
 
             @Override
@@ -132,18 +176,22 @@ public class MaxCoverXPs {
     }
 
     private static void xpRelaxation() throws IOException {
-        MaxCoverProblem[] instances = generateInstances();
+        MaxCoverProblem[] instances = generateInstancesRestricted();
         FileWriter writer = new FileWriter("xps/relaxationsMaxCover.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
-                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
+                "isExact;RunTime(ms);Incumbent;NbRelaxations" +
+                ";avgExactNodes;geoAvgExactNodes;minExactNodes;maxExactNodes;varExactNodes" +
+                ";avgStateCardinalities;geoAvgStateCardinalities;minStateCardinalities;maxStateCardinalities;varStateCardinalities" +
+                ";avgStateDegradation;geoAvgStateDegradation;minStateDegradation;maxStateDegradation;varStateDegradation" +
+                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize" +
+                ";\n");
 
         for (MaxCoverProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans, ClusterType.Cost, ClusterType.Hybrid, ClusterType.GHP}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -177,17 +225,17 @@ public class MaxCoverXPs {
     }
 
     private static void xpRestriction() throws IOException {
-        MaxCoverProblem[] instances = generateInstances();
+        MaxCoverProblem[] instances = generateInstancesRestricted();
         FileWriter writer = new FileWriter("xps/restrictionMaxCover.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRestrictions;AvgLayerSize\n");
 
         for (MaxCoverProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Random}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+                    double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
@@ -220,9 +268,56 @@ public class MaxCoverXPs {
         writer.close();
     }
 
+
+    private static void xpBnB(int index) throws IOException {
+        MaxCoverProblem[] instances = generateInstancesRestricted();
+        FileWriter writer = new FileWriter("results/" + index +".csv");
+        //writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+        //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+
+        int maxWidth = 60;
+        int kmeansIter = 5;
+        double hybridFactor = -1;
+        ClusterType[] relaxTypes = {ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        MaxCoverProblem problem = instances[index];
+        for (ClusterType relaxType: relaxTypes) {
+            for (ClusterType restrictType : restrictTypes) {
+                long[] seeds = (restrictType != ClusterType.GHP) && (restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                for (long seed : seeds) {
+                    DdoModel<MaxCoverState> model = getModel(problem,
+                            maxWidth,
+                            relaxType,
+                            restrictType,
+                            seed,
+                            kmeansIter,
+                            hybridFactor);
+                    assert problem.name.isPresent();
+                    System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
+                    long startTime = System.currentTimeMillis();
+                    SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0*60.0));
+
+                    writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                            problem.name.get(),
+                            relaxType,
+                            restrictType,
+                            maxWidth,
+                            seed,
+                            kmeansIter,
+                            hybridFactor,
+                            stats.toCSV()
+                    ));
+                    writer.flush();
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
         try {
-            xpRelaxation();
+            // xpRelaxation();
+            xpRestriction();
+            xpBnB(Integer.parseInt(args[0]));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

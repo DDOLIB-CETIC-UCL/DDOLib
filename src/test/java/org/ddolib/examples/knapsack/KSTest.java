@@ -80,12 +80,12 @@ public class KSTest {
 
                 @Override
                 public StateDistance<Integer> stateDistance() {
-                    return new KSDistance();
+                    return new KSDistance(problem);
                 }
 
                 @Override
                 public ReductionStrategy<Integer> relaxStrategy() {
-                    return new GHP<>(new KSDistance());
+                    return new GHP<>(new KSDistance(problem));
                 }
 
                 @Override

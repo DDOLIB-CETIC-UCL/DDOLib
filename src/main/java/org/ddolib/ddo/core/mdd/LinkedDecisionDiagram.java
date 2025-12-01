@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core.mdd;
 
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -113,10 +114,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private final CompilationConfig<T> config;
 
-    public final List<DoubleSummaryStatistics> stateCardinalities = new LinkedList<>();
-    public final IntSummaryStatistics exactStates = new IntSummaryStatistics();
-    public final List<DoubleSummaryStatistics> stateDegradations = new LinkedList<>();
-    public final IntSummaryStatistics layerSize = new IntSummaryStatistics();
+    // public final List<SummaryStatistics> stateCardinalitiesPerLayer = new LinkedList<>();
+    public final SummaryStatistics stateCardinalities = new SummaryStatistics();
+    public final SummaryStatistics exactStates = new SummaryStatistics();
+    // public final List<SummaryStatistics> stateDegradationsPerLayer = new LinkedList<>();
+    public final SummaryStatistics stateDegradationsPerNode = new SummaryStatistics();
+    // public final List<SummaryStatistics> stateDegradationsPerCluster = new LinkedList<>();
+    public final SummaryStatistics layerSize = new SummaryStatistics();
     public int nbRelaxations;
     public int nbRestrictions;
 
@@ -243,7 +247,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            layerSize.accept(currentLayer.size());
+            layerSize.addValue(currentLayer.size());
             if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
                 switch (config.compilationType) {
                     case Restricted:
@@ -613,16 +617,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         nbRelaxations++;
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
-        DoubleSummaryStatistics degradations = new DoubleSummaryStatistics();
-        DoubleSummaryStatistics cardinalities = new DoubleSummaryStatistics();
+        // SummaryStatistics degradationsPerLayer = new SummaryStatistics();
+        // SummaryStatistics cardinalities = new SummaryStatistics();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
+            SummaryStatistics degradationsPerCluster = new SummaryStatistics();
             // System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
-                degradations.accept(0.0);
-                cardinalities.accept(distance.distanceWithRoot(cluster.getFirst().state));
+                stateDegradationsPerNode.addValue(0.0);
+                // degradationsPerLayer.addValue(0.0);
+                degradationsPerCluster.addValue(0.0);
+                // cardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
+                stateCardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
+                // stateDegradationsPerCluster.add(degradationsPerCluster);
                 continue;
             }
 
@@ -631,13 +640,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
-            cardinalities.accept(distance.distanceWithRoot(merged));
-            double avgDegradations = 0.0;
+            // cardinalities.addValue(distance.distanceWithRoot(merged));
+            stateCardinalities.addValue(distance.distanceWithRoot(merged));
             for (NodeSubProblem<T> node : cluster) {
-                avgDegradations += distance.distance(node.state, merged);
+                double dist = distance.distance(node.state, merged);
+                stateDegradationsPerNode.addValue(dist);
+                degradationsPerCluster.addValue(dist);
+                // degradationsPerLayer.addValue(dist);
             }
-            avgDegradations = avgDegradations / cluster.size();
-            degradations.accept(avgDegradations);
+            // stateDegradationsPerCluster.add(degradationsPerCluster);
             // System.out.println(merged);
             NodeSubProblem<T> node = null;
             for (NodeSubProblem<T> n: currentLayer) {
@@ -685,9 +696,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
 
-        this.exactStates.accept(nbExact);
-        this.stateDegradations.add(degradations);
-        this.stateCardinalities.add(cardinalities);
+        this.exactStates.addValue(nbExact);
+        // this.stateDegradationsPerLayer.add(degradationsPerLayer);
+        // this.stateCardinalitiesPerLayer.add(cardinalities);
     }
 
     /**
