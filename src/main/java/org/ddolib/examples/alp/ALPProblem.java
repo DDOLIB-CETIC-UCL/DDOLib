@@ -338,7 +338,6 @@ public class ALPProblem implements Problem<ALPState> {
             nextState.runwayStates[runway].prevClass = aircraftClass;
             nextState.runwayStates[runway].prevTime = getArrivalTime(state.runwayStates, aircraft, runway);
 
-            Arrays.sort(nextState.runwayStates);
             return nextState;
         }
     }
