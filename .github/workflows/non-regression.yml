@@ -1,0 +1,24 @@
+name: non-regression.yml
+on:
+  workflow_dispatch: #can be run manually
+
+  schedule:
+    - cron: "0 9 * * 1" # 21h utc
+
+jobs:
+  run-non-regression-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run non-regressions tests
+        run: mvn clean test -P non-regression-tests
