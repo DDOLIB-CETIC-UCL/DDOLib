@@ -1,4 +1,4 @@
-package org.ddolib.nonregression;
+package org.ddolib.util.testbench;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
@@ -8,36 +8,25 @@ import org.junit.jupiter.api.DynamicTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract public class NonRegressionTestBench<T, P extends Problem<T>> {
+public class NonRegressionTestBench<T, P extends Problem<T>> {
 
     protected final List<P> problems;
+    private final Function<P, DdoModel<T>> model;
 
-    protected NonRegressionTestBench() {
-        this.problems = generateProblems();
+    public NonRegressionTestBench(TestDataSupplier<T, P> dataSupplier) {
+        problems = dataSupplier.generateProblems();
+        model = dataSupplier::model;
     }
 
-    /**
-     * Generates {@link Problem} instances to test.
-     *
-     * @return A list of problems used for tests.
-     */
-    abstract protected List<P> generateProblems();
-
-    /**
-     * Given a problem instance returns the whole model used to solve this problem.
-     *
-     * @param problem The problem to solve.
-     * @return A model containing all the component to solve it.
-     */
-    abstract protected DdoModel<T> model(P problem);
 
     protected void testAllSolver(P problem) {
         DdoModel<T> globalModel =
-                model(problem).setCutSetType(CutSetType.LastExactLayer).fixWidth(500);
+                model.apply(problem).setCutSetType(CutSetType.LastExactLayer).fixWidth(500);
 
         double aStarVal = solveWithAStar(globalModel.disableDominance());
 
