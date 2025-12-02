@@ -40,6 +40,10 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
      */
     @Override
     public double fastLowerBound(Integer state, Set<Integer> variables) {
+        if (state == 3) {
+            int debug = 0;
+            System.out.println(debug);
+        }
 
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
