@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Contains methods to generates instance of the MSCT
+ */
 public class MSCTGenerator {
 
     private static MSCTData randomMSCTData(int n, long seed) {
@@ -25,6 +28,14 @@ public class MSCTGenerator {
         return res;
     }
 
+    /**
+     * Generates and writes instances for the MSCT
+     *
+     * @param fname The file to save the instance.
+     * @param n     The number of task in the problem.
+     * @param seed  The seed of the random number generator.
+     * @throws IOException If something goes wrong while writing the file.
+     */
     public static void writeInstance(String fname, int n, long seed) throws IOException {
         MSCTData data = randomMSCTData(n, seed);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {
