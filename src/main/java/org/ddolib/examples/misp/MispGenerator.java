@@ -5,6 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * Contains methods to generate instances of the MISP.
+ */
 public class MispGenerator {
 
     /**
@@ -12,7 +15,7 @@ public class MispGenerator {
      *
      * @param nbVars         How many nodes in the graph.
      * @param fileName       The file to save the instance.
-     * @param connectedProba Each pair of nodes has a probibility of {@code 1 / connectedProba}
+     * @param connectedProba Each pair of nodes has a probability of {@code 1 / connectedProba}
      *                       to <i>not</i> be connected.
      * @param seed           The seed of the random number generator.
      * @throws IOException If something goes wrong while writing the file
@@ -40,6 +43,15 @@ public class MispGenerator {
         }
     }
 
+    /**
+     * Generates a random instance of the MISP.
+     *
+     * @param nbVars         How many nodes in the graph.
+     * @param fileName       The file to save the instance.
+     * @param connectedProba Each pair of nodes has a probability of {@code 1 / connectedProba}
+     *                       to <i>not</i> be connected.
+     * @throws IOException If something goes wrong while writing the file
+     */
     public static void generateRandom(int nbVars, String fileName, int connectedProba) throws IOException {
         long seed = new Random().nextLong();
         System.out.printf("Used seed: %d\n", seed);

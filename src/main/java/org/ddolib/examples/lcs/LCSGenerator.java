@@ -13,7 +13,7 @@ public class LCSGenerator {
     /**
      * Generates and saves a random instance of the LCS
      *
-     * @param fileName     The file the save the instance
+     * @param fileName     The file to save the instance
      * @param nbString     How many strings to generate.
      * @param nbChar       How many characters can be used to generate the string.
      * @param minStrLength The inclusive minimal size of the generated strings.
