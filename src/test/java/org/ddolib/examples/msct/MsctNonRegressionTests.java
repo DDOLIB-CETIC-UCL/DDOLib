@@ -6,8 +6,9 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
@@ -35,19 +36,19 @@ public class MsctNonRegressionTests {
 
         @Override
         protected List<MSCTProblem> generateProblems() {
-            File[] files = new File(dir).listFiles();
-            assert files != null;
-            Stream<File> stream = Stream.of(files);
-            return stream.filter(file -> !file.isDirectory())
-                    .map(File::getName)
-                    .map(fileName -> Paths.get(dir, fileName))
-                    .map(filePath -> {
-                        try {
-                            return new MSCTProblem(filePath.toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).toList();
+            try (Stream<Path> stream = Files.walk(Path.of(dir))) {
+                return stream.filter(Files::isRegularFile) // get only files
+                        .map(filePath -> {
+                            try {
+                                return new MSCTProblem(filePath.toString());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
