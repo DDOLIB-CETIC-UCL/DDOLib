@@ -140,13 +140,13 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 2. **Clone the Repository**:
    Launch IntelliJ IDEA.
-   Select File > Open and navigate to the maxicp folder you cloned.
+   Select File > Open and navigate to the DDOLib folder you cloned.
    Open the `pom.xml` file.
 
 3. **Running the tests**:
 
-   From the IntelliJ IDEA editor, navigate to the `src/test/java` directory.
-   Right-click then select `Run 'All Tests'` to run all the tests.
+   For the IntelliJ IDEA editor, take a look at our [wiki page](wiki/tests.md) to learn about our tests convention and
+   how to configure your IDE properly.
 
    From the terminal, navigate to the root directory of the project and run the following command:
     ```bash

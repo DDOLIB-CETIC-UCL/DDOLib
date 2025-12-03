@@ -19,7 +19,7 @@ We take the convention that each test on each instance must be executed in less 
 
 These tests are excluded from the default `mvn test` command.
 
-Be sure to tag you non-regression tests with `@Tag("non-regression)`.
+Be sure to tag you non-regression tests with `@Tag("non-regression")`.
 
 You can run manually these tests with:
 
@@ -29,9 +29,12 @@ You can run manually these tests with:
 
 ### Configure you IDE
 
-If you are using Intellij to run your tests, we encourage you to disable the non-regressions tests :
+If you are using IntelliJ IDEA to run your tests, we encourage you to disable the non-regressions tests :
 
 Run -> Edit Configurations -> Edit Configuration Templates -> Junit
 
-Find the `Tag` fields and add `!non-regression`.
+Find the `Tag` fields and add `!non-regression`. Your new configuration will exclude des non-regression tests by
+default.
+
+![](config-intellij-tests.png)
 
