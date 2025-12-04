@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
@@ -16,8 +16,8 @@ public class Max2SatNonRegressionTests {
     @TestFactory
     public Stream<DynamicTest> nonRegressionMax2Sat() {
         var supplier =
-                new Max2SatTestDataSupplier(Paths.get("src", "test", "resources", "Non-Regression",
-                        "Max2Sat").toString());
+                new Max2SatTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                        "Max2Sat"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }

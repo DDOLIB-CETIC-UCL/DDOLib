@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
@@ -15,8 +15,8 @@ public class McpNonRegressionTest {
     @TestFactory
     public Stream<DynamicTest> nonRegressionMcp() {
         var supplier =
-                new MCPTestDataSupplier(Paths.get("src", "test", "resources", "Non-Regression",
-                        "MCP").toString());
+                new MCPTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                        "MCP"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }

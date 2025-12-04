@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
@@ -16,8 +16,8 @@ public class KsNonRegressionTests {
     @TestFactory
     public Stream<DynamicTest> nonRegressionKs() {
         var supplier =
-                new KSTestDataSupplier(Paths.get("src", "test", "resources", "Non-Regression",
-                        "Knapsack").toString());
+                new KSTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                        "Knapsack"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
@@ -16,8 +16,8 @@ public class AlpNonRegressionTests {
     @TestFactory
     public Stream<DynamicTest> nonRegressionAlp() {
         var supplier =
-                new ALPTestDataSupplier(Paths.get("src", "test", "resources", "Non-Regression",
-                        "ALP").toString());
+                new ALPTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                        "ALP"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }

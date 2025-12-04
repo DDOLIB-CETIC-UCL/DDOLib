@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
@@ -16,8 +16,8 @@ public class PdpNonRegressionTests {
     @TestFactory
     public Stream<DynamicTest> nonRegressionPdp() {
         var supplier =
-                new PDPTestDataSupplier(Paths.get("src", "test", "resources", "Non-Regression",
-                        "PDP").toString());
+                new PDPTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                        "PDP"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }
