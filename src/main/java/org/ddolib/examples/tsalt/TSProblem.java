@@ -21,7 +21,7 @@ public class TSProblem implements Problem<TSState> {
     final BitSet[] actors;
 
     public final Optional<Double> optimal;
-    private Optional<String> name = Optional.empty();
+    protected Optional<String> name = Optional.empty();
 
     /**
      * @param nbScene  The number of scenes in the instance.
@@ -55,7 +55,6 @@ public class TSProblem implements Problem<TSState> {
 
         try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
             String line;
-
             int lineCount = 0;
             int skip = 0;
             while ((line = br.readLine()) != null) {

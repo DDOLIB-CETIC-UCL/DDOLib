@@ -123,6 +123,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     public final SummaryStatistics layerSize = new SummaryStatistics();
     public int nbRelaxations;
     public int nbRestrictions;
+    public int nbNodes = 0;
+    public int nbExactNodes = 0;
 
     /**
      * Creates a new linked decision diagram.
@@ -268,6 +270,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                         /* nothing to do */
                         break;
                 }
+            } else if (config.compilationType == CompilationType.Relaxed) {
+                int nbExact = 0;
+                for (NodeSubProblem<T> n : currentLayer) {
+                    stateDegradationsPerNode.addValue(0.0);
+                    stateCardinalities.addValue(config.stateDistance.distanceWithRoot(n.state));
+                    nbNodes++;
+                    if (n.node.type == NodeType.EXACT) {
+                        nbExactNodes++;
+                        nbExact++;
+                    }
+                }
+                this.exactStates.addValue(nbExact);
             }
 
             // System.out.println(currentLayer.size());
@@ -622,13 +636,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
-            SummaryStatistics degradationsPerCluster = new SummaryStatistics();
+            // SummaryStatistics degradationsPerCluster = new SummaryStatistics();
             // System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
                 stateDegradationsPerNode.addValue(0.0);
                 // degradationsPerLayer.addValue(0.0);
-                degradationsPerCluster.addValue(0.0);
+                // degradationsPerCluster.addValue(0.0);
                 // cardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
                 stateCardinalities.addValue(distance.distanceWithRoot(cluster.getFirst().state));
                 // stateDegradationsPerCluster.add(degradationsPerCluster);
@@ -645,7 +659,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             for (NodeSubProblem<T> node : cluster) {
                 double dist = distance.distance(node.state, merged);
                 stateDegradationsPerNode.addValue(dist);
-                degradationsPerCluster.addValue(dist);
+                // degradationsPerCluster.addValue(dist);
                 // degradationsPerLayer.addValue(dist);
             }
             // stateDegradationsPerCluster.add(degradationsPerCluster);
@@ -691,10 +705,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         int nbExact = 0;
         for (NodeSubProblem<T> node : currentLayer) {
+            nbNodes++;
             if (node.node.type == NodeType.EXACT) {
                 nbExact++;
+                nbExactNodes++;
             }
         }
+
 
         this.exactStates.addValue(nbExact);
         // this.stateDegradationsPerLayer.add(degradationsPerLayer);

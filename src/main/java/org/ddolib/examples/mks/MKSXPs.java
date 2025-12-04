@@ -138,14 +138,18 @@ public class MKSXPs {
     private static void xpRelaxation() throws IOException {
         MKSProblem[] instances = loadInstances();
         FileWriter writer = new FileWriter("xps/relaxationsMKS.csv");
-        writer.write("Instance;Optimal;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-                "isExact;RunTime(ms);Incumbent;NbRelaxations;avgExactNodes;minExactNodes;maxExactNodes;avgMinCardinality;avgMaxCardinality;"+
-                "avgAvgCardinality;avgMinDegradation;avgMaxDegradation;avgAvgDegradation\n");
+        writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+                "isExact;RunTime(ms);Incumbent;NbRelaxations" +
+                ";avgExactNodes;geoAvgExactNodes;minExactNodes;maxExactNodes;varExactNodes" +
+                ";avgStateCardinalities;geoAvgStateCardinalities;minStateCardinalities;maxStateCardinalities;varStateCardinalities" +
+                ";avgStateDegradation;geoAvgStateDegradation;minStateDegradation;maxStateDegradation;varStateDegradation" +
+                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize;nbNode;nbExactNode" +
+                ";\n");
 
         for (MKSProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.Hybrid}) {
-                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5, 10, 50};
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Hybrid, ClusterType.GHP, ClusterType.Cost, ClusterType.Kmeans}) {
+                    int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
                     double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
                     for (long seed : ghpSeeds) {
@@ -228,6 +232,92 @@ public class MKSXPs {
         writer.close();
     }
 
+    private static void xpRelaxation(String instance) throws IOException {
+        MKSProblem problem = new MKSProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results_relaxation" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ClusterType.Hybrid, ClusterType.GHP, ClusterType.Cost, ClusterType.Kmeans}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<MKSState> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %d %d %d %f %n", problem.name.get(), maxWidth, kmeansIter, seed, hybridFactor);
+                            RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
+    private static void xpRestriction(String instance) throws IOException {
+        MKSProblem problem = new MKSProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results_restriction" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans, ClusterType.Hybrid}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<MKSState> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), clusterType, maxWidth, kmeansIter, seed, hybridFactor);
+                            RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
     private static void xpBnB(String instance) throws IOException {
         MKSProblem problem = new MKSProblem(instance);
         String[] nameParts = instance.split("/");
@@ -278,8 +368,8 @@ public class MKSXPs {
     public static void main(String[] args) {
         try {
             // xpBnB(args[0]);
-            xpRelaxation();
-            // xpRestriction();
+            xpRelaxation(args[0]);
+            xpRestriction(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

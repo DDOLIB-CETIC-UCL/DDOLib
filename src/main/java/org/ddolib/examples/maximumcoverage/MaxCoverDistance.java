@@ -85,7 +85,7 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     private double symmetricDifferenceDistance(BitSet a, BitSet b) {
         BitSet tmp = (BitSet) a.clone();
         tmp.xor(b);
-        return tmp.cardinality();
+        return ((double) tmp.cardinality()) / instance.nbItems;
     }
 
     private double convexCombination(double distanceOnSet, double distanceOnCost) {
@@ -98,12 +98,12 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         symmetricDifference.xor(b);
         double dist = symmetricDifference.cardinality();
 
-        return Math.sqrt(dist);
+        return Math.sqrt(dist) / Math.sqrt(instance.nbItems);
     }
 
     @Override
     public double distanceWithRoot(MaxCoverState state) {
-            return state.coveredItems().cardinality();
+            return ((double) state.coveredItems().cardinality()) /instance.nbItems;
     }
 
     @Override
@@ -117,8 +117,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
 
     @Override
     public double distance(MaxCoverState a, MaxCoverState b) {
-            return weightedJaccardDistance(a.coveredItems(), b.coveredItems());
-        //return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems());
+            // return euclideanDistance(a.coveredItems(), b.coveredItems());
+        // return weightedJaccardDistance(a.coveredItems(), b.coveredItems());
+        return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems());
         // return jaccardDistance(a.coveredItems(), b.coveredItems());
         //return diceDistance(a.coveredItems(), b.coveredItems());
         //return rogerDistance(a.coveredItems(),b.coveredItems());

@@ -187,7 +187,9 @@ public final class RelaxationSolver<T> {
                 relaxedMdd.exactStates,
                 relaxedMdd.stateDegradationsPerNode,
                 relaxedMdd.layerSize,
-                relaxedMdd.isExact());
+                relaxedMdd.isExact(),
+                relaxedMdd.nbNodes,
+                relaxedMdd.nbExactNodes);
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
 

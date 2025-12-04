@@ -102,7 +102,20 @@ public class GHP<T> implements ReductionStrategy<T> {
                         furthestFromB = node;
                         maxDistanceB = distWithB;
                     }
-                }
+                } /*else if (rnd.nextBoolean()) { // Random Tie breaking
+                    newClusterA.add(node);
+                    if (distWithA > maxDistanceA) {
+                        furthestFromA = node;
+                        maxDistanceA = distWithA;
+                    }
+                } else {
+                    newClusterB.add(node);
+                    distanceWithPivot.put(node.state, distWithB);
+                    if (distWithB > maxDistanceB) {
+                        furthestFromB = node;
+                        maxDistanceB = distWithB;
+                    }
+                }*/
             }
 
             double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;

@@ -188,6 +188,11 @@ public final class RestrictionSolver<T> {
         restrictedMdd.compile();
         maybeUpdateBest(restrictedMdd, exportAsDot);
 
+        if (!restrictedMdd.bestValue().isPresent()) {
+            System.out.println(restrictedMdd.bestSolution());
+            System.exit(0);
+        }
+
         return new RestrictSearchStatistics(System.currentTimeMillis() - start,
                 restrictedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY),
                 restrictedMdd.nbRestrictions,

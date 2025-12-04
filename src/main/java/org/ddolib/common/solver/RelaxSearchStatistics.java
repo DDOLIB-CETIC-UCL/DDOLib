@@ -15,14 +15,16 @@ public record RelaxSearchStatistics(
         SummaryStatistics exactStates,
         SummaryStatistics stateDegradationsPerNode,
         SummaryStatistics layerSize,
-        boolean isExact
+        boolean isExact,
+        int nbNode,
+        int nbExactNode
         ) {
 
     @Override
     public String toString() {
 
 
-        return String.format("%b;%d;%f;%d;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f",
+        return String.format("%b;%d;%f;%d;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%d;%d",
                 isExact,
                 runTimeMs,
                 incumbent,
@@ -46,8 +48,9 @@ public record RelaxSearchStatistics(
                 layerSize.getGeometricMean(),
                 layerSize.getMin(),
                 layerSize.getMax(),
-                layerSize.getVariance()
-
+                layerSize.getVariance(),
+                nbNode,
+                nbExactNode
         );
     }
 

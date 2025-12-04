@@ -144,7 +144,7 @@ public class KSXPs {
                 ";avgExactNodes;geoAvgExactNodes;minExactNodes;maxExactNodes;varExactNodes" +
                 ";avgStateCardinalities;geoAvgStateCardinalities;minStateCardinalities;maxStateCardinalities;varStateCardinalities" +
                 ";avgStateDegradation;geoAvgStateDegradation;minStateDegradation;maxStateDegradation;varStateDegradation" +
-                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize" +
+                ";avgLayerSize;geoAvgLayerSize;minLayerSize;maxLayerSize;varLayerSize;nbNode;nbExactNode" +
                 ";\n");
 
         for (KSProblem problem : instances) {
@@ -233,6 +233,92 @@ public class KSXPs {
         writer.close();
     }
 
+    private static void xpRelaxation(String instance) throws IOException {
+        KSProblem problem = new KSProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results_relaxation/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<Integer> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
+                            RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
+    private static void xpRestriction(String instance) throws IOException {
+        KSProblem problem = new KSProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results_restriction/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random, ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{546351, 87676, 465465};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<Integer> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
+                            RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
     private static void xpBnB(String instance) throws IOException {
         KSProblem problem = new KSProblem(instance);
         String[] nameParts = instance.split("/");
@@ -282,8 +368,8 @@ public class KSXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation();
-            // xpRestriction();
+            xpRelaxation(args[0]);
+            xpRestriction(args[0]);
             // xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());

@@ -49,20 +49,15 @@ public class TSDistance implements StateDistance<TSState> {
     }
 
     private double jaccardDistance(BitSet a, BitSet b) {
-        double intersectionSize =0;
-        double unionSize = 0;
+        BitSet tmp = (BitSet) a.clone();
+        tmp.and(b);
+        int intersectionSize = tmp.cardinality();
 
-        int maxIndex = max(a.length(), b.length());
-        for (int i = 0; i < maxIndex; i++) {
-            if (a.get(i) || b.get(i)) {
-                unionSize++;
-                if (a.get(i) && b.get(i)) {
-                    intersectionSize++;
-                }
-            }
-        }
+        tmp = (BitSet) a.clone();
+        tmp.or(b);
+        int unionSize = tmp.cardinality();
 
-        return 1 - intersectionSize / unionSize;
+        return (1.0 - ((double) intersectionSize) / unionSize);
     }
 
     private double weightedHammingDistance(BitSet a, BitSet b) {
@@ -94,7 +89,7 @@ public class TSDistance implements StateDistance<TSState> {
     }
 
     private double convexCombination(double distanceOnRemainingScenes, double distanceOnActors) {
-        double alpha = 0.75;
+        double alpha = 0.5;
         return alpha * distanceOnActors + (1 - alpha) * distanceOnRemainingScenes;
     }
 
