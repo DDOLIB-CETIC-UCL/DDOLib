@@ -1,15 +1,18 @@
 package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 public class KSPaperExample {
     public static void main(String[] args) {
-        final KSProblem problem = new KSProblem(12, new int[]{5,6,1,6}, new int[]{6,5,6,6});
+        final KSProblem problem = new KSProblem(12, new int[]{5,4,3,6,8}, new int[]{3,5,6,4,5});
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -26,11 +29,6 @@ public class KSPaperExample {
                 return new KSRanking();
             }
 
-//            @Override
-//            public FastLowerBound<Integer> lowerBound() {
-//                return new KSFastLowerBound(problem);
-//            }
-
             @Override
             public boolean exportDot() {
                 return true;
@@ -38,12 +36,23 @@ public class KSPaperExample {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(3);
             }
 
             @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
+            public ReductionStrategy<Integer> relaxStrategy() {
+                //return new GHP<>(new KSDistance());
+                //return new CostBased<>(new KSRanking());
+                return new Kmeans<>(new KSCoordinates());
+                // return new Hybrid<>(new KSRanking(), new KSDistance(problem));
+            }
+
+            @Override
+            public ReductionStrategy<Integer> restrictStrategy() {
+                //return new GHP<>(new KSDistance());
+                //return new CostBased<>(new KSRanking());
+                return new Kmeans<>(new KSCoordinates());
+                //return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
         };
 
