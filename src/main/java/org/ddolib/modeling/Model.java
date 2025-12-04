@@ -111,4 +111,79 @@ public interface Model<T> {
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
     }
+
+
+    /**
+     * Returns a copy of this model but without dominance.
+     *
+     * @return A copy of this model but without dominance.
+     */
+    default Model<T> disableDominance() {
+        return new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return Model.this.lowerBound();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return Model.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but without {@link FastLowerBound}.
+     *
+     * @return A copy of this model but without {@link FastLowerBound}.
+     */
+    default Model<T> disableLowerBound() {
+        return new Model<T>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return Model.this.dominance();
+            }
+
+            @Override
+            public void onSolution(SearchStatistics statistics) {
+                Model.this.onSolution(statistics);
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return Model.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+        };
+
+    }
 }
