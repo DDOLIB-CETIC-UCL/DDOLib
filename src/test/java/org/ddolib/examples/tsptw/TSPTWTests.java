@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class TSPTWTests {
@@ -14,7 +14,7 @@ public class TSPTWTests {
     @TestFactory
     public Stream<DynamicTest> testTSPTW() {
         var dataSupplier =
-                new TSPTWTestDataSupplier(Paths.get("src", "test", "resources", "TSPTW").toString());
+                new TSPTWTestDataSupplier(Path.of("src", "test", "resources", "TSPTW"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;

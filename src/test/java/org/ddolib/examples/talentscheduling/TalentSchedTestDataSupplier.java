@@ -7,35 +7,35 @@ import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class TalentSchedTestDataSupplier extends TestDataSupplier<TSState, TSProblem> {
 
-    private final String dir;
+    private final Path dir;
 
-    public TalentSchedTestDataSupplier(String dir) {
+    public TalentSchedTestDataSupplier(Path dir) {
         this.dir = dir;
     }
 
     @Override
     protected List<TSProblem> generateProblems() {
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> {
-                    try {
-                        return new TSProblem(filePath.toString());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return new TSProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

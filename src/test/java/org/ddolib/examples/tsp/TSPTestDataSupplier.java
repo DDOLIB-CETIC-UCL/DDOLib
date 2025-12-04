@@ -7,36 +7,35 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
 import org.ddolib.util.testbench.TestDataSupplier;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class TSPTestDataSupplier extends TestDataSupplier<TSPState, TSPProblem> {
 
-    private final String dir;
+    private final Path dir;
 
-    public TSPTestDataSupplier(String dir) {
+    public TSPTestDataSupplier(Path dir) {
         this.dir = dir;
     }
 
     @Override
     protected List<TSPProblem> generateProblems() {
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-
-        return stream.filter(file -> !file.isDirectory())
-                .map(File::getName)
-                .map(fileName -> Paths.get(dir, fileName))
-                .map(filePath -> {
-                    try {
-                        return new TSPProblem(filePath.toString());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return new TSPProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

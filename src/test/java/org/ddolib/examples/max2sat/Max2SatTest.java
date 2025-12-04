@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class Max2SatTest {
@@ -14,12 +14,10 @@ public class Max2SatTest {
     @TestFactory
     public Stream<DynamicTest> testMax2Sat() {
         var dataSupplier =
-                new Max2SatTestDataSupplier(Paths.get("src", "test", "resources", "Max2Sat").toString());
+                new Max2SatTestDataSupplier(Path.of("src", "test", "resources", "Max2Sat"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;
         return bench.generateTests();
     }
-
-
 }

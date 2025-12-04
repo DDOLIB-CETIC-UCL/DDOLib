@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class TSPTests {
@@ -14,7 +14,7 @@ public class TSPTests {
     @TestFactory
     public Stream<DynamicTest> testTSP() {
         var dataSupplier =
-                new TSPTestDataSupplier(Paths.get("src", "test", "resources", "TSP").toString());
+                new TSPTestDataSupplier(Path.of("src", "test", "resources", "TSP"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;

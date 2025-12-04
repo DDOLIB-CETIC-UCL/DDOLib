@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class LCSTest {
@@ -13,7 +13,7 @@ public class LCSTest {
     @TestFactory
     public Stream<DynamicTest> testLCS() {
         var dataSupplier =
-                new LCSTestDataSupplier(Paths.get("src", "test", "resources", "LCS").toString());
+                new LCSTestDataSupplier(Path.of("src", "test", "resources", "LCS"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;

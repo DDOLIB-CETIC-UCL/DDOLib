@@ -7,7 +7,7 @@ public class SMICTest {
     @TestFactory
     public Stream<DynamicTest> testSMIC() {
         var dataSupplier =
-                new SMICTestDataSupplier(Paths.get("src", "test", "resources", "SMIC").toString());
+                new SMICTestDataSupplier(Path.of("src", "test", "resources", "SMIC"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;
