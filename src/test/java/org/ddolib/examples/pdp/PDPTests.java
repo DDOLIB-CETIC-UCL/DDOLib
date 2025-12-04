@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class PDPTests {
@@ -14,7 +14,7 @@ public class PDPTests {
     @TestFactory
     public Stream<DynamicTest> testPDP() {
         var dataSupplier =
-                new PDPTestDataSupplier(Paths.get("src", "test", "resources", "PDP").toString());
+                new PDPTestDataSupplier(Path.of("src", "test", "resources", "PDP"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;

@@ -209,7 +209,7 @@ public class Solvers {
      * For larger instances or more advanced strategies, consider using {@link Solvers#minimizeDdo(DdoModel)}.
      *
      * @param model the DDO model to solve
-     * @return search statistics summarizing the ACS execution
+     * @return search statistics summarizing the exact execution
      */
     public static <T> SearchStatistics minimizeExact(DdoModel<T> model) {
         return new ExactSolver<>(model).minimize(s -> false, (sol, s) -> {

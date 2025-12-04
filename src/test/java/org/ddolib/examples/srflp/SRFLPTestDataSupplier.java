@@ -4,34 +4,35 @@ import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class SRFLPTestDataSupplier extends TestDataSupplier<SRFLPState, SRFLPProblem> {
 
-    private final String dir;
+    private final Path dir;
 
-    public SRFLPTestDataSupplier(String dir) {
+    public SRFLPTestDataSupplier(Path dir) {
         this.dir = dir;
     }
 
     @Override
     protected List<SRFLPProblem> generateProblems() {
-        File[] files = new File(dir).listFiles();
-        assert files != null;
-        Stream<File> stream = Stream.of(files);
-        return stream.filter(file -> !file.isDirectory())
-                .map(file -> Paths.get(dir, file.getName()))
-                .map(filePath -> {
-                    try {
-                        return new SRFLPProblem(filePath.toString());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return new SRFLPProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

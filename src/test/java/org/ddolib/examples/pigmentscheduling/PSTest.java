@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 class PSTest {
@@ -14,7 +14,7 @@ class PSTest {
     @TestFactory
     public Stream<DynamicTest> testPSP() {
         var dataSupplier =
-                new PSTestDataSupplier(Paths.get("src", "test", "resources", "PSP", "2items").toString());
+                new PSTestDataSupplier(Path.of("src", "test", "resources", "PSP", "2items"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;

@@ -12,15 +12,15 @@ import java.util.stream.Stream;
 
 public class PSTestDataSupplier extends TestDataSupplier<PSState, PSProblem> {
 
-    private final String dir;
+    private final Path dir;
 
-    public PSTestDataSupplier(String dir) {
+    public PSTestDataSupplier(Path dir) {
         this.dir = dir;
     }
 
     @Override
     protected List<PSProblem> generateProblems() {
-        try (Stream<Path> stream = Files.walk(Path.of(dir))) {
+        try (Stream<Path> stream = Files.walk(dir)) {
             return stream.filter(Files::isRegularFile) // get only files
                     .map(filePath -> new PSProblem(filePath.toString()))
                     .toList();
