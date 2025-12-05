@@ -3,6 +3,7 @@ package org.ddolib.astar.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -36,28 +37,15 @@ public final class AStarSolver<T> implements Solver {
      * A heuristic to choose the next variable to branch on when developing a DD
      */
     private final VariableHeuristic<T> varh;
-
-    /**
-     * Value of the best known upper bound.
-     */
-    private double bestUB;
-
     /**
      * HashMap mapping (state,depth) to the f value.
      * Closed nodes are the ones for which their children have been generated.
      */
     private final HashMap<StateAndDepth<T>, Double> closed;
-
     /**
      * HashMap mapping (state,depth) open nodes to the f value.
      */
     private final HashMap<StateAndDepth<T>, Double> present;
-
-    /**
-     * If set, this keeps the info about the best solution so far.
-     */
-    private Optional<Set<Decision>> bestSol;
-
     /**
      * The dominance object that will be used to prune the search space.
      */
@@ -68,12 +56,7 @@ public final class AStarSolver<T> implements Solver {
      */
     private final PriorityQueue<SubProblem<T>> open = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f));
-
     private final SubProblem<T> root;
-
-    private boolean negativeTransitionCosts = false; // in case of negative transition cost, A* must not stop
-
-
     /**
      * <ul>g
      *     <li>0: no verbosity</li>
@@ -88,14 +71,21 @@ public final class AStarSolver<T> implements Solver {
      * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
-
     private final VerboseMode verboseMode;
-
     /**
      * The debug level of the compilation to add additional checks (see
      * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    /**
+     * Value of the best known upper bound.
+     */
+    private double bestUB;
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
+    private Optional<Set<Decision>> bestSol;
+    private boolean negativeTransitionCosts = false; // in case of negative transition cost, A* must not stop
 
 
     public AStarSolver(Model<T> model) {
@@ -141,7 +131,8 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -166,7 +157,7 @@ public final class AStarSolver<T> implements Solver {
                     0);
 
             if (limit.test(stats)) {
-                return stats;
+                return new Solution(bestSolution(), stats);
             }
 
             present.remove(subKey);
@@ -209,8 +200,9 @@ public final class AStarSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkFLBAdmissibility();
         }
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+        return new Solution(bestSol, stats);
     }
 
     @Override
