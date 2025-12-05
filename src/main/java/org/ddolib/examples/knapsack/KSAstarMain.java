@@ -2,7 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
@@ -11,7 +11,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 /**
  * Knapsack Problem (KS) with AsTar.
@@ -43,7 +42,7 @@ public class KSAstarMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
         final Model<Integer> model = new Model<>() {
             @Override
@@ -52,21 +51,22 @@ public class KSAstarMain {
             }
 
             @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
-
-            @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
             }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
     }
 
