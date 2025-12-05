@@ -1,6 +1,6 @@
 package org.ddolib.examples.tsp;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -47,6 +47,11 @@ public class TSPDdoMain {
             }
 
             @Override
+            public TSPFastLowerBound lowerBound() {
+                return new TSPFastLowerBound(problem);
+            }
+
+            @Override
             public Relaxation<TSPState> relaxation() {
                 return new TSPRelax(problem);
             }
@@ -57,25 +62,20 @@ public class TSPDdoMain {
             }
 
             @Override
-            public TSPFastLowerBound lowerBound() {
-                return new TSPFastLowerBound(problem);
+            public WidthHeuristic<TSPState> widthHeuristic() {
+                return new FixedWidth<>(500);
             }
 
             @Override
             public boolean useCache() {
                 return true;
             }
-
-            @Override
-            public WidthHeuristic<TSPState> widthHeuristic() {
-                return new FixedWidth<>(500);
-            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
-        System.out.println(stats);
+        System.out.println(bestSolution);
 
     }
 

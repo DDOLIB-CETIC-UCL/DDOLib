@@ -1,6 +1,7 @@
 package org.ddolib.examples.mcp;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -9,7 +10,7 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
 /**
  * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using a DDO (Decision Diagram Optimization) approach.
  * <p>
@@ -59,6 +60,11 @@ public final class MCPDdoMain {
             }
 
             @Override
+            public MCPFastLowerBound lowerBound() {
+                return new MCPFastLowerBound(problem);
+            }
+
+            @Override
             public Relaxation<MCPState> relaxation() {
                 return new MCPRelax(problem);
             }
@@ -67,17 +73,13 @@ public final class MCPDdoMain {
             public MCPRanking ranking() {
                 return new MCPRanking();
             }
-
-            @Override
-            public MCPFastLowerBound lowerBound() {
-                return new MCPFastLowerBound(problem);
-            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
     }
 }

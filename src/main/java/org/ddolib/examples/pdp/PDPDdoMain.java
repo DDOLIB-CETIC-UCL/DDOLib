@@ -1,6 +1,7 @@
 package org.ddolib.examples.pdp;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import static org.ddolib.examples.pdp.PDPGenerator.genInstance;
+
 /**
  * Single Vehicle Pick-up and Delivery Problem (PDP) with Ddo.
  * Main class for solving the <b>Pickup and Delivery Problem (PDP)</b> using the
@@ -99,6 +101,11 @@ public final class PDPDdoMain {
             }
 
             @Override
+            public PDPFastLowerBound lowerBound() {
+                return new PDPFastLowerBound(problem);
+            }
+
+            @Override
             public PDPRelax relaxation() {
                 return new PDPRelax(problem);
             }
@@ -109,8 +116,8 @@ public final class PDPDdoMain {
             }
 
             @Override
-            public PDPFastLowerBound lowerBound() {
-                return new PDPFastLowerBound(problem);
+            public WidthHeuristic<PDPState> widthHeuristic() {
+                return new FixedWidth<>(1000);
             }
 
             @Override
@@ -122,16 +129,13 @@ public final class PDPDdoMain {
             public boolean useCache() {
                 return true;
             }
-
-            @Override
-            public WidthHeuristic<PDPState> widthHeuristic() {
-                return new FixedWidth<>(1000);
-            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
-        System.out.println(stats);
+
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

@@ -1,6 +1,6 @@
 package org.ddolib.examples.talentscheduling;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -9,6 +9,7 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+
 /**
  * The talent scheduling problem (tsp) with Ddo.
  * Entry point for solving instances of the Talent Scheduling Problem (TSP)
@@ -43,6 +44,11 @@ public class TSDdoMain {
             }
 
             @Override
+            public TSFastLowerBound lowerBound() {
+                return new TSFastLowerBound(problem);
+            }
+
+            @Override
             public Relaxation<TSState> relaxation() {
                 return new TSRelax(problem);
             }
@@ -51,16 +57,12 @@ public class TSDdoMain {
             public TSRanking ranking() {
                 return new TSRanking();
             }
-
-            @Override
-            public TSFastLowerBound lowerBound() {
-                return new TSFastLowerBound(problem);
-            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

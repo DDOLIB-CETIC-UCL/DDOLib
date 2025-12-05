@@ -1,6 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -40,7 +40,7 @@ public class PSAstarMain {
      * @throws IOException if an error occurs while reading the problem instance
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith5items","3").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "PSP", "instancesWith5items", "3").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
         Model<PSState> model = new Model<>() {
             @Override
@@ -54,10 +54,11 @@ public class PSAstarMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

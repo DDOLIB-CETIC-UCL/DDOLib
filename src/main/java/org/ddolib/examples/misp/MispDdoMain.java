@@ -2,7 +2,7 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -10,8 +10,8 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.BitSet;
+
 /**
  * The Maximum Independent Set Problem (MISP) with Ddo.
  * Entry point for solving the Maximum Independent Set Problem (MISP) using a Decision Diagram Optimization (DDO) solver.
@@ -52,13 +52,8 @@ public final class MispDdoMain {
             }
 
             @Override
-            public MispRelax relaxation() {
-                return new MispRelax(problem);
-            }
-
-            @Override
-            public MispRanking ranking() {
-                return new MispRanking();
+            public MispFastLowerBound lowerBound() {
+                return new MispFastLowerBound(problem);
             }
 
             @Override
@@ -67,16 +62,22 @@ public final class MispDdoMain {
             }
 
             @Override
-            public MispFastLowerBound lowerBound() {
-                return new MispFastLowerBound(problem);
+            public MispRelax relaxation() {
+                return new MispRelax(problem);
+            }
+
+            @Override
+            public MispRanking ranking() {
+                return new MispRanking();
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 
 }

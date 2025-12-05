@@ -2,7 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -64,6 +64,21 @@ public class KSDdoMain {
             }
 
             @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.LARGE;
+            }
+
+            @Override
             public Relaxation<Integer> relaxation() {
                 return new KSRelax();
             }
@@ -74,13 +89,8 @@ public class KSDdoMain {
             }
 
             @Override
-            public FastLowerBound<Integer> lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
-
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(1000);
             }
 
             @Override
@@ -92,23 +102,14 @@ public class KSDdoMain {
             public boolean useCache() {
                 return true;
             }
-
-            @Override
-            public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(1000);
-            }
-
-            @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
-            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
 
     }

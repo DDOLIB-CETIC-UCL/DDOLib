@@ -2,7 +2,7 @@ package org.ddolib.examples.tsptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -78,6 +78,16 @@ public class TSPTWDdoMain {
             }
 
             @Override
+            public TSPTWFastLowerBound lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            }
+
+            @Override
             public TSPTWRelax relaxation() {
                 return new TSPTWRelax(problem);
             }
@@ -88,13 +98,8 @@ public class TSPTWDdoMain {
             }
 
             @Override
-            public TSPTWFastLowerBound lowerBound() {
-                return new TSPTWFastLowerBound(problem);
-            }
-
-            @Override
-            public DominanceChecker<TSPTWState> dominance() {
-                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            public WidthHeuristic<TSPTWState> widthHeuristic() {
+                return new FixedWidth<>(20);
             }
 
             @Override
@@ -107,17 +112,13 @@ public class TSPTWDdoMain {
                 return true;
             }
 
-            @Override
-            public WidthHeuristic<TSPTWState> widthHeuristic() {
-                return new FixedWidth<>(20);
-            }
-
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

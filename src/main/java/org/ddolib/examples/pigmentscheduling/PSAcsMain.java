@@ -1,7 +1,6 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.examples.msct.MSCTProblem;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -37,7 +36,7 @@ public class PSAcsMain {
      * @throws IOException if there is an error reading the problem instance file
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith5items","3").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "PSP", "instancesWith5items", "3").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
         AcsModel<PSState> model = new AcsModel<>() {
             @Override
@@ -56,10 +55,11 @@ public class PSAcsMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.examples.gruler.GRProblem;
 import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;
@@ -12,14 +13,15 @@ import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,24 +34,26 @@ class AcsSolverTest {
         // Therefore, Acs with a lower-bound (objective value used here) can be interrupted at any
         // time while providing a relevant and improved solution over time.
         // It can prove that no better solution exists.
-        final String instance = Path.of("data","Knapsack","instance_n100_c500_10_5_10_5_2").toString();
+        final String instance = Path.of("data", "Knapsack", "instance_n100_c500_10_5_10_5_2").toString();
         final KSProblem problem = new KSProblem(instance);
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
             public Problem<Integer> problem() {
                 return problem;
             }
+
             @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
             }
+
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             }
         };
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        SearchStatistics finalStats = Solvers.minimizeAcs(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAcs(model, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             int computedProfit = 0;
             int computedWeight = 0;
@@ -73,8 +77,8 @@ class AcsSolverTest {
         }
 
         // final solution, gap should be zero
-        assertEquals(0.0, finalStats.gap());
-        assertEquals(SearchStatus.OPTIMAL, finalStats.status());
+        assertEquals(0.0, finalSol.statistics().gap());
+        assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
     }
 
     @Test
@@ -92,10 +96,10 @@ class AcsSolverTest {
         };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        SearchStatistics finalStats = Solvers.minimizeAcs(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAcs(model, (sol, s) -> {
             // verify that each found solution is valid
             assertEquals(n - 1, sol.length);
-            assertEquals(sol[n-2], s.incumbent());
+            assertEquals(sol[n - 2], s.incumbent());
             assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
@@ -110,8 +114,8 @@ class AcsSolverTest {
         }
 
         // final solution, gap should be zero
-        assertEquals(0.0, finalStats.gap());
-        assertEquals(SearchStatus.OPTIMAL, finalStats.status());
+        assertEquals(0.0, finalSol.statistics().gap());
+        assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
     }
 
     @Test
@@ -134,7 +138,7 @@ class AcsSolverTest {
             }
         };
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        SearchStatistics finalStats = Solvers.minimizeAcs(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAcs(model, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
             assertEquals(problem.nbVars(), sol.length);
@@ -151,7 +155,7 @@ class AcsSolverTest {
         }
 
         // final solution, gap should be zero
-        assertEquals(0.0, finalStats.gap());
-        assertEquals(SearchStatus.OPTIMAL, finalStats.status());
+        assertEquals(0.0, finalSol.statistics().gap());
+        assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
     }
 }

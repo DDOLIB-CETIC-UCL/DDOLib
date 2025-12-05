@@ -1,6 +1,6 @@
 package org.ddolib.examples.srflp;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -8,7 +8,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 /**
  * The Single-Row Facility Layout Problem (SRFLP) with Ddo.
@@ -67,6 +66,11 @@ public final class SRFLPDdoMain {
             }
 
             @Override
+            public FastLowerBound<SRFLPState> lowerBound() {
+                return new SRFLPFastLowerBound(problem);
+            }
+
+            @Override
             public Relaxation<SRFLPState> relaxation() {
                 return new SRFLPRelax(problem);
             }
@@ -80,23 +84,16 @@ public final class SRFLPDdoMain {
             public WidthHeuristic<SRFLPState> widthHeuristic() {
                 return new FixedWidth<>(maxWidth);
             }
-
-            @Override
-            public FastLowerBound<SRFLPState> lowerBound() {
-                return new SRFLPFastLowerBound(problem);
-            }
         };
 
-        int[] bestSolution = new int[problem.nbVars()];
 
-        SearchStatistics finalStats = Solvers.minimizeDdo(model, (sol, stat) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, stat) -> {
             SolutionPrinter.printSolution(stat, sol);
-            System.arraycopy(sol, 0, bestSolution, 0, sol.length);
         });
 
         System.out.println("\n");
         System.out.println("===== Optimal Solution =====");
-        System.out.println(finalStats);
-        System.out.println("Best solution: " + Arrays.toString(bestSolution));
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

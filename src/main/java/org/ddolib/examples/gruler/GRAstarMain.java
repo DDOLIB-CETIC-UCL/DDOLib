@@ -1,6 +1,6 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -29,6 +29,7 @@ public class GRAstarMain {
      *     <li>Solves the problem using the A* search algorithm.</li>
      *     <li>Prints the solution and search statistics to the console.</li>
      * </ol>
+     *
      * @param args command-line arguments (not used)
      * @throws IOException if an I/O error occurs while printing the solution
      */
@@ -42,10 +43,11 @@ public class GRAstarMain {
 
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

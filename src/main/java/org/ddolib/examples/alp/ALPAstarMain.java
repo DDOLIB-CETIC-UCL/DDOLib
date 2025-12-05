@@ -1,6 +1,6 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Solvers;
@@ -48,12 +48,13 @@ public final class ALPAstarMain {
 
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
             System.out.println(new ALPSolution(problem, sol));
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
 
     }

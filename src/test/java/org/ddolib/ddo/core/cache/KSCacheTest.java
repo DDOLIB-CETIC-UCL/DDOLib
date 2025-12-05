@@ -2,13 +2,12 @@ package org.ddolib.ddo.core.cache;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.modeling.*;
-import org.junit.jupiter.api.Test;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -53,16 +52,6 @@ public class KSCacheTest {
             }
 
             @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
-            }
-
-            @Override
-            public KSRanking ranking() {
-                return new KSRanking();
-            }
-
-            @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
             }
@@ -73,8 +62,18 @@ public class KSCacheTest {
             }
 
             @Override
-            public boolean useCache() {
-                return false;
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
             }
 
             @Override
@@ -83,15 +82,15 @@ public class KSCacheTest {
             }
 
             @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.SILENT;
+            public boolean useCache() {
+                return false;
             }
         };
 
-        SearchStatistics stat = Solvers.minimizeDdo(model);
+        Solution bestSol = Solvers.minimizeDdo(model);
 
 
-        return stat.incumbent();
+        return bestSol.value();
     }
 
 
@@ -105,16 +104,6 @@ public class KSCacheTest {
             }
 
             @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
-            }
-
-            @Override
-            public KSRanking ranking() {
-                return new KSRanking();
-            }
-
-            @Override
             public FastLowerBound<Integer> lowerBound() {
                 return new KSFastLowerBound(problem);
             }
@@ -125,8 +114,18 @@ public class KSCacheTest {
             }
 
             @Override
-            public boolean useCache() {
-                return true;
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
             }
 
             @Override
@@ -135,15 +134,15 @@ public class KSCacheTest {
             }
 
             @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.SILENT;
+            public boolean useCache() {
+                return true;
             }
         };
 
-        SearchStatistics stat = Solvers.minimizeDdo(model);
+        Solution bestSol = Solvers.minimizeDdo(model);
 
 
-        return stat.incumbent();
+        return bestSol.value();
     }
 
     @ParameterizedTest

@@ -2,7 +2,7 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -28,11 +28,13 @@ public class BKSAstarMain {
      *     <li>Solves the problem using the A* search algorithm.</li>
      *     <li>Prints the solution and search statistics to the console.</li>
      * </ol>
+     *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-         Model<Integer> model = new Model<>() {
+        Model<Integer> model = new Model<>() {
             final BKSProblem problem = new BKSProblem(10, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
+
             @Override
             public BKSProblem problem() {
                 return problem;
@@ -49,11 +51,12 @@ public class BKSAstarMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
 

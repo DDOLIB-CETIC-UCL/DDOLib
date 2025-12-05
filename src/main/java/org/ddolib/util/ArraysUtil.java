@@ -5,7 +5,7 @@ package org.ddolib.util;
  * <p>
  * Currently, this class provides functionality to shuffle arrays of integers.
  */
-public class Arrays {
+public class ArraysUtil {
     /**
      * Randomly shuffles the elements of the given integer array in place.
      * <p>

@@ -1,13 +1,13 @@
 package org.ddolib.util.testbench;
 
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.DynamicTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -106,15 +106,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     private void testTransitionModel(P problem) throws InvalidSolutionException {
 
         DdoModel<T> testModel = model.apply(problem);
-        int[] bestSolution = new int[problem.nbVars()];
-        double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
-            Arrays.setAll(bestSolution, i -> sol[i]);
-        }).incumbent();
+        Solution bestSolution = Solvers.minimizeExact(testModel);
+        double bestValue = bestSolution.value();
+        ;
         Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
     }
 
@@ -150,15 +149,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        int[] bestSolution = new int[problem.nbVars()];
-        double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
-            Arrays.setAll(bestSolution, i -> sol[i]);
-        }).incumbent();
+        Solution bestSolution = Solvers.minimizeExact(testModel);
+        double bestValue = bestSolution.value();
+        ;
         Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
 
 
@@ -197,15 +195,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
 
-                int[] bestSolution = new int[problem.nbVars()];
-                double bestValue = Solvers.minimizeDdo(testModel, (sol, stat) -> {
-                    Arrays.setAll(bestSolution, i -> sol[i]);
-                }).incumbent();
+                Solution bestSolution = Solvers.minimizeDdo(testModel);
+                double bestValue = bestSolution.value();
                 Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
                 assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, w);
 
                 if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution),
+                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
                             1e-10, "Max width of the mdd:  " + w);
                 }
             } catch (Exception e) {
@@ -262,15 +258,15 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
 
-                int[] bestSolution = new int[problem.nbVars()];
-                double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
-                    Arrays.setAll(bestSolution, i -> sol[i]);
-                }).incumbent();
+
+                Solution bestSolution = Solvers.minimizeDdo(testModel);
+                double bestValue = bestSolution.value();
                 Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
                 assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
                 if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
+                            1e-10);
                 }
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
@@ -310,15 +306,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        int[] bestSolution = new int[problem.nbVars()];
-        double bestValue = Solvers.minimizeAstar(testModel, (sol, stat) -> {
-            Arrays.setAll(bestSolution, i -> sol[i]);
-        }).incumbent();
+        Solution bestSolution = Solvers.minimizeAstar(testModel);
+        double bestValue = bestSolution.value();
         Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
     }
 
@@ -353,15 +347,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        int[] bestSolution = new int[problem.nbVars()];
-        double bestValue = Solvers.minimizeAcs(testModel, (sol, stat) -> {
-            Arrays.setAll(bestSolution, i -> sol[i]);
-        }).incumbent();
+        Solution bestSolution = Solvers.minimizeAcs(testModel);
+        double bestValue = bestSolution.value();
         Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
     }
 
@@ -397,15 +389,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
                 DdoModel<T> testModel = getModel.apply(w);
-                int[] bestSolution = new int[problem.nbVars()];
-                double bestValue = Solvers.minimizeDdo(testModel, (sol, stat) -> {
-                    Arrays.setAll(bestSolution, i -> sol[i]);
-                }).incumbent();
+                Solution bestSolution = Solvers.minimizeDdo(testModel);
+                double bestValue = bestSolution.value();
                 Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
                 assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
                 if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
+                            1e-10);
                 }
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
@@ -439,15 +430,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        int[] bestSolution = new int[problem.nbVars()];
-        double bestValue = Solvers.minimizeExact(testModel, (sol, stat) -> {
-            Arrays.setAll(bestSolution, i -> sol[i]);
-        }).incumbent();
+        Solution bestSolution = Solvers.minimizeExact(testModel);
+        double bestValue = bestSolution.value();
         Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution), 1e-10);
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
     }
 

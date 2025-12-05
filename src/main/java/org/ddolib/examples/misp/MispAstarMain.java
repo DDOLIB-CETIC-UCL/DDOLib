@@ -2,7 +2,7 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -52,21 +52,22 @@ public final class MispAstarMain {
             }
 
             @Override
-            public DominanceChecker<BitSet> dominance() {
-                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
-            }
-
-            @Override
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
+
+            @Override
+            public DominanceChecker<BitSet> dominance() {
+                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+            }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 
 }

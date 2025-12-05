@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -203,7 +204,8 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -226,7 +228,7 @@ public final class SequentialSolver<T> implements Solver {
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
 
             if (limit.test(stats)) {
-                return stats;
+                return new Solution(bestSolution(), stats);
             }
 
 
@@ -235,7 +237,9 @@ public final class SequentialSolver<T> implements Solver {
             if (nodeLB >= bestUB) {
                 frontier.clear();
                 end = System.currentTimeMillis();
-                return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, end - start, bestUB, 0);
+                SearchStatistics s = new SearchStatistics(SearchStatus.OPTIMAL, nbIter,
+                        queueMaxSize, end - start, bestUB, 0);
+                return new Solution(bestSolution(), s);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -304,7 +308,7 @@ public final class SequentialSolver<T> implements Solver {
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             } else {
-                if (relaxedMdd.bestValue().isPresent() &&  relaxedMdd.bestValue().get() >= bestUB) {
+                if (relaxedMdd.bestValue().isPresent() && relaxedMdd.bestValue().get() >= bestUB) {
                     continue;
                 } else {
                     enqueueCutset(relaxedMdd);
@@ -312,7 +316,9 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, end - start, bestUB, 0);
+        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+                end - start, bestUB, 0);
+        return new Solution(bestSolution(), stats);
     }
 
     @Override

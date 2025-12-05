@@ -2,7 +2,7 @@ package org.ddolib.examples.msct;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -42,7 +42,7 @@ public class MSCTAcsMain {
      * @throws IOException if reading the instance file fails
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","MSCT","msct1.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "MSCT", "msct1.txt").toString() : args[0];
         final MSCTProblem problem = new MSCTProblem(instance);
         AcsModel<MSCTState> model = new AcsModel<>() {
             @Override
@@ -51,21 +51,22 @@ public class MSCTAcsMain {
             }
 
             @Override
-            public DominanceChecker<MSCTState> dominance() {
-                return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
-            }
-
-            @Override
             public FastLowerBound<MSCTState> lowerBound() {
                 return new MSCTFastLowerBound(problem);
             }
+
+            @Override
+            public DominanceChecker<MSCTState> dominance() {
+                return new SimpleDominanceChecker<>(new MSCTDominance(), problem.nbVars());
+            }
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
 

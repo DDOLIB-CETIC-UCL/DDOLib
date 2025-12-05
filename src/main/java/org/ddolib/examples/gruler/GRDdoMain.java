@@ -1,6 +1,6 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
 
@@ -32,6 +32,7 @@ public class GRDdoMain {
      *     <li>Solves the problem using the DDO solver.</li>
      *     <li>Prints the solution and search statistics to the console.</li>
      * </ol>
+     *
      * @param args command-line arguments (not used)
      * @throws IOException if an I/O error occurs while printing the solution
      */
@@ -54,10 +55,11 @@ public class GRDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

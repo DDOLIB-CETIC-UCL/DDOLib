@@ -1,18 +1,13 @@
 package org.ddolib.examples.lcs;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * Longest Common Subsequence (LCS) with AsTar.
@@ -52,10 +47,11 @@ public final class LCSAstarMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAstar(model, s -> false, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAstar(model, s -> false, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
     }
 }

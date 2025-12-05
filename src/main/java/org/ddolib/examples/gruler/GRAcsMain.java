@@ -1,6 +1,6 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -10,7 +10,7 @@ import java.io.IOException;
 
 /**
  * Golomb Rule Problem (GRP) with Acs.
-
+ *
  * <p>
  * This program demonstrates how to:
  * </p>
@@ -50,10 +50,11 @@ public class GRAcsMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
