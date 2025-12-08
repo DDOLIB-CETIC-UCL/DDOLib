@@ -64,13 +64,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         model = dataSupplier::model;
     }
 
+
     /**
      * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
      *
-     * @param expected The expected {@code Optional<Double>}.
-     * @param actual   The actual {@code Optional<Double>}.
-     * @param delta    The tolerance for the comparison if both optionals contain a value.
-     * @param width    The maximum width of mdd used for the tests. Used to display error message.
+     * @param expected the expected {@code Optional<Double>}
+     * @param actual   the actual {@code Optional<Double>}
+     * @param delta    the tolerance for the comparison if both optionals contain a value
+     * @param width    the maximum width of mdd used for the tests. Used to display error message
      */
     public static void assertOptionalDoubleEqual(Optional<Double> expected,
                                                  Optional<Double> actual,
@@ -87,9 +88,9 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     /**
      * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
      *
-     * @param expected The expected {@code Optional<Double>}.
-     * @param actual   The actual {@code Optional<Double>}.
-     * @param delta    The tolerance for the comparison if both optionals contain a value.
+     * @param expected the expected {@code Optional<Double>}
+     * @param actual   the actual {@code Optional<Double>}
+     * @param delta    the tolerance for the comparison if both optionals contain a value
      */
     public static void assertOptionalDoubleEqual(Optional<Double> expected,
                                                  Optional<Double> actual,
@@ -98,10 +99,39 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     }
 
     /**
+     * Given a model run a solver and check if the solution is the expected one.
+     *
+     * @param model the model to test
+     * @param width the max width of the diagram ; -1 if the solver does not use the width
+     * @throws InvalidSolutionException if the returned solution is not well evaluated
+     */
+    private void testSolverResult(Model<T> model, int width) throws InvalidSolutionException {
+        Solution bestSolution = switch (model) {
+            case DdoModel<T> ddoModel when width == -1 -> Solvers.minimizeExact(ddoModel);
+            case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
+            case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
+            default -> Solvers.minimizeAstar(model);
+        };
+
+        Problem<T> problem = model.problem();
+        double bestValue = bestSolution.value();
+        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
+        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, width);
+
+        if (problem.optimalValue().isPresent()) {
+            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
+        }
+    }
+
+    private void testSolverResult(Model<T> model) throws InvalidSolutionException {
+        testSolverResult(model, -1);
+    }
+
+    /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
      * <p>
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testTransitionModel(P problem) throws InvalidSolutionException {
 
@@ -119,22 +149,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeExact(testModel);
-        double bestValue = bestSolution.value();
-        ;
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
-
-        if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
-        }
+        testSolverResult(testModel);
     }
 
     /**
      * Test if the fast lower bound is a lower bound for the root node and if the compilation with only the fast lower
      * bound enabled lead to the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testFlb(P problem) throws InvalidSolutionException {
 
@@ -162,23 +184,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeExact(testModel);
-        double bestValue = bestSolution.value();
-        ;
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
-
-        if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
-        }
-
+        testSolverResult(testModel);
 
     }
 
     /**
      * Test if the model only with relaxation enabled lead to the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testRelaxation(P problem) {
 
@@ -206,17 +219,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
-                DdoModel<T> testModel = getModel.apply(w);
-
-                Solution bestSolution = Solvers.minimizeDdo(testModel);
-                double bestValue = bestSolution.value();
-                Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, w);
-
-                if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
-                            1e-10, "Max width of the mdd:  " + w);
-                }
+                testSolverResult(getModel.apply(w), w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
                 throw new RuntimeException(msg);
@@ -227,7 +230,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     /**
      * Test if using the cache lead to the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testCache(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
@@ -274,18 +277,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
-                DdoModel<T> testModel = getModel.apply(w);
-
-
-                Solution bestSolution = Solvers.minimizeDdo(testModel);
-                double bestValue = bestSolution.value();
-                Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, w);
-
-                if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
-                            1e-10);
-                }
+                testSolverResult(getModel.apply(w), w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
                 throw new RuntimeException(msg);
@@ -296,7 +288,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     /**
      * Test if the A* solver reaches the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testAStarSolver(P problem) throws InvalidSolutionException {
 
@@ -324,20 +316,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeAstar(testModel);
-        double bestValue = bestSolution.value();
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
-
-        if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
-        }
+        testSolverResult(testModel);
     }
 
     /**
      * Test if the ACS solver reaches the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testACSSolver(P problem) throws InvalidSolutionException {
 
@@ -365,21 +350,14 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeAcs(testModel);
-        double bestValue = bestSolution.value();
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
-
-        if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
-        }
+        testSolverResult(testModel);
     }
 
     /**
      * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal solution. As side
      * effect, it tests if the fast lower bound on merged states does not cause errors.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testFlbOnRelaxedNodes(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
@@ -406,16 +384,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
-                DdoModel<T> testModel = getModel.apply(w);
-                Solution bestSolution = Solvers.minimizeDdo(testModel);
-                double bestValue = bestSolution.value();
-                Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
-
-                if (problem.optimalValue().isPresent()) {
-                    assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),
-                            1e-10);
-                }
+                testSolverResult(getModel.apply(w), w);
             } catch (Exception e) {
                 String msg = String.format("Max width of the MDD: %d\n", w) + e.getMessage();
                 throw new RuntimeException(msg);
@@ -426,7 +395,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     /**
      * Test if the model with the dominance enabled lead to the optimal solution.
      *
-     * @param problem The instance to test.
+     * @param problem the instance to test
      */
     private void testDominance(P problem) throws InvalidSolutionException {
         DdoModel<T> globalModel = model.apply(problem);
@@ -448,20 +417,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeExact(testModel);
-        double bestValue = bestSolution.value();
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-        assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
 
-        if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
-        }
     }
 
     /**
      * Generates all the tests for all the generated instances.
      *
-     * @return A stream of tests over all the generated instances.
+     * @return a stream of tests over all the generated instances
      */
     public Stream<DynamicTest> generateTests() {
 
