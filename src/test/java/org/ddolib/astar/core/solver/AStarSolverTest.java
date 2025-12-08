@@ -8,6 +8,7 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.examples.gruler.GRProblem;
 import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;
+import org.ddolib.examples.knapsack.KSFastLowerBound;
 import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;

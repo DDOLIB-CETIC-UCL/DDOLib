@@ -3,6 +3,7 @@ package org.ddolib.astar.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -30,25 +31,16 @@ public final class AStarSolver<T> implements Solver {
     private final FastLowerBound<T> lb;
     // A heuristic to choose the next variable to branch on
     private final VariableHeuristic<T> varh;
-    // Value of the best known upper bound.
-    private double bestUB;
     // HashMap mapping (state,depth) to the f value
     private final HashMap<StateAndDepth<T>, Double> closed;
     // HashMap mapping (state,depth) open nodes to the f value.
     private final HashMap<StateAndDepth<T>, Double> present;
-    // If set, this keeps the info about the best solution so far.
-    private Optional<Set<Decision>> bestSol;
     // The dominance object that will be used to prune the search space.
     private final DominanceChecker<T> dominance;
     // The priority queue containing the open subproblems by decreasing f = g + h (lower-bound
     private final PriorityQueue<SubProblem<T>> open = new PriorityQueue<>(
             Comparator.comparingDouble(SubProblem<T>::f));
     private final SubProblem<T> root;
-    // Statistics
-    long t0; // time at the beginning of the search
-    int nbIter; // number of iterations
-    int queueMaxSize; // maximum size reached by the queue
-
     /**
      * <ul>g
      *     <li>0: no verbosity</li>
@@ -63,14 +55,20 @@ public final class AStarSolver<T> implements Solver {
      * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
-
     private final VerboseMode verboseMode;
-
     /**
      * The debug level of the compilation to add additional checks (see
      * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    // Statistics
+    long t0; // time at the beginning of the search
+    int nbIter; // number of iterations
+    int queueMaxSize; // maximum size reached by the queue
+    // Value of the best known upper bound.
+    private double bestUB;
+    // If set, this keeps the info about the best solution so far.
+    private Optional<Set<Decision>> bestSol;
 
 
     public AStarSolver(Model<T> model) {
@@ -116,7 +114,8 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         t0 = System.currentTimeMillis();
         nbIter = 0;
         queueMaxSize = 0;
@@ -138,8 +137,9 @@ public final class AStarSolver<T> implements Solver {
                     bestValue().orElse(Double.POSITIVE_INFINITY),
                     0);
 
+
             if (limit.test(stats)) { // user-defined stopping criterion
-                return stats;
+                return new Solution(bestSolution(), stats);
             }
             // -- end debug, stats, verbosity, stopping  ---
 
@@ -150,12 +150,11 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
 
-
             if (sub.getPath().size() == problem.nbVars()) { // target node reached
-                assert(sub.getValue() == sub.f());
+                assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-                return new SearchStatistics(
+                SearchStatistics statistics = new SearchStatistics(
                         SearchStatus.OPTIMAL,
                         nbIter,
                         queueMaxSize,
@@ -163,6 +162,8 @@ public final class AStarSolver<T> implements Solver {
                         bestUB,
                         gap()
                 );
+
+                return new Solution(bestSol, statistics);
 
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(nbIter, sub);
@@ -173,8 +174,11 @@ public final class AStarSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkFLBAdmissibility();
         }
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+
+        SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+
+        return new Solution(bestSolution(), statistics);
     }
 
     @Override
@@ -263,12 +267,12 @@ public final class AStarSolver<T> implements Solver {
             }
 
             // is the new state a solution?
-            if (newSub.getPath().size() == problem.nbVars() && (newSub.getValue() < bestUB) ) {
-                assert(h == 0.0);
+            if (newSub.getPath().size() == problem.nbVars() && (newSub.getValue() < bestUB)) {
+                assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis()-t0, bestUB, gap());
-                onSolution.accept(constructSolution(path),stats);
+                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
+                onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }
         }
