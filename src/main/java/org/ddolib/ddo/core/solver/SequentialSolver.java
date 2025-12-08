@@ -348,7 +348,7 @@ public final class SequentialSolver<T> implements Solver {
 
     private CompilationConfig<T> configureCompilation(CompilationType type, SubProblem<T> sub,
                                                       int maxWidth, boolean exportAsDot) {
-        CompilationConfig<T> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = type;
         compilation.problem = model.problem();
         compilation.relaxation = model.relaxation();
