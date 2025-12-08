@@ -17,7 +17,6 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
@@ -93,21 +92,9 @@ public final class SequentialSolver<T> implements Solver {
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to minimize
-     */
-    private final Relaxation<T> relax;
-    /**
-     * A heuristic to identify the most promising nodes
-     */
-    private final StateRanking<T> ranking;
-    /**
      * A heuristic to choose the maximum width of the DD you compile
      */
     private final WidthHeuristic<T> width;
-    /**
-     * A heuristic to choose the next variable to branch on when developing a DD
-     */
-    private final VariableHeuristic<T> varh;
 
     /**
      * Set of nodes that must still be explored before
@@ -122,14 +109,6 @@ public final class SequentialSolver<T> implements Solver {
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
-    /**
-     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
-     */
-    private final FastLowerBound<T> flb;
-    /**
-     * The dominance object that will be used to prune the search space.
-     */
-    private final DominanceChecker<T> dominance;
 
 
     /**
@@ -152,11 +131,11 @@ public final class SequentialSolver<T> implements Solver {
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
+    private final DdoModel<T> model;
     /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link DebugLevel for details}
+     * This is the cache used to prune the search tree
      */
-    private final DebugLevel debugLevel;
+    private final Optional<SimpleCache<T>> cache;
     /**
      * Value of the best known upper bound.
      */
@@ -165,10 +144,6 @@ public final class SequentialSolver<T> implements Solver {
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-    /**
-     * This is the cache used to prune the search tree
-     */
-    private Optional<SimpleCache<T>> cache;
     /**
      * Only the first restricted mdd can be exported to a .dot file
      */
@@ -187,12 +162,7 @@ public final class SequentialSolver<T> implements Solver {
      */
     public SequentialSolver(DdoModel<T> model) {
         this.problem = model.problem();
-        this.relax = model.relaxation();
-        this.varh = model.variableHeuristic();
-        this.ranking = model.ranking();
         this.width = model.widthHeuristic();
-        this.flb = model.lowerBound();
-        this.dominance = model.dominance();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.frontier = model.frontier();
         this.bestUB = Double.POSITIVE_INFINITY;
@@ -200,7 +170,8 @@ public final class SequentialSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
-        this.debugLevel = model.debugMode();
+
+        this.model = model;
     }
 
     @Override
@@ -243,21 +214,8 @@ public final class SequentialSolver<T> implements Solver {
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
-            CompilationConfig<T> compilation = new CompilationConfig<>();
-            compilation.compilationType = CompilationType.Restricted;
-            compilation.problem = this.problem;
-            compilation.relaxation = this.relax;
-            compilation.variableHeuristic = this.varh;
-            compilation.stateRanking = this.ranking;
-            compilation.residual = sub;
-            compilation.maxWidth = maxWidth;
-            compilation.flb = flb;
-            compilation.dominance = this.dominance;
-            compilation.cache = this.cache;
-            compilation.bestUB = this.bestUB;
-            compilation.cutSetType = frontier.cutSetType();
-            compilation.exportAsDot = this.exportAsDot && this.firstRestricted;
-            compilation.debugLevel = this.debugLevel;
+            CompilationConfig<T> compilation = configureCompilation(CompilationType.Restricted,
+                    sub, maxWidth, model.exportDot() && this.firstRestricted);
 
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
@@ -280,11 +238,10 @@ public final class SequentialSolver<T> implements Solver {
             }
 
             // 2. RELAXATION
-            compilation.compilationType = CompilationType.Relaxed;
-            compilation.bestUB = this.bestUB;
-            compilation.exportAsDot = this.exportAsDot && this.firstRelaxed;
-            DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
+            compilation = configureCompilation(CompilationType.Relaxed, sub, maxWidth,
+                    model.exportDot() && this.firstRelaxed);
 
+            DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
@@ -393,5 +350,35 @@ public final class SequentialSolver<T> implements Solver {
             double bestInFrontier = frontier.bestInFrontier();
             return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
         }
+    }
+
+    /**
+     * Initialize the parameters of a compilation.
+     *
+     * @param type        the type of the compilation (restricted or relaxed)
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
+     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @return the parameters of the compilation
+     */
+    private CompilationConfig<T> configureCompilation(CompilationType type, SubProblem<T> sub,
+                                                      int maxWidth, boolean exportAsDot) {
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
+        compilation.compilationType = type;
+        compilation.problem = model.problem();
+        compilation.relaxation = model.relaxation();
+        compilation.variableHeuristic = model.variableHeuristic();
+        compilation.stateRanking = model.ranking();
+        compilation.residual = sub;
+        compilation.maxWidth = maxWidth;
+        compilation.flb = model.lowerBound();
+        compilation.dominance = model.dominance();
+        compilation.cache = this.cache;
+        compilation.bestUB = this.bestUB;
+        compilation.cutSetType = frontier.cutSetType();
+        compilation.exportAsDot = exportAsDot;
+        compilation.debugLevel = model.debugMode();
+
+        return compilation;
     }
 }

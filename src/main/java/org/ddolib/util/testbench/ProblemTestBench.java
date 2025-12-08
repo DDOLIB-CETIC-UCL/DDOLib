@@ -105,7 +105,20 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      */
     private void testTransitionModel(P problem) throws InvalidSolutionException {
 
-        DdoModel<T> testModel = model.apply(problem);
+        DdoModel<T> globalModel = model.apply(problem);
+
+        DdoModel<T> testModel = new DdoModel<T>() {
+            @Override
+            public Relaxation<T> relaxation() {
+                return globalModel.relaxation();
+            }
+
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+        };
+
         Solution bestSolution = Solvers.minimizeExact(testModel);
         double bestValue = bestSolution.value();
         ;
@@ -225,6 +238,11 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
 
             @Override
+            public StateRanking<T> ranking() {
+                return globalModel.ranking();
+            }
+
+            @Override
             public WidthHeuristic<T> widthHeuristic() {
                 return new FixedWidth<>(w);
             }
@@ -262,7 +280,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
                 Solution bestSolution = Solvers.minimizeDdo(testModel);
                 double bestValue = bestSolution.value();
                 Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
-                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10);
+                assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, w);
 
                 if (problem.optimalValue().isPresent()) {
                     assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()),

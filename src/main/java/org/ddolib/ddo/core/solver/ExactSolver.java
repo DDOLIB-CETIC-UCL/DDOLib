@@ -107,6 +107,9 @@ public final class ExactSolver<T> implements Solver {
      */
     private Optional<Double> bestValue = Optional.empty();
 
+    private final DdoModel<T> model;
+
+
 
     /**
      * Creates a fully-configured ExactSolver instance.
@@ -127,6 +130,7 @@ public final class ExactSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
+        this.model = model;
     }
 
     /**
@@ -156,7 +160,7 @@ public final class ExactSolver<T> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationConfig<T> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
