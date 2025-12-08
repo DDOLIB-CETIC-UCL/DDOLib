@@ -109,6 +109,11 @@ public class CompilationConfig<T> {
      */
     public DebugLevel debugLevel = null;
 
+    /**
+     * Initialize the parameters of the compilation.
+     *
+     * @param model the model containing the problem specific parameter of the compilation
+     */
     public CompilationConfig(DdoModel<T> model) {
         this.model = model;
     }

@@ -346,6 +346,15 @@ public final class SequentialSolver<T> implements Solver {
         }
     }
 
+    /**
+     * Initialize the parameters of a compilation.
+     *
+     * @param type        the type of the compilation (restricted or relaxed)
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
+     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @return the parameters of the compilation
+     */
     private CompilationConfig<T> configureCompilation(CompilationType type, SubProblem<T> sub,
                                                       int maxWidth, boolean exportAsDot) {
         CompilationConfig<T> compilation = new CompilationConfig<>(model);
