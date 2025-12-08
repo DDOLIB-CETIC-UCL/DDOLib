@@ -76,9 +76,10 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
     @Override
     public double fastLowerBound(MSCTState state, Set<Integer> variables) {
         int lb = 0;
+        /*
         for (Integer v : variables) {
             lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];
-        }
+        }*/
         return lb;
     }
 }
