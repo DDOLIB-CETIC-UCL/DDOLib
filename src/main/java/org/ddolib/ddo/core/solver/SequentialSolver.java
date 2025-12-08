@@ -153,6 +153,8 @@ public final class SequentialSolver<T> implements Solver {
      */
     private boolean firstRelaxed = true;
 
+    private DominanceChecker<T> dominance;
+
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -170,7 +172,7 @@ public final class SequentialSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
-
+        this.dominance = model.dominance();
         this.model = model;
     }
 
@@ -372,7 +374,7 @@ public final class SequentialSolver<T> implements Solver {
         compilation.residual = sub;
         compilation.maxWidth = maxWidth;
         compilation.flb = model.lowerBound();
-        compilation.dominance = model.dominance();
+        compilation.dominance = this.dominance;
         compilation.cache = this.cache;
         compilation.bestUB = this.bestUB;
         compilation.cutSetType = frontier.cutSetType();
