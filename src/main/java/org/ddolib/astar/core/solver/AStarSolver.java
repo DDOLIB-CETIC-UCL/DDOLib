@@ -152,7 +152,7 @@ public final class AStarSolver<T> implements Solver {
 
 
             if (sub.getPath().size() == problem.nbVars()) { // target node reached
-
+                assert(sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
                 return new SearchStatistics(
@@ -233,7 +233,7 @@ public final class AStarSolver<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
+            double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
 
 
             // if the new state is dominated, we skip it
@@ -241,7 +241,7 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
 
-            SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+            SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
             }
@@ -264,6 +264,7 @@ public final class AStarSolver<T> implements Solver {
 
             // is the new state a solution?
             if (newSub.getPath().size() == problem.nbVars() && (newSub.getValue() < bestUB) ) {
+                assert(h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
                 SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis()-t0, bestUB, gap());
@@ -316,7 +317,7 @@ public final class AStarSolver<T> implements Solver {
         if (open.isEmpty()) {
             return 0.0;
         } else {
-            double bestInFrontier = open.peek().getLowerBound();
+            double bestInFrontier = open.peek().f();
             return (bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }

@@ -48,12 +48,7 @@ class AStarSolverTest {
             }
             @Override
             public FastLowerBound<Integer> lowerBound() {
-                return new FastLowerBound<Integer>() {
-                    @Override
-                    public double fastLowerBound(Integer state, Set<Integer> variables) {
-                        return problem.optimalValue().get();
-                    }
-                };
+                return new KSFastLowerBound(problem);
             }
         };
 
@@ -97,6 +92,16 @@ class AStarSolverTest {
             @Override
             public Problem<GRState> problem() {
                 return problem;
+            }
+
+            @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new FastLowerBound<GRState>() {
+                    @Override
+                    public double fastLowerBound(GRState state, Set<Integer> variables) {
+                        return 0;
+                    }
+                };
             }
         };
 
