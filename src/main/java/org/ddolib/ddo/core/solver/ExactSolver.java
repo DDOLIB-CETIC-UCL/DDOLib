@@ -85,8 +85,19 @@ public final class ExactSolver<T> implements Solver {
      * Optional cache for pruning repeated subproblems.
      */
     private final Optional<SimpleCache<T>> cache;
-
-
+    /**
+     * Verbosity level controlling output during the solving process.
+     */
+    private final VerbosityLevel verbosityLevel;
+    /**
+     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
+     */
+    private final boolean exportAsDot;
+    /**
+     * Debug level controlling additional consistency checks during compilation.
+     */
+    private final DebugLevel debugLevel;
+    private final DdoModel<T> model;
     /**
      * Optional set containing the best solution found so far.
      */
@@ -95,22 +106,6 @@ public final class ExactSolver<T> implements Solver {
      * Optional value of the best solution found so far.
      */
     private Optional<Double> bestValue = Optional.empty();
-
-    /**
-     * Verbosity level controlling output during the solving process.
-     */
-    private final VerbosityLevel verbosityLevel;
-
-    /**
-     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
-     */
-    private final boolean exportAsDot;
-
-    /**
-     * Debug level controlling additional consistency checks during compilation.
-     */
-    private final DebugLevel debugLevel;
-
 
     /**
      * Creates a fully-configured ExactSolver instance.
@@ -131,6 +126,7 @@ public final class ExactSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.exportAsDot = model.exportDot();
         this.debugLevel = model.debugMode();
+        this.model = model;
     }
 
     /**
@@ -159,7 +155,7 @@ public final class ExactSolver<T> implements Solver {
                 Collections.emptySet());
         cache.ifPresent(c -> c.initialize(problem));
 
-        CompilationConfig<T> compilation = new CompilationConfig<>();
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
         compilation.relaxation = this.relax;
