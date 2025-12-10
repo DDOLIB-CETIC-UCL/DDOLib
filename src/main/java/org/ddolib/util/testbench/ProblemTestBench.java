@@ -99,7 +99,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     }
 
     /**
-     * Given a model run a solver and check if the solution is the expected one.
+     * Given a model runs a solver and checks if the solution is the expected one.
      *
      * @param model the model to test
      * @param width the max width of the diagram ; -1 if the solver does not use the width
