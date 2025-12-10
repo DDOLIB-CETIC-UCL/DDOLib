@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -97,7 +98,6 @@ public final class ExactSolver<T> implements Solver {
      * Debug level controlling additional consistency checks during compilation.
      */
     private final DebugLevel debugLevel;
-    private final DdoModel<T> model;
     /**
      * Optional set containing the best solution found so far.
      */
@@ -106,6 +106,10 @@ public final class ExactSolver<T> implements Solver {
      * Optional value of the best solution found so far.
      */
     private Optional<Double> bestValue = Optional.empty();
+
+    private final DdoModel<T> model;
+
+
 
     /**
      * Creates a fully-configured ExactSolver instance.
@@ -146,7 +150,8 @@ public final class ExactSolver<T> implements Solver {
      * @return statistics about the search process, including the best value found
      */
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -190,7 +195,7 @@ public final class ExactSolver<T> implements Solver {
 
 
         bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), stats));
-        return stats;
+        return new Solution(bestSolution(), stats);
     }
 
     /**

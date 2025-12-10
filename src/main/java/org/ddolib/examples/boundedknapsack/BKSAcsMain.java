@@ -2,7 +2,7 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -28,6 +28,7 @@ public class BKSAcsMain {
      *     <li>Solves the problem using an Ant Colony System (ACS) solver.</li>
      *     <li>Prints the solution and search statistics to the console.</li>
      * </ol>
+     *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
@@ -45,15 +46,16 @@ public class BKSAcsMain {
 
             @Override
             public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<Integer>(new BKSDominance(), problem.nbVars());
+                return new SimpleDominanceChecker<>(new BKSDominance(), problem.nbVars());
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
 
