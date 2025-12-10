@@ -73,7 +73,7 @@ public class SMICDdoMain {
      * @throws IOException if an error occurs while reading the instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_2.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_3.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         DdoModel<SMICState> model = new DdoModel<>() {
             @Override

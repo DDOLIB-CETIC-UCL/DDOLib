@@ -262,11 +262,11 @@ public class SMICProblem implements Problem<SMICState> {
      */
     @Override
     public SMICState initialState() {
-        Set<Integer> jobs = new HashSet<>();
+        BitSet jobs = new BitSet(nbJob);
         for (int i = 0; i < nbVars(); i++) {
-            jobs.add(i);
+            jobs.set(i);
         }
-        return new SMICState(jobs, 0, initInventory, initInventory);
+        return new SMICState(jobs, 0, initInventory);
     }
 
     /**
@@ -289,12 +289,10 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        for (Integer job : state.remainingJobs()) {
-            int deltaInventory = (type[job] == 0) ? -inventory[job] : +inventory[job];
-            int minCurrentInventory = state.minCurrentInventory() + deltaInventory;
-            int maxCurrentInventory = state.maxCurrentInventory() + deltaInventory;
-            if (maxCurrentInventory >= 0 && minCurrentInventory <= capaInventory) {
-                domain.add(job);
+        for (int i = state.remainingJobs().nextSetBit(0); i >= 0; i = state.remainingJobs().nextSetBit(i + 1)) {
+            int currentInventory = (type[i] == 0) ? state.currentInventory() - inventory[i] : state.currentInventory() + inventory[i];
+            if (currentInventory >= 0 && currentInventory <= capaInventory) {
+                domain.add(i);
             }
         }
         return domain.iterator();
@@ -313,14 +311,12 @@ public class SMICProblem implements Problem<SMICState> {
      */
     @Override
     public SMICState transition(SMICState state, Decision decision) {
-        Set<Integer> remaining = new HashSet<>(state.remainingJobs());
+        BitSet remaining = (BitSet) state.remainingJobs().clone();
         int job = decision.val();
-        remaining.remove(job);
+        remaining.clear(job);
         int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
-        int deltaInventory = (type[job] == 0) ? -inventory[job] : +inventory[job];
-        int minCurrentInventory = state.minCurrentInventory() + deltaInventory;
-        int maxCurrentInventory = state.maxCurrentInventory() + deltaInventory;
-        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
+        int currentInventory = (type[job] == 0) ? state.currentInventory() - inventory[job] : state.currentInventory() + inventory[job];
+        return new SMICState(remaining, currentTime, currentInventory);
     }
 
     /**

@@ -3,6 +3,7 @@ package org.ddolib.examples.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
 
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -66,23 +67,33 @@ public class SMICRelax implements Relaxation<SMICState> {
      */
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-
-//        SMICState state = states.next();
-        Set<Integer> unionJobs = new HashSet<>(/*state.remainingJobs()*/);
-        int minCurrentTime = Integer.MAX_VALUE;
-        int minCurrentInventory = Integer.MIN_VALUE;
-        int maxCurrentInventory = Integer.MAX_VALUE;
-
+        BitSet unionScheduled = (BitSet) states.next().remainingJobs().clone();
+        BitSet unionRemaining = (BitSet) unionScheduled.clone();
+        unionScheduled.flip(0, problem.nbVars());
         while (states.hasNext()) {
             final SMICState state = states.next();
-            unionJobs.addAll(state.remainingJobs());
-            minCurrentTime = Math.min(minCurrentTime, state.currentTime());
-            minCurrentInventory = Math.max(minCurrentInventory, state.minCurrentInventory());
-            maxCurrentInventory = Math.min(maxCurrentInventory, state.maxCurrentInventory());
+            unionRemaining.or(state.remainingJobs());
+            BitSet scheduled = (BitSet) state.remainingJobs().clone();
+            scheduled.flip(0, problem.nbVars());
+            unionScheduled.or(scheduled);
         }
-        if (minCurrentInventory <= maxCurrentInventory)
-            return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
-        return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, minCurrentInventory);
+        int minCurrentTime = 0;
+        int currentInventory = problem.initInventory;
+        int minRelease = Integer.MAX_VALUE;
+        for (int j = unionScheduled.nextSetBit(0); j >= 0; j = unionScheduled.nextSetBit(j + 1)) {
+            minRelease = Math.min(minRelease, problem.release[j]);
+            minCurrentTime += problem.processing[j];
+            currentInventory += (problem.type[j] == 0) ? -problem.inventory[j] : problem.inventory[j];
+        }
+        //minCurrentTime += Math.max(0, minRelease);
+        int inventory = currentInventory;
+        if (currentInventory < 0) {
+            inventory = 0;
+        } else if (currentInventory > problem.capaInventory) {
+            inventory = problem.capaInventory;
+        }
+//        intersectionScheduled.flip(0, problem.nbVars());
+        return new SMICState(unionRemaining, minCurrentTime, inventory);
     }
     /**
      * Relaxes the cost of an edge between two states.

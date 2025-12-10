@@ -1,8 +1,7 @@
 package org.ddolib.examples.smic;
 
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.util.BitSet;
 /**
  * The {@code SMICState} record represents a state in the search space of the
  * Single Machine with Inventory Constraint (SMIC) scheduling problem.
@@ -37,18 +36,16 @@ import java.util.Set;
  *
  * @param remainingJobs        the set of job indices that remain to be scheduled
  * @param currentTime          the current time in the schedule
- * @param minCurrentInventory  the minimum possible inventory level at this state
- * @param maxCurrentInventory  the maximum possible inventory level at this state
+ * @param currentInventory     the current inventory level at this state
  *
  * @see SMICProblem
  * @see SMICRelax
  * @see SMICRanking
  * @see SMICDominance
  */
-public record SMICState(Set<Integer> remainingJobs,
+public record SMICState(BitSet remainingJobs,
                         int currentTime,
-                        int minCurrentInventory,
-                        int maxCurrentInventory) {
+                        int currentInventory) {
     /**
      * Returns a string representation of this state, displaying the set of
      * remaining jobs, the current time, and the current inventory bounds.
@@ -57,7 +54,7 @@ public record SMICState(Set<Integer> remainingJobs,
      */
     @Override
     public String toString() {
-        return "RemainingJobs " + Arrays.toString(remainingJobs.toArray()) + " ----> currentTime " + currentTime + " ---> minCurrentInventory" + minCurrentInventory + " ---> maxCurrentInventory" + maxCurrentInventory;
+        return "RemainingJobs : " + remainingJobs + " ----> currentTime : " + currentTime + " ---> currentInventory : " + currentInventory;
     }
 
 }
