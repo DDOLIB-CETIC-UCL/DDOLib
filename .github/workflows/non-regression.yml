@@ -3,7 +3,7 @@ on:
   workflow_dispatch: #can be run manually
 
   schedule:
-    - cron: "0 21 * * 0" # 21h utc
+    - cron: "0 23 * * 0" # 23h utc
 
 jobs:
   run-non-regression-tests:

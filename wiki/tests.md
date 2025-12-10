@@ -13,7 +13,7 @@ Otherwise, the instance can be used in the non-regression tests.
 
 ## Non-regression tests
 
-These tests are run each sunday at 21h utc.
+These tests are run each Sunday at 23h utc.
 
 We take the convention that each test on each instance must be executed in less thant **3 minutes**.
 
