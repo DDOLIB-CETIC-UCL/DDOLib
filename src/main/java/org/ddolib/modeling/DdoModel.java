@@ -315,7 +315,7 @@ public interface DdoModel<T> extends Model<T> {
 
             @Override
             public boolean useCache() {
-                return DdoModel.this.useCache();
+                return b;
             }
 
             @Override

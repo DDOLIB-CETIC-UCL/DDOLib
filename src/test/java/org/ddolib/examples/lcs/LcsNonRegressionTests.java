@@ -15,7 +15,7 @@ public class LcsNonRegressionTests {
 
     @DisplayName("LCS: non-regression")
     @TestFactory
-    public Stream<DynamicTest> nonRegressionMisp() {
+    public Stream<DynamicTest> nonRegressionLcs() {
         var supplier =
                 new LCSTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
                         "LCS"));

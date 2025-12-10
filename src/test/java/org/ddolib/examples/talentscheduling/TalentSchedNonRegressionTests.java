@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public class TalentSchedNonRegressionTests {
     @DisplayName("Talent Sched: non-regression")
     @TestFactory
-    public Stream<DynamicTest> nonRegressionMisp() {
+    public Stream<DynamicTest> nonRegressionTalentSched() {
         var supplier =
                 new TalentSchedTestDataSupplier(Path.of("src", "test", "resources",
                         "Non-Regression", "TalentScheduling"));

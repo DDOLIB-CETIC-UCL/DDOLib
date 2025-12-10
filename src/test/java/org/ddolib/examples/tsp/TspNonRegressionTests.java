@@ -14,7 +14,7 @@ public class TspNonRegressionTests {
 
     @DisplayName("TSP: non-regression")
     @TestFactory
-    public Stream<DynamicTest> nonRegressionMisp() {
+    public Stream<DynamicTest> nonRegressionTsp() {
         var supplier =
                 new TSPTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
                         "TSP"));
