@@ -3,6 +3,7 @@ package org.ddolib.examples.msct;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.TestDataSupplier;
@@ -52,6 +53,11 @@ public class MSCTTestDataSupplier extends TestDataSupplier<MSCTState, MSCTProble
             @Override
             public MSCTRanking ranking() {
                 return new MSCTRanking();
+            }
+
+            @Override
+            public FastLowerBound<MSCTState> lowerBound() {
+                return new MSCTFastLowerBound(problem);
             }
         };
     }
