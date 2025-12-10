@@ -2,11 +2,11 @@ package org.ddolib.util.testbench;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.modeling.*;
 import org.junit.jupiter.api.DynamicTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -28,51 +28,70 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
         DdoModel<T> globalModel =
                 model.apply(problem).setCutSetType(CutSetType.LastExactLayer).fixWidth(500);
 
-        double aStarVal = solveWithAStar(globalModel.disableDominance());
+        boolean dominanceUsed = !(globalModel.dominance() instanceof DefaultDominanceChecker<T>);
 
-        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+        Model<T> astarModel = new Model<T>() {
+            @Override
+            public Problem<T> problem() {
+                return globalModel.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+        };
+
+        double aStarVal = solveAndChecksSolution(astarModel.disableDominance());
+
+        if (dominanceUsed) {
             // No dominance rule defined for this problem. No need to test it.
-            double aStarWithDominance = solveWithAStar(globalModel);
+            double aStarWithDominance = solveAndChecksSolution(astarModel);
             assertEquals(aStarVal, aStarWithDominance, 1e-10,
                     "A* : adding dominance change the value"
             );
         }
 
-        double ddoVal = solveWithDdo(globalModel.disableDominance());
+        double ddoVal = solveAndChecksSolution(globalModel.disableDominance());
         assertEquals(aStarVal, ddoVal, 1e-10,
                 "A* solver and DDO solver do not return the same value."
         );
 
-        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+        if (dominanceUsed) {
             // No dominance rule defined for this problem. No need to test it.
-            double ddoWithDominance = solveWithDdo(globalModel);
+            double ddoWithDominance = solveAndChecksSolution(globalModel);
             assertEquals(ddoVal, ddoWithDominance, 1e-10,
                     "DDO: adding the dominance changes the value"
             );
         }
 
         double ddoWithFrontier =
-                solveWithDdo(globalModel.setCutSetType(CutSetType.Frontier));
+                solveAndChecksSolution(globalModel.setCutSetType(CutSetType.Frontier));
         assertEquals(ddoVal, ddoWithFrontier, 1e-10,
                 "DDO: using CutSetType.Frontier changes the value."
         );
 
         double ddoWithCache =
-                solveWithDdo(globalModel.useCache(true));
+                solveAndChecksSolution(globalModel.useCache(true));
         assertEquals(ddoVal, ddoWithCache, 1e-10,
                 "DDO: using cache changes the value"
         );
 
 
         double ddoWithCacheAndFrontier =
-                solveWithDdo(globalModel.setCutSetType(CutSetType.Frontier).useCache(true));
+                solveAndChecksSolution(globalModel.setCutSetType(CutSetType.Frontier).useCache(true));
         assertEquals(ddoVal, ddoWithCacheAndFrontier, 1e-10,
                 "DDO: using cache and Frontier changes the value"
         );
 
 
         for (int w = 600; w <= 1000; w += 100) {
-            double ddo = solveWithDdo(globalModel.fixWidth(w));
+            double ddo = solveAndChecksSolution(globalModel.fixWidth(w));
             assertEquals(ddoVal, ddo, 1e-10,
                     "DDO: using width " + w + " changes the value"
             );
@@ -95,21 +114,21 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
             }
         };
 
-        double acsVal = solveWithAcs(acsModel.disableDominance());
+        double acsVal = solveAndChecksSolution(acsModel.disableDominance());
         assertEquals(aStarVal, acsVal, 1e-10,
                 "A* and ACS do not return the same value"
         );
 
-        if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
+        if (dominanceUsed) {
             // No dominance rule defined for this problem. No need to test it.
-            double acsWithDominance = solveWithAcs(acsModel);
+            double acsWithDominance = solveAndChecksSolution(acsModel);
             assertEquals(acsVal, acsWithDominance, 1e-10,
                     "ACS: the dominance change the value"
             );
         }
 
         for (int c = 6; c <= 20; c++) {
-            double acs = solveWithAcs(acsModel.setColumnWidth(c));
+            double acs = solveAndChecksSolution(acsModel.setColumnWidth(c));
             assertEquals(acsVal, acs, 1e-10,
                     "ACS: using column width " + c + " changes the value");
         }
@@ -122,50 +141,26 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
         );
     }
 
-    private double solveWithAStar(Model<T> model) {
-        int[] solution = new int[model.problem().nbVars()];
-        double value =
-                Solvers.minimizeAstar(model,
-                        (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
+
+    /**
+     * Given a model, runs a solver and checks if the solution is coherent.
+     *
+     * @param model the model to test
+     * @return the value of the obtained solution
+     */
+    private double solveAndChecksSolution(Model<T> model) {
+        Solution solution = switch (model) {
+            case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
+            case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
+            default -> Solvers.minimizeAstar(model);
+        };
         try {
-            assertEquals(model.problem().evaluate(solution), value, 1e-10,
+            assertEquals(model.problem().evaluate(solution.solution()), solution.value(), 1e-10,
                     "A*: The solution has not the same value that the returned value");
         } catch (InvalidSolutionException e) {
             throw new RuntimeException(e);
         }
 
-        return value;
-    }
-
-    private double solveWithDdo(DdoModel<T> model) {
-        int[] solution = new int[model.problem().nbVars()];
-        double value = Solvers.minimizeDdo(model,
-                (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
-
-
-        try {
-            assertEquals(model.problem().evaluate(solution), value, 1e-10,
-                    "DDO: The solution has not the same value that the returned value");
-        } catch (InvalidSolutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        return value;
-    }
-
-    private double solveWithAcs(AcsModel<T> model) {
-        int[] solution = new int[model.problem().nbVars()];
-        double value = Solvers.minimizeAcs(model,
-                (sol, s) -> Arrays.setAll(solution, i -> sol[i])).incumbent();
-
-
-        try {
-            assertEquals(model.problem().evaluate(solution), value, 1e-10,
-                    "ACS: The solution has not the same value that the returned value");
-        } catch (InvalidSolutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        return value;
+        return solution.value();
     }
 }
