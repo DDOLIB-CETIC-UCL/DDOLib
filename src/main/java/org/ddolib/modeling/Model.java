@@ -2,7 +2,6 @@ package org.ddolib.modeling;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.util.debug.DebugLevel;
@@ -62,17 +61,6 @@ public interface Model<T> {
      */
     default DominanceChecker<T> dominance() {
         return new DefaultDominanceChecker<>();
-    }
-
-    /**
-     * Callback invoked when a new solution is found during the search process.
-     * <p>
-     * This method is a hook for monitoring or logging purposes and does nothing by default.
-     * </p>
-     *
-     * @param statistics a snapshot of the search statistics at the time the solution was found
-     */
-    default void onSolution(SearchStatistics statistics) {
     }
 
     /**
@@ -153,7 +141,7 @@ public interface Model<T> {
      * @return A copy of this model but without {@link FastLowerBound}.
      */
     default Model<T> disableLowerBound() {
-        return new Model<T>() {
+        return new Model<>() {
             @Override
             public Problem<T> problem() {
                 return Model.this.problem();
@@ -162,11 +150,6 @@ public interface Model<T> {
             @Override
             public DominanceChecker<T> dominance() {
                 return Model.this.dominance();
-            }
-
-            @Override
-            public void onSolution(SearchStatistics statistics) {
-                Model.this.onSolution(statistics);
             }
 
             @Override
