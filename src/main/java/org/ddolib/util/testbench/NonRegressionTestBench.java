@@ -38,14 +38,14 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
             );
         }
 
-        double ddoVal = solveWithDdo(globalModel.disableDominance().fixWidth(500));
+        double ddoVal = solveWithDdo(globalModel.disableDominance());
         assertEquals(aStarVal, ddoVal, 1e-10,
                 "A* solver and DDO solver do not return the same value."
         );
 
         if (!(globalModel.dominance() instanceof DefaultDominanceChecker<T>)) {
             // No dominance rule defined for this problem. No need to test it.
-            double ddoWithDominance = solveWithDdo(globalModel.fixWidth(500));
+            double ddoWithDominance = solveWithDdo(globalModel);
             assertEquals(ddoVal, ddoWithDominance, 1e-10,
                     "DDO: adding the dominance changes the value"
             );
@@ -58,7 +58,7 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
         );
 
         double ddoWithCache =
-                solveWithDdo(globalModel.fixWidth(500).useCache(true));
+                solveWithDdo(globalModel.useCache(true));
         assertEquals(ddoVal, ddoWithCache, 1e-10,
                 "DDO: using cache changes the value"
         );
