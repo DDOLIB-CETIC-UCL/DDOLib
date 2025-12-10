@@ -339,6 +339,21 @@ public interface DdoModel<T> extends Model<T> {
             }
 
             @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
             public Relaxation<T> relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -372,7 +387,7 @@ public interface DdoModel<T> extends Model<T> {
 
     @Override
     default DdoModel<T> disableLowerBound() {
-        return new DdoModel<T>() {
+        return new DdoModel<>() {
             @Override
             public Problem<T> problem() {
                 return DdoModel.this.problem();
