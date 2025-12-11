@@ -15,11 +15,9 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
     @Override
     public double fastLowerBound(BPPState state, Set<Integer> variables) {
         if (variables.isEmpty()) return 0;
-        int remainingTotalWeight = state.remainingItems.stream().map(i -> problem.itemWeight[i]).reduce(0,Integer::sum);
-        int minRemainingSpace = state.remainingSpace;
-        if(minRemainingSpace == -1)
-            minRemainingSpace = state.remainingSpaces.stream().min(Integer::compareTo).orElse(0);
+        int smallestRemainingItem = state.remainingItems.stream().max(Integer::compare).get();
+        int remainingSpaceIfUsable = problem.itemWeight[smallestRemainingItem] <= state.remainingSpace ? state.remainingSpace : 0;
 
-        return (int) Math.ceil((double) (remainingTotalWeight - minRemainingSpace) / problem.binMaxSpace);
+        return (int) Math.ceil((double) (state.remainingTotalWeight - remainingSpaceIfUsable) / problem.binMaxSpace);
     }
 }
