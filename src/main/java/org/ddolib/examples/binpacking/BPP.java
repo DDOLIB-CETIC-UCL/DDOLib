@@ -1,5 +1,7 @@
 package org.ddolib.examples.binpacking;
 
+import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
@@ -43,20 +45,19 @@ public class BPP {
         return new BPPProblem(nbItems, binMaxSize, Arrays.stream(itemWeights).mapToInt(i -> i).toArray(), optimal);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InvalidSolutionException {
         final String file = args.length == 0 ? "data/BPP/test.txt" : args[0];
-        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 5;
+        final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 20;
 
         BPPProblem problem = extractFile(file);
         BPPDdoModel model = new BPPDdoModel(problem,maxWidth);
 
-        long start = System.currentTimeMillis();
-        Solvers.minimizeDdo(model,(sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model,(sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
-            BPPSolution bppSolution = new BPPSolution(problem, sol);
-            System.out.println(bppSolution);
-            System.out.println((System.currentTimeMillis() - start) / 1000.0);
         });
+
+        System.out.println(bestSolution);
+        System.out.println(problem.evaluate(bestSolution.solution()));
 
     }
 

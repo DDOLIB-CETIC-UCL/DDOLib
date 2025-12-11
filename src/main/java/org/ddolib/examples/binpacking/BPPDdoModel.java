@@ -1,5 +1,7 @@
 package org.ddolib.examples.binpacking;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -41,7 +43,7 @@ public class BPPDdoModel implements DdoModel<BPPState> {
 
     @Override
     public Frontier<BPPState> frontier() {
-        return new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
+        return new SimpleFrontier<>(ranking, CutSetType.Frontier);
     }
 
     @Override
@@ -52,5 +54,10 @@ public class BPPDdoModel implements DdoModel<BPPState> {
     @Override
     public VerbosityLevel verbosityLevel() {
         return VerbosityLevel.NORMAL;
+    }
+
+    @Override
+    public DominanceChecker<BPPState> dominance() {
+        return new SimpleDominanceChecker<>(new BPPDominance(), problem.nbItems);
     }
 }

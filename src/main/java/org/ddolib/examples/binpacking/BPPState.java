@@ -5,58 +5,43 @@ import java.util.stream.Collectors;
 
 public class BPPState {
     HashSet<Integer> remainingItems;
+    int remainingTotalWeight;
     int remainingSpace;
-    HashSet<Integer> remainingSpaces;
     int usedBins;
+    int wastedSpace;
 
-    BPPState(int remainingSpace, HashSet<Integer> remainingItems, int usedBins) {
+    BPPState(int remainingSpace, HashSet<Integer> remainingItems, int usedBins, int remainingTotalWeight, int wastedSpace) {
         this.remainingSpace = remainingSpace;
         this.remainingItems = remainingItems;
         this.usedBins = usedBins;
-        remainingSpaces = new HashSet<>();
-    }
-
-    BPPState(HashSet<Integer> remainingSpaces, HashSet<Integer> remainingItems, int usedBins) {
-        this.remainingItems = remainingItems;
-        this.remainingSpace = -1;
-        this.remainingSpaces = remainingSpaces;
-        this.usedBins = usedBins;
+        this.remainingTotalWeight = remainingTotalWeight;
+        this.wastedSpace = wastedSpace;
     }
 
     public BPPState packItem(int item, int itemWeight) {
         HashSet<Integer> newRemainingItems = new HashSet<>(remainingItems);
         newRemainingItems.remove(item);
-        if(remainingSpace == -1){
-            HashSet<Integer> newRemainingSpaces =
-                    remainingSpaces.stream().map(s -> s-itemWeight).collect(Collectors.toCollection(HashSet::new));
-            return new BPPState(newRemainingSpaces,newRemainingItems,usedBins);
-        } else {
-            return new BPPState(remainingSpace-itemWeight,newRemainingItems,usedBins);
-        }
+        return new BPPState(remainingSpace-itemWeight,newRemainingItems,usedBins,remainingTotalWeight-itemWeight, wastedSpace);
     }
 
     public BPPState newBin(int maxSpace) {
-        return new BPPState(maxSpace, remainingItems,usedBins+1);
+        return new BPPState(maxSpace, remainingItems,usedBins+1, remainingTotalWeight, wastedSpace + remainingSpace);
     }
 
     public boolean itemFitInBin(int itemWeight){
-        if(remainingSpace == -1){
-            // If item fit, no space should be smaller than item weight.
-            return remainingSpaces.stream().filter(s -> s < itemWeight).toList().isEmpty();
-        } else {
-            return remainingSpace >= itemWeight;
-        }
+        return remainingSpace >= itemWeight;
     }
 
     @Override
     public String toString() {
         String remainingItemsAndWeight = String.join(" - ", remainingItems.stream().map(Object::toString).toList());
-        return String.format("Remaining item to pack : \n%s%nCurrent bin space : %d\n", remainingItemsAndWeight, remainingSpace);
+        return String.format("\n\tUsed bins : %d\n\tTotal wasted space : %d\n\tRemaining item to pack : %s\n\tCurrent bin space : %d\n",
+                usedBins, wastedSpace, remainingItemsAndWeight, remainingSpace);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(remainingItems,remainingSpace,remainingSpaces,usedBins);
+        return Objects.hash(remainingItems,remainingSpace,usedBins,remainingTotalWeight);
     }
 
     @Override
@@ -66,7 +51,7 @@ public class BPPState {
             return other.usedBins == this.usedBins &&
                     other.remainingSpace == this.remainingSpace &&
                     other.remainingItems.equals(this.remainingItems) &&
-                    other.remainingSpaces.equals(this.remainingSpaces);
+                    other.remainingTotalWeight == this.remainingTotalWeight;
         }
         return false;
     }
