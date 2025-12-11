@@ -5,18 +5,18 @@ import org.ddolib.modeling.StateRanking;
 public class BPPRanking implements StateRanking<BPPState> {
     @Override
     public int compare(BPPState o1, BPPState o2) {
-        int o1RemainingSpace = o1.remainingSpace;
-        int o2RemainingSpace = o2.remainingSpace;
-        if(o1RemainingSpace == -1){
-            o1RemainingSpace = o1.remainingSpaces.stream().min(Integer::compareTo).orElse(0);
+        // If positive we keep o1 and merge o2
+        if (o1.usedBins == o2.usedBins) {
+            if (o1.wastedSpace == o2.wastedSpace) {
+                // We prefer to keep the one with most remaining space and less remaining total weight.
+                return  (o2.remainingTotalWeight - o2.remainingSpace) - (o1.remainingTotalWeight - o1.remainingSpace);
+            } else {
+                return o2.wastedSpace - o1.wastedSpace;
+            }
+        } else {
+            // we prefer to keep the one with less wasted space.
+            return o2.usedBins - o1.usedBins;
         }
-
-        if(o2RemainingSpace == -1){
-            o2RemainingSpace = o2.remainingSpaces.stream().min(Integer::compareTo).orElse(0);
-        }
-        int o1Rank = (o1RemainingSpace*o1.usedBins);
-        int o2Rank = (o2RemainingSpace*o2.usedBins);
-        return Integer.compare(o1Rank, o2Rank);
     }
 
     @Override

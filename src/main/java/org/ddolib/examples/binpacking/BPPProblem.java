@@ -58,7 +58,7 @@ public class BPPProblem implements Problem<BPPState> {
         for (int i = 0; i < nbItems; i++) {
             remainingItems.add(i);
         }
-        return new BPPState(binMaxSpace, remainingItems, 1);
+        return new BPPState(binMaxSpace, remainingItems, 1, remainingItems.stream().reduce(0, Integer::sum),0);
     }
 
     @Override
