@@ -59,7 +59,7 @@ public class SmicApp extends Application {
 
             @Override
             public DebugLevel debugMode() {
-                return DebugLevel.ON;
+                return DebugLevel.OFF;
             }
         };
 
