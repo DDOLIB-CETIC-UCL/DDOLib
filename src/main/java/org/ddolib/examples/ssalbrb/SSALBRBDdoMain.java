@@ -17,7 +17,7 @@ public class SSALBRBDdoMain {
                 : args[0];
 //        final String instance = args.length == 0 ?
 //                Path.of("data", "test_5tasks_2.alb").toString() : args[0];
-//test
+
         final SSALBRBProblem problem = new SSALBRBProblem(instance);
         
         final DdoModel<SSALBRBState> model = new DdoModel<>() {
@@ -52,12 +52,11 @@ public class SSALBRBDdoMain {
             }
         };
 
-
-
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
+//            SSALBRBSolutionPrinter.printSolution(problem, sol);
         });
 
-        //System.out.println("\n" + stats);
+        System.out.println("\n" + solution.statistics());
     }
 }
