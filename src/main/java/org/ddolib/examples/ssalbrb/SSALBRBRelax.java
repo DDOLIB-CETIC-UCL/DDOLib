@@ -5,7 +5,9 @@ import org.ddolib.modeling.Relaxation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Relaxation for state representation <r_h, r_r, E> where E encodes both

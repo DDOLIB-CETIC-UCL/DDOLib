@@ -43,7 +43,7 @@ public class SSALBRBDdoMain {
 
             @Override
             public WidthHeuristic<SSALBRBState> widthHeuristic() {
-                return new FixedWidth<>(1000);  // 无限宽度（完全搜索）
+                return new FixedWidth<>(10);  // 无限宽度（完全搜索）
             }
 
             @Override
@@ -52,12 +52,11 @@ public class SSALBRBDdoMain {
             }
         };
 
-
-
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
+//            SSALBRBSolutionPrinter.printSolution(problem, sol);
         });
 
-        //System.out.println("\n" + stats);
+        System.out.println("\n" + solution.statistics());
     }
 }
