@@ -1,6 +1,7 @@
 package org.ddolib.examples.pigmentscheduling;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -43,17 +44,23 @@ public class PSDdoMain {
      *     <li>Invokes the DDO solver via {@link Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)}.</li>
      *     <li>Prints the computed solution and the corresponding {@link SearchStatistics} to standard output.</li>
      * </ol>
+     *
      * @param args optional command-line argument specifying the path to a PSP instance file.
      *             If omitted, a default instance path is used.
      * @throws IOException if an error occurs while reading the problem instance.
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","PSP","instancesWith5items","3").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "PSP", "instancesWith5items", "3").toString() : args[0];
         final PSProblem problem = new PSProblem(instance);
         DdoModel<PSState> model = new DdoModel<>() {
             @Override
             public PSProblem problem() {
                 return problem;
+            }
+
+            @Override
+            public PSFastLowerBound lowerBound() {
+                return new PSFastLowerBound(problem);
             }
 
             @Override
@@ -67,21 +74,17 @@ public class PSDdoMain {
             }
 
             @Override
-            public PSFastLowerBound lowerBound() {
-                return new PSFastLowerBound(problem);
-            }
-
-            @Override
             public WidthHeuristic<PSState> widthHeuristic() {
                 return new FixedWidth<>(100);
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
     }
 }

@@ -1,6 +1,6 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -66,11 +66,12 @@ public final class ALPDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
             //System.out.println(new ALPSolution(problem, sol));
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
