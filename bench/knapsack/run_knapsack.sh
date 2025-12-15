@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-INST_DIR="../data/Knapsack"
+INST_DIR="../../data/Knapsack"
 TIME_LIMIT=4000
 OUT_DIR="results"
 
