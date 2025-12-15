@@ -217,10 +217,10 @@ public final class ACSSolver<T> implements Solver {
                 return new Solution(bestSolution(), stats);
             }
 
-            for (int i = 0; i < problem.nbVars() + 1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) {
+                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);

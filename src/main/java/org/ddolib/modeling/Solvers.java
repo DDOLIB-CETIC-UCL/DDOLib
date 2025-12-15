@@ -198,7 +198,6 @@ public class Solvers {
      * @return search statistics summarizing the ACS execution
      */
     public static <T> Solution minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-
         return new ACSSolver<>(model).minimize(limit, onSolution);
     }
 
