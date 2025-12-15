@@ -9,7 +9,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class BPP {
     public static BPPProblem extractFile(String fileName) throws IOException {
@@ -41,24 +44,59 @@ public class BPP {
         }
 
         Arrays.sort(itemWeights, Comparator.reverseOrder());
+        BPPProblem problem = new BPPProblem(nbItems, binMaxSize, Arrays.stream(itemWeights).mapToInt(i -> i).toArray(), optimal);
+        problem.setName(fileName);
 
-        return new BPPProblem(nbItems, binMaxSize, Arrays.stream(itemWeights).mapToInt(i -> i).toArray(), optimal);
+        return problem;
     }
 
     public static void main(String[] args) throws IOException, InvalidSolutionException {
-        final String file = args.length == 0 ? "data/BPP/test.txt" : args[0];
+        final String file = args.length == 0 ? "all" : args[0];
         final int maxWidth = args.length >= 2 ? Integer.parseInt(args[1]) : 20;
 
-        BPPProblem problem = extractFile(file);
-        BPPDdoModel model = new BPPDdoModel(problem,maxWidth);
+        List<BPPProblem> problems = new ArrayList<>();
 
-        Solution bestSolution = Solvers.minimizeDdo(model,(sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        if (file.equals("all")) {
+            Path path = Path.of("data", "BPP");
+            problems.addAll(generateProblems(path));
+        } else {
+            problems.add(extractFile(file));
+        }
 
-        System.out.println(bestSolution);
-        System.out.println(problem.evaluate(bestSolution.solution()));
+        problems.forEach(
+                problem -> {
+                    System.out.println(problem.name.get());
+                    BPPDdoModel model = new BPPDdoModel(problem, maxWidth);
 
+                    Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+                        SolutionPrinter.printSolution(s, sol);
+                    });
+                    System.out.println(bestSolution);
+                    if(problem.optimal.isPresent()){
+                        System.out.printf("Found : %f \t Optimal : %f\n", bestSolution.value(), problem.optimal.get());
+                    } else {
+                        System.out.printf("Found : %f\n", bestSolution.value());
+                    }
+                }
+        );
+
+    }
+
+    private static List<BPPProblem> generateProblems(Path dir) {
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .sorted(Comparator.comparing(Path::toString))
+                    .map(filePath -> {
+                        try {
+                            return BPP.extractFile(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

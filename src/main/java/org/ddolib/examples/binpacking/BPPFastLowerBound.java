@@ -1,8 +1,9 @@
 package org.ddolib.examples.binpacking;
 
 import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.util.algo.BinPacking;
 
-import java.util.Set;
+import java.util.*;
 
 public class BPPFastLowerBound implements FastLowerBound<BPPState> {
 
@@ -15,9 +16,17 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
     @Override
     public double fastLowerBound(BPPState state, Set<Integer> variables) {
         if (variables.isEmpty()) return 0;
-        int smallestRemainingItem = state.remainingItems.stream().max(Integer::compare).get();
-        int remainingSpaceIfUsable = problem.itemWeight[smallestRemainingItem] <= state.remainingSpace ? state.remainingSpace : 0;
 
-        return (int) Math.ceil((double) (state.remainingTotalWeight - remainingSpaceIfUsable) / problem.binMaxSpace);
+        int currentBinSpace = state.remainingSpace;
+        Iterator<Integer> remainingItemWeightsIt = state.remainingItems.stream().map(i -> problem.itemWeight[i]).iterator();
+        ArrayList<Integer> remainingItemWeightsList = new ArrayList<>();
+        while (remainingItemWeightsIt.hasNext()) {
+            int itemWeight = remainingItemWeightsIt.next();
+            if(itemWeight < currentBinSpace) currentBinSpace -= itemWeight;
+            else remainingItemWeightsList.add(itemWeight);
+        }
+        int[] remainingItemWeights = remainingItemWeightsList.stream().mapToInt(Integer::intValue).toArray();
+
+        return BinPacking.labbeLB(remainingItemWeights, this.problem.binMaxSpace);
     }
 }

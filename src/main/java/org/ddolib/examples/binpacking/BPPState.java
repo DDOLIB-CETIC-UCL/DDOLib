@@ -24,8 +24,10 @@ public class BPPState {
         return new BPPState(remainingSpace-itemWeight,newRemainingItems,usedBins,remainingTotalWeight-itemWeight, wastedSpace);
     }
 
-    public BPPState newBin(int maxSpace) {
-        return new BPPState(maxSpace, remainingItems,usedBins+1, remainingTotalWeight, wastedSpace + remainingSpace);
+    public BPPState newBin(int maxSpace, int item, int itemWeight) {
+        HashSet<Integer> newRemainingItems = new HashSet<>(remainingItems);
+        newRemainingItems.remove(item);
+        return new BPPState(maxSpace-itemWeight, newRemainingItems,usedBins+1, remainingTotalWeight-itemWeight, wastedSpace + remainingSpace);
     }
 
     public boolean itemFitInBin(int itemWeight){
