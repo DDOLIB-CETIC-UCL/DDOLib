@@ -10,7 +10,6 @@ import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.modeling.*;
-import org.ddolib.util.io.SolutionPrinter;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class KSDdoMain {
         final String instance = args.length == 0 ?
                 Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() :
                 args[0];
-        final long timeout = args.length == 2 ? Long.parseLong(args[1]): 100;
+        final long timeout = args.length == 2 ? Long.parseLong(args[1]) : 100;
         final KSProblem problem = new KSProblem(instance);
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
@@ -75,11 +74,6 @@ public class KSDdoMain {
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
-
-            @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
             }
 
             @Override
@@ -112,9 +106,9 @@ public class KSDdoMain {
         Solution bestSolution = Solvers.minimizeDdo(model,
                 s -> s.runTimeMs() > timeout,
                 (sol, s) -> {
-            System.out.println("%%incumbent:"+s.incumbent()+" gap:"+s.gap()+" time:"+s.runTimeMs());
-        });
-        System.out.println("%%optimality:"+bestSolution.statistics().status()+" gap:"+bestSolution.statistics().gap()+" time:"+bestSolution.statistics().runTimeMs());
+                    System.out.println("%%incumbent:" + s.incumbent() + " gap:" + s.gap() + " time:" + s.runTimeMs());
+                });
+        System.out.println("%%optimality:" + bestSolution.statistics().status() + " gap:" + bestSolution.statistics().gap() + " time:" + bestSolution.statistics().runTimeMs());
 
 
     }

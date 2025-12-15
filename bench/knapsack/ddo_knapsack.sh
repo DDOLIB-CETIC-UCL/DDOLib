@@ -1,7 +1,6 @@
 cd ../..
-pwd
 mvn exec:java \
   -Dexec.mainClass="org.ddolib.examples.bench.KSDdoMain" \
-  -Dexec.args="bench/knapsack/$1 $2"
+  -Dexec.args="bench/knapsack/$1 $2" \
   | grep '^%%'
 cd bench/knapsack
