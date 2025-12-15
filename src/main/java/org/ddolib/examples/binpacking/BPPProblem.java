@@ -37,7 +37,7 @@ public class BPPProblem implements Problem<BPPState> {
                 currentSpace -= w;
             } else {
                 value += 1;
-                currentSpace += binMaxSpace - w;
+                currentSpace = binMaxSpace - w;
             }
         }
         return value;
@@ -86,13 +86,11 @@ public class BPPProblem implements Problem<BPPState> {
     public BPPState transition(BPPState state, Decision decision) {
         int item = decision.val();
         int weight = itemWeight[item];
-        BPPState newState;
         if (!state.itemFitInBin(weight)) {
-            newState = state.newBin(binMaxSpace).packItem(item, weight);
+            return state.newBin(binMaxSpace, item, weight);
         } else {
-            newState = state.packItem(item, weight);
+            return state.packItem(item, weight);
         }
-        return newState;
     }
 
     @Override
