@@ -92,7 +92,7 @@ public class DebugUtil {
                         "State: " + current.state().toString() + "\n" +
                         "Depth: " + current.depth() + "\n" +
                         "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Longest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
+                        "Shortest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
 
                 throw new RuntimeException(failureMsg);
             }
