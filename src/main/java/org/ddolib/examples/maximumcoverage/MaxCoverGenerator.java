@@ -9,17 +9,17 @@ import static java.lang.Math.*;
 public class MaxCoverGenerator {
 
     public static void main(String[] args) {
-        debugInstance();
+        measureInstance();
     }
 
-    private static void createInstance(int n, int m, int k, double maxR, int index, String dirPath, boolean computeOptimum) {
-        MaxCoverProblem instance = new MaxCoverProblem(n, m, k, maxR, (int) (Math.random()*100000));
+    private static void createInstance(int n, int m, int k, double maxR, int seed, String dirPath, boolean computeOptimum) {
+        MaxCoverProblem instance = new MaxCoverProblem(n, m, k, maxR, seed);
         if (computeOptimum) {
             double optimum = bruteForce(instance);
             instance.optimal = Optional.of(optimum);
         }
 
-        String instanceName = dirPath + String.format("mc_n%d_m%d_k%d_r%d_%d.txt", n, m, k, (int) ceil(100*maxR), index);
+        String instanceName = dirPath + String.format("mc_n%d_m%d_k%d_r%d_%d.txt", n, m, k, (int) ceil(100*maxR), seed);
         try {
             FileWriter fw = new FileWriter(instanceName, false);
             fw.write(instance.instanceFormat());
@@ -35,14 +35,16 @@ public class MaxCoverGenerator {
         double[] mFactors = {0.5, 0.8};
         double[] kFactors = {0.1, 0.2};
         double[] maxRs = {0.1, 0.2};
+        int nbSeeds = 10;
+
         for (int n: ns) {
             for (double mFactor: mFactors) {
                 int m = (int) ceil(mFactor * n);
                 for (double kFactor: kFactors) {
                     int k = (int) ceil(kFactor * m);
                     for (double maxR: maxRs) {
-                        for (int index = 0; index < 10; index++) {
-                            createInstance(n, m, k, maxR, index, "data/MaxCover/", false);
+                        for (int seed = 0; seed < nbSeeds; seed++) {
+                            createInstance(n, m, k, maxR, seed, "data/MaxCover/", false);
                         }
                     }
                 }

@@ -109,7 +109,6 @@ public class TSDistance implements StateDistance<TSState> {
         double distanceOnActors = jaccardDistance(a.onLocationActors(),b.onLocationActors());
         double distanceOnRemainingScenes = jaccardDistance(a.remainingScenes(), b.remainingScenes());
         return convexCombination(distanceOnRemainingScenes, distanceOnActors);
-        // return euclideanDistance(distanceOnActors, distanceOnRemainingScenes);
     }
 
     @Override

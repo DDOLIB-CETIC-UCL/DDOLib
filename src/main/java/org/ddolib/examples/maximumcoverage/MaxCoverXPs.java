@@ -30,12 +30,6 @@ public class MaxCoverXPs {
         double[] maxRs = {0.1, 0.2};
         int nbSeeds = 10;
 
-        /*int[] ns = {100};
-        double[] mFactors = {0.8};
-        double[] kFactors = {0.2};
-        double[] maxRs = {0.2};
-        int nbSeeds = 2;*/
-
         int nbInstances = ns.length*mFactors.length*kFactors.length*maxRs.length*nbSeeds;
         MaxCoverProblem[] instances = new MaxCoverProblem[nbInstances];
         int index = 0;
@@ -167,7 +161,7 @@ public class MaxCoverXPs {
 
         for (MaxCoverProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
-                for (ClusterType clusterType : new ClusterType[]{ClusterType.GHP}) {
+                for (ClusterType clusterType : new ClusterType[]{ClusterType.Kmeans}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
                     long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
                     double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
@@ -381,9 +375,9 @@ public class MaxCoverXPs {
 
     public static void main(String[] args) {
         try {
-            // xpRelaxation();
-            xpRelaxation(Integer.parseInt(args[0]));
-            xpRestriction(Integer.parseInt(args[0]));
+            xpRelaxation();
+            // xpRelaxation(Integer.parseInt(args[0]));
+            // xpRestriction(Integer.parseInt(args[0]));
             // xpBnB(Integer.parseInt(args[0]));
         } catch (IOException e) {
             System.err.println(e.getMessage());
