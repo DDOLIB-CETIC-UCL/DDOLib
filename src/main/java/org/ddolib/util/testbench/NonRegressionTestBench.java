@@ -30,7 +30,7 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
 
         boolean dominanceUsed = !(globalModel.dominance() instanceof DefaultDominanceChecker<T>);
 
-        Model<T> astarModel = new Model<T>() {
+        Model<T> astarModel = new Model<>() {
             @Override
             public Problem<T> problem() {
                 return globalModel.problem();
@@ -149,14 +149,24 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
      * @return the value of the obtained solution
      */
     private double solveAndChecksSolution(Model<T> model) {
+        String solverStr;
         Solution solution = switch (model) {
-            case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
-            case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
-            default -> Solvers.minimizeAstar(model);
+            case DdoModel<T> ddoModel -> {
+                solverStr = "DDO";
+                yield Solvers.minimizeDdo(ddoModel);
+            }
+            case AcsModel<T> acsModel -> {
+                solverStr = "ACS";
+                yield Solvers.minimizeAcs(acsModel);
+            }
+            default -> {
+                solverStr = "A*";
+                yield Solvers.minimizeAstar(model);
+            }
         };
         try {
             assertEquals(model.problem().evaluate(solution.solution()), solution.value(), 1e-10,
-                    "A*: The solution has not the same value that the returned value");
+                    solverStr + ": The solution has not the same value that the returned value");
         } catch (InvalidSolutionException e) {
             throw new RuntimeException(e);
         }
