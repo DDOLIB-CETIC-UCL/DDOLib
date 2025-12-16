@@ -19,7 +19,7 @@ public class SSALBRBDdoMain {
 //                Path.of("data", "test_5tasks_2.alb").toString() : args[0];
 
         final SSALBRBProblem problem = new SSALBRBProblem(instance);
-        
+
         final DdoModel<SSALBRBState> model = new DdoModel<>() {
             @Override
             public Problem<SSALBRBState> problem() {
@@ -28,7 +28,7 @@ public class SSALBRBDdoMain {
 
             @Override
             public Relaxation<SSALBRBState> relaxation() {
-                return new SSALBRBRelax();
+                return new SSALBRBRelax(problem.humanDurations, problem.robotDurations, problem.collaborationDurations);
             }
 
             @Override
@@ -43,7 +43,7 @@ public class SSALBRBDdoMain {
 
             @Override
             public WidthHeuristic<SSALBRBState> widthHeuristic() {
-                return new FixedWidth<>(1000);  // 无限宽度（完全搜索）
+                return new FixedWidth<>(10);  // 无限宽度（完全搜索）
             }
 
             @Override

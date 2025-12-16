@@ -16,6 +16,16 @@ import java.util.Set;
  */
 public class SSALBRBRelax implements Relaxation<SSALBRBState> {
 
+    private final int[] humanDurations;
+    private final int[] robotDurations;
+    private final int[] collaborationDurations;
+
+    public SSALBRBRelax(int[] humanDurations, int[] robotDurations, int[] collaborationDurations) {
+        this.humanDurations = humanDurations;
+        this.robotDurations = robotDurations;
+        this.collaborationDurations = collaborationDurations;
+    }
+
     @Override
     public SSALBRBState mergeStates(Iterator<SSALBRBState> states) {
         if (!states.hasNext()) {
@@ -30,7 +40,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             SSALBRBState state = states.next();
             bestHumanReady = Math.min(bestHumanReady, state.humanAvailable());
             bestRobotReady = Math.min(bestRobotReady, state.robotAvailable());
-            
+
             List<Integer> earliestStartTimes = state.earliestStartTimes();
             if (mergedE == null) {
                 mergedE = new ArrayList<>(earliestStartTimes);
@@ -38,18 +48,39 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
                 for (int i = 0; i < earliestStartTimes.size(); i++) {
                     int existing = mergedE.get(i);
                     int candidate = earliestStartTimes.get(i);
-                    
+
                     // Relaxation logic:
                     // - If both unassigned (>= 0): take minimum (more optimistic)
                     // - If both assigned (< 0): take maximum completion time (less negative, later completion)
-                    // - If mixed: prefer unassigned (more optimistic relaxation)
+                    // - If mixed: convert assigned to earliest start time, then take minimum
                     if (existing >= 0 && candidate >= 0) {
                         mergedE.set(i, Math.min(existing, candidate));
                     } else if (existing < 0 && candidate < 0) {
                         mergedE.set(i, Math.max(existing, candidate));
                     } else {
-                        // Mixed: one assigned, one not -> mark as unassigned with earliest possible time
-                        mergedE.set(i, Math.max(0, Math.max(existing, candidate)));
+                        // Mixed: convert assigned task to earliest start time
+                        // E[i] < 0 means completion time = -E[i]
+                        // Earliest start time = completion time - minimum possible duration
+                        int earliestFromAssigned;
+                        int earliestFromUnassigned;
+
+                        if (existing < 0) {
+                            // existing is assigned, candidate is unassigned
+                            int completionTime = -existing;
+                            // Use minimum duration (collaboration mode is fastest)
+                            int minDuration = Math.min(Math.min(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                            earliestFromAssigned = Math.max(0, completionTime - minDuration);
+                            earliestFromUnassigned = candidate;
+                        } else {
+                            // candidate is assigned, existing is unassigned
+                            int completionTime = -candidate;
+                            int minDuration = Math.min(Math.min(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                            earliestFromAssigned = Math.max(0, completionTime - minDuration);
+                            earliestFromUnassigned = existing;
+                        }
+
+                        // Take minimum of both (most optimistic)
+                        mergedE.set(i, Math.min(earliestFromAssigned, earliestFromUnassigned));
                     }
                 }
             }
