@@ -32,6 +32,11 @@ public class SSALBRBFastLowerBound implements FastLowerBound<SSALBRBState> {
             tasks = variables;
         }
 
+        // If no tasks remaining, lower bound is 0 (no additional time needed)
+        if (tasks.isEmpty()) {
+            return 0.0;
+        }
+
         double t1 = 0.0; // Sum of processing times for human-only tasks (none here, kept for completeness)
         double t2 = 0.0; // Sum of robot processing times for tasks in I2
         double t3 = 0.0; // Sum of collaboration processing times for tasks in I3
@@ -49,8 +54,6 @@ public class SSALBRBFastLowerBound implements FastLowerBound<SSALBRBState> {
             lowerBoundIncrement = (t1 + t3) / NS;
         }
 
-        // 返回剩余makespan的下界（增量），不是总makespan的下界
-        // DDO框架会自动加上累计代价（currentMakespan）
         return lowerBoundIncrement;
     }
 }
