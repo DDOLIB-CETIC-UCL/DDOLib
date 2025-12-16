@@ -27,6 +27,27 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
     public final int[] collaborationDurations;
     public final Map<Integer, List<Integer>> successors;
     public final Map<Integer, List<Integer>> predecessors;
+    private Optional<Double> optimal;
+
+    public SSALBRBProblem(int nbTasks,
+                          int[] humanDurations,
+                          int[] robotDurations,
+                          int[] collaborationDurations,
+                          Map<Integer, List<Integer>> successors,
+                          Optional<Double> optimal) {
+        this.nbTasks = nbTasks;
+        this.humanDurations = humanDurations;
+        this.robotDurations = robotDurations;
+        this.collaborationDurations = collaborationDurations;
+        this.successors = new HashMap<>();
+
+        for (int task = 0; task < nbTasks; task++) {
+            this.successors.put(task, new ArrayList<>(successors.getOrDefault(task, List.of())));
+        }
+
+        this.predecessors = buildPredecessors(this.successors, nbTasks);
+        this.optimal = optimal;
+    }
 
     public SSALBRBProblem(int nbTasks,
                           int[] humanDurations,
@@ -44,7 +65,9 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
         }
 
         this.predecessors = buildPredecessors(this.successors, nbTasks);
+        this.optimal = Optional.empty();
     }
+
 
     public SSALBRBProblem(final String file) throws IOException {
         try (Scanner scanner = new Scanner(new File(file))) {
@@ -86,7 +109,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
-                if (line.isEmpty() || line.startsWith("<end>")) {
+                if (line.isEmpty()) {
                     break;
                 }
 
@@ -97,6 +120,15 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                     succ.get(a).add(b);
                 }
             }
+            String li = scanner.nextLine().trim();
+            if (!li.equals("<end>")) {
+                String lin = scanner.nextLine().trim();
+                if (!lin.isEmpty()) {
+                    double optimal = Integer.parseInt(lin);
+                    this.optimal = Optional.of(optimal);
+                } else this.optimal = Optional.empty();
+            }
+            scanner.close();
 
             this.nbTasks = n;
             this.humanDurations = hDurations;
@@ -151,7 +183,6 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                 domain.add(task * 3 + MODE_COLLABORATION);
             }
         }
-
         return domain.iterator();
     }
 
@@ -185,7 +216,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return Optional.empty();
+        return optimal;
     }
 
     @Override
@@ -268,4 +299,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
         return new TransitionInfo(task, mode, startTime, completion, nextState);
     }
+
+    @Override
+    public String toString() {return nbTasks + ", " + Arrays.toString(humanDurations) + ", " + Arrays.toString(robotDurations) + ", " + Arrays.toString(collaborationDurations) + optimal.get();}
 }

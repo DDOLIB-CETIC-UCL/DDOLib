@@ -1,0 +1,28 @@
+<number of tasks>
+5
+
+<cycle time>
+1000
+
+<order strength>
+0,350
+
+
+<task times>
+1 90
+2 110
+3 140
+4 85
+5 95
+
+<precedence relations>
+1,3
+1,4
+2,3
+2,5
+4,5
+
+<solution>
+364
+
+<end>

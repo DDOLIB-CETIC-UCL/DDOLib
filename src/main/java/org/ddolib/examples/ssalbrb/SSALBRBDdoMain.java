@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public class SSALBRBDdoMain {
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0
-                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_441.alb").toString()
+                ? Path.of("data", "SSALBRB", "test_5tasks_5.alb").toString()
                 : args[0];
 //        final String instance = args.length == 0 ?
 //                Path.of("data", "test_5tasks_2.alb").toString() : args[0];
@@ -43,12 +43,12 @@ public class SSALBRBDdoMain {
 
             @Override
             public WidthHeuristic<SSALBRBState> widthHeuristic() {
-                return new FixedWidth<>(10);  // 无限宽度（完全搜索）
+                return new FixedWidth<>(1000000000);  // 无限宽度（完全搜索）
             }
 
             @Override
             public boolean exportDot() {
-                return false;
+                return true;
             }
         };
 
