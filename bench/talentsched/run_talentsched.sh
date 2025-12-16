@@ -15,21 +15,24 @@ INSTANCES=(
   film118.dat
   film117.dat
   film114.dat
+  'film-12'
+  MobStory
+  Shaw2020
 )
 
 for inst in "${INSTANCES[@]}"; do
   echo "## Running $inst" >&2
 
   OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_talentscheduling.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
+  ./ddo_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
     2>&1 | grep '^%%' > "$OUT_FILE_DDO"
 
+
   OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_talentscheduling.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
+  ./astar_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
+    2>&1| grep '^%%' > "$OUT_FILE_ASTAR"
 
   OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_talentscheduling.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
+  ./acs_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
     2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
 done
