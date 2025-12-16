@@ -58,7 +58,7 @@ public class MaxCoverTestDataSupplier extends TestDataSupplier<MaxCoverState, Ma
 
             @Override
             public FastLowerBound<MaxCoverState> lowerBound() {
-                return new DefaultFastLowerBound<>();
+                return new MaxCoverFastLowerBound(problem);
             }
 
             @Override

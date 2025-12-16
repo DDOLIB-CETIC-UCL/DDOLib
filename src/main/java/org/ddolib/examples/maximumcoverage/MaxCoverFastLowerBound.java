@@ -20,8 +20,8 @@ public class MaxCoverFastLowerBound implements FastLowerBound<MaxCoverState> {
 
     @Override
     public double fastLowerBound(MaxCoverState state, Set<Integer> variables) {
-        int coveredItems = state.coveredItems().cardinality();
-        coveredItems += variables.size() * maxCardSet;
-        return -coveredItems;
+        // int coveredItems = state.coveredItems().cardinality();
+        int lb = variables.size() * maxCardSet;
+        return -lb;
     }
 }

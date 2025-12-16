@@ -6,6 +6,7 @@ import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.testbench.TestDataSupplier;
 
@@ -75,6 +76,11 @@ public class MKSTestDataSupplier extends TestDataSupplier<MKSState, MKSProblem> 
             public ReductionStrategy<MKSState> restrictStrategy() {
                 return new CostBased<>(new MKSRanking());
                 // return new Kmeans<>(new MKSCoordinates(problem));
+            }
+
+            @Override
+            public FastLowerBound<MKSState> lowerBound() {
+                return new MKSFastLowerBound(problem);
             }
         };
         return model;
