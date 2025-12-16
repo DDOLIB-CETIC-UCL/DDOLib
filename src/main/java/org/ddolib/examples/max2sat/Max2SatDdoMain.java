@@ -1,6 +1,7 @@
 package org.ddolib.examples.max2sat;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -9,7 +10,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Maximum 2-Satisfiability (MAX2SAT) (MAX2SAT) problem with Ddo.
@@ -76,6 +76,11 @@ public final class Max2SatDdoMain {
             }
 
             @Override
+            public Max2SatFastLowerBound lowerBound() {
+                return new Max2SatFastLowerBound(problem);
+            }
+
+            @Override
             public Relaxation<Max2SatState> relaxation() {
                 return new Max2SatRelax(problem);
             }
@@ -84,19 +89,15 @@ public final class Max2SatDdoMain {
             public Max2SatRanking ranking() {
                 return new Max2SatRanking();
             }
-
-            @Override
-            public Max2SatFastLowerBound lowerBound() {
-                return new Max2SatFastLowerBound(problem);
-            }
         };
 
         // Execute DDO search and print intermediate solutions
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
         // Display search statistics
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

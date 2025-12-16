@@ -4,6 +4,7 @@ import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.RestrictSearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -158,7 +159,7 @@ public class TSXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+                                Solution solution = Solvers.relaxedDdo(model);
 
                                 writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -168,7 +169,7 @@ public class TSXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        stats
+                                        solution
                                 ));
                                 writer.flush();
                             }
@@ -204,7 +205,7 @@ public class TSXPs {
                                 assert problem.name.isPresent();
                                 double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
                                 System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
-                                RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+                                Solution solution = Solvers.restrictedDdo(model);
 
                                 writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -214,7 +215,7 @@ public class TSXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        stats
+                                        solution
                                 ));
                                 writer.flush();
                             }

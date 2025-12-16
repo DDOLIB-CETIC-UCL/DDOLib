@@ -2,7 +2,7 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -42,6 +42,7 @@ public class BKSDdoMain {
      *     <li>Solves the problem using the DDO solver.</li>
      *     <li>Prints the solution and search statistics to the console.</li>
      * </ol>
+     *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
@@ -50,16 +51,6 @@ public class BKSDdoMain {
             @Override
             public BKSProblem problem() {
                 return problem;
-            }
-
-            @Override
-            public BKSRelax relaxation() {
-                return new BKSRelax();
-            }
-
-            @Override
-            public BKSRanking ranking() {
-                return new BKSRanking();
             }
 
             @Override
@@ -73,8 +64,13 @@ public class BKSDdoMain {
             }
 
             @Override
-            public boolean useCache() {
-                return true;
+            public BKSRelax relaxation() {
+                return new BKSRelax();
+            }
+
+            @Override
+            public BKSRanking ranking() {
+                return new BKSRanking();
             }
 
             @Override
@@ -86,13 +82,19 @@ public class BKSDdoMain {
             public SimpleFrontier<Integer> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
             }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }
 

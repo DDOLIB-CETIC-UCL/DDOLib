@@ -2,7 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -11,7 +11,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 /**
  * Knapsack Problem (KS) with Acs.
@@ -44,7 +43,7 @@ public class KSAcsMain {
      */
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0 ?
-                Path.of("data","Knapsack","instance_n1000_c1000_10_5_10_5_0").toString() :
+                Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() :
                 args[0];
         final KSProblem problem = new KSProblem(instance);
         final AcsModel<Integer> model = new AcsModel<>() {
@@ -70,11 +69,12 @@ public class KSAcsMain {
 
         };
 
-        SearchStatistics stats = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
 
     }
 }

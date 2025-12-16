@@ -1,6 +1,6 @@
 package org.ddolib.examples.alp;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -37,12 +37,17 @@ public final class ALPDdoMain {
 
     public static void main(final String[] args) throws IOException {
         final String fileStr = args.length == 0 ?
-                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+                Path.of("data", "ALP", "alp_n100_r2_c2_std20_s0").toString() : args[0];
         final ALPProblem problem = new ALPProblem(fileStr);
         DdoModel<ALPState> model = new DdoModel<>() {
             @Override
             public ALPProblem problem() {
                 return problem;
+            }
+
+            @Override
+            public ALPFastLowerBound lowerBound() {
+                return new ALPFastLowerBound(problem);
             }
 
             @Override
@@ -56,21 +61,17 @@ public final class ALPDdoMain {
             }
 
             @Override
-            public ALPFastLowerBound lowerBound() {
-                return new ALPFastLowerBound(problem);
-            }
-
-            @Override
             public WidthHeuristic<ALPState> widthHeuristic() {
-                return new FixedWidth<>(100);
+                return new FixedWidth<>(500);
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
-            System.out.println(new ALPSolution(problem, sol));
+            //System.out.println(new ALPSolution(problem, sol));
         });
 
-        System.out.println(stats);
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
     }
 }

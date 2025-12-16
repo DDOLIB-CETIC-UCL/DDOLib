@@ -5,6 +5,7 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -176,7 +177,7 @@ public class MaxCoverXPs {
                                         hybridFactor);
                                 assert problem.name.isPresent();
                                 System.out.printf("%s %d %d %d %f %n", problem.name.get(), maxWidth, kmeansIter, seed, hybridFactor);
-                                RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+                                Solution solution = Solvers.relaxedDdo(model);
 
                                 writer.append(String.format("%s;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -185,7 +186,7 @@ public class MaxCoverXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        stats
+                                        solution
                                 ));
                                 writer.flush();
                             }
@@ -220,7 +221,7 @@ public class MaxCoverXPs {
                                         hybridFactor);
                                 assert problem.name.isPresent();
                                 System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), clusterType, maxWidth, kmeansIter, seed, hybridFactor);
-                                RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+                                Solution solution = Solvers.restrictedDdo(model);
 
                                 writer.append(String.format("%s;%s;%d;%d;%d;%f;%s%n",
                                         problem.name.get(),
@@ -229,7 +230,7 @@ public class MaxCoverXPs {
                                         seed,
                                         kmeansIter,
                                         hybridFactor,
-                                        stats
+                                        solution
                                 ));
                                 writer.flush();
                             }
@@ -262,7 +263,7 @@ public class MaxCoverXPs {
                                     hybridFactor);
                             assert problem.name.isPresent();
                             System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), clusterType, maxWidth, kmeansIter, seed, hybridFactor);
-                            RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+                            Solution solution = Solvers.restrictedDdo(model);
 
                             writer.append(String.format("%s;%s;%d;%d;%d;%f;%s%n",
                                     problem.name.get(),
@@ -271,7 +272,7 @@ public class MaxCoverXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    stats
+                                    solution
                             ));
                             writer.flush();
                         }
@@ -303,7 +304,7 @@ public class MaxCoverXPs {
                                     hybridFactor);
                             assert problem.name.isPresent();
                             System.out.printf("%s %d %d %d %f %n", problem.name.get(), maxWidth, kmeansIter, seed, hybridFactor);
-                            RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+                            Solution solution = Solvers.relaxedDdo(model);
 
                             writer.append(String.format("%s;%s;%d;%d;%d;%f;%s%n",
                                     problem.name.get(),
@@ -312,7 +313,7 @@ public class MaxCoverXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    stats
+                                    solution
                             ));
                             writer.flush();
                         }
@@ -350,7 +351,7 @@ public class MaxCoverXPs {
                     assert problem.name.isPresent();
                     System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
                     long startTime = System.currentTimeMillis();
-                    SearchStatistics stats = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0*60.0));
+                    Solution solution = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0*60.0));
 
                     writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
                             problem.name.get(),
@@ -360,7 +361,7 @@ public class MaxCoverXPs {
                             seed,
                             kmeansIter,
                             hybridFactor,
-                            stats.toCSV()
+                            solution.statistics().toCSV()
                     ));
                     writer.flush();
                 }

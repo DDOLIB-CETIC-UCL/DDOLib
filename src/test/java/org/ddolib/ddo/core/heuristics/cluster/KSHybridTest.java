@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.heuristics.cluster;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -99,9 +100,9 @@ public class KSHybridTest {
             }
         };
 
-        SearchStatistics stat = Solvers.minimizeDdo(model);
+        Solution solution = Solvers.minimizeDdo(model);
 
-        return stat.incumbent();
+        return solution.value();
     }
 
 
@@ -160,9 +161,9 @@ public class KSHybridTest {
             }
         };
 
-        SearchStatistics stat = Solvers.minimizeDdo(model);
+        Solution solution = Solvers.minimizeDdo(model);
 
-        return stat.incumbent();
+        return solution.value();
     }
 
     @ParameterizedTest

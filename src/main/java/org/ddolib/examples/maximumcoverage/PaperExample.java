@@ -1,6 +1,7 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
@@ -67,10 +68,10 @@ public class PaperExample {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
         System.out.println();
-        System.out.println(stats);
+        System.out.println(solution);
     }
 }

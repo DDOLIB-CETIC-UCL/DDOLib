@@ -1,6 +1,7 @@
 package org.ddolib.examples.tsalt;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -58,9 +59,9 @@ public class TSMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
-        System.out.println(stats);
+        System.out.println(solution);
     }
 }

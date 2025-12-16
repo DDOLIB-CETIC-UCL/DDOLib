@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Represents an instance of the **Maximum Sum of Completion Times (MSCT)** problem.
+ * Represents an instance of the **Minimum Sum of Completion Times (MSCT)** problem.
  * <p>
  * The MSCT problem consists in scheduling a set of jobs on a single machine
  * to minimize the total completion time (or sum of finishing times).
@@ -128,7 +128,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         String line;
         int count = 0;
         int nVar = 0;
-        int[] releas = new int[0];
+        int[] release = new int[0];
         int[] proces = new int[0];
         Optional<Double> optimal = Optional.empty();
         try (final BufferedReader bf = new BufferedReader(new FileReader(fname))) {
@@ -140,19 +140,19 @@ public class MSCTProblem implements Problem<MSCTState> {
                     if (tokens.length == 2) {
                         optimal = Optional.of(Double.parseDouble(tokens[1]));
                     }
-                    releas = new int[nVar];
+                    release = new int[nVar];
                     proces = new int[nVar];
                 } else {
                     if (count < nVar) {
                         String[] tokens = line.split("\\s+");
-                        releas[count] = Integer.parseInt(tokens[0]);
+                        release[count] = Integer.parseInt(tokens[0]);
                         proces[count] = Integer.parseInt(tokens[1]);
                         count++;
                     }
                 }
             }
         }
-        this.release = releas;
+        this.release = release;
         this.processing = proces;
         this.optimal = optimal;
         this.name = Optional.of(fname);
@@ -175,16 +175,6 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.processing = processing;
         this.optimal = Optional.empty();
 
-    }
-
-    /**
-     * Returns the known optimal value of this instance, if available.
-     *
-     * @return the negated optimal value wrapped in an {@link Optional}, or empty if unknown.
-     */
-    @Override
-    public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
     }
 
     /**
@@ -267,14 +257,13 @@ public class MSCTProblem implements Problem<MSCTState> {
     }
 
     /**
-     * Returns a string representation of this MSCT instance for debugging purposes.
+     * Returns the known optimal value of this instance, if available.
      *
-     * @return a string listing the release and processing times.
+     * @return the negated optimal value wrapped in an {@link Optional}, or empty if unknown.
      */
     @Override
-    public String toString() {
-        return name.orElse(String.format("release: %s - processing: %s", Arrays.toString(release),
-                Arrays.toString(processing)));
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 
     @Override
@@ -292,5 +281,16 @@ public class MSCTProblem implements Problem<MSCTState> {
         }
 
         return value;
+    }
+
+    /**
+     * Returns a string representation of this MSCT instance for debugging purposes.
+     *
+     * @return a string listing the release and processing times.
+     */
+    @Override
+    public String toString() {
+        return name.orElse(String.format("release: %s - processing: %s", Arrays.toString(release),
+                Arrays.toString(processing)));
     }
 }
