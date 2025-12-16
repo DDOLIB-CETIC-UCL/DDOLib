@@ -2,7 +2,6 @@ package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.examples.tsalt.TSState;
 
 import java.util.BitSet;
 
