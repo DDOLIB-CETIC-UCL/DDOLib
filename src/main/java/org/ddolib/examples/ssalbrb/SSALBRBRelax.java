@@ -68,13 +68,13 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
                             // existing is assigned, candidate is unassigned
                             int completionTime = -existing;
                             // Use minimum duration (collaboration mode is fastest)
-                            int minDuration = Math.min(Math.min(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                            int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
                             earliestFromAssigned = Math.max(0, completionTime - minDuration);
                             earliestFromUnassigned = candidate;
                         } else {
                             // candidate is assigned, existing is unassigned
                             int completionTime = -candidate;
-                            int minDuration = Math.min(Math.min(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                            int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
                             earliestFromAssigned = Math.max(0, completionTime - minDuration);
                             earliestFromUnassigned = existing;
                         }
