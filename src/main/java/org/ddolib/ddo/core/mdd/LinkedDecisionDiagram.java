@@ -1,6 +1,5 @@
 package org.ddolib.ddo.core.mdd;
 
-import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;

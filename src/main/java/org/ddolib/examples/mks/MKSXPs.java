@@ -2,9 +2,6 @@ package org.ddolib.examples.mks;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.RelaxSearchStatistics;
-import org.ddolib.common.solver.RestrictSearchStatistics;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
@@ -12,11 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.knapsack.KSProblem;
-import org.ddolib.examples.knapsack.KSXPs;
-import org.ddolib.examples.maximumcoverage.MaxCoverState;
 import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 
@@ -24,8 +17,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import static java.lang.Math.ceil;
 
 public class MKSXPs {
 

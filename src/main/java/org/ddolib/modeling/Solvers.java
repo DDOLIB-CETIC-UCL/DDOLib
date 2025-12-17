@@ -2,8 +2,6 @@ package org.ddolib.modeling;
 
 import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.common.solver.RelaxSearchStatistics;
-import org.ddolib.common.solver.RestrictSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.solver.ExactSolver;
