@@ -1,21 +1,19 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.RelaxSearchStatistics;
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
@@ -45,21 +43,9 @@ public final class RelaxationSolver<T> {
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to minimize
-     */
-    private final Relaxation<T> relax;
-    /**
-     * A heuristic to identify the most promising nodes
-     */
-    private final StateRanking<T> ranking;
-    /**
      * A heuristic to choose the maximum width of the DD you compile
      */
     private final WidthHeuristic<T> width;
-    /**
-     * A heuristic to choose the next variable to branch on when developing a DD
-     */
-    private final VariableHeuristic<T> varh;
 
     /**
      * Set of nodes that must still be explored before
@@ -75,13 +61,11 @@ public final class RelaxationSolver<T> {
      */
     private final Frontier<T> frontier;
     /**
-     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
-     */
-    private final FastLowerBound<T> flb;
-    /**
      * The dominance object that will be used to prune the search space.
      */
     private final DominanceChecker<T> dominance;
+
+    private final DdoModel<T> model;
 
 
     /**
@@ -104,11 +88,7 @@ public final class RelaxationSolver<T> {
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
-    /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link DebugLevel for details}
-     */
-    private final DebugLevel debugLevel;
+
     /**
      * Value of the best known upper bound.
      */
@@ -119,13 +99,6 @@ public final class RelaxationSolver<T> {
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * Strategy to select which nodes should be merged together on a relaxed DD.
-     */
-    private final ReductionStrategy<T> relaxStrategy;
-
-    private final StateDistance<T> stateDistance;
-
-    /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
      *
@@ -133,64 +106,33 @@ public final class RelaxationSolver<T> {
      */
     public RelaxationSolver(DdoModel<T> model) {
         this.problem = model.problem();
-        this.relax = model.relaxation();
-        this.varh = model.variableHeuristic();
-        this.ranking = model.ranking();
         this.width = model.widthHeuristic();
-        this.flb = model.lowerBound();
-        this.dominance = model.dominance();
         this.frontier = model.frontier();
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
-        this.debugLevel = model.debugMode();
-        this.relaxStrategy = model.relaxStrategy();
-        this.stateDistance = model.stateDistance();
+        this.dominance = model.dominance();
+        this.model = model;
     }
 
-    public RelaxSearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                                          BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
-        int nbIter = 0;
-        int queueMaxSize = 0;
-        nbIter++;
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
-        CompilationConfig<T> compilation = new CompilationConfig<>();
-        compilation.compilationType = CompilationType.Relaxed;
-        compilation.problem = this.problem;
-        compilation.relaxation = this.relax;
-        compilation.variableHeuristic = this.varh;
-        compilation.stateRanking = this.ranking;
-        compilation.residual = sub;
-        compilation.maxWidth = maxWidth;
-        compilation.flb = flb;
-        compilation.dominance = this.dominance;
-        compilation.bestUB = this.bestUB;
-        compilation.cutSetType = frontier.cutSetType();
-        compilation.exportAsDot = this.exportAsDot;
-        compilation.debugLevel = this.debugLevel;
-        compilation.reductionStrategy = relaxStrategy;
-        compilation.stateDistance = this.stateDistance;
+        CompilationConfig<T> compilation = configureCompilation(sub, maxWidth, model.exportDot());
 
         LinkedDecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
         maybeUpdateBest(relaxedMdd, exportAsDot);
-        double lb = relaxedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY);
 
-        return new RelaxSearchStatistics(System.currentTimeMillis() - start,
-                relaxedMdd.bestValue().get(),
-                relaxedMdd.nbRelaxations,
-                relaxedMdd.stateCardinalities,
-                relaxedMdd.exactStates,
-                relaxedMdd.stateDegradationsPerNode,
-                relaxedMdd.layerSize,
-                relaxedMdd.isExact(),
-                relaxedMdd.nbNodes,
-                relaxedMdd.nbExactNodes);
-        // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+        long end = System.currentTimeMillis();
+        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
+                end - start, bestUB, 0);
+        return new Solution(bestSolution(), stats);
     }
 
     public Optional<Double> bestValue() {
@@ -240,5 +182,34 @@ public final class RelaxationSolver<T> {
             double bestInFrontier = frontier.bestInFrontier();
             return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
         }
+    }
+
+    /**
+     * Initialize the parameters of a compilation.
+     *
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
+     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @return the parameters of the compilation
+     */
+    private CompilationConfig<T> configureCompilation(SubProblem<T> sub,
+                                                      int maxWidth, boolean exportAsDot) {
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
+        compilation.compilationType = CompilationType.Relaxed;
+        compilation.problem = model.problem();
+        compilation.relaxation = model.relaxation();
+        compilation.variableHeuristic = model.variableHeuristic();
+        compilation.stateRanking = model.ranking();
+        compilation.residual = sub;
+        compilation.maxWidth = maxWidth;
+        compilation.flb = model.lowerBound();
+        compilation.dominance = this.dominance;
+        compilation.bestUB = this.bestUB;
+        compilation.cutSetType = frontier.cutSetType();
+        compilation.exportAsDot = exportAsDot;
+        compilation.debugLevel = model.debugMode();
+        compilation.reductionStrategy = model.relaxStrategy();
+
+        return compilation;
     }
 }

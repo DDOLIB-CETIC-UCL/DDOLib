@@ -30,14 +30,17 @@ public final class NodeSubProblem<T> {
     /** The actual node from the decision diagram graph. */
     public final Node node;
 
-    /** The lower bound associated with this node (if the state were the root). */
+    /** The lower bound associated with this node (root to terminal node) */
     public double lb;
+
+    /** The fast lower bound of this node (this node to terminal node) */
+    public double flb;
 
     /**
      * Creates a new NodeSubProblem associating a state with a node and a lower bound.
      *
      * @param state the state associated with the node
-     * @param lb    the rough lower bound associated with the state-node pair
+     * @param lb the rough lower bound associated with the state-node pair (g cost + fast lower bound)
      * @param node  the node in the decision diagram
      */
     public NodeSubProblem(final T state, final double lb, final Node node) {

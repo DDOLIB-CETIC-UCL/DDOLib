@@ -1,10 +1,7 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.RestrictSearchStatistics;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.*;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -54,21 +51,10 @@ public final class RestrictionSolver<T> {
      */
     private final Problem<T> problem;
     /**
-     * A suitable relaxation for the problem we want to minimize
-     */
-    private final Relaxation<T> relax;
-    /**
-     * A heuristic to identify the most promising nodes
-     */
-    private final StateRanking<T> ranking;
-    /**
      * A heuristic to choose the maximum width of the DD you compile
      */
     private final WidthHeuristic<T> width;
-    /**
-     * A heuristic to choose the next variable to branch on when developing a DD
-     */
-    private final VariableHeuristic<T> varh;
+
 
     /**
      * Set of nodes that must still be explored before
@@ -83,10 +69,7 @@ public final class RestrictionSolver<T> {
      * lower bound is popped.
      */
     private final Frontier<T> frontier;
-    /**
-     * The heuristic defining a very rough estimation (lower bound) of the optimal value.
-     */
-    private final FastLowerBound<T> flb;
+
     /**
      * The dominance object that will be used to prune the search space.
      */
@@ -114,11 +97,6 @@ public final class RestrictionSolver<T> {
      */
     private final boolean exportAsDot;
     /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link DebugLevel for details}
-     */
-    private final DebugLevel debugLevel;
-    /**
      * Value of the best known upper bound.
      */
     private double bestUB;
@@ -127,12 +105,7 @@ public final class RestrictionSolver<T> {
      */
     private Optional<Set<Decision>> bestSol;
 
-    /**
-     * Strategy to select which nodes should be dropped on a restricted DD.
-     */
-    private final ReductionStrategy<T> restrictStrategy;
-
-    private final StateDistance<T> stateDistance;
+    private final DdoModel<T> model;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -142,47 +115,24 @@ public final class RestrictionSolver<T> {
      */
     public RestrictionSolver(DdoModel<T> model) {
         this.problem = model.problem();
-        this.relax = model.relaxation();
-        this.varh = model.variableHeuristic();
-        this.ranking = model.ranking();
         this.width = model.widthHeuristic();
-        this.flb = model.lowerBound();
-        this.dominance = model.dominance();
         this.frontier = model.frontier();
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
-        this.debugLevel = model.debugMode();
-        this.restrictStrategy = model.restrictStrategy();
-        this.stateDistance = model.stateDistance();
+        this.dominance = model.dominance();
+        this.model = model;
     }
 
-    public RestrictSearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                                             BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
-        int nbIter = 0;
-        int queueMaxSize = 0;
-        nbIter++;
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
-        CompilationConfig<T> compilation = new CompilationConfig<>();
-        compilation.compilationType = CompilationType.Restricted;
-        compilation.problem = this.problem;
-        compilation.relaxation = this.relax;
-        compilation.variableHeuristic = this.varh;
-        compilation.stateRanking = this.ranking;
-        compilation.residual = sub;
-        compilation.maxWidth = maxWidth;
-        compilation.flb = flb;
-        compilation.dominance = this.dominance;
-        compilation.bestUB = this.bestUB;
-        compilation.cutSetType = frontier.cutSetType();
-        compilation.exportAsDot = this.exportAsDot;
-        compilation.debugLevel = this.debugLevel;
-        compilation.reductionStrategy = restrictStrategy;
-        compilation.stateDistance = this.stateDistance;
+        CompilationConfig<T> compilation = configureCompilation(sub, maxWidth, model.exportDot());
 
         LinkedDecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();
@@ -193,12 +143,10 @@ public final class RestrictionSolver<T> {
             System.exit(0);
         }
 
-        return new RestrictSearchStatistics(System.currentTimeMillis() - start,
-                restrictedMdd.bestValue().orElse(Double.NEGATIVE_INFINITY),
-                restrictedMdd.nbRestrictions,
-                restrictedMdd.isExact(),
-                restrictedMdd.layerSize
-                );
+        long end = System.currentTimeMillis();
+        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
+                end - start, bestUB, 0);
+        return new Solution(bestSolution(), stats);
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }
 
@@ -248,5 +196,34 @@ public final class RestrictionSolver<T> {
             double bestInFrontier = frontier.bestInFrontier();
             return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
         }
+    }
+
+    /**
+     * Initialize the parameters of a compilation.
+     *
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
+     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @return the parameters of the compilation
+     */
+    private CompilationConfig<T> configureCompilation(SubProblem<T> sub,
+                                                      int maxWidth, boolean exportAsDot) {
+        CompilationConfig<T> compilation = new CompilationConfig<>(model);
+        compilation.compilationType = CompilationType.Restricted;
+        compilation.problem = model.problem();
+        compilation.relaxation = model.relaxation();
+        compilation.variableHeuristic = model.variableHeuristic();
+        compilation.stateRanking = model.ranking();
+        compilation.residual = sub;
+        compilation.maxWidth = maxWidth;
+        compilation.flb = model.lowerBound();
+        compilation.dominance = this.dominance;
+        compilation.bestUB = this.bestUB;
+        compilation.cutSetType = frontier.cutSetType();
+        compilation.exportAsDot = exportAsDot;
+        compilation.debugLevel = model.debugMode();
+        compilation.reductionStrategy = model.restrictStrategy();
+
+        return compilation;
     }
 }

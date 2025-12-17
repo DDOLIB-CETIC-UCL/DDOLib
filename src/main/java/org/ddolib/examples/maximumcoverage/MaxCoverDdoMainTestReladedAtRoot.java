@@ -2,8 +2,7 @@ package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.RelaxSearchStatistics;
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -122,11 +121,11 @@ public class MaxCoverDdoMainTestReladedAtRoot {
             }
         };
 
-        RelaxSearchStatistics stats = Solvers.relaxedDdo(model, (sol, s) -> {
+        Solution solution = Solvers.relaxedDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        return stats.incumbent();
+        return solution.value();
     }
 
 }

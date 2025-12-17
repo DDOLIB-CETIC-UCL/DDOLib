@@ -29,6 +29,7 @@ public class TSPTWDominance implements Dominance<TSPTWState> {
     public TSPTWDominanceKey getKey(TSPTWState state) {
         return new TSPTWDominanceKey(state.position(), state.mustVisit());
     }
+
     /**
      * Checks whether {@code state1} is dominated by or equal to {@code state2}.
      *

@@ -20,7 +20,9 @@ import java.util.Set;
  * </p>
  */
 public class KSFastLowerBound implements FastLowerBound<Integer> {
-    /** The associated Knapsack problem instance. */
+    /**
+     * The associated Knapsack problem instance.
+     */
     private final KSProblem problem;
 
     /**
@@ -31,16 +33,16 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
     public KSFastLowerBound(KSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a fast lower bound for the given knapsack state.
      *
-     * @param state the current remaining capacity of the knapsack
+     * @param state     the current remaining capacity of the knapsack
      * @param variables the set of available item indices
      * @return a fast estimate of the lower bound (negated)
      */
     @Override
     public double fastLowerBound(Integer state, Set<Integer> variables) {
-
         double[] ratio = new double[problem.nbVars()];
         int capacity = state;
         for (int v : variables) {

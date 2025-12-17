@@ -2,7 +2,6 @@ package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.examples.tsalt.TSState;
 
 import java.util.BitSet;
 
@@ -108,21 +107,14 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
 
     @Override
     public double distance(NodeSubProblem<MaxCoverState> a, NodeSubProblem<MaxCoverState> b) {
-        // double distanceOnSet = jaccardDistance(a.state.coveredItems(),b.state.coveredItems());
         double distanceOnSet = weightedJaccardDistance(a.state.coveredItems(), b.state.coveredItems());
-        double distanceOnCost = abs(a.getValue() - b.getValue()) / instance.nbItems; // TODO normalize this distance
-        // System.out.println(distanceOnCost);
+        double distanceOnCost = abs(a.getValue() - b.getValue()) / instance.nbItems;
         return convexCombination(distanceOnSet, distanceOnCost);
     }
 
     @Override
     public double distance(MaxCoverState a, MaxCoverState b) {
-            // return euclideanDistance(a.coveredItems(), b.coveredItems());
-        // return weightedJaccardDistance(a.coveredItems(), b.coveredItems());
         return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems());
-        // return jaccardDistance(a.coveredItems(), b.coveredItems());
-        //return diceDistance(a.coveredItems(), b.coveredItems());
-        //return rogerDistance(a.coveredItems(),b.coveredItems());
     }
 
 

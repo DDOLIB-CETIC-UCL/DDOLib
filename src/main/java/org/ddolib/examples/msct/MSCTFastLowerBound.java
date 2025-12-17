@@ -60,6 +60,7 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
     public MSCTFastLowerBound(MSCTProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a fast lower bound on the total completion time (or cost)
      * from the given state and remaining variables.
@@ -74,14 +75,11 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
      */
     @Override
     public double fastLowerBound(MSCTState state, Set<Integer> variables) {
-        int k = variables.size();
-        int minProcessing = Integer.MAX_VALUE;
-        int minRelese = Integer.MAX_VALUE;
-        for (Integer v : variables) {
-            minProcessing = Math.min(minProcessing, problem.processing[v]);
-            minRelese = Math.min(minRelese, problem.release[v]);
+        int lb = 0;
+
+        for (Integer v : state.remainingJobs()) {
+            lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];
         }
-        double u = Math.max(minRelese, state.currentTime());
-        return  k * u + minProcessing * (k * (k+1) / 2.0);
+        return lb;
     }
 }

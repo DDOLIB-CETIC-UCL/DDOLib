@@ -1,6 +1,7 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -77,11 +78,11 @@ public class MaxCoverDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
         System.out.println();
-        System.out.println(stats);
+        System.out.println(solution);
     }
 
 }

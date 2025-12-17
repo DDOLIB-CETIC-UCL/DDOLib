@@ -160,11 +160,6 @@ public class MispProblem implements Problem<BitSet> {
     }
 
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
-    }
-
-    @Override
     public int nbVars() {
         return weight.length;
     }
@@ -208,6 +203,11 @@ public class MispProblem implements Problem<BitSet> {
     }
 
     @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
+    }
+
+    @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
             throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
@@ -228,7 +228,7 @@ public class MispProblem implements Problem<BitSet> {
                 int from = independentSet.get(i);
                 int to = independentSet.get(j);
                 if (neighbors[from].get(to)) {
-                    String msg = String.format("The solution %s is not an independant set. Nodes " +
+                    String msg = String.format("The solution %s is not an independent set. Nodes " +
                             "%d and %d are adjacent", independentSet, from, to);
                     throw new InvalidSolutionException(msg);
                 }
