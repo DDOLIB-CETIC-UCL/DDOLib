@@ -67,33 +67,18 @@ public class SMICRelax implements Relaxation<SMICState> {
      */
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-        BitSet unionScheduled = (BitSet) states.next().remainingJobs().clone();
-        BitSet unionRemaining = (BitSet) unionScheduled.clone();
-        unionScheduled.flip(0, problem.nbVars());
+        BitSet remaining = new BitSet();
+        int currentTime = Integer.MAX_VALUE;
+        int minCurrentInventory = Integer.MAX_VALUE;
+        int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
-            unionRemaining.or(state.remainingJobs());
-            BitSet scheduled = (BitSet) state.remainingJobs().clone();
-            scheduled.flip(0, problem.nbVars());
-            unionScheduled.or(scheduled);
+            remaining.or(state.remainingJobs());
+            currentTime = Math.min(currentTime, state.currentTime());
+            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
+            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }
-        int minCurrentTime = 0;
-        int currentInventory = problem.initInventory;
-        int minRelease = Integer.MAX_VALUE;
-        for (int j = unionScheduled.nextSetBit(0); j >= 0; j = unionScheduled.nextSetBit(j + 1)) {
-            minRelease = Math.min(minRelease, problem.release[j]);
-            minCurrentTime += problem.processing[j];
-            currentInventory += (problem.type[j] == 0) ? -problem.inventory[j] : problem.inventory[j];
-        }
-        //minCurrentTime += Math.max(0, minRelease);
-        int inventory = currentInventory;
-        if (currentInventory < 0) {
-            inventory = 0;
-        } else if (currentInventory > problem.capaInventory) {
-            inventory = problem.capaInventory;
-        }
-//        intersectionScheduled.flip(0, problem.nbVars());
-        return new SMICState(unionRemaining, minCurrentTime, inventory);
+        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
     /**
      * Relaxes the cost of an edge between two states.

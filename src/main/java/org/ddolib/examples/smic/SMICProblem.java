@@ -266,7 +266,7 @@ public class SMICProblem implements Problem<SMICState> {
         for (int i = 0; i < nbVars(); i++) {
             jobs.set(i);
         }
-        return new SMICState(jobs, 0, initInventory);
+        return new SMICState(jobs, 0, initInventory, initInventory);
     }
 
     /**
@@ -290,9 +290,18 @@ public class SMICProblem implements Problem<SMICState> {
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
         for (int i = state.remainingJobs().nextSetBit(0); i >= 0; i = state.remainingJobs().nextSetBit(i + 1)) {
-            int currentInventory = (type[i] == 0) ? state.currentInventory() - inventory[i] : state.currentInventory() + inventory[i];
-            if (currentInventory >= 0 && currentInventory <= capaInventory) {
-                domain.add(i);
+            int minCurrentInventory = state.minCurrentInventory();
+            int maxCurrentInventory = state.maxCurrentInventory();
+            if (type[i] == 0) {
+                minCurrentInventory -= inventory[i];
+                if (minCurrentInventory >= 0) {
+                    domain.add(i);
+                }
+            } else {
+                maxCurrentInventory +=  inventory[i];
+                if (maxCurrentInventory <= capaInventory) {
+                    domain.add(i);
+                }
             }
         }
         return domain.iterator();
@@ -315,8 +324,24 @@ public class SMICProblem implements Problem<SMICState> {
         int job = decision.val();
         remaining.clear(job);
         int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
-        int currentInventory = (type[job] == 0) ? state.currentInventory() - inventory[job] : state.currentInventory() + inventory[job];
-        return new SMICState(remaining, currentTime, currentInventory);
+        int minCurrentInventory = state.minCurrentInventory();
+        int maxCurrentInventory = state.maxCurrentInventory();
+        if (minCurrentInventory == maxCurrentInventory) {
+            if (type[job] == 0) {
+                minCurrentInventory -= inventory[job];
+                maxCurrentInventory = minCurrentInventory;
+            } else {
+                maxCurrentInventory += inventory[job];
+                minCurrentInventory = maxCurrentInventory;
+            }
+        } else {
+            if (type[job] == 0) {
+                minCurrentInventory -= inventory[job];
+            } else {
+                maxCurrentInventory += inventory[job];
+            }
+        }
+        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     /**

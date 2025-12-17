@@ -6,6 +6,8 @@ import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -73,7 +75,7 @@ public class SMICDdoMain {
      * @throws IOException if an error occurs while reading the instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_3.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data","SMIC","example.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         DdoModel<SMICState> model = new DdoModel<>() {
             @Override
@@ -91,15 +93,15 @@ public class SMICDdoMain {
                 return new SMICRanking();
             }
 
-            @Override
-            public SMICFastLowerBound lowerBound() {
-                return new SMICFastLowerBound(problem);
-            }
+//            @Override
+//            public SMICFastLowerBound lowerBound() {
+//                return new SMICFastLowerBound(problem);
+//            }
 
-            @Override
-            public DominanceChecker<SMICState> dominance() {
-                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-            }
+//            @Override
+//            public DominanceChecker<SMICState> dominance() {
+//                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+//            }
 
             @Override
             public Frontier<SMICState> frontier() {
@@ -109,6 +111,14 @@ public class SMICDdoMain {
             @Override
             public boolean useCache() {
                 return true;
+            }
+
+            @Override
+            public boolean exportDot() {return true;}
+
+            @Override
+            public WidthHeuristic<SMICState> widthHeuristic() {
+                return new FixedWidth<>(2);
             }
         };
 
