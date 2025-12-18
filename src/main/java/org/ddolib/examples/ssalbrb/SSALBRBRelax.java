@@ -32,65 +32,116 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             throw new IllegalArgumentException("Cannot merge empty state set");
         }
 
+        List<SSALBRBState> stateList = new ArrayList<>();
+        while (states.hasNext()) {
+            stateList.add(states.next());
+        }
+
         int bestHumanReady = Integer.MAX_VALUE;
         int bestRobotReady = Integer.MAX_VALUE;
-        List<Integer> mergedE = null;
 
-        while (states.hasNext()) {
-            SSALBRBState state = states.next();
+        SSALBRBState first = stateList.get(0);
+        int n = first.earliestStartTimes().size();
+
+        int[] assignedCount = new int[n];
+        int[] bestAssignedE = new int[n];
+        int[] bestUnassignedE = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            bestAssignedE[i] = Integer.MIN_VALUE;
+            bestUnassignedE[i] = Integer.MAX_VALUE;
+        }
+
+        int k = Integer.MAX_VALUE;
+        for (SSALBRBState state : stateList) {
+            int cnt = 0;
+            List<Integer> e = state.earliestStartTimes();
+            for (int i = 0; i < n; i++) {
+                if (e.get(i) < 0) {
+                    cnt++;
+                }
+            }
+            k = Math.min(k, cnt);
+        }
+
+        for (SSALBRBState state : stateList) {
             bestHumanReady = Math.min(bestHumanReady, state.humanAvailable());
             bestRobotReady = Math.min(bestRobotReady, state.robotAvailable());
 
-            List<Integer> earliestStartTimes = state.earliestStartTimes();
-            if (mergedE == null) {
-                mergedE = new ArrayList<>(earliestStartTimes);
-            } else {
-                for (int i = 0; i < earliestStartTimes.size(); i++) {
-                    int existing = mergedE.get(i);
-                    int candidate = earliestStartTimes.get(i);
-
-                    // Relaxation logic:
-                    // - If both unassigned (>= 0): take minimum (more optimistic)
-                    // - If both assigned (< 0): take maximum completion time (less negative, later completion)
-                    // - If mixed: convert assigned to earliest start time, then take minimum
-                    if (existing >= 0 && candidate >= 0) {
-                        mergedE.set(i, Math.min(existing, candidate));
-                    } else if (existing < 0 && candidate < 0) {
-                        mergedE.set(i, Math.max(existing, candidate));
-                    } else {
-                        // Mixed: convert assigned task to earliest start time
-                        // E[i] < 0 means completion time = -E[i]
-                        // Earliest start time = completion time - minimum possible duration
-                        int earliestFromAssigned;
-                        int earliestFromUnassigned;
-
-                        if (existing < 0) {
-                            // existing is assigned, candidate is unassigned
-                            int completionTime = -existing;
-                            // Use minimum duration (collaboration mode is fastest)
-                            int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
-                            earliestFromAssigned = Math.max(0, completionTime - minDuration);
-                            earliestFromUnassigned = candidate;
-                        } else {
-                            // candidate is assigned, existing is unassigned
-                            int completionTime = -candidate;
-                            int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
-                            earliestFromAssigned = Math.max(0, completionTime - minDuration);
-                            earliestFromUnassigned = existing;
-                        }
-
-                        // Take minimum of both (most optimistic)
-                        mergedE.set(i, Math.min(earliestFromAssigned, earliestFromUnassigned));
-                    }
+            List<Integer> e = state.earliestStartTimes();
+            for (int i = 0; i < n; i++) {
+                int v = e.get(i);
+                if (v < 0) {
+                    assignedCount[i]++;
+                    bestAssignedE[i] = Math.max(bestAssignedE[i], v);
+                } else {
+                    bestUnassignedE[i] = Math.min(bestUnassignedE[i], v);
                 }
             }
         }
 
-        if (mergedE == null) {
-            mergedE = List.of();
+        boolean[] chosenAssigned = new boolean[n];
+        int chosen = 0;
+
+        List<Integer> candidates = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (assignedCount[i] > 0) {
+                candidates.add(i);
+            }
+        }
+        candidates.sort((a, b) -> {
+            int cmp = Integer.compare(assignedCount[b], assignedCount[a]);
+            if (cmp != 0) {
+                return cmp;
+            }
+            return Integer.compare(bestAssignedE[b], bestAssignedE[a]);
+        });
+
+        for (int idx : candidates) {
+            if (chosen >= k) {
+                break;
+            }
+            chosenAssigned[idx] = true;
+            chosen++;
         }
 
-        return new SSALBRBState(bestHumanReady, bestRobotReady, mergedE);
+        int maxCompletion = 0;
+        for (int i = 0; i < n; i++) {
+            if (chosenAssigned[i] && bestAssignedE[i] != Integer.MIN_VALUE) {
+                maxCompletion = Math.max(maxCompletion, -bestAssignedE[i]);
+            }
+        }
+
+        int mergedHumanReady = bestHumanReady;
+        int mergedRobotReady = bestRobotReady;
+        if (Math.max(mergedHumanReady, mergedRobotReady) < maxCompletion) {
+            if (mergedHumanReady <= mergedRobotReady) {
+                mergedRobotReady = maxCompletion;
+            } else {
+                mergedHumanReady = maxCompletion;
+            }
+        }
+
+        List<Integer> mergedE = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            if (chosenAssigned[i]) {
+                mergedE.add(bestAssignedE[i]);
+            } else {
+                int est = bestUnassignedE[i];
+                if (est == Integer.MAX_VALUE) {
+                    est = 0;
+                }
+                if (assignedCount[i] > 0 && bestAssignedE[i] != Integer.MIN_VALUE) {
+                    int completionTime = -bestAssignedE[i];
+                    int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                    int earliestFromAssigned = Math.max(0, completionTime - minDuration);
+                    est = Math.min(est, earliestFromAssigned);
+                }
+                mergedE.add(est);
+            }
+        }
+
+        return new SSALBRBState(mergedHumanReady, mergedRobotReady, mergedE);
     }
 
     @Override
@@ -99,6 +150,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
                             SSALBRBState merged,
                             Decision decision,
                             double originalCost) {
-        return originalCost;
+        double relaxedCost = Math.max(0.0, ((double) merged.makespan()) - ((double) from.makespan()));
+        return Math.min(originalCost, relaxedCost);
     }
 }
