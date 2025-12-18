@@ -8,14 +8,13 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -23,7 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class AwAstar<T> implements Solver {
+public final class AwAstar<T> implements Solver {
 
 
     // The problem we want to minimize
@@ -59,7 +58,6 @@ public class AwAstar<T> implements Solver {
      * 3: 2 + every developed subproblem
      * 4: 3 + details about the developed state
      */
-    private final VerbosityLevel verbosityLevel;
     private final VerboseMode verboseMode;
     /**
      * The debug level of the compilation to add additional checks (see
@@ -76,7 +74,7 @@ public class AwAstar<T> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
 
-    public AwAstar(Model<T> model, double w) {
+    public AwAstar(AwAstarModel<T> model) {
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
@@ -85,12 +83,10 @@ public class AwAstar<T> implements Solver {
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
-        this.verbosityLevel = model.verbosityLevel();
-        this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
+        this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
         this.debugLevel = model.debugMode();
 
-
-        this.weight = w;
+        this.weight = model.weight();
         this.open = new PriorityQueue<>(
                 Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
@@ -132,7 +128,7 @@ public class AwAstar<T> implements Solver {
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             Double subValue = present.remove(subKey);
             // The current has been explored, or it can only lead to less good solution
-            if (subValue >= bestUB || closed.containsKey(subKey)) continue;
+            if (closed.containsKey(subKey) || subValue + 1e-10 >= bestUB) continue;
 
             if (sub.getDepth() == problem.nbVars()) { // target node reached
                 assert (sub.getValue() == sub.f());
@@ -200,7 +196,8 @@ public class AwAstar<T> implements Solver {
             double fprime = value + weight * h;
 
 
-            if (fprime >= bestUB) continue;
+            // this child can only lead to less good solution
+            if (fprime + 1e-10 >= bestUB) continue;
 
             // if the new state is dominated, we skip it
             if (dominance.updateDominance(newState, path.size(), value)) {
@@ -212,26 +209,25 @@ public class AwAstar<T> implements Solver {
             StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
             Double presentValue = present.get(newKey);
             if (presentValue != null && fprime < presentValue) {
+                open.remove(newSub);
                 open.add(newSub);
                 present.put(newKey, fprime);
-            } else {
+            } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
-                if (closedValue != null && closedValue > newSub.f()) {
-                    open.add(newSub);
+                open.add(newSub);
+                if (closedValue != null && fprime < closedValue) {
                     closed.remove(newKey);
-                    present.put(newKey, fprime);
-                } else {
-                    open.add(newSub);
-                    present.put(newKey, fprime);
                 }
+                present.put(newKey, fprime);
             }
 
             // is the new state a solution?
             if (newSub.getDepth() == problem.nbVars() && (newSub.getValue() < bestUB)) {
-                assert (h == 0.0);
+                assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
+                SearchStatistics stats = new SearchStatistics(SearchStatus.SAT, nbIter,
+                        queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }

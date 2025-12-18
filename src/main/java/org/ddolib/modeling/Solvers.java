@@ -2,6 +2,7 @@ package org.ddolib.modeling;
 
 import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
+import org.ddolib.awastar.core.solver.AwAstar;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.solver.ExactSolver;
@@ -201,6 +202,39 @@ public class Solvers {
 
         return new ACSSolver<>(model).minimize(limit, onSolution);
     }
+
+    // =============================================================
+    // Anytime Weighted A* Solver Methods
+    // =============================================================
+
+
+    public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
+                                               Predicate<SearchStatistics> limit,
+                                               BiConsumer<int[], SearchStatistics> onSolution) {
+        return new AwAstar<>(model).minimize(limit, onSolution);
+    }
+
+    public static <T> Solution minimizeAwAStar(AwAstarModel<T> model) {
+        return new AwAstar<>(model).minimize(s -> false, (sol, s) -> {
+        });
+    }
+
+    public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
+                                               Predicate<SearchStatistics> limit) {
+        return new AwAstar<>(model).minimize(limit, (sol, s) -> {
+        });
+    }
+
+    public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
+                                               BiConsumer<int[], SearchStatistics> onSolution) {
+        return new AwAstar<>(model).minimize(s -> false, onSolution);
+    }
+
+
+    // =============================================================
+    // Exact (DDO) Solver Methods
+    // =============================================================
+
 
     /**
      * Solves the given model using the Exact DDO algorithm.

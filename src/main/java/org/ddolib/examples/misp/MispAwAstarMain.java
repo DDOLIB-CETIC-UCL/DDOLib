@@ -2,9 +2,10 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -12,27 +13,26 @@ import java.nio.file.Path;
 import java.util.BitSet;
 
 /**
- * The Maximum Independent Set Problem (MISP) with Ddo.
- * Entry point for solving the Maximum Independent Set Problem (MISP) using a Decision Diagram Optimization (DDO) solver.
+ * The Maximum Independent Set Problem (MISP) with AsTar.
+ * Entry point for solving the Maximum Independent Set Problem (MISP) using an A* solver.
  * <p>
- * This class demonstrates how to configure and run a DDO search algorithm for a MISP instance.
+ * This class demonstrates how to configure and run an A* search algorithm for a MISP instance.
  * The model used for the search includes:
  * </p>
  * <ul>
  *     <li>The problem instance {@link MispProblem} read from a file.</li>
- *     <li>A relaxation {@link MispRelax} to merge multiple states during the DDO search.</li>
- *     <li>A ranking {@link MispRanking} to order states within the DDO search.</li>
  *     <li>A dominance checker {@link SimpleDominanceChecker} with {@link MispDominance} to prune dominated states.</li>
- *     <li>A fast lower bound {@link MispFastLowerBound} to guide the search.</li>
+ *     <li>A fast lower bound {@link MispFastLowerBound} to guide the A* search.</li>
+ *     <li>Debug mode enabled through {@link DebugLevel#ON}.</li>
  * </ul>
  *
  * <p>
  * The best solutions and search statistics are printed to the standard output.
  * </p>
  */
-public final class MispDdoMain {
+public final class MispAwAstarMain {
     /**
-     * Main method to execute the DDO solver on a MISP instance.
+     * Main method to execute the A* solver on a MISP instance.
      * <p>
      * If no command-line argument is provided, the default instance
      * <code>data/MISP/tadpole_4_2.dot</code> is used.
@@ -45,7 +45,7 @@ public final class MispDdoMain {
         final String instance = args.length == 0 ? Path.of("data", "MISP", "C_6.dot").toString() :
                 args[0];
         final MispProblem problem = new MispProblem(instance);
-        DdoModel<BitSet> model = new DdoModel<>() {
+        AwAstarModel<BitSet> model = new AwAstarModel<BitSet>() {
             @Override
             public Problem<BitSet> problem() {
                 return problem;
@@ -55,30 +55,14 @@ public final class MispDdoMain {
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
-
-           /* @Override
+/*
+            @Override
             public DominanceChecker<BitSet> dominance() {
                 return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
-            }
-*/
-
-            @Override
-            public MispRelax relaxation() {
-                return new MispRelax(problem);
-            }
-
-            @Override
-            public MispRanking ranking() {
-                return new MispRanking();
-            }
-
-            @Override
-            public boolean exportDot() {
-                return true;
-            }
+            }*/
         };
 
-        Solution bestSolution = Solvers.minimizeExact(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeAwAStar(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
