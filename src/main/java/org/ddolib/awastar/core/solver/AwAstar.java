@@ -11,10 +11,12 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.SolverUtil;
 import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -92,6 +94,25 @@ public final class AwAstar<T> implements Solver {
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
     }
 
+
+    private AwAstar(AwAstarModel<T> model, StateAndDepth<T> rootKey) {
+        this.problem = model.problem();
+        this.varh = model.variableHeuristic();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestSol = Optional.empty();
+        this.present = new HashMap<>();
+        this.closed = new HashMap<>();
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500L);
+        this.debugLevel = DebugLevel.OFF;
+
+        this.weight = model.weight();
+        this.open = new PriorityQueue<>(
+                Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+    }
+
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         t0 = System.currentTimeMillis();
@@ -160,11 +181,7 @@ public final class AwAstar<T> implements Solver {
 
     @Override
     public Optional<Double> bestValue() {
-        if (bestSol.isPresent()) {
-            return Optional.of(bestUB);
-        } else {
-            return Optional.empty();
-        }
+        return bestSol.map(sol -> bestUB);
     }
 
     @Override
@@ -192,7 +209,8 @@ public final class AwAstar<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
+            // h-cost from this state to the target
             double fprime = value + weight * h;
 
 
@@ -268,16 +286,5 @@ public final class AwAstar<T> implements Solver {
             double bestInFrontier = open.peek().f();
             return (bestUB - bestInFrontier) / Math.abs(bestUB);
         }
-    }
-
-    private Set<Integer> varSet(Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.var());
-        }
-        return set;
     }
 }

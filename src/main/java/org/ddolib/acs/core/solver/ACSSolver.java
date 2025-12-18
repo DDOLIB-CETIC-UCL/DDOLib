@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.SolverUtil;
 import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
@@ -337,7 +338,7 @@ public final class ACSSolver<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
+            double fastLowerBound = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
 
 
             // if the new state is dominated, we skip it
@@ -366,24 +367,6 @@ public final class ACSSolver<T> implements Solver {
             }
         }
     }
-
-    /**
-     * Returns the set of variables not yet assigned in a given path.
-     *
-     * @param path set of decisions already taken
-     * @return set of remaining variable indices
-     */
-    private Set<Integer> varSet(Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.var());
-        }
-        return set;
-    }
-
 
     private void checkAdmissibility() {
         Set<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());

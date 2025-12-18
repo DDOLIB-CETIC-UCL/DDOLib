@@ -11,6 +11,7 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.SolverUtil;
 import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
@@ -237,7 +238,8 @@ public final class AStarSolver<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
+            // h-cost from this state to the target
 
 
             // if the new state is dominated, we skip it
@@ -278,16 +280,6 @@ public final class AStarSolver<T> implements Solver {
         }
     }
 
-    private Set<Integer> varSet(Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.var());
-        }
-        return set;
-    }
 
     /**
      * Checks if the lower bound of explored nodes of the search is admissible.
