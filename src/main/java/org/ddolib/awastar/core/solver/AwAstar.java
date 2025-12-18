@@ -173,6 +173,10 @@ public final class AwAstar<T> implements Solver {
             }
         }
 
+        if (debugLevel != DebugLevel.OFF) {
+            checkFLBAdmissibility();
+        }
+
         SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
@@ -286,5 +290,37 @@ public final class AwAstar<T> implements Solver {
             double bestInFrontier = open.peek().f();
             return (bestUB - bestInFrontier) / Math.abs(bestUB);
         }
+    }
+
+    /**
+     * Checks if the lower bound of explored nodes of the search is admissible.
+     */
+    private void checkFLBAdmissibility() {
+
+        HashSet<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+        AwAstarModel<T> model = new AwAstarModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return dominance;
+            }
+
+            @Override
+            public double weight() {
+                return weight;
+            }
+        };
+
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AwAstar<>(model, key));
     }
 }
