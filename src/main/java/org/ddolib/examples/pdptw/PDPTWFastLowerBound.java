@@ -62,10 +62,10 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
          for (int i = 0; i < variables.size(); i++) { //variable.size already includes the final come back
              double incomingHop = toVisitLB.get(i);
              double earlyLine = toVisitEarlyLines.get(i);
-             currentSimulationTime += incomingHop;
-             currentSimulationTime = max(currentSimulationTime,earlyLine);
+             currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
              double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
              if(currentSimulationTime>deadLine){
+
                  return Double.POSITIVE_INFINITY;
              }
          }
