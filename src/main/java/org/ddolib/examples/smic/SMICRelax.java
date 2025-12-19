@@ -68,13 +68,13 @@ public class SMICRelax implements Relaxation<SMICState> {
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
         BitSet remaining = new BitSet();
-        int currentTime = Integer.MAX_VALUE;
+        int currentTime = Integer.MIN_VALUE;
         int minCurrentInventory = Integer.MAX_VALUE;
         int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
             remaining.or(state.remainingJobs());
-            currentTime = Math.min(currentTime, state.currentTime());
+            currentTime = Math.max(currentTime, state.currentTime());
             minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
             maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }

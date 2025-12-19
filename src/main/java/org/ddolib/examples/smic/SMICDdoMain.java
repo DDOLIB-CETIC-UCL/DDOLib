@@ -105,20 +105,20 @@ public class SMICDdoMain {
 
             @Override
             public Frontier<SMICState> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+                return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
             }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
+//            @Override
+//            public boolean useCache() {
+//                return true;
+//            }
 
             @Override
             public boolean exportDot() {return true;}
 
             @Override
             public WidthHeuristic<SMICState> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(9);
             }
         };
 
