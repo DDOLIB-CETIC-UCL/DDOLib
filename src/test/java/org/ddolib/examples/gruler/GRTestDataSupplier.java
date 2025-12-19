@@ -1,13 +1,11 @@
 package org.ddolib.examples.gruler;
 
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.*;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
@@ -39,6 +37,16 @@ public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
             @Override
             public StateRanking<GRState> ranking() {
                 return new GRRanking();
+            }
+
+            @Override
+            public FastLowerBound lowerBound() {
+                return new FastLowerBound() {
+                    @Override
+                    public double fastLowerBound(Object state, Set variables) {
+                        return 0;
+                    }
+                };
             }
         };
     }

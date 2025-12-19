@@ -3,6 +3,7 @@ package org.ddolib.acs.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -67,6 +68,25 @@ public final class ACSSolver<T> implements Solver {
      */
     private final VariableHeuristic<T> varh;
     /**
+     * The dominance object that will be used to prune the search space.
+     */
+    private final DominanceChecker<T> dominance;
+    /**
+     * HashMap mapping (state,depth) to the f value.
+     * Closed nodes are the ones for which their children have been generated.
+     */
+    private final HashMap<StateAndDepth<T>, Double> closed;
+    /**
+     * HashMap mapping (state,depth) to the f value.
+     * Open nodes are the ones in the frontier.
+     */
+    private final HashMap<StateAndDepth<T>, Double> present;
+    private final List<PriorityQueue<SubProblem<T>>> open;
+    private final int columnWidth;
+    private final SubProblem<T> root;
+    private final VerboseMode verboseMode;
+    private final DebugLevel debugLevel;
+    /**
      * Value of the best known upper bound (incumbent solution).
      */
     private double bestUB;
@@ -74,34 +94,6 @@ public final class ACSSolver<T> implements Solver {
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-    /**
-     * The dominance object that will be used to prune the search space.
-     */
-    private final DominanceChecker<T> dominance;
-
-    /**
-     * HashMap mapping (state,depth) to the f value.
-     * Closed nodes are the ones for which their children have been generated.
-     */
-    private final HashMap<StateAndDepth<T>, Double> closed;
-
-    /**
-     * HashMap mapping (state,depth) to the f value.
-     * Open nodes are the ones in the frontier.
-     */
-    private final HashMap<StateAndDepth<T>, Double> present;
-
-
-    private final List<PriorityQueue<SubProblem<T>>> open;
-
-    private final int columnWidth;
-
-    private final SubProblem<T> root;
-
-    private final VerboseMode verboseMode;
-
-    private final DebugLevel debugLevel;
-
     private boolean negativeTransitionCosts = false;
 
     private boolean defaultLowerBoundValue = false;
@@ -195,7 +187,8 @@ public final class ACSSolver<T> implements Solver {
      * @return final {@link SearchStatistics} of the search
      */
     @Override
-    public SearchStatistics minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
@@ -221,13 +214,13 @@ public final class ACSSolver<T> implements Solver {
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
 
             if (limit.test(stats)) {
-                return stats;
+                return new Solution(bestSolution(), stats);
             }
 
-            for (int i = 0; i < problem.nbVars() + 1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) {
+                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
@@ -267,8 +260,9 @@ public final class ACSSolver<T> implements Solver {
             checkAdmissibility();
         }
 
-        return new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+        return new Solution(bestSolution(), stats);
     }
 
     /**
@@ -404,12 +398,6 @@ public final class ACSSolver<T> implements Solver {
             }
 
             @Override
-            public int columnWidth() {
-                return columnWidth;
-            }
-
-
-            @Override
             public FastLowerBound<T> lowerBound() {
                 return lb;
             }
@@ -417,6 +405,11 @@ public final class ACSSolver<T> implements Solver {
             @Override
             public DominanceChecker<T> dominance() {
                 return dominance;
+            }
+
+            @Override
+            public int columnWidth() {
+                return columnWidth;
             }
         };
 
