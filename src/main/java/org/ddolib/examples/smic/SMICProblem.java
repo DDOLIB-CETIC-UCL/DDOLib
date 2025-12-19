@@ -263,9 +263,7 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public SMICState initialState() {
         BitSet jobs = new BitSet(nbJob);
-        for (int i = 0; i < nbVars(); i++) {
-            jobs.set(i);
-        }
+        jobs.set(0, nbJob);
         return new SMICState(jobs, 0, initInventory, initInventory);
     }
 
@@ -289,28 +287,20 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
-        ArrayList<Integer> domain1 = new ArrayList<>();
-        int minCurrentInventory = state.minCurrentInventory();
-        int maxCurrentInventory = state.maxCurrentInventory();
-        if (minCurrentInventory == maxCurrentInventory) {
-            for (int i = state.remainingJobs().nextSetBit(0); i >= 0; i = state.remainingJobs().nextSetBit(i + 1)) {
-                domain1.add(i);
-                if (type[i] == 0) {
-                    minCurrentInventory -= inventory[i];
-                    if (minCurrentInventory >= 0) {
-                        domain.add(i);
-                    }
-                } else {
-                    maxCurrentInventory +=  inventory[i];
-                    if (maxCurrentInventory <= capaInventory) {
-                        domain.add(i);
-                    }
+        BitSet remaining = state.remainingJobs();
+        for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
+            if (type[i] == 0) {
+                if (state.minCurrentInventory() - inventory[i] >= 0) {
+                    domain.add(i);
+                }
+            } else {
+                if (state.minCurrentInventory() + inventory[i] <= capaInventory) {
+                    domain.add(i);
                 }
             }
-            return domain.iterator();
-        } else {
-            return domain1.iterator();
         }
+        System.out.println("Domain for state " + domain);
+        return domain.iterator();
     }
 
     /**
@@ -330,23 +320,8 @@ public class SMICProblem implements Problem<SMICState> {
         int job = decision.val();
         remaining.clear(job);
         int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
-        int minCurrentInventory = state.minCurrentInventory();
-        int maxCurrentInventory = state.maxCurrentInventory();
-        if (minCurrentInventory == maxCurrentInventory) {
-            if (type[job] == 0) {
-                minCurrentInventory -= inventory[job];
-                maxCurrentInventory = minCurrentInventory;
-            } else {
-                maxCurrentInventory += inventory[job];
-                minCurrentInventory = maxCurrentInventory;
-            }
-        } else {
-            if (type[job] == 0) {
-                minCurrentInventory = Math.max(0, minCurrentInventory -inventory[job]);
-            } else {
-                maxCurrentInventory = Math.min(maxCurrentInventory + inventory[job], capaInventory);
-            }
-        }
+        int minCurrentInventory = state.minCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
+        int maxCurrentInventory = state.maxCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 

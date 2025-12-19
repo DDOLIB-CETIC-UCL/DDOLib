@@ -93,10 +93,10 @@ public class SMICDdoMain {
                 return new SMICRanking();
             }
 
-//            @Override
-//            public SMICFastLowerBound lowerBound() {
-//                return new SMICFastLowerBound(problem);
-//            }
+            @Override
+            public SMICFastLowerBound lowerBound() {
+                return new SMICFastLowerBound(problem);
+            }
 
 //            @Override
 //            public DominanceChecker<SMICState> dominance() {
@@ -122,7 +122,7 @@ public class SMICDdoMain {
             }
         };
 
-        SearchStatistics stats = Solvers.minimizeDdo(model, (sol, s) -> {
+        SearchStatistics stats = Solvers.minimizeExact(model, (sol, s) -> {
             SolutionPrinter.printSolution(s,sol);
         });
 

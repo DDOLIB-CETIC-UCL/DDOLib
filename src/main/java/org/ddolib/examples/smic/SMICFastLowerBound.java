@@ -2,6 +2,8 @@ package org.ddolib.examples.smic;
 
 import org.ddolib.modeling.FastLowerBound;
 
+import java.util.BitSet;
+import java.util.PriorityQueue;
 import java.util.Set;
 /**
  * The {@code SMICFastLowerBound} class provides a fast and simple estimation
@@ -64,12 +66,15 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
      */
     @Override
     public double fastLowerBound(SMICState state, Set<Integer> variables) {
-        double lowerBound = 0.0;
-        int minRelease = Integer.MAX_VALUE;
-        for (int j = state.remainingJobs().nextSetBit(0); j >= 0; j = state.remainingJobs().nextSetBit(j + 1)) {
-            minRelease = Math.min(minRelease, problem.release[j]);
-            lowerBound += problem.processing[j];
+        double lowerBound = 0;
+        BitSet remaining = state.remainingJobs();
+        PriorityQueue<Integer> queue = new PriorityQueue<>();
+        for (int j = remaining.nextSetBit(0); j >= 0; j = remaining.nextSetBit(j + 1)) {
+            queue.add(problem.processing[j]);
         }
-        return Math.min(0, minRelease - state.currentTime()) + lowerBound; //minProcessing * variables.size();
+        for (int i = 0; i < variables.size(); i++) {
+            lowerBound += queue.poll();
+        }
+        return lowerBound;
     }
 }

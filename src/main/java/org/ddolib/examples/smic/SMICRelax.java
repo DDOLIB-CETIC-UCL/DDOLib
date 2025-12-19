@@ -74,7 +74,7 @@ public class SMICRelax implements Relaxation<SMICState> {
         while (states.hasNext()) {
             final SMICState state = states.next();
             remaining.or(state.remainingJobs());
-            currentTime = Math.max(currentTime, state.currentTime());
+            currentTime = Math.min(currentTime, state.currentTime());
             minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
             maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }
