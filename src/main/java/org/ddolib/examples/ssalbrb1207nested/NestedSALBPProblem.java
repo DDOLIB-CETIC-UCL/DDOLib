@@ -100,33 +100,17 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 Set<Integer> testTasks = new LinkedHashSet<>(currentStationTasks);
                 testTasks.add(task);
 
-                // 使用乐观估计（工人时间之和）快速判断
-                int sumHuman = sumHumanDurations(testTasks);
-
-                if (sumHuman <= cycleTime) {
-                    // 乐观情况：肯定能放入当前工位
+                // 使用乐观估计（减少内层 DDO 调用）
+                // domain() 用乐观估计，transition() 会精确判断
+                if (isStationFeasibleOptimistic(testTasks, state.currentStationHasRobot())) {
+                    // 乐观认为可以放入当前工位
                     decisions.add(task * 2 + 0);  // 加入当前工位
                 } else {
-                    // sumHuman > cycleTime：需要进一步判断
-                    if (state.currentStationHasRobot()) {
-                        // 当前工位有机器人：调用内层 DDO 精确判断
-                        if (isStationFeasible(testTasks, true)) {
-                            decisions.add(task * 2 + 0);  // 还能放入
-                        } else {
-                            // 当前工位已满，需要新开工位
-                            if (remainingRobots > 0) {
-                                decisions.add(task * 2 + 1);  // 新工位，分配机器人（优先）
-                            }
-                            decisions.add(task * 2 + 0);  // 新工位，不分配机器人
-                        }
-                    } else {
-                        // 当前工位无机器人：sumHuman > cycleTime → infeasible
-                        // 需要新开工位
-                        if (remainingRobots > 0) {
-                            decisions.add(task * 2 + 1);  // 新工位，分配机器人（优先）
-                        }
-                        decisions.add(task * 2 + 0);  // 新工位，不分配机器人
+                    // 乐观估计都不可行，需要新开工位
+                    if (remainingRobots > 0) {
+                        decisions.add(task * 2 + 1);  // 新工位，分配机器人（优先）
                     }
+                    decisions.add(task * 2 + 0);  // 新工位，不分配机器人
                 }
             }
         }
@@ -157,6 +141,38 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             sum += innerProblem.humanDurations[task];
         }
         return sum;
+    }
+
+    /**
+     * 计算 minDur 之和（更乐观的下界）
+     * minDur[i] = min(humanDur[i], robotDur[i], collabDur[i])
+     */
+    private int sumMinDurations(Set<Integer> tasks) {
+        int sum = 0;
+        for (int task : tasks) {
+            int tH = innerProblem.humanDurations[task];
+            int tR = innerProblem.robotDurations[task];
+            int tC = innerProblem.collaborationDurations[task];
+            sum += Math.min(tH, Math.min(tR, tC));
+        }
+        return sum;
+    }
+
+    /**
+     * 乐观版本：用于 domain() 生成决策
+     * 使用 sumMinDur 进行更乐观的估计，减少内层 DDO 调用
+     * 可能过于乐观，但不影响正确性（transition 会精确判断）
+     */
+    private boolean isStationFeasibleOptimistic(Set<Integer> tasks, boolean hasRobot) {
+        // 无机器人：只能用 human 模式，用 sumHuman 判断
+        if (!hasRobot) {
+            return sumHumanDurations(tasks) <= cycleTime;
+        }
+
+        // 有机器人：用 sumMinDur 乐观估计
+        // 如果 sumMinDur <= cycleTime，乐观认为可行（让 transition 精确判断）
+        int sumMinDur = sumMinDurations(tasks);
+        return sumMinDur <= cycleTime;
     }
 
     /**

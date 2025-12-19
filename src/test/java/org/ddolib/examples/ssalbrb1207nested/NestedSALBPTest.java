@@ -1,4 +1,4 @@
-package org.ddolib.examples.ssalbrb;
+package org.ddolib.examples.ssalbrb1207nested;
 
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -8,17 +8,16 @@ import org.junit.jupiter.api.TestFactory;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class SSALBRBTest {
-    @DisplayName("SSALBRB")
+public class NestedSALBPTest {
+    @DisplayName("NestedSALBP")
     @TestFactory
-    public Stream<DynamicTest> testSSALBRB() {
+    public Stream<DynamicTest> testNestedSALBP() {
         var dataSupplier =
-                new SSALBRBTestDataSupplier(Path.of("src", "test", "resources", "SSALBRB"));
+                new NestedSALBPTestDataSupplier(Path.of("src", "test", "resources", "NestedSALBP"));
         var bench = new ProblemTestBench<>(dataSupplier);
 
         bench.testRelaxation = true;
         bench.testFLB = true;
-        //bench.testDominance = true;
         return bench.generateTests();
     }
 }

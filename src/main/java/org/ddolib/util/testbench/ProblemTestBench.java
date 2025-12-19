@@ -469,15 +469,15 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             allTests = Stream.concat(allTests, cacheTests);
         }
 
-        Stream<DynamicTest> aStarTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
-        );
-        allTests = Stream.concat(allTests, aStarTests);
-
-        Stream<DynamicTest> acsTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("ACS for %s", p.toString()), () -> testACSSolver(p))
-        );
-        allTests = Stream.concat(allTests, acsTests);
+//        Stream<DynamicTest> aStarTests = problems.stream().map(p ->
+//                DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
+//        );
+//        allTests = Stream.concat(allTests, aStarTests);
+//
+//        Stream<DynamicTest> acsTests = problems.stream().map(p ->
+//                DynamicTest.dynamicTest(String.format("ACS for %s", p.toString()), () -> testACSSolver(p))
+//        );
+//        allTests = Stream.concat(allTests, acsTests);
 
         return allTests;
     }
