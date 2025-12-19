@@ -1,67 +1,96 @@
 package org.ddolib.modeling;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.solver.ExactSolver;
+import org.ddolib.ddo.core.solver.SequentialSolver;
 
 import java.util.Iterator;
 import java.util.Optional;
 
 /**
- * This is the definition of the problem one tries to optimize. It basically
- * consists of a problem's formulation in terms of the labeled transition
- * system semantics of a dynamic programme.
+ * Represents an optimization problem formulated as a labeled transition
+ * system, following the semantics of dynamic programming.
+ * <p>
+ * A {@code Problem} defines the state space, the transitions between states
+ * induced by decisions, and the objective values associated with those transitions.
+ * Implementations provide the essential operations required by solvers such as
+ * {@link SequentialSolver} or {@link ExactSolver}.
  *
- * @param <T> the type of state
+ * @param <T> the type representing a state in the problem
  */
 public interface Problem<T> {
     /**
-     * @return the number of variables in the problem
+     * @return the total number of decision variables in this problem
      */
     int nbVars();
 
     /**
-     * @return the intial state of the problem
+     * Returns the initial state of the problem.
+     *
+     * @return the state representing the starting point of the optimization
      */
     T initialState();
 
     /**
-     * @return the problem's initial value
+     * Returns the initial objective value associated with the initial state.
+     *
+     * @return the starting value of the objective function
      */
     double initialValue();
 
     /**
-     * @param state the state from which the transitions should be applicable
-     * @param var   the variable whose domain in being queried
-     * @return all values in the domain of `var` if a decision is made about the given variable
+     * Returns the domain of possible values for a given variable
+     * when applied to a specific state.
+     *
+     * @param state the current state
+     * @param var   the variable index whose domain is queried
+     * @return an iterator over all feasible values for the variable in this state
      */
     Iterator<Integer> domain(final T state, final int var);
 
     /**
-     * Applies the problem transition function from one state to the next
-     * going through a given decision. (Computes the next state)
+     * Applies a decision to a state, computing the next state according
+     * to the problem's transition function.
      *
      * @param state    the state from which the transition originates
-     * @param decision the decision which is applied to `state`.
+     * @param decision the decision to apply
+     * @return the resulting state after applying the decision
      */
     T transition(final T state, final Decision decision);
 
     /**
-     * Computes the impact on the objective value of making the given
-     * decision in the specified state.
+     * Computes the change in objective value resulting from applying
+     * a decision to a given state.
      *
-     * @param state    the state from which the transition originates.
-     * @param decision the decision which is applied to `state`.
+     * @param state    the state from which the transition originates
+     * @param decision the decision to apply
+     * @return the incremental objective cost/value associated with this decision
      */
     double transitionCost(final T state, final Decision decision);
 
     /**
-     * Returns the expected optimal value if known.
+     * Returns the known optimal value of the problem, if available.
      * <p>
-     * <b>WARNING:</b> It must return the expected value returned by the solver. Be cautious if you are working with a
-     * minimization problem and negative number.
+     * <b>Note:</b> This value should correspond to the expected output
+     * of the solver. For maximization problems, be careful with negative values.
      *
-     * @return the expected optimal value if known.
+     * @return an {@code Optional} containing the known optimal value, or empty if unknown
      */
     default Optional<Double> optimalValue() {
         return Optional.empty();
     }
+
+    /**
+     * Given a solution such that {@code solution[i]} is the value of the variable {@code x_i},
+     * returns the value of this solution and checks if the solution respects the problem's
+     * constraints.
+     * <p>
+     * <b>Note:</b> For maximization problems, the returned value is minus the computed value.
+     *
+     * @param solution A solution of the problem.
+     * @return The value of the input solution
+     * @throws InvalidSolutionException If the solution does not respect problem's constraints.
+     */
+    double evaluate(final int[] solution) throws InvalidSolutionException;
+
 }

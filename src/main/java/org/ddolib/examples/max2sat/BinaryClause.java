@@ -26,7 +26,7 @@ public class BinaryClause implements Comparable<BinaryClause> {
      *
      * @param a The value to attribute to the variable {@code x_i} (0 or 1).
      * @param b The value to attribute to the variable {@code x_j} (0 or 1).
-     * @return 0 if the clause is verified. 1 else.
+     * @return 1 if the clause is verified. 0 else.
      */
     public int eval(int a, int b) {
         int literal1 = i < 0 ? a ^ 1 : a;
