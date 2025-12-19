@@ -25,7 +25,7 @@ public class NestedSALBPDdoMain {
 //                ? Path.of("data", "SALBP1", "medium data set_n=50", "instance_n=50_361.alb").toString()
 //                : args[0];
         final String instance = args.length == 0
-                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_5.alb").toString()
+                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_144.alb").toString()
                 : args[0];
 //        final String instance = args.length >= 1 ?
 //                args[0] : Path.of("data", "test_5tasks_3.alb").toString();
@@ -73,7 +73,7 @@ public class NestedSALBPDdoMain {
 
             @Override
             public WidthHeuristic<NestedSALBPState> widthHeuristic() {
-                return new FixedWidth<>(5);
+                return new FixedWidth<>(20);
             }
 
             @Override

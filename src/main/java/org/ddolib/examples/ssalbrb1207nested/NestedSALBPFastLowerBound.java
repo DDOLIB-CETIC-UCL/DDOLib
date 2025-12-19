@@ -120,56 +120,175 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         Set<Integer> currentStationTasks = state.currentStationTasks();
         boolean currentHasRobot = state.currentStationHasRobot();
 
-        // ========== 下界1：工作量下界 ==========
-        // 使用最小处理时间计算（保证是下界）
-        double sumMinDur = 0.0;
+        // ========== 下界1：转换率(Cr)工作量平衡下界 ==========
+        // 参考论文中的方法：
+        // 1. 计算 Cr_i = min(t_iR/t_iH, t_iC/(t_iH - t_iC))
+        // 2. 按 Cr_i 排序，将工作量从 human 转移到 robot
+        // 3. 计算平衡后的 LH
+        // 4. 工位数下界 = ceil(LH / cycleTime)
+
+        // 收集剩余任务和当前工位任务的转换信息
+        List<double[]> candidates = new ArrayList<>();  // [task, mode, cr, tH, tR, tC]
+        double lh = 0.0;  // 初始 LH = 所有任务的人工时间之和
+        double maxMinDur = 0.0;  // max{min_p t_ip}
+
+        // 处理剩余任务
         for (int task : remainingTasks) {
-            sumMinDur += minDur[task];
+            int tH = innerProblem.humanDurations[task];
+            int tR = innerProblem.robotDurations[task];
+            int tC = innerProblem.collaborationDurations[task];
+
+            lh += tH;
+            maxMinDur = Math.max(maxMinDur, minDur[task]);
+
+            // Cr_i^R = t_iR / t_iH
+            double crR = tH > 0 ? ((double) tR) / tH : Double.POSITIVE_INFINITY;
+            // Cr_i^C = t_iC / (t_iH - t_iC)
+            double crC = tH > tC ? ((double) tC) / (tH - tC) : Double.POSITIVE_INFINITY;
+
+            // 选择转换率更小的模式
+            if (crR <= crC) {
+                candidates.add(new double[]{task, 0, crR, tH, tR, tC});  // mode=0: robot
+            } else {
+                candidates.add(new double[]{task, 1, crC, tH, tR, tC});  // mode=1: collab
+            }
         }
 
-        // 当前工位已使用的容量
+        // 处理当前工位任务
+        for (int task : currentStationTasks) {
+            int tH = innerProblem.humanDurations[task];
+            int tR = innerProblem.robotDurations[task];
+            int tC = innerProblem.collaborationDurations[task];
+
+            lh += tH;
+            maxMinDur = Math.max(maxMinDur, minDur[task]);
+
+            double crR = tH > 0 ? ((double) tR) / tH : Double.POSITIVE_INFINITY;
+            double crC = tH > tC ? ((double) tC) / (tH - tC) : Double.POSITIVE_INFINITY;
+
+            if (crR <= crC) {
+                candidates.add(new double[]{task, 0, crR, tH, tR, tC});
+            } else {
+                candidates.add(new double[]{task, 1, crC, tH, tR, tC});
+            }
+        }
+
+        // 按 Cr 升序排序
+        candidates.sort(Comparator.comparingDouble(c -> c[2]));
+
+        // 计算可用机器人总数（当前工位 + 剩余）
+        int totalAvailableRobots = remainingRobots + (currentHasRobot ? 1 : 0);
+
+        // m = 工位数（我们要求的），q = 机器人数
+        // 假设所有机器人都被使用，这是乐观估计
+        int q = totalAvailableRobots;
+
+        // 迭代转换工作量，直到 LR * 1 >= LH * q/m
+        // 简化：我们用固定的 q 来计算平衡点
+        // 由于我们不知道 m，我们假设 m 足够大，让所有机器人都能被分配
+        // 目标：LR * m = LH * q，即 LR/q = LH/m
+        // 最终 LC = LH/m = LR/q
+
+        double lr = 0.0;
+        double lhBefore = lh;
+        double lrBefore = lr;
+        int crossingIdx = -1;
+
+        for (int i = 0; i < candidates.size() && q > 0; i++) {
+            double[] cand = candidates.get(i);
+            int mode = (int) cand[1];
+            int tH = (int) cand[3];
+            int tR = (int) cand[4];
+            int tC = (int) cand[5];
+
+            lhBefore = lh;
+            lrBefore = lr;
+
+            // 更新 LH 和 LR
+            if (mode == 0) {  // robot
+                lh -= tH;
+                lr += tR;
+            } else {  // collaboration
+                lh -= (tH - tC);
+                lr += tC;
+            }
+
+            // 检查是否超过平衡点 (LR >= LH 即 q=m 时的平衡)
+            // 更一般的平衡条件是 LR/q = LH/m
+            // 为简化，我们用 LR >= LH * (q / m_est) 来估计
+            // 假设 m_est = max(1, 工位数估计)
+            if (lr >= lh) {  // 简化的平衡条件
+                crossingIdx = i;
+                break;
+            }
+        }
+
+        // 线性插值修正（如果超过了平衡点）
+        if (crossingIdx >= 0 && lrBefore < lhBefore) {
+            double[] cand = candidates.get(crossingIdx);
+            int mode = (int) cand[1];
+            int tH = (int) cand[3];
+            int tR = (int) cand[4];
+            int tC = (int) cand[5];
+
+            // 使用线性插值找到精确的平衡点
+            // 目标：LR' = LH' (q=m 时)
+            if (mode == 0) {  // robot
+                double denom = (double) tR + (double) tH;
+                if (denom > 0) {
+                    double alpha = (lhBefore - lrBefore) / denom;
+                    alpha = Math.max(0, Math.min(1, alpha));
+                    lh = lhBefore - alpha * tH;
+                    lr = lrBefore + alpha * tR;
+                }
+            } else {  // collaboration
+                double dh = tH - tC;
+                double dr = tC;
+                double denom = dr + dh;
+                if (denom > 0) {
+                    double alpha = (lhBefore - lrBefore) / denom;
+                    alpha = Math.max(0, Math.min(1, alpha));
+                    lh = lhBefore - alpha * dh;
+                    lr = lrBefore + alpha * dr;
+                }
+            }
+        }
+
+        // LC = max{LH/m, max{min_p t_ip}}
+        // 对于最小化工位数：给定 cycleTime，m >= LH / cycleTime
+        // 考虑 maxMinDur：如果 maxMinDur > cycleTime，问题无解
+        // 否则，工位数下界 = ceil(LH / cycleTime)
+        double lc = Math.max(lh, maxMinDur);  // LH 已经是平衡后的工作量
+
+        // 当前工位已用容量
         double currentStationUsed = 0.0;
         for (int task : currentStationTasks) {
             currentStationUsed += minDur[task];
         }
 
-        // 工位容量估计：
-        // - 有机器人的工位：容量 = 2 * cycleTime（乐观假设完美并行）
-        // - 无机器人的工位：容量 = cycleTime
-        //
-        // 估计未来工位的平均容量：
-        // 如果还有剩余机器人，部分工位可以有机器人
-        // 为了保证是下界，我们假设所有剩余机器人都能被最优利用
-
         // 当前工位剩余容量
         double currentCapacity = currentHasRobot ? (2.0 * cycleTime) : cycleTime;
         double currentRemaining = Math.max(0, currentCapacity - currentStationUsed);
 
-        // 如果剩余任务可以放入当前工位
-        if (sumMinDur <= currentRemaining) {
+        // 如果剩余工作量可以放入当前工位
+        if (lc <= currentRemaining) {
             return 0;
         }
 
         // 需要分配到新工位的工作量
-        double overflow = sumMinDur - currentRemaining;
+        double overflow = lc - currentRemaining;
 
         // 计算新工位数下界
         // 假设剩余的 remainingRobots 个机器人可以分配给新工位
-        // 每个有机器人的工位容量 = 2 * cycleTime
-        // 每个无机器人的工位容量 = cycleTime
-        //
-        // 为了得到下界，我们假设优先使用机器人工位（容量更大）
         double lbWorkload = 0;
         double remainingWork = overflow;
         int robotsLeft = remainingRobots;
 
         while (remainingWork > 0) {
             if (robotsLeft > 0) {
-                // 使用一个有机器人的工位
                 remainingWork -= 2.0 * cycleTime;
                 robotsLeft--;
             } else {
-                // 使用无机器人的工位
                 remainingWork -= cycleTime;
             }
             lbWorkload++;
@@ -191,7 +310,43 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             lbCriticalPath = Math.max(0, lbCriticalPath - 1);
         }
 
+        // ========== 下界3：大任务下界 (3B) ==========
+        // 如果一个任务的 minDur > cycleTime/2，称为“大任务”
+        // 两个大任务不能放在同一个工位（即使有机器人，容量也只有 2*cycleTime）
+        // 所以 n 个大任务至少需要 ceil(n/2) 个工位
+        int bigTaskCount = 0;
+        double halfCapacity = cycleTime;  // 有机器人工位容量的一半
+        for (int task : remainingTasks) {
+            if (minDur[task] > halfCapacity) {
+                bigTaskCount++;
+            }
+        }
+
+        // 检查当前工位是否已经有大任务
+        boolean currentHasBigTask = false;
+        for (int task : currentStationTasks) {
+            if (minDur[task] > halfCapacity) {
+                currentHasBigTask = true;
+                break;
+            }
+        }
+
+        // 计算大任务下界
+        double lbBigTask = 0;
+        if (bigTaskCount > 0) {
+            if (currentHasBigTask) {
+                // 当前工位已有大任务，最多再放一个大任务
+                // 剩余大任务需要新工位
+                int remainingBig = Math.max(0, bigTaskCount - 1);  // 当前工位可以再放1个
+                lbBigTask = Math.ceil(remainingBig / 2.0);
+            } else {
+                // 当前工位没有大任务，可以放2个大任务
+                int remainingBig = Math.max(0, bigTaskCount - 2);
+                lbBigTask = Math.ceil(remainingBig / 2.0);
+            }
+        }
+
         // ========== 返回最大下界 ==========
-        return Math.max(0, Math.max(lbWorkload, lbCriticalPath));
+        return Math.max(0, Math.max(lbWorkload, Math.max(lbCriticalPath, lbBigTask)));
     }
 }
