@@ -288,18 +288,23 @@ public class SMICProblem implements Problem<SMICState> {
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
         BitSet remaining = state.remainingJobs();
-        for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
-            if (type[i] == 0) {
-                if (state.minCurrentInventory() - inventory[i] >= 0) {
-                    domain.add(i);
-                }
-            } else {
-                if (state.minCurrentInventory() + inventory[i] <= capaInventory) {
-                    domain.add(i);
+        if (state.minCurrentInventory() < state.maxCurrentInventory()) {
+            for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
+                domain.add(i);
+            }
+        } else {
+            for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
+                if (type[i] == 0) {
+                    if (state.minCurrentInventory() - inventory[i] >= 0) {
+                        domain.add(i);
+                    }
+                } else {
+                    if (state.minCurrentInventory() + inventory[i] <= capaInventory) {
+                        domain.add(i);
+                    }
                 }
             }
         }
-        System.out.println("Domain for state " + domain);
         return domain.iterator();
     }
 

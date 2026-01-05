@@ -81,10 +81,10 @@ public class SMICDdoMain {
                 return new SMICFastLowerBound(problem);
             }
 
-//            @Override
-//            public DominanceChecker<SMICState> dominance() {
-//                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-//            }
+            @Override
+            public DominanceChecker<SMICState> dominance() {
+                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+            }
 
             @Override
             public SMICRelax relaxation() {
@@ -101,17 +101,17 @@ public class SMICDdoMain {
                 return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
             }
 
-//            @Override
-//            public boolean useCache() {
-//                return true;
-//            }
+            @Override
+            public boolean useCache() {
+                return true;
+            }
 
             @Override
             public boolean exportDot() {return true;}
 
             @Override
             public WidthHeuristic<SMICState> widthHeuristic() {
-                return new FixedWidth<>(9);
+                return new FixedWidth<>(2);
             }
         };
         Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {

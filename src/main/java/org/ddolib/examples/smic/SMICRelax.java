@@ -3,10 +3,8 @@ package org.ddolib.examples.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
 
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+
 /**
  * The {@code SMICRelax} class implements a relaxation operator for the
  * {@link SMICProblem}, used in Decision Diagram Optimization (DDO)-based solvers.
@@ -68,15 +66,17 @@ public class SMICRelax implements Relaxation<SMICState> {
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
         BitSet remaining = new BitSet();
-        int currentTime = Integer.MIN_VALUE;
+        int currentTime = Integer.MAX_VALUE;
         int minCurrentInventory = Integer.MAX_VALUE;
         int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
-            remaining.or(state.remainingJobs());
-            currentTime = Math.min(currentTime, state.currentTime());
-            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
-            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
+            if (!domain(state).isEmpty()) {
+                remaining.or(state.remainingJobs());
+                currentTime = Math.min(currentTime, state.currentTime());
+                minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
+                maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
+            }
         }
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
@@ -97,6 +97,23 @@ public class SMICRelax implements Relaxation<SMICState> {
     @Override
     public double relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, double cost) {
         return cost;
+    }
+
+    private ArrayList<Integer> domain(SMICState state) {
+        ArrayList<Integer> domain = new ArrayList<>();
+        BitSet remaining = state.remainingJobs();
+        for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
+            if (problem.type[i] == 0) {
+                if (state.minCurrentInventory() - problem.inventory[i] >= 0) {
+                    domain.add(i);
+                }
+            } else {
+                if (state.minCurrentInventory() + problem.inventory[i] <= problem.capaInventory) {
+                    domain.add(i);
+                }
+            }
+        }
+        return domain;
     }
 }
 
