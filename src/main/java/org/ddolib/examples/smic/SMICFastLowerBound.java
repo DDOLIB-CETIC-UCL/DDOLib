@@ -41,7 +41,7 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
      * @param problem the {@link SMICProblem} instance containing job data
      *                such as processing times and release dates
      */
-    SMICFastLowerBound(SMICProblem problem)  {
+    public SMICFastLowerBound(SMICProblem problem)  {
         this.problem = problem;
     }
     /**
