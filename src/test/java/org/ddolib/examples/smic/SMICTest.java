@@ -18,8 +18,8 @@ public class SMICTest {
                 new SMICTestDataSupplier(Path.of("src", "test", "resources", "SMIC"));
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
-//        bench.testFLB = true;
-//        bench.testDominance = true;
+        bench.testFLB = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
 }
