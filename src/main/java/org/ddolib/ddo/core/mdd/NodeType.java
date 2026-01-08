@@ -8,7 +8,7 @@ package org.ddolib.ddo.core.mdd;
  * that may not yield an optimal solution but provide bounds or approximations.
  * </p>
  */
-enum NodeType {
+public enum NodeType {
     /**
      * Represents an exact node in the decision diagram.
      * This type of node corresponds to an exact solution or a state that contributes to the final solution.
