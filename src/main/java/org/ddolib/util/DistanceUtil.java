@@ -6,6 +6,12 @@ import static java.lang.Math.*;
 
 public class DistanceUtil {
 
+    /**
+     * Computes the jaccard Distance between the two given sets.
+     * @param a the first set
+     * @param b the second set
+     * @return 1 - |a ∩ b| / |a ∪ b|
+     */
     public static double jaccardDistance(BitSet a, BitSet b) {
 
         BitSet tmp = (BitSet) a.clone();
@@ -19,6 +25,13 @@ public class DistanceUtil {
         return (1.0 - ((double) intersectionSize) / unionSize);
     }
 
+    /**
+     * Computes the weighted jaccard Distance between the two given sets.
+     * @param a the first set
+     * @param b the second set
+     * @param weights the weight of each element in a and b
+     * @return 1 - |a ∩ b| / |a ∪ b|
+     */
     public static double weightedJaccardDistance(BitSet a, BitSet b, double[] weights) {
         double intersectionSize =0;
         double unionSize = 0;
@@ -36,15 +49,17 @@ public class DistanceUtil {
         return 1 - intersectionSize / unionSize;
     }
 
+    /**
+     * Computes the Dice Distance between the two given sets.
+     * @param a the first set
+     * @param b the second set
+     * @return 1 - 2|a ∩ b| / (|a| + |b|)
+     */
     public static double diceDistance(BitSet a, BitSet b) {
-        double distance = 0;
+        BitSet tmp = (BitSet) a.clone();
+        tmp.and(b);
+        double distance = tmp.cardinality();
 
-        int maxIndex = max(a.length(), b.length());
-        for (int i = 0; i < maxIndex; i++) {
-            if (a.get(i) && b.get(i)) {
-                distance++;
-            }
-        }
         distance = distance*-2;
         distance = distance / (a.cardinality() + b.cardinality());
         distance += 1;
@@ -52,26 +67,12 @@ public class DistanceUtil {
         return distance;
     }
 
-    public static double hammingDistance(BitSet a, BitSet b) {
-        double distance = 0;
-        int maxIndex = max(a.length(), b.length());
-        for (int i = 0; i < maxIndex; i++) {
-            if (a.get(i) != b.get(i)) {
-                distance++;
-            }
-        }
-
-        return distance;
-    }
-
-    public static double euclideanDistance(BitSet a, BitSet b) {
-        BitSet symmetricDifference = (BitSet) a.clone();
-        symmetricDifference.xor(b);
-        double dist = symmetricDifference.cardinality();
-
-        return Math.sqrt(dist);
-    }
-
+    /**
+     * Computes the Euclidean Distance between the two given arrays of coordinates
+     * @param a the first array
+     * @param b the second array
+     * @return the Euclidean distance between a and b
+     */
     public static double euclideanDistance(double[]a, double[]b) {
         double distance = 0.0;
         for (int dim = 0; dim < a.length; dim++) {
@@ -82,6 +83,12 @@ public class DistanceUtil {
         return distance;
     }
 
+    /**
+     * Computes the size of the symmetric difference between a and b
+     * @param a the first set
+     * @param b the second set
+     * @return |a XOR b|
+     */
     public static double symmetricDifferenceDistance(BitSet a, BitSet b) {
         BitSet tmp = (BitSet) a.clone();
         tmp.xor(b);
