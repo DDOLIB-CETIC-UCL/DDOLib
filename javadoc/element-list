@@ -12,6 +12,7 @@ org.ddolib.ddo.core.cache
 org.ddolib.ddo.core.compilation
 org.ddolib.ddo.core.frontier
 org.ddolib.ddo.core.heuristics
+org.ddolib.ddo.core.heuristics.cluster
 org.ddolib.ddo.core.heuristics.variable
 org.ddolib.ddo.core.heuristics.width
 org.ddolib.ddo.core.mdd
@@ -24,8 +25,10 @@ org.ddolib.examples.gruler
 org.ddolib.examples.knapsack
 org.ddolib.examples.lcs
 org.ddolib.examples.max2sat
+org.ddolib.examples.maximumcoverage
 org.ddolib.examples.mcp
 org.ddolib.examples.misp
+org.ddolib.examples.mks
 org.ddolib.examples.msct
 org.ddolib.examples.pdp
 org.ddolib.examples.pigmentscheduling
