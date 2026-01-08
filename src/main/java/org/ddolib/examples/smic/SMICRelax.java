@@ -71,12 +71,10 @@ public class SMICRelax implements Relaxation<SMICState> {
         int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
-            if (!domain(state).isEmpty()) {
-                remaining.or(state.remainingJobs());
-                currentTime = Math.min(currentTime, state.currentTime());
-                minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
-                maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
-            }
+            remaining.or(state.remainingJobs());
+            currentTime = Math.min(currentTime, state.currentTime());
+            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
+            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
@@ -99,21 +97,5 @@ public class SMICRelax implements Relaxation<SMICState> {
         return cost;
     }
 
-    private ArrayList<Integer> domain(SMICState state) {
-        ArrayList<Integer> domain = new ArrayList<>();
-        BitSet remaining = state.remainingJobs();
-        for (int i = remaining.nextSetBit(0); i >= 0; i = remaining.nextSetBit(i + 1)) {
-            if (problem.type[i] == 0) {
-                if (state.minCurrentInventory() - problem.inventory[i] >= 0) {
-                    domain.add(i);
-                }
-            } else {
-                if (state.minCurrentInventory() + problem.inventory[i] <= problem.capaInventory) {
-                    domain.add(i);
-                }
-            }
-        }
-        return domain;
-    }
 }
 
