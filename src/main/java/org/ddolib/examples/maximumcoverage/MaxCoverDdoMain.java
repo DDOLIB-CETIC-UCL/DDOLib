@@ -18,8 +18,47 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
+/**
+ * Maximum Coverage (MaxCover) problem with Ddo
+ * <p>
+ * This class demonstrates how to solve an instance of the Maximum Coverage (MaxCover) problem (BKP)
+ * using a Decision Diagram Optimization (DDO) algorithm.
+ * <ul>
+ *   <li>Builds an instance of the MaxCover problem (randomly generated or loaded from a file)</li>
+ *   <li>Defines a {@link DdoModel} by specifying the problem, relaxation,
+ *       ranking strategy, width heuristic, and lower bound</li>
+ *   <li>Runs the DDO solver to compute a solution</li>
+ *   <li>Prints the resulting solution</li>
+ * </ul>
+ *
+ * <p>
+ * The problem parameters (size, cardinality, random seed, etc.) can be
+ * easily modified to experiment with different instances.
+ */
 public class MaxCoverDdoMain {
+    /**
+     * Program entry point.
+     *
+     * <p>
+     * This method:
+     * <ol>
+     *   <li>Creates an instance of the MaxCover problem</li>
+     *   <li>Builds a DDO model by defining:
+     *     <ul>
+     *       <li>the problem to solve</li>
+     *       <li>the relaxation used during search</li>
+     *       <li>the state ranking strategy</li>
+     *       <li>the width heuristic (fixed width in this example)</li>
+     *       <li>a fast lower bound</li>
+     *     </ul>
+     *   </li>
+     *   <li>Runs the DDO solver in minimization mode</li>
+     *   <li>Prints the intermediate and final solutions</li>
+     * </ol>
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if an error occurs while loading a problem instance from a file
+     */
     public static void main(String[] args) throws IOException {
         MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
         // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
