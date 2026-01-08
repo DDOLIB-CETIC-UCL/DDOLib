@@ -7,6 +7,7 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -90,12 +91,12 @@ public class KSHybridTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
+            public ReductionStrategy<Integer> relaxStrategy() {
                 return new CostBased<>(ranking());
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
+            public ReductionStrategy<Integer> restrictStrategy() {
                 return new CostBased<>(ranking());
             }
         };
@@ -106,7 +107,7 @@ public class KSHybridTest {
     }
 
 
-    private double optimalSolutionGHPClustering(KSProblem problem, int w, CutSetType cutSetType) {
+    private double optimalSolutionHybridClustering(KSProblem problem, int w, CutSetType cutSetType) {
         final DdoModel<Integer> model = new DdoModel<>() {
             ;
 
@@ -142,7 +143,12 @@ public class KSHybridTest {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(10_000);
+                return new FixedWidth<>(w);
+            }
+
+            @Override
+            public Frontier<Integer> frontier() {
+                return new SimpleFrontier<>(ranking(), cutSetType);
             }
 
             @Override
@@ -151,13 +157,13 @@ public class KSHybridTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance(problem));
+            public ReductionStrategy<Integer> relaxStrategy() {
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance(problem));
+            public ReductionStrategy<Integer> restrictStrategy() {
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
         };
 
@@ -172,7 +178,7 @@ public class KSHybridTest {
         CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionGHPClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionHybridClustering(problem, wid, ct));
             }
         }
     }

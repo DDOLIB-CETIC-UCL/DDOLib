@@ -1,6 +1,5 @@
 package org.ddolib.examples.maximumcoverage;
 
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
@@ -12,18 +11,14 @@ import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
-import java.util.BitSet;
+import java.io.IOException;
 
-public class PaperExample {
-    public static void main(String[] args) {
-        int n = 5; int m = 4; int k = 3;
-        BitSet[] ss = new BitSet[m];
-        ss[0] = new BitSet(n);  ss[0].set(0);  ss[0].set(2);
-        ss[1] = new BitSet(n);  ss[1].set(1);  ss[1].set(3); ss[1].set(3);
-        ss[2] = new BitSet(n);  ss[2].set(3);  /*ss[2].set(1);*/
-        ss[3] = new BitSet(n);  ss[3].set(1);  ss[3].set(4);
-//        ss[4] = new BitSet(n);  ss[4].set(1);  ss[4].set(3);
-        MaxCoverProblem problem = new MaxCoverProblem(n, m, k, ss);
+public class MaxCoverDdoMainWithCluster {
+    public static void main(String[] args) throws IOException {
+        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
+        // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
+
+        // MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
         System.out.println(problem);
         DdoModel<MaxCoverState> model = new DdoModel<>() {
             @Override
@@ -43,29 +38,31 @@ public class PaperExample {
 
             @Override
             public WidthHeuristic<MaxCoverState> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(100);
+            }
+
+            @Override
+            public MaxCoverFastLowerBound lowerBound() {
+                return new MaxCoverFastLowerBound(problem);
             }
 
             @Override
             public boolean exportDot() {
-                return true;
+                return false;
             }
 
             @Override
             public ReductionStrategy<MaxCoverState> relaxStrategy() {
                 return new GHP<>(new MaxCoverDistance(problem));
-//                return new CostBased<>(new MaxCoverRanking());
-                //return new Kmeans<>(new MaxCoverCoordinates(problem));
-                // return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
-
+//                return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
+//                return new CostBased<>(new MaxCoverRanking()); // default strategy
             }
 
             @Override
             public ReductionStrategy<MaxCoverState> restrictStrategy() {
                 return new GHP<>(new MaxCoverDistance(problem));
-//                return new CostBased<>(new MaxCoverRanking());
-                // return new Kmeans<>(new MaxCoverCoordinates(problem));
-                //return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
+//                return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
+//                return new CostBased<>(new MaxCoverRanking()); // default strategy
             }
         };
 
@@ -75,4 +72,5 @@ public class PaperExample {
         System.out.println();
         System.out.println(solution);
     }
+
 }

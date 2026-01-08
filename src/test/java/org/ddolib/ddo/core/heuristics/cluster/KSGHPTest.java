@@ -7,6 +7,7 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -90,12 +91,12 @@ public class KSGHPTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
+            public ReductionStrategy<Integer> relaxStrategy() {
                 return new CostBased<>(ranking());
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
+            public ReductionStrategy<Integer> restrictStrategy() {
                 return new CostBased<>(ranking());
             }
         };
@@ -142,7 +143,12 @@ public class KSGHPTest {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(10_000);
+                return new FixedWidth<>(w);
+            }
+
+            @Override
+            public Frontier<Integer> frontier() {
+                return new SimpleFrontier<>(ranking(), cutSetType);
             }
 
             @Override
@@ -151,13 +157,13 @@ public class KSGHPTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
-                return new GHP(new KSDistance(problem));
+            public ReductionStrategy<Integer> relaxStrategy() {
+                return new GHP<>(new KSDistance(problem));
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
-                return new GHP(new KSDistance(problem));
+            public ReductionStrategy<Integer> restrictStrategy() {
+                return new GHP<>(new KSDistance(problem));
             }
         };
 

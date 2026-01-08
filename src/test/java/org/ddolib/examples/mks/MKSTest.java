@@ -6,7 +6,6 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
