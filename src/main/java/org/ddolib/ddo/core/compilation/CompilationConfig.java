@@ -117,8 +117,6 @@ public class CompilationConfig<T> {
      */
     public ReductionStrategy<T> reductionStrategy = null;
 
-    public StateDistance<T> stateDistance = null;
-
     /**
      * Initialize the parameters of the compilation.
      *

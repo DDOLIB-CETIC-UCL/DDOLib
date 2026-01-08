@@ -243,7 +243,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, relax, config.reductionStrategy, config.stateDistance);
+                        relax(maxWidth, relax, config.reductionStrategy);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -732,14 +732,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param maxWidth the maximum tolerated layer width
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy, final StateDistance<T> distance) {
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
+        // generates clusters
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
         for (List<NodeSubProblem<T>> cluster: clusters) {
-            // SummaryStatistics degradationsPerCluster = new SummaryStatistics();
-            // System.out.println(cluster);
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
                 continue;
