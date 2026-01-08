@@ -1,6 +1,7 @@
 package org.ddolib.examples.mks;
 
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import static org.ddolib.util.DistanceUtil.euclideanDistance;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
@@ -14,23 +15,11 @@ public class MKSDistance implements StateDistance<MKSState> {
 
     @Override
     public double distance(MKSState a, MKSState b) {
-        double distance = 0.0;
-        for (int dim = 0; dim < a.capacities.length; dim++) {
-            distance += pow(a.capacities[dim] - b.capacities[dim], 2);
-        }
-        distance = sqrt(distance);
-
-        return distance / instance.maximalDistance;
+        return euclideanDistance(a.capacities, b.capacities) / instance.maximalDistance;
     }
 
     @Override
     public double distanceWithRoot(MKSState a) {
-        double distance = 0.0;
-        for (int dim = 0; dim < a.capacities.length; dim++) {
-            distance += pow(a.capacities[dim], 2);
-        }
-        distance = sqrt(distance);
-
-        return distance/ instance.maximalDistance;
+        return euclideanDistance(a.capacities, instance.initialState().capacities) / instance.maximalDistance;
     }
 }
