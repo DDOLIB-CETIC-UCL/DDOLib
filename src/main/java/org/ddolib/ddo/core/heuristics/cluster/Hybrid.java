@@ -5,13 +5,16 @@ import org.ddolib.modeling.StateRanking;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import static java.lang.Math.ceil;
 
 /**
  * This strategy is a hybridation between cost based selection and GHP.
- * It preserves the w*alpha best nodes (0 <= alpha <= 1) and merge the other nodes using clustering.
+ * It preserves the w * alpha best nodes (0 &le; alpha &le; 1) and merge the other nodes using
+ * clustering.
  * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost,
  * and a problem-specif StateDistance to quantify the dissimilarity between states.
+ *
  * @param <T>
  */
 public class Hybrid<T> implements ReductionStrategy<T> {
@@ -35,11 +38,11 @@ public class Hybrid<T> implements ReductionStrategy<T> {
 
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
-        int nbPreserved = (int) ceil(maxWidth*alpha);
+        int nbPreserved = (int) ceil(maxWidth * alpha);
 
         List<List<NodeSubProblem<T>>> clusters = new ArrayList<List<NodeSubProblem<T>>>();
-        List<NodeSubProblem<T>>[] costClusters = costBased.defineClusters(layer, nbPreserved+1);
-        for (int i = 0; i < costClusters.length-1; i++) {
+        List<NodeSubProblem<T>>[] costClusters = costBased.defineClusters(layer, nbPreserved + 1);
+        for (int i = 0; i < costClusters.length - 1; i++) {
             clusters.add(costClusters[i]);
         }
         List<NodeSubProblem<T>> toCluster = costClusters[nbPreserved];
