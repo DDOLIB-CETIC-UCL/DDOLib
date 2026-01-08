@@ -7,7 +7,7 @@ import static java.lang.Math.*;
 public class DistanceUtil {
 
     /**
-     * Computes the jaccard Distance between the two given sets.
+     * Computes the Jaccard Distance between the two given sets.
      * @param a the first set
      * @param b the second set
      * @return 1 - |a ∩ b| / |a ∪ b|
@@ -26,11 +26,11 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the weighted jaccard Distance between the two given sets.
+     * Computes the weighted Jaccard Distance between the two given sets.
      * @param a the first set
      * @param b the second set
      * @param weights the weight of each element in a and b
-     * @return 1 - |a ∩ b| / |a ∪ b|
+     * @return the weighted Jaccard Distance between a and b
      */
     public static double weightedJaccardDistance(BitSet a, BitSet b, double[] weights) {
         double intersectionSize =0;
@@ -46,7 +46,7 @@ public class DistanceUtil {
             }
         }
 
-        return 1 - intersectionSize / unionSize;
+        return 1.0 - intersectionSize / unionSize;
     }
 
     /**
@@ -95,5 +95,21 @@ public class DistanceUtil {
         return tmp.cardinality();
     }
 
+    /**
+     * Computes the weighted symmetric difference between a and b
+     * @param a the first set
+     * @param b the second set
+     * @return the weighted symmetric difference between a and b
+     */
+    public static double weightedSymmetricDifferenceDistance(BitSet a, BitSet b, double[] weights) {
+        BitSet tmp = (BitSet) a.clone();
+        tmp.xor(b);
 
+        double distance = 0;
+        for (int i = tmp.nextSetBit(0); i > 0; i = tmp.nextSetBit(i)) {
+            distance += weights[i];
+        }
+
+        return distance;
+    }
 }
