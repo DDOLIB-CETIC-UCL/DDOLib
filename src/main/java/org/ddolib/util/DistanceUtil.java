@@ -1,6 +1,7 @@
 package org.ddolib.util;
 
 import java.util.BitSet;
+import java.util.List;
 
 import static java.lang.Math.*;
 
@@ -77,6 +78,23 @@ public class DistanceUtil {
         double distance = 0.0;
         for (int dim = 0; dim < a.length; dim++) {
             distance += pow(a[dim] - b[dim], 2);
+        }
+        distance = sqrt(distance);
+
+        return distance;
+    }
+
+    /**
+     * Computes the Euclidean Distance between the two given list of coordinates
+     * @param a the first array
+     * @param b the second array
+     * @return the Euclidean distance between a and b
+     */
+    public static double euclideanDistance(List<Integer> a, List<Integer> b) {
+        assert a.size() == b.size();
+        double distance = 0.0;
+        for (int dim = 0; dim < a.size(); dim++) {
+            distance += pow(a.get(dim) - b.get(dim), 2);
         }
         distance = sqrt(distance);
 
