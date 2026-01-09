@@ -4,6 +4,9 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -112,6 +115,24 @@ public interface DdoModel<T> extends Model<T> {
      */
     default boolean exportDot() {
         return false;
+    }
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    default ReductionStrategy<T> relaxStrategy() {
+        return new CostBased<>((o1, o2) -> 0);
+    }
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    default ReductionStrategy<T> restrictStrategy() {
+        return new CostBased<>((o1, o2) -> 0);
+    }
+
+    default StateDistance<T> stateDistance() {
+        return (o1, o2) -> 0;
     }
 
 

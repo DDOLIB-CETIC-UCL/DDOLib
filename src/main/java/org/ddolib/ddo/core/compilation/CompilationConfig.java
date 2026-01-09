@@ -4,6 +4,8 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
@@ -31,6 +33,7 @@ import java.util.Optional;
  * @see SimpleCache
  * @see CutSetType
  * @see DebugLevel
+ * @see ReductionStrategy
  */
 public class CompilationConfig<T> {
 
@@ -108,6 +111,11 @@ public class CompilationConfig<T> {
      * @see DebugLevel
      */
     public DebugLevel debugLevel = null;
+
+    /**
+     * The Reduction Strategy that should be used to select nodes to merge/drop
+     */
+    public ReductionStrategy<T> reductionStrategy = null;
 
     /**
      * Initialize the parameters of the compilation.

@@ -170,7 +170,8 @@ public class TSProblem implements Problem<TSState> {
     public TSState initialState() {
         BitSet scenes = new BitSet(nbScene);
         scenes.set(0, nbScene, true); // All scenes must be performed
-        return new TSState(scenes, new BitSet(nbScene));
+        // return new TSState(scenes, new BitSet(nbScene));
+        return new TSState(scenes, new BitSet(nbScene), onLocationActors(scenes, new BitSet(nbScene)));
     }
 
     @Override
@@ -205,7 +206,8 @@ public class TSProblem implements Problem<TSState> {
         newRemaining.set(decision.val(), false);
         newMaybe.set(decision.val(), false);
 
-        return new TSState(newRemaining, newMaybe);
+        // return new TSState(newRemaining, newMaybe);
+        return new TSState(newRemaining, newMaybe, onLocationActors(newRemaining, newMaybe));
     }
 
     @Override
@@ -222,8 +224,15 @@ public class TSProblem implements Problem<TSState> {
             cost += costs[actor] * duration[scene];
         }
 
-
         return cost;
+    }
+
+    public int sceneCost(int scene) {
+        int sum = 0;
+        for (int actor = this.actors[scene].nextSetBit(0); actor >= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {
+            sum += costs[actor];
+        }
+        return sum;
     }
 
 
@@ -241,6 +250,20 @@ public class TSProblem implements Problem<TSState> {
         for (int i = 0; i < nbScene; i++) {
             if (!state.maybeScenes().get(i)) {
                 if (state.remainingScenes().get(i)) after.or(actors[i]);
+                else before.or(actors[i]);
+            }
+        }
+        after.and(before); // Already present actors
+        return after;
+    }
+
+    public BitSet onLocationActors(BitSet remainingScenes, BitSet maybeScenes) {
+        BitSet before = new BitSet(); //Actors for past scenes
+        BitSet after = new BitSet(); // Actors for future scenes
+
+        for (int i = 0; i < nbScene; i++) {
+            if (!maybeScenes.get(i)) {
+                if (remainingScenes.get(i)) after.or(actors[i]);
                 else before.or(actors[i]);
             }
         }
