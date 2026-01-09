@@ -1,5 +1,10 @@
 package org.ddolib.modeling;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
 /**
  * Defines the structure of an optimization model solved using the
  * <b>Anytime Column Search (ACS)</b> algorithm within the
@@ -31,5 +36,120 @@ public interface AcsModel<T> extends Model<T> {
 
     default int columnWidth() {
         return 5;
+    }
+
+    /**
+     * Returns a copy of this model but with another column width.
+     *
+     * @param width The column width to use.
+     * @return A copy of this model but with another column width.
+     */
+    default AcsModel<T> setColumnWidth(int width) {
+        return new AcsModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return AcsModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return AcsModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return AcsModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return AcsModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AcsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public int columnWidth() {
+                return width;
+            }
+        };
+    }
+
+    @Override
+    default AcsModel<T> disableDominance() {
+        return new AcsModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return AcsModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return AcsModel.this.lowerBound();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return AcsModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AcsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public int columnWidth() {
+                return AcsModel.this.columnWidth();
+            }
+        };
+    }
+
+    @Override
+    default AcsModel<T> disableLowerBound() {
+        return new AcsModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return AcsModel.this.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return AcsModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return AcsModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AcsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public int columnWidth() {
+                return AcsModel.this.columnWidth();
+            }
+        };
     }
 }
