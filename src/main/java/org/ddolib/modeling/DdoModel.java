@@ -1,5 +1,6 @@
 package org.ddolib.modeling;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -8,6 +9,9 @@ import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
 /**
  * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model.
  * <p>
@@ -28,6 +32,7 @@ import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
  *   <li>Specify how to maintain and update the frontier ({@link #frontier()}).</li>
  *   <li>Indicate optional behaviors like caching ({@link #useCache()}) or exporting the structure ({@link #exportDot()}).</li>
  * </ul>
+ *
  * @param <T> the state type
  */
 public interface DdoModel<T> extends Model<T> {
@@ -42,6 +47,7 @@ public interface DdoModel<T> extends Model<T> {
      * @return the {@link Relaxation} object associated with this model
      */
     Relaxation<T> relaxation();
+
     /**
      * Returns the ranking function used to order states within a layer.
      * <p>
@@ -55,6 +61,7 @@ public interface DdoModel<T> extends Model<T> {
     default StateRanking<T> ranking() {
         return (o1, o2) -> 0;
     }
+
     /**
      * Returns the width heuristic controlling the maximum number of nodes per layer.
      * <p>
@@ -66,6 +73,7 @@ public interface DdoModel<T> extends Model<T> {
     default WidthHeuristic<T> widthHeuristic() {
         return new FixedWidth<>(10);
     }
+
     /**
      * Returns the frontier management strategy used to store and expand the current
      * layer of the decision diagram.
@@ -79,6 +87,7 @@ public interface DdoModel<T> extends Model<T> {
     default Frontier<T> frontier() {
         return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
     }
+
     /**
      * Indicates whether caching should be used during the diagram construction.
      * <p>
@@ -91,6 +100,7 @@ public interface DdoModel<T> extends Model<T> {
     default boolean useCache() {
         return false;
     }
+
     /**
      * Indicates whether the generated decision diagram should be exported
      * to a DOT file (Graphviz format).
@@ -122,6 +132,50 @@ public interface DdoModel<T> extends Model<T> {
 
     default StateDistance<T> stateDistance() {
         return (o1, o2) -> 0;
+    }
+
+    /**
+     * Convert this model into a model for the exact solver.
+     *
+     * @return a model usable by an {@link ExactModel}
+     */
+    default ExactModel<T> toExactModel() {
+        return new ExactModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public ExactModel<T> toExactModel() {
+                return DdoModel.this.toExactModel();
+            }
+        };
     }
 
 }
