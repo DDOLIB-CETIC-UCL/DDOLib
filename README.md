@@ -145,7 +145,8 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 3. **Running the tests**:
 
-   For the IntelliJ IDEA editor, take a look at our [wiki page](wiki/tests.md) to learn about our tests convention and
+   For the IntelliJ IDEA editor, take a look at our [wiki page](docs/tests_conventions.md) to learn about our tests
+   convention and
    how to configure your IDE properly.
 
    From the terminal, navigate to the root directory of the project and run the following command:
