@@ -34,6 +34,7 @@ public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
      */
     @Override
     public double fastLowerBound(T state, Set<Integer> variables) {
-        return Integer.MIN_VALUE;
+        if (variables.isEmpty()) { return 0;}
+        else return Integer.MIN_VALUE;
     }
 }
