@@ -12,6 +12,9 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -154,7 +157,6 @@ public final class SequentialSolver<T> implements Solver {
     private boolean firstRelaxed = true;
 
     private DominanceChecker<T> dominance;
-
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -380,6 +382,12 @@ public final class SequentialSolver<T> implements Solver {
         compilation.cutSetType = frontier.cutSetType();
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
+
+        if (type == CompilationType.Relaxed) {
+            compilation.reductionStrategy = model.relaxStrategy();
+        } else if(type == CompilationType.Restricted) {
+            compilation.reductionStrategy = model.restrictStrategy();
+        }
 
         return compilation;
     }

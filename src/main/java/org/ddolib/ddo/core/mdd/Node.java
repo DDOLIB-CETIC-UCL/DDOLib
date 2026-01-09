@@ -11,7 +11,7 @@ import java.util.List;
  * dynamic programming, search, or pruning operations.
  * </p>
  */
-final class Node {
+final public class Node {
     /** The length of the longest path to this node. */
     public double value;
 

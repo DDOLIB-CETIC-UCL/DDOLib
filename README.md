@@ -140,7 +140,7 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 2. **Clone the Repository**:
    Launch IntelliJ IDEA.
-   Select File > Open and navigate to the maxicp folder you cloned.
+   Select File > Open and navigate to the DDOLib folder you cloned.
    Open the `pom.xml` file.
 
 3. **Running the tests**:

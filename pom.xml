@@ -62,6 +62,12 @@
             <organization>UCLouvain / ICTEAM / INGI</organization>
             <organizationUrl></organizationUrl>
         </developer>
+        <developer>
+            <name>Roger Kameugne</name>
+            <email>roger.kameugne@uclouvain.be</email>
+            <organization>UCLouvain / ICTEAM / INGI</organization>
+            <organizationUrl></organizationUrl>
+        </developer>
     </developers>
 
     <properties>
@@ -81,6 +87,11 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.jupiter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
