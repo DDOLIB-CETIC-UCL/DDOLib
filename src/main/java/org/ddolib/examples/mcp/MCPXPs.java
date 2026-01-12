@@ -226,52 +226,49 @@ public class MCPXPs {
         writer.close();
     }
 
-    private static void xpBnB() throws IOException {
-        MCPProblem[] instances = loadInstances();
+    private static void xpBnB(String instance) throws IOException {
+        MCPProblem problem = new MCPProblem(instance);
+        String[] nameParts = instance.split("/");
+        FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+            // FileWriter writer = new FileWriter("xps/bnbMCP.csv");
+            //writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+        writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
+                "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
 
-        for (MCPProblem problem: instances) {
-            //String[] nameParts = instance.split("/");
-            //FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
-            FileWriter writer = new FileWriter("xps/bnbMCP.csv");
-            writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
-            // writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-            //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
-
-            int maxWidth = 60;
+        int maxWidth = 60;
             //  int kmeansIter = -1;
-            double hybridFactor = -1;
-            ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
-            ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
-            for (ClusterType relaxType : relaxTypes) {
-                for (ClusterType restrictType : restrictTypes) {
-                    int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans) ? new int[]{-1} : new int[]{5};
-                    long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
-                    for (long seed : seeds) {
-                        for (int kmeansIter : kmeansIters) {
-                            DdoModel<MCPState> model = getModel(problem,
-                                    maxWidth,
-                                    relaxType,
-                                    restrictType,
-                                    seed,
-                                    kmeansIter,
-                                    hybridFactor);
-                            assert problem.name.isPresent();
-                            System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
-                            long startTime = System.currentTimeMillis();
-                            Solution solution = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
+        double hybridFactor = -1;
+        ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        for (ClusterType relaxType : relaxTypes) {
+            for (ClusterType restrictType : restrictTypes) {
+                int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans) ? new int[]{-1} : new int[]{5};
+                long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                for (long seed : seeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        DdoModel<MCPState> model = getModel(problem,
+                                maxWidth,
+                                relaxType,
+                                restrictType,
+                                seed,
+                                kmeansIter,
+                                hybridFactor);
+                        assert problem.name.isPresent();
+                        System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), restrictType, maxWidth, kmeansIter, seed, hybridFactor);
+                        long startTime = System.currentTimeMillis();
+                        Solution solution = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
 
-                            writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
-                                    problem.name.get(),
-                                    relaxType,
-                                    restrictType,
-                                    maxWidth,
-                                    seed,
-                                    kmeansIter,
-                                    hybridFactor,
-                                    solution.statistics().toCSV()
-                            ));
-                            writer.flush();
-                        }
+                        writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                                problem.name.get(),
+                                relaxType,
+                                restrictType,
+                                maxWidth,
+                                seed,
+                                kmeansIter,
+                                hybridFactor,
+                                solution.statistics().toCSV()
+                        ));
+                        writer.flush();
                     }
                 }
             }
@@ -280,7 +277,7 @@ public class MCPXPs {
 
     public static void main(String[] args) {
         try {
-            xpBnB();
+            xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
