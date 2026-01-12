@@ -2,6 +2,11 @@ package org.ddolib.examples.mcp;
 
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -51,7 +56,7 @@ public final class MCPDdoMain {
      */
 
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_4.txt").toString() : args[0];
         final MCPProblem problem = new MCPProblem(instance);
         DdoModel<MCPState> model = new DdoModel<MCPState>() {
             @Override
@@ -73,9 +78,26 @@ public final class MCPDdoMain {
             public MCPRanking ranking() {
                 return new MCPRanking();
             }
+
+            @Override
+            public WidthHeuristic<MCPState> widthHeuristic() {
+                return new FixedWidth<>(20);
+            }
+
+            @Override
+            public ReductionStrategy<MCPState> relaxStrategy() {
+                //return new CostBased<>(new MCPRanking());
+                return new GHP<>(new MCPDistance(), 46545);
+            }
+
+            @Override
+            public ReductionStrategy<MCPState> restrictStrategy() {
+                return new CostBased<>(new MCPRanking());
+                //return new GHP<>(new MCPDistance(), 46545);
+            }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.restrictedDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(bestSolution.statistics());

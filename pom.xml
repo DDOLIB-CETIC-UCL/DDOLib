@@ -82,6 +82,13 @@
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.jupiter.version}</version>
         </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/com.gurobi/gurobi -->
+        <dependency>
+            <groupId>com.gurobi</groupId>
+            <artifactId>gurobi</artifactId>
+            <version>12.0.3</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.github.haifengl</groupId>
             <artifactId>smile-core</artifactId>

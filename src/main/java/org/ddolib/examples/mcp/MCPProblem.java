@@ -66,7 +66,7 @@ public class MCPProblem implements Problem<MCPState> {
     /**
      * Optional name for the instance to ease readability in tests.
      */
-    private Optional<String> name = Optional.empty();
+    public Optional<String> name = Optional.empty();
 
     /**
      * Constructs an MCP problem from a given graph.
