@@ -1,4 +1,4 @@
-package org.ddolib.examples.mcp;
+package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
@@ -9,8 +9,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.knapsack.KSProblem;
-import org.ddolib.examples.knapsack.KSXPs;
+import org.ddolib.examples.mcp.*;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -20,34 +19,36 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.BitSet;
 
-public class MCPXPs {
+public class MispXPs {
 
-    protected static MCPProblem[] loadInstances() throws IOException {
-        String instancePath = Path.of("data", "MCP").toString();
+    protected static MispProblem[] loadInstances() throws IOException {
+        String instancePath = Path.of("data", "MISP").toString();
         System.out.println(instancePath);
         File instanceDir = new File(instancePath);
-        String pattern = "mcp_\\d*.txt"; // regex
+        //String pattern = "/.*\\.dot$/gm"; // regex
 
-        File[] files = instanceDir.listFiles(f -> f.isFile() && f.getName().matches(pattern));
-        MCPProblem[] problems = new MCPProblem[files.length];
+        File[] files = instanceDir.listFiles(File::isFile);
+        assert files != null;
+        MispProblem[] problems = new MispProblem[files.length];
         for (int i = 0; i < files.length; i++) {
-            problems[i] = new MCPProblem(files[i].getAbsolutePath());
+            problems[i] = new MispProblem(files[i].getAbsolutePath());
         }
 
         return problems;
     }
 
-    private static DdoModel<MCPState> getModel(MCPProblem problem,
-                                                    int maxWidth,
-                                                    ClusterType clusterType,
-                                                    long seed,
-                                                    int kmeansIter,
-                                                    double hybridFactor) {
+    private static DdoModel<BitSet> getModel(MispProblem problem,
+                                             int maxWidth,
+                                             ClusterType clusterType,
+                                             long seed,
+                                             int kmeansIter,
+                                             double hybridFactor) {
         return getModel(problem, maxWidth, clusterType, clusterType, seed, kmeansIter, hybridFactor);
     }
 
-    private static DdoModel<MCPState> getModel(MCPProblem problem,
+    private static DdoModel<BitSet> getModel(MispProblem problem,
                                                     int maxWidth,
                                                     ClusterType relaxType,
                                                     ClusterType restrictType,
@@ -56,22 +57,22 @@ public class MCPXPs {
                                                     double hybridFactor) {
         return new DdoModel<>() {
             @Override
-            public Problem<MCPState> problem() {
+            public Problem<BitSet> problem() {
                 return problem;
             }
 
             @Override
-            public MCPRelax relaxation() {
-                return new MCPRelax(problem);
+            public MispRelax relaxation() {
+                return new MispRelax(problem);
             }
 
             @Override
-            public MCPRanking ranking() {
-                return new MCPRanking();
+            public MispRanking ranking() {
+                return new MispRanking();
             }
 
             @Override
-            public WidthHeuristic<MCPState> widthHeuristic() {
+            public WidthHeuristic<BitSet> widthHeuristic() {
                 return new FixedWidth<>(maxWidth);
             }
 
@@ -81,50 +82,50 @@ public class MCPXPs {
             }
 
             @Override
-            public StateDistance<MCPState> stateDistance() {
-                return new MCPDistance();
+            public StateDistance<BitSet> stateDistance() {
+                return new MispDistance();
             }
 
             @Override
-            public ReductionStrategy<MCPState> relaxStrategy() {
-                ReductionStrategy<MCPState> strat = null;
+            public ReductionStrategy<BitSet> relaxStrategy() {
+                ReductionStrategy<BitSet> strat = null;
                 switch (relaxType) {
-                    case Cost -> strat = new CostBased<>(new MCPRanking());
+                    case Cost -> strat = new CostBased<>(new MispRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MCPCoordinates(), kmeansIter, false);
-                    case Hybrid -> strat = new Hybrid<>(new MCPRanking(), stateDistance(), hybridFactor, seed);
+                    case Kmeans -> strat = new Kmeans<>(new MispCoordinates(problem), kmeansIter, false);
+                    case Hybrid -> strat = new Hybrid<>(new MispRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
                 return strat;
             }
 
             @Override
-            public ReductionStrategy<MCPState> restrictStrategy() {
-                ReductionStrategy<MCPState> strat = null;
+            public ReductionStrategy<BitSet> restrictStrategy() {
+                ReductionStrategy<BitSet> strat = null;
                 switch (restrictType) {
-                    case Cost -> strat = new CostBased<>(new MCPRanking());
+                    case Cost -> strat = new CostBased<>(new MispRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new MCPCoordinates(), kmeansIter, false);
-                    case Hybrid -> strat = new Hybrid<>(new MCPRanking(), stateDistance(), hybridFactor, seed);
+                    case Kmeans -> strat = new Kmeans<>(new MispCoordinates(problem), kmeansIter, false);
+                    case Hybrid -> strat = new Hybrid<>(new MispRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
                 return strat;
             }
 
             @Override
-            public DominanceChecker<MCPState> dominance() {
+            public DominanceChecker<BitSet> dominance() {
                 return new DefaultDominanceChecker<>();
                 //return new SimpleDominanceChecker<>(new MCPDominance(), problem.nbVars());
             }
 
             @Override
-            public Frontier<MCPState> frontier() {
+            public Frontier<BitSet> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
             }
 
             @Override
-            public FastLowerBound<MCPState> lowerBound() {
-                return new MCPFastLowerBound(problem);
+            public FastLowerBound<BitSet> lowerBound() {
+                return new MispFastLowerBound(problem);
             }
 
             @Override
@@ -135,11 +136,11 @@ public class MCPXPs {
     }
 
     private static void xpRelaxation() throws IOException {
-        MCPProblem[] instances = loadInstances();
-        FileWriter writer = new FileWriter("xps/relaxationMCP.csv");
-        writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;Incumbent;RunTime(ms);\n");
+        MispProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/relaxationMisp.csv");
+        writer.write("Instance;Optimal;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;Incumbent;RunTime(ms)\n");
 
-        for (MCPProblem problem : instances) {
+        for (MispProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
@@ -148,7 +149,7 @@ public class MCPXPs {
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
-                                DdoModel<MCPState> model = getModel(problem,
+                                DdoModel<BitSet> model = getModel(problem,
                                         maxWidth,
                                         clusterType,
                                         seed,
@@ -181,11 +182,11 @@ public class MCPXPs {
     }
 
     private static void xpRestriction() throws IOException {
-        MCPProblem[] instances = loadInstances();
-        FileWriter writer = new FileWriter("xps/restrictionMCP.csv");
-        writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;Incumbent;RunTime(ms);\n");
+        MispProblem[] instances = loadInstances();
+        FileWriter writer = new FileWriter("xps/restrictionMisp.csv");
+        writer.write("Instance;Optimal;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;Incumbent;RunTime(ms)\n");
 
-        for (MCPProblem problem : instances) {
+        for (MispProblem problem : instances) {
             for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
                 for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random, ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
                     int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
@@ -194,7 +195,7 @@ public class MCPXPs {
                     for (long seed : ghpSeeds) {
                         for (int kmeansIter : kmeansIters) {
                             for (double hybridFactor : hybridFactors) {
-                                DdoModel<MCPState> model = getModel(problem,
+                                DdoModel<BitSet> model = getModel(problem,
                                         maxWidth,
                                         clusterType,
                                         seed,
@@ -227,7 +228,7 @@ public class MCPXPs {
     }
 
     private static void xpBnB(String instance) throws IOException {
-        MCPProblem problem = new MCPProblem(instance);
+        MispProblem problem = new MispProblem(instance);
         String[] nameParts = instance.split("/");
         FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
             // FileWriter writer = new FileWriter("xps/bnbMCP.csv");
@@ -246,7 +247,7 @@ public class MCPXPs {
                 long[] seeds = (relaxType != ClusterType.GHP && restrictType != ClusterType.GHP && restrictType != ClusterType.Random) ? new long[]{465465} : new long[]{465465, 546351, 87676};
                 for (long seed : seeds) {
                     for (int kmeansIter : kmeansIters) {
-                        DdoModel<MCPState> model = getModel(problem,
+                        DdoModel<BitSet> model = getModel(problem,
                                 maxWidth,
                                 relaxType,
                                 restrictType,

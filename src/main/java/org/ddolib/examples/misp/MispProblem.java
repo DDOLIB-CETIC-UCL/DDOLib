@@ -42,12 +42,12 @@ public class MispProblem implements Problem<BitSet> {
     /**
      * Optional value of the optimal solution, if known.
      */
-    private Optional<Double> optimal = Optional.empty();
+    protected Optional<Double> optimal = Optional.empty();
 
     /**
      * Optional name for readability of tests and outputs.
      */
-    private Optional<String> name = Optional.empty();
+    protected Optional<String> name = Optional.empty();
 
     /**
      * Constructs a MISP problem with a given state, adjacency lists, weights, and known optimal value.

@@ -80,24 +80,8 @@ public class MCPILP {
             }
             model.setObjective(objective, GRB.MAXIMIZE);
             model.optimize();
-           // System.out.println(model.get(GRB.DoubleAttr.ObjVal));
 
-            /*for (int i = 0; i < edgeVar.length; i++) {
-                if (instance.graph.weightOf(i / n, i % n) != 0) {
-                    System.out.println("*****");
-                    System.out.println("y: " + edgeVar[i].get(GRB.DoubleAttr.X));
-                    System.out.println("i: " + vertexVar[i/n].get(GRB.DoubleAttr.X));
-                    System.out.println("j: " + vertexVar[i%n].get(GRB.DoubleAttr.X));
-                    System.out.println(instance.graph.weightOf(i/n, i%n));
-                }
-            }
-
-            for (GRBVar var: vertexVar) {
-                System.out.println(var.get(GRB.DoubleAttr.X));
-            }
-            System.out.println(model.get(GRB.DoubleAttr.ObjVal));*/
-
-            return model.get(GRB.DoubleAttr.ObjVal) / 2;
+            return model.get(GRB.DoubleAttr.ObjVal) / 2; // edges weights are counted twice in the objective
 
         } catch (GRBException e) {
             System.err.println(e.getMessage());
@@ -110,8 +94,7 @@ public class MCPILP {
 
         // MCPProblem[] instances = MCPXPs.loadInstances();
         MCPProblem[] instances = new MCPProblem[2];
-        instances[0] = new MCPProblem("data/MCP/mcp_38.txt");
-        instances[1] = new MCPProblem("data/MCP/mcp_39.txt");
+        instances[0] = new MCPProblem("data/MCP/mcp_100.txt");
         // StringBuilder outputs = new StringBuilder();
         // outputs.append("Instance;Objective\n");
         try {
