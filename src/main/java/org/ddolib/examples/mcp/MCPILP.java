@@ -108,7 +108,10 @@ public class MCPILP {
 
     public static void main(String[] args) throws IOException {
 
-        MCPProblem[] instances = MCPXPs.loadInstances();
+        // MCPProblem[] instances = MCPXPs.loadInstances();
+        MCPProblem[] instances = new MCPProblem[2];
+        instances[0] = new MCPProblem("data/MCP/mcp_38.txt");
+        instances[1] = new MCPProblem("data/MCP/mcp_39.txt");
         // StringBuilder outputs = new StringBuilder();
         // outputs.append("Instance;Objective\n");
         try {
