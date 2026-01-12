@@ -45,9 +45,9 @@ public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
                 if (stateCsSize < bestCsSize) {
                     stateIsBetter = true;
                 } else if (stateCsSize == bestCsSize) {
-                    // 3. 已完成工位数更少
-                    int bestCompleted = bestState.completedStations().size();
-                    int stateCompleted = state.completedStations().size();
+                    // 3. 已完成任务数更少（近似工位数）
+                    int bestCompleted = bestState.completedTasks().size();
+                    int stateCompleted = state.completedTasks().size();
 
                     if (stateCompleted < bestCompleted) {
                         stateIsBetter = true;
