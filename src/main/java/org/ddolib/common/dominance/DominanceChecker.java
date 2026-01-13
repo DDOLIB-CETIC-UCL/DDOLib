@@ -6,13 +6,12 @@ import org.ddolib.modeling.Dominance;
  * Object that, given a dominance, will check if a state is dominated.
  *
  * @param <T> The type of states.
- * @param <K> The type of dominance keys.
  */
-public abstract class DominanceChecker<T, K> {
+public abstract class DominanceChecker<T> {
 
-    protected final Dominance<T, K> dominance;
+    protected final Dominance<T> dominance;
 
-    protected DominanceChecker(Dominance<T, K> dominance) {
+    protected DominanceChecker(Dominance<T> dominance) {
         this.dominance = dominance;
     }
 

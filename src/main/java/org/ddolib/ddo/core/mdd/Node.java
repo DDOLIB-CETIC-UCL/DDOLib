@@ -4,57 +4,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is an atomic node from the decision diagram. Per-se, it does not
- * hold much interpretable information.
+ * Represents an atomic node in a decision diagram.
+ * <p>
+ * By itself, a {@code Node} does not hold much interpretable information, but it serves as a building block
+ * for constructing decision diagrams. It stores edges, values, and auxiliary information used in
+ * dynamic programming, search, or pruning operations.
+ * </p>
  */
-final class Node {
-    /**
-     * The length of the longest path to this node
-     */
+final public class Node {
+    /** The length of the longest path to this node. */
     public double value;
-    /**
-     * The length of the longest suffix of this node (bottom part of a local bound)
-     */
+
+    /** The length of the longest suffix of this node (used in local bound calculations). */
     public Double suffix;
-    /**
-     * The edge terminating the longest path to this node
-     */
+
+    /** The edge terminating the longest path to this node. */
     public Edge best;
-    /**
-     * The list of edges leading to this node
-     */
+
+    /** The list of edges leading to this node. */
     public List<Edge> edges;
 
-    /**
-     * The type of this node (exact, relaxed, etc...)
-     */
+    /** The type of this node (e.g., exact, relaxed). */
     public NodeType type;
 
-    /**
-     * The falg to indicate if a node is marked
-     */
+    /** Flag indicating if the node is marked. */
     public boolean isMarked;
 
-    /**
-     * An overapproximation of the longest from this node to a terminal node
-     */
-    public double fub = Double.POSITIVE_INFINITY;
+    /** Overapproximation of the shortest path from this node to a terminal node. */
+    public double flb = Double.NEGATIVE_INFINITY;
 
-    // USED IF WORKING WITH CACHE
+    // Fields used if working with a cache
 
-    /**
-     * The flag to indicate if a node is in exact cutset
-     */
+    /** Flag indicating if the node is in the exact cutset. */
     public boolean isInExactCutSet = false;
 
-    /**
-     * The flag to indicate if a node is above the exact cutset
-     */
+    /** Flag indicating if the node is above the exact cutset. */
     public boolean isAboveExactCutSet = false;
 
 
     /**
-     * Creates a new node
+     * Creates a new {@code Node} with the given value.
+     * <p>
+     * Initializes suffix and best edge to {@code null}, creates an empty list of edges,
+     * sets the type to {@link NodeType#EXACT}, and marks the node as unmarked.
+     * </p>
+     *
+     * @param value the initial value of the node (length of the longest path to this node)
      */
     public Node(final double value) {
         this.value = value;
@@ -65,7 +60,11 @@ final class Node {
         this.isMarked = false;
     }
 
-
+    /**
+     * Returns a string representation of this node, including its value, suffix, best edge, and parent edges.
+     *
+     * @return a string describing the node
+     */
     @Override
     public String toString() {
         return String.format("Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s",
