@@ -330,6 +330,9 @@ public final class ACSSolver<T> implements Solver {
             if (debugLevel != DebugLevel.OFF)
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
+            if(newState==null){
+                continue;
+            }
             double cost = problem.transitionCost(state, decision);
             if (cost < 0) {
                 negativeTransitionCosts = true;
