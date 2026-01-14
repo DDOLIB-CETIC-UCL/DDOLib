@@ -88,7 +88,7 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(10);
+                return new FixedWidth<>(500);
             }
 
             @Override

@@ -1,0 +1,1 @@
+%%incumbent:294.0 gap:100.0 time:595

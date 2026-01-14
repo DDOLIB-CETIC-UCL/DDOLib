@@ -6,6 +6,8 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.smic.*;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
@@ -95,6 +97,12 @@ public class SMICDdoMain {
             public SMICRanking ranking() {
                 return new SMICRanking();
             }
+
+            @Override
+            public WidthHeuristic<SMICState> widthHeuristic() {
+                return new FixedWidth<>(100);
+            }
+
 
             @Override
             public Frontier<SMICState> frontier() {

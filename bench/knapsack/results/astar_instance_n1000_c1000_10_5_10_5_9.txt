@@ -1,0 +1,3 @@
+%%incumbent:-1459.0 gap:0.00205620287868403 time:14189
+%%incumbent:-1462.0 gap:0.0 time:17956
+%%optimality:OPTIMAL gap:0.0 time:17956

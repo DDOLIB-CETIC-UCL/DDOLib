@@ -2,7 +2,7 @@
 set -e
 
 INST_DIR="../../data/Knapsack"
-TIME_LIMIT=4000
+TIME_LIMIT=600000
 OUT_DIR="results"
 
 mkdir -p "$OUT_DIR"
@@ -30,9 +30,7 @@ for inst in "${INSTANCES[@]}"; do
   OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
   ./astar_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
     2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
+#  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
+#  ./acs_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
+#    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
 done
