@@ -8,8 +8,7 @@ import java.util.Objects;
  * <p>
  * 状态支配规则用于剪枝，当一个状态被另一个状态支配时，可以安全地丢弃被支配的状态。
  * </p>
- * 
- * <h3>支配规则设计</h3>
+ *
  * <p>
  * 对于两个状态 s1 和 s2，如果满足以下条件，则 s1 被 s2 支配（s2 dominate s1）：
  * </p>
@@ -73,12 +72,12 @@ public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
         int totalUsed2 = state2.usedRobots() + (state2.currentStationHasRobot() ? 1 : 0);
 
         // 规则2：state2 使用更少的机器人 -> state2 更优 -> state1 被支配
-        if (totalUsed2 < totalUsed1) {
+        if (getKey(state1).equals(getKey(state2)) && totalUsed2 < totalUsed1) {
             return true;
         }
 
         // 规则1：总使用机器人相等时，比较当前工位的机器人状态
-        if (totalUsed1 == totalUsed2) {
+        if (getKey(state1).equals(getKey(state2)) && totalUsed1 == totalUsed2) {
             // usedRobots 相等的情况
             if (state1.usedRobots() == state2.usedRobots()) {
                 // 若 state2 有机器人而 state1 没有 -> state1 被支配

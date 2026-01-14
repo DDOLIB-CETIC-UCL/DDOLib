@@ -30,7 +30,7 @@ public class NestedSALBPDdoMain {
 //                ? Path.of("data", "SALBP1", "medium data set_n=50", "instance_n=50_25.alb").toString()
 //                : args[0];
 //        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_501.alb").toString()
+//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_441.alb").toString()
 //                : args[0];
         //    final String instance = args.length >= 1 ?
         //            args[0] : Path.of("data", "test_5tasks_3.alb").toString();
@@ -45,7 +45,7 @@ public class NestedSALBPDdoMain {
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 5;
+                Integer.parseInt(args[2]) : 3;
 
         System.out.println("=== 嵌套动态规划：一型装配线平衡 + 人机协同调度 ===");
         System.out.println("Instance: " + instance);
