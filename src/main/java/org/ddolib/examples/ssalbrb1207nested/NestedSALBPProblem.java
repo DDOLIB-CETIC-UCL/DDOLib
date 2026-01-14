@@ -40,6 +40,61 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         this.predecessors = innerProblem.predecessors;
         this.successors = innerProblem.successors;
         this.makespanCache = new HashMap<>();
+
+        // 问题可行性检查：检查是否存在任务即使用最快的加工方式也超过节拍时间
+        checkProblemFeasibility();
+
+        // 打印需要机器人的任务信息
+        System.out.println("\n=== 任务分析 ===");
+        int robotRequiredCount = 0;
+        for (int task = 0; task < nbTasks; task++) {
+            if (taskRequiresRobot(task)) {
+                robotRequiredCount++;
+                System.out.printf("任务 %d 必须使用机器人: humanDur=%d > cycleTime=%d, minDur=%d%n",
+                        task + 1, innerProblem.humanDurations[task], cycleTime,
+                        Math.min(innerProblem.humanDurations[task],
+                                Math.min(innerProblem.robotDurations[task],
+                                        innerProblem.collaborationDurations[task])));
+            }
+        }
+        System.out.printf("共有 %d 个任务必须使用机器人，可用机器人数: %d%n", robotRequiredCount, totalRobots);
+        System.out.println();
+    }
+
+    /**
+     * 检查问题是否可行：是否存在任务的最小加工时间超过节拍时间
+     * 如果存在，则问题不可行，直接抛出异常
+     */
+    private void checkProblemFeasibility() {
+        for (int task = 0; task < nbTasks; task++) {
+            int minDuration = getMinDuration(task);
+            if (minDuration > cycleTime) {
+                throw new IllegalArgumentException(
+                        String.format("问题不可行：任务 %d 的最小加工时间 %d 超过节拍时间 %d。" +
+                                        "(Human=%d, Robot=%d, Collab=%d)",
+                                task + 1, minDuration, cycleTime,
+                                innerProblem.humanDurations[task],
+                                innerProblem.robotDurations[task],
+                                innerProblem.collaborationDurations[task]));
+            }
+        }
+    }
+
+    /**
+     * 获取任务的最小加工时间（三种模式中最小的）
+     */
+    private int getMinDuration(int task) {
+        return Math.min(innerProblem.humanDurations[task],
+                Math.min(innerProblem.robotDurations[task],
+                        innerProblem.collaborationDurations[task]));
+    }
+
+    /**
+     * 检查任务是否必须使用机器人（人工时间超过节拍时间）
+     * 如果人工时间 > cycleTime，则该任务单独在无机器人工位上无法完成
+     */
+    public boolean taskRequiresRobot(int task) {
+        return innerProblem.humanDurations[task] > cycleTime;
     }
 
     @Override
@@ -47,7 +102,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         // 初始状态：没有已完成工位，也没有当前工位（第一个任务会触发新开工位1）
         // currentStationHasRobot设为false只是占位，因为currentStationTasks为空
         return new NestedSALBPState(
-                Collections.emptyList(),        // 已完成工位列表为空
+                Collections.emptySet(),         // 已完成任务为空
                 Collections.emptySet(),         // 当前工位任务为空（还未开始第一个工位）
                 false,                          // 当前工位机器人状态（占位，因为工位还未开始）
                 0);                             // 已使用机器人数为0
@@ -63,6 +118,17 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     @Override
     public Iterator<Integer> domain(NestedSALBPState state, int var) {
         domainCallCount++;
+
+        // 首次调用时打印详细信息
+        if (domainCallCount == 1) {
+            System.out.printf("[DEBUG-INIT] 首次domain调用: var=%d, state=%s%n", var, state);
+            System.out.printf("[DEBUG-INIT] remaining=%d, currentStation=%s, hasRobot=%s, remainingRobots=%d%n",
+                    state.getRemainingTasks(nbTasks).size(),
+                    state.currentStationTasks(),
+                    state.currentStationHasRobot(),
+                    state.remainingRobots(totalRobots));
+        }
+
         long now = System.currentTimeMillis();
         if (now - lastLogTime > 5000) {  // 每5秒打印一次
             System.out.printf("[DEBUG] domain=%d, innerDDO=%d (hit=%d, miss=%d), var=%d, remaining=%d, usedRobots=%d, csHasRobot=%s%n",
@@ -81,22 +147,85 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         Set<Integer> currentStationTasks = state.currentStationTasks();
         int remainingRobots = state.remainingRobots(totalRobots);
 
-        // 枚举每个 eligible 任务
-        for (int task : remaining) {
-            // 检查前继约束
-            if (!isTaskEligible(task, remaining, currentStationTasks)) {
-                continue;
+        // 【关键】计算剩余任务中有多少必须使用机器人
+        // 用于决定是否需要预留机器人
+        int tasksRequiringRobot = 0;
+        for (int t : remaining) {
+            if (taskRequiresRobot(t)) {
+                tasksRequiringRobot++;
             }
+        }
+        // 注意：不需要减去currentStationTasks中的任务，因为它们已经不在remaining中了
+        // 如果当前工位有机器人且包含需要机器人的任务，这些任务已经"消耗"了一个机器人
+        // 而remainingRobots已经正确地减去了当前工位的机器人（如果有的话）
+
+        // 机器人是否紧缺：
+        // - 严格紧缺：remainingRobots < tasksRequiringRobot（机器人真的不够）
+        // - 刚好够用：remainingRobots == tasksRequiringRobot（需要预留，但可以探索）
+        boolean robotsCriticallyShort = (remainingRobots < tasksRequiringRobot);
+        boolean robotsAreScarce = (remainingRobots <= tasksRequiringRobot);
+
+        // 【关键优化】检查是否有 eligible 且需要机器人的任务
+        List<Integer> eligibleRobotTasks = new ArrayList<>();
+        List<Integer> eligibleNormalTasks = new ArrayList<>();
+        for (int task : remaining) {
+            if (isTaskEligible(task, remaining, currentStationTasks)) {
+                if (taskRequiresRobot(task)) {
+                    eligibleRobotTasks.add(task);
+                } else {
+                    eligibleNormalTasks.add(task);
+                }
+            }
+        }
+
+        // 决定要处理哪些任务
+        // 只有当机器人**真正不够**时才强制只处理需要机器人的任务
+        // 当机器人刚好够时，处理所有任务（但用robotsAreScarce限制机器人分配）
+        List<Integer> tasksToProcess;
+        if (!eligibleRobotTasks.isEmpty() && robotsCriticallyShort) {
+            // 机器人真的不够了，只处理需要机器人的任务
+            tasksToProcess = eligibleRobotTasks;
+        } else {
+            // 处理所有 eligible 任务
+            tasksToProcess = new ArrayList<>();
+            tasksToProcess.addAll(eligibleRobotTasks);
+            tasksToProcess.addAll(eligibleNormalTasks);
+        }
+
+        // 枚举要处理的任务（已经过滤过eligible）
+        for (int task : tasksToProcess) {
+            // 检查该任务是否必须使用机器人（人工时间超过节拍时间）
+            boolean requiresRobot = taskRequiresRobot(task);
 
             if (currentStationTasks.isEmpty()) {
                 // ===== 新开工位：机器人决策分叉点 =====
-                // 优先生成有机器人的分支（鼓励使用机器人提高工位容量）
-                if (remainingRobots > 0) {
-                    decisions.add(task * 2 + 1);  // 新工位，分配机器人（优先）
+                if (requiresRobot) {
+                    // 任务必须使用机器人，只有当有剩余机器人时才生成分支
+                    if (remainingRobots > 0) {
+                        decisions.add(task * 2 + 1);  // 新工位，必须分配机器人
+                    }
+                    // 不生成无机器人分支，因为该任务无法在无机器人工位完成
+                } else {
+                    // 任务不强制需要机器人
+                    // 【关键修改】如果机器人紧缺，不要把机器人分配给不需要它的任务
+                    if (remainingRobots > 0 && !robotsAreScarce) {
+                        decisions.add(task * 2 + 1);  // 新工位，分配机器人
+                    }
+                    decisions.add(task * 2 + 0);  // 新工位，不分配机器人
                 }
-                decisions.add(task * 2 + 0);  // 新工位，不分配机器人
             } else {
                 // ===== 当前工位已打开：判断能否继续放入 =====
+
+                // 如果任务必须使用机器人，但当前工位没有机器人，则必须新开工位
+                if (requiresRobot && !state.currentStationHasRobot()) {
+                    // 该任务无法加入当前无机器人工位，必须新开有机器人工位
+                    if (remainingRobots > 0) {
+                        decisions.add(task * 2 + 1);  // 新工位，必须分配机器人
+                    }
+                    // 如果没有剩余机器人，则该分支不可行，不生成决策
+                    continue;
+                }
+
                 Set<Integer> testTasks = new LinkedHashSet<>(currentStationTasks);
                 testTasks.add(task);
 
@@ -106,12 +235,47 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                     // 乐观认为可以放入当前工位
                     decisions.add(task * 2 + 0);  // 加入当前工位
                 } else {
-                    // 乐观估计都不可行，需要新开工位
-                    if (remainingRobots > 0) {
-                        decisions.add(task * 2 + 1);  // 新工位，分配机器人（优先）
+                    // 乐观估计认为不可行，需要新开工位
+                    if (requiresRobot) {
+                        // 任务必须使用机器人
+                        if (remainingRobots > 0) {
+                            decisions.add(task * 2 + 1);  // 新工位，必须分配机器人
+                        }
+                        // 【关键修复】如果没有剩余机器人，但当前工位有机器人，
+                        // 仍然尝试加入当前工位（让transition()做精确判断）
+                        // 这允许多个需要机器人的任务共享同一个有机器人的工位
+                        if (state.currentStationHasRobot()) {
+                            decisions.add(task * 2 + 0);  // 尝试加入当前有机器人工位
+                        }
+                    } else {
+                        // 任务不强制需要机器人
+                        // 【关键修改】如果机器人紧缺，不要把机器人分配给不需要它的任务
+                        if (remainingRobots > 0 && !robotsAreScarce) {
+                            decisions.add(task * 2 + 1);  // 新工位，分配机器人
+                        }
+                        decisions.add(task * 2 + 0);  // 尝试加入当前工位，或开新无机器人工位
                     }
-                    decisions.add(task * 2 + 0);  // 新工位，不分配机器人
                 }
+            }
+        }
+
+        // 首次调用时打印生成的决策
+        if (domainCallCount == 1) {
+            System.out.printf("[DEBUG-INIT] 机器人预留: tasksRequiringRobot=%d, remainingRobots=%d, robotsAreScarce=%s%n",
+                    tasksRequiringRobot, remainingRobots, robotsAreScarce);
+            System.out.printf("[DEBUG-INIT] 生成的决策数: %d, decisions=%s%n", decisions.size(), decisions);
+        }
+
+        // 调试：检查是否返回空决策列表
+        if (decisions.isEmpty() && !state.isComplete(nbTasks)) {
+            System.out.printf("[WARNING] domain() 返回空决策！var=%d, remaining=%d, currentStation=%s, hasRobot=%s, remainingRobots=%d%n",
+                    var, remaining.size(), currentStationTasks, state.currentStationHasRobot(), remainingRobots);
+            // 打印所有remaining任务的信息
+            for (int task : remaining) {
+                boolean eligible = isTaskEligible(task, remaining, currentStationTasks);
+                boolean needsRobot = taskRequiresRobot(task);
+                System.out.printf("  Task %d: eligible=%s, requiresRobot=%s, humanDur=%d%n",
+                        task + 1, eligible, needsRobot, innerProblem.humanDurations[task]);
             }
         }
 
@@ -164,8 +328,14 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      * 可能过于乐观，但不影响正确性（transition 会精确判断）
      */
     private boolean isStationFeasibleOptimistic(Set<Integer> tasks, boolean hasRobot) {
-        // 无机器人：只能用 human 模式，用 sumHuman 判断
+        // 首先检查：如果工位没有机器人，但存在任务必须使用机器人，则不可行
         if (!hasRobot) {
+            for (int task : tasks) {
+                if (taskRequiresRobot(task)) {
+                    return false;  // 该任务人工时间超过节拍时间，必须有机器人
+                }
+            }
+            // 无机器人：只能用 human 模式，用 sumHuman 判断
             return sumHumanDurations(tasks) <= cycleTime;
         }
 
@@ -179,6 +349,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      * 判断任务集合在给定机器人配置下是否 feasible（makespan ≤ cycleTime）
      *
      * 优化策略（lazy evaluation）：
+     * - 首先检查是否存在任务必须使用机器人但工位没有机器人
      * - 先计算 sum(humanDurations)
      * - 如果 sum ≤ cycleTime → 无论有没有机器人都 feasible，不需要调用内层 DDO
      * - 如果 sum > cycleTime：
@@ -186,6 +357,15 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      *   - 有机器人：需要调用内层 DDO 精确计算
      */
     private boolean isStationFeasible(Set<Integer> tasks, boolean hasRobot) {
+        // 首先检查：如果工位没有机器人，但存在任务必须使用机器人，则不可行
+        if (!hasRobot) {
+            for (int task : tasks) {
+                if (taskRequiresRobot(task)) {
+                    return false;  // 该任务人工时间超过节拍时间，必须有机器人
+                }
+            }
+        }
+
         int sumHuman = sumHumanDurations(tasks);
 
         if (sumHuman <= cycleTime) {
@@ -585,18 +765,18 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             newStationTasks.add(task);
 
             return new NestedSALBPState(
-                    state.completedStations(),
+                    state.completedTasks(),
                     newStationTasks,
                     state.currentStationHasRobot(),  // 机器人状态不变
                     state.usedRobots());
         } else {
             // 新开工位
-            List<Set<Integer>> newCompletedStations = new ArrayList<>(state.completedStations());
+            Set<Integer> newCompletedTasks = new LinkedHashSet<>(state.completedTasks());
             int newUsedRobots = state.usedRobots();
 
-            // 只有当前工位不为空时，才将其加入已完成列表
+            // 只有当前工位不为空时，才将其任务加入已完成集合
             if (!state.currentStationTasks().isEmpty()) {
-                newCompletedStations.add(state.currentStationTasks());
+                newCompletedTasks.addAll(state.currentStationTasks());
                 if (state.currentStationHasRobot()) {
                     newUsedRobots++;
                 }
@@ -604,10 +784,23 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
             Set<Integer> freshStationTasks = Set.of(task);
 
+            // 【关键修复】如果任务需要机器人，新工位必须有机器人
+            // 即使决策中robotFlag=0，也要强制分配机器人给新工位
+            boolean newStationHasRobot = assignRobot;
+            if (taskRequiresRobot(task)) {
+                // 检查是否有剩余机器人可用
+                int availableRobots = totalRobots - newUsedRobots;
+                if (availableRobots > 0) {
+                    newStationHasRobot = true;  // 强制分配机器人
+                }
+                // 如果没有剩余机器人，保持assignRobot的值
+                // （这种情况理论上不应该发生，因为domain()应该已经过滤掉了）
+            }
+
             return new NestedSALBPState(
-                    newCompletedStations,
+                    newCompletedTasks,
                     freshStationTasks,
-                    assignRobot,  // 新工位的机器人决策由 robotFlag 决定
+                    newStationHasRobot,  // 新工位的机器人决策
                     newUsedRobots);
         }
     }
@@ -657,6 +850,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     public double evaluate(int[] solution) throws org.ddolib.modeling.InvalidSolutionException {
         // 重建状态并计算工位数
         NestedSALBPState state = initialState();
+        int stationCount = 0;
 
         for (int decisionVal : solution) {
             // 解码决策
@@ -683,18 +877,19 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 newStationTasks.add(task);
 
                 state = new NestedSALBPState(
-                        state.completedStations(),
+                        state.completedTasks(),
                         newStationTasks,
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
                 // 新开工位
-                List<Set<Integer>> newCompletedStations = new ArrayList<>(state.completedStations());
+                Set<Integer> newCompletedTasks = new LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
 
-                // 只有当前工位不为空时，才将其加入已完成列表
+                // 只有当前工位不为空时，才将其任务加入已完成集合
                 if (!state.currentStationTasks().isEmpty()) {
-                    newCompletedStations.add(state.currentStationTasks());
+                    newCompletedTasks.addAll(state.currentStationTasks());
+                    stationCount++;  // 完成一个工位
                     if (state.currentStationHasRobot()) {
                         newUsedRobots++;
                     }
@@ -702,15 +897,18 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
                 Set<Integer> freshStationTasks = Set.of(task);
                 state = new NestedSALBPState(
-                        newCompletedStations,
+                        newCompletedTasks,
                         freshStationTasks,
                         assignRobot,
                         newUsedRobots);
             }
         }
 
-        // 总工位数
-        return state.getUsedStations();
+        // 总工位数 = 已完成工位 + (当前工位非空则+1)
+        if (!state.currentStationTasks().isEmpty()) {
+            stationCount++;
+        }
+        return stationCount;
     }
 
 }

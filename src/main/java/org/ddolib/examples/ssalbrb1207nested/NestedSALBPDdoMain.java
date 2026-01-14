@@ -1,7 +1,12 @@
 package org.ddolib.examples.ssalbrb1207nested;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
@@ -18,17 +23,17 @@ import java.nio.file.Path;
 public class NestedSALBPDdoMain {
     public static void main(String[] args) throws IOException {
         // 数据文件
-//        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "large data set_n=100", "instance_n=100_458.alb").toString()
-//                : args[0];
-//        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "medium data set_n=50", "instance_n=50_361.alb").toString()
-//                : args[0];
         final String instance = args.length == 0
-                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_144.alb").toString()
+                ? Path.of("data", "SALBP1", "large data set_n=100", "instance_n=100_441.alb").toString()
                 : args[0];
-//        final String instance = args.length >= 1 ?
-//                args[0] : Path.of("data", "test_5tasks_3.alb").toString();
+//        final String instance = args.length == 0
+//                ? Path.of("data", "SALBP1", "medium data set_n=50", "instance_n=50_25.alb").toString()
+//                : args[0];
+//        final String instance = args.length == 0
+//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_501.alb").toString()
+//                : args[0];
+        //    final String instance = args.length >= 1 ?
+        //            args[0] : Path.of("data", "test_5tasks_3.alb").toString();
 
 //        final String instance = args.length >= 1 ?
 //                args[0] : Path.of("src", "test", "resources", "NestedSALBP", "test_5tasks_3.alb").toString();
@@ -36,11 +41,11 @@ public class NestedSALBPDdoMain {
 
         // 循环时间（cycle time）
         final int cycleTime = args.length >= 2 ?
-                Integer.parseInt(args[1]) : 1000;
+                Integer.parseInt(args[1]) : 1500;
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 3;
+                Integer.parseInt(args[2]) : 5;
 
         System.out.println("=== 嵌套动态规划：一型装配线平衡 + 人机协同调度 ===");
         System.out.println("Instance: " + instance);
@@ -73,7 +78,22 @@ public class NestedSALBPDdoMain {
 
             @Override
             public WidthHeuristic<NestedSALBPState> widthHeuristic() {
-                return new FixedWidth<>(20);
+                return new FixedWidth<>(10);
+            }
+
+            @Override
+            public DominanceChecker<NestedSALBPState> dominance() {
+                return new SimpleDominanceChecker<>(new NestedSALBPDominance(), problem.nbTasks);
+            }
+
+            @Override
+            public Frontier<NestedSALBPState> frontier() {
+                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
             }
 
             @Override
@@ -182,19 +202,19 @@ public class NestedSALBPDdoMain {
                 newStationTasks.add(task);
 
                 state = new NestedSALBPState(
-                        state.completedStations(),
+                        state.completedTasks(),
                         newStationTasks,
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
                 // 新开工位
-                java.util.List<java.util.Set<Integer>> newCompletedStations =
-                        new java.util.ArrayList<>(state.completedStations());
+                java.util.Set<Integer> newCompletedTasks =
+                        new java.util.LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
 
-                // 只有当前工位不为空时，才将其加入已完成列表
+                // 只有当前工位不为空时，才将其任务加入已完成集合
                 if (!state.currentStationTasks().isEmpty()) {
-                    newCompletedStations.add(state.currentStationTasks());
+                    newCompletedTasks.addAll(state.currentStationTasks());
                     if (state.currentStationHasRobot()) {
                         newUsedRobots++;
                     }
@@ -202,7 +222,7 @@ public class NestedSALBPDdoMain {
 
                 java.util.Set<Integer> freshStationTasks = java.util.Set.of(task);
                 state = new NestedSALBPState(
-                        newCompletedStations,
+                        newCompletedTasks,
                         freshStationTasks,
                         assignRobot,
                         newUsedRobots);
@@ -246,6 +266,6 @@ public class NestedSALBPDdoMain {
             System.out.printf("  Makespan: %d%n", problem.computeStationMakespan(state.currentStationTasks(), state.currentStationHasRobot()));
         }
 
-        System.out.println("\nTotal stations used: " + state.getUsedStations());
+        System.out.println("\nTotal stations used: " + stationNum);
     }
 }
