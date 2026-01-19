@@ -54,7 +54,7 @@ public class TSRelax implements Relaxation<TSState> {
         }
         mergedMaybe.andNot(mergedRemaining);
 
-        return new TSState(mergedRemaining, mergedMaybe);
+        return new TSState(mergedRemaining, mergedMaybe, problem.onLocationActors(mergedRemaining, mergedMaybe));
     }
     /**
      * Returns the relaxed edge cost between two states.
