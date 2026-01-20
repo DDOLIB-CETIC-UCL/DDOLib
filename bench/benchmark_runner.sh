@@ -60,10 +60,10 @@ run_solver(){
   # If class is not defined, skip it
   if [ -z "$java_class" ]; then return; fi
 
-  local log_file="$LOG_DIR/${output_prefix}_${instance}.log"
-  local res_file="$OUT_DIR/${output_prefix}_${instance}.txt"
+  local log_file="$LOG_DIR/${script_name}_${instance}.log"
+  local res_file="$OUT_DIR/${script_name}_${instance}.txt"
 
-  echo "  > Running $output_prefix on $instance"
+  echo "  > Running $script_name on $instance"
 
   pushd ../.. > /dev/null
 
