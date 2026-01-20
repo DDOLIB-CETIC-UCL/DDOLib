@@ -33,5 +33,5 @@ if os.path.exists(data_file_path):
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig("ks_graph_memory.png") # save image
+    plt.savefig("smic_graph_memory.png") # save image
     plt.show()

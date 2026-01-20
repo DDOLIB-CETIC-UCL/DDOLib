@@ -117,7 +117,7 @@ if os.path.exists(folder_path):
         print(df_results)
 
         # Optional: Save to CSV
-        df_results.to_csv("consolidated_results_memory.csv", index=False)
+        df_results.to_csv("smic_consolidated_results.csv", index=False)
         print("\nSaved to consolidated_results_memory.csv")
     else:
         print("No valid data found.")
