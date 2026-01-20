@@ -4,10 +4,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Represents an instance of the <b>Bounded Knapsack Problem (BKP)</b>.
@@ -25,6 +22,8 @@ public class BKSProblem implements Problem<Integer> {
     public final int[] values;
     public final int[] weights;
     public final int[] quantities;
+    public final Optional<String> name;
+    public final Optional<Double> optimal;
 
     /**
      * Constructs a bounded knapsack problem from explicitly given parameters.
@@ -39,6 +38,8 @@ public class BKSProblem implements Problem<Integer> {
         this.values = values;
         this.weights = weights;
         this.quantities = quantities;
+        this.name = Optional.empty();
+        this.optimal = Optional.empty();
     }
 
     /**
@@ -93,6 +94,8 @@ public class BKSProblem implements Problem<Integer> {
         this.values = values;
         this.weights = weights;
         this.quantities = quantity;
+        this.name = Optional.of(String.format("%d_%d_%s_%d", n, range, type.toString(), seed));
+        this.optimal = Optional.empty();
     }
 
     /**
