@@ -1,7 +1,9 @@
 package org.ddolib.util;
 
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.*;
 
@@ -110,6 +112,64 @@ public class DistanceUtil {
         BitSet tmp = (BitSet) a.clone();
         tmp.xor(b);
         return tmp.cardinality();
+    }
+
+    /**
+     * Computes the size of the symmetric difference between a and b
+     * @param a the first set
+     * @param b the second set
+     * @return |a XOR b|
+     */
+    public static double symmetricDifferenceDistance(Set<Integer> a, Set<Integer> b) {
+        Set<Integer> intersection = new HashSet<>(a);
+        Set<Integer> union = new HashSet<>(a);
+        intersection.retainAll(b);
+        union.addAll(b);
+        return union.size() - intersection.size();
+    }
+
+    /**
+     * Computes the size of the symmetric difference between a and b
+     * @param a the first set
+     * @param b the second set
+     * @return |a XOR b|
+     */
+    public static double weightedSymmetricDifferenceDistance(Set<Integer> a, Set<Integer> b, double[] weights) {
+        Set<Integer> intersection = new HashSet<>(a);
+        Set<Integer> union = new HashSet<>(a);
+        intersection.retainAll(b);
+        union.addAll(b);
+
+        double distance = 0.0;
+        for (int item: union) {
+            if (!intersection.contains(item)) {
+                distance += weights[item];
+            }
+        }
+
+        return distance;
+    }
+
+    /**
+     * Computes the size of the symmetric difference between a and b
+     * @param a the first set
+     * @param b the second set
+     * @return |a XOR b|
+     */
+    public static double weightedSymmetricDifferenceDistance(Set<Integer> a, Set<Integer> b, int[] weights) {
+        Set<Integer> intersection = new HashSet<>(a);
+        Set<Integer> union = new HashSet<>(a);
+        intersection.retainAll(b);
+        union.addAll(b);
+
+        double distance = 0.0;
+        for (int item: union) {
+            if (!intersection.contains(item)) {
+                distance += weights[item];
+            }
+        }
+
+        return distance;
     }
 
     /**
