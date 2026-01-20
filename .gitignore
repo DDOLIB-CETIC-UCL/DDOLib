@@ -5,3 +5,4 @@ target/
 output/
 results/
 bench/visu/bench_env
+logs/

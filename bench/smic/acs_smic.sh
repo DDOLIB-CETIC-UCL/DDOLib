@@ -1,8 +1,11 @@
+#!/usr/bin/env bash
+
+set -e
+
 cd ../..
-pmd
+
 mvn exec:java \
   -Dexec.mainClass="org.ddolib.examples.bench.SMICAcsMain" \
-  -Dexec.args="bench/smic/$1 $2" \
-  | grep '^%%'
+  -Dexec.args="bench/smic/$1 $2"
 
 cd bench/smic

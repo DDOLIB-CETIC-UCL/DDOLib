@@ -3,9 +3,11 @@ set -e
 
 INST_DIR="../../data/TSPTW/AFG"
 TIME_LIMIT=4000
-OUT_DIR="results/AFG"
+OUT_DIR="results"
+LOG_DIR="logs"
 
 mkdir -p "$OUT_DIR"
+mkdir -p "$LOG_DIR"
 
 INSTANCES=(
   rbg010a.tw
@@ -25,96 +27,50 @@ INSTANCES=(
   rbg233.tw
 )
 
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
 
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
+run_solver(){
+  local script_name=$1
+  local output_prefix=$2
+  local instance=$3
 
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
 
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
+  local log_file="$LOG_DIR/${output_prefix}_${instance}.log"
+  local res_file="$OUT_DIR/${output_prefix}_${instance}.txt"
 
-done
+  echo "  > Running $output_prefix on $instance"
 
-INST_DIR="../../data/TSPTW/Dumas"
-OUT_DIR="results/Dumas"
+  set +e
+  bash "$script_name" "$INST_DIR/$instance" "$TIME_LIMIT" > "$log_file" 2>&1
+  local exit_code=$?
+  set -e
 
-mkdir -p "$OUT_DIR"
+  if [ $exit_code -ne 0 ]; then
+    echo "    [ERROR] Script $script_name failed for $instance"
+    echo " --- Error Log Preview (last 20 lines) ---"
+    tail -n 20 "$log_file"
+    echo " --- End of Log"
+    exit 1
+  else
+    grep '^%%' "$log_file" > "$res_file"
+    echo "    [SUCCESS] Results saved to $res_file"
+  fi
+}
 
-INSTANCES=(
-  n60w20.001.txt
-  n60w20.002.txt
-  n60w20.003.txt
-  n60w20.004.txt
-  n60w20.005.txt
-  n100w20.001.txt
-  n100w20.002.txt
-  n100w20.003.txt
-  n100w20.004.txt
-  n100w20.005.txt
-  n200w40.001.txt
-  n200w40.002.txt
-  n200w40.003.txt
-  n200w40.004.txt
-  n200w40.005.txt
-)
 
 for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
+  echo "## Processing $inst" >&2
 
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
+  # Run DDO
+  run_solver "ddo_tsptw.sh" "ddo" "$inst"
 
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
+  # Run A*
+  run_solver "astar_tsptw.sh" "astar" "$inst"
 
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
+  # Run ACS
+  run_solver "acs_tsptw.sh" "acs" "$inst"
 
+  echo ""
 done
 
-
-INST_DIR="../../data/TSPTW/OhlmannThomas"
-OUT_DIR="results/OhlmannThomas"
-
-mkdir -p "$OUT_DIR"
-
-INSTANCES=(
-  n150w120.001.txt
-  n150w120.002.txt
-  n150w120.003.txt
-  n150w120.004.txt
-  n150w120.005.txt
-  n200w120.001.txt
-  n200w120.002.txt
-  n200w120.003.txt
-  n200w120.004.txt
-  n200w120.005.txt
-)
-
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
-done
-
+#Remove the log file
+rm -rf "$LOG_DIR"
