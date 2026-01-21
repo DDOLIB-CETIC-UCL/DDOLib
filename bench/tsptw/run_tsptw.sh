@@ -1,12 +1,29 @@
 #!/usr/bin/env bash
 set -e
 
-INST_DIR="../../data/TSPTW/AFG"
+################################################################################
+# TSPTW BENCHMARK CONFIGURATION
+#
+# This script defines the specific configuration (instances, data paths, classes)
+# for the TSPTW problem (Traveling Salesman Problem with Time Windows).
+#
+# It relies on the shared 'benchmark_runner.sh' script to perform the actual
+# execution logic (compilation, logging, error handling).
+#
+# To run: ./run_tsptw.sh
+################################################################################
+
+# Problem Configuration
+PROBLEM_NAME="tsptw"
+DATA_DIR="data/TSPTW/AFG"
 TIME_LIMIT=4000
-OUT_DIR="results/AFG"
 
-mkdir -p "$OUT_DIR"
+# Main Java Classes Definition
+CLASS_DDO="org.ddolib.examples.bench.TSPTWDdoMain"
+CLASS_ASTAR="org.ddolib.examples.bench.TSPTWAstarMain"
+CLASS_ACS="org.ddolib.examples.bench.TSPTWAcsMain"
 
+# Instances List
 INSTANCES=(
   rbg010a.tw
   rbg016a.tw
@@ -25,96 +42,5 @@ INSTANCES=(
   rbg233.tw
 )
 
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
-done
-
-INST_DIR="../../data/TSPTW/Dumas"
-OUT_DIR="results/Dumas"
-
-mkdir -p "$OUT_DIR"
-
-INSTANCES=(
-  n60w20.001.txt
-  n60w20.002.txt
-  n60w20.003.txt
-  n60w20.004.txt
-  n60w20.005.txt
-  n100w20.001.txt
-  n100w20.002.txt
-  n100w20.003.txt
-  n100w20.004.txt
-  n100w20.005.txt
-  n200w40.001.txt
-  n200w40.002.txt
-  n200w40.003.txt
-  n200w40.004.txt
-  n200w40.005.txt
-)
-
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
-done
-
-
-INST_DIR="../../data/TSPTW/OhlmannThomas"
-OUT_DIR="results/OhlmannThomas"
-
-mkdir -p "$OUT_DIR"
-
-INSTANCES=(
-  n150w120.001.txt
-  n150w120.002.txt
-  n150w120.003.txt
-  n150w120.004.txt
-  n150w120.005.txt
-  n200w120.001.txt
-  n200w120.002.txt
-  n200w120.003.txt
-  n200w120.004.txt
-  n200w120.005.txt
-)
-
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_tsptw.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-
-done
-
+# Load and execute the runner
+source ../benchmark_runner.sh

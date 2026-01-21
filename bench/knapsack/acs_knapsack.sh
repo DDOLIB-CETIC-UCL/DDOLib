@@ -1,7 +1,0 @@
-cd ../..
-mvn exec:java \
-  -Dexec.mainClass="org.ddolib.examples.bench.KSAcsMain" \
-  -Dexec.args="bench/knapsack/$1 $2" \
-  | grep '^%%'
-
-cd bench/knapsack

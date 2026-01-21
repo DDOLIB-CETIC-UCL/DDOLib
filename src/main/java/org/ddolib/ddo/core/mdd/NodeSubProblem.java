@@ -23,7 +23,7 @@ import static org.ddolib.util.MathUtil.saturatedAdd;
  *
  * @param <T> the type of state associated with the node
  */
-final class NodeSubProblem<T> {
+public final class NodeSubProblem<T> {
     /** The state associated with this node. */
     public final T state;
 
@@ -84,4 +84,9 @@ final class NodeSubProblem<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
         return String.format("%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
     }
+
+    public double getValue() {
+        return node.value;
+    }
+
 }

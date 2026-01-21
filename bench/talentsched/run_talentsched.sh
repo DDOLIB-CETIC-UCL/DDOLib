@@ -1,12 +1,29 @@
 #!/usr/bin/env bash
 set -e
 
-INST_DIR="../../data/TalentScheduling"
+################################################################################
+# TALENT SCHEDULING BENCHMARK CONFIGURATION
+#
+# This script defines the specific configuration (instances, data paths, classes)
+# for the Talent Scheduling problem.
+#
+# It relies on the shared 'benchmark_runner.sh' script to perform the actual
+# execution logic (compilation, logging, error handling).
+#
+# To run: ./run_talentsched.sh
+################################################################################
+
+# Problem Configuration
+PROBLEM_NAME="talentsched"
+DATA_DIR="data/TalentScheduling"
 TIME_LIMIT=4000
-OUT_DIR="results"
 
-mkdir -p "$OUT_DIR"
+# Main Java Classes Definition
+CLASS_DDO="org.ddolib.examples.bench.TSDdoMain"
+CLASS_ASTAR="org.ddolib.examples.bench.TSAstarMain"
+CLASS_ACS="org.ddolib.examples.bench.TSAcsMain"
 
+# Instances List
 INSTANCES=(
   film103.dat
   film105.dat
@@ -20,19 +37,5 @@ INSTANCES=(
   Shaw2020
 )
 
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1| grep '^%%' > "$OUT_FILE_ASTAR"
-
-  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-  ./acs_talentsched.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-done
+# Load and execute the runner
+source ../benchmark_runner.sh

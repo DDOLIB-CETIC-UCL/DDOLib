@@ -10,7 +10,6 @@ import org.ddolib.examples.smic.SMICState;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -64,7 +63,7 @@ public class SMICAstarMain {
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_2.txt").toString() : args[0];
-        final long timeout = args.length == 2 ? Long.parseLong(args[1]): 100;
+        final long timeout = args.length == 2 ? Long.parseLong(args[1]) : 100;
         final SMICProblem problem = new SMICProblem(instance);
         Model<SMICState> model = new Model<>() {
             @Override
@@ -83,13 +82,19 @@ public class SMICAstarMain {
             }
         };
 
+        System.gc();
+        long memoryBefore = MemoryUtil.getUsedMemory();
+
         Solution bestSolution = Solvers.minimizeAstar(model, s -> s.runTimeMs() > timeout,
                 (sol, s) -> {
-                    System.out.println("%%incumbent:"+s.incumbent()+" gap:"+s.gap()+" time:"+s.runTimeMs());
+                    System.out.println("%%incumbent:" + s.incumbent() + " gap:" + s.gap() + " time:" + s.runTimeMs());
                 });
+        long memoryAfter = MemoryUtil.getUsedMemory();
 
-        System.out.println(bestSolution.statistics());
-        System.out.println(bestSolution);
+        System.out.println("%%optimality:" + bestSolution.statistics().status()
+                + " gap:" + bestSolution.statistics().gap()
+                + " time:" + bestSolution.statistics().runTimeMs() + " "
+                + MemoryUtil.printMemoryConsumption((memoryAfter - memoryBefore)));
 
     }
 }

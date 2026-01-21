@@ -3,5 +3,7 @@
 target/
 *.DS_Store
 output/
+
+bench/*/results/
+bench/*/logs/
 bench/visu/bench_env
-results/

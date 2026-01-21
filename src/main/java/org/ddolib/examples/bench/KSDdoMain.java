@@ -102,14 +102,19 @@ public class KSDdoMain {
             }
         };
 
+        System.gc();
+        long memoryBefore = MemoryUtil.getUsedMemory();
 
         Solution bestSolution = Solvers.minimizeDdo(model,
                 s -> s.runTimeMs() > timeout,
                 (sol, s) -> {
                     System.out.println("%%incumbent:" + s.incumbent() + " gap:" + s.gap() + " time:" + s.runTimeMs());
                 });
-        System.out.println("%%optimality:" + bestSolution.statistics().status() + " gap:" + bestSolution.statistics().gap() + " time:" + bestSolution.statistics().runTimeMs());
+        long memoryAfter = MemoryUtil.getUsedMemory();
 
-
+        System.out.println("%%optimality:" + bestSolution.statistics().status()
+                + " gap:" + bestSolution.statistics().gap()
+                + " time:" + bestSolution.statistics().runTimeMs() + " "
+                + MemoryUtil.printMemoryConsumption((memoryAfter - memoryBefore)));
     }
 }

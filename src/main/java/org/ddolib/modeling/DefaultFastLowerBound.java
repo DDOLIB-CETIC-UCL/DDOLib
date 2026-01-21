@@ -28,12 +28,19 @@ public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
      * effectively indicating that no lower bound information is available.
      * </p>
      *
-     * @param state the current state for which the lower bound is estimated
+     * @param state     the current state for which the lower bound is estimated
      * @param variables the set of remaining variable indices yet to be assigned
      * @return always {@code Integer.MIN_VALUE}
      */
     @Override
     public double fastLowerBound(T state, Set<Integer> variables) {
-        return Integer.MIN_VALUE;
+        // must be very careful with this default implementation,
+        // it must be a lower-bound, but when reaching the terminal state
+        // with no remaining variables, it should return 0 otherwise
+        // A* search will not work correctly as it will incorrectly terminate
+        // by thinking it has found an optimal solution when popping the terminal state
+        // from the open list.
+        if (variables.isEmpty()) return 0;
+        else return Integer.MIN_VALUE;
     }
 }

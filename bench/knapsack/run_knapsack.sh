@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
 set -e
 
-INST_DIR="../../data/Knapsack"
-TIME_LIMIT=600000
-OUT_DIR="results"
 
-mkdir -p "$OUT_DIR"
+################################################################################
+# KNAPSACK BENCHMARK CONFIGURATION
+#
+# This script defines the specific configuration (instances, data paths, classes)
+# for the Knapsack problem.
+#
+# It relies on the shared 'benchmark_runner.sh' script to perform the actual
+# execution logic (compilation, logging, error handling).
+#
+# To run: ./run_knapsack.sh
+################################################################################
 
+# Problem Configuration
+PROBLEM_NAME="knapsack"
+DATA_DIR="data/Knapsack"
+TIME_LIMIT=4000
+
+# Main Java Classes Definition
+CLASS_DDO="org.ddolib.examples.bench.KSDdoMain"
+CLASS_ASTAR="org.ddolib.examples.bench.KSAstarMain"
+CLASS_ACS="org.ddolib.examples.bench.KSAcsMain"
+
+# Instances List
 INSTANCES=(
   instance_n1000_c1000_10_5_10_5_0
   instance_n1000_c1000_10_5_10_5_1
@@ -20,17 +38,5 @@ INSTANCES=(
   instance_n1000_c1000_10_5_10_5_9
 )
 
-for inst in "${INSTANCES[@]}"; do
-  echo "## Running $inst" >&2
-
-  OUT_FILE_DDO="$OUT_DIR/ddo_${inst}.txt"
-  ./ddo_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_DDO"
-
-  OUT_FILE_ASTAR="$OUT_DIR/astar_${inst}.txt"
-  ./astar_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-    2>&1 | grep '^%%' > "$OUT_FILE_ASTAR"
-#  OUT_FILE_ACS="$OUT_DIR/acs_${inst}.txt"
-#  ./acs_knapsack.sh "$INST_DIR/$inst" "$TIME_LIMIT" \
-#    2>&1 | grep '^%%' > "$OUT_FILE_ACS"
-done
+# Load and execute the runner
+source ../benchmark_runner.sh
