@@ -8,6 +8,8 @@ import org.ddolib.ddo.core.cache.Threshold;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -103,7 +105,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
-
 
     /**
      * Creates a new linked decision diagram.
@@ -232,7 +233,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 switch (config.compilationType) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking);
+                        restrict(maxWidth, ranking, config.reductionStrategy);
                         break;
                     case Relaxed:
                         if (exact) {
@@ -242,7 +243,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+                        relax(maxWidth, relax, config.reductionStrategy);
                         break;
                     case Exact:
                         /* nothing to do */
@@ -709,79 +710,85 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
+
      */
-    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking) {
-        this.currentLayer.sort(ranking);
-        this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
+
+        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.isEmpty()) continue;
+
+            cluster.sort(ranking);
+            currentLayer.add(cluster.getFirst());
+            cluster.clear();
+        }
     }
 
     /**
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
-                       final Relaxation<T> relax) {
-        this.currentLayer.sort(ranking);
+    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
+        // generates clusters
+        List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
 
-        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
-        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
-
-        // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> mergedNode = null;
-        boolean fresh = true;
-        for (NodeSubProblem<T> n : keep) {
-            if (n.state.equals(merged)) {
-                mergedNode = n;
-                fresh = false;
-                break;
+        // For each cluster, merge all the nodes together and add the new node to the layer.
+        for (List<NodeSubProblem<T>> cluster: clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
             }
-        }
-        // when the merged node is new, set its type to relaxed
-        if (mergedNode == null) {
-            Node newNode = new Node(Double.POSITIVE_INFINITY);
-            newNode.type = NodeType.RELAXED;
-            mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
-        }
 
-        // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : merge) {
-            mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
+            if (cluster.isEmpty()) {
+                continue;
+            }
 
-            for (Edge e : drop.node.edges) {
-                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
-
-                double value = saturatedAdd(e.origin.value, rcost);
-                e.weight = rcost;
-                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.type == NodeType.RELAXED) {
+            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            NodeSubProblem<T> mergedNode = null;
+            for (NodeSubProblem<T> n: currentLayer) {
+                if (n.state.equals(merged)) {
+                    mergedNode = n;
                     mergedNode.node.type = NodeType.RELAXED;
-                }
-                mergedNode.node.edges.add(e);
-                if (value < mergedNode.node.value) {
-                    mergedNode.node.value = value;
-                    mergedNode.node.best = e;
+                    break;
                 }
             }
-        }
 
+            if (mergedNode == null) {
+                Node newNode = new Node(Double.POSITIVE_INFINITY);
+                newNode.type = NodeType.RELAXED;
+                mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
+                currentLayer.add(mergedNode);
+            }
 
-        if (debugLevel != DebugLevel.OFF) {
-            checkRelaxation(merge, mergedNode);
-        }
+            // redirect and relax all arcs entering the merged node
+            for (NodeSubProblem<T> drop : cluster) {
+                mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
 
+                for (Edge e : drop.node.edges) {
+                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
-        // delete the nodes that have been merged
-        merge.clear();
-        // append the newly merged node if needed
-        if (fresh) {
-            currentLayer.add(mergedNode);
+                    double value = saturatedAdd(e.origin.value, rcost);
+                    e.weight  = rcost;
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                    if (e.origin.type == NodeType.RELAXED) {
+                        mergedNode.node.type = NodeType.RELAXED;
+                    }
+
+                    mergedNode.node.edges.add(e);
+                    if (value < mergedNode.node.value) {
+                        mergedNode.node.value = value;
+                        mergedNode.node.best  = e;
+                    }
+                }
+            }
+            if (debugLevel != DebugLevel.OFF) {
+                checkRelaxation(cluster, mergedNode);
+            }
         }
     }
 

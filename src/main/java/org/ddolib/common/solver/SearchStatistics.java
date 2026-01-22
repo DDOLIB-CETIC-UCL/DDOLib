@@ -8,6 +8,16 @@ public record SearchStatistics(
         double incumbent,
         double gap) {
 
+    public String toCSV() {
+        return String.format("%s;%d;%d;%d;%f;%f",
+                status,
+                nbIterations,
+                queueMaxSize,
+                runTimeMs,
+                incumbent,
+                gap);
+    }
+
     @Override
     public String toString() {
         return "\n\tstatus = " + status +

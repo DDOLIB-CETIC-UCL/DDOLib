@@ -218,10 +218,10 @@ public final class ACSSolver<T> implements Solver {
                 return new Solution(bestSolution(), stats);
             }
 
-            for (int i = 0; i < problem.nbVars() + 1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) {
+                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
@@ -410,16 +410,21 @@ public final class ACSSolver<T> implements Solver {
             return Double.NaN;
         } else {
             double maxLB = Double.NEGATIVE_INFINITY;
+            double minUB = Double.POSITIVE_INFINITY;
             for (int i = 0; i < problem.nbVars(); i++) {
                 if (!open.get(i).isEmpty()) {
                     if (negativeTransitionCosts) {
-                        maxLB = Math.max(maxLB, Math.abs(open.get(i).peek().f()));
+                        minUB = Math.min(minUB, open.get(i).peek().f());
                     } else {
                         maxLB = Math.max(maxLB, open.get(i).peek().f());
                     }
                 }
             }
-            return Math.abs(100.0 * (bestUB - maxLB) / Math.abs(bestUB));
+            if (negativeTransitionCosts) {
+                return Math.abs(100.0 * (minUB - bestUB) / Math.abs(bestUB));
+            } else {
+                return Math.abs(100.0 * (bestUB - maxLB) / Math.abs(bestUB));
+            }
         }
     }
 }

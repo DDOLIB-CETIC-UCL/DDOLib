@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Represents an instance of the **Maximum Sum of Completion Times (MSCT)** problem.
+ * Represents an instance of the **Minimum Sum of Completion Times (MSCT)** problem.
  * <p>
  * The MSCT problem consists in scheduling a set of jobs on a single machine
  * to minimize the total completion time (or sum of finishing times).
