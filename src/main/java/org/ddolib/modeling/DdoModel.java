@@ -470,4 +470,48 @@ public interface DdoModel<T> extends Model<T> {
             }
         };
     }
+    /**
+     * Convert this model into a model for the exact solver.
+     *
+     * @return a model usable by an {@link ExactModel}
+     */
+    default ExactModel<T> toExactModel() {
+        return new ExactModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public ExactModel<T> toExactModel() {
+                return DdoModel.this.toExactModel();
+            }
+        };
+    }
+
 }
