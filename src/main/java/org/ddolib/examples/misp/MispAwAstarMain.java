@@ -42,7 +42,8 @@ public final class MispAwAstarMain {
      * @throws IOException if there is an error reading the problem instance from the file
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "MISP", "C_6.dot").toString() :
+        final String instance = args.length == 0 ?
+                Path.of("data", "MISP", "weighted.dot").toString() :
                 args[0];
         final MispProblem problem = new MispProblem(instance);
         AwAstarModel<BitSet> model = new AwAstarModel<BitSet>() {

@@ -155,7 +155,7 @@ public final class AwAstar<T> implements Solver {
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-                SearchStatistics statistics = new SearchStatistics(
+               /* SearchStatistics statistics = new SearchStatistics(
                         SearchStatus.OPTIMAL,
                         nbIter,
                         queueMaxSize,
@@ -164,7 +164,7 @@ public final class AwAstar<T> implements Solver {
                         gap()
                 );
 
-                return new Solution(bestSol, statistics);
+                return new Solution(bestSol, statistics);*/
             } else if (sub.getDepth() < problem.nbVars()) {
 
                 addChildren(sub, onSolution);
@@ -178,7 +178,8 @@ public final class AwAstar<T> implements Solver {
         }
 
         SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY),
+                gap());
 
         return new Solution(bestSolution(), statistics);
     }
@@ -284,12 +285,7 @@ public final class AwAstar<T> implements Solver {
 
 
     private double gap() {
-        if (open.isEmpty()) {
-            return 0.0;
-        } else {
-            double bestInFrontier = open.peek().f();
-            return (bestUB - bestInFrontier) / Math.abs(bestUB);
-        }
+        return problem.optimalValue().map(opti -> bestUB - opti).orElse(Double.POSITIVE_INFINITY);
     }
 
     /**
