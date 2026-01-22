@@ -29,7 +29,15 @@ You can run manually these tests with:
 
 ### Configure you IDE
 
-If you are using IntelliJ IDEA to run your tests, we encourage you to disable the non-regressions tests :
+If you are using IntelliJ IDEA to run your tests, we encourage you to disable the non-regressions tests.
+
+A default configuration excluding the non-regression tests can be
+found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib/blob/main/.run/All%20without%20non-regression.run.xml). This
+configuration is directly present in the IntelliJ configuration list without any additional manipulation.
+
+![](list-config.png)
+
+If you want to write your own configuration go on:
 
 Run -> Edit Configurations -> Edit Configuration Templates -> Junit
 
