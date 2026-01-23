@@ -65,19 +65,13 @@ public class KSAstarMain {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             }
         };
-
-        System.gc();
-        long memoryBefore = MemoryUtil.getUsedMemory();
         Solution bestSolution = Solvers.minimizeAstar(model, s -> s.runTimeMs() > timeout, (sol, s) -> {
             System.out.println("%%incumbent:" + s.incumbent() + " gap:" + s.gap() + " time:" + s.runTimeMs());
         });
 
-        long memoryAfter = MemoryUtil.getUsedMemory();
-
         System.out.println("%%optimality:" + bestSolution.statistics().status()
                 + " gap:" + bestSolution.statistics().gap()
-                + " time:" + bestSolution.statistics().runTimeMs() + " "
-                + MemoryUtil.printMemoryConsumption((memoryAfter - memoryBefore)));
+                + " time:" + bestSolution.statistics().runTimeMs());
 
 
     }

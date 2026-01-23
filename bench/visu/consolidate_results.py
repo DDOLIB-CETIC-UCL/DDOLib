@@ -14,7 +14,7 @@ def parse_result_files(folder_path):
 
     # Regex pattern to extract data from the last line
     # Matches: %%optimality:SAT gap:41.35... time:4612
-    line_pattern = re.compile(r"%%optimality:(?P<status>\w+)\s+gap:(?P<gap>[\d\.]+)\s+time:(?P<time>[\d\.]+)\s+memory:(?P<memory>[\d\.]+)")
+    line_pattern = re.compile(r"%%optimality:(?P<status>\w+)\s+gap:(?P<gap>[\d\.]+)\s+time:(?P<time>[\d\.]+)")
 
     # specific allowed algorithms (optional validation)
     allowed_algos = {'acs', 'ddo', 'astar'}
@@ -65,7 +65,6 @@ def parse_result_files(folder_path):
                     status = match.group("status")
                     gap = float(match.group("gap"))
                     time_val = float(match.group("time"))
-                    memory_val = float(match.group("memory"))
 
                     # Store in our list
                     data.append({
@@ -73,8 +72,7 @@ def parse_result_files(folder_path):
                         "Algorithm": algo,
                         "Status": status,
                         "Gap": gap,
-                        "Time": time_val,
-                        "Memory": memory_val
+                        "Time": time_val
                     })
                 else:
                     print(f"Warning: Last line format not recognized in {filename}")
@@ -117,8 +115,8 @@ if os.path.exists(folder_path):
         print(df_results)
 
         # Optional: Save to CSV
-        df_results.to_csv("smic_consolidated_results.csv", index=False)
-        print("\nSaved to consolidated_results_memory.csv")
+        df_results.to_csv("ks_consolidated_results.csv", index=False)
+        print("\nSaved to ks_consolidated_results.csv")
     else:
         print("No valid data found.")
 else:
