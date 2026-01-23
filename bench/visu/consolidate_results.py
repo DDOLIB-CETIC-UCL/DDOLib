@@ -64,7 +64,7 @@ def parse_result_files(folder_path):
                     # Extract values
                     status = match.group("status")
                     gap = float(match.group("gap"))
-                    time_val = float(match.group("time"))
+                    time_val = float(match.group("time")) / 1000
 
                     # Store in our list
                     data.append({
@@ -116,7 +116,7 @@ if os.path.exists(folder_path):
 
         # Optional: Save to CSV
         df_results.to_csv("smic_consolidated_results.csv", index=False)
-        print("\nSaved to ks_consolidated_results.csv")
+        print("\nSaved to smic_consolidated_results.csv")
     else:
         print("No valid data found.")
 else:

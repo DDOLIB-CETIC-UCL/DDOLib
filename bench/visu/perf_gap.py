@@ -1,65 +1,72 @@
+import argparse
+import os
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# Create dummy data
-data = []
-algos = ['acs', 'ddo', 'astar']
-n_instances = 50
+parser = argparse.ArgumentParser(description="Generate performance graphs from a CSV")
+parser.add_argument(
+    "data_file",
+    help="Path to the CSV file containing results"
+)
 
-for i in range(n_instances):
-    for algo in algos:
-        # Randomly decide result
-        # Scenario: ACS is fast but sometimes has gaps. DDO is slow but optimal.
-        if algo == 'acs':
-            gap = 0 if np.random.rand() > 0.5 else np.random.rand() * 50
-            time_val = np.random.rand() * 1000
-        else:
-            gap = 0 if np.random.rand() > 0.2 else np.random.rand() * 10
-            time_val = np.random.rand() * 5000
+args = parser.parse_args()
+data_file_path = args.data_file
 
-        data.append({
-            "Instance": f"inst_{i}",
-            "Algorithm": algo,
-            "Gap": gap,
-            "Time": time_val
-        })
+if not os.path.exists(data_file_path):
+    print(f"Error: The file '{data_file_path}' does not exist.")
+    sys.exit(1)
 
-df = pd.DataFrame(data)
+df = pd.read_csv(data_file_path)
 
-# --- Plotting Logic ---
+required_columns = ['Algorithm', 'Gap', 'Time']
+if not all(col in df.columns for col in required_columns):
+    print(f"Error: The CSV must contain columns: {required_columns}")
+    sys.exit(1)
+
+algos = df['Algorithm'].unique()
+
+print(f"Data loaded successfully. Algorithms found: {algos}")
+
 fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
-# Remove space between plots
 plt.subplots_adjust(wspace=0.05)
 
-# Left Plot: Solved over Time
 for algo in algos:
-    subset = df[(df['Algorithm'] == algo) & (df['Gap'] == 0.0)].copy()
-    if subset.empty: continue
+    subset = df[df['Algorithm'] == algo].copy()
+
+    if subset.empty:
+        continue
+
     subset = subset.sort_values(by='Time')
     x = subset['Time'].values
     y = np.arange(1, len(subset) + 1)
-    # Append a starting point? Optional, usually standard plots just start at first point
+
     ax1.plot(x, y, label=algo, marker='.', linestyle='-')
 
 ax1.set_xlabel('Runtime (s)')
 ax1.set_ylabel('Cumulative Instances')
-ax1.set_title('Solved vs Time')
+ax1.set_title('Runtime Profile')
 ax1.grid(True)
+ax1.legend()
 
-# Right Plot: Gap Profile
 for algo in algos:
     subset = df[df['Algorithm'] == algo].copy()
-    if subset.empty: continue
+
+    if subset.empty:
+        continue
+
     subset = subset.sort_values(by='Gap')
     x = subset['Gap'].values
     y = np.arange(1, len(subset) + 1)
     ax2.plot(x, y, label=algo, marker='.', linestyle='-')
 
 ax2.set_xlabel('Gap (%)')
-# ax2.set_ylabel('Cumulative Instances') # Shared
 ax2.set_title('Gap Profile')
 ax2.grid(True)
 ax2.legend()
 
-plt.savefig('smic_combined_plot.png')
+output_filename = 'ks_combined_plot.png'
+plt.savefig(output_filename, transparent=True)
+print(f"Graph saved to: {output_filename}")

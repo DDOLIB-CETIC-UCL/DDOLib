@@ -34,5 +34,5 @@ if os.path.exists(data_file_path):
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig("smic_graph_time.png")  # save image
+    plt.savefig("smic_graph_time.png", transparent=True)  # save image
     plt.show()
