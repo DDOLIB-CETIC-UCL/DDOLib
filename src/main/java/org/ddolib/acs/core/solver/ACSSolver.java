@@ -426,21 +426,20 @@ public final class ACSSolver<T> implements Solver {
         if (defaultLowerBoundValue) {
             return Double.NaN;
         } else {
-            double maxLB = Double.NEGATIVE_INFINITY;
-            double minUB = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < problem.nbVars(); i++) {
-                if (!open.get(i).isEmpty()) {
-                    if (negativeTransitionCosts) {
-                        minUB = Math.min(minUB, open.get(i).peek().f());
-                    } else {
-                        maxLB = Math.max(maxLB, open.get(i).peek().f());
+            if (allEmpty()) {
+                return 0;
+            } else {
+                double minLB = Double.POSITIVE_INFINITY;
+                for (int i = 0; i < problem.nbVars(); i++) {
+                    if (!open.get(i).isEmpty()) {
+                        minLB = Math.min(minLB, open.get(i).peek().f());
                     }
                 }
-            }
-            if (negativeTransitionCosts) {
-                return Math.abs(100.0 * (minUB - bestUB) / Math.abs(bestUB));
-            } else {
-                return Math.abs(100.0 * (bestUB - maxLB) / Math.abs(bestUB));
+                if (negativeTransitionCosts) {
+                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB),Math.abs(bestUB)));
+                } else {
+                    return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
+                }
             }
         }
     }
