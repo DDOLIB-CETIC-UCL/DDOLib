@@ -1,6 +1,6 @@
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 # Create dummy data
 data = []
@@ -42,7 +42,7 @@ for algo in algos:
     # Append a starting point? Optional, usually standard plots just start at first point
     ax1.plot(x, y, label=algo, marker='.', linestyle='-')
 
-ax1.set_xlabel('Time (s)')
+ax1.set_xlabel('Runtime (s)')
 ax1.set_ylabel('Cumulative Instances')
 ax1.set_title('Solved vs Time')
 ax1.grid(True)
@@ -62,4 +62,4 @@ ax2.set_title('Gap Profile')
 ax2.grid(True)
 ax2.legend()
 
-plt.savefig('combined_plot_test.png')
+plt.savefig('smic_combined_plot.png')

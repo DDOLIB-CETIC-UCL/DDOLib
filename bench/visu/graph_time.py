@@ -2,6 +2,7 @@ import argparse
 import os
 
 import matplotlib
+
 matplotlib.use("Qt5Agg")
 
 import matplotlib.pyplot as plt
@@ -29,9 +30,9 @@ if os.path.exists(data_file_path):
     plt.xticks(rotation=90)
     plt.title("Time for each instance by algorithm")
     plt.xlabel("Instance")
-    plt.ylabel("Time (s)")
+    plt.ylabel("Runtime (s)")
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig("ks_graph_time.png") # save image
+    plt.savefig("smic_graph_time.png")  # save image
     plt.show()
