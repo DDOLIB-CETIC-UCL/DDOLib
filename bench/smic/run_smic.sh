@@ -28,33 +28,23 @@ INSTANCES=(
   data10_1.txt
   data10_2.txt
   data10_3.txt
+  data10_4.txt
+  data10_5.txt
+  data10_6.txt
+  data10_7.txt
+  data10_8.txt
+  data10_9.txt
+  data10_10.txt
   data20_1.txt
   data20_2.txt
   data20_3.txt
-  data30_1.txt
-  data30_2.txt
-  data30_3.txt
-  data40_1.txt
-  data40_2.txt
-  data40_3.txt
-  data50_1.txt
-  data50_2.txt
-  data50_3.txt
-  data60_1.txt
-  data60_2.txt
-  data60_3.txt
-  data70_1.txt
-  data70_2.txt
-  data70_3.txt
-  data80_1.txt
-  data80_2.txt
-  data80_3.txt
-  data90_1.txt
-  data90_2.txt
-  data90_3.txt
-  data100_1.txt
-  data100_2.txt
-  data100_3.txt
+  data20_4.txt
+  data20_5.txt
+  data20_6.txt
+  data20_7.txt
+  data20_8.txt
+  data20_9.txt
+  data20_10.txt
 )
 
 # Load and execute the runner
