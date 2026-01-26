@@ -114,9 +114,15 @@ if os.path.exists(folder_path):
         print("--- parsing complete ---")
         print(df_results)
 
+        clean_path = os.path.normpath(folder_path)
+        parent_dir = os.path.dirname(clean_path)
+        problem_name = os.path.basename(parent_dir)
+
+        out_file = f"{problem_name.lower()}_consolidated_results.csv"
+
         # Optional: Save to CSV
-        df_results.to_csv("smic_consolidated_results.csv", index=False)
-        print("\nSaved to smic_consolidated_results.csv")
+        df_results.to_csv(out_file, index=False)
+        print(f"\nSaved to {out_file}")
     else:
         print("No valid data found.")
 else:
