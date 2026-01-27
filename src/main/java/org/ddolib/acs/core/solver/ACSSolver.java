@@ -118,7 +118,6 @@ public final class ACSSolver<T> implements Solver {
      * </ul>
      *
      * @param model Provides all parameters needed to configure the solver
-     * @throws IllegalArgumentException if the debug mode is enabled (not supported)
      */
     public ACSSolver(AcsModel<T> model) {
         this.problem = model.problem();
@@ -419,7 +418,7 @@ public final class ACSSolver<T> implements Solver {
                     }
                 }
                 if (negativeTransitionCosts) {
-                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB),Math.abs(bestUB)));
+                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB), Math.abs(bestUB)));
                 } else {
                     return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
                 }

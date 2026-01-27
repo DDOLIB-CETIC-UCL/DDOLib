@@ -7,7 +7,6 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -24,6 +23,22 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of an Anytime Weighted A* search (AWA*) solver for decision diagram-based optimization problems.
+ *
+ * <p>The solver uses a combination of a lower bound, dominance rules to explore the
+ * search space efficiently. It adds a weight to the heuristic function of the A* algorithm. This
+ * weight speed-up reaching feasible solution.
+ * </p>
+ *
+ * @param <T> the type of states in a problem
+ * @see Solver
+ * @see Solver
+ * @see Problem
+ * @see FastLowerBound
+ * @see DominanceChecker
+ * @see AwAstarModel
+ */
 public final class AwAstar<T> implements Solver {
 
 
@@ -40,6 +55,7 @@ public final class AwAstar<T> implements Solver {
     // The dominance object that will be used to prune the search space.
     private final DominanceChecker<T> dominance;
 
+    // The weight of add to the heuristic function
     private final double weight;
 
     // The priority queue containing the open subproblems by decreasing f' = g + w *  h (lower-bound
@@ -76,7 +92,19 @@ public final class AwAstar<T> implements Solver {
     private Optional<Set<Decision>> bestSol;
 
 
+    /**
+     * Constructs a solver via a {@link AwAstarModel}.
+     *
+     * @param model provides all parameters needed to configure the solver
+     * @throws IllegalArgumentException if the weight associated to the heuristic function is &lt; 1
+     */
     public AwAstar(AwAstarModel<T> model) {
+
+        if (model.weight() < 1) {
+            throw new IllegalArgumentException("The weight associated to the heuristic function " +
+                    "must be >= 1 !");
+        }
+
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
