@@ -17,7 +17,6 @@ import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -54,7 +53,6 @@ public class AwAStarSolverTest {
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
             // verify that each found solution is valid and corresponds to its cost
             int computedProfit = 0;
             int computedWeight = 0;
@@ -101,7 +99,6 @@ public class AwAStarSolverTest {
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
             // verify that each found solution is valid
             assertEquals(n - 1, sol.length);
             assertEquals(sol[n - 2], s.incumbent());
@@ -153,9 +150,7 @@ public class AwAStarSolverTest {
             assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
-
-        System.out.println(finalSol);
-
+        
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
