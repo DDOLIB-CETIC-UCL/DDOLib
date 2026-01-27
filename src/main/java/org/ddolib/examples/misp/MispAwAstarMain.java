@@ -1,5 +1,6 @@
 package org.ddolib.examples.misp;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AwAstarModel;
@@ -43,10 +44,16 @@ public final class MispAwAstarMain {
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ?
-                Path.of("data", "MISP", "weighted.dot").toString() :
+                Path.of("data", "MISP", "tadpole_4_2.dot").toString() :
                 args[0];
         final MispProblem problem = new MispProblem(instance);
-        AwAstarModel<BitSet> model = new AwAstarModel<BitSet>() {
+        AwAstarModel<BitSet> model = new AwAstarModel<>() {
+
+            @Override
+            public double weight() {
+                return 3.0;
+            }
+
             @Override
             public Problem<BitSet> problem() {
                 return problem;
@@ -56,15 +63,15 @@ public final class MispAwAstarMain {
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);
             }
-/*
+
             @Override
             public DominanceChecker<BitSet> dominance() {
                 return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
-            }*/
+            }
         };
 
-        Solution bestSolution = Solvers.minimizeAwAStar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
+        Solution bestSolution = Solvers.minimizeAwAStar(model, (sol, stats) -> {
+            SolutionPrinter.printSolution(stats, sol);
         });
 
         System.out.println(bestSolution.statistics());

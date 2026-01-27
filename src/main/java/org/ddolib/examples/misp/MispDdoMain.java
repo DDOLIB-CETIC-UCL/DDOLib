@@ -78,7 +78,7 @@ public final class MispDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeExact(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
