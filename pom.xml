@@ -62,12 +62,6 @@
             <organization>UCLouvain / ICTEAM / INGI</organization>
             <organizationUrl></organizationUrl>
         </developer>
-        <developer>
-            <name>Roger Kameugne</name>
-            <email>roger.kameugne@uclouvain.be</email>
-            <organization>UCLouvain / ICTEAM / INGI</organization>
-            <organizationUrl></organizationUrl>
-        </developer>
     </developers>
 
     <properties>
