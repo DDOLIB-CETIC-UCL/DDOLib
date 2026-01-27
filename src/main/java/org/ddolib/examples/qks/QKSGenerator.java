@@ -7,7 +7,7 @@ import java.util.Optional;
 public class QKSGenerator {
 
     public static void main(String[] args) {
-        debugInstance();
+        xpInstance();
     }
 
     /**
@@ -23,10 +23,24 @@ public class QKSGenerator {
         }
     }
 
+    /**
+     * Creates instances for experiments
+     */
+    private static void xpInstance() {
+        for (int n : new int[] {50, 100}) {
+            for (double sparsity: new double[] { 0.25, 0.5, 0.75 }) {
+                for (int seed = 0; seed < 5; seed++) {
+                    createInstance(n, sparsity, seed, "data/QKS/", false);
+                }
+            }
+        }
+    }
+
+
     private static void createInstance(int n, double sparsity, int seed, String dirPath, boolean computeOptimum) {
         QKSProblem instance = new QKSProblem(n ,sparsity, seed, computeOptimum);
 
-        int sparsityInteger = (int) sparsity * 100;
+        int sparsityInteger = (int) (sparsity * 100);
         String instanceName = dirPath + String.format("qks_%d_%d_%d.txt", n, sparsityInteger, seed);
         try {
             FileWriter fw = new FileWriter(instanceName, false);

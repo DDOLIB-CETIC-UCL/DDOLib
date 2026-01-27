@@ -39,7 +39,7 @@ public class QKSRelax implements Relaxation<QKSState> {
             }
         }
 
-        return new QKSState(capacity, itemsProfit);
+        return new QKSState(capacity, itemsProfit, state.remainingItems);
     }
 
     /**

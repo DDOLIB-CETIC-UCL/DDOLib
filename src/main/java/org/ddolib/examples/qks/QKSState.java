@@ -1,12 +1,17 @@
 package org.ddolib.examples.qks;
 
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Set;
 
 public class QKSState {
 
     /** Remaining capacity */
     double capacity;
+    /** actual profit of selecting each item, depending on the already added items*/
     double[] itemsProfit;
+    /** set of non-considered items */
+    BitSet remainingItems;
 
     /**
      * Constructs a new QKSState with the given capacity and vector of profits for each item
@@ -14,9 +19,10 @@ public class QKSState {
      * @param capacity a double
      * @param itemsProfit an array of double representing the sum of the profit linked to each item
      */
-    public QKSState(double capacity, double[] itemsProfit) {
+    public QKSState(double capacity, double[] itemsProfit, BitSet remainingItems) {
         this.capacity = capacity;
         this.itemsProfit = itemsProfit;
+        this.remainingItems = remainingItems;
     }
 
     /**
@@ -26,7 +32,7 @@ public class QKSState {
      */
     @Override
     public QKSState clone() {
-        return new QKSState(capacity, itemsProfit.clone());
+        return new QKSState(capacity, itemsProfit.clone(), (BitSet) remainingItems.clone());
     }
 
     /**

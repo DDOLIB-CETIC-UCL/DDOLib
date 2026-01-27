@@ -21,6 +21,8 @@ public class QKSProblem implements Problem<QKSState> {
     public final Optional<Double> optimal;
     /** Optional problem name or file name. */
     final Optional<String> name;
+    /** The maximal profit of each item, used for normalization in QKSDistance */
+    final double[] maxProfits;
 
     /**
      * Constructs a Quadratic Knapsack Problem with given capacity, profits, weights and known optimal value.
@@ -36,6 +38,13 @@ public class QKSProblem implements Problem<QKSState> {
         this.weights = weights;
         this.optimal = optimal;
         this.name = Optional.empty();
+
+        this.maxProfits = new double[capacity];
+        for (int i = 0; i < capacity; i++) {
+            for (int j = 0; j < capacity; j++) {
+                maxProfits[i] += 2 * profitMatrix[i][j];
+            }
+        }
     }
 
     @Override
@@ -49,7 +58,9 @@ public class QKSProblem implements Problem<QKSState> {
         for (int i = 0; i < profitMatrix.length; i++) {
             initialProfits[i] = profitMatrix[i][i];
         }
-        return new QKSState(capacity, initialProfits);
+        BitSet remainingItems = new BitSet(profitMatrix.length);
+        remainingItems.set(0, profitMatrix.length);
+        return new QKSState(capacity, initialProfits, remainingItems);
     }
 
     @Override
@@ -70,10 +81,13 @@ public class QKSProblem implements Problem<QKSState> {
     public QKSState transition(QKSState state, Decision decision) {
         double newCapacity = state.capacity - weights[decision.var()] * decision.val();
         double[] newProfits = state.itemsProfit.clone();
+        newProfits[decision.var()] = newCapacity;
         for (int i = 0; i < newProfits.length; i++) {
             newProfits[i] += 2 * profitMatrix[decision.var()][i] * decision.val();
         }
-        return new QKSState(newCapacity, newProfits);
+        BitSet newRemainingItems = (BitSet) state.remainingItems.clone();
+        newRemainingItems.set(decision.var(), false);
+        return new QKSState(newCapacity, newProfits, newRemainingItems);
     }
 
     @Override
@@ -171,6 +185,12 @@ public class QKSProblem implements Problem<QKSState> {
         this.weights = weights;
         this.optimal = optimal;
         this.name = Optional.of(fname);
+        this.maxProfits = new double[weights.length];
+        for (int i = 0; i < weights.length; i++) {
+            for (int j = 0; j < weights.length; j++) {
+                maxProfits[i] += 2 * profitMatrix[i][j];
+            }
+        }
     }
 
     /**
@@ -218,7 +238,14 @@ public class QKSProblem implements Problem<QKSState> {
             this.optimal = Optional.empty();
         }
 
-        this.name = null;
+        this.maxProfits = new double[weights.length];
+        for (int i = 0; i < weights.length; i++) {
+            for (int j = 0; j < weights.length; j++) {
+                maxProfits[i] += 2 * profitMatrix[i][j];
+            }
+        }
+
+        this.name = Optional.empty();
     }
 
     public String instanceFormat() {
