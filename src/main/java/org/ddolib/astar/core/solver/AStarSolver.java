@@ -136,7 +136,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0);
+                    gap());
 
 
             if (limit.test(stats)) { // user-defined stopping criterion
@@ -310,11 +310,11 @@ public final class AStarSolver<T> implements Solver {
 
 
     private double gap() {
-        if (open.isEmpty()) {
-            return 0.0;
+        if (open.isEmpty() | bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
         } else {
             double bestInFrontier = open.peek().f();
-            return Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
+            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 
