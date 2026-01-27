@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Kmeans;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -63,13 +64,15 @@ public class QKSDdoMain {
             @Override
             public ReductionStrategy<QKSState> relaxStrategy() {
                 // return new CostBased<>(ranking());
-                return new GHP<>(new QKSDistance(problem));
+                // return new GHP<>(new QKSDistance(problem));
+                return new Kmeans<>(new QKSCoordinates(problem));
             }
 
             @Override
             public ReductionStrategy<QKSState> restrictStrategy() {
                 // return new CostBased<>(ranking());
-                return new GHP<>(new QKSDistance(problem));
+                // return new GHP<>(new QKSDistance(problem));
+                return new Kmeans<>(new QKSCoordinates(problem));
             }
 
             @Override
