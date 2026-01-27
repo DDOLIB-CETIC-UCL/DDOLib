@@ -136,10 +136,18 @@ public final class AwAstar<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0);
+                    gap());
 
 
-            if (limit.test(stats)) { // user-defined stopping criterion
+            if (limit.test(stats)) {
+                // user-defined stopping criterion
+                stats = new SearchStatistics(
+                        bestSolution().map(sol -> SearchStatus.SAT).orElse(SearchStatus.UNKNOWN),
+                        nbIter,
+                        queueMaxSize,
+                        System.currentTimeMillis() - t0,
+                        bestValue().orElse(Double.POSITIVE_INFINITY),
+                        gap());
                 return new Solution(bestSolution(), stats);
             }
             // -- end debug, stats, verbosity, stopping  ---
@@ -163,9 +171,14 @@ public final class AwAstar<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY),
-                gap());
+        SearchStatistics statistics = new SearchStatistics(
+                SearchStatus.OPTIMAL,
+                nbIter,
+                queueMaxSize,
+                System.currentTimeMillis() - t0,
+                problem.nbVars() == 0 ? problem.initialValue() : bestValue().orElse(Double.POSITIVE_INFINITY),
+                gap()
+        );
 
         return new Solution(bestSolution(), statistics);
     }
