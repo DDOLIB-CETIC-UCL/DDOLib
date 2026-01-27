@@ -178,6 +178,7 @@ public final class AwAstar<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
+            present.remove(subKey);
 
             // The current has been explored, or it can only lead to less good solution
             if (closed.containsKey(subKey) || sub.f() + 1e-10 >= bestUB) {
