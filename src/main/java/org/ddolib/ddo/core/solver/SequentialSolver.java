@@ -12,9 +12,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -198,9 +195,8 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100);
-            if (bestUB != Double.POSITIVE_INFINITY)
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter,
+                    queueMaxSize, end - start, bestUB, gap());
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -348,11 +344,11 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (frontier.isEmpty()) {
+        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
             return 100.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
+            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 
@@ -385,7 +381,7 @@ public final class SequentialSolver<T> implements Solver {
 
         if (type == CompilationType.Relaxed) {
             compilation.reductionStrategy = model.relaxStrategy();
-        } else if(type == CompilationType.Restricted) {
+        } else if (type == CompilationType.Restricted) {
             compilation.reductionStrategy = model.restrictStrategy();
         }
 
