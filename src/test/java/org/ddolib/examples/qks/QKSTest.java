@@ -17,8 +17,8 @@ public class QKSTest {
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;
-        bench.testDominance = false;
-        bench.testCache = false;
+        bench.testDominance = true;
+        bench.testCache = true;
         return bench.generateTests();
     }
 }

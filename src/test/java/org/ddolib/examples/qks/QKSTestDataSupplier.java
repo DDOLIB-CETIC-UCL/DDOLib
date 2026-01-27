@@ -1,5 +1,7 @@
 package org.ddolib.examples.qks;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
@@ -58,6 +60,11 @@ public class QKSTestDataSupplier extends TestDataSupplier<QKSState, QKSProblem> 
             @Override
             public QKSRanking ranking() {
                 return new QKSRanking();
+            }
+
+            @Override
+            public DominanceChecker<QKSState> dominance() {
+                return new SimpleDominanceChecker<>(new QKSDominance(), problem.nbVars());
             }
 
             @Override

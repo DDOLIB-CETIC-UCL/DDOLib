@@ -97,10 +97,6 @@ public class QKSProblem implements Problem<QKSState> {
         double totalWeight = 0;
         for (int i = 0; i < solution.length; i++) {
             for (int j = 0; j < solution.length; j++) {
-                if (solution[i] == 1 && solution[j] == 1) {
-                    System.out.println(profitMatrix[i][j] * solution[i] * solution[j]);
-                }
-
                 totalProfit += profitMatrix[i][j] * solution[i] * solution[j];
             }
             totalWeight += weights[i] * solution[i];
