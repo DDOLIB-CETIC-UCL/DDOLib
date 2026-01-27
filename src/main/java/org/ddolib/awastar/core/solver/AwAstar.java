@@ -123,6 +123,9 @@ public final class AwAstar<T> implements Solver {
                 root.getValue() + weight * root.getLowerBound());
 
         while (!open.isEmpty()) {
+            System.out.printf("open: %s\n", open);
+            System.out.printf("closed: %s\n", closed);
+            System.out.printf("present: %s\n", present);
 
             // -- debug, stats, verbosity, stopping  ---
             verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
@@ -148,14 +151,21 @@ public final class AwAstar<T> implements Solver {
             SubProblem<T> sub = open.poll();
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             Double subValue = present.remove(subKey);
-            // The current has been explored, or it can only lead to less good solution
-            if (closed.containsKey(subKey) || subValue + 1e-10 >= bestUB) continue;
+            System.out.printf("Current: %s%n", sub.getState());
+            System.out.printf("Key: %s%n", subKey);
+            System.out.printf("SubVal: %f%n", subValue);
 
-            if (sub.getDepth() == problem.nbVars()) { // target node reached
+            // The current has been explored, or it can only lead to less good solution
+            if (closed.containsKey(subKey) || sub.f() + 1e-10 >= bestUB) {
+                System.out.println("Current already visit or less good\n\n\n");
+                continue;
+            }
+
+            /*if (sub.getDepth() == problem.nbVars()) { // target node reached
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-               /* SearchStatistics statistics = new SearchStatistics(
+               *//* SearchStatistics statistics = new SearchStatistics(
                         SearchStatus.OPTIMAL,
                         nbIter,
                         queueMaxSize,
@@ -164,13 +174,16 @@ public final class AwAstar<T> implements Solver {
                         gap()
                 );
 
-                return new Solution(bestSol, statistics);*/
-            } else if (sub.getDepth() < problem.nbVars()) {
+                return new Solution(bestSol, statistics);*//*
+            } else*/
+            if (sub.getDepth() < problem.nbVars()) {
 
                 addChildren(sub, onSolution);
                 closed.put(subKey, sub.getValue() + weight * sub.getLowerBound());
 
             }
+
+            System.out.println("\n\n\n");
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -210,42 +223,51 @@ public final class AwAstar<T> implements Solver {
 
 
             T newState = problem.transition(state, decision);
+            System.out.printf("\tChild: %s%n", newState);
             double cost = problem.transitionCost(state, decision);
-            double value = subProblem.getValue() + cost;
+            double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
             // h-cost from this state to the target
-            double fprime = value + weight * h;
+            double f = g + h;
+            double fprime = g + weight * h;
+            System.out.printf("\tg: %f - h: %f - f': %f\n", g, h, fprime);
 
 
             // this child can only lead to less good solution
-            if (fprime + 1e-10 >= bestUB) continue;
+            if (f + 1e-10 >= bestUB) continue;
 
             // if the new state is dominated, we skip it
-            if (dominance.updateDominance(newState, path.size(), value)) {
-                continue;
-            }
+            if (dominance.updateDominance(newState, path.size(), g)) continue;
 
-            SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
+            SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
 
             StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
             Double presentValue = present.get(newKey);
+            System.out.printf("\tpresentVal: %f%n", presentValue);
             if (presentValue != null && fprime < presentValue) {
+                System.out.printf("\talready present and improve obj. Value: %f\n", presentValue);
                 open.remove(newSub);
                 open.add(newSub);
                 present.put(newKey, fprime);
+                System.out.printf("\tupdated open: %s\n", open);
+                System.out.printf("\tupdated present: %s", present);
             } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
                 open.add(newSub);
+                System.out.printf("\tupdated open: %s%n", open);
                 if (closedValue != null && fprime < closedValue) {
                     closed.remove(newKey);
+                    System.out.printf("\tupdated closed: %s%n", closed);
                 }
                 present.put(newKey, fprime);
+                System.out.printf("\tupdated present: %s%n", present);
             }
 
             // is the new state a solution?
             if (newSub.getDepth() == problem.nbVars() && (newSub.getValue() < bestUB)) {
+                System.out.println("\tnew best");
                 assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
@@ -254,6 +276,7 @@ public final class AwAstar<T> implements Solver {
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }
+            System.out.println("\n");
 
         }
     }
