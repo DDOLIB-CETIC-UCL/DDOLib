@@ -17,7 +17,7 @@ set -e
 # Problem Configuration
 PROBLEM_NAME="knapsack"
 DATA_DIR="data/Knapsack"
-TIME_LIMIT=4000
+TIME_LIMIT=10000
 
 # Main Java Classes Definition
 CLASS_DDO="org.ddolib.examples.bench.KSDdoMain"
@@ -26,6 +26,16 @@ CLASS_ACS="org.ddolib.examples.bench.KSAcsMain"
 
 # Instances List
 INSTANCES=(
+  instance_n100_c500_10_5_10_5_0
+  instance_n100_c500_10_5_10_5_1
+  instance_n100_c500_10_5_10_5_2
+  instance_n100_c500_10_5_10_5_3
+  instance_n100_c500_10_5_10_5_4
+  instance_n100_c500_10_5_10_5_5
+  instance_n100_c500_10_5_10_5_6
+  instance_n100_c500_10_5_10_5_7
+  instance_n100_c500_10_5_10_5_8
+  instance_n100_c500_10_5_10_5_9
   instance_n1000_c1000_10_5_10_5_0
   instance_n1000_c1000_10_5_10_5_1
   instance_n1000_c1000_10_5_10_5_2
