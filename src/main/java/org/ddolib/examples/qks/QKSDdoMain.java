@@ -7,6 +7,9 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.KSDominance;
@@ -24,7 +27,7 @@ import java.util.Arrays;
 public class QKSDdoMain {
 
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("src", "test", "resources", "qks", "qks_3_0_2.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "QKS", "qks_15_25_0.txt").toString() : args[0];
         final QKSProblem problem = new QKSProblem(instance);
         final DdoModel<QKSState> model = new DdoModel<>() {
             @Override
@@ -44,7 +47,7 @@ public class QKSDdoMain {
 
             @Override
             public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
+                return VerbosityLevel.NORMAL;
             }
 
             @Override
@@ -58,8 +61,20 @@ public class QKSDdoMain {
             }
 
             @Override
+            public ReductionStrategy<QKSState> relaxStrategy() {
+                // return new CostBased<>(ranking());
+                return new GHP<>(new QKSDistance(problem));
+            }
+
+            @Override
+            public ReductionStrategy<QKSState> restrictStrategy() {
+                // return new CostBased<>(ranking());
+                return new GHP<>(new QKSDistance(problem));
+            }
+
+            @Override
             public WidthHeuristic<QKSState> widthHeuristic() {
-                return new FixedWidth<>(10);
+                return new FixedWidth<>(100);
             }
 
             @Override

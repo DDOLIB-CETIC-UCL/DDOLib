@@ -27,7 +27,7 @@ public class QKSGenerator {
      * Creates instances for experiments
      */
     private static void xpInstance() {
-        for (int n : new int[] {50, 100}) {
+        for (int n : new int[] {15, 25, 50, 100}) {
             for (double sparsity: new double[] { 0.25, 0.5, 0.75 }) {
                 for (int seed = 0; seed < 5; seed++) {
                     createInstance(n, sparsity, seed, "data/QKS/", false);
