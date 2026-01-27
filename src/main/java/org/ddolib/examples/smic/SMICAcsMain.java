@@ -60,7 +60,7 @@ public class SMICAcsMain {
      * @throws IOException if the instance file cannot be read.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_2.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         AcsModel<SMICState> model = new AcsModel<>() {
             @Override

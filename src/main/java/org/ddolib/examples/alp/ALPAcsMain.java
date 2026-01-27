@@ -49,7 +49,7 @@ public final class ALPAcsMain {
 
         Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
-            System.out.println(new ALPSolution(problem, sol));
+//            System.out.println(new ALPSolution(problem, sol));
         });
 
         System.out.println(bestSolution.statistics());
