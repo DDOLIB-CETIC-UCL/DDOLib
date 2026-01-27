@@ -48,10 +48,10 @@ public class BKSDominance implements Dominance<Integer> {
      *
      * @param capa1 The first capacity (potentially dominated).
      * @param capa2 The second capacity (potential dominator).
-     * @return {@code true} if {@code capa1 < capa2}, {@code false} otherwise.
+     * @return {@code true} if {@code capa1 <= capa2}, {@code false} otherwise.
      */
     @Override
     public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {
-        return capa1 < capa2;
+        return capa1 <= capa2;
     }
 }
