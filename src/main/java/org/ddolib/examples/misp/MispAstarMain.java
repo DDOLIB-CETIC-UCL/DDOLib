@@ -51,6 +51,7 @@ public final class MispAstarMain {
                 return problem;
             }
 
+
             @Override
             public MispFastLowerBound lowerBound() {
                 return new MispFastLowerBound(problem);

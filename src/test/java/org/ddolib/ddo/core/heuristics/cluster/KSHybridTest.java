@@ -7,6 +7,7 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
@@ -24,9 +25,39 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+/**
+ * Unit tests for evaluating the Hybrid reduction strategy on Knapsack problems (KSProblem)
+ * using Decision Diagram Optimization (DDO).
+ *
+ * <p>
+ * This test class compares the optimal solutions obtained using two different
+ * reduction strategies:
+ * <ul>
+ *   <li>Cost-based clustering</li>
+ *   <li>Hybrid clustering (combining cost-based and distance-based GHP methods)</li>
+ * </ul>
+ *
+ * <p>
+ * The tests ensure that the Hybrid strategy produces solutions equivalent
+ * to the cost-based method across a range of knapsack instances, layer widths,
+ * and cut set types.
+ *
+ * <p>
+ * The class uses JUnit 5 {@link org.junit.jupiter.params.ParameterizedTest} and
+ * {@link org.junit.jupiter.params.provider.MethodSource} for generating test
+ * instances.
+ */
 public class KSHybridTest {
-
+    /**
+     * Generates a stream of KSProblem instances for testing.
+     *
+     * <p>
+     * Each instance has random profits and weights for a fixed number of variables,
+     * and a fixed knapsack capacity.
+     *
+     * @return a stream of {@link KSProblem} instances
+     * @throws IOException if any I/O error occurs (not expected here)
+     */
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
         int number = 1000;
@@ -44,7 +75,12 @@ public class KSHybridTest {
             return Stream.of(pb);
         });
     }
-
+    /**
+     * Computes the optimal solution using cost-based clustering strategy.
+     *
+     * @param problem the knapsack problem instance
+     * @return the optimal objective value
+     */
     private static double optimalSolutionCostBasedClustering(KSProblem problem) {
         final DdoModel<Integer> model = new DdoModel<>() {
             ;
@@ -90,12 +126,12 @@ public class KSHybridTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
+            public ReductionStrategy<Integer> relaxStrategy() {
                 return new CostBased<>(ranking());
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
+            public ReductionStrategy<Integer> restrictStrategy() {
                 return new CostBased<>(ranking());
             }
         };
@@ -105,8 +141,19 @@ public class KSHybridTest {
         return solution.value();
     }
 
-
-    private double optimalSolutionGHPClustering(KSProblem problem, int w, CutSetType cutSetType) {
+    /**
+     * Computes the optimal solution using the Hybrid clustering strategy.
+     *
+     * <p>
+     * The Hybrid strategy combines cost-based ranking and distance-based GHP
+     * clustering to reduce the width of the decision diagram.
+     *
+     * @param problem the knapsack problem instance
+     * @param w the maximum width of the decision diagram
+     * @param cutSetType the type of cut set used in frontier-based DDO
+     * @return the optimal objective value
+     */
+    private double optimalSolutionHybridClustering(KSProblem problem, int w, CutSetType cutSetType) {
         final DdoModel<Integer> model = new DdoModel<>() {
             ;
 
@@ -142,7 +189,12 @@ public class KSHybridTest {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(10_000);
+                return new FixedWidth<>(w);
+            }
+
+            @Override
+            public Frontier<Integer> frontier() {
+                return new SimpleFrontier<>(ranking(), cutSetType);
             }
 
             @Override
@@ -151,13 +203,13 @@ public class KSHybridTest {
             }
 
             @Override
-            public ReductionStrategy relaxStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance(problem));
+            public ReductionStrategy<Integer> relaxStrategy() {
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
 
             @Override
-            public ReductionStrategy restrictStrategy() {
-                return new Hybrid(new KSRanking(), new KSDistance(problem));
+            public ReductionStrategy<Integer> restrictStrategy() {
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
         };
 
@@ -165,14 +217,23 @@ public class KSHybridTest {
 
         return solution.value();
     }
-
+    /**
+     * Parameterized test that compares the solutions obtained with Hybrid clustering
+     * against cost-based clustering for each test problem instance.
+     *
+     * <p>
+     * The test iterates over different layer widths and cut set types, asserting
+     * that the Hybrid strategy produces the same optimal value as cost-based clustering.
+     *
+     * @param problem a knapsack problem instance from the data provider
+     */
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testOptimalSolutionFound(KSProblem problem) {
         CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionGHPClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionHybridClustering(problem, wid, ct));
             }
         }
     }

@@ -1,21 +1,19 @@
 package org.ddolib.ddo.core.solver;
 
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.ExactModel;
+import org.ddolib.modeling.Problem;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
@@ -58,35 +56,6 @@ public final class ExactSolver<T> implements Solver {
     private final Problem<T> problem;
 
     /**
-     * A relaxation of the problem (used internally, e.g., for fast lower bounds).
-     */
-    private final Relaxation<T> relax;
-
-    /**
-     * Heuristic used to rank states and identify the most promising nodes.
-     */
-    private final StateRanking<T> ranking;
-
-    /**
-     * Heuristic used to select the next variable to branch on during MDD compilation.
-     */
-    private final VariableHeuristic<T> varh;
-
-    /**
-     * Heuristic providing a lower bound of the optimal value.
-     */
-    private final FastLowerBound<T> flb;
-
-    /**
-     * Dominance checker used to prune the search space.
-     */
-    private final DominanceChecker<T> dominance;
-
-    /**
-     * Optional cache for pruning repeated subproblems.
-     */
-    private final Optional<SimpleCache<T>> cache;
-    /**
      * Verbosity level controlling output during the solving process.
      */
     private final VerbosityLevel verbosityLevel;
@@ -94,10 +63,7 @@ public final class ExactSolver<T> implements Solver {
      * Flag to indicate whether the compiled MDD should be exported as a DOT file.
      */
     private final boolean exportAsDot;
-    /**
-     * Debug level controlling additional consistency checks during compilation.
-     */
-    private final DebugLevel debugLevel;
+    private final ExactModel<T> model;
     /**
      * Optional set containing the best solution found so far.
      */
@@ -107,9 +73,6 @@ public final class ExactSolver<T> implements Solver {
      */
     private Optional<Double> bestValue = Optional.empty();
 
-    private final DdoModel<T> model;
-
-
 
     /**
      * Creates a fully-configured ExactSolver instance.
@@ -118,18 +81,11 @@ public final class ExactSolver<T> implements Solver {
      *              to configure the solver, including the problem, relaxation, ranking,
      *              variable heuristic, lower bound, dominance checker, caching, and verbosity settings.
      */
-    public ExactSolver(DdoModel<T> model) {
+    public ExactSolver(ExactModel<T> model) {
         this.problem = model.problem();
-        this.relax = model.relaxation();
-        this.ranking = model.ranking();
-        this.varh = model.variableHeuristic();
-        this.flb = model.lowerBound();
-        this.dominance = model.dominance();
-        this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.exportAsDot = model.exportDot();
-        this.debugLevel = model.debugMode();
         this.model = model;
     }
 
@@ -158,23 +114,22 @@ public final class ExactSolver<T> implements Solver {
                 problem.initialValue(),
                 Double.POSITIVE_INFINITY,
                 Collections.emptySet());
-        cache.ifPresent(c -> c.initialize(problem));
 
         CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = CompilationType.Exact;
         compilation.problem = this.problem;
-        compilation.relaxation = this.relax;
-        compilation.variableHeuristic = this.varh;
-        compilation.stateRanking = this.ranking;
+        compilation.relaxation = model.relaxation();
+        compilation.variableHeuristic = model.variableHeuristic();
+        compilation.stateRanking = model.ranking();
         compilation.residual = root;
         compilation.maxWidth = Integer.MAX_VALUE;
-        compilation.flb = flb;
-        compilation.dominance = this.dominance;
-        compilation.cache = this.cache;
+        compilation.flb = model.lowerBound();
+        compilation.dominance = model.dominance();
+        compilation.cache = Optional.empty();
         compilation.bestUB = Double.POSITIVE_INFINITY;
         compilation.cutSetType = CutSetType.LastExactLayer;
         compilation.exportAsDot = this.exportAsDot;
-        compilation.debugLevel = this.debugLevel;
+        compilation.debugLevel = model.debugMode();
 
         DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();

@@ -251,7 +251,7 @@ public class Solvers {
      * @param model the DDO model to solve
      * @return search statistics summarizing the exact execution
      */
-    public static <T> Solution minimizeExact(DdoModel<T> model) {
+    public static <T> Solution minimizeExact(ExactModel<T> model) {
         return new ExactSolver<>(model).minimize(s -> false, (sol, s) -> {
         });
     }
@@ -271,7 +271,7 @@ public class Solvers {
      * @param onSolution callback invoked when new incumbent solutions are found
      * @return search statistics summarizing the ACS execution
      */
-    public static <T> Solution minimizeExact(DdoModel<T> model,
+    public static <T> Solution minimizeExact(ExactModel<T> model,
                                              BiConsumer<int[], SearchStatistics> onSolution) {
         return new ExactSolver<>(model).minimize(s -> false, onSolution);
     }

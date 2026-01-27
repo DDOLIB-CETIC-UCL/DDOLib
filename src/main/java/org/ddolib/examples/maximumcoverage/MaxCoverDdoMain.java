@@ -18,16 +18,48 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
+/**
+ * Maximum Coverage (MaxCover) problem with Ddo
+ * <p>
+ * This class demonstrates how to solve an instance of the Maximum Coverage (MaxCover) problem (BKP)
+ * using a Decision Diagram Optimization (DDO) algorithm.
+ * <ul>
+ *   <li>Builds an instance of the MaxCover problem (randomly generated or loaded from a file)</li>
+ *   <li>Defines a {@link DdoModel} by specifying the problem, relaxation,
+ *       ranking strategy, width heuristic, and lower bound</li>
+ *   <li>Runs the DDO solver to compute a solution</li>
+ *   <li>Prints the resulting solution</li>
+ * </ul>
+ *
+ * <p>
+ * The problem parameters (size, cardinality, random seed, etc.) can be
+ * easily modified to experiment with different instances.
+ */
 public class MaxCoverDdoMain {
+    /**
+     * Program entry point.
+     *
+     * <p>
+     * This method:
+     * <ol>
+     *   <li>Creates an instance of the MaxCover problem</li>
+     *   <li>Builds a DDO model by defining:
+     *     <ul>
+     *       <li>the problem to solve</li>
+     *       <li>the relaxation used during search</li>
+     *       <li>the state ranking strategy</li>
+     *       <li>the width heuristic (fixed width in this example)</li>
+     *       <li>a fast lower bound</li>
+     *     </ul>
+     *   </li>
+     *   <li>Runs the DDO solver in minimization mode</li>
+     *   <li>Prints the intermediate and final solutions</li>
+     * </ol>
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if an error occurs while loading a problem instance from a file
+     */
     public static void main(String[] args) throws IOException {
-        /*int n = 4; int m = 3; int k = 3;
-        BitSet[] ss = new BitSet[m];
-        ss[0] = new BitSet(n);  ss[0].set(0);  ss[0].set(1);
-        ss[1] = new BitSet(n);  ss[1].set(2);  ss[1].set(3);
-        ss[2] = new BitSet(n);  /*ss[2].set(1);*/  // ss[2].set(3);
-        //ss[3] = new BitSet(n);  ss[3].set(3);  ss[3].set(4);
-        // MaxCoverProblem problem = new MaxCoverProblem(n, m, k, ss);
         MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
         // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
 
@@ -51,30 +83,17 @@ public class MaxCoverDdoMain {
 
             @Override
             public WidthHeuristic<MaxCoverState> widthHeuristic() {
-                return new FixedWidth<>(100);
+                return new FixedWidth<>(10);
             }
 
-//            @Override
-//            public MaxCoverFastLowerBound lowerBound() {
-//                return new MaxCoverFastLowerBound(problem);
-//            }
+            @Override
+            public MaxCoverFastLowerBound lowerBound() {
+                return new MaxCoverFastLowerBound(problem);
+            }
 
             @Override
             public boolean exportDot() {
-                return true;
-            }
-
-            @Override
-            public ReductionStrategy<MaxCoverState> relaxStrategy() {
-                return new GHP<>(new MaxCoverDistance(problem));
-                // return new Hybrid<>(new MaxCoverRanking(), new MaxCoverDistance(problem));
-                // return new CostBased<>(new MaxCoverRanking());
-            }
-
-            @Override
-            public ReductionStrategy<MaxCoverState> restrictStrategy() {
-                return new CostBased<>(new MaxCoverRanking());
-                // return new Kmeans<>(new MaxCoverCoordinates(problem));
+                return false;
             }
         };
 
