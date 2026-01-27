@@ -46,8 +46,6 @@ public final class AwAstar<T> implements Solver {
     private final Problem<T> problem;
     // A suitable lb for the problem we want to minimize
     private final FastLowerBound<T> lb;
-    // A heuristic to choose the next variable to branch on
-    private final VariableHeuristic<T> varh;
     // HashMap mapping (state,depth) to the f value
     private final HashMap<StateAndDepth<T>, Double> closed;
     // HashMap mapping (state,depth) open nodes to the f value.
@@ -106,7 +104,6 @@ public final class AwAstar<T> implements Solver {
         }
 
         this.problem = model.problem();
-        this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
         this.bestUB = Double.POSITIVE_INFINITY;
@@ -125,7 +122,6 @@ public final class AwAstar<T> implements Solver {
 
     private AwAstar(AwAstarModel<T> model, StateAndDepth<T> rootKey) {
         this.problem = model.problem();
-        this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
         this.bestUB = Double.POSITIVE_INFINITY;
@@ -182,7 +178,6 @@ public final class AwAstar<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
-            Double subValue = present.remove(subKey);
 
             // The current has been explored, or it can only lead to less good solution
             if (closed.containsKey(subKey) || sub.f() + 1e-10 >= bestUB) {
