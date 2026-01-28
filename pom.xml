@@ -76,6 +76,8 @@
         <maven.compiler.target>21</maven.compiler.target>
         <checkstyle.config.location>${basedir}/checkstyle.xml</checkstyle.config.location>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
+        <junit.groups.include></junit.groups.include>
+        <junit.groups.exclude>non-regression</junit.groups.exclude>
     </properties>
     <dependencies>
         <dependency>
@@ -134,9 +136,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
+                <version>3.5.3</version>
                 <configuration>
                     <skipTests>false</skipTests>
+                    <groups>${junit.groups.include}</groups>
+                    <excludedGroups>${junit.groups.exclude}</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
@@ -165,4 +169,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>non-regression-tests</id>
+            <properties>
+                <junit.groups.include>non-regression</junit.groups.include>
+                <junit.groups.exclude></junit.groups.exclude>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -7,6 +7,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.util.debug.DebugLevel;
@@ -134,6 +135,341 @@ public interface DdoModel<T> extends Model<T> {
         return (o1, o2) -> 0;
     }
 
+
+    /**
+     * Returns a copy of this model but with a fixed width.
+     *
+     * @param width The maximum width of the diagram.
+     * @return A copy of this model but with a fixed width.
+     */
+    default DdoModel<T> fixWidth(int width) {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(width);
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model by changing the {@link CutSetType}.
+     *
+     * @param type The new cutset type.
+     * @return A copy of this model by changing the {@link CutSetType}.
+     */
+    default DdoModel<T> setCutSetType(CutSetType type) {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return new SimpleFrontier<>(ranking(), type);
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model by enabling or disabling the cache.
+     *
+     * @param b Whether the cache must be used.
+     * @return A copy of this model by enabling or disabling the cache.
+     */
+    default DdoModel<T> useCache(boolean b) {
+        return new DdoModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return b;
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+        };
+    }
+
+    @Override
+    default DdoModel<T> disableDominance() {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+        };
+    }
+
+    @Override
+    default DdoModel<T> disableLowerBound() {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public DdoModel<T> fixWidth(int width) {
+                return DdoModel.this.fixWidth(width);
+            }
+        };
+    }
     /**
      * Convert this model into a model for the exact solver.
      *
