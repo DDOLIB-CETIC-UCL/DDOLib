@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.SolverUtil;
@@ -87,6 +88,7 @@ public final class ACSSolver<T> implements Solver {
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
     private final DebugLevel debugLevel;
+    private final boolean defaultLowerBoundValue;
     /**
      * Value of the best known upper bound (incumbent solution).
      */
@@ -96,8 +98,6 @@ public final class ACSSolver<T> implements Solver {
      */
     private Optional<Set<Decision>> bestSol;
     private boolean negativeTransitionCosts = false;
-
-    private boolean defaultLowerBoundValue = false;
 
 
     /**
@@ -141,6 +141,7 @@ public final class ACSSolver<T> implements Solver {
         this.debugLevel = model.debugMode();
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
 
     }
 
@@ -163,6 +164,7 @@ public final class ACSSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     /**
@@ -195,23 +197,22 @@ public final class ACSSolver<T> implements Solver {
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
-        if (root.f() == Integer.MIN_VALUE) {
-            defaultLowerBoundValue = true;
-        }
-
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             verboseMode.detailedSearchState(nbIter,
                     open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
                     bestUB,
                     open.stream()
-                            .map(pq -> pq.peek() != null ? pq.peek().getLowerBound() : 0)
-                            .mapToDouble(x -> x).min().orElse(Double.POSITIVE_INFINITY),
-                    100 * gap());
+                            .filter(pq -> !pq.isEmpty())
+                            .mapToDouble(pq -> pq.peek().getLowerBound())
+                            .min().
+                            orElse(Double.POSITIVE_INFINITY),
+                    gap());
 
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
+                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY)
+                    , gap());
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -290,6 +291,25 @@ public final class ACSSolver<T> implements Solver {
     }
 
     /**
+     * Computes the gap (percentage difference) between the best known upper bound and the lowest
+     * f-value in the open nodes, for anytime search reporting.
+     *
+     * @return gap as a percentage
+     */
+    @Override
+    public double gap() {
+        if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
+
+        double globalLB = open.stream()
+                .filter(pq -> !pq.isEmpty())
+                .mapToDouble(pq -> defaultLowerBoundValue ? pq.peek().getValue() : pq.peek().f())
+                .min()
+                .orElse(bestUB);
+
+        return 100 * Math.abs((bestUB - globalLB) / bestUB);
+    }
+
+    /**
      * Constructs the root subproblem from a given state, value, and depth.
      *
      * @param state the initial state
@@ -331,9 +351,7 @@ public final class ACSSolver<T> implements Solver {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
-            if (cost < 0) {
-                negativeTransitionCosts = true;
-            }
+
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
@@ -396,33 +414,5 @@ public final class ACSSolver<T> implements Solver {
         };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new ACSSolver<>(model, key));
-    }
-
-    /**
-     * Computes the gap (percentage difference) between the best known upper bound and the lowest
-     * f-value in the open nodes, for anytime search reporting.
-     *
-     * @return gap as a percentage
-     */
-    private double gap() {
-        if (defaultLowerBoundValue) {
-            return Double.NaN;
-        } else {
-            if (allEmpty()) {
-                return 0;
-            } else {
-                double minLB = Double.POSITIVE_INFINITY;
-                for (int i = 0; i < problem.nbVars(); i++) {
-                    if (!open.get(i).isEmpty()) {
-                        minLB = Math.min(minLB, open.get(i).peek().f());
-                    }
-                }
-                if (negativeTransitionCosts) {
-                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB), Math.abs(bestUB)));
-                } else {
-                    return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
-                }
-            }
-        }
     }
 }

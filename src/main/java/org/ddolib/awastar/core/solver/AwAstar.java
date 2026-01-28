@@ -8,6 +8,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.modeling.AwAstarModel;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.SolverUtil;
@@ -80,6 +81,8 @@ public final class AwAstar<T> implements Solver {
      * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    private final boolean defaultLowerBoundValue;
+
     // Statistics
     long t0; // time at the beginning of the search
     int nbIter; // number of iterations
@@ -117,6 +120,7 @@ public final class AwAstar<T> implements Solver {
         this.open = new PriorityQueue<>(
                 Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
 
@@ -135,6 +139,7 @@ public final class AwAstar<T> implements Solver {
         this.open = new PriorityQueue<>(
                 Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     @Override
@@ -149,7 +154,7 @@ public final class AwAstar<T> implements Solver {
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
             verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
-                    open.peek().getLowerBound(), 100 * gap());
+                    open.peek().getLowerBound(), gap());
 
             nbIter++;
             queueMaxSize = Math.max(queueMaxSize, open.size());
@@ -163,8 +168,7 @@ public final class AwAstar<T> implements Solver {
                     gap());
 
 
-            if (limit.test(stats)) {
-                // user-defined stopping criterion
+            if (limit.test(stats)) { // user-defined stopping criterion
                 stats = new SearchStatistics(
                         bestSolution().map(sol -> SearchStatus.SAT).orElse(SearchStatus.UNKNOWN),
                         nbIter,
@@ -180,7 +184,7 @@ public final class AwAstar<T> implements Solver {
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             present.remove(subKey);
 
-            // The current has been explored, or it can only lead to less good solution
+            // The current node has been explored, or it can only lead to less good solution
             if (closed.containsKey(subKey) || sub.f() + 1e-10 >= bestUB) {
                 continue;
             }
@@ -217,6 +221,18 @@ public final class AwAstar<T> implements Solver {
         return bestSol;
     }
 
+    @Override
+    public double gap() {
+        if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
+
+        double globalLB = open.stream()
+                .mapToDouble(sub -> defaultLowerBoundValue ? sub.getValue() : sub.f())
+                .min()
+                .orElse(bestUB);
+
+        return 100 * Math.abs((bestUB - globalLB) / bestUB);
+    }
+
     private void addChildren(SubProblem<T> subProblem,
                              BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
@@ -237,8 +253,8 @@ public final class AwAstar<T> implements Solver {
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
-            // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));   // h-cost from this state to the target
+
             double f = g + h;
             double fprime = g + weight * h;
 
@@ -302,13 +318,6 @@ public final class AwAstar<T> implements Solver {
                 value,
                 lb.fastLowerBound(state, vars),
                 nullDecisions);
-    }
-
-
-    private double gap() {
-        return problem.optimalValue()
-                .map(opti -> 100 * (Math.abs(bestUB - opti) / Math.abs(opti)))
-                .orElse(100.);
     }
 
     /**

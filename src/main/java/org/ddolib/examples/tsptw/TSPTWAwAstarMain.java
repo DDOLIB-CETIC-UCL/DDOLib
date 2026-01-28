@@ -1,5 +1,7 @@
 package org.ddolib.examples.tsptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.Model;
@@ -57,8 +59,10 @@ public class TSPTWAwAstarMain {
      * @throws IOException If there is an error reading the input instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];
+        final String instance = args.length == 0 ?
+                Path.of("data", "TSPTW", "AFG", "rbg042a.tw").toString() : args[0];
         final TSPTWProblem problem = new TSPTWProblem(instance);
+
         AwAstarModel<TSPTWState> model = new AwAstarModel<>() {
             @Override
             public Problem<TSPTWState> problem() {
@@ -70,15 +74,17 @@ public class TSPTWAwAstarMain {
                 return new TSPTWFastLowerBound(problem);
             }
 
-            /*@Override
+            @Override
             public DominanceChecker<TSPTWState> dominance() {
                 return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-            }*/
+            }
         };
 
-        Solution bestSolution = Solvers.minimizeAwAStar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeAwAStar(
+                model,
+                stats -> stats.runTimeMs() > 10000,
+                (sol, s) -> SolutionPrinter.printSolution(s, sol)
+        );
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

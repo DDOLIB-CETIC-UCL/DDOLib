@@ -83,19 +83,9 @@ public class AwAStarSolverTest {
 
     @Test
     void testGR() {
-        final int n = 7;
-        final GRProblem problem = new GRProblem(n, 25);
-        final AwAstarModel<GRState> model = new AwAstarModel<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
-
-            @Override
-            public FastLowerBound<GRState> lowerBound() {
-                return (state, variables) -> 0;
-            }
-        };
+        final int n = 6;
+        final GRProblem problem = new GRProblem(n);
+        final AwAstarModel<GRState> model = () -> problem;
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
@@ -150,7 +140,7 @@ public class AwAStarSolverTest {
             assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
-        
+
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());

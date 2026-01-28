@@ -88,19 +88,13 @@ class AStarSolverTest {
         // The golomb ruler problem is a minimization problem.
         // Ddo is used to improved solution over time
         // and prove that no better solution exists.
-        final int n = 7;
-        final GRProblem problem = new GRProblem(n);
-        final Model<GRState> model = new Model<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
-
-            @Override
+        final int n = 6;
+        final GRProblem problem = new GRProblem(n, 17);
+        /* @Override
             public FastLowerBound<GRState> lowerBound() {
                 return (state, variables) -> 0;
-            }
-        };
+            }*/
+        final Model<GRState> model = () -> problem;
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = Solvers.minimizeAstar(model, (sol, s) -> {

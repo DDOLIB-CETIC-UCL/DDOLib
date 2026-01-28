@@ -88,12 +88,7 @@ class AcsSolverTest {
         // and prove that no better solution exists.
         final int n = 7;
         final GRProblem problem = new GRProblem(n);
-        final AcsModel<GRState> model = new AcsModel<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
-        };
+        final AcsModel<GRState> model = () -> problem;
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = Solvers.minimizeAcs(model, (sol, s) -> {
@@ -106,12 +101,10 @@ class AcsSolverTest {
         // verify that the solutions are improving and the gap is decreasing
         for (int i = 1; i < statsList.size(); i++) {
             assertTrue(statsList.get(i).incumbent() < statsList.get(i - 1).incumbent());
+            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
 
-        for (int i = 0; i < statsList.size(); i++) {
-            assertEquals(Double.NaN, statsList.get(i).gap());
-        }
 
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());

@@ -8,6 +8,7 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
@@ -62,6 +63,7 @@ public final class AStarSolver<T> implements Solver {
      * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    private final boolean defaultLowerBoundValue;
     // Statistics
     long t0; // time at the beginning of the search
     int nbIter; // number of iterations
@@ -70,7 +72,6 @@ public final class AStarSolver<T> implements Solver {
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
     private Optional<Set<Decision>> bestSol;
-
 
     public AStarSolver(Model<T> model) {
         this.problem = model.problem();
@@ -85,7 +86,7 @@ public final class AStarSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
         this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     /**
@@ -112,6 +113,7 @@ public final class AStarSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     @Override
@@ -196,6 +198,18 @@ public final class AStarSolver<T> implements Solver {
         return bestSol;
     }
 
+    @Override
+    public double gap() {
+        if (bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
+        } else if (open.isEmpty()) {
+            return 0.0;
+        } else {
+            double globalLB = defaultLowerBoundValue ? open.peek().getValue() : open.peek().f();
+            return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);
+        }
+    }
+
     /**
      * Construct the root of a problem given the state, the value and the depth of the root node.
      * A non-zero depth is used for debug. For debug, the value of root is 0.
@@ -220,7 +234,6 @@ public final class AStarSolver<T> implements Solver {
                 lb.fastLowerBound(state, vars),
                 nullDecisions);
     }
-
 
     private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
@@ -280,7 +293,6 @@ public final class AStarSolver<T> implements Solver {
         }
     }
 
-
     /**
      * Checks if the lower bound of explored nodes of the search is admissible.
      */
@@ -306,16 +318,6 @@ public final class AStarSolver<T> implements Solver {
         };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AStarSolver<>(model, key));
-    }
-
-
-    private double gap() {
-        if (open.isEmpty() | bestUB == Double.POSITIVE_INFINITY) {
-            return 100.0;
-        } else {
-            double bestInFrontier = open.peek().f();
-            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
-        }
     }
 
 
