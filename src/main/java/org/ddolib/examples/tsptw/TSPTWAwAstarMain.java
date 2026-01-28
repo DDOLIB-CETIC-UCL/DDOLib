@@ -13,13 +13,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with AsTar.
+ * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Anytime Weighted
+ * A* (AWA*).
  * Main class to solve the Traveling Salesman Problem with Time Windows (TSPTW)
- * using the A* search algorithm.
+ * using the AWA* search algorithm.
  *
  * <p>
  * This class initializes a {@link TSPTWProblem} instance, sets up an A* model,
- * and runs the A* solver to find an optimal or near-optimal solution to the TSPTW.
+ * and runs the AWA* solver to find an optimal or near-optimal solution to the TSPTW.
  * </p>
  *
  * <p>

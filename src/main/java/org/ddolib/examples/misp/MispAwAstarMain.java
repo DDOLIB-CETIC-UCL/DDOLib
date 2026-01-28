@@ -14,16 +14,16 @@ import java.nio.file.Path;
 import java.util.BitSet;
 
 /**
- * The Maximum Independent Set Problem (MISP) with AsTar.
- * Entry point for solving the Maximum Independent Set Problem (MISP) using an A* solver.
+ * The Maximum Independent Set Problem (MISP) with Anytime Weighted A* (AWA*).
+ * Entry point for solving the Maximum Independent Set Problem (MISP) using an AWA* solver.
  * <p>
- * This class demonstrates how to configure and run an A* search algorithm for a MISP instance.
+ * This class demonstrates how to configure and run an AWA* search algorithm for a MISP instance.
  * The model used for the search includes:
  * </p>
  * <ul>
  *     <li>The problem instance {@link MispProblem} read from a file.</li>
  *     <li>A dominance checker {@link SimpleDominanceChecker} with {@link MispDominance} to prune dominated states.</li>
- *     <li>A fast lower bound {@link MispFastLowerBound} to guide the A* search.</li>
+ *     <li>A fast lower bound {@link MispFastLowerBound} to guide the search.</li>
  *     <li>Debug mode enabled through {@link DebugLevel#ON}.</li>
  * </ul>
  *
@@ -33,7 +33,7 @@ import java.util.BitSet;
  */
 public final class MispAwAstarMain {
     /**
-     * Main method to execute the A* solver on a MISP instance.
+     * Main method to execute the AWA* solver on a MISP instance.
      * <p>
      * If no command-line argument is provided, the default instance
      * <code>data/MISP/tadpole_4_2.dot</code> is used.
