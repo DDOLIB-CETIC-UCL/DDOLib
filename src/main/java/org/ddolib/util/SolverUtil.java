@@ -1,7 +1,6 @@
 package org.ddolib.util;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.modeling.Problem;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,9 +11,16 @@ import java.util.Set;
 public final class SolverUtil {
 
 
-    public static <T> Set<Integer> varSet(Problem<T> problem, Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
+    /**
+     * Returns the set of variables not covered by the given set of decisions.
+     *
+     * @param nbVars the number of variables in the related problem
+     * @param path   a set of decision
+     * @return the set of variables not covered by the given set of decisions
+     */
+    public static Set<Integer> unassignedVars(int nbVars, Set<Decision> path) {
+        final Set<Integer> set = new HashSet<>(nbVars);
+        for (int i = 0; i < nbVars; i++) {
             set.add(i);
         }
         for (Decision d : path) {

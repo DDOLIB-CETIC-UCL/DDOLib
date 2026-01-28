@@ -253,7 +253,7 @@ public final class AwAstarSolver<T> implements Solver {
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));   // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));   // h-cost from this state to the target
 
             double f = g + h;
             double fprime = g + weight * h;

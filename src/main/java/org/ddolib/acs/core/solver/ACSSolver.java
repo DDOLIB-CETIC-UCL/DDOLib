@@ -355,7 +355,7 @@ public final class ACSSolver<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastLowerBound = lb.fastLowerBound(newState, SolverUtil.varSet(problem, path));
+            double fastLowerBound = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
 
 
             // if the new state is dominated, we skip it
