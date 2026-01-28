@@ -40,7 +40,7 @@ import java.util.stream.IntStream;
  * @see DominanceChecker
  * @see AwAstarModel
  */
-public final class AwAstar<T> implements Solver {
+public final class AwAstarSolver<T> implements Solver {
 
 
     // The problem we want to minimize
@@ -99,7 +99,7 @@ public final class AwAstar<T> implements Solver {
      * @param model provides all parameters needed to configure the solver
      * @throws IllegalArgumentException if the weight associated to the heuristic function is &lt; 1
      */
-    public AwAstar(AwAstarModel<T> model) {
+    public AwAstarSolver(AwAstarModel<T> model) {
 
         if (model.weight() < 1) {
             throw new IllegalArgumentException("The weight associated to the heuristic function " +
@@ -124,7 +124,7 @@ public final class AwAstar<T> implements Solver {
     }
 
 
-    private AwAstar(AwAstarModel<T> model, StateAndDepth<T> rootKey) {
+    private AwAstarSolver(AwAstarModel<T> model, StateAndDepth<T> rootKey) {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
@@ -349,6 +349,6 @@ public final class AwAstar<T> implements Solver {
             }
         };
 
-        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AwAstar<>(model, key));
+        DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AwAstarSolver<>(model, key));
     }
 }

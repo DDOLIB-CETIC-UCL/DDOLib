@@ -2,7 +2,7 @@ package org.ddolib.modeling;
 
 import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.awastar.core.solver.AwAstar;
+import org.ddolib.awastar.core.solver.AwAstarSolver;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.solver.ExactSolver;
@@ -26,15 +26,19 @@ import java.util.function.Predicate;
  *       to guarantee optimality.</li>
  *   <li><b>ACS (Anytime Column Search)</b> — An iterative improvement algorithm that progressively
  *       refines solutions over time using bounded-width decision diagrams.</li>
+ *   <li><b>Anytime Weighted A*</b> - A variant of A* algorithm that progressively refines
+ *   solution using a weighted heuristic function.</li>
  * </ul>
  *
  * @see DdoModel
  * @see AcsModel
  * @see Model
+ * @see Solution
  * @see SearchStatistics
  * @see SequentialSolver
  * @see AStarSolver
  * @see ACSSolver
+ * @see AwAstarSolver
  */
 public class Solvers {
     // =============================================================
@@ -46,9 +50,9 @@ public class Solvers {
      * with default stopping criteria and no solution callback.
      *
      * @param model the DDO model to solve
-     * @return search statistics summarizing the solver's execution
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
-    public static final <T> Solution minimizeDdo(DdoModel<T> model) {
+    public static <T> Solution minimizeDdo(DdoModel<T> model) {
         return minimizeDdo(model, stats -> false, (sol, s) -> {
         });
     }
@@ -58,10 +62,9 @@ public class Solvers {
      *
      * @param model the DDO model to solve
      * @param limit a predicate defining the stopping criterion (e.g., max iterations, time limit)
-     * @return search statistics summarizing the solver's execution
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
-
-    public static final <T> Solution minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> Solution minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
         return minimizeDdo(model, limit, (sol, s) -> {
         });
     }
@@ -71,10 +74,9 @@ public class Solvers {
      *
      * @param model      the DDO model to solve
      * @param onSolution callback executed when a new best solution is discovered
-     * @return search statistics summarizing the solver's execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
-    public static final <T> Solution minimizeDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return minimizeDdo(model, s -> false, onSolution);
     }
 
@@ -88,46 +90,46 @@ public class Solvers {
      * @param model      the DDO model to solve
      * @param limit      a predicate defining when the solver should stop
      * @param onSolution a callback invoked whenever a new best solution is found
-     * @return search statistics summarizing the solver's performance
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
-    public static final <T> Solution minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeDdo(DdoModel<T> model,
+                                           Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new SequentialSolver<>(model).minimize(limit, onSolution);
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model) {
+    public static <T> Solution relaxedDdo(DdoModel<T> model) {
         return relaxedDdo(model, stats -> false, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
         return relaxedDdo(model, limit, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution relaxedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return relaxedDdo(model, s -> false, onSolution);
     }
 
-    public static final <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution relaxedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new RelaxationSolver<>(model).minimize(limit, onSolution);
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model) {
+    public static <T> Solution restrictedDdo(DdoModel<T> model) {
         return restrictedDdo(model, stats -> false, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
         return restrictedDdo(model, limit, (sol, s) -> {
         });
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution restrictedDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return restrictedDdo(model, s -> false, onSolution);
     }
 
-    public static final <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution restrictedDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new RestrictionSolver<>(model).minimize(limit, onSolution);
     }
 
@@ -140,10 +142,10 @@ public class Solvers {
      * Solves the given model using the A* search algorithm with default parameters.
      *
      * @param model the model to solve
-     * @return search statistics summarizing the A* execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
 
-    public static final <T> Solution minimizeAstar(Model<T> model) {
+    public static <T> Solution minimizeAstar(Model<T> model) {
         return minimizeAstar(model, s -> false, (sol, s) -> {
         });
     }
@@ -153,10 +155,9 @@ public class Solvers {
      *
      * @param model the model to solve
      * @param limit predicate defining the termination condition
-     * @return search statistics summarizing the A* execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
-    public static final <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
         return minimizeAstar(model, limit, (sol, s) -> {
         });
     }
@@ -166,10 +167,9 @@ public class Solvers {
      *
      * @param model      the model to solve
      * @param onSolution callback triggered for each new best solution
-     * @return search statistics summarizing the A* execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
-    public static final <T> Solution minimizeAstar(Model<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeAstar(Model<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return minimizeAstar(model, s -> false, onSolution);
     }
 
@@ -179,10 +179,9 @@ public class Solvers {
      * @param model      the model to solve
      * @param limit      stopping condition for the search
      * @param onSolution callback invoked when a new best solution is found
-     * @return search statistics of the A* execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
-    public static final <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
 
         return new AStarSolver<>(model).minimize(limit, onSolution);
     }
@@ -194,9 +193,8 @@ public class Solvers {
      * Solves the given model using the Anytime Column Search (ACS) algorithm.
      *
      * @param model the ACS model to solve
-     * @return search statistics summarizing the ACS execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
     public static <T> Solution minimizeAcs(AcsModel<T> model) {
         return minimizeAcs(model, s -> false, (sol, s) -> {
         });
@@ -207,9 +205,8 @@ public class Solvers {
      *
      * @param model the ACS model to solve
      * @param limit predicate defining the stopping criterion
-     * @return search statistics summarizing the ACS execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
     public static <T> Solution minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit) {
         return minimizeAcs(model, limit, (sol, s) -> {
         });
@@ -220,9 +217,8 @@ public class Solvers {
      *
      * @param model      the ACS model to solve
      * @param onSolution callback executed on discovery of a new best solution
-     * @return search statistics summarizing the ACS execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
     public static <T> Solution minimizeAcs(AcsModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
         return minimizeAcs(model, s -> false, onSolution);
     }
@@ -236,7 +232,7 @@ public class Solvers {
      * @param model      the ACS model to solve
      * @param limit      predicate defining the stopping condition
      * @param onSolution callback invoked when new incumbent solutions are found
-     * @return search statistics summarizing the ACS execution
+     * @return sa solution to the related problem with search statistics summarizing solver's performance
      */
     public static <T> Solution minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new ACSSolver<>(model).minimize(limit, onSolution);
@@ -247,26 +243,57 @@ public class Solvers {
     // =============================================================
 
 
+    /**
+     * Core method for solving a model with the Anytime Weighted A* search algorithm, with custom
+     * limit and callback.
+     *
+     * @param model      the model to solve
+     * @param limit      stopping condition for the search
+     * @param onSolution callback invoked when a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing solver's
+     * performance
+     */
     public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
                                                Predicate<SearchStatistics> limit,
                                                BiConsumer<int[], SearchStatistics> onSolution) {
-        return new AwAstar<>(model).minimize(limit, onSolution);
+        return new AwAstarSolver<>(model).minimize(limit, onSolution);
     }
 
+
+    /**
+     * Solves the given model using the Anytime Weighted A* (AWA*) algorithm.
+     *
+     * @param model the AWA* model to solve
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
     public static <T> Solution minimizeAwAStar(AwAstarModel<T> model) {
-        return new AwAstar<>(model).minimize(s -> false, (sol, s) -> {
+        return new AwAstarSolver<>(model).minimize(s -> false, (sol, s) -> {
         });
     }
 
+    /**
+     * Solves the given model using AWA*, stopping when the limit condition is satisfied.
+     *
+     * @param model the AWA* model to solve
+     * @param limit predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
     public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
                                                Predicate<SearchStatistics> limit) {
-        return new AwAstar<>(model).minimize(limit, (sol, s) -> {
+        return new AwAstarSolver<>(model).minimize(limit, (sol, s) -> {
         });
     }
 
+    /**
+     * Solves the given model using AWA* and calls the callback when a new incumbent is found.
+     *
+     * @param model      the AWA* model to solve
+     * @param onSolution callback executed on discovery of a new best solution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
     public static <T> Solution minimizeAwAStar(AwAstarModel<T> model,
                                                BiConsumer<int[], SearchStatistics> onSolution) {
-        return new AwAstar<>(model).minimize(s -> false, onSolution);
+        return new AwAstarSolver<>(model).minimize(s -> false, onSolution);
     }
 
 
@@ -283,7 +310,7 @@ public class Solvers {
      * For larger instances or more advanced strategies, consider using {@link Solvers#minimizeDdo(DdoModel)}.
      *
      * @param model the DDO model to solve
-     * @return search statistics summarizing the exact execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static <T> Solution minimizeExact(ExactModel<T> model) {
         return new ExactSolver<>(model).minimize(s -> false, (sol, s) -> {
@@ -303,7 +330,7 @@ public class Solvers {
      *
      * @param model      the DDO model to solve
      * @param onSolution callback invoked when new incumbent solutions are found
-     * @return search statistics summarizing the ACS execution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static <T> Solution minimizeExact(ExactModel<T> model,
                                              BiConsumer<int[], SearchStatistics> onSolution) {
