@@ -175,22 +175,6 @@ public final class SequentialSolver<T> implements Solver {
         this.model = model;
     }
 
-    public SequentialSolver(Problem<T> problem, WidthHeuristic<T> width, Frontier<T> frontier, VerbosityLevel verbosityLevel, VerboseMode verboseMode, boolean exportAsDot, DdoModel<T> model, Optional<SimpleCache<T>> cache, double bestUB, Optional<Set<Decision>> bestSol, boolean firstRestricted, boolean firstRelaxed, DominanceChecker<T> dominance) {
-        this.problem = problem;
-        this.width = width;
-        this.frontier = frontier;
-        this.verbosityLevel = verbosityLevel;
-        this.verboseMode = verboseMode;
-        this.exportAsDot = exportAsDot;
-        this.model = model;
-        this.cache = cache;
-        this.bestUB = bestUB;
-        this.bestSol = bestSol;
-        this.firstRestricted = firstRestricted;
-        this.firstRelaxed = firstRelaxed;
-        this.dominance = dominance;
-    }
-
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
