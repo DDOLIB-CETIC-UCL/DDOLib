@@ -1,5 +1,6 @@
 package org.ddolib.examples.misp;
 
+import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.DdoModel;
@@ -42,7 +43,7 @@ public final class MispDdoMain {
      * @throws IOException if there is an error reading the problem instance from the file
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "MISP", "C_6.dot").toString() :
+        final String instance = args.length == 0 ? Path.of("data", "MISP", "tadpole_4_2.dot").toString() :
                 args[0];
         final MispProblem problem = new MispProblem(instance);
         DdoModel<BitSet> model = new DdoModel<>() {
@@ -56,11 +57,10 @@ public final class MispDdoMain {
                 return new MispFastLowerBound(problem);
             }
 
-           /* @Override
+            @Override
             public DominanceChecker<BitSet> dominance() {
                 return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
             }
-*/
 
             @Override
             public MispRelax relaxation() {
@@ -70,11 +70,6 @@ public final class MispDdoMain {
             @Override
             public MispRanking ranking() {
                 return new MispRanking();
-            }
-
-            @Override
-            public boolean exportDot() {
-                return true;
             }
         };
 
