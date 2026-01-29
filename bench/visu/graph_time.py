@@ -5,6 +5,7 @@ import matplotlib
 
 matplotlib.use("Qt5Agg")
 
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -18,10 +19,13 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
 data_file_path = args.data_file
 
 if os.path.exists(data_file_path):
     df = pd.read_csv(data_file_path)
+    print(df)
+
 
     plt.figure(figsize=(12, 8))
 
@@ -34,5 +38,5 @@ if os.path.exists(data_file_path):
     plt.grid(True)
     plt.tight_layout()
 
-    plt.savefig("smic_graph_time.png", transparent=True)  # save image
+    plt.savefig("knapsack_graph_time1.png", transparent=True)  # save image
     plt.show()

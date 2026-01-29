@@ -6,7 +6,7 @@ from itertools import cycle
 import matplotlib
 
 matplotlib.use("Qt5Agg")
-
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -183,7 +183,7 @@ setup_axis_ticks(ax2)
 # --- Save Output ---
 filename = os.path.basename(data_file_path)
 suffix = "_consolidated_results.csv"
-png_filename = f"{filename.replace(suffix, "")}_cactus_plot.png"
+png_filename = f"{filename.replace(suffix, '')}_cactus_plot.png"
 plt.savefig(png_filename, transparent=True, dpi=600)
 print(f"Graph saved to: {png_filename}")
 plt.show()

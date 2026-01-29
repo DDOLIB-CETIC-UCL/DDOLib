@@ -17,7 +17,7 @@ set -e
 # Problem Configuration
 PROBLEM_NAME="knapsack"
 DATA_DIR="data/Knapsack"
-TIME_LIMIT=10000
+TIME_LIMIT=300000
 
 # Main Java Classes Definition
 CLASS_DDO="org.ddolib.examples.bench.KSDdoMain"

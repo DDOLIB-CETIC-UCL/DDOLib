@@ -16,7 +16,7 @@ set -e
 # Problem Configuration
 PROBLEM_NAME="smic"
 DATA_DIR="data/SMIC"
-TIME_LIMIT=5000
+TIME_LIMIT=300000
 
 # Main Java Classes Definition
 CLASS_DDO="org.ddolib.examples.bench.SMICDdoMain"
