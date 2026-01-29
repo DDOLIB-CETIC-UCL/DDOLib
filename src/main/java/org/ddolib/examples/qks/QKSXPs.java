@@ -240,10 +240,10 @@ public class QKSXPs {
                                     hybridFactor);
                             assert problem.name.isPresent();
                             double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
-                            System.out.printf("%s %d %d %d %f %n", problem.name.get(), maxWidth, kmeansIter, seed, hybridFactor);
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
                             Solution solution = Solvers.relaxedDdo(model);
 
-                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%f;%d%n",
                                     problem.name.get(),
                                     optimal,
                                     clusterType,
@@ -251,7 +251,8 @@ public class QKSXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    solution
+                                    solution.value(),
+                                    solution.statistics().runTimeMs()
                             ));
                             writer.flush();
                         }
@@ -283,10 +284,10 @@ public class QKSXPs {
                                     hybridFactor);
                             assert problem.name.isPresent();
                             double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
-                            System.out.printf("%s %s %d %d %d %f %n", problem.name.get(), clusterType, maxWidth, kmeansIter, seed, hybridFactor);
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
                             Solution solution = Solvers.restrictedDdo(model);
 
-                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%f;%d%n",
                                     problem.name.get(),
                                     optimal,
                                     clusterType,
@@ -294,7 +295,8 @@ public class QKSXPs {
                                     seed,
                                     kmeansIter,
                                     hybridFactor,
-                                    solution
+                                    solution.value(),
+                                    solution.statistics().runTimeMs()
                             ));
                             writer.flush();
                         }
@@ -335,15 +337,14 @@ public class QKSXPs {
                         long startTime = System.currentTimeMillis();
                         Solution solution = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
 
-                        writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
+                        writer.append(String.format("%s;%d;%d;%d;%f;%f;%d%n",
                                 problem.name.get(),
-                                relaxType,
-                                restrictType,
                                 maxWidth,
                                 seed,
                                 kmeansIter,
                                 hybridFactor,
-                                solution.statistics().toCSV()
+                                solution.value(),
+                                solution.statistics().runTimeMs()
                         ));
                         writer.flush();
                     }
@@ -354,9 +355,11 @@ public class QKSXPs {
 
     public static void main(String[] args) {
         try {
-            // xpBnB(args[0]);
-            xpRelaxation();
-            xpRestriction();
+            xpRelaxation(args[0]);
+            xpRestriction(args[0]);
+            xpBnB(args[0]);
+            // xpRelaxation();
+            // xpRestriction();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
