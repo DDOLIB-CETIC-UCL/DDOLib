@@ -89,7 +89,7 @@ public class QKSXPs {
                 switch (relaxType) {
                     case Cost -> strat = new CostBased<>(new QKSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new QKSCoordinates(problem), kmeansIter, true);
+                    case Kmeans -> strat = new Kmeans<>(new QKSCoordinates(problem), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new QKSRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }
@@ -102,7 +102,7 @@ public class QKSXPs {
                 switch (restrictType) {
                     case Cost -> strat = new CostBased<>(new QKSRanking());
                     case GHP -> strat = new GHP<>(stateDistance(), seed);
-                    case Kmeans -> strat = new Kmeans<>(new QKSCoordinates(problem), kmeansIter, true);
+                    case Kmeans -> strat = new Kmeans<>(new QKSCoordinates(problem), kmeansIter, false);
                     case Hybrid -> strat = new Hybrid<>(new QKSRanking(), stateDistance(), hybridFactor, seed);
                     case Random -> strat = new RandomBased<>(seed);
                 }

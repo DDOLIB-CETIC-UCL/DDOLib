@@ -14,9 +14,15 @@ public class QKSCoordinates implements StateCoordinates<QKSState> {
 
     @Override
     public double[] getCoordinates(QKSState state) {
-        double[] coordinates = new double[problem.nbVars()+1];
+        double[] coordinates = new double[1];
         coordinates[0] = state.capacity;
-        System.arraycopy(state.itemsProfit, 0, coordinates, 1, problem.nbVars());
+        /*int index = 1;
+        for (int item = state.remainingItems.nextSetBit(0); item >= 0; item = state.remainingItems.nextSetBit(item+1)){
+            coordinates[index++] = state.itemsProfit[item];
+        }*/
+
+        // System.arraycopy(state.itemsProfit, 0, coordinates, 1, problem.nbVars());
         return coordinates;
+        // return new double[0];
     }
 }

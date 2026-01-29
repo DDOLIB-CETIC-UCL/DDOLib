@@ -16,7 +16,7 @@ public class QKSDistance implements StateDistance<QKSState> {
 
     @Override
     public double distance(QKSState a, QKSState b) {
-        return distanceOnProfits(a, b) * 0.5 + distanceOnCapacity(a, b) * 0.5;
+        return distanceOnCapacity(a, b);
     }
 
     private double distanceOnProfits(QKSState a, QKSState b) {
