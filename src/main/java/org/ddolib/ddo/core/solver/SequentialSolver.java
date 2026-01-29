@@ -292,6 +292,16 @@ public final class SequentialSolver<T> implements Solver {
         return bestSol;
     }
 
+    @Override
+    public double gap() {
+        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
+        } else {
+            double globalLB = frontier.bestInFrontier();
+            return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);
+        }
+    }
+
     /**
      * @return the root subproblem
      */
@@ -340,15 +350,6 @@ public final class SequentialSolver<T> implements Solver {
             bw.write(dot);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private double gap() {
-        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
-            return 100.0;
-        } else {
-            double bestInFrontier = frontier.bestInFrontier();
-            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 

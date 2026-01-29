@@ -881,8 +881,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         if (lastLayer) {
             node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
+            node.flb = node.lb;
         }
-        String nodeStr = "";
+        String nodeStr;
         if (lastLayer) {
             nodeStr = String.format(
                     "\"%s\ng: %s\"",
@@ -891,9 +892,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             );
         } else {
             nodeStr = String.format(
-                    "\"%s\nf: %s - g: %s\"",
+                    "\"%s\nh: %s - g: %s\"",
                     node.state,
-                    df.format(node.lb),
+                    df.format(node.node.flb),
                     df.format(node.node.value)
             );
         }

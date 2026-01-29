@@ -52,6 +52,14 @@ public interface Solver {
     Optional<Set<Decision>> bestSolution();
 
     /**
+     * Computes the gap (percentage difference) between the best known upper bound and the lowest
+     * lower bound in the open nodes, for anytime search reporting.
+     *
+     * @return gap as a percentage
+     */
+    double gap();
+
+    /**
      * Constructs an array representing the values assigned to each variable from a set of decisions.
      *
      * @param decisions a set of {@link Decision} objects representing variable assignments
