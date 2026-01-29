@@ -10,7 +10,7 @@ import java.nio.file.Path;
 
 /**
  * The Pigment Sequencing Problem (PSP) with Acs.
- * Main class for solving a Precedence-constrained Scheduling Problem (PSP)
+ * Main class for solving a Pigment Sequencing Problem (PSP)
  * using the Anytime Column Search (ACS) algorithm.
  * <p>
  * This class reads a problem instance from a file (or uses a default instance if none
@@ -51,7 +51,7 @@ public class PSAcsMain {
 
             @Override
             public int columnWidth() {
-                return 1000;
+                return 10;
             }
         };
 

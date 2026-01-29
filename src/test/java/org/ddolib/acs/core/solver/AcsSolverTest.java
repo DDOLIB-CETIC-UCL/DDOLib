@@ -5,6 +5,9 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.examples.boundedknapsack.BKSDominance;
+import org.ddolib.examples.boundedknapsack.BKSFastLowerBound;
+import org.ddolib.examples.boundedknapsack.BKSProblem;
 import org.ddolib.examples.gruler.GRProblem;
 import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;
@@ -13,10 +16,7 @@ import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
-import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -103,12 +103,12 @@ class AcsSolverTest {
             assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
-
         // verify that the solutions are improving and the gap is decreasing
         for (int i = 1; i < statsList.size(); i++) {
             assertTrue(statsList.get(i).incumbent() < statsList.get(i - 1).incumbent());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
+
         for (int i = 0; i < statsList.size(); i++) {
             assertEquals(Double.NaN, statsList.get(i).gap());
         }
@@ -143,6 +143,55 @@ class AcsSolverTest {
             double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
             assertEquals(problem.nbVars(), sol.length);
             assertEquals(computedCost, s.incumbent());
+            assertEquals(SearchStatus.SAT, s.status());
+            statsList.add(s);
+        });
+
+        // verify that the solutions are improving and the gap is decreasing
+        for (int i = 1; i < statsList.size(); i++) {
+            assertTrue(statsList.get(i).incumbent() < statsList.get(i - 1).incumbent());
+            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
+            assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
+        }
+
+        // final solution, gap should be zero
+        assertEquals(0.0, finalSol.statistics().gap());
+        assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
+    }
+
+    @Test
+    void testBKSGapNonConsistentHeuristic() throws IOException, InvalidSolutionException {
+        // The BKS problem is a maximization problem.
+        // The Acs with a lower-bound (objective value used here) can be interrupted at any
+        // time while providing a relevant and improved solution over time.
+        // It can prove that no better solution exists.
+        final BKSProblem problem = new BKSProblem(10, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
+        AcsModel<Integer> model = new AcsModel<>() {
+            @Override
+            public BKSProblem problem() {
+                return problem;
+            }
+
+            @Override
+            public BKSFastLowerBound lowerBound() {
+                return new BKSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new BKSDominance(), problem.nbVars());
+            }
+        };
+        ArrayList<SearchStatistics> statsList = new ArrayList<>();
+        Solution finalSol = Solvers.minimizeAcs(model, (sol, s) -> {
+            // verify that each found solution is valid and corresponds to its cost
+            try {
+                double computedCost = problem.evaluate(sol);
+                assertEquals(computedCost, s.incumbent());
+            } catch (InvalidSolutionException e) {
+                throw new RuntimeException(e);
+            }
+            assertEquals(problem.nbVars(), sol.length);
             assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });

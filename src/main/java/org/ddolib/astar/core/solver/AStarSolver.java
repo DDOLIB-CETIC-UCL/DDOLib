@@ -42,7 +42,7 @@ public final class AStarSolver<T> implements Solver {
             Comparator.comparingDouble(SubProblem<T>::f));
     private final SubProblem<T> root;
     /**
-     * <ul>g
+     * <ul>
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
      *     <li>2: 1 + statistics about the front every half a second (or so)</li>
@@ -135,7 +135,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0);
+                    gap());
 
 
             if (limit.test(stats)) { // user-defined stopping criterion
@@ -271,7 +271,7 @@ public final class AStarSolver<T> implements Solver {
                 assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
+                SearchStatistics stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }
@@ -318,11 +318,11 @@ public final class AStarSolver<T> implements Solver {
 
 
     private double gap() {
-        if (open.isEmpty()) {
-            return 0.0;
+        if (open.isEmpty() | bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
         } else {
             double bestInFrontier = open.peek().f();
-            return (bestUB - bestInFrontier) / Math.abs(bestUB);
+            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 

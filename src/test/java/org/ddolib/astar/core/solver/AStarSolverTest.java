@@ -67,7 +67,7 @@ class AStarSolverTest {
             }
             assertTrue(computedWeight <= problem.capa);
             assertEquals(-computedProfit, s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
@@ -107,7 +107,7 @@ class AStarSolverTest {
             // verify that each found solution is valid
             assertEquals(n - 1, sol.length);
             assertEquals(sol[n - 2], s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
@@ -148,7 +148,7 @@ class AStarSolverTest {
             double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
             assertEquals(problem.nbVars(), sol.length);
             assertEquals(computedCost, s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
