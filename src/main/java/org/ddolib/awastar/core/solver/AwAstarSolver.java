@@ -182,17 +182,20 @@ public final class AwAstarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
-            present.remove(subKey);
+            double subFprime = present.remove(subKey);
 
-            // The current node has been explored, or it can only lead to less good solution
-            if (closed.containsKey(subKey) || sub.f() + 1e-10 >= bestUB) {
-                continue;
-            }
+            // The current node has been explored. We can skip it.
+            if (closed.containsKey(subKey)) continue;
 
-            if (sub.getDepth() < problem.nbVars()) {
-                addChildren(sub, onSolution);
-                closed.put(subKey, sub.getValue() + weight * sub.getLowerBound());
-            }
+            closed.put(subKey, subFprime);
+
+            // Sub can only lead to less good solution.
+            // If sub is a terminal node, whether it is less good whether it is the current best
+            // known solution. In all case, we can skip it.
+            if (sub.f() + 1e-10 >= bestUB) continue;
+
+            // Only non-terminal nodes can reach this point
+            addChildren(sub, onSolution);
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -247,17 +250,16 @@ public final class AwAstarSolver<T> implements Solver {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
             }
 
-
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));   // h-cost from this state to the target
+            // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
 
             double f = g + h;
             double fprime = g + weight * h;
-
 
             // this child can only lead to less good solution
             if (f + 1e-10 >= bestUB) continue;
@@ -266,20 +268,19 @@ public final class AwAstarSolver<T> implements Solver {
             if (dominance.updateDominance(newState, path.size(), g)) continue;
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
-
             StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
-            Double presentValue = present.get(newKey);
-            if (presentValue != null && fprime < presentValue) {
+
+            Double previousFprime = present.get(newKey);
+            if (previousFprime != null && fprime < previousFprime) {
                 open.remove(newSub);
                 open.add(newSub);
                 present.put(newKey, fprime);
-            } else if (presentValue == null) {
-                Double closedValue = closed.get(newKey);
+            } else if (previousFprime == null) {
                 open.add(newSub);
-                if (closedValue != null && fprime < closedValue) {
-                    closed.remove(newKey);
-                }
                 present.put(newKey, fprime);
+
+                Double closedFprime = closed.get(newKey);
+                if (closedFprime != null && fprime < closedFprime) closed.remove(newKey);
             }
 
             // is the new state a solution?
