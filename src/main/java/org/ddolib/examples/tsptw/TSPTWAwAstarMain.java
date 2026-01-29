@@ -61,7 +61,7 @@ public class TSPTWAwAstarMain {
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ?
-                Path.of("data", "TSPTW", "AFG", "rbg042a.tw").toString() : args[0];
+                Path.of("data", "TSPTW", "AFG", "rbg172a.tw").toString() : args[0];
         final TSPTWProblem problem = new TSPTWProblem(instance);
 
         AwAstarModel<TSPTWState> model = new AwAstarModel<>() {
@@ -83,7 +83,7 @@ public class TSPTWAwAstarMain {
 
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                stats -> stats.runTimeMs() > 10000,
+                stats -> stats.runTimeMs() > 2_000,
                 (sol, s) -> SolutionPrinter.printSolution(s, sol)
         );
 
