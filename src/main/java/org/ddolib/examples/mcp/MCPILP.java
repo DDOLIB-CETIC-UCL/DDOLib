@@ -1,9 +1,6 @@
 package org.ddolib.examples.mcp;
 
 import com.gurobi.gurobi.*;
-import org.ddolib.examples.maximumcoverage.MaxCoverILP;
-import org.ddolib.examples.maximumcoverage.MaxCoverProblem;
-import org.ddolib.examples.maximumcoverage.MaxCoverXPs;
 
 import java.io.FileWriter;
 import java.io.IOException;

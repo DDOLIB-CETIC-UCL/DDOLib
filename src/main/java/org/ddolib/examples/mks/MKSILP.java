@@ -1,7 +1,5 @@
 package org.ddolib.examples.mks;
 import com.gurobi.gurobi.*;
-import org.ddolib.examples.knapsack.KSProblem;
-import org.ddolib.examples.knapsack.KSXPs;
 
 import java.io.FileWriter;
 import java.io.IOException;
