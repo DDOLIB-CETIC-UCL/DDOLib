@@ -57,7 +57,7 @@ public final class AwAstarSolver<T> implements Solver {
     // The weight of add to the heuristic function
     private final double weight;
 
-    // The priority queue containing the open subproblems by decreasing f' = g + w *  h (lower-bound
+    // The priority queue containing the open subproblems by decreasing f' = g + w *  h
     private final PriorityQueue<SubProblem<T>> open;
     private final SubProblem<T> root;
 
@@ -190,12 +190,9 @@ public final class AwAstarSolver<T> implements Solver {
             closed.put(subKey, subFprime);
 
             // Sub can only lead to less good solution.
-            // If sub is a terminal node, whether it is less good whether it is the current best
-            // known solution. In all case, we can skip it.
             if (sub.f() + 1e-10 >= bestUB) continue;
 
-            // Only non-terminal nodes can reach this point
-            addChildren(sub, onSolution);
+            if (sub.getDepth() < problem.nbVars()) addChildren(sub, onSolution);
         }
 
         if (debugLevel != DebugLevel.OFF) {
