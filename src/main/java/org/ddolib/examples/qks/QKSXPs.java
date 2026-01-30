@@ -222,7 +222,7 @@ public class QKSXPs {
     private static void xpRelaxation(String instance) throws IOException {
         QKSProblem problem = new QKSProblem(instance);
         String[] nameParts = instance.split("/");
-        FileWriter writer = new FileWriter("results_relaxation" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+        FileWriter writer = new FileWriter("results_relaxation/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
 
         for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
             for (ClusterType clusterType : new ClusterType[]{ClusterType.Hybrid, ClusterType.GHP, ClusterType.Cost, ClusterType.Kmeans}) {
@@ -266,7 +266,7 @@ public class QKSXPs {
     private static void xpRestriction(String instance) throws IOException {
         QKSProblem problem = new QKSProblem(instance);
         String[] nameParts = instance.split("/");
-        FileWriter writer = new FileWriter("results_restriction" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
+        FileWriter writer = new FileWriter("results_restriction/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
 
         for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
             for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans, ClusterType.Hybrid}) {
@@ -337,14 +337,15 @@ public class QKSXPs {
                         long startTime = System.currentTimeMillis();
                         Solution solution = Solvers.minimizeDdo(model, x -> (System.currentTimeMillis() - startTime >= 1000.0 * 300.0));
 
-                        writer.append(String.format("%s;%d;%d;%d;%f;%f;%d%n",
+                        writer.append(String.format("%s;%s;%s;%d;%d;%d;%f;%s%n",
                                 problem.name.get(),
+                                relaxType,
+                                restrictType,
                                 maxWidth,
                                 seed,
                                 kmeansIter,
                                 hybridFactor,
-                                solution.value(),
-                                solution.statistics().runTimeMs()
+                                solution.statistics().toCSV()
                         ));
                         writer.flush();
                     }
