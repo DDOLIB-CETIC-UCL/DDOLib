@@ -275,7 +275,7 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 3. **Running the tests**:
 
-   For the IntelliJ IDEA editor, take a look at our [wiki page](docs/Conventions-for-tests.md) to learn about our tests
+   For the IntelliJ IDEA editor, take a look at our [wiki page](https://github.com/DDOLIB-CETIC-UCL/DDOLib/wiki/Conventions-for-tests) to learn about our tests
    convention and
    how to configure your IDE properly.
 
