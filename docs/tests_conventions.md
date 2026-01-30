@@ -27,22 +27,50 @@ You can run manually these tests with:
  mvn test -P non-regression-tests
 ```
 
-### Configure you IDE
+## Running Tests in IntelliJ IDEA
 
-If you are using IntelliJ IDEA to run your tests, we encourage you to disable the non-regressions tests.
+By default, the `ddolib` project contains both standard unit tests (fast) and non-regression tests (potentially slow).
 
-A default configuration excluding the non-regression tests can be
-found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib/blob/main/.run/All%20without%20non-regression.run.xml). This
-configuration is directly present in the IntelliJ configuration list without any additional manipulation.
+> [!WARNING]
+> **Avoid "Run All" on the Package**
+>
+> If you simply right-click on the `org.ddolib` package and select **Run 'Tests in 'org.ddolib''**, IntelliJ will
+> execute **ALL** tests, including the time-consuming non-regression tests.
+>
+> To avoid this, please use one of the methods below to run only the standard unit tests.
 
-![](list-config.png)
+### How to Run Standard Tests
 
-If you want to write your own configuration go on:
+#### Option 1: Use the Test Suite (Recommended)
 
-Run -> Edit Configurations -> Edit Configuration Templates -> Junit
+The easiest way to run the standard test set is to execute the dedicated Suite class. This class is pre-configured to
+exclude non-regression tests.
 
-Find the `Tag` fields and add `!non-regression`. Your new configuration will exclude des non-regression tests by
-default.
+1. Navigate to `src/test/java/org/ddolib/AllTests.java`.
+2. Click the green **Play** button (▶) next to the class name.
+3. Select **Run 'AllTests'**.
+
+--- 
+
+#### Option 2: Create a Custom Run Configuration
+
+If you prefer running tests via a global Run Configuration, you can configure IntelliJ to exclude specific tags
+dynamically:
+
+1. Go to the top toolbar and select **Edit Configurations...** (or **Run > Edit Configurations...**).
+2. Click the **+** button and select **JUnit**.
+3. Set **Test kind** to: `Tags`.
+4. Set **Tag expression** to: `!non-regression` (Note the exclamation mark for negation).
+5. Click **Apply**.
 
 ![](config-intellij-tests.png)
 
+You can now run this configuration anytime to execute all tests except the non-regression ones.
+
+---
+
+### How to Run Non-Regression Tests
+
+If you specifically need to run the heavy validation tests :
+
+* Run the `src/test/java/org/ddolib/NonRegressionTests.java` suite.
