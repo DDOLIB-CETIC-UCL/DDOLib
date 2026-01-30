@@ -1,4 +1,4 @@
-# Convention for tests
+# Conventions for tests
 
 ## Unit tests
 
