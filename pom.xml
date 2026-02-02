@@ -190,6 +190,16 @@
                             <includes>
                                 <include>**/NonRegressionTests.java</include>
                             </includes>
+                            <argLine>-Xmx5g -Xms1g</argLine>
+
+                            <statelessTestsetInfoReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+                                <disable>false</disable>
+                                <usePhrasedFileName>false</usePhrasedFileName>
+                                <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
+                                <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
+                            </statelessTestsetInfoReporter>
+
                         </configuration>
                     </plugin>
                 </plugins>
