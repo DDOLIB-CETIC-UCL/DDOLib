@@ -23,7 +23,7 @@ import static java.lang.Math.ceil;
 
 public class SetCoverXPs {
 
-    public static SetCoverProblem[] loadInstances() throws IOException {
+    protected static SetCoverProblem[] loadInstances() throws IOException {
         String instancePath = Path.of("data", "SetCover", "measurements", "or_library", "set_covering").toString();
         System.out.println(instancePath);
         File instanceDir = new File(instancePath);
@@ -33,6 +33,20 @@ public class SetCoverXPs {
         SetCoverProblem[] problems = new SetCoverProblem[files.length];
         for (int i = 0; i < files.length; i++) {
             problems[i] = new SetCoverProblem(files[i].getAbsolutePath(), false);
+        }
+        return problems;
+    }
+
+    public static SetCoverProblem[] loadWeightedInstances() throws IOException {
+        String instancePath = Path.of("data", "SetCover", "measurements", "or_library", "weighted_set_covering").toString();
+        System.out.println(instancePath);
+        File instanceDir = new File(instancePath);
+
+        File[] files = instanceDir.listFiles(File::isFile);
+        assert files != null;
+        SetCoverProblem[] problems = new SetCoverProblem[files.length];
+        for (int i = 0; i < files.length; i++) {
+            problems[i] = new SetCoverProblem(files[i].getAbsolutePath(), true);
         }
         return problems;
     }
