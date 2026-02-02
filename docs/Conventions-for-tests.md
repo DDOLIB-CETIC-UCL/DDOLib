@@ -15,7 +15,8 @@ Otherwise, the instance can be used in the non-regression tests.
 
 These tests are run each Sunday at 23h utc.
 
-We take the convention that each test on each instance must be executed in less thant **3 minutes**.
+We take the convention that each test on each instance must be executed in less than **3 minutes**.
+All tests on a problem must execute in at most **10 minutes**
 
 These tests are excluded from the default `mvn test` command.
 
