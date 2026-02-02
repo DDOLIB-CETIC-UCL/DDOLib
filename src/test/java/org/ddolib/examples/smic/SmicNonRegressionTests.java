@@ -1,4 +1,4 @@
-package org.ddolib.examples.pdp;
+package org.ddolib.examples.smic;
 
 import org.ddolib.util.testbench.NonRegressionTestBench;
 import org.junit.jupiter.api.DisplayName;
@@ -10,14 +10,13 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Tag("non-regression")
-public class PdpNonRegressionTests {
+public class SmicNonRegressionTests {
 
-    @DisplayName("PDP: non-regression")
+    @DisplayName("SMIC: non-regression")
     @TestFactory
-    public Stream<DynamicTest> nonRegressionPdp() {
-        var supplier =
-                new PDPTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
-                        "PDP"));
+    public Stream<DynamicTest> nonRegressionSmic() {
+        var supplier = new SMICTestDataSupplier(Path.of("src", "test", "resources", "Non-Regression",
+                "SMIC"));
         var bench = new NonRegressionTestBench<>(supplier);
         return bench.generateTests();
     }
