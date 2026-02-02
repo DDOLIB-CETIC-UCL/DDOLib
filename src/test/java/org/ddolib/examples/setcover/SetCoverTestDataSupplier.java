@@ -56,7 +56,7 @@ public class SetCoverTestDataSupplier extends TestDataSupplier<SetCoverState, Se
 
             @Override
             public DominanceChecker<SetCoverState> dominance() {
-                return new DefaultDominanceChecker<>();
+                return new SimpleDominanceChecker<>(new SetCoverDominance(), problem.nbVars());
             }
 
             @Override

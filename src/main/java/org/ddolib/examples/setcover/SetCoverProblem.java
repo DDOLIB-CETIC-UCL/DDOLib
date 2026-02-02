@@ -230,6 +230,7 @@ public class SetCoverProblem implements Problem<SetCoverState> {
             this.nSet = nSet;
             this.sets = sets;
             this.weights = weights;
+            this.name = Optional.of(f.getName());
 
             this.constraints = new ArrayList<>(nSet);
             this.itemMinWeights = new double[nItems];

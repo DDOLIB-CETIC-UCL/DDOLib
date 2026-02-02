@@ -16,7 +16,7 @@ public class SetCoverTest {
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = false;
-        bench.testDominance = false;
+        bench.testDominance = true;
         bench.testCache = false;
         return bench.generateTests();
     }
