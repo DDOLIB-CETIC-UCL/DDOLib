@@ -217,8 +217,8 @@ public class SetCoverXPs {
         writer.close();
     }
 
-    private static void xpRestriction(String instance) throws IOException {
-        SetCoverProblem problem = new SetCoverProblem(instance, false);
+    private static void xpRestriction(String instance, boolean weighted) throws IOException {
+        SetCoverProblem problem = new SetCoverProblem(instance, weighted);
         String[] nameParts = instance.split("/");
         FileWriter writer = new FileWriter("results_restriction/" + nameParts[nameParts.length - 1] + ".csv");
 
@@ -261,8 +261,8 @@ public class SetCoverXPs {
         writer.close();
     }
 
-    private static void xpRelaxation(String instance) throws IOException {
-        SetCoverProblem problem = new SetCoverProblem(instance, false);
+    private static void xpRelaxation(String instance, boolean weighted) throws IOException {
+        SetCoverProblem problem = new SetCoverProblem(instance, weighted);
         String[] nameParts = instance.split("/");
         FileWriter writer = new FileWriter("results_relaxation/" + nameParts[nameParts.length - 1] + ".csv");
 
@@ -306,8 +306,8 @@ public class SetCoverXPs {
     }
 
 
-    private static void xpBnB(String instance) throws IOException {
-        SetCoverProblem problem = new SetCoverProblem(instance, false);
+    private static void xpBnB(String instance, boolean weighted) throws IOException {
+        SetCoverProblem problem = new SetCoverProblem(instance, weighted);
         String[] nameParts = instance.split("/");
         FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1] + ".csv");
 
@@ -351,9 +351,13 @@ public class SetCoverXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation(args[0]);
-            xpRestriction(args[0]);
-            xpBnB(args[0]);
+            boolean weighted = false;
+            if (args.length > 1) {
+                weighted = args[1].equals("-w");
+            }
+            xpRelaxation(args[0], weighted);
+            xpRestriction(args[0], weighted);
+            xpBnB(args[0], weighted);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
