@@ -2,6 +2,7 @@ package org.ddolib.examples.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.debug.DebugLevel;
@@ -57,6 +58,11 @@ public class MispTestDataSupplier extends TestDataSupplier<BitSet, MispProblem> 
             @Override
             public DominanceChecker<BitSet> dominance() {
                 return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+            }
+
+            @Override
+            public VariableHeuristic<BitSet> variableHeuristic() {
+                return new MispHeuristic(problem);
             }
 
             @Override

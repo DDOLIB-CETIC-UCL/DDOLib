@@ -62,6 +62,7 @@ public class MispProblem implements Problem<BitSet> {
         this.neighbors = neighbors;
         this.weight = weight;
         this.optimal = Optional.of(optimal);
+
     }
 
     /**
