@@ -2,6 +2,7 @@ package org.ddolib.examples.knapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -58,6 +59,11 @@ public class KSTestDataSupplier extends TestDataSupplier<Integer, KSProblem> {
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public VariableHeuristic<Integer> variableHeuristic() {
+                return new KSHeuristic(problem);
             }
 
             @Override

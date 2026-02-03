@@ -10,6 +10,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -74,6 +75,11 @@ public class KSXPs {
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
                 return new FixedWidth<>(maxWidth);
+            }
+
+            @Override
+            public VariableHeuristic<Integer> variableHeuristic() {
+                return new KSHeuristic(problem);
             }
 
             @Override

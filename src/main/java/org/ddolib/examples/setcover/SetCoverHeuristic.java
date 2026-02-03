@@ -5,7 +5,6 @@ import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import java.util.*;
 
 public class SetCoverHeuristic implements VariableHeuristic<SetCoverState> {
-    private final SetCoverProblem problem;
     private final Iterator<Integer> ordering;
 
     /**
@@ -14,12 +13,11 @@ public class SetCoverHeuristic implements VariableHeuristic<SetCoverState> {
      * @param problem
      */
     public SetCoverHeuristic(SetCoverProblem problem) {
-        this.problem = problem;
         Integer[] orderedVariables = new Integer[problem.nItems];
         for (int i = 0; i < problem.nItems; i++) {
             orderedVariables[i] = i;
         }
-        Arrays.sort(orderedVariables, Comparator.comparingInt(x -> this.problem.constraints.get(x).size()));
+        Arrays.sort(orderedVariables, Comparator.comparingInt(x -> problem.constraints.get(x).size()));
         ordering = Arrays.stream(orderedVariables).iterator();
 
     }

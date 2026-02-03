@@ -10,6 +10,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.KSProblem;
@@ -94,6 +95,11 @@ public class SetCoverXPs {
             @Override
             public StateDistance<SetCoverState> stateDistance() {
                 return new SetCoverDistance(problem);
+            }
+
+            @Override
+            public VariableHeuristic<SetCoverState> variableHeuristic() {
+                return new SetCoverHeuristic(problem);
             }
 
             @Override
