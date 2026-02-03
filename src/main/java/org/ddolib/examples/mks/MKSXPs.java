@@ -10,6 +10,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -79,6 +80,11 @@ public class MKSXPs {
             @Override
             public boolean exportDot() {
                 return false;
+            }
+
+            @Override
+            public VariableHeuristic<MKSState> variableHeuristic() {
+                return new MKSHeuristic(problem);
             }
 
             @Override
@@ -322,9 +328,9 @@ public class MKSXPs {
 
         int maxWidth = 60;
         //  int kmeansIter = -1;
-        double hybridFactor = -1;
-        ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans};
-        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans};
+        double hybridFactor = 0.6;
+        ClusterType[] relaxTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Kmeans, ClusterType.Hybrid};
+        ClusterType[] restrictTypes = new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Random, ClusterType.Kmeans, ClusterType.Hybrid};
         for (ClusterType relaxType: relaxTypes) {
             for (ClusterType restrictType : restrictTypes) {
                 int[] kmeansIters = (relaxType != ClusterType.Kmeans && restrictType != ClusterType.Kmeans ) ? new int[]{-1} : new int[]{5};
@@ -365,6 +371,7 @@ public class MKSXPs {
             // xpBnB(args[0]);
             xpRelaxation(args[0]);
             xpRestriction(args[0]);
+            xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

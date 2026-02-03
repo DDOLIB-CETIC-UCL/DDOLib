@@ -3,6 +3,7 @@ package org.ddolib.examples.mks;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -63,6 +64,11 @@ public class MKSTestDataSupplier extends TestDataSupplier<MKSState, MKSProblem> 
             @Override
             public WidthHeuristic<MKSState> widthHeuristic() {
                 return new FixedWidth<>(100);
+            }
+
+            @Override
+            public VariableHeuristic<MKSState> variableHeuristic() {
+                return new MKSHeuristic(problem);
             }
 
             @Override

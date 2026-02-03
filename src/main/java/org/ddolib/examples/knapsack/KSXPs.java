@@ -361,7 +361,7 @@ public class KSXPs {
                                 seed,
                                 kmeansIter,
                                 hybridFactor,
-                                solution
+                                solution.statistics().toCSV()
                         ));
                         writer.flush();
                     }
@@ -372,7 +372,7 @@ public class KSXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation();
+            // xpRelaxation();
             // xpRestriction();
             xpRelaxation(args[0]);
             xpRestriction(args[0]);
