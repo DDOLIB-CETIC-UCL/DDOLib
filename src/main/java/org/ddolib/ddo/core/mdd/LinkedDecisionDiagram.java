@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -710,7 +709,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
         List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
@@ -738,7 +736,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         currentLayer.clear();
 
         // For each cluster, merge all the nodes together and add the new node to the layer.
-        for (List<NodeSubProblem<T>> cluster: clusters) {
+        for (List<NodeSubProblem<T>> cluster : clusters) {
             if (cluster.size() == 1) {
                 currentLayer.add(cluster.getFirst());
                 continue;
@@ -750,7 +748,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
             NodeSubProblem<T> mergedNode = null;
-            for (NodeSubProblem<T> n: currentLayer) {
+            for (NodeSubProblem<T> n : currentLayer) {
                 if (n.state.equals(merged)) {
                     mergedNode = n;
                     mergedNode.node.type = NodeType.RELAXED;
@@ -773,7 +771,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
                     double value = saturatedAdd(e.origin.value, rcost);
-                    e.weight  = rcost;
+                    e.weight = rcost;
                     // if there exists an entring arc with relaxed origin, set the merged node to relaxed
                     if (e.origin.type == NodeType.RELAXED) {
                         mergedNode.node.type = NodeType.RELAXED;
@@ -782,7 +780,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     mergedNode.node.edges.add(e);
                     if (value < mergedNode.node.value) {
                         mergedNode.node.value = value;
-                        mergedNode.node.best  = e;
+                        mergedNode.node.best = e;
                     }
                 }
             }
@@ -891,9 +889,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             );
         } else {
             nodeStr = String.format(
-                    "\"%s\nf: %s - g: %s\"",
+                    "\"%s\nh: %s - g: %s\"",
                     node.state,
-                    df.format(node.lb),
+                    df.format(node.node.flb),
                     df.format(node.node.value)
             );
         }
