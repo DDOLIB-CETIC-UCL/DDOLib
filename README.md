@@ -59,21 +59,23 @@ relation:
 where `KS(i, c)` is the maximum value of the first `i` items with a knapsack capacity of `c`,
 `p[i]` is the profit of item `i`, and `w[i]` is the weight of item `i`.
 
-Several search strategies are available in DDOLib, and they share the same modeling interface. 
-These include the classic branch-and-bound (B&B) approach denoted Ddo, the Astar (A*) approach, and the Anytime Column Search (ACS).
-For modeling this problem in DDOLib, the state is the remaining capacity of the knapsack (an Integer). 
-We define the `KSProblem` class that implements the `Problem` interface. This interface requires defining the 
-number of variables 'nbVars' method, the initial state `initialState` method, the `initialValue` method, the `domain` 
-method, the `transition` and `transitionCost` methods. 
+Several search strategies are available in DDOLib, and they share the same modeling interface.
+These include the classic branch-and-bound (B&B) approach denoted Ddo, the Astar (A*) approach, and the Anytime Column
+Search (ACS).
+For modeling this problem in DDOLib, the state is the remaining capacity of the knapsack (an Integer).
+We define the `KSProblem` class that implements the `Problem` interface. This interface requires defining the
+number of variables 'nbVars' method, the initial state `initialState` method, the `initialValue` method, the `domain`
+method, the `transition` and `transitionCost` methods.
 The `nbVars` method returns the number of items, which is the same as the number of variables in the problem.
-The `initialState` method returns the weight limit of the problem, and the `initialValue` method returns 0. 
+The `initialState` method returns the weight limit of the problem, and the `initialValue` method returns 0.
 The `domain` method defines the possible decisions for each item (take or not take), and the `transition` method updates
 the state of the knapsack based on the decision made.
-The `transitionCost` method returns the profit of the item if it is taken, and 0 otherwise. These transition costs are 
+The `transitionCost` method returns the profit of the item if it is taken, and 0 otherwise. These transition costs are
 negative, since the KP is a maximization problem and we model it as a minimization.
 We define the `KSRelax` class that implements the `Relaxation` interface.
 This interface requires defining the `mergeStates` method and the `relaxEdge` method.
-The `mergeStates` method returns the maximum capacity state among the states to be merged, while the `relaxEdge` method returns 
+The `mergeStates` method returns the maximum capacity state among the states to be merged, while the `relaxEdge` method
+returns
 the cost of the selected state.
 We finaly define the `KSRanking` class that implements the `StateRanking` interface.
 This interface requires defining the `compare` method where two state are compared.
@@ -174,6 +176,7 @@ public class KSProblem implements Problem<Integer> {
     }
 }
 ```
+
 ```java
 public class KSRelax implements Relaxation<Integer> {
     /**
@@ -205,6 +208,7 @@ public class KSRelax implements Relaxation<Integer> {
 
 }
 ```
+
 ```java
 /** DDO Model */
 public class KSDdoMain {
@@ -251,6 +255,7 @@ public class KSDdoMain {
 }
 
 ```
+
 ### Recommended IDE: IntelliJ IDEA
 
 We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
@@ -270,8 +275,9 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 3. **Running the tests**:
 
-   From the IntelliJ IDEA editor, navigate to the `src/test/java` directory.
-   Right-click then select `Run 'All Tests'` to run all the tests.
+   For the IntelliJ IDEA editor, take a look at our [wiki page](https://github.com/DDOLIB-CETIC-UCL/DDOLib/wiki/Conventions-for-tests) to learn about our tests
+   convention and
+   how to configure your IDE properly.
 
    From the terminal, navigate to the root directory of the project and run the following command:
     ```bash
