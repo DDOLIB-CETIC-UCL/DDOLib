@@ -79,6 +79,11 @@ public class TSPTWAwAstarMain {
             public DominanceChecker<TSPTWState> dominance() {
                 return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
             }
+
+            @Override
+            public double weight() {
+                return 7.5;
+            }
         };
 
         Solution bestSolution = Solvers.minimizeAwAStar(
