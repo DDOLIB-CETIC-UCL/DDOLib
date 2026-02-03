@@ -5,6 +5,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.mks.*;
@@ -70,6 +71,11 @@ public class QKSTestDataSupplier extends TestDataSupplier<QKSState, QKSProblem> 
             @Override
             public WidthHeuristic<QKSState> widthHeuristic() {
                 return new FixedWidth<>(100);
+            }
+
+            @Override
+            public VariableHeuristic<QKSState> variableHeuristic() {
+                return new QKSHeuristic(problem);
             }
 
             @Override

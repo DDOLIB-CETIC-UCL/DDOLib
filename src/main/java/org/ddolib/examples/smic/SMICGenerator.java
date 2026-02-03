@@ -47,7 +47,7 @@ import java.util.Random;
  * @see SMICProblem
  * @see java.util.Random
  */
-public class SMICGenrator {
+public class SMICGenerator {
     /** Number of jobs to generate. */
     private int n;
 
@@ -95,7 +95,7 @@ public class SMICGenrator {
      * @param eta   the scaling factor for inventory capacity
      * @param seed  the random seed for reproducibility
      */
-    public SMICGenrator(int n, int alpha, double tau, int eta, long seed) {
+    public SMICGenerator(int n, int alpha, double tau, int eta, long seed) {
         this.n = n;
         this.alpha = alpha;
         this.tau = tau;
