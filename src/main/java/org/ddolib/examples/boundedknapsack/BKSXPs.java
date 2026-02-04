@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.knapsack.*;
@@ -79,6 +80,11 @@ public class BKSXPs {
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
                 return new FixedWidth<>(maxWidth);
+            }
+
+            @Override
+            public VariableHeuristic<Integer> variableHeuristic() {
+                return new BKSHeuristic(problem);
             }
 
             @Override
@@ -229,13 +235,96 @@ public class BKSXPs {
         writer.close();
     }
 
-    private static void xpBnB(String instance) throws IOException {
+    private static void xpRelaxation(int index) throws IOException {
         BKSProblem[] problems = loadInstances();
-        BKSProblem problem = problems[0];
-        String[] nameParts = instance.split("/");
-        FileWriter writer = new FileWriter("results/" + nameParts[nameParts.length - 1].replace(".txt", ".csv"));
-        // writer.write("Instance;RelaxType;RestrictType;MaxWidth;Seed;KmeansIter;HybridFactor;" +
-        //        "Status;nbIterations;queueMaxSize;RunTimeMs(ms);Incumbent;Gap\n");
+        BKSProblem problem = problems[index];
+        FileWriter writer = new FileWriter("results_relaxation/" + index + ".csv");
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = clusterType != ClusterType.GHP ? new long[]{465465} : new long[]{465465, 546351, 87676};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<Integer> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
+                            RelaxSearchStatistics stats = Solvers.relaxedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
+    private static void xpRestriction(int index) throws IOException {
+        BKSProblem[] problems = loadInstances();
+        BKSProblem problem = problems[index];
+        FileWriter writer = new FileWriter("results_restriction/" + index + ".csv");
+
+        for (int maxWidth = 10; maxWidth <= 100; maxWidth+=10) {
+            for (ClusterType clusterType : new ClusterType[]{ ClusterType.Random, ClusterType.Cost, ClusterType.GHP, ClusterType.Hybrid, ClusterType.Kmeans,}) {
+                int[] kmeansIters = clusterType != ClusterType.Kmeans ? new int[]{-1} : new int[]{5};
+                long[] ghpSeeds = (clusterType != ClusterType.GHP) && (clusterType != ClusterType.Random) ? new long[]{465465} : new long[]{546351, 87676, 465465};
+                double[] hybridFactors = clusterType != ClusterType.Hybrid ? new double[]{-1} : new double[] {0.2, 0.4, 0.6, 0.8};
+                for (long seed : ghpSeeds) {
+                    for (int kmeansIter : kmeansIters) {
+                        for (double hybridFactor : hybridFactors) {
+                            DdoModel<Integer> model = getModel(problem,
+                                    maxWidth,
+                                    clusterType,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor);
+                            assert problem.name.isPresent();
+                            double optimal = problem.optimal.isPresent() ? problem.optimal.get() : -1;
+                            System.out.printf("%s %f %d %d %d %f %n", problem.name.get(), optimal, maxWidth, kmeansIter, seed, hybridFactor);
+                            RestrictSearchStatistics stats = Solvers.restrictedDdo(model);
+
+                            writer.append(String.format("%s;%f;%s;%d;%d;%d;%f;%s%n",
+                                    problem.name.get(),
+                                    optimal,
+                                    clusterType,
+                                    maxWidth,
+                                    seed,
+                                    kmeansIter,
+                                    hybridFactor,
+                                    stats
+                            ));
+                            writer.flush();
+                        }
+                    }
+                }
+            }
+        }
+        writer.close();
+    }
+
+    private static void xpBnB(int index) throws IOException {
+        BKSProblem[] problems = loadInstances();
+        BKSProblem problem = problems[index];
+        FileWriter writer = new FileWriter("results/" + index + ".csv");
 
         int maxWidth = 60;
        //  int kmeansIter = -1;
@@ -279,9 +368,11 @@ public class BKSXPs {
 
     public static void main(String[] args) {
         try {
-            xpRelaxation();
-            xpRestriction();
-            // xpBnB(args[0]);
+            // xpRelaxation();
+            // xpRestriction();
+            xpRelaxation(Integer.parseInt(args[0]));
+            xpRestriction(Integer.parseInt(args[0]));
+            xpBnB(Integer.parseInt(args[0]));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
