@@ -160,7 +160,7 @@ public final class AStarSolver<T> implements Solver {
                         queueMaxSize,
                         System.currentTimeMillis() - t0,
                         bestUB,
-                        gap()
+                        0
                 );
 
                 return new Solution(bestSol, statistics);
