@@ -22,38 +22,53 @@ import java.nio.file.Path;
  */
 public class NestedSALBPDdoMain {
     public static void main(String[] args) throws IOException {
-        // 数据文件
+        // ==================== 优化开关配置 ====================
+        // 设置为 true 启用优化，设置为 false 禁用（用于对比实验）
+        final boolean USE_INFEASIBILITY_CACHE = true;   // ← 不可行子集缓存
+        final boolean USE_CAPACITY_CUT = true;          // ← 容量割平面
+        final boolean USE_BOUND_PROPAGATION = true;     // ← 上界传播
+        final boolean USE_SYMMETRY_BREAKING = true;     // ← 对称性破坏
+
+        // ==================== 数据文件路径配置 ====================
+        // 支持两种格式：
+        // 1. .csv 格式（新格式）：task,th,tr,tc,successor
+        // 2. .alb 格式（原始格式）
+
+        // 【当前使用】CSV格式 - 20任务数据集
         final String instance = args.length == 0
-                ? Path.of("data", "SALBP1", "large data set_n=100", "instance_n=100_441.alb").toString()
+                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_246.csv").toString()
                 : args[0];
-//        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "medium data set_n=50", "instance_n=50_25.alb").toString()
-//                : args[0];
-//        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_501.alb").toString()
-//                : args[0];
-        //    final String instance = args.length >= 1 ?
-        //            args[0] : Path.of("data", "test_5tasks_3.alb").toString();
 
-//        final String instance = args.length >= 1 ?
-//                args[0] : Path.of("src", "test", "resources", "NestedSALBP", "test_5tasks_3.alb").toString();
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_465.csv").toString()
+//                : args[0];
 
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_444.csv").toString()
+//                : args[0];
+
+        // 【备选】ALB格式 - 数据集
+//        final String instance = args.length == 0
+//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_106.alb").toString()
+//                : args[0];
 
         // 循环时间（cycle time）
         final int cycleTime = args.length >= 2 ?
-                Integer.parseInt(args[1]) : 1500;
+                Integer.parseInt(args[1]) : 1000;
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 5;
+                Integer.parseInt(args[2]) : 3;
 
-        System.out.println("=== 嵌套动态规划：一型装配线平衡 + 人机协同调度 ===");
+
         System.out.println("Instance: " + instance);
         System.out.println("Cycle Time: " + cycleTime);
         System.out.println("Total Robots: " + totalRobots);
         System.out.println();
 
-        final NestedSALBPProblem problem = new NestedSALBPProblem(instance, cycleTime, totalRobots);
+        final NestedSALBPProblem problem = new NestedSALBPProblem(instance, cycleTime, totalRobots,
+                USE_INFEASIBILITY_CACHE, USE_CAPACITY_CUT,
+                USE_BOUND_PROPAGATION, USE_SYMMETRY_BREAKING);
 
         final DdoModel<NestedSALBPState> model = new DdoModel<>() {
             @Override
@@ -106,6 +121,21 @@ public class NestedSALBPDdoMain {
                 (sol, searchStats) -> {
                     // 每次找到更好的解时都会调用这个callback
                     System.out.println("\n===== New Incumbent Solution =====");
+
+                    // 更新上界传播的最优解
+                    if (sol != null && sol.length > 0) {
+                        try {
+                            int solutionValue = (int) problem.evaluate(sol);
+                            problem.updateBestSolution(solutionValue);
+                        } catch (Exception e) {
+                            // 忽略评估错误
+                        }
+                    }
+
+                    // 计算全局下界
+                    double globalLB = searchStats.incumbent() * (1.0 - searchStats.gap() / 100.0);
+                    System.out.printf("Global Lower Bound: %.2f (from gap calculation)%n", globalLB);
+
                     System.out.println("\n" + searchStats);
 
                     if (sol != null && sol.length > 0) {
@@ -116,6 +146,12 @@ public class NestedSALBPDdoMain {
                 });
 
         System.out.println("\n" + solution.statistics());
+
+        // 打印缓存统计信息
+        problem.printCacheStatistics();
+
+        // 打印优化统计信息
+        problem.printOptimizationStatistics();
     }
 
     /**

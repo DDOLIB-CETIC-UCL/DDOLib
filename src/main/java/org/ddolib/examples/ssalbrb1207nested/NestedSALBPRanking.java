@@ -24,31 +24,31 @@ public class NestedSALBPRanking implements StateRanking<NestedSALBPState> {
             return completedCompare;
         }
 
-        // 其次比较当前工位任务数（越少越好 - 更接近完成当前工位）
+        // 其次比较当前工位任务数（越多越好 - 在当前工位塞入更多任务意味着更少的总工位数）
         int currentTasksCompare = Integer.compare(
-                first.currentStationTasks().size(),
-                second.currentStationTasks().size()
+                second.currentStationTasks().size(),  // 注意：second 在前，表示越大越好
+                first.currentStationTasks().size()
         );
         if (currentTasksCompare != 0) {
             return currentTasksCompare;
         }
 
-        // 第三，比较已使用的机器人数（越多越好 - 鼓励使用机器人）
-        int usedRobotsCompare = Integer.compare(
-                second.usedRobots(),  // 注意顺序：second在前表示越大越好
-                first.usedRobots()
-        );
-        if (usedRobotsCompare != 0) {
-            return usedRobotsCompare;
-        }
-
-        // 第四，如果当前工位有机器人，优先（提高当前工位容量）
+        // 第三，如果当前工位有机器人，优先（提高当前工位容量，能塞入更多任务）
         int currentRobotCompare = Boolean.compare(
                 second.currentStationHasRobot(),  // 注意顺序：true > false
                 first.currentStationHasRobot()
         );
         if (currentRobotCompare != 0) {
             return currentRobotCompare;
+        }
+
+        // 第四，比较已使用的机器人数（越少越好 - 保留更多机器人给未来）
+        int usedRobotsCompare = Integer.compare(
+                first.usedRobots(),  // 注意顺序：first 在前表示越小越好
+                second.usedRobots()
+        );
+        if (usedRobotsCompare != 0) {
+            return usedRobotsCompare;
         }
 
         // 最后比较剩余机器人数（越多越好）

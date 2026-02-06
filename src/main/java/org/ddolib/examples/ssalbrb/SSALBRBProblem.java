@@ -27,7 +27,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
     public final int[] collaborationDurations;
     public final Map<Integer, List<Integer>> successors;
     public final Map<Integer, List<Integer>> predecessors;
-    private Optional<Double> optimal;
+    private final Optional<Double> optimal;
 
     public SSALBRBProblem(int nbTasks,
                           int[] humanDurations,
@@ -69,7 +69,147 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
     }
 
 
+    /**
+     * 从文件读取数据（支持CSV和ALB两种格式）
+     * - CSV格式：task,th,tr,tc,successor
+     * - ALB格式：传统的装配线平衡问题格式
+     */
     public SSALBRBProblem(final String file) throws IOException {
+        // 检查文件扩展名，决定使用哪种读取方式
+        DataHolder data;
+        if (file.endsWith(".csv")) {
+            // 读取CSV格式文件
+            data = readFromCSV(file);
+        } else {
+            // 读取原来的.alb格式文件
+            data = readFromALB(file);
+        }
+
+        // 初始化final字段（只能在构造函数中初始化一次）
+        this.nbTasks = data.nbTasks;
+        this.humanDurations = data.humanDurations;
+        this.robotDurations = data.robotDurations;
+        this.collaborationDurations = data.collaborationDurations;
+        this.successors = data.successors;
+        this.predecessors = buildPredecessors(this.successors, this.nbTasks);
+        this.optimal = data.optimal;
+    }
+
+    /**
+     * 临时数据持有类，用于从文件读取数据后返回
+     * 因为final字段只能在构造函数中初始化一次，所以需要这个辅助类
+     */
+    private static class DataHolder {
+        int nbTasks;
+        int[] humanDurations;
+        int[] robotDurations;
+        int[] collaborationDurations;
+        Map<Integer, List<Integer>> successors;
+        Optional<Double> optimal;
+    }
+
+    /**
+     * 从CSV文件读取数据
+     * CSV格式：task,th,tr,tc,successor
+     * 例如：1,132,264,100000,[]
+     */
+    private static DataHolder readFromCSV(String file) throws IOException {
+        try (Scanner scanner = new Scanner(new File(file))) {
+            // 跳过表头
+            scanner.nextLine();
+
+            // 先读取所有数据到临时列表
+            List<int[]> taskData = new ArrayList<>();
+            List<String> successorStrings = new ArrayList<>();
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                // 解析CSV行：task,th,tr,tc,successor
+                String[] parts = line.split(",", 5);  // 最多分割成5部分
+                if (parts.length < 5) {
+                    continue;
+                }
+
+                int taskId = Integer.parseInt(parts[0].trim());
+                int th = Integer.parseInt(parts[1].trim());
+                int tr = Integer.parseInt(parts[2].trim());
+                int tc = Integer.parseInt(parts[3].trim());
+                String successorStr = parts[4].trim();
+
+                taskData.add(new int[]{taskId, th, tr, tc});
+                successorStrings.add(successorStr);
+            }
+
+            // 初始化数据结构
+            int n = taskData.size();
+            int[] hDurations = new int[n];
+            int[] rDurations = new int[n];
+            int[] cDurations = new int[n];
+            Map<Integer, List<Integer>> succ = new HashMap<>();
+
+            for (int i = 0; i < n; i++) {
+                succ.put(i, new ArrayList<>());
+            }
+
+            // 填充时间数据
+            for (int i = 0; i < n; i++) {
+                int[] data = taskData.get(i);
+                int taskId = data[0];
+                int taskIndex = taskId - 1;  // 任务ID从1开始，索引从0开始
+
+                hDurations[taskIndex] = data[1];
+                rDurations[taskIndex] = data[2];
+                cDurations[taskIndex] = data[3];
+            }
+
+            // 解析后继关系
+            for (int i = 0; i < n; i++) {
+                int[] data = taskData.get(i);
+                int taskId = data[0];
+                int taskIndex = taskId - 1;
+
+                String successorStr = successorStrings.get(i);
+                // 解析后继列表，格式如：[] 或 [5, 7, 8, 9] 或 "[5, 7, 8, 9]"
+                successorStr = successorStr.replace("\"", "").trim();
+
+                if (!successorStr.equals("[]")) {
+                    // 移除方括号
+                    successorStr = successorStr.substring(1, successorStr.length() - 1);
+                    String[] successorIds = successorStr.split(",");
+
+                    for (String succId : successorIds) {
+                        succId = succId.trim();
+                        if (!succId.isEmpty()) {
+                            int successorTaskId = Integer.parseInt(succId);
+                            int successorIndex = successorTaskId - 1;
+                            succ.get(taskIndex).add(successorIndex);
+                        }
+                    }
+                }
+            }
+
+            // 创建并返回数据持有对象
+            DataHolder holder = new DataHolder();
+            holder.nbTasks = n;
+            holder.humanDurations = hDurations;
+            holder.robotDurations = rDurations;
+            holder.collaborationDurations = cDurations;
+            holder.successors = succ;
+            holder.optimal = Optional.empty();  // CSV文件中没有最优解信息
+
+            return holder;
+        }
+    }
+
+    /**
+     * 从ALB格式文件读取数据
+     * ALB格式是传统的装配线平衡问题格式
+     */
+    private static DataHolder readFromALB(String file) throws IOException {
         try (Scanner scanner = new Scanner(new File(file))) {
             scanner.nextLine();
             int n = scanner.nextInt();
@@ -95,7 +235,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                 succ.put(i, new ArrayList<>());
             }
 
-            // <task times> header already read at line 63, start reading task data directly
+            // <task times> header already read, start reading task data directly
             for (int i = 0; i < n; i++) {
                 String[] line = scanner.nextLine().trim().split("\\s+");
                 int baseTime = Integer.parseInt(line[1]);
@@ -120,22 +260,29 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                     succ.get(a).add(b);
                 }
             }
-            String li = scanner.nextLine().trim();
-            if (!li.equals("<end>")) {
-                String lin = scanner.nextLine().trim();
-                if (!lin.isEmpty()) {
-                    double optimal = Integer.parseInt(lin);
-                    this.optimal = Optional.of(optimal);
-                } else this.optimal = Optional.empty();
-            }
-            scanner.close();
 
-            this.nbTasks = n;
-            this.humanDurations = hDurations;
-            this.robotDurations = rDurations;
-            this.collaborationDurations = cDurations;
-            this.successors = succ;
-            this.predecessors = buildPredecessors(this.successors, nbTasks);
+            Optional<Double> optimalValue = Optional.empty();
+            if (scanner.hasNextLine()) {
+                String li = scanner.nextLine().trim();
+                if (!li.equals("<end>") && scanner.hasNextLine()) {
+                    String lin = scanner.nextLine().trim();
+                    if (!lin.isEmpty()) {
+                        double optimal = Integer.parseInt(lin);
+                        optimalValue = Optional.of(optimal);
+                    }
+                }
+            }
+
+            // 创建并返回数据持有对象
+            DataHolder holder = new DataHolder();
+            holder.nbTasks = n;
+            holder.humanDurations = hDurations;
+            holder.robotDurations = rDurations;
+            holder.collaborationDurations = cDurations;
+            holder.successors = succ;
+            holder.optimal = optimalValue;
+
+            return holder;
         }
     }
 
@@ -239,7 +386,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
         int humanReady = state.humanAvailable();
         int robotReady = state.robotAvailable();
-        
+
         // Get E_t for the task (earliest start time from precedence constraints)
         int taskEarliestStart = state.earliestStartTimes().get(task);
         if (taskEarliestStart < 0) {

@@ -1,67 +1,72 @@
 package org.ddolib.examples.ssalbrb1207nested;
 
 import org.ddolib.modeling.Dominance;
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Dominance relation for the Nested SALBP Problem.
- * <p>
+ * 支配规则 - Memory-based Dominance Rule
+ *
  * 状态支配规则用于剪枝，当一个状态被另一个状态支配时，可以安全地丢弃被支配的状态。
- * </p>
- * 
- * <h3>支配规则设计</h3>
- * <p>
- * 对于两个状态 s1 和 s2，如果满足以下条件，则 s1 被 s2 支配（s2 dominate s1）：
- * </p>
- * <ul>
- *   <li><b>前提条件</b>：completedTasks 相同且 currentStationTasks 相同</li>
- *   <li><b>规则1 - 机器人优势</b>：当 usedRobots 相等时，有机器人的工位优于没机器人的工位
- *       （因为有机器人的工位可以接受更多任务，搜索空间更大）</li>
- *   <li><b>规则2 - 机器人资源</b>：剩余机器人更多的状态优于剩余机器人更少的状态
- *       （因为未来有更多选择）</li>
- *   <li><b>综合规则</b>：s2 dominate s1 当且仅当 s2 的"总消耗机器人"不多于 s1 的
- *       且 s2 当前工位的机器人状态不差于 s1</li>
- * </ul>
+ *
+ * 支配规则设计：
+ *
+ * 前提条件：
+ *   - 已分配任务集合（completedTasks ∪ currentStationTasks）相同
+ *
+ * 支配判断规则：
+ *   规则1 - 机器人资源：剩余机器人更多的状态优于剩余机器人更少的状态
+ *           （因为未来有更多选择）
+ *
+ *   规则2 - 机器人优势：当总使用机器人相等时，有机器人的当前工位优于没机器人的工位
+ *           （因为有机器人的工位可以接受更多任务，搜索空间更大）
+ *
+ *   综合规则：s2 dominate s1 当且仅当 s2 的"总消耗机器人"不多于 s1 的
+ *           且 s2 当前工位的机器人状态不差于 s1
+ *
+ * 改进说明：
+ *   相比严格版本（要求 completedTasks 和 currentStationTasks 都完全相同），
+ *   宽松版本只要求"已分配任务集合"相同，能够比较更多的状态对，剪枝效果更强。
+ *
+ * 理论正确性：
+ *   如果两个状态的"已分配任务集合"相同，则它们面临相同的"剩余任务分配问题"。
+ *   此时，使用更少机器人的状态拥有更多未来选择，因此不会更差。
  */
 public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
 
     /**
      * 支配关系的分组键
-     * 只有 completedTasks 和 currentStationTasks 都相同的状态才需要比较支配关系
+     *
+     * 策略选择：
+     * - 严格策略：completedTasks + currentStationTasks 都相同才比较
+     * - 宽松策略：只要"所有已分配任务"相同就比较
+     *
+     * 当前使用：宽松策略（Memory-based Dominance Rule）
      */
     private record DominanceKey(
-        java.util.Set<Integer> completedTasks,
-        java.util.Set<Integer> currentStationTasks
+            Set<Integer> allAssignedTasks  // completedTasks ∪ currentStationTasks
     ) {}
 
     /**
      * 返回用于分组的键。
      * 只有相同 key 的状态才会进行支配关系比较。
-     * 
+     *
+     * 采用文献中改进的Memory-based Dominance Rule：
+     * 只要"已分配任务集合"相同，就进行支配关系比较，
+     * 而不管这些任务是如何分配到工位的。
+     *
      * @param state 当前状态
-     * @return 分组键（completedTasks + currentStationTasks）
+     * @return 分组键（所有已分配任务）
      */
     @Override
     public Object getKey(NestedSALBPState state) {
-        return new DominanceKey(state.completedTasks(), state.currentStationTasks());
+        // 合并 completedTasks 和 currentStationTasks
+        Set<Integer> allAssigned = new HashSet<>(state.completedTasks());
+        allAssigned.addAll(state.currentStationTasks());
+        return new DominanceKey(allAssigned);
     }
 
     /**
-     * 判断 state1 是否被 state2 支配（或相等）。
-     * <p>
-     * 支配判断逻辑：
-     * </p>
-     * <ol>
-     *   <li>计算总使用机器人数 = usedRobots + (currentStationHasRobot ? 1 : 0)</li>
-     *   <li>如果 state2 总使用机器人 < state1 总使用机器人，则 state2 更优，state1 被支配</li>
-     *   <li>如果总使用机器人相等：
-     *       <ul>
-     *         <li>若 state2 当前有机器人而 state1 没有，则 state1 被支配（规则1）</li>
-     *         <li>若机器人状态也相同，则两者等价</li>
-     *       </ul>
-     *   </li>
-     * </ol>
-     * 
      * @param state1 第一个状态
      * @param state2 第二个状态
      * @return true 如果 state1 被 state2 支配或两者等价
