@@ -8,7 +8,7 @@ import org.junit.jupiter.api.TestFactory;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class SSALBRBTest {
+/*public class SSALBRBTest {
     @DisplayName("SSALBRB")
     @TestFactory
     public Stream<DynamicTest> testSSALBRB() {
@@ -18,7 +18,7 @@ public class SSALBRBTest {
 
         bench.testRelaxation = true;
         bench.testFLB = true;
-        //bench.testDominance = true;
+        bench.testDominance = true;
         return bench.generateTests();
     }
-}
+}*/

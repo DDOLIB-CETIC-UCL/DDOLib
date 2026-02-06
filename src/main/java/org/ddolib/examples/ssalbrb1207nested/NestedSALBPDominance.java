@@ -8,6 +8,7 @@ import java.util.Set;
  * 支配规则 - Memory-based Dominance Rule
  *
  * 状态支配规则用于剪枝，当一个状态被另一个状态支配时，可以安全地丢弃被支配的状态。
+<<<<<<< HEAD
  *
  * 支配规则设计：
  *
@@ -31,6 +32,22 @@ import java.util.Set;
  * 理论正确性：
  *   如果两个状态的"已分配任务集合"相同，则它们面临相同的"剩余任务分配问题"。
  *   此时，使用更少机器人的状态拥有更多未来选择，因此不会更差。
+=======
+ * </p>
+ *
+ * <p>
+ * 对于两个状态 s1 和 s2，如果满足以下条件，则 s1 被 s2 支配（s2 dominate s1）：
+ * </p>
+ * <ul>
+ *   <li><b>前提条件</b>：completedTasks 相同且 currentStationTasks 相同</li>
+ *   <li><b>规则1 - 机器人优势</b>：当 usedRobots 相等时，有机器人的工位优于没机器人的工位
+ *       （因为有机器人的工位可以接受更多任务，搜索空间更大）</li>
+ *   <li><b>规则2 - 机器人资源</b>：剩余机器人更多的状态优于剩余机器人更少的状态
+ *       （因为未来有更多选择）</li>
+ *   <li><b>综合规则</b>：s2 dominate s1 当且仅当 s2 的"总消耗机器人"不多于 s1 的
+ *       且 s2 当前工位的机器人状态不差于 s1</li>
+ * </ul>
+>>>>>>> d5e45d6e2a49f8ecc03f8ffff65e5b0c91614c1b
  */
 public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
 
@@ -78,12 +95,12 @@ public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
         int totalUsed2 = state2.usedRobots() + (state2.currentStationHasRobot() ? 1 : 0);
 
         // 规则2：state2 使用更少的机器人 -> state2 更优 -> state1 被支配
-        if (totalUsed2 < totalUsed1) {
+        if (getKey(state1).equals(getKey(state2)) && totalUsed2 < totalUsed1) {
             return true;
         }
 
         // 规则1：总使用机器人相等时，比较当前工位的机器人状态
-        if (totalUsed1 == totalUsed2) {
+        if (getKey(state1).equals(getKey(state2)) && totalUsed1 == totalUsed2) {
             // usedRobots 相等的情况
             if (state1.usedRobots() == state2.usedRobots()) {
                 // 若 state2 有机器人而 state1 没有 -> state1 被支配
