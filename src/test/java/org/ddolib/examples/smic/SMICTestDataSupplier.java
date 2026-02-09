@@ -77,11 +77,6 @@ public class SMICTestDataSupplier extends TestDataSupplier<SMICState, SMICProble
             public SMICRanking ranking() {
                 return new SMICRanking();
             }
-
-            @Override
-            public boolean exportDot() {
-                return true;
-            }
         };
     }
 }
