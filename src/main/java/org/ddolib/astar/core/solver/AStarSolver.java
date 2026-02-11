@@ -83,7 +83,11 @@ public final class AStarSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
         this.debugLevel = model.debugMode();
-        this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
+        if (problem.initialState()==null){
+            this.root = null;
+        }else {
+            this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
+        }
 
     }
 
@@ -113,12 +117,25 @@ public final class AStarSolver<T> implements Solver {
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
     }
 
+    public void setBestUB(double bestUB) {
+        this.bestUB = bestUB;
+    }
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
         t0 = System.currentTimeMillis();
         nbIter = 0;
         queueMaxSize = 0;
+        if (root==null){
+            SearchStatistics stats = new SearchStatistics(
+                    SearchStatus.UNKNOWN,
+                    nbIter,
+                    queueMaxSize,
+                    System.currentTimeMillis() - t0,
+                    bestValue().orElse(Double.POSITIVE_INFINITY),
+                    0,0 );
+            return new Solution(bestSolution(), stats);
+        }
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
@@ -135,7 +152,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0);
+                    0,0 );
 
 
             if (limit.test(stats)) { // user-defined stopping criterion
@@ -149,6 +166,10 @@ public final class AStarSolver<T> implements Solver {
             if (closed.containsKey(subKey)) {
                 continue;
             }
+            // if the new state is dominated, we skip it
+            if (dominance.updateDominance(sub.getState(), subKey.depth(), sub.getValue())) {
+                continue;
+            }
 
             if (sub.getPath().size() == problem.nbVars()) { // target node reached
                 assert (sub.getValue() == sub.f());
@@ -160,7 +181,7 @@ public final class AStarSolver<T> implements Solver {
                         queueMaxSize,
                         System.currentTimeMillis() - t0,
                         bestUB,
-                        gap()
+                        gap(), 1
                 );
 
                 return new Solution(bestSol, statistics);
@@ -176,7 +197,7 @@ public final class AStarSolver<T> implements Solver {
         }
 
         SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, 0 );
 
         return new Solution(bestSolution(), statistics);
     }
@@ -243,10 +264,7 @@ public final class AStarSolver<T> implements Solver {
             double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
 
 
-            // if the new state is dominated, we skip it
-            if (dominance.updateDominance(newState, path.size(), value)) {
-                continue;
-            }
+            
 
             SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
@@ -257,12 +275,16 @@ public final class AStarSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.add(newSub);
                 present.put(newKey, newSub.f());
+            } else if (presentValue != null && presentValue <= newSub.f()) {
+                
             } else {
                 Double closedValue = closed.get(newKey);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.add(newSub);
                     closed.remove(newKey);
                     present.put(newKey, newSub.f());
+                } else if (closedValue != null && closedValue <= newSub.f()) {
+                    
                 } else {
                     open.add(newSub);
                     present.put(newKey, newSub.f());
@@ -274,7 +296,7 @@ public final class AStarSolver<T> implements Solver {
                 assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
+                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap(),1 );
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }

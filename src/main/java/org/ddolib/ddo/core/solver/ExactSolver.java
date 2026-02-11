@@ -146,7 +146,7 @@ public final class ExactSolver<T> implements Solver {
                 1,
                 end - start,
                 bestValue.orElse(Double.POSITIVE_INFINITY),
-                0);
+                0, 0);
 
 
         bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), stats));

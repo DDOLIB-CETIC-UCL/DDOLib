@@ -98,6 +98,11 @@ public final class ACSSolver<T> implements Solver {
 
     private boolean defaultLowerBoundValue = false;
 
+    private int nbSameNodes = 0;
+
+    private int dominatedNodes = 0;
+
+
 
     /**
      * Constructs an ACS solver with all required and optional components provided via an {@link AcsModel}.
@@ -192,6 +197,7 @@ public final class ACSSolver<T> implements Solver {
         long t0 = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
+        int nbSols =0;
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
@@ -211,7 +217,7 @@ public final class ACSSolver<T> implements Solver {
 
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
+                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100,nbSols );
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -224,6 +230,10 @@ public final class ACSSolver<T> implements Solver {
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
+                    if (dominance.updateDominance(sub.getState(), subKey.depth(), sub.getValue())){
+                        dominatedNodes+=1;
+                        continue;
+                    }
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
                     } else {
@@ -241,9 +251,12 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
+                            nbSols+=1;
                             stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
-                                    System.currentTimeMillis() - t0, bestUB, gap());
+                                    System.currentTimeMillis() - t0, bestUB, gap(), nbSols);
                             onSolution.accept(constructSolution(bestSol.get()), stats);
+                            System.out.println("Same nodes : "+nbSameNodes);
+                            System.out.println("Domintated nodes : "+dominatedNodes);
                         }
                         verboseMode.newBest(bestUB);
                     } else {
@@ -259,9 +272,9 @@ public final class ACSSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkAdmissibility();
         }
-
+        System.out.println("Same nodes : "+nbSameNodes);
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols );
         return new Solution(bestSolution(), stats);
     }
 
@@ -343,29 +356,30 @@ public final class ACSSolver<T> implements Solver {
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
 
-            // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                if (debugLevel == DebugLevel.EXTENDED) {
-                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
-                }
-                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
-                Double presentValue = present.get(newKey);
-                if (presentValue != null && presentValue > newSub.f()) {
+
+            SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+            if (debugLevel == DebugLevel.EXTENDED) {
+                DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
+            }
+            StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
+            Double presentValue = present.get(newKey);
+            if (presentValue != null && presentValue > newSub.f()) {
+                open.get(newSub.getDepth()).add(newSub);
+                present.put(newKey, newSub.f());
+            } else if (presentValue != null && presentValue <= newSub.f()) {
+                nbSameNodes+=1;
+            } else {
+                Double closedValue = closed.get(newKey);
+                if (closedValue != null && closedValue > newSub.f()) {
+                    open.get(newSub.getDepth()).add(newSub);
+                    closed.remove(newKey);
+                    present.put(newKey, newSub.f());
+                }else if(closedValue != null && closedValue <= newSub.f()){
+                    nbSameNodes+=1;
+                }else {
                     open.get(newSub.getDepth()).add(newSub);
                     present.put(newKey, newSub.f());
-                } else {
-                    Double closedValue = closed.get(newKey);
-                    if (closedValue != null && closedValue > newSub.f()) {
-                        open.get(newSub.getDepth()).add(newSub);
-                        closed.remove(newKey);
-                        present.put(newKey, newSub.f());
-                    } else {
-                        open.get(newSub.getDepth()).add(newSub);
-                        present.put(newKey, newSub.f());
-                    }
                 }
-
             }
         }
     }
@@ -429,13 +443,16 @@ public final class ACSSolver<T> implements Solver {
         if (defaultLowerBoundValue) {
             return Double.NaN;
         } else {
-            double maxLB = Double.NEGATIVE_INFINITY;
+            double maxLB = Double.POSITIVE_INFINITY;
+            if (negativeTransitionCosts){
+                maxLB = Double.NEGATIVE_INFINITY;
+            }
             for (int i = 0; i < problem.nbVars(); i++) {
                 if (!open.get(i).isEmpty()) {
                     if (negativeTransitionCosts) {
                         maxLB = Math.max(maxLB, Math.abs(open.get(i).peek().f()));
                     } else {
-                        maxLB = Math.max(maxLB, open.get(i).peek().f());
+                        maxLB = Math.min(maxLB, open.get(i).peek().f());
                     }
                 }
             }

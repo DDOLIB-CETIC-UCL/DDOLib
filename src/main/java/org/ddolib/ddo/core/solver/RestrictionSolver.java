@@ -4,28 +4,18 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.*;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -145,7 +135,7 @@ public final class RestrictionSolver<T> {
 
         long end = System.currentTimeMillis();
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0);
+                end - start, bestUB, 0, 0);
         return new Solution(bestSolution(), stats);
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }

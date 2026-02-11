@@ -12,9 +12,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
@@ -198,9 +195,9 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100);
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100, 0);
             if (bestUB != Double.POSITIVE_INFINITY)
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
+                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap(), 0);
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -213,7 +210,7 @@ public final class SequentialSolver<T> implements Solver {
                 frontier.clear();
                 end = System.currentTimeMillis();
                 SearchStatistics s = new SearchStatistics(SearchStatus.OPTIMAL, nbIter,
-                        queueMaxSize, end - start, bestUB, 0);
+                        queueMaxSize, end - start, bestUB, 0, 0);
                 return new Solution(bestSolution(), s);
             }
 
@@ -227,7 +224,7 @@ public final class SequentialSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(),0 );
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
@@ -251,7 +248,7 @@ public final class SequentialSolver<T> implements Solver {
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0);
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             }
@@ -265,7 +262,7 @@ public final class SequentialSolver<T> implements Solver {
             if (relaxedMdd.isExact()) {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0);
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             } else {
@@ -278,7 +275,7 @@ public final class SequentialSolver<T> implements Solver {
         }
         long end = System.currentTimeMillis();
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                end - start, bestUB, 0);
+                end - start, bestUB, 0, 0);
         return new Solution(bestSolution(), stats);
     }
 

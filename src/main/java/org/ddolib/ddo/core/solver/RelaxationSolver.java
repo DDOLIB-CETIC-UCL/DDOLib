@@ -131,7 +131,7 @@ public final class RelaxationSolver<T> {
 
         long end = System.currentTimeMillis();
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0);
+                end - start, bestUB, 0, 0);
         return new Solution(bestSolution(), stats);
     }
 

@@ -6,7 +6,7 @@ public record SearchStatistics(
         int queueMaxSize,
         long runTimeMs,
         double incumbent,
-        double gap) {
+        double gap, int nbSols) {
 
     public String toCSV() {
         return String.format("%s;%d;%d;%d;%f;%f",

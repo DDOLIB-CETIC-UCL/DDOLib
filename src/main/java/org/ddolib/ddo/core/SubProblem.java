@@ -40,7 +40,7 @@ public final class SubProblem<T> {
      * A lower bound on the optimal objective value reachable
      * when continuing from this subproblem.
      */
-    final double lb;
+    double lb;
     /**
      * The sequence of {@link Decision decisions} made from the root of the original problem
      * to reach this subproblem. Represents the partial assignment of variables.
@@ -117,6 +117,10 @@ public final class SubProblem<T> {
      */
     public double f() {
         return this.value + this.lb;
+    }
+
+    public void resetLB(int lb){
+        this.lb = lb;
     }
 
     /**
