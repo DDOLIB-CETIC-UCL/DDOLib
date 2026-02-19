@@ -284,15 +284,17 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      * 初始状态特征：
      * - 没有任何任务被完成
      * - 当前工位为空
+     * - maybeCompletedTasks 为空（只在Relax合并时产生）
      * - 没有使用任何机器人
      */
     @Override
     public NestedSALBPState initialState() {
         return new NestedSALBPState(
-                Collections.emptySet(),         // 已完成任务为空
-                Collections.emptySet(),         // 当前工位任务为空
-                false,                          // 当前工位机器人状态（占位符）
-                0);                             // 已使用机器人数为0
+                Collections.emptySet(),         // completedTasks: 空
+                Collections.emptySet(),         // currentStationTasks: 空
+                Collections.emptySet(),         // maybeCompletedTasks: 空
+                false,                          // currentStationHasRobot: false
+                0);                             // usedRobots: 0
     }
 
     /**
@@ -735,6 +737,10 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      *    - 关闭当前工位（将任务移到completedTasks，更新usedRobots）
      *    - 开启新工位（将新任务放入新工位，根据需要分配机器人）
      *
+     * 🔥 关键：处理 maybeCompletedTasks
+     * - 如果分配的任务在 maybeCompletedTasks 中，从中移除
+     * - maybeCompletedTasks 在其他情况下保持不变
+     *
      * @param state 当前状态
      * @param decision 决策
      * @return 新状态
@@ -745,6 +751,10 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         int task = decisionVal / 2;
         int robotFlag = decisionVal % 2;
         boolean assignRobot = (robotFlag == 1);
+
+        // 🔥 检查任务是否在 maybeCompletedTasks 中
+        // 这种情况只会发生在从 relax 状态继续 transition 时
+        boolean taskIsMaybeCompleted = state.maybeCompletedTasks().contains(task);
 
         // 判断是否需要新开工位（使用精确可行性检查）
         boolean needNewStation = false;
@@ -760,22 +770,32 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         }
 
         if (!needNewStation) {
-            // 情况1：加入当前工位
+            // ========== 情况1：加入当前工位 ==========
             Set<Integer> newStationTasks = new LinkedHashSet<>(state.currentStationTasks());
             newStationTasks.add(task);
 
+            // 🔥 如果任务原本在 maybeCompletedTasks 中，现在确定在当前工位了
+            // 所以从 maybeCompletedTasks 中移除
+            Set<Integer> newMaybeCompleted = new LinkedHashSet<>(state.maybeCompletedTasks());
+            if (taskIsMaybeCompleted) {
+                newMaybeCompleted.remove(task);
+            }
+
             return new NestedSALBPState(
-                    state.completedTasks(),
-                    newStationTasks,
-                    state.currentStationHasRobot(),
-                    state.usedRobots());
+                    state.completedTasks(),           // 不变
+                    newStationTasks,                  // 增加任务
+                    newMaybeCompleted,                // 可能减少
+                    state.currentStationHasRobot(),   // 不变
+                    state.usedRobots());              // 不变
         } else {
-            // 情况2：新开工位
+            // ========== 情况2：新开工位 ==========
             Set<Integer> newCompletedTasks = new LinkedHashSet<>(state.completedTasks());
+            Set<Integer> newMaybeCompleted = new LinkedHashSet<>(state.maybeCompletedTasks());
             int newUsedRobots = state.usedRobots();
 
             // 关闭当前工位（如果非空）
             if (!state.currentStationTasks().isEmpty()) {
+                // 当前工位的任务移到 completedTasks
                 newCompletedTasks.addAll(state.currentStationTasks());
                 if (state.currentStationHasRobot()) {
                     newUsedRobots++;
@@ -783,9 +803,16 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             }
 
             // 开启新工位
-            Set<Integer> freshStationTasks = Set.of(task);
+            Set<Integer> freshStationTasks = new LinkedHashSet<>();
+            freshStationTasks.add(task);
 
-            // 如果任务需要机器人，新工位必须有机器人
+            // 🔥 如果任务原本在 maybeCompletedTasks 中，现在确定在新工位了
+            // 所以从 maybeCompletedTasks 中移除
+            if (taskIsMaybeCompleted) {
+                newMaybeCompleted.remove(task);
+            }
+
+            // 确定新工位是否有机器人
             boolean newStationHasRobot = assignRobot;
             if (taskRequiresRobot(task)) {
                 int availableRobots = totalRobots - newUsedRobots;
@@ -795,8 +822,9 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             }
 
             return new NestedSALBPState(
-                    newCompletedTasks,
-                    freshStationTasks,
+                    newCompletedTasks,                // 增加了当前工位的任务
+                    freshStationTasks,                // 新工位只有一个任务
+                    newMaybeCompleted,                // 可能减少
                     newStationHasRobot,
                     newUsedRobots);
         }
@@ -804,6 +832,10 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
     /**
      * 计算转移代价（开新工位代价为1，加入当前工位代价为0）
+     *
+     * 🔥 关键修改：处理 maybeCompletedTasks
+     * - 如果任务在 maybeCompletedTasks 中，说明它可能已经在某个工位里了
+     * - 此时代价应该是 0（乐观估计：假设它已经被分配了）
      *
      * @param state 当前状态
      * @param decision 决策
@@ -813,6 +845,12 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     public double transitionCost(NestedSALBPState state, Decision decision) {
         int decisionVal = decision.val();
         int task = decisionVal / 2;
+
+        // 🔥 如果任务在 maybeCompletedTasks 中，乐观估计代价为 0
+        // 因为它可能已经在某个工位里了（在某些合并的路径中）
+        if (state.maybeCompletedTasks().contains(task)) {
+            return 0.0;
+        }
 
         if (state.currentStationTasks().isEmpty()) {
             return 1.0;  // 开启第一个工位
@@ -866,6 +904,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 state = new NestedSALBPState(
                         state.completedTasks(),
                         newStationTasks,
+                        state.maybeCompletedTasks(),  // 保持不变
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
@@ -885,6 +924,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 state = new NestedSALBPState(
                         newCompletedTasks,
                         freshStationTasks,
+                        state.maybeCompletedTasks(),  // 保持不变
                         assignRobot,
                         newUsedRobots);
             }

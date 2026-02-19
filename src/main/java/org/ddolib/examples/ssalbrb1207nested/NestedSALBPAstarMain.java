@@ -191,6 +191,7 @@ public class NestedSALBPAstarMain {
                 state = new NestedSALBPState(
                         state.completedTasks(),
                         newStationTasks,
+                        state.maybeCompletedTasks(),  // 🔥 保持不变
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
@@ -208,6 +209,7 @@ public class NestedSALBPAstarMain {
                 state = new NestedSALBPState(
                         newCompletedTasks,
                         freshStationTasks,
+                        state.maybeCompletedTasks(),  // 🔥 保持不变
                         assignRobot,
                         newUsedRobots);
             }

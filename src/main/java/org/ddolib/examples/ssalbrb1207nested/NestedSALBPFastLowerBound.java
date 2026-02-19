@@ -75,7 +75,8 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         }
 
         // 获取剩余未分配的任务和当前工位的任务
-        Set<Integer> remainingTasks = state.getRemainingTasks(nbTasks);
+        // 🔥 使用专门的方法：下界计算时排除 maybeCompletedTasks
+        Set<Integer> remainingTasks = state.getRemainingTasksForLowerBound(nbTasks);
         Set<Integer> currentStationTasks = state.currentStationTasks();
 
         // 特殊情况：没有剩余任务要分配
@@ -95,18 +96,18 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             double lb = computeLowerBound(remainingTasks, remainingRobots);
 
             // 【调试】仅在root节点输出详细信息
-            if (state.completedTasks().isEmpty()) {
-                System.out.println("Root节点下界计算：");
-                System.out.println("剩余任务数: " + remainingTasks.size());
-                System.out.println("可用机器人: " + remainingRobots);
-
-                double lb1 = computeLB1(remainingTasks, remainingRobots);
-                double lb2 = computeLB2(remainingTasks, remainingRobots);
-
-                System.out.println("\n--- 下界计算结果 ---");
-                System.out.println("LB₁ (工作量下界): " + lb1);
-                System.out.println("LB₂ (装箱下界): " + lb2);
-            }
+//            if (state.completedTasks().isEmpty()) {
+//                System.out.println("Root节点下界计算：");
+//                System.out.println("剩余任务数: " + remainingTasks.size());
+//                System.out.println("可用机器人: " + remainingRobots);
+//
+//                double lb1 = computeLB1(remainingTasks, remainingRobots);
+//                double lb2 = computeLB2(remainingTasks, remainingRobots);
+//
+//                System.out.println("\n--- 下界计算结果 ---");
+//                System.out.println("LB₁ (工作量下界): " + lb1);
+//                System.out.println("LB₂ (装箱下界): " + lb2);
+//            }
 
             return lb;
         }

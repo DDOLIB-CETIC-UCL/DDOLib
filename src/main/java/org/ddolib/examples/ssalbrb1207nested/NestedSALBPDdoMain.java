@@ -35,17 +35,17 @@ public class NestedSALBPDdoMain {
         // 2. .alb 格式（原始格式）
 
         // 【当前使用】CSV格式 - 20任务数据集
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_324.csv").toString()
+//                : args[0];
+
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_476.csv").toString()
+//                : args[0];
+
         final String instance = args.length == 0
-                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_246.csv").toString()
+                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_11.csv").toString()
                 : args[0];
-
-//        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_465.csv").toString()
-//                : args[0];
-
-//        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_444.csv").toString()
-//                : args[0];
 
         // 【备选】ALB格式 - 数据集
 //        final String instance = args.length == 0
@@ -58,7 +58,7 @@ public class NestedSALBPDdoMain {
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 3;
+                Integer.parseInt(args[2]) : 5;
 
 
         System.out.println("Instance: " + instance);
@@ -240,6 +240,7 @@ public class NestedSALBPDdoMain {
                 state = new NestedSALBPState(
                         state.completedTasks(),
                         newStationTasks,
+                        state.maybeCompletedTasks(),  // 🔥 保持不变
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
@@ -260,6 +261,7 @@ public class NestedSALBPDdoMain {
                 state = new NestedSALBPState(
                         newCompletedTasks,
                         freshStationTasks,
+                        state.maybeCompletedTasks(),  // 🔥 保持不变
                         assignRobot,
                         newUsedRobots);
             }
