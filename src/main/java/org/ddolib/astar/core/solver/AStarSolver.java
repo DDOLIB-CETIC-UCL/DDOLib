@@ -133,7 +133,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0,0 );
+                    0,0, 0, 0, new ArrayList<>());
             return new Solution(bestSolution(), stats);
         }
         open.add(root);
@@ -152,7 +152,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0,0 );
+                    0,0, 0, 0, new ArrayList<>());
 
 
             if (limit.test(stats)) { // user-defined stopping criterion
@@ -181,8 +181,8 @@ public final class AStarSolver<T> implements Solver {
                         queueMaxSize,
                         System.currentTimeMillis() - t0,
                         bestUB,
-                        gap(), 1
-                );
+                        gap(), 1,
+                        0, 0, new ArrayList<>());
 
                 return new Solution(bestSol, statistics);
 
@@ -197,7 +197,7 @@ public final class AStarSolver<T> implements Solver {
         }
 
         SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, 0 );
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, 0, 0, 0, new ArrayList<>());
 
         return new Solution(bestSolution(), statistics);
     }
@@ -296,7 +296,7 @@ public final class AStarSolver<T> implements Solver {
                 assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap(),1 );
+                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap(),1, 0, 0, new ArrayList<>());
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }

@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -146,7 +147,7 @@ public final class ExactSolver<T> implements Solver {
                 1,
                 end - start,
                 bestValue.orElse(Double.POSITIVE_INFINITY),
-                0, 0);
+                0, 0, 0, 0, new ArrayList<>());
 
 
         bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), stats));

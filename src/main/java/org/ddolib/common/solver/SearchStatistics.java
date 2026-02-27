@@ -1,12 +1,16 @@
 package org.ddolib.common.solver;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public record SearchStatistics(
         SearchStatus status,
         int nbIterations,
         int queueMaxSize,
         long runTimeMs,
         double incumbent,
-        double gap, int nbSols) {
+        double gap, int nbSols, int nbSomeNodes, int nbDominatedNodes, ArrayList<int[]> ubs) {
 
     public String toCSV() {
         return String.format("%s;%d;%d;%d;%f;%f",
@@ -20,13 +24,26 @@ public record SearchStatistics(
 
     @Override
     public String toString() {
-        return "\n\tstatus = " + status +
-                "\n\tnbIterations = " + nbIterations +
-                "\n\tqueueMaxSize = " + queueMaxSize +
-                "\n\trunTimeMs (ms) = " + runTimeMs +
-                "\n\tincumbent = " + (incumbent == Double.POSITIVE_INFINITY || incumbent == Double.NEGATIVE_INFINITY ? "+-∞" : incumbent) +
-                "\n\tgap = " + (gap == Double.POSITIVE_INFINITY ? "∞" : gap) +
-                "\n";
+        // Convert each int[] in ubs to a string like (a,b)
+        String ubsStr = ubs.stream()
+                .map(arr -> "(" + Arrays.stream(arr)
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(",")) + ")")
+                .collect(Collectors.joining(", "));
+
+        // Combine all values into a single line, separated by ';'
+        return String.join(";",
+                String.valueOf(status),
+                String.valueOf(nbIterations),
+                String.valueOf(queueMaxSize),
+                String.valueOf(runTimeMs),
+                String.valueOf(incumbent),
+                String.valueOf(gap),
+                String.valueOf(nbSols),
+                String.valueOf(nbSomeNodes),
+                String.valueOf(nbDominatedNodes),
+                "[" + ubsStr + "]"
+        );
     }
 }
 

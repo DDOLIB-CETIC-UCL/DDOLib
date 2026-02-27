@@ -15,6 +15,7 @@ import org.ddolib.modeling.*;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -135,7 +136,7 @@ public final class RestrictionSolver<T> {
 
         long end = System.currentTimeMillis();
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0, 0);
+                end - start, bestUB, 0, 0, 0, 0, new ArrayList<>());
         return new Solution(bestSolution(), stats);
         // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
     }

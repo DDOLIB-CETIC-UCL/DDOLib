@@ -24,10 +24,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -195,9 +192,9 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100, 0);
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100, 0, 0, 0, new ArrayList<>());
             if (bestUB != Double.POSITIVE_INFINITY)
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap(), 0);
+                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap(), 0, 0, 0, new ArrayList<>());
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -210,7 +207,7 @@ public final class SequentialSolver<T> implements Solver {
                 frontier.clear();
                 end = System.currentTimeMillis();
                 SearchStatistics s = new SearchStatistics(SearchStatus.OPTIMAL, nbIter,
-                        queueMaxSize, end - start, bestUB, 0, 0);
+                        queueMaxSize, end - start, bestUB, 0, 0, 0, 0, new ArrayList<>());
                 return new Solution(bestSolution(), s);
             }
 
@@ -224,7 +221,7 @@ public final class SequentialSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(),0 );
+                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(),0, 0, 0, new ArrayList<>());
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
@@ -248,7 +245,7 @@ public final class SequentialSolver<T> implements Solver {
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0);
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0, 0, 0, new ArrayList<>());
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             }
@@ -262,7 +259,7 @@ public final class SequentialSolver<T> implements Solver {
             if (relaxedMdd.isExact()) {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0);
+                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap(), 0, 0, 0, new ArrayList<>());
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
             } else {
@@ -275,7 +272,7 @@ public final class SequentialSolver<T> implements Solver {
         }
         long end = System.currentTimeMillis();
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                end - start, bestUB, 0, 0);
+                end - start, bestUB, 0, 0, 0, 0, new ArrayList<>());
         return new Solution(bestSolution(), stats);
     }
 

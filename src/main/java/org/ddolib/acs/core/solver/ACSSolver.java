@@ -199,6 +199,7 @@ public final class ACSSolver<T> implements Solver {
         int queueMaxSize = 0;
         int nbSols =0;
         open.getFirst().add(root);
+        ArrayList<int[]> ubs = new ArrayList<>();
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
         if (root.f() == Integer.MIN_VALUE) {
@@ -217,7 +218,7 @@ public final class ACSSolver<T> implements Solver {
 
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100,nbSols );
+                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100,nbSols, 0, 0, new ArrayList<>());
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -251,9 +252,10 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
+                            ubs.add(new int[]{(int) bestUB, (int) (System.currentTimeMillis() - t0)});
                             nbSols+=1;
                             stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
-                                    System.currentTimeMillis() - t0, bestUB, gap(), nbSols);
+                                    System.currentTimeMillis() - t0, bestUB, gap(), nbSols, nbSameNodes, dominatedNodes, ubs);
                             onSolution.accept(constructSolution(bestSol.get()), stats);
                         }
                         verboseMode.newBest(bestUB);
@@ -271,8 +273,7 @@ public final class ACSSolver<T> implements Solver {
             checkAdmissibility();
         }
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols );
-        System.out.print("];"+ nbSameNodes + ";" + dominatedNodes);
+                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols, nbSameNodes, dominatedNodes, ubs);
         return new Solution(bestSolution(), stats);
     }
 
