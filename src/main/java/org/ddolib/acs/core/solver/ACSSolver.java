@@ -230,7 +230,7 @@ public final class ACSSolver<T> implements Solver {
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
-                    if (dominance.updateDominance(sub.getState(), subKey.depth(), sub.getValue())){
+                    if (dominance.updateDominance(sub.getState(), subKey.depth(), sub.getValue()) || problem.stateSpaceReduction(sub.getState())){
                         dominatedNodes+=1;
                         continue;
                     }
@@ -255,8 +255,6 @@ public final class ACSSolver<T> implements Solver {
                             stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
                                     System.currentTimeMillis() - t0, bestUB, gap(), nbSols);
                             onSolution.accept(constructSolution(bestSol.get()), stats);
-                            System.out.println("Same nodes : "+nbSameNodes);
-                            System.out.println("Domintated nodes : "+dominatedNodes);
                         }
                         verboseMode.newBest(bestUB);
                     } else {
@@ -272,9 +270,9 @@ public final class ACSSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkAdmissibility();
         }
-        System.out.println("Same nodes : "+nbSameNodes);
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols );
+        System.out.print("];"+ nbSameNodes + ";" + dominatedNodes);
         return new Solution(bestSolution(), stats);
     }
 

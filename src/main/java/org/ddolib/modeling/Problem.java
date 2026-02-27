@@ -93,4 +93,5 @@ public interface Problem<T> {
      */
     double evaluate(final int[] solution) throws InvalidSolutionException;
 
+    default boolean stateSpaceReduction(T state) {return false;};
 }
