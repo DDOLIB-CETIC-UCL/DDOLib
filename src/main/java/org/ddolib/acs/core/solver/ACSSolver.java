@@ -218,7 +218,7 @@ public final class ACSSolver<T> implements Solver {
 
 
             SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100,nbSols, 0, 0, new ArrayList<>());
+                    System.currentTimeMillis() - t0, bestUB, gap(), nbSols, nbSameNodes, dominatedNodes, ubs);
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -227,7 +227,7 @@ public final class ACSSolver<T> implements Solver {
             for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
+                while(!open.get(i).isEmpty()&& candidates.size()<l) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
