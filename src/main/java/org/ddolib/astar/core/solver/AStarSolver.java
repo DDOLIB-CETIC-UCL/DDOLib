@@ -145,7 +145,7 @@ public final class AStarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             // if the new state is dominated, we skip it
-            if (sub.getState()!=null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+            if (sub.getState() != null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
                 continue;
             }
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
@@ -154,20 +154,11 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
 
-            if (sub.getPath().size() == problem.nbVars()) { // target node reached
+            if (sub.getPath().size() == problem.nbVars()) {// target node reached
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-                SearchStatistics statistics = new SearchStatistics(
-                        SearchStatus.OPTIMAL,
-                        nbIter,
-                        queueMaxSize,
-                        System.currentTimeMillis() - t0,
-                        bestUB,
-                        0
-                );
-
-                return new Solution(bestSol, statistics);
+                break;
 
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(nbIter, sub);
@@ -175,6 +166,7 @@ public final class AStarSolver<T> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
+
         if (debugLevel != DebugLevel.OFF) {
             checkFLBAdmissibility();
         }
@@ -244,8 +236,6 @@ public final class AStarSolver<T> implements Solver {
             double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
 
 
-
-
             SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
@@ -255,13 +245,13 @@ public final class AStarSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.add(newSub);
                 present.put(newKey, newSub.f());
-            } else if (presentValue==null){
+            } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.add(newSub);
                     closed.remove(newKey);
                     present.put(newKey, newSub.f());
-                } else if (closedValue == null){
+                } else if (closedValue == null) {
                     open.add(newSub);
                     present.put(newKey, newSub.f());
                 }
