@@ -9,9 +9,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+
 /**
  * Represents a Multi-dimensional Knapsack Problem (MKS) as a {@link Problem} for decision diagram optimization.
  *
@@ -29,24 +30,37 @@ import java.util.Optional;
  * The class also provides an optional known optimal solution for testing purposes.
  */
 public class MKSProblem implements Problem<MKSState> {
-    /** Capacities of each knapsack dimension. */
-    final double[] capa;
-    /** Profit of each item. */
-    final int[] profit;
-    /** Weights of each item along each dimension. */
-    final int[][] weights;
-    /** Optional known optimal solution value. */
+    /**
+     * Optional known optimal solution value.
+     */
     public final Optional<Double> optimal;
-    /** Optional problem name or file name. */
+    /**
+     * Capacities of each knapsack dimension.
+     */
+    final double[] capa;
+    /**
+     * Profit of each item.
+     */
+    final int[] profit;
+    /**
+     * Weights of each item along each dimension.
+     */
+    final int[][] weights;
+    /**
+     * Optional problem name or file name.
+     */
     final Optional<String> name;
-    /** Maximal Euclidean distance of the capacities, used for normalization or heuristics. */
+    /**
+     * Maximal Euclidean distance of the capacities, used for normalization or heuristics.
+     */
     final double maximalDistance;
+
     /**
      * Constructs an MKSProblem with the given capacities, profits, and weights.
      *
-     * @param capa the capacities of each knapsack dimension
-     * @param profit the profit of each item
-     * @param weight the weight of each item along each dimension
+     * @param capa    the capacities of each knapsack dimension
+     * @param profit  the profit of each item
+     * @param weight  the weight of each item along each dimension
      * @param optimal the known optimal solution value
      */
     public MKSProblem(final double[] capa, final int[] profit, final int[][] weight, final double optimal) {
@@ -62,6 +76,7 @@ public class MKSProblem implements Problem<MKSState> {
         }
         maximalDistance = Math.sqrt(distance);
     }
+
     /**
      * Loads an MKSProblem from a text file.
      *
@@ -105,10 +120,10 @@ public class MKSProblem implements Problem<MKSState> {
                 } else {
                     if (context.count < context.n) {
                         String[] tokens = s.split("\\s");
-                        assert tokens.length == context.dimensions+1;
+                        assert tokens.length == context.dimensions + 1;
                         context.profit[context.count] = Integer.parseInt(tokens[0]);
                         for (int i = 0; i < context.dimensions; i++) {
-                            context.weights[context.count][i] = Integer.parseInt(tokens[i+1]);
+                            context.weights[context.count][i] = Integer.parseInt(tokens[i + 1]);
                         }
                         context.count++;
                     }
@@ -127,6 +142,90 @@ public class MKSProblem implements Problem<MKSState> {
             maximalDistance = Math.sqrt(distance);
         }
     }
+
+    /**
+     * Returns the number of decision variables (items).
+     *
+     * @return number of items
+     */
+    @Override
+    public int nbVars() {
+        return profit.length;
+    }
+
+    /**
+     * Returns the initial state for this problem, representing full capacities.
+     *
+     * @return initial {@link MKSState}
+     */
+    @Override
+    public MKSState initialState() {
+        return new MKSState(capa.clone());
+    }
+
+    /**
+     * Returns the initial value associated with the initial state.
+     *
+     * @return 0
+     */
+    @Override
+    public double initialValue() {
+        return 0;
+    }
+
+    /**
+     * Returns an iterator over the domain of a variable (item) in a given state.
+     *
+     * <p>
+     * An item can be either taken (1) or not taken (0), depending on remaining capacities.
+     *
+     * @param state the current MKS state
+     * @param var   the index of the variable (item)
+     * @return iterator over possible decisions (0 or 1)
+     */
+    @Override
+    public Iterator<Integer> domain(MKSState state, int var) {
+        for (int dim = 0; dim < capa.length; dim++) {
+            // the item cannot be taken
+            if (state.capacities[dim] < weights[var][dim]) {
+                return List.of(0).iterator();
+            }
+        } // The item can be taken or not
+        return List.of(1, 0).iterator();
+    }
+
+    /**
+     * Computes the state resulting from taking a decision in the current state.
+     *
+     * @param state    the current MKS state
+     * @param decision the decision to apply
+     * @return the resulting {@link MKSState} after the decision
+     */
+    @Override
+    public MKSState transition(MKSState state, Decision decision) {
+        double[] newCapa = state.capacities.clone();
+        for (int dim = 0; dim < capa.length; dim++) {
+            newCapa[dim] -= weights[decision.variable()][dim] * decision.value();
+        }
+        return new MKSState(newCapa);
+    }
+
+    /**
+     * Computes the cost of taking a decision in a given state.
+     *
+     * <p>
+     * The cost is equal to the negative profit if the item is taken, or 0 otherwise.
+     *
+     * @param state    the current MKS state
+     * @param decision the decision applied
+     * @return the transition cost
+     */
+    @Override
+    public double transitionCost(MKSState state, Decision decision) {
+        // If the item is taken (1) the cost is the profit of the item, 0 otherwise
+        return -profit[decision.variable()] * decision.value();
+    }
+
     /**
      * Returns the optional optimal value (negated to follow minimization conventions in DDO).
      *
@@ -134,8 +233,9 @@ public class MKSProblem implements Problem<MKSState> {
      */
     @Override
     public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x );
+        return optimal.map(x -> -x);
     }
+
     /**
      * Evaluates the cost of a given solution.
      *
@@ -176,83 +276,6 @@ public class MKSProblem implements Problem<MKSState> {
     }
 
     /**
-     * Returns the number of decision variables (items).
-     *
-     * @return number of items
-     */
-    @Override
-    public int nbVars() {
-        return profit.length;
-    }
-    /**
-     * Returns the initial state for this problem, representing full capacities.
-     *
-     * @return initial {@link MKSState}
-     */
-    @Override
-    public MKSState initialState() {
-        return new MKSState(capa.clone());
-    }
-    /**
-     * Returns the initial value associated with the initial state.
-     *
-     * @return 0
-     */
-    @Override
-    public double initialValue() {
-        return 0;
-    }
-    /**
-     * Returns an iterator over the domain of a variable (item) in a given state.
-     *
-     * <p>
-     * An item can be either taken (1) or not taken (0), depending on remaining capacities.
-     *
-     * @param state the current MKS state
-     * @param var the index of the variable (item)
-     * @return iterator over possible decisions (0 or 1)
-     */
-    @Override
-    public Iterator<Integer> domain(MKSState state, int var) {
-        for (int dim = 0; dim < capa.length; dim++) {
-            // the item cannot be taken
-            if (state.capacities[dim] < weights[var][dim]){
-                return List.of(0).iterator();
-            }
-        } // The item can be taken or not
-        return List.of(1,0).iterator();
-    }
-    /**
-     * Computes the state resulting from taking a decision in the current state.
-     *
-     * @param state the current MKS state
-     * @param decision the decision to apply
-     * @return the resulting {@link MKSState} after the decision
-     */
-    @Override
-    public MKSState transition(MKSState state, Decision decision) {
-        double[] newCapa = state.capacities.clone();
-        for (int dim = 0; dim < capa.length; dim++) {
-            newCapa[dim] -= weights[decision.var()][dim] * decision.val();
-        }
-        return new MKSState(newCapa);
-    }
-    /**
-     * Computes the cost of taking a decision in a given state.
-     *
-     * <p>
-     * The cost is equal to the negative profit if the item is taken, or 0 otherwise.
-     *
-     * @param state the current MKS state
-     * @param decision the decision applied
-     * @return the transition cost
-     */
-    @Override
-    public double transitionCost(MKSState state, Decision decision) {
-        // If the item is taken (1) the cost is the profit of the item, 0 otherwise
-        return -profit[decision.var()] * decision.val();
-    }
-    /**
      * Returns a human-readable string representation of the problem,
      * including capacities, items' profits, weights, and known optimal value.
      *
@@ -263,7 +286,7 @@ public class MKSProblem implements Problem<MKSState> {
         StringBuilder builder = new StringBuilder();
         builder.append("Capacities: ").append(Arrays.toString(capa)).append("\n");
         builder.append("Optimal: ").append(optimal).append("\n");
-        for (int item= 0; item < profit.length; item++) {
+        for (int item = 0; item < profit.length; item++) {
             builder.append("Item: ").append(profit[item]).append(", ").append(Arrays.toString(weights[item])).append("\n");
         }
         return builder.toString();

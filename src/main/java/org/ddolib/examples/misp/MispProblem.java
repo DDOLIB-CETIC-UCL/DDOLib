@@ -189,17 +189,17 @@ public class MispProblem implements Problem<BitSet> {
     public BitSet transition(BitSet state, Decision decision) {
         var res = (BitSet) state.clone();
         // When we are selecting a node, we cannot select this node and its neighbors
-        if (decision.val() == 1) {
-            res.andNot(neighbors[decision.var()]);
+        if (decision.value() == 1) {
+            res.andNot(neighbors[decision.variable()]);
         }
-        res.set(decision.var(), false);
+        res.set(decision.variable(), false);
 
         return res;
     }
 
     @Override
     public double transitionCost(BitSet state, Decision decision) {
-        return -weight[decision.var()] * decision.val();
+        return -weight[decision.variable()] * decision.value();
     }
 
     @Override

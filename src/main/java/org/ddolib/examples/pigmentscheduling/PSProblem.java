@@ -42,26 +42,25 @@ import java.util.stream.Stream;
 public class PSProblem implements Problem<PSState> {
 
     /**
+     * Represents the idle state of the machine (no production).
+     */
+    public static final int IDLE = -1;
+    /**
      * Number of distinct item types.
      */
     final int nItems;
-
     /**
      * Total number of discrete time periods in the planning horizon.
      */
     final int horizon;
-
     /**
      * Stocking cost for each item type (per unit time of early production).
      */
     final int[] stockingCost;
-
     /**
      * Changeover cost matrix: cost of switching from item {@code i} to item {@code j}.
      */
     final int[][] changeoverCost;
-
-
     /**
      * For each item {@code i} and time {@code t}, gives the latest time slot before {@code t}
      * in which a demand for {@code i} occurred.
@@ -70,23 +69,15 @@ public class PSProblem implements Problem<PSState> {
      * </p>
      */
     final int[][] previousDemands;
-
     /**
      * For each item {@code i} and time {@code t}, stores the total number of remaining
      * demands for item {@code i} in the time interval {@code [0..t]}.
      */
     int[][] remainingDemands;
-
     /**
      * Optional known optimal objective value for benchmarking or validation purposes.
      */
     private Optional<Double> optimal;
-
-    /**
-     * Represents the idle state of the machine (no production).
-     */
-    public static final int IDLE = -1;
-
     /**
      * Optional name of the problem instance.
      */
@@ -213,14 +204,6 @@ public class PSProblem implements Problem<PSState> {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public String toString() {
         return name.orElse(super.toString());
     }
@@ -231,14 +214,6 @@ public class PSProblem implements Problem<PSState> {
     @Override
     public int nbVars() {
         return horizon;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public double initialValue() {
-        return 0;
     }
 
     /**
@@ -254,6 +229,14 @@ public class PSProblem implements Problem<PSState> {
             prevDemands[i] = previousDemands[i][horizon];
         }
         return new PSState(horizon, IDLE, prevDemands);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double initialValue() {
+        return 0;
     }
 
     /**
@@ -307,7 +290,7 @@ public class PSProblem implements Problem<PSState> {
     @Override
     public PSState transition(PSState state, Decision decision) {
         PSState ret = state.clone();
-        int item = decision.val();
+        int item = decision.value();
         if (item != IDLE) {
             ret.next = item;
             ret.previousDemands[item] = previousDemands[item][state.previousDemands[item]];
@@ -333,11 +316,11 @@ public class PSProblem implements Problem<PSState> {
      */
     @Override
     public double transitionCost(PSState state, Decision decision) {
-        int item = decision.val();
+        int item = decision.value();
         if (item == IDLE) {
             return 0;
         } else {
-            int t = (horizon - decision.var() - 1);
+            int t = (horizon - decision.variable() - 1);
             int duration = state.previousDemands[item] - t;
             int stocking = stockingCost[item] * duration;
             int changeover = state.next != IDLE ? changeoverCost[item][state.next] : 0;
@@ -346,6 +329,13 @@ public class PSProblem implements Problem<PSState> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {

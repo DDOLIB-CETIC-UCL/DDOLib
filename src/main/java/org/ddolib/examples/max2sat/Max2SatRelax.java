@@ -36,7 +36,9 @@ import static java.lang.Math.abs;
  */
 public class Max2SatRelax implements Relaxation<Max2SatState> {
 
-    /** The MAX2SAT problem instance being relaxed. */
+    /**
+     * The MAX2SAT problem instance being relaxed.
+     */
     private final Max2SatProblem problem;
 
     /**
@@ -47,6 +49,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
     public Max2SatRelax(Max2SatProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple {@link Max2SatState} instances into a single relaxed state.
      * <p>
@@ -83,6 +86,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         }
         return new Max2SatState(merged, depth);
     }
+
     /**
      * Adjusts the cost of transitioning from one state to another in the relaxed model.
      * <p>
@@ -104,7 +108,7 @@ public class Max2SatRelax implements Relaxation<Max2SatState> {
         // To offset the losses of benefit and guarantee an over-approximation of the optimal
         // solution, we add the losses to the transition cost.
         double toReturn = -cost;
-        for (int i = d.var() + 1; i < problem.nbVars(); i++) {
+        for (int i = d.variable() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
         return -toReturn;

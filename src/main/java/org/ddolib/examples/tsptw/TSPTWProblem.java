@@ -104,11 +104,6 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append("\n");
@@ -176,7 +171,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public TSPTWState transition(TSPTWState state, Decision decision) {
-        int target = decision.val();
+        int target = decision.value();
         TSPNode newPos = new TSPNode(target);
         int newTime = arrivalTime(state, target);
         BitSet newMust = (BitSet) state.mustVisit().clone();
@@ -188,13 +183,18 @@ public class TSPTWProblem implements Problem<TSPTWState> {
 
     @Override
     public double transitionCost(TSPTWState state, Decision decision) {
-        int to = decision.val();
+        int to = decision.value();
 
         int travel = minDuration(state, to);
         int arrival = state.time() + travel;
         int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
         return travel + waiting;
 
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override

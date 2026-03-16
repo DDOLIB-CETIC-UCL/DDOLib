@@ -673,7 +673,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private String describePath(Set<Decision> pathFromRoot, Optional<Integer> relaxationDepth,
                                 Optional<T> relaxedState, Optional<Double> relaxedCost) {
-        List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::var)).toList();
+        List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::variable)).toList();
         T current = config.problem.initialState();
         int depth = 0;
         StringBuilder msg = new StringBuilder(String.format("\t\t%-23s", depth + "."));
@@ -707,7 +707,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
 
         for (Decision d : input.residual.getPath()) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }

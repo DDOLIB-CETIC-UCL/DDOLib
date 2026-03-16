@@ -236,8 +236,8 @@ public class MSCTProblem implements Problem<MSCTState> {
     @Override
     public MSCTState transition(MSCTState state, Decision decision) {
         Set<Integer> remaining = new HashSet<>(state.remainingJobs());
-        remaining.remove(decision.val());
-        int currentTime = Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
+        remaining.remove(decision.value());
+        int currentTime = Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];
         return new MSCTState(remaining, currentTime);
     }
 
@@ -253,7 +253,7 @@ public class MSCTProblem implements Problem<MSCTState> {
      */
     @Override
     public double transitionCost(MSCTState state, Decision decision) {
-        return Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
+        return Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];
     }
 
     /**

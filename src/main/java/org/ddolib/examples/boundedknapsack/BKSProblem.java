@@ -161,7 +161,7 @@ public class BKSProblem implements Problem<Integer> {
     @Override
     public Integer transition(Integer state, Decision decision) {
         // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
-        return state - weights[decision.var()] * decision.val();
+        return state - weights[decision.variable()] * decision.value();
     }
 
     /**
@@ -178,21 +178,7 @@ public class BKSProblem implements Problem<Integer> {
     @Override
     public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
-        return -values[decision.var()] * decision.val();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(String.format("BKS: %d vars\n", nbVars()));
-        sb.append("Max Capacity: ").append(capacity).append("\n");
-        for (int i = 0; i < nbVars(); i++) {
-            sb.append(String.format("%d - ", i));
-            sb.append("value: ").append(values[i]).append(" - ");
-            sb.append("weight: ").append(weights[i]).append(" - ");
-            sb.append("quantity: ").append(quantities[i]).append("\n");
-        }
-
-        return sb.toString();
+        return -values[decision.variable()] * decision.value();
     }
 
     @Override
@@ -221,6 +207,20 @@ public class BKSProblem implements Problem<Integer> {
             throw new InvalidSolutionException(msg);
         }
         return -value;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(String.format("BKS: %d vars\n", nbVars()));
+        sb.append("Max Capacity: ").append(capacity).append("\n");
+        for (int i = 0; i < nbVars(); i++) {
+            sb.append(String.format("%d - ", i));
+            sb.append("value: ").append(values[i]).append(" - ");
+            sb.append("weight: ").append(weights[i]).append(" - ");
+            sb.append("quantity: ").append(quantities[i]).append("\n");
+        }
+
+        return sb.toString();
     }
 
     /**

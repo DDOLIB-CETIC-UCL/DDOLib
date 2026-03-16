@@ -169,8 +169,8 @@ public class MCPProblem implements Problem<MCPState> {
     @Override
     public MCPState transition(MCPState state, Decision decision) {
         ArrayList<Integer> newBenefits = new ArrayList<>(Collections.nCopies(nbVars(), 0));
-        int k = decision.var();
-        if (decision.val() == S) {
+        int k = decision.variable();
+        if (decision.value() == S) {
             for (int l = k + 1; l < nbVars(); l++) {
                 // If k is put in S, and then l is put in T, we gain the weight of the edge k -- l
                 int benef = state.netBenefit().get(l) + graph.weightOf(k, l);
@@ -189,8 +189,8 @@ public class MCPProblem implements Problem<MCPState> {
     @Override
     public double transitionCost(MCPState state, Decision decision) {
         if (state.depth() == 0) return 0;
-        else if (decision.val() == S) return -branchOnS(state, decision.var());
-        else return -branchOnT(state, decision.var());
+        else if (decision.value() == S) return -branchOnS(state, decision.variable());
+        else return -branchOnT(state, decision.variable());
     }
 
     @Override

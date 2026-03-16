@@ -177,13 +177,13 @@ public class KSProblem implements Problem<Integer> {
     @Override
     public Integer transition(Integer state, Decision decision) {
         // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
-        return state - weight[decision.var()] * decision.val();
+        return state - weight[decision.variable()] * decision.value();
     }
 
     @Override
     public double transitionCost(Integer state, Decision decision) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
-        return -profit[decision.var()] * decision.val();
+        return -profit[decision.variable()] * decision.value();
     }
 
     @Override

@@ -38,35 +38,29 @@ import java.util.Optional;
 public class TSProblem implements Problem<TSState> {
 
     /**
+     * The optimal solution value if known (optional, used for testing and benchmarking).
+     */
+    public final Optional<Double> optimal;
+    /**
      * Number of scenes in the instance.
      */
     final int nbScene;
-
     /**
      * Number of actors in the instance.
      */
     final int nbActors;
-
     /**
      * Cost for each actor per day.
      */
     final int[] costs;
-
     /**
      * Duration of each scene.
      */
     final int[] duration;
-
     /**
      * For each scene, the set of actors required to perform that scene.
      */
     final BitSet[] actors;
-
-    /**
-     * The optimal solution value if known (optional, used for testing and benchmarking).
-     */
-    public final Optional<Double> optimal;
-
     /**
      * Optional descriptive name for the instance.
      */
@@ -157,11 +151,6 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    @Override
     public int nbVars() {
         return nbScene;
     }
@@ -203,8 +192,8 @@ public class TSProblem implements Problem<TSState> {
     public TSState transition(TSState state, Decision decision) {
         BitSet newRemaining = (BitSet) state.remainingScenes().clone();
         BitSet newMaybe = (BitSet) state.maybeScenes().clone();
-        newRemaining.set(decision.val(), false);
-        newMaybe.set(decision.val(), false);
+        newRemaining.set(decision.value(), false);
+        newMaybe.set(decision.value(), false);
 
         // return new TSState(newRemaining, newMaybe);
         return new TSState(newRemaining, newMaybe, onLocationActors(newRemaining, newMaybe));
@@ -212,7 +201,7 @@ public class TSProblem implements Problem<TSState> {
 
     @Override
     public double transitionCost(TSState state, Decision decision) {
-        int scene = decision.val();
+        int scene = decision.value();
 
         // All the already present actors (playing for this scene or waiting)
         // Actors no longer needed are discarded from this BitSet.
@@ -227,6 +216,51 @@ public class TSProblem implements Problem<TSState> {
         return cost;
     }
 
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        // For each actor, return the position in the solution of the first scene in which he is present.
+        int[] firstScenePos = new int[nbActors];
+        Arrays.fill(firstScenePos, -1);
+        // For each actor, return the position in the solution of the last scene in which he is
+        // present.
+        int[] lastScenePos = new int[nbActors];
+        Arrays.fill(lastScenePos, -1);
+        for (int i = 0; i < nbVars(); i++) {
+            int scene = solution[i];
+            BitSet neededActors = actors[scene];
+            for (int actor = neededActors.nextSetBit(0); actor >= 0; actor = neededActors.nextSetBit(actor + 1)) {
+                if (firstScenePos[actor] == -1) {
+                    firstScenePos[actor] = i;
+                }
+                if (firstScenePos[actor] != -1) {
+                    lastScenePos[actor] = i;
+                }
+            }
+        }
+
+        double value = 0;
+        for (int i = 0; i < nbVars(); i++) {
+            int scene = solution[i];
+            for (int actor = 0; actor < nbActors; actor++) {
+                if (firstScenePos[actor] <= i && i <= lastScenePos[actor]) { //The actor is present
+                    value += costs[actor] * duration[scene];
+                }
+            }
+        }
+
+        return value;
+    }
+
     public int sceneCost(int scene) {
         int sum = 0;
         for (int actor = this.actors[scene].nextSetBit(0); actor >= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {
@@ -234,7 +268,6 @@ public class TSProblem implements Problem<TSState> {
         }
         return sum;
     }
-
 
     /**
      * Returns the set of actors already present on location at the current state,
@@ -287,45 +320,5 @@ public class TSProblem implements Problem<TSState> {
 
             return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
         }
-    }
-
-    @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
-        }
-
-        // For each actor, return the position in the solution of the first scene in which he is present.
-        int[] firstScenePos = new int[nbActors];
-        Arrays.fill(firstScenePos, -1);
-        // For each actor, return the position in the solution of the last scene in which he is
-        // present.
-        int[] lastScenePos = new int[nbActors];
-        Arrays.fill(lastScenePos, -1);
-        for (int i = 0; i < nbVars(); i++) {
-            int scene = solution[i];
-            BitSet neededActors = actors[scene];
-            for (int actor = neededActors.nextSetBit(0); actor >= 0; actor = neededActors.nextSetBit(actor + 1)) {
-                if (firstScenePos[actor] == -1) {
-                    firstScenePos[actor] = i;
-                }
-                if (firstScenePos[actor] != -1) {
-                    lastScenePos[actor] = i;
-                }
-            }
-        }
-
-        double value = 0;
-        for (int i = 0; i < nbVars(); i++) {
-            int scene = solution[i];
-            for (int actor = 0; actor < nbActors; actor++) {
-                if (firstScenePos[actor] <= i && i <= lastScenePos[actor]) { //The actor is present
-                    value += costs[actor] * duration[scene];
-                }
-            }
-        }
-
-        return value;
     }
 }

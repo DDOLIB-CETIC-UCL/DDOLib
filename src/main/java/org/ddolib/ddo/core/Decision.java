@@ -54,7 +54,7 @@ public final class Decision {
      *
      * @return the variable identifier
      */
-    public int var() {
+    public int variable() {
         return _variable;
     }
 
@@ -63,7 +63,7 @@ public final class Decision {
      *
      * @return the assigned value
      */
-    public int val() {
+    public int value() {
         return _value;
     }
 
