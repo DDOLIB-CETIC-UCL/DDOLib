@@ -450,7 +450,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             PathInfo info = new PathInfo(eb.decision, eb.origin.flb, currentLength);
             path.addFirst(info);
             if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(eb.hashCode(), "#ff0000");
-            eb = eb.origin == null ? null : eb.origin.best;
+            eb = eb.origin.best;
 
         }
         return path;
@@ -471,22 +471,22 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         LinkedList<String> states = new LinkedList<>();
         T current = problem.initialState();
         int depth = 0;
-        String msg = String.format("%-23s", depth + ".");
+        StringBuilder msg = new StringBuilder(String.format("%-23s", depth + "."));
         for (PathInfo pathInfo : pathFromRoot) {
-            msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
-            msg += String.format(" - flb: %6s", pathInfo.flbOfOrigin);
-            if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg += "!";
-            msg += " - " + current.toString();
-            msg += "\n" + pathInfo.decision;
-            states.addLast(msg);
+            msg.append(String.format("length to end: %6s", pathInfo.lengthToEnd));
+            msg.append(String.format(" - flb: %6s", pathInfo.flbOfOrigin));
+            if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg.append("!");
+            msg.append(" - ").append(current.toString());
+            msg.append("\n").append(pathInfo.decision);
+            states.addLast(msg.toString());
             depth++;
-            msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
-                    pathInfo.decision));
+            msg = new StringBuilder(String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+                    pathInfo.decision)));
             current = problem.transition(current, pathInfo.decision);
 
 
         }
-        states.addLast(msg);
+        states.addLast(msg.toString());
         states.addLast(current.toString());
         return states;
     }
@@ -500,7 +500,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     private void checkFlb(Problem<T> problem) {
         DecimalFormat df = new DecimalFormat("#.##########");
         for (Node last : nextLayer.values()) {
-            //For each node we save the longest path to last
+            //For each node we save the shortest path to last
             LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
             parent.put(last, 0.0);
             while (!parent.isEmpty()) {
@@ -518,12 +518,19 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     lastState = failedState.getLast() + lastState;
                     failedState.removeLast();
                     failedState.addLast(lastState);
+                    LinkedList<PathInfo> wholePath = constructPathFromRoot(last, 0.0);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
                     String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
-                                    "its longest path (%s)\n", df.format(current.getKey().flb),
+                                    " its shortest path (%s)\n", df.format(current.getKey().flb),
                             df.format(current.getValue()));
                     failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
                     failureMsg += String.format("Failing state: %s\n", failedState.getLast());
+                    failureMsg += "\nWhole failing path:\n";
+                    failureMsg += wholePath
+                            .stream()
+                            .map(pi -> "\t" + pi.decision.toString())
+                            .collect(Collectors.joining("\n"));
+                    failureMsg += "\n";
                     if (debugLevel == DebugLevel.EXTENDED) {
                         String dot = exportAsDot();
                         try (BufferedWriter bw =
@@ -540,8 +547,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
 
                 for (Edge edge : current.getKey().edges) {
-                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
-                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
+                    double shortestFromParent = parent.getOrDefault(edge.origin, Double.POSITIVE_INFINITY);
+                    parent.put(edge.origin, Double.min(shortestFromParent, edge.weight + current.getValue()));
                 }
             }
         }
