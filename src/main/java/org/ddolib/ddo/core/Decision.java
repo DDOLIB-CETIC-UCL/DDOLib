@@ -11,7 +11,8 @@ package org.ddolib.ddo.core;
  * <p><b>Example:</b></p>
  * <pre>{@code
  * Decision d = new Decision(2, 5);
- * System.out.println(d); // prints: Decision: assign 5 to var 2
+ * System.out.println(d); // prints: Decision(2, 5)
+ * //Where 2 is the id of the varible and 5 the assigned value
  * }</pre>
  *
  * <p><b>Use in DD-based solvers:</b></p>
@@ -30,22 +31,22 @@ public final class Decision {
     /**
      * Identifier of the variable involved in this decision.
      */
-    private final int var;
+    private final int _variable;
     /**
      * The value assigned to the variable.
      */
-    private final int value;
+    private final int _value;
 
     /**
      * Constructs a new {@code Decision} representing the assignment of a value
      * to a variable.
      *
-     * @param var the identifier of the variable
-     * @param val the value assigned to that variable
+     * @param variable the identifier of the variable
+     * @param value    the value assigned to that variable
      */
-    public Decision(final int var, final int val) {
-        this.var = var;
-        this.value = val;
+    public Decision(final int variable, final int value) {
+        this._variable = variable;
+        this._value = value;
     }
 
     /**
@@ -54,7 +55,7 @@ public final class Decision {
      * @return the variable identifier
      */
     public int var() {
-        return var;
+        return _variable;
     }
 
     /**
@@ -63,8 +64,9 @@ public final class Decision {
      * @return the assigned value
      */
     public int val() {
-        return value;
+        return _value;
     }
+
     /**
      * Returns a hash code consistent with {@link #equals(Object)}.
      * This ensures decisions can be efficiently used in hash-based collections.
@@ -73,8 +75,9 @@ public final class Decision {
      */
     @Override
     public int hashCode() {
-        return var * 31 + value;
+        return _variable * 31 + _value;
     }
+
     /**
      * Compares this decision to another object for equality.
      * Two decisions are equal if they assign the same value to the same variable.
@@ -84,13 +87,13 @@ public final class Decision {
      */
     @Override
     public boolean equals(Object that) {
-        if (!(that instanceof Decision)) {
-            return false;
+        if (that instanceof Decision other) {
+            return _variable == other._variable && _value == other._value;
         } else {
-            Decision other = (Decision) that;
-            return var == other.var && value == other.value;
+            return false;
         }
     }
+
     /**
      * Returns a human-readable representation of this decision.
      *
@@ -98,6 +101,6 @@ public final class Decision {
      */
     @Override
     public String toString() {
-        return String.format("Decision: assign %d to var %d", value, var);
+        return String.format("Decision(%d, %d)", _variable, _value);
     }
 }
