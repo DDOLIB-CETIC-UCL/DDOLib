@@ -50,6 +50,7 @@ public class MCPRelax implements Relaxation<MCPState> {
     public MCPRelax(MCPProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple MCP states into a single optimistic state.
      * <p>
@@ -87,6 +88,7 @@ public class MCPRelax implements Relaxation<MCPState> {
         }
         return new MCPState(merged, depth);
     }
+
     /**
      * Computes the relaxed transition cost from one state to another given a merged state.
      * <p>
@@ -95,18 +97,18 @@ public class MCPRelax implements Relaxation<MCPState> {
      * remains optimistic.
      * </p>
      *
-     * @param from the initial state
-     * @param to the target state
+     * @param from   the initial state
+     * @param to     the target state
      * @param merged the merged state used for relaxation
-     * @param d the decision applied to reach the target state
-     * @param cost the original transition cost
+     * @param d      the decision applied to reach the target state
+     * @param cost   the original transition cost
      * @return the relaxed transition cost
      */
 
     @Override
     public double relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, double cost) {
         double toReturn = -cost;
-        for (int i = d.var() + 1; i < problem.nbVars(); i++) {
+        for (int i = d.variable() + 1; i < problem.nbVars(); i++) {
             toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));
         }
         return -toReturn;

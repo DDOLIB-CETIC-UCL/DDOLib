@@ -42,35 +42,29 @@ import java.util.stream.IntStream;
  */
 public class PDPProblem implements Problem<PDPState> {
     /**
-     * Number of nodes in the problem.
-     */
-    public int n;
-
-    /**
      * Distance matrix between all nodes.
      */
     public final double[][] distanceMatrix;
-
     /**
      * Maximum capacity of the vehicle.
      */
     public final int maxCapa;
-
+    /**
+     * Number of nodes in the problem.
+     */
+    public int n;
     /**
      * Map of pickup nodes to their associated delivery nodes.
      */
     public HashMap<Integer, Integer> pickupToAssociatedDelivery;
-
-    /**
-     * Map of delivery nodes to their associated pickup nodes.
-     */
-    HashMap<Integer, Integer> deliveryToAssociatedPickup;
-
     /**
      * Set of nodes that are not part of any pickup-delivery pair.
      */
     public Set<Integer> unrelatedNodes;
-
+    /**
+     * Map of delivery nodes to their associated pickup nodes.
+     */
+    HashMap<Integer, Integer> deliveryToAssociatedPickup;
     /**
      * Optional known optimal value of the problem.
      */
@@ -212,12 +206,6 @@ public class PDPProblem implements Problem<PDPState> {
         return new PDPState(singleton(0), openToVisit, allToVisit, 0, 0);
     }
 
-    public BitSet singleton(int singletonValue) {
-        BitSet toReturn = new BitSet(n);
-        toReturn.set(singletonValue);
-        return toReturn;
-    }
-
     /**
      * Returns the initial value of the problem.
      *
@@ -265,7 +253,7 @@ public class PDPProblem implements Problem<PDPState> {
      */
     @Override
     public PDPState transition(PDPState state, Decision decision) {
-        int node = decision.val();
+        int node = decision.value();
         BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();
         newOpenToVisit.clear(node);
 
@@ -311,25 +299,10 @@ public class PDPProblem implements Problem<PDPState> {
     @Override
     public double transitionCost(PDPState state, Decision decision) {
         return state.current.stream()
-                .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
+                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.value()])
                 .min()
                 .getAsDouble();
-    }
-
-    /**
-     * Returns a string representation of the PDP instance.
-     *
-     * @return string describing the PDP instance
-     */
-    @Override
-    public String toString() {
-        String str = "PDP(\n\tn:" + n + "\n" +
-                "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
-                "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
-                "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
-
-        return name.orElse(str);
     }
 
     /**
@@ -341,31 +314,6 @@ public class PDPProblem implements Problem<PDPState> {
     public Optional<Double> optimalValue() {
         return optimal;
     }
-
-    /**
-     * Evaluates a solution represented as an array of node indices.
-     *
-     * @param solution array of node indices representing the route
-     * @return total distance of the solution, or -1 if it violates vehicle capacity
-     */
-    public double eval(int[] solution) {
-        int vehicleContent = 0;
-        double toReturn = 0;
-        for (int i = 1; i < solution.length; i++) {
-            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
-            if (pickupToAssociatedDelivery.containsKey(solution[i])) {
-                vehicleContent += 1;
-            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {
-                vehicleContent -= 1;
-            }
-            if (vehicleContent > maxCapa) {
-                return -1;
-            }
-        }
-        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
-        return toReturn;
-    }
-
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
@@ -424,5 +372,50 @@ public class PDPProblem implements Problem<PDPState> {
 
 
         return value;
+    }
+
+    public BitSet singleton(int singletonValue) {
+        BitSet toReturn = new BitSet(n);
+        toReturn.set(singletonValue);
+        return toReturn;
+    }
+
+    /**
+     * Returns a string representation of the PDP instance.
+     *
+     * @return string describing the PDP instance
+     */
+    @Override
+    public String toString() {
+        String str = "PDP(\n\tn:" + n + "\n" +
+                "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
+                "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
+                "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
+
+        return name.orElse(str);
+    }
+
+    /**
+     * Evaluates a solution represented as an array of node indices.
+     *
+     * @param solution array of node indices representing the route
+     * @return total distance of the solution, or -1 if it violates vehicle capacity
+     */
+    public double eval(int[] solution) {
+        int vehicleContent = 0;
+        double toReturn = 0;
+        for (int i = 1; i < solution.length; i++) {
+            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
+            if (pickupToAssociatedDelivery.containsKey(solution[i])) {
+                vehicleContent += 1;
+            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {
+                vehicleContent -= 1;
+            }
+            if (vehicleContent > maxCapa) {
+                return -1;
+            }
+        }
+        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
+        return toReturn;
     }
 }

@@ -223,7 +223,7 @@ public final class ACSSolver<T> implements Solver {
                 for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     // if the new state is dominated, we skip it
-                    if (sub.getState()!=null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                    if (sub.getState() != null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
                         continue;
                     }
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
@@ -344,7 +344,6 @@ public final class ACSSolver<T> implements Solver {
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
 
-
             SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
@@ -354,7 +353,7 @@ public final class ACSSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.get(newSub.getDepth()).add(newSub);
                 present.put(newKey, newSub.f());
-            } else if (presentValue==null) {
+            } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.get(newSub.getDepth()).add(newSub);
@@ -382,7 +381,7 @@ public final class ACSSolver<T> implements Solver {
             set.add(i);
         }
         for (Decision d : path) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }
@@ -439,7 +438,7 @@ public final class ACSSolver<T> implements Solver {
                     }
                 }
                 if (negativeTransitionCosts) {
-                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB),Math.abs(bestUB)));
+                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB), Math.abs(bestUB)));
                 } else {
                     return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
                 }

@@ -88,7 +88,7 @@ public class DebugUtil {
             Optional<Set<Decision>> shortestPath = internalSolver.bestSolution();
             if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
                 List<Decision> sortedDecisions = new ArrayList<>(shortestPath.get());
-                sortedDecisions.sort(Comparator.comparingInt(Decision::var));
+                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));
 
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your lower bound is not admissible.\n" +

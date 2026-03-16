@@ -26,7 +26,7 @@ public class Solution {
         if (decisions.isPresent()) {
             solution = new int[decisions.get().size()];
             for (Decision d : decisions.get()) {
-                solution[d.var()] = d.val();
+                solution[d.variable()] = d.value();
             }
         } else {
             solution = new int[0];
