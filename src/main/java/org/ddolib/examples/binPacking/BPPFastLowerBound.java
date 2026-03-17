@@ -21,10 +21,10 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
         // Therefore, we remove the content of each used bin AS ONE ITEM and add it to the list (sorted biggest to lowest).
         // And we run the algorithm. We need to remove all used bins from the result (otherwise counted twice).
         int[] fullItems = new int[1 + variables.size()];
-        fullItems[0] = problem.binMaxSpace - state.currentBinSpace;
+        fullItems[0] = problem.binMaxSpace - state.currentBinSpace();
 
         int fullItemId = 1;
-        for (int i = state.remainingItems.nextSetBit(0); i >= 0; i = state.remainingItems.nextSetBit(i + 1)) {
+        for (int i = state.remainingItems().nextSetBit(0); i >= 0; i = state.remainingItems().nextSetBit(i + 1)) {
             fullItems[fullItemId] = problem.itemWeights[i];
             fullItemId++;
         }
