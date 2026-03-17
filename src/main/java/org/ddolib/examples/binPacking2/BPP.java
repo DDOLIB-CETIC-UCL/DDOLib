@@ -1,7 +1,6 @@
-package org.ddolib.examples.binpacking;
+package org.ddolib.examples.binPacking2;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;

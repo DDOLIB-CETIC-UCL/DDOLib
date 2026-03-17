@@ -1,59 +1,64 @@
 package org.ddolib.examples.binpacking;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BPPState {
-    HashSet<Integer> remainingItems;
-    int remainingTotalWeight;
-    int remainingSpace;
-    int usedBins;
-    int wastedSpace;
+    int[] binsUsedSpace;
+    int binMaxSpace;
 
-    BPPState(int remainingSpace, HashSet<Integer> remainingItems, int usedBins, int remainingTotalWeight, int wastedSpace) {
-        this.remainingSpace = remainingSpace;
-        this.remainingItems = remainingItems;
-        this.usedBins = usedBins;
-        this.remainingTotalWeight = remainingTotalWeight;
-        this.wastedSpace = wastedSpace;
+    BPPState(int[] binsUsedSpace, int binMaxSpace) {
+        this.binsUsedSpace = binsUsedSpace;
+        this.binMaxSpace = binMaxSpace;
     }
 
-    public BPPState packItem(int item, int itemWeight) {
-        HashSet<Integer> newRemainingItems = new HashSet<>(remainingItems);
-        newRemainingItems.remove(item);
-        return new BPPState(remainingSpace-itemWeight,newRemainingItems,usedBins,remainingTotalWeight-itemWeight, wastedSpace);
+    public int usedBins() {
+        return binsUsedSpace.length;
     }
 
-    public BPPState newBin(int maxSpace, int item, int itemWeight) {
-        HashSet<Integer> newRemainingItems = new HashSet<>(remainingItems);
-        newRemainingItems.remove(item);
-        return new BPPState(maxSpace-itemWeight, newRemainingItems,usedBins+1, remainingTotalWeight-itemWeight, wastedSpace + remainingSpace);
+    public BPPState packItem(int itemWeight, int bin) {
+        int binNb = usedBins();
+        int newBinNb = bin == binNb ? binNb + 1 : binNb;
+        int[] newBinsUsedSpace = new int[newBinNb];
+        System.arraycopy(binsUsedSpace, 0, newBinsUsedSpace, 0, binNb);
+        if (newBinNb > binNb) {
+            newBinsUsedSpace[bin] = itemWeight;
+        } else {
+            newBinsUsedSpace[bin] = newBinsUsedSpace[bin] + itemWeight;
+        }
+        return new BPPState(newBinsUsedSpace, binMaxSpace);
     }
 
-    public boolean itemFitInBin(int itemWeight){
-        return remainingSpace >= itemWeight;
+    public Iterator<Integer> findFittingBins(int weight) {
+        if(usedBins() == 0) { return List.of(0).iterator();}
+
+        HashSet<Integer> openFittingBins = new HashSet<>();
+        for(int i = 0; i < usedBins() + 1; i++) {
+            if(i != usedBins() && binsUsedSpace[i] + weight == binMaxSpace) { return List.of(i).iterator();}
+            else if(i == usedBins() || binsUsedSpace[i] + weight < binMaxSpace) { openFittingBins.add(i);};
+        }
+        return openFittingBins.iterator();
     }
 
     @Override
     public String toString() {
-        String remainingItemsAndWeight = String.join(" - ", remainingItems.stream().map(Object::toString).toList());
-        return String.format("\n\tUsed bins : %d\n\tTotal wasted space : %d\n\tRemaining item to pack : %s\n\tCurrent bin space : %d\n",
-                usedBins, wastedSpace, remainingItemsAndWeight, remainingSpace);
+        String binsUsage = String.join(" - ", Arrays.stream(binsUsedSpace).
+                mapToObj(us -> String.format("%d/%d", us, binMaxSpace)).toList());
+        return String.format("\n\tBins : %d\n\t%s\n", binsUsedSpace.length, binsUsage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(remainingItems,remainingSpace,usedBins,remainingTotalWeight);
+        return Objects.hash(Arrays.hashCode(binsUsedSpace));
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj.getClass() == this.getClass()){
+        if (obj.getClass() == this.getClass()) {
             BPPState other = (BPPState) obj;
-            return other.usedBins == this.usedBins &&
-                    other.remainingSpace == this.remainingSpace &&
-                    other.remainingItems.equals(this.remainingItems) &&
-                    other.remainingTotalWeight == this.remainingTotalWeight;
+            return Arrays.equals(
+                    Arrays.stream(other.binsUsedSpace).sorted().toArray(),
+                    Arrays.stream(this.binsUsedSpace).sorted().toArray()
+            );
         }
         return false;
     }
