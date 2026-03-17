@@ -436,31 +436,4 @@ public final class ACSSolver<T> implements Solver {
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new ACSSolver<>(model, key));
     }
 
-    /**
-     * Computes the gap (percentage difference) between the best known upper bound and the lowest
-     * f-value in the open nodes, for anytime search reporting.
-     *
-     * @return gap as a percentage
-     */
-    private double gap() {
-        if (defaultLowerBoundValue) {
-            return Double.NaN;
-        } else {
-            if (allEmpty()) {
-                return 0;
-            } else {
-                double minLB = Double.POSITIVE_INFINITY;
-                for (int i = 0; i < problem.nbVars(); i++) {
-                    if (!open.get(i).isEmpty()) {
-                        minLB = Math.min(minLB, open.get(i).peek().f());
-                    }
-                }
-                if (negativeTransitionCosts) {
-                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB), Math.abs(bestUB)));
-                } else {
-                    return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
-                }
-            }
-        }
-    }
 }

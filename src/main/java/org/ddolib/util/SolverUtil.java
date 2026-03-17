@@ -24,7 +24,7 @@ public final class SolverUtil {
             set.add(i);
         }
         for (Decision d : path) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }
