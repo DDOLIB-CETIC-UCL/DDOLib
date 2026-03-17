@@ -1,10 +1,13 @@
-package org.ddolib.examples.binpacking;
+package org.ddolib.examples.binPacking2;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
-import java.util.*;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
 
 public class BPPProblem implements Problem<BPPState> {
 
@@ -29,25 +32,18 @@ public class BPPProblem implements Problem<BPPState> {
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-        int item = 0;
-        int[] binsUsedSpace = new int[]{0};
-        for (int bin : solution) {
-            if (binsUsedSpace.length == bin) {
-                int[] newBinsUsedSpace = new int[binsUsedSpace.length + 1];
-                System.arraycopy(binsUsedSpace, 0, newBinsUsedSpace, 0, binsUsedSpace.length);
-                newBinsUsedSpace[bin] = itemWeights[item];
-                binsUsedSpace = newBinsUsedSpace;
+        int currentBinSpace = binMaxSpace;
+        int bins = 1;
+        for (int item : solution) {
+            int weight = itemWeights[item];
+            if (currentBinSpace < weight) {
+                currentBinSpace = binMaxSpace-weight;
+                bins++;
             } else {
-                binsUsedSpace[bin] += itemWeights[item];
-                if (binsUsedSpace[bin] > binMaxSpace) {
-                    throw new InvalidSolutionException(
-                            String.format("Invalid solution, bin %d exceed it's capacity (got %d, max %d)",
-                                    bin, -binsUsedSpace[bin] + binMaxSpace, binMaxSpace));
-                }
+                currentBinSpace -= weight;
             }
-            item++;
         }
-        return binsUsedSpace.length;
+        return bins;
     }
 
     public void setName(String name) {
@@ -61,36 +57,34 @@ public class BPPProblem implements Problem<BPPState> {
 
     @Override
     public BPPState initialState() {
-        int[] binUsedSpace = {};
-        return new BPPState(binUsedSpace, binMaxSpace);
+        BitSet remainingItems = new BitSet(nbItems);
+        remainingItems.set(0, nbItems);
+        return new BPPState(binMaxSpace, 1, this, remainingItems);
     }
 
     @Override
     public double initialValue() {
-        // Starting with no opened bin.
-        return 0;
+        // Starting with one opened bin.
+        return 1;
     }
 
     @Override
     public Iterator<Integer> domain(BPPState state, int var) {
         if (var >= nbVars()) return Collections.emptyIterator();
 
-        int itemWeight = itemWeights[var];
-        return state.findFittingBins(itemWeight);
+        return state.fittingItems();
     }
 
     @Override
     public BPPState transition(BPPState state, Decision decision) {
-        int item = decision.variable();
-        int bin = decision.value();
-        int weight = itemWeights[item];
-        return state.packItem(weight, bin);
+        int item = decision.value();
+        return state.packItem(item);
     }
 
     @Override
     public double transitionCost(BPPState state, Decision decision) {
-        int bin = decision.value();
-        if (state.usedBins() == bin) return 1;
+        int item = decision.value();
+        if (state.currentBinSpace < itemWeights[item]) return 1;
         else return 0;
     }
 }

@@ -1,4 +1,4 @@
-package org.ddolib.examples.binpacking;
+package org.ddolib.examples.binPacking2;
 
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
