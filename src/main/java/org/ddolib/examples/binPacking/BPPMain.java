@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking2;
+package org.ddolib.examples.binPacking;
 
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.InvalidSolutionException;
@@ -9,10 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class BPPMain {
 

@@ -1,10 +1,8 @@
-package org.ddolib.examples.binPacking2;
+package org.ddolib.examples.binPacking;
 
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.util.algo.BinPacking;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 
 public class BPPFastLowerBound implements FastLowerBound<BPPState> {
