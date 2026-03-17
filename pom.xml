@@ -4,7 +4,7 @@
     <groupId>org.ddolib</groupId>
     <artifactId>ddolib</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1</version>
+    <version>0.0.3</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Discrete Optimization Library based on Decision Diagrams</description>
     <url>https://github.com/DDOLIB-CETIC-UCL/DDOLib</url>

@@ -44,17 +44,14 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      * Value representing a decision of FALSE.
      */
     final static int F = 0;
-
-    /**
-     * Number of decision variables in this MAX2SAT instance.
-     */
-    private final int numVar;
-
     /**
      * Map storing the weight of each binary clause.
      */
     final HashMap<BinaryClause, Integer> weights;
-
+    /**
+     * Number of decision variables in this MAX2SAT instance.
+     */
+    private final int numVar;
     /**
      * Optional value of the known optimal solution.
      */
@@ -186,8 +183,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     @Override
     public Max2SatState transition(Max2SatState state, Decision decision) {
         ArrayList<Integer> newBenefit = new ArrayList<>(Collections.nCopies(numVar, 0));
-        int k = decision.var();
-        if (decision.val() == T) {
+        int k = decision.variable();
+        if (decision.value() == T) {
             for (int l = k + 1; l < nbVars(); l++) {
                 // If the variable k has been set to T, and then we set the variable l to T, we gain the weight of the
                 // clause (!xk || xl). But we lose the weight of the clause (!xk || !xl).
@@ -207,9 +204,9 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     @Override
     public double transitionCost(Max2SatState state, Decision decision) {
 
-        int k = decision.var();
+        int k = decision.variable();
         int toReturn;
-        if (decision.val() == T) {
+        if (decision.value() == T) {
             // If k has been set to T, we gain the net benefit if it is > 0 and the weight of the unary clause xk.
             toReturn = positiveOrNull(state.netBenefit().get(k)) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
@@ -235,6 +232,29 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         return -toReturn;
     }
 
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+        if (solution.length != nbVars()) {
+            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
+                    "the %d variables", Arrays.toString(solution), nbVars()));
+        }
+
+        int value = 0;
+        for (Map.Entry<BinaryClause, Integer> entry : weights.entrySet()) {
+            BinaryClause bc = entry.getKey();
+            int w = entry.getValue();
+            int a = solution[Math.abs(bc.i) - 1];
+            int b = solution[Math.abs(bc.j) - 1];
+            value += bc.eval(a, b) * w;
+        }
+
+        return -value;
+    }
 
     /**
      * Converts zero-based variable index to a 1-based index required by BinaryClause.
@@ -287,29 +307,5 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         BinaryClause bc = new BinaryClause(x, y);
         BinaryClause bcCommuted = new BinaryClause(y, x);
         return weights.getOrDefault(bc, weights.getOrDefault(bcCommuted, 0));
-    }
-
-    @Override
-    public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
-    }
-
-    @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
-        }
-
-        int value = 0;
-        for (Map.Entry<BinaryClause, Integer> entry : weights.entrySet()) {
-            BinaryClause bc = entry.getKey();
-            int w = entry.getValue();
-            int a = solution[Math.abs(bc.i) - 1];
-            int b = solution[Math.abs(bc.j) - 1];
-            value += bc.eval(a, b) * w;
-        }
-
-        return -value;
     }
 }

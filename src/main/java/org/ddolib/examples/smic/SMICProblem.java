@@ -234,14 +234,6 @@ public class SMICProblem implements Problem<SMICState> {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public String toString() {
         return name;
     }
@@ -316,7 +308,7 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public SMICState transition(SMICState state, Decision decision) {
         BitSet remaining = (BitSet) state.remainingJobs().clone();
-        int job = decision.val();
+        int job = decision.value();
         remaining.clear(job);
         int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
         int minCurrentInventory = state.minCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
@@ -337,7 +329,15 @@ public class SMICProblem implements Problem<SMICState> {
      */
     @Override
     public double transitionCost(SMICState state, Decision decision) {
-        return Math.max(release[decision.val()] - state.currentTime(), 0) + processing[decision.val()];
+        return Math.max(release[decision.value()] - state.currentTime(), 0) + processing[decision.value()];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override

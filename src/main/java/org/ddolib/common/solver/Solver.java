@@ -69,7 +69,7 @@ public interface Solver {
     default int[] constructSolution(Set<Decision> decisions) {
         int[] toReturn = new int[decisions.size()];
         for (Decision d : decisions) {
-            toReturn[d.var()] = d.val();
+            toReturn[d.variable()] = d.value();
         }
         return toReturn;
     }

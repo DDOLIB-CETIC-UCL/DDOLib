@@ -9,6 +9,8 @@ by the [CETIC](https://www.cetic.be/) (team of [Renaud De Landtsheer](https://ww
 the [UCLouvain](https://uclouvain.be/en/index.html) (team of [Pierre Schaus](https://pschaus.github.io/)).
 It includes a modeling API for users to define their DP problem and solve them efficiently.
 
+A Scala API for this library can be found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib-Scala).
+
 # Theoretical Foundations
 
 The technique of using decision diagrams for solving combinatorial problems is based on the work of several researchers.

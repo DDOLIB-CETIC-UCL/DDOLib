@@ -30,70 +30,57 @@ import java.util.stream.IntStream;
  */
 public class LCSProblem implements Problem<LCSState> {
     /**
+     * Special value indicating no more characters to select.
+     */
+    final int GO_TO_END_OF_STRINGS = -1;
+    /**
      * Name or identifier of the instance.
      */
     String instance;
-
     /**
      * Number of strings in the problem.
      */
     int stringNb;
-
     /**
      * Number of different characters in the input strings.
      */
     int diffCharNb;
-
     /**
      * Input strings converted to integer IDs per character.
      */
     int[][] stringsAsInt;
-
     /**
      * Length of each string.
      */
     int[] stringsLength;
-
     /**
      * Minimal string length among all strings.
      */
     int minLength;
-
     /**
      * Next occurrence of a character after a given position for each string.
      */
     int[][][] nextCharPos;
-
     /**
      * Number of remaining occurrences of a character after a given position in each string.
      */
     int[][][] remChar;
-
     /**
      * Mapping from character to integer ID.
      */
     HashMap<Character, Integer> charToId = new HashMap<>();
-
     /**
      * Mapping from integer ID to original character.
      */
     Character[] idToChar;
-
     /**
      * Precomputed dynamic programming tables for pairwise string LCS.
      */
     int[][][] tables;
-
     /**
      * Known optimal solution, if available.
      */
     Optional<Double> optimal;
-
-    /**
-     * Special value indicating no more characters to select.
-     */
-    final int GO_TO_END_OF_STRINGS = -1;
-
     private Optional<String> name = Optional.empty();
 
     /**
@@ -248,11 +235,6 @@ public class LCSProblem implements Problem<LCSState> {
     }
 
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal.map(x -> -x);
-    }
-
-    @Override
     public int nbVars() {
         return minLength;
     }
@@ -317,8 +299,8 @@ public class LCSProblem implements Problem<LCSState> {
     public LCSState transition(LCSState state, Decision decision) {
         int[] position = Arrays.copyOf(stringsLength, stringsLength.length);
 
-        if (decision.val() != GO_TO_END_OF_STRINGS) {
-            int c = decision.val();
+        if (decision.value() != GO_TO_END_OF_STRINGS) {
+            int c = decision.value();
             // Move current position of each string based on selected character.
             for (int s = 0; s < stringNb; s++) {
                 position[s] = nextCharPos[s][c][state.position[s]] + 1;
@@ -340,8 +322,13 @@ public class LCSProblem implements Problem<LCSState> {
      */
     @Override
     public double transitionCost(LCSState state, Decision decision) {
-        if (decision.val() == GO_TO_END_OF_STRINGS) return 0;
+        if (decision.value() == GO_TO_END_OF_STRINGS) return 0;
         return -1;
+    }
+
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal.map(x -> -x);
     }
 
     @Override
