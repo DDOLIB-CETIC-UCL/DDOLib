@@ -59,6 +59,9 @@ public final class AwAstarSolver<T> implements Solver {
 
     // The priority queue containing the open subproblems by decreasing f' = g + w *  h
     private final PriorityQueue<SubProblem<T>> open;
+    private final PriorityQueue<SubProblem<T>> openByF;
+
+
     private final SubProblem<T> root;
 
 
@@ -119,6 +122,8 @@ public final class AwAstarSolver<T> implements Solver {
         this.weight = model.weight();
         this.open = new PriorityQueue<>(
                 Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+
+        this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
@@ -138,6 +143,7 @@ public final class AwAstarSolver<T> implements Solver {
         this.weight = model.weight();
         this.open = new PriorityQueue<>(
                 Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+        this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
@@ -148,16 +154,12 @@ public final class AwAstarSolver<T> implements Solver {
         nbIter = 0;
         queueMaxSize = 0;
         open.add(root);
+        openByF.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
                 root.getValue() + weight * root.getLowerBound());
 
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
-            verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
-                    open.peek().getLowerBound(), gap());
-
-            nbIter++;
-            queueMaxSize = Math.max(queueMaxSize, open.size());
 
             SearchStatistics stats = new SearchStatistics(
                     SearchStatus.UNKNOWN,
@@ -167,6 +169,12 @@ public final class AwAstarSolver<T> implements Solver {
                     bestValue().orElse(Double.POSITIVE_INFINITY),
                     gap());
 
+            verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
+                    open.peek().getLowerBound(), stats.gap());
+
+            nbIter++;
+            queueMaxSize = Math.max(queueMaxSize, open.size());
+
 
             if (limit.test(stats)) { // user-defined stopping criterion
                 stats = new SearchStatistics(
@@ -175,12 +183,13 @@ public final class AwAstarSolver<T> implements Solver {
                         queueMaxSize,
                         System.currentTimeMillis() - t0,
                         bestValue().orElse(Double.POSITIVE_INFINITY),
-                        gap());
+                        stats.gap());
                 return new Solution(bestSolution(), stats);
             }
             // -- end debug, stats, verbosity, stopping  ---
 
             SubProblem<T> sub = open.poll();
+            openByF.remove(sub);
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             double subFprime = present.remove(subKey);
 
@@ -225,11 +234,9 @@ public final class AwAstarSolver<T> implements Solver {
     public double gap() {
         if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
 
-        double globalLB = open.stream()
-                .mapToDouble(sub -> defaultLowerBoundValue ? sub.getValue() : sub.f())
-                .min()
-                .orElse(bestUB);
+        if (open.isEmpty()) return 0.0;
 
+        double globalLB = defaultLowerBoundValue ? openByF.peek().getValue() : openByF.peek().f();
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
     }
 
@@ -271,9 +278,12 @@ public final class AwAstarSolver<T> implements Solver {
             if (previousFprime != null && fprime < previousFprime) {
                 open.remove(newSub);
                 open.add(newSub);
+                openByF.remove(newSub);
+                openByF.add(newSub);
                 present.put(newKey, fprime);
             } else if (previousFprime == null) {
                 open.add(newSub);
+                openByF.add(newSub);
                 present.put(newKey, fprime);
 
                 Double closedFprime = closed.get(newKey);

@@ -20,11 +20,8 @@ public final class SolverUtil {
      */
     public static Set<Integer> unassignedVars(int nbVars, Set<Decision> path) {
         final Set<Integer> set = new HashSet<>(nbVars);
-        for (int i = 0; i < nbVars; i++) {
+        for (int i = path.size(); i < nbVars; i++) {
             set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.variable());
         }
         return set;
     }
