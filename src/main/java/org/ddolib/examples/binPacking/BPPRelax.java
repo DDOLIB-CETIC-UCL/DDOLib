@@ -17,27 +17,24 @@ public class BPPRelax implements Relaxation<BPPState> {
     @Override
     public BPPState mergeStates(Iterator<BPPState> states) {
 
-        int nCurrentBinSpace = Integer.MIN_VALUE;
-        int nUsedBins = Integer.MAX_VALUE;
-        BitSet nRemainingItems = new BitSet(problem.nbItems);
-        nRemainingItems.set(0, problem.nbItems);
-        int nbRemainingItems = -1;
+        BPPState first = states.next();
+        int currentBinSpace = first.currentBinSpace();
+        int usedBins = first.usedBins();
+        BitSet remainingItems = (BitSet) first.remainingItems().clone();
+        int nbRemainingItems = remainingItems.cardinality();
 
         while (states.hasNext()) {
             BPPState state = states.next();
-            if (nbRemainingItems == -1) {
-                nbRemainingItems = state.remainingItems().cardinality();
-            }
-            nCurrentBinSpace = Math.max(state.currentBinSpace(), nCurrentBinSpace);
-            nUsedBins = Math.min(state.usedBins(), nUsedBins);
-            nRemainingItems.or(state.remainingItems());
+            currentBinSpace = Math.max(state.currentBinSpace(), currentBinSpace);
+            usedBins = Math.min(state.usedBins(), usedBins);
+            remainingItems.or(state.remainingItems());
         }
-        int nbItemsToIgnore = nRemainingItems.cardinality() - nbRemainingItems;
+        int nbItemsToIgnore = remainingItems.cardinality() - nbRemainingItems;
         for (int i = 0; i < nbItemsToIgnore; i++) {
-            nRemainingItems.clear(nRemainingItems.nextSetBit(0));
+            remainingItems.clear(remainingItems.nextSetBit(0));
         }
 
-        return new BPPState(nCurrentBinSpace, nUsedBins, nRemainingItems);
+        return new BPPState(currentBinSpace, usedBins, remainingItems);
     }
 
     @Override
