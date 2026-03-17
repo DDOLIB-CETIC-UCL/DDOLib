@@ -9,7 +9,7 @@ import java.util.*;
 public class BPInstanceGenerator {
 
     public static void main(String[] args) throws IOException {
-        int[][] params = {{10, 5}/*,{10, 10}, {20, 10}, {10, 15}, {20, 15}*/};
+        int[][] params = {{5, 5}/*,{10, 10}, {20, 10}, {10, 15}, {20, 15}*/};
         //String dir = "data/BPP/test";
         String dir = "src/test/resources/BinPacking";
         for (int[] p : params) {
