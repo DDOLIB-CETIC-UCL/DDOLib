@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking2;
+package org.ddolib.examples.binPacking;
 
 import java.io.File;
 import java.io.IOException;

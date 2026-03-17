@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking2;
+package org.ddolib.examples.binPacking;
 
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
