@@ -17,7 +17,7 @@ public class BPPRelax implements Relaxation<BPPState> {
     @Override
     public BPPState mergeStates(Iterator<BPPState> states) {
 
-        int nCurrentBinSpace = Integer.MAX_VALUE;
+        int nCurrentBinSpace = Integer.MIN_VALUE;
         int nUsedBins = Integer.MAX_VALUE;
         BitSet nRemainingItems = new BitSet(problem.nbItems);
         nRemainingItems.set(0, problem.nbItems);
@@ -26,7 +26,7 @@ public class BPPRelax implements Relaxation<BPPState> {
         while (states.hasNext()) {
             BPPState state = states.next();
             if(nbRemainingItems == -1) { nbRemainingItems = state.remainingItems.cardinality(); }
-            nCurrentBinSpace = Math.min(state.currentBinSpace, nCurrentBinSpace);
+            nCurrentBinSpace = Math.max(state.currentBinSpace, nCurrentBinSpace);
             nUsedBins = Math.min(state.usedBins, nUsedBins);
             nRemainingItems.or(state.remainingItems);
         }
