@@ -507,6 +507,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             Edge e = bestEdgeToSuccessor.get(curr);
             if (e == null) break;
             path.add(e.decision);
+            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(e.hashCode(), "#ff0000");
             curr = successors.get(curr);
         }
         return path;
@@ -585,6 +586,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 if (current.getKey().flb - 1e-10 > current.getValue()) {
                     LinkedList<PathInfo> pathFromRoot = constructPathFromRoot(current.getKey(),
                             current.getValue());
+                    List<Decision> fullPath = new ArrayList<>();
+                    pathFromRoot.forEach(pi -> fullPath.add(pi.decision()));
+                    fullPath.addAll(shortestPath(current.getKey(), last));
+
                     LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
                     String lastState = failedState.getLast();
                     lastState =
@@ -595,17 +600,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     lastState = failedState.getLast() + lastState;
                     failedState.removeLast();
                     failedState.addLast(lastState);
-                    LinkedList<PathInfo> wholePath = constructPathFromRoot(last, 0.0);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
                     String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
                                     " its shortest path (%s)\n", df.format(current.getKey().flb),
                             df.format(current.getValue()));
                     failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
                     failureMsg += String.format("Failing state: %s\n", failedState.getLast());
-                    failureMsg += "\nWhole failing path:\n";
-                    failureMsg += wholePath
+                    failureMsg += "\nFull failing path:\n";
+                    failureMsg += fullPath
                             .stream()
-                            .map(pi -> "\t" + pi.decision.toString())
+                            .map(d -> "\t" + d.toString())
                             .collect(Collectors.joining("\n"));
                     failureMsg += "\n";
                     if (debugLevel == DebugLevel.EXTENDED) {
