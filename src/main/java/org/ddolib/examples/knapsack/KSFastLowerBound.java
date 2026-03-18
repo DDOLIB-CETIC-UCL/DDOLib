@@ -72,8 +72,6 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
                 capacity = 0;
             }
         }
-        if (variables.size() == 2 && state == 15) return 100;
-
         return -maxProfit;
     }
 }
