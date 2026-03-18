@@ -436,6 +436,83 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
+     * Finds the shortest path between two nodes in the decision diagram using a Dijkstra variant.
+     * <p>
+     * Since nodes only store incoming edges, the search starts from the target node
+     * and explores the graph backwards until the source node is reached.
+     * </p>
+     *
+     * @param source the starting node of the path
+     * @param target the ending node of the path
+     * @return a list of decisions representing the shortest path from source to target
+     */
+    private List<Decision> shortestPath(Node source, Node target) {
+        if (source == null || target == null) {
+            return Collections.emptyList();
+        }
+
+        if (source.equals(target)) {
+            return Collections.emptyList();
+        }
+
+        record NodeDist(Node node, double dist) implements Comparable<NodeDist> {
+            @Override
+            public int compareTo(NodeDist o) {
+                return Double.compare(this.dist, o.dist);
+            }
+        }
+
+        final Map<Node, Double> distances = new HashMap<>();
+        final Map<Node, Edge> bestEdgeToSuccessor = new HashMap<>();
+        final Map<Node, Node> successors = new HashMap<>();
+        PriorityQueue<NodeDist> pq = new PriorityQueue<>();
+
+        distances.put(target, 0.0);
+        pq.add(new NodeDist(target, 0.0));
+
+        while (!pq.isEmpty()) {
+            NodeDist current = pq.poll();
+            Node u = current.node();
+            double d = current.dist();
+
+            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) {
+                continue;
+            }
+
+            if (u.equals(source)) {
+                break;
+            }
+
+            for (Edge e : u.edges) {
+                Node v = e.origin;
+                if (v == null) continue;
+
+                double newDist = d + e.weight;
+                if (newDist < distances.getOrDefault(v, Double.POSITIVE_INFINITY)) {
+                    distances.put(v, newDist);
+                    bestEdgeToSuccessor.put(v, e);
+                    successors.put(v, u);
+                    pq.add(new NodeDist(v, newDist));
+                }
+            }
+        }
+
+        if (!bestEdgeToSuccessor.containsKey(source)) {
+            return Collections.emptyList();
+        }
+
+        List<Decision> path = new ArrayList<>();
+        Node curr = source;
+        while (curr != null && !curr.equals(target)) {
+            Edge e = bestEdgeToSuccessor.get(curr);
+            if (e == null) break;
+            path.add(e.decision);
+            curr = successors.get(curr);
+        }
+        return path;
+    }
+
+    /**
      * Given a node, returns the list of decisions taken from the root to reach this node.
      *
      * @param node A node of the mdd
