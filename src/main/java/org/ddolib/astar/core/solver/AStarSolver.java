@@ -76,7 +76,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -103,7 +103,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();

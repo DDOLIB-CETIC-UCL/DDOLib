@@ -124,7 +124,7 @@ public final class ACSSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Integer.MAX_VALUE;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.columnWidth = model.columnWidth();
 
