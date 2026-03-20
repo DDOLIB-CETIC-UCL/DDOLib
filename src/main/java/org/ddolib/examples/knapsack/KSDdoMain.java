@@ -14,6 +14,7 @@ import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
  * Knapsack Problem (KS) with Ddo.
@@ -48,6 +49,30 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSDdoMain {
+
+    private static int greedyKS(KSProblem problem) {
+        Integer[] items = new Integer[problem.nbVars()];
+        for (int i = 0; i < problem.nbVars(); i++) {
+            items[i] = i;
+        }
+
+        Arrays.sort(items, (o1, o2) -> {
+            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];
+            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];
+            return Double.compare(ratio2, ratio1);
+        });
+
+        int capa = problem.capa;
+        int value = 0;
+        for (Integer i : items) {
+            if (capa < problem.weight[i]) break;
+            value += problem.profit[i];
+            capa -= problem.weight[i];
+        }
+
+        return value;
+    }
+
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
      *
@@ -57,6 +82,10 @@ public class KSDdoMain {
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
+
+        int ub = greedyKS(problem);
+        System.out.printf("Start UB: %d%n", -ub);
+
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -69,13 +98,18 @@ public class KSDdoMain {
             }
 
             @Override
+            public double upperBound() {
+                return -ub;
+            }
+
+            @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
+                return VerbosityLevel.SILENT;
             }
 
             @Override
@@ -90,7 +124,7 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(1000);
+                return new FixedWidth<>(50);
             }
 
             @Override
@@ -104,7 +138,7 @@ public class KSDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, s -> s.runTimeMs() < 100, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
