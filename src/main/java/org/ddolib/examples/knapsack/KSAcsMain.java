@@ -7,10 +7,13 @@ import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.PrettyPrint;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static org.ddolib.examples.knapsack.KSAlgo.greedyKS;
 
 /**
  * Knapsack Problem (KS) with Acs.
@@ -46,6 +49,11 @@ public class KSAcsMain {
                 Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() :
                 args[0];
         final KSProblem problem = new KSProblem(instance);
+
+        long ubTime = System.currentTimeMillis();
+        int ub = -greedyKS(problem);// Converts max-problem primal bound to min-problem primal bound
+        ubTime = System.currentTimeMillis() - ubTime;
+
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -73,7 +81,15 @@ public class KSAcsMain {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(bestSolution.statistics());
+        long totalTime = ubTime + bestSolution.statistics().runTimeMs();
+
+        System.out.println("\n");
+
+        System.out.printf("KS %d items%n", problem.nbVars());
+        System.out.printf("Starting UB: %d%n", ub);
+        System.out.println("Solution found in " + PrettyPrint.formatMs(totalTime));
+        System.out.println("Status: " + bestSolution.statistics().status());
+
         System.out.println(bestSolution);
 
     }

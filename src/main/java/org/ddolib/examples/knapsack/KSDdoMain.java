@@ -9,12 +9,14 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
+import org.ddolib.util.PrettyPrint;
 import org.ddolib.util.io.SolutionPrinter;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
+
+import static org.ddolib.examples.knapsack.KSAlgo.greedyKS;
 
 /**
  * Knapsack Problem (KS) with Ddo.
@@ -50,28 +52,6 @@ import java.util.Arrays;
  */
 public class KSDdoMain {
 
-    private static int greedyKS(KSProblem problem) {
-        Integer[] items = new Integer[problem.nbVars()];
-        for (int i = 0; i < problem.nbVars(); i++) {
-            items[i] = i;
-        }
-
-        Arrays.sort(items, (o1, o2) -> {
-            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];
-            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];
-            return Double.compare(ratio2, ratio1);
-        });
-
-        int capa = problem.capa;
-        int value = 0;
-        for (Integer i : items) {
-            if (capa < problem.weight[i]) break;
-            value += problem.profit[i];
-            capa -= problem.weight[i];
-        }
-
-        return value;
-    }
 
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
@@ -80,11 +60,14 @@ public class KSDdoMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
+                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
 
-        int ub = greedyKS(problem);
-        System.out.printf("Start UB: %d%n", -ub);
+
+        long ubTime = System.currentTimeMillis();
+        int ub = -greedyKS(problem);// Converts max-problem primal bound to min-problem primal bound
+        ubTime = System.currentTimeMillis() - ubTime;
 
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
@@ -99,7 +82,7 @@ public class KSDdoMain {
 
             @Override
             public double upperBound() {
-                return -ub;
+                return ub;
             }
 
             @Override
@@ -142,7 +125,15 @@ public class KSDdoMain {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        System.out.println(bestSolution.statistics());
+        long totalTime = ubTime + bestSolution.statistics().runTimeMs();
+
+        System.out.println("\n");
+
+        System.out.printf("KS %d items%n", problem.nbVars());
+        System.out.printf("Starting UB: %d%n", ub);
+        System.out.println("Solution found in " + PrettyPrint.formatMs(totalTime));
+        System.out.println("Status: " + bestSolution.statistics().status());
+
         System.out.println(bestSolution);
 
 
