@@ -1,6 +1,7 @@
 package org.ddolib.common.solver;
 
 import org.ddolib.ddo.core.Decision;
+import org.ddolib.util.PrettyPrint;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -62,6 +63,10 @@ public class Solution {
      */
     public SearchStatistics statistics() {
         return statistics;
+    }
+
+    public String searchTime() {
+        return PrettyPrint.formatMs(statistics.runTimeMs());
     }
 
     @Override
