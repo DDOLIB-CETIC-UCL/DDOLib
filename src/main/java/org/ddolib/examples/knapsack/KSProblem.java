@@ -8,10 +8,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import static java.lang.Math.ceil;
 
 /**
  * Represents an instance of the Knapsack Problem (KS).
@@ -90,6 +88,62 @@ public class KSProblem implements Problem<Integer> {
         this.optimal = Optional.empty();
         this.name = Optional.empty();
     }
+
+    /**
+     * Generate a Knapsack problem using Spanner instances method from :
+     * Pisinger, D. (2005). Where are the hard knapsack problems?.
+     * Computers & Operations Research, 32(9), 2271-2284.
+     */
+    public KSProblem(int v, int m, int n, double c, int dataRange, int seed) {
+        Random r = new Random(seed);
+        assert v <= n;
+
+        this.profit = new int[n];
+        this.weight = new int[n];
+        int sumWeights = 0;
+        for (int i = 0; i < v; i++) {
+            weight[i] = r.nextInt(1, dataRange);
+            sumWeights += weight[i];
+            profit[i] = weight[i] + dataRange / 10;
+        }
+        for (int i = v; i < n; i++) {
+            double a = r.nextDouble(1, m);
+            weight[i] = (int) ceil(weight[i%v] * a);
+            sumWeights += weight[i];
+            profit[i] = (int) ceil(profit[i%v] * a);
+        }
+        this.capa = (int) ceil(c * sumWeights);
+        this.optimal = Optional.empty();
+        this.name = Optional.of(String.format("%d_%d_%d_%d", v, m, n, seed));
+    }
+
+    /**
+     * Generate a Knapsack problem using Spanner instances method from :
+     * Pisinger, D. (2005). Where are the hard knapsack problems?.
+     * Computers & Operations Research, 32(9), 2271-2284.
+     */
+    /*public KSProblem(int k1, int k2, int d, double c, int dataRange, int seed) {
+        Random r = new Random(seed);
+        assert v <= n;
+
+        this.profit = new int[n];
+        this.weight = new int[n];
+        int sumWeights = 0;
+        for (int i = 0; i < v; i++) {
+            weight[i] = r.nextInt(1, dataRange);
+            sumWeights += weight[i];
+            profit[i] = weight[i] + dataRange / 10;
+        }
+        for (int i = v; i < n; i++) {
+            double a = r.nextDouble(1, m);
+            weight[i] = (int) ceil(weight[i%v] * a);
+            sumWeights += weight[i];
+            profit[i] = (int) ceil(profit[i%v] * a);
+        }
+        this.capa = (int) ceil(c * sumWeights);
+        this.optimal = Optional.empty();
+        this.name = Optional.of(String.format("%d_%d_%d_%d", v, m, n, seed));
+    }*/
 
     /**
      * Constructs a Knapsack problem from a file.

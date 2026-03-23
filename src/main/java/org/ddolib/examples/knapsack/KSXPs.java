@@ -40,6 +40,15 @@ public class KSXPs {
         return problems;
     }
 
+    protected static KSProblem[] generateInstances() {
+        KSProblem[] problems = new KSProblem[100];
+        for (int i = 0; i < problems.length; i++) {
+            problems[i] = new KSProblem(2, 10, 500, (double) i/100.0, 1000, i);
+        }
+
+        return problems;
+    }
+
     private static DdoModel<Integer> getModel(KSProblem problem,
                                                     int maxWidth,
                                                     ClusterType clusterType,
@@ -141,7 +150,7 @@ public class KSXPs {
     }
 
     private static void xpRelaxation() throws IOException {
-        KSProblem[] instances = loadInstances();
+        KSProblem[] instances = generateInstances();
         FileWriter writer = new FileWriter("xps/relaxationsKS.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRelaxations" +
@@ -192,7 +201,7 @@ public class KSXPs {
     }
 
     private static void xpRestriction() throws IOException {
-        KSProblem[] instances = loadInstances();
+        KSProblem[] instances = generateInstances();
         FileWriter writer = new FileWriter("xps/restrictionKS.csv");
         writer.write("Instance;ClusterStrat;MaxWidth;Seed;KmeansIter;HybridFactor;" +
                 "isExact;RunTime(ms);Incumbent;NbRestrictions;AvgLayerSize\n");
@@ -372,11 +381,11 @@ public class KSXPs {
 
     public static void main(String[] args) {
         try {
-            // xpRelaxation();
-            // xpRestriction();
-            xpRelaxation(args[0]);
-            xpRestriction(args[0]);
-            xpBnB(args[0]);
+            xpRelaxation();
+            xpRestriction();
+            // xpRelaxation(args[0]);
+            // xpRestriction(args[0]);
+            //xpBnB(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
