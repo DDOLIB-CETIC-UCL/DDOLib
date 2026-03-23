@@ -15,7 +15,6 @@ public class PrettyPrint {
      * @return a formatted string representing the duration
      */
     public static String formatMs(long durationMs) {
-        if (durationMs == 0) return "%3d ms".formatted(0);
 
         Duration duration = Duration.ofMillis(durationMs);
         long h = duration.toHours();
