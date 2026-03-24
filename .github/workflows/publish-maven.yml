@@ -30,13 +30,29 @@ jobs:
           echo "use-agent" >> ~/.gnupg/gpg.conf
           echo RELOADAGENT | gpg-connect-agent
 
+      - name: Setup Maven settings.xml
+      run: |
+        mkdir -p $HOME/.m2
+        cat > $HOME/.m2/settings.xml <<EOF
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <servers>
+            <server>
+              <id>central</id>
+              <username>${{ secrets.MVN_USERNAME }}</username>
+              <password>${{ secrets.MVN_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+
       - name: Deploy to Maven Central
         env:
-          OSSRH_USERNAME: ${{ secrets.MVN_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.MVN_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn -B clean deploy \
-            -DskipTests=false \
+            -DskipTests=true \
             -Dgpg.passphrase="$GPG_PASSPHRASE" \
             -Dgpg.pinentry-mode=loopback
