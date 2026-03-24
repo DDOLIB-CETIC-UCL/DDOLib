@@ -9,14 +9,11 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
-import org.ddolib.util.PrettyPrint;
 import org.ddolib.util.io.SolutionPrinter;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
-
-import static org.ddolib.examples.knapsack.KSAlgo.greedyKS;
 
 /**
  * Knapsack Problem (KS) with Ddo.
@@ -64,11 +61,6 @@ public class KSDdoMain {
                 "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
 
-
-        long ubTime = System.currentTimeMillis();
-        int ub = -greedyKS(problem);// Converts max-problem primal bound to min-problem primal bound
-        ubTime = System.currentTimeMillis() - ubTime;
-
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -81,18 +73,8 @@ public class KSDdoMain {
             }
 
             @Override
-            public double upperBound() {
-                return ub;
-            }
-
-            @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
-
-            @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.SILENT;
             }
 
             @Override
@@ -125,15 +107,7 @@ public class KSDdoMain {
             SolutionPrinter.printSolution(s, sol);
         });
 
-        long totalTime = ubTime + bestSolution.statistics().runTimeMs();
-
-        System.out.println("\n");
-
-        System.out.printf("KS %d items%n", problem.nbVars());
-        System.out.printf("Starting UB: %d%n", ub);
-        System.out.println("Solution found in " + PrettyPrint.formatMs(totalTime));
-        System.out.println("Status: " + bestSolution.statistics().status());
-
+        System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
 
 
