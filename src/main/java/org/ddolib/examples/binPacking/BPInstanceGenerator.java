@@ -9,12 +9,12 @@ import java.util.*;
 public class BPInstanceGenerator {
 
     public static void main(String[] args) throws IOException {
-        int[][] params = {{5, 5}/*,{10, 10}, {20, 10}, {10, 15}, {20, 15}*/};
+        int[][] params = {{10, 3}/*,{10, 10}, {20, 10}, {10, 15}, {20, 15}*/};
         //String dir = "data/BPP/test";
         String dir = "src/test/resources/BinPacking";
         for (int[] p : params) {
             int capa = p[0], nbBins = p[1];
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 50; i++) {
                 String path = dir + "/bp_" + capa + "_" + nbBins + "_" + i + ".txt";
                 randomInstance(capa, nbBins, i).save(path);
             }

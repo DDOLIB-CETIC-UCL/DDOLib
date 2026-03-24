@@ -56,7 +56,7 @@ public class BPPProblem implements Problem<BPPState> {
     public BPPState initialState() {
         BitSet remainingItems = new BitSet(nbItems);
         remainingItems.set(0, nbItems);
-        return new BPPState(binMaxSpace, 1, remainingItems);
+        return new BPPState(binMaxSpace, remainingItems, 0);
     }
 
     @Override
@@ -72,34 +72,41 @@ public class BPPProblem implements Problem<BPPState> {
         int nextItem = state.remainingItems().nextSetBit(0);
         HashSet<Integer> allItems = new HashSet<>();
         HashSet<Integer> fittingItems = new HashSet<>();
+
+        // Trying to ensure an increasing remaining space bin order.
         while (nextItem != -1) {
-            if (itemWeights[nextItem] == state.currentBinSpace()) {
+            // If we find a perfectly fitting item and last closed bin was full or do not exist. Take this item.
+            if (itemWeights[nextItem] == state.currentBinSpace() && state.lastRemainingSpace() <= 0) {
                 return List.of(nextItem).iterator();
-            } else if (itemWeights[nextItem] <= state.currentBinSpace()) {
+            // If an item fits and resulting bin have more space than last closed bin, we can use it.
+            } else if (itemWeights[nextItem] < state.currentBinSpace() - state.lastRemainingSpace()) {
                 fittingItems.add(nextItem);
             }
             allItems.add(nextItem);
             nextItem = state.remainingItems().nextSetBit(nextItem + 1);
         }
-        if (!fittingItems.isEmpty()) return fittingItems.iterator();
+
+        if (!fittingItems.isEmpty()) {
+            return fittingItems.iterator();
+        // If no item fits and the currentBinSpace is less than the previous closed bin. Done
+        } else if (state.currentBinSpace() < state.lastRemainingSpace()) {
+            return Collections.emptyIterator();
+        }
         return allItems.iterator();
     }
 
     @Override
     public BPPState transition(BPPState state, Decision decision) {
         int item = decision.value();
-        int nCurrentBinSpace;
-        int nUsedBins = state.usedBins();
-        BitSet nRemainingItems = (BitSet) state.remainingItems().clone();
         int itemWeight = itemWeights[item];
-        if (state.currentBinSpace() - itemWeight < 0) {
-            nCurrentBinSpace = binMaxSpace - itemWeight;
-            nUsedBins++;
-        } else {
-            nCurrentBinSpace = state.currentBinSpace() - itemWeight;
-        }
-        nRemainingItems.set(item, false);
-        return new BPPState(nCurrentBinSpace, nUsedBins, nRemainingItems);
+        boolean binFull = state.currentBinSpace() - itemWeight < 0;
+
+        int lastRemainingSpace = binFull ? state.currentBinSpace() : state.lastRemainingSpace();
+        int currentBinSpace = binFull ? binMaxSpace-itemWeight:state.currentBinSpace()-itemWeight;
+        BitSet remainingItems = (BitSet) state.remainingItems().clone();
+        remainingItems.set(item, false);
+
+        return new BPPState(currentBinSpace, remainingItems, lastRemainingSpace);
     }
 
     @Override
@@ -107,6 +114,11 @@ public class BPPProblem implements Problem<BPPState> {
         int item = decision.value();
         if (state.currentBinSpace() < itemWeights[item]) return 1;
         else return 0;
+    }
+
+    @Override
+    public String toString() {
+        return name.orElse("No name");
     }
 }
 

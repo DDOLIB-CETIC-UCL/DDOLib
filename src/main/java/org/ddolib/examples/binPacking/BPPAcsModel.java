@@ -1,5 +1,7 @@
 package org.ddolib.examples.binPacking;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -8,14 +10,14 @@ import org.ddolib.util.verbosity.VerbosityLevel;
 public class BPPAcsModel implements AcsModel<BPPState> {
 
     private final BPPProblem problem;
-    private final int WIDTH;
-    private final BPPRanking ranking = new BPPRanking();
 
-    public BPPAcsModel(BPPProblem problem, int width) {
+    public BPPAcsModel(BPPProblem problem) {
         this.problem = problem;
-        this.WIDTH = width;
     }
 
+//    public DominanceChecker<BPPState> dominance() {
+//        return new SimpleDominanceChecker<>(new BPPDominance(), problem.nbVars());
+//    }
 
     @Override
     public Problem<BPPState> problem() {
@@ -30,5 +32,10 @@ public class BPPAcsModel implements AcsModel<BPPState> {
     @Override
     public VerbosityLevel verbosityLevel() {
         return VerbosityLevel.NORMAL;
+    }
+
+    @Override
+    public int columnWidth() {
+        return 20;
     }
 }
