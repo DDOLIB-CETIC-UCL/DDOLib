@@ -251,7 +251,7 @@
         </plugins>
     </build>
 
-    <profiles>NODE_OPTIONS="--max-old-space-size=16384" npm run build
+    <profiles>
         <profile>
             <id>non-regression-tests</id>
             <build>
