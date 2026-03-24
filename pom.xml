@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.be.cetic.ddolib</groupId>
+    <groupId>be.cetic</groupId>
     <artifactId>ddolib</artifactId>
     <version>0.0.4</version>
     <packaging>jar</packaging>
