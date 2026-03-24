@@ -1,0 +1,42 @@
+name: Publish Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*'   # Trigger on tags v1.0.0, v0.0.4, ...
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          server-id: 'central'
+          settings-path: ${{ github.workspace }}
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          echo "use-agent" >> ~/.gnupg/gpg.conf
+          echo RELOADAGENT | gpg-connect-agent
+
+      - name: Deploy to Maven Central
+        env:
+          OSSRH_USERNAME: ${{ secrets.MVN_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.MVN_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn -B clean deploy \
+            -DskipTests=false \
+            -Dgpg.passphrase="$GPG_PASSPHRASE" \
+            -Dgpg.pinentry-mode=loopback

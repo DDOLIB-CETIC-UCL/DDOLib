@@ -1,22 +1,27 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>org.ddolib</groupId>
     <artifactId>ddolib</artifactId>
-    <packaging>jar</packaging>
     <version>0.0.4</version>
+    <packaging>jar</packaging>
+
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Discrete Optimization Library based on Decision Diagrams</description>
     <url>https://github.com/DDOLIB-CETIC-UCL/DDOLib</url>
+
     <organization>
-        <name>Cetic-UCLouvain</name>
+        <name>CETIC-UCLouvain</name>
         <url>https://github.com/DDOLIB-CETIC-UCL/DDOLib</url>
     </organization>
 
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <url>https://opensource.org/license/mit</url>
         </license>
     </licenses>
 
@@ -55,15 +60,27 @@
             <name>Pierre Schaus</name>
             <email>pierre.schaus@uclouvain.be</email>
             <organization>UCLouvain / ICTEAM / INGI</organization>
-            <organizationUrl></organizationUrl>
         </developer>
         <developer>
             <name>Roger Kameugne</name>
             <email>roger.kameugne@uclouvain.be</email>
             <organization>UCLouvain / ICTEAM / INGI</organization>
-            <organizationUrl></organizationUrl>
         </developer>
     </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/DDOLIB-CETIC-UCL/DDOLib.git</connection>
+        <developerConnection>scm:git:ssh://github.com:DDOLIB-CETIC-UCL/DDOLib.git</developerConnection>
+        <url>https://github.com/DDOLIB-CETIC-UCL/DDOLib</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://central.sonatype.com/api/v1/publisher</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -86,14 +103,17 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite</artifactId>
@@ -105,20 +125,24 @@
             <artifactId>smile-core</artifactId>
             <version>3.0.1</version>
         </dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20250517</version>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -160,25 +184,74 @@
                     <target>21</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.7.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <reportOutputDirectory>${project.reporting.outputDirectory}</reportOutputDirectory>
-                    <destDir>javadoc</destDir>
                     <source>21</source>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.6.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
             </plugin>
+
         </plugins>
     </build>
 
-    <profiles>
+    <profiles>NODE_OPTIONS="--max-old-space-size=16384" npm run build
         <profile>
             <id>non-regression-tests</id>
             <build>
@@ -191,19 +264,11 @@
                                 <include>**/NonRegressionTests.java</include>
                             </includes>
                             <argLine>-Xmx5g -Xms1g</argLine>
-
-                            <statelessTestsetInfoReporter
-                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
-                                <disable>false</disable>
-                                <usePhrasedFileName>false</usePhrasedFileName>
-                                <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
-                                <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
-                            </statelessTestsetInfoReporter>
-
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
+
 </project>
