@@ -4,12 +4,13 @@ import java.util.*;
 
 public record BPPState(
     int currentBinSpace,
-    int usedBins,
-    BitSet remainingItems) {
+    BitSet remainingItems,
+    int lastRemainingSpace) {
 
 
     @Override
     public String toString() {
-        return String.format("Used bins : %d\tCurrent bin space : %d\nRemaining items : %s", usedBins, currentBinSpace, remainingItems.toString());
+        return String.format("\nCurrent bin space : %d\tLast remaining space : %d\nRemaining items : %s",
+                currentBinSpace, lastRemainingSpace, remainingItems.toString());
     }
 }

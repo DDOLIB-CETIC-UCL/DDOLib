@@ -41,7 +41,7 @@ public class BPPDdoModel implements DdoModel<BPPState> {
 
     @Override
     public Frontier<BPPState> frontier() {
-        return new SimpleFrontier<>(ranking, CutSetType.Frontier);
+        return new SimpleFrontier<>(ranking, CutSetType.LastExactLayer);
     }
 
     @Override
