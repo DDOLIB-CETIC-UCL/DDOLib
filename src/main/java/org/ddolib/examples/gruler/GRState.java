@@ -91,7 +91,7 @@ public class GRState {
      * @return the number of marks in this state.
      */
     public int getNumberOfMarks() {
-        return marks.size();
+        return marks.cardinality();
     }
 
     /**
@@ -123,19 +123,6 @@ public class GRState {
     }
 
     /**
-     * Returns a human-readable string representation of this state.
-     * <p>
-     * The output includes the list of marks, distances, and the last mark position.
-     * </p>
-     *
-     * @return a string describing this state.
-     */
-    @Override
-    public String toString() {
-        return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
-    }
-
-    /**
      * Compares this state to another for equality.
      * Two states are equal if they have identical marks, identical distances,
      * and the same last mark position.
@@ -149,5 +136,18 @@ public class GRState {
             return this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark;
         }
         return false;
+    }
+
+    /**
+     * Returns a human-readable string representation of this state.
+     * <p>
+     * The output includes the list of marks, distances, and the last mark position.
+     * </p>
+     *
+     * @return a string describing this state.
+     */
+    @Override
+    public String toString() {
+        return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
     }
 }
