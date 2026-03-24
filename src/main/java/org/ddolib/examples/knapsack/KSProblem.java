@@ -135,9 +135,31 @@ public class KSProblem implements Problem<Integer> {
                 }
             }
         }
+
+        Integer[] items = new Integer[profit.length];
+        for (int i = 0; i < items.length; i++) {
+            items[i] = i;
+        }
+        final int[] w = weight;
+        final int[] p = profit;
+
+        Arrays.sort(items, (o1, o2) -> {
+            double ratio1 = (double) p[o1] / w[o1];
+            double ratio2 = (double) p[o2] / w[o2];
+            return Double.compare(ratio2, ratio1);
+        });
+
+
+        this.profit = new int[items.length];
+        this.weight = new int[items.length];
+
+        for (int i = 0; i < items.length; i++) {
+            int j = items[i];
+            this.profit[i] = profit[j];
+            this.weight[i] = weight[j];
+        }
+
         this.capa = c;
-        this.profit = profit;
-        this.weight = weight;
         this.optimal = optimal;
         this.name = Optional.of(fname);
     }
