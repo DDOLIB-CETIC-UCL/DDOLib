@@ -11,160 +11,160 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * 嵌套动态规划问题：一型装配线平衡 + 人机协同调度
+ * Nested Dynamic Programming Problem: Type I Assembly Line Balancing + Human-Robot Collaborative Scheduling
  *
  * ============================================================================
- * 问题描述：
+ * Problem Description:
  * ============================================================================
- * 外层DDO：决定任务到工位的分配，目标是最小化工位数
- * 内层DDO：对每个工位进行人机协同调度，目标是最小化makespan（确保不超过节拍时间）
- *
- * ============================================================================
- * 核心设计思想：
- * ============================================================================
- * 1. 【机器人保留策略】Robot Reservation Strategy
- *    - 识别瓶颈任务：人工时间 > 节拍时间的任务必须使用机器人
- *    - 保留机制：当剩余机器人数 <= 需要机器人的任务数时，优先为瓶颈任务保留机器人
- *    - 目的：确保问题可行性，避免瓶颈任务无法完成
- *
- * 2. 【可行性检查】Feasibility Check
- *    - 问题级别：检查是否存在任务即使用最快模式也超过节拍时间
- *    - 工位级别：检查工位内任务集合是否能在节拍时间内完成
- *    - 前继约束：确保任务分配满足优先级关系
- *
- * 3. 【懒惰求值】Lazy Evaluation
- *    - 乐观估计：在domain()中使用sumMinDurations快速判断可行性
- *    - 精确计算：在transition()中调用内层DDO进行精确验证
- *    - 缓存机制：缓存makespan和解序列，避免重复计算
- *
- * 4. 【优化策略】Optimization Strategies（可配置开关）
- *    - 容量割平面 (Capacity Cut)：基于最小时间和剪枝不可行工位
- *    - 不可行子集缓存 (Infeasibility Cache)：记录已知不可行的任务子集
- *    - 上界传播 (Bound Propagation)：使用已知最优解剪枝
- *    - 对称性破坏 (Symmetry Breaking)：强制工位按首任务编号排序
+ * Outer DDO: Determines task-to-station assignment, objective is to minimize number of stations
+ * Inner DDO: For each station performs human-robot collaborative scheduling, objective is to minimize makespan (ensuring not exceeding cycle time)
  *
  * ============================================================================
- * 决策编码：
+ * Core Design Principles:
+ * ============================================================================
+ * 1. [Robot Reservation Strategy]
+ *    - Identify bottleneck tasks: tasks with manual time > cycle time must use robot
+ *    - Reservation mechanism: When remaining robots <= tasks needing robots, prioritize robot reservation for bottleneck tasks
+ *    - Purpose: Ensure problem feasibility, avoid bottleneck tasks unable to complete
+ *
+ * 2. [Feasibility Check]
+ *    - Problem level: Check if any task exceeds cycle time even in fastest mode
+ *    - Station level: Check if task set in station can complete within cycle time
+ *    - Precedence constraints: Ensure task assignment satisfies precedence relationships
+ *
+ * 3. [Lazy Evaluation]
+ *    - Optimistic estimation: Use sumMinDurations in domain() for quick feasibility check
+ *    - Exact computation: Call inner DDO in transition() for precise verification
+ *    - Caching mechanism: Cache makespan and solution sequences to avoid recomputation
+ *
+ * 4. [Optimization Strategies] (Configurable switches)
+ *    - Capacity Cut: Prune infeasible stations based on minimum times
+ *    - Infeasibility Cache: Record known infeasible task subsets
+ *    - Bound Propagation: Use known optimal solution for pruning
+ *    - Symmetry Breaking: Force stations sorted by first task number
+ *
+ * ============================================================================
+ * Decision Encoding:
  * ============================================================================
  * decision = task * 2 + robotFlag
- * - task: 要分配的任务索引 (0 到 nbTasks-1)
- * - robotFlag: 0 = 加入当前工位或开新工位不分配机器人
- *              1 = 开新工位并分配机器人
+ * - task: Index of task to assign (0 to nbTasks-1)
+ * - robotFlag: 0 = Join current station or open new station without robot
+ *              1 = Open new station and assign robot
  *
  * ============================================================================
- * 状态表示：
+ * State Representation:
  * ============================================================================
- * NestedSALBPState 包含：
- * - completedTasks: 已完成的任务集合（已关闭工位中的任务）
- * - currentStationTasks: 当前工位中的任务集合
- * - currentStationHasRobot: 当前工位是否有机器人
- * - usedRobots: 已使用的机器人数量（已关闭工位中的机器人）
+ * NestedSALBPState contains:
+ * - completedTasks: Set of completed tasks (tasks in closed stations)
+ * - currentStationTasks: Set of tasks in current station
+ * - currentStationHasRobot: Whether current station has robot
+ * - usedRobots: Number of robots used (robots in closed stations)
  */
 public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
-    // ==================== 问题参数 (Problem Parameters) ====================
+    // ==================== Problem Parameters ====================
     public final int nbTasks;
     public final int cycleTime;
     public final int totalRobots;
     private final Map<Integer, List<Integer>> predecessors;
     private final Map<Integer, List<Integer>> successors;
 
-    // ==================== 内层问题 (Inner Problem) ====================
+    // ==================== Inner Problem ====================
     public final SSALBRBProblem innerProblem;
 
-    // ==================== 缓存系统 (Cache System) ====================
+    // ==================== Cache System ====================
     /**
-     * Makespan缓存：任务子集 -> (是否有机器人 -> makespan)
-     * 用途：避免重复调用内层DDO求解器计算相同工位的makespan
+     * Makespan cache: task subset -> (has robot -> makespan)
+     * Purpose: Avoid repeated calls to inner DDO solver for same station makespan computation
      */
     private final Map<Set<Integer>, Map<Boolean, Integer>> makespanCache;
 
     /**
-     * 解序列缓存：任务子集 -> (是否有机器人 -> 解序列)
-     * 用途：缓存内层DDO的完整解，用于打印详细调度方案
+     * Solution sequence cache: task subset -> (has robot -> solution sequence)
+     * Purpose: Cache complete solution from inner DDO for detailed scheduling plan printing
      */
     private final Map<Set<Integer>, Map<Boolean, int[]>> solutionCache;
 
-    // ==================== 优化组件 (Optimization Components) ====================
+    // ==================== Optimization Components ====================
     /**
-     * 不可行子集缓存：记录已知不可行的任务子集
-     * 原理：如果任务集合S不可行，则包含S的任何超集也不可行
-     * 作用：快速剪枝，避免重复检查已知不可行的子集
+     * Infeasibility cache: Records known infeasible task subsets
+     * Principle: If task set S is infeasible, then any superset containing S is also infeasible
+     * Effect: Fast pruning, avoid checking known infeasible subsets repeatedly
      */
     private final InfeasibilityCache infeasibilityCache;
 
     /**
-     * 上界传播：使用已知最优解进行剪枝
-     * 原理：如果当前状态的下界 >= 已知上界，则可以剪枝
-     * 作用：减少搜索空间，提前终止无希望的分支
+     * Bound propagation: Use known optimal solution for pruning
+     * Principle: If current state's lower bound >= known upper bound, can prune
+     * Effect: Reduce search space, terminate unpromising branches early
      */
     private final BoundPropagation boundPropagation;
 
-    /** 开关：是否启用不可行子集缓存 */
+    /** Switch: Enable infeasibility cache */
     private final boolean useInfeasibilityCache;
 
-    /** 开关：是否启用容量割平面（基于最小时间和的快速剪枝） */
+    /** Switch: Enable capacity cut (fast pruning based on minimum time sum) */
     private final boolean useCapacityCut;
 
-    /** 开关：是否启用上界传播 */
+    /** Switch: Enable bound propagation */
     private final boolean useBoundPropagation;
 
-    /** 开关：是否启用对称性破坏（强制工位按首任务编号排序） */
+    /** Switch: Enable symmetry breaking (force stations sorted by first task number) */
     private final boolean useSymmetryBreaking;
 
-    // ==================== 调试统计 (Debug Statistics) ====================
+    // ==================== Debug Statistics ====================
 
-    /** 统计：domain()方法被调用的总次数 */
+    /** Statistics: Total calls to domain() method */
     private static long domainCallCount = 0;
-    /** 统计：内层DDO求解器被调用的总次数 */
+    /** Statistics: Total calls to inner DDO solver */
     private static long innerDdoCallCount = 0;
-    /** 统计：缓存命中次数（成功从缓存获取结果） */
+    /** Statistics: Cache hits (successfully retrieved from cache) */
     private static long cacheHitCount = 0;
-    /** 统计：缓存未命中次数（需要重新计算） */
+    /** Statistics: Cache misses (need recomputation) */
     private static long cacheMissCount = 0;
-    /** 上次打印日志的时间戳 */
+    /** Timestamp of last log print */
     private static long lastLogTime = System.currentTimeMillis();
-    /** 求解开始时间戳 */
+    /** Solve start timestamp */
     private static long startTime = System.currentTimeMillis();
-    /** 容量割平面剪枝统计：检查次数 */
+    /** Capacity cut pruning statistics: check count */
     private long capacityCutChecks = 0;
-    /** 容量割平面剪枝统计：成功剪枝次数 */
+    /** Capacity cut pruning statistics: successful prune count */
     private long capacityCutPrunes = 0;
-    /** 对称性破坏统计：检查次数 */
+    /** Symmetry breaking statistics: check count */
     private long symmetryBreakingChecks = 0;
-    /** 对称性破坏统计：成功剪枝次数 */
+    /** Symmetry breaking statistics: successful prune count */
     private long symmetryBreakingPrunes = 0;
 
-    // ==================== 构造函数 (Constructors) ====================
+    // ==================== Constructors ====================
 
     /**
-     * 构造函数（使用默认优化配置）
+     * Constructor (using default optimization configuration)
      *
-     * @param dataFile 数据文件路径
-     * @param cycleTime 节拍时间
-     * @param totalRobots 可用机器人总数
-     * @throws IOException 文件读取异常
+     * @param dataFile Data file path
+     * @param cycleTime Cycle time
+     * @param totalRobots Total available robots
+     * @throws IOException File read exception
      */
     public NestedSALBPProblem(String dataFile, int cycleTime, int totalRobots) throws IOException {
-        this(dataFile, cycleTime, totalRobots, true, true, true, true);  // 默认所有优化都启用
+        this(dataFile, cycleTime, totalRobots, true, true, true, true);  // Enable all optimizations by default
     }
 
     /**
-     * 构造函数（完整配置）
+     * Constructor (full configuration)
      *
-     * @param dataFile 数据文件路径
-     * @param cycleTime 节拍时间
-     * @param totalRobots 可用机器人总数
-     * @param useInfeasibilityCache 是否启用不可行子集缓存
-     * @param useCapacityCut 是否启用容量割平面
-     * @param useBoundPropagation 是否启用上界传播
-     * @param useSymmetryBreaking 是否启用对称性破坏
-     * @throws IOException 文件读取异常
+     * @param dataFile Data file path
+     * @param cycleTime Cycle time
+     * @param totalRobots Total available robots
+     * @param useInfeasibilityCache Whether to enable infeasibility cache
+     * @param useCapacityCut Whether to enable capacity cut
+     * @param useBoundPropagation Whether to enable bound propagation
+     * @param useSymmetryBreaking Whether to enable symmetry breaking
+     * @throws IOException File read exception
      */
     public NestedSALBPProblem(String dataFile, int cycleTime, int totalRobots,
                               boolean useInfeasibilityCache, boolean useCapacityCut,
                               boolean useBoundPropagation, boolean useSymmetryBreaking) throws IOException {
-        // 初始化内层问题
+        // Initialize inner problem
         this.innerProblem = new SSALBRBProblem(dataFile);
         this.nbTasks = innerProblem.nbTasks;
         this.cycleTime = cycleTime;
@@ -172,11 +172,11 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         this.predecessors = innerProblem.predecessors;
         this.successors = innerProblem.successors;
 
-        // 初始化缓存
+        // Initialize caches
         this.makespanCache = new HashMap<>();
         this.solutionCache = new HashMap<>();
 
-        // 初始化优化组件和开关
+        // Initialize optimization components and switches
         this.useInfeasibilityCache = useInfeasibilityCache;
         this.useCapacityCut = useCapacityCut;
         this.useBoundPropagation = useBoundPropagation;
@@ -184,29 +184,29 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         this.infeasibilityCache = new InfeasibilityCache();
         this.boundPropagation = new BoundPropagation();
 
-        // 打印优化配置
-        System.out.println("=== 优化配置 ===");
-        System.out.println("容量割平面: " + (useCapacityCut ? "启用 ✓" : "禁用 ✗"));
-        System.out.println("InfeasibilityCache: " + (useInfeasibilityCache ? "启用 ✓" : "禁用 ✗"));
-        System.out.println("BoundPropagation: " + (useBoundPropagation ? "启用 ✓" : "禁用 ✗"));
-        System.out.println("SymmetryBreaking: " + (useSymmetryBreaking ? "启用 ✓" : "禁用 ✗"));
+        // Print optimization configuration
+        System.out.println("=== Optimization Configuration ===");
+        System.out.println("Capacity Cut: " + (useCapacityCut ? "Enabled ✓" : "Disabled ✗"));
+        System.out.println("InfeasibilityCache: " + (useInfeasibilityCache ? "Enabled ✓" : "Disabled ✗"));
+        System.out.println("BoundPropagation: " + (useBoundPropagation ? "Enabled ✓" : "Disabled ✗"));
+        System.out.println("SymmetryBreaking: " + (useSymmetryBreaking ? "Enabled ✓" : "Disabled ✗"));
         System.out.println();
 
-        // 问题可行性检查：检查是否存在任务即使用最快的加工方式也超过节拍时间
+        // Problem feasibility check: check if any task exceeds cycle time even in fastest mode
         checkProblemFeasibility();
 
-        // 打印需要机器人的任务信息
+        // Print robot requirement analysis
         printRobotRequirementAnalysis();
     }
 
-    // ==================== 问题可行性检查 (Problem Feasibility Check) ====================
+    // ==================== Problem Feasibility Check ====================
     /**
-     * 检查问题是否可行：是否存在任务即使用最快的加工方式也超过节拍时间
+     * Check problem feasibility: whether any task exceeds cycle time even in fastest mode
      *
-     * 检查逻辑：
-     * - 对每个任务，计算三种模式（人工、机器人、协同）中的最小加工时间
-     * - 如果最小加工时间 > 节拍时间，则该任务无法在任何工位中完成
-     * - 此时问题不可行，直接抛出异常
+     * Check logic:
+     * - For each task, compute minimum processing time among three modes (manual, robot, cooperative)
+     * - If minimum time > cycle time, the task cannot be completed in any station
+     * - If so, problem is infeasible, throw exception immediately
      *
      * @throws IllegalArgumentException 如果问题不可行
      */

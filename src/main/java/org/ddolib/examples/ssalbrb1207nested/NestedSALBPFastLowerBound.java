@@ -6,46 +6,47 @@ import org.ddolib.examples.ssalbrb.SSALBRBProblem;
 import java.util.*;
 
 /**
- * 针对一型装配线平衡问题与人机协同资源配置的组合优化问题，
- * 实现了两种互补的下界计算方法：
+ * For the Type I Assembly Line Balancing Problem combined with human-robot collaborative resource allocation,
+ * implemented two complementary lower bound calculation methods:
  *
- *   LB₁ (工作量平衡下界):
- *   基于任务在不同执行模式间的转换系数，通过工作量平衡原理估计最少需要的工位数
- *   LB₂ (改进的装箱问题下界)：
- *   将任务按处理时间分为大、中、小三类，采用装箱策略估计最少需要的工位数。
- *   最终下界取两者的最大值：LB = max(LB₁, LB₂)
+ *   LB₁ (workload balancing lower bound):
+ *   Based on conversion coefficients of tasks among different execution modes, estimates minimum stations needed through workload balancing principle
+ *   LB₂ (improved bin packing lower bound):
+ *   Classifies tasks into large, medium, small based on processing time, estimates minimum stations using bin packing strategy.
+ *   Final lower bound takes maximum of both: LB = max(LB₁, LB₂)
  *
- * 核心设计思想：
- *  当前工位为空时：直接计算剩余任务需要的工位数
- *  当前工位非空时：计算所有未完成任务（当前工位+剩余任务）需要的总工位数，然后减1（因为当前工位已占用1个工位）
+ * Core design principle:
+ *  When current station is empty: directly calculate stations needed for remaining tasks
+ *  When current station is not empty: calculate total stations needed for all incomplete tasks (current station + remaining),
+ *  then subtract 1 (since current station already occupies 1 station)
  *
  */
 public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPState> {
 
-    // ==================== 问题参数 ====================
+    // ==================== Problem Parameters ====================
 
-    private final int cycleTime;      // 节拍时间 c
-    private final int nbTasks;        // 任务总数 n
-    private final int totalRobots;    // 可用机器人总数 q
+    private final int cycleTime;      // Cycle time c
+    private final int nbTasks;        // Total number of tasks n
+    private final int totalRobots;    // Total available robots q
 
-    // 任务处理时间数组（预计算以提高性能）
-    private final int[] humanDur;     // 每个任务的人工时间 t_ih
-    private final int[] robotDur;     // 每个任务的机器人时间 t_ir
-    private final int[] collabDur;    // 每个任务的人机协同时间 t_ic
+    // Task processing time arrays (precomputed for performance)
+    private final int[] humanDur;     // Human time for each task t_ih
+    private final int[] robotDur;     // Robot time for each task t_ir
+    private final int[] collabDur;    // Cooperative time for each task t_ic
 
-    // ==================== 构造函数 ====================
+    // ==================== Constructor ====================
 
     /**
-     * 构造快速下界估计器
+     * Construct fast lower bound estimator
      *
-     * @param problem 嵌套SALBP问题实例
+     * @param problem Nested SALBP problem instance
      */
     public NestedSALBPFastLowerBound(NestedSALBPProblem problem) {
         this.cycleTime = problem.cycleTime;
         this.nbTasks = problem.nbTasks;
         this.totalRobots = problem.totalRobots;
 
-        // 预计算每个任务的处理时间，避免重复访问
+        // Precompute processing time for each task to avoid repeated access
         this.humanDur = new int[nbTasks];
         this.robotDur = new int[nbTasks];
         this.collabDur = new int[nbTasks];
@@ -56,69 +57,69 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         }
     }
 
-    // ==================== FastLowerBound 接口实现 ====================
+    // ==================== FastLowerBound Interface Implementation ====================
 
     /**
-     * 计算给定状态的快速下界
+     * Calculate fast lower bound for given state
      *
-     * 下界表示从当前状态到目标状态至少还需要多少个新工位。
+     * Lower bound represents minimum number of new stations still needed from current state to goal state.
      *
-     * @param state 当前状态
-     * @param variables 待决策的变量集合（本实现中未使用）
-     * @return 下界值（至少还需要的新工位数）
+     * @param state Current state
+     * @param variables Set of variables to decide (not used in this implementation)
+     * @return Lower bound value (minimum new stations needed)
      */
     @Override
     public double fastLowerBound(NestedSALBPState state, Set<Integer> variables) {
-        // 终止条件：所有任务已分配完毕
+        // Termination condition: all tasks assigned
         if (state.isComplete(nbTasks)) {
             return 0;
         }
 
-        // 获取剩余未分配的任务和当前工位的任务
-        // 🔥 使用专门的方法：下界计算时排除 maybeCompletedTasks
+        // Get remaining unassigned tasks and current station tasks
+        // Use special method: exclude maybeCompletedTasks in lower bound calculation
         Set<Integer> remainingTasks = state.getRemainingTasksForLowerBound(nbTasks);
         Set<Integer> currentStationTasks = state.currentStationTasks();
 
-        // 特殊情况：没有剩余任务要分配
-        // 此时只需关闭当前工位（如果非空），不需要额外的新工位
+        // Special case: no remaining tasks to assign
+        // Only need to close current station (if not empty), no additional new stations
         if (remainingTasks.isEmpty()) {
             return 0;
         }
 
-        // 计算剩余可用机器人数
+        // Calculate remaining available robots
         int remainingRobots = totalRobots - state.usedRobots();
         if (state.currentStationHasRobot()) {
-            remainingRobots--;  // 当前工位的机器人也算已使用
+            remainingRobots--;  // Current station's robot also counts as used
         }
 
-        // ========== 情况1：当前工位为空 ==========
+        // ========== Case 1: Current station is empty ==========
         if (currentStationTasks.isEmpty()) {
             double lb = computeLowerBound(remainingTasks, remainingRobots);
 
-            // 【调试】仅在root节点输出详细信息
+            // [Debug] Output detailed info only at root node
 //            if (state.completedTasks().isEmpty()) {
-//                System.out.println("Root节点下界计算：");
-//                System.out.println("剩余任务数: " + remainingTasks.size());
-//                System.out.println("可用机器人: " + remainingRobots);
+//                System.out.println("Root node lower bound calculation:");
+//                System.out.println("Remaining tasks: " + remainingTasks.size());
+//                System.out.println("Available robots: " + remainingRobots);
 //
 //                double lb1 = computeLB1(remainingTasks, remainingRobots);
 //                double lb2 = computeLB2(remainingTasks, remainingRobots);
 //
-//                System.out.println("\n--- 下界计算结果 ---");
-//                System.out.println("LB₁ (工作量下界): " + lb1);
-//                System.out.println("LB₂ (装箱下界): " + lb2);
+//                System.out.println("\n--- Lower bound calculation results ---");
+//                System.out.println("LB₁ (workload lower bound): " + lb1);
+//                System.out.println("LB₂ (bin packing lower bound): " + lb2);
 //            }
 
             return lb;
         }
 
-        // ========== 情况2：当前工位非空 ==========
-        // 策略：计算所有未完成任务需要的总工位数，然后减去当前工位
+        // ========== Case 2: Current station is not empty ==========
+        // Strategy: calculate total stations needed for all unfinished tasks, then subtract current station
         Set<Integer> allUnfinishedTasks = new HashSet<>();
         allUnfinishedTasks.addAll(currentStationTasks);
         allUnfinishedTasks.addAll(remainingTasks);
 
-        // 计算总可用机器人数（包括当前工位的机器人）
+        // Calculate total available robots (including current station's robot)
         int totalAvailableRobots = remainingRobots;
         if (state.currentStationHasRobot()) {
             totalAvailableRobots++;
@@ -126,19 +127,19 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
 
         double totalStationsNeeded = computeLowerBound(allUnfinishedTasks, totalAvailableRobots);
 
-        // 减去当前工位（因为它已经存在）
+        // Subtract current station (since it already exists)
         return Math.max(0, totalStationsNeeded - 1);
     }
 
-    // ==================== 下界计算核心方法 ====================
+    // ==================== Core Lower Bound Calculation Methods ====================
 
     /**
-     * 计算给定任务集合需要的最少工位数（公共方法）
-     * 这个方法可以被外部调用，用于计算任意任务集合的下界
+     * Calculate minimum stations needed for given task set (public method)
+     * This method can be called externally to calculate lower bound for any task set
      *
-     * @param tasks 任务集合
-     * @param availableRobots 可用机器人数
-     * @return 最少需要的工位数
+     * @param tasks Task set
+     * @param availableRobots Available robots count
+     * @return Minimum stations needed
      */
     public double computeLowerBound(Set<Integer> tasks, int availableRobots) {
         double lb1 = computeLB1(tasks, availableRobots);
@@ -148,25 +149,25 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
     }
 
     /**
-     * LB₁: 工作量平衡下界
-     * 基于任务在不同执行模式间的转换系数 θ_i = min{θ_ir, θ_ic}，其中：
-     *   θ_ir = t_ir / t_ih (机器人模式转换系数)
-     *   θ_ic = t_ic / (t_ih - t_ic) (人机协同模式转换系数)
-     * 算法思想：通过将部分任务从人工模式转换为机器人或协同模式，
-     * 平衡人工工作量和机器人工作量，从而估计最少需要的工位数。
+     * LB₁: Workload balancing lower bound
+     * Based on conversion coefficients θ_i = min{θ_ir, θ_ic}, where:
+     *   θ_ir = t_ir / t_ih (robot mode conversion coefficient)
+     *   θ_ic = t_ic / (t_ih - t_ic) (cooperative mode conversion coefficient)
+     * Algorithm idea: Balance human and robot workloads by converting some tasks
+     * from human mode to robot or cooperative mode, to estimate minimum stations needed.
      *
-     * @param remainingTasks 剩余任务集合
-     * @param q 可用机器人数
-     * @return LB₁下界值
+     * @param remainingTasks Remaining task set
+     * @param q Available robots count
+     * @return LB₁ lower bound value
      */
     private double computeLB1(Set<Integer> remainingTasks, int q) {
         if (remainingTasks.isEmpty()) {
             return 0;
         }
 
-        // 构建任务转换信息列表
+        // Build task conversion info list
         List<TaskConversion> conversions = new ArrayList<>();
-        double LH = 0.0;  // 初始人工工作量
+        double LH = 0.0;  // Initial human workload
 
         for (int task : remainingTasks) {
             int tH = humanDur[task];
@@ -175,7 +176,7 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
 
             LH += tH;
 
-            // 计算转换系数（避免除零和无效转换）
+            // Calculate conversion coefficients (avoid division by zero and invalid conversions)
             double theta_ir = (tR < 100000 && tH > 0) ?
                     ((double) tR / tH) : Double.POSITIVE_INFINITY;
             double theta_ic = (tC < 100000 && tH > tC) ?
@@ -184,34 +185,34 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             conversions.add(new TaskConversion(task, theta_ir, theta_ic, tH, tR, tC));
         }
 
-        // 按转换系数升序排序（优先转换效率高的任务）
+        // Sort by conversion coefficients ascending (prioritize high-efficiency conversions)
         conversions.sort(Comparator.comparingDouble(tc -> Math.min(tc.theta_ir, tc.theta_ic)));
 
-        double LR = 0.0;  // 机器人工作量
+        double LR = 0.0;  // Robot workload
 
-        // 迭代转换工作量，直到达到平衡或资源耗尽
+        // Iteratively convert workload until balanced or resources exhausted
         for (TaskConversion tc : conversions) {
-            // 停止条件(iii)：如果已经平衡，停止
+            // Stop condition (iii): if already balanced, stop
             if (LR >= LH) {
                 break;
             }
 
-            // 记录转换前的LH和LR（用于部分转换回退）
+            // Record LH and LR before conversion (for partial conversion rollback)
             double LH_before = LH;
             double LR_before = LR;
 
-            // 选择转换系数更小的模式
+            // Choose mode with smaller conversion coefficient
             if (tc.theta_ir <= tc.theta_ic) {
-                // 使用机器人模式
+                // Use robot mode
                 if (tc.tR < 100000) {
-                    // 执行完全转换
+                    // Execute full conversion
                     LH -= tc.tH;
                     LR += tc.tR;
 
-                    // 检查是否超过容量上限（停止条件ii）
-                    // LR = c·q 表示所有可用机器人的总容量
+                    // Check if exceeds capacity limit (stop condition ii)
+                    // LR = c·q represents total capacity of all available robots
                     if (LR > cycleTime * q) {
-                        // 超过容量，部分转回到容量上限
+                        // Exceeds capacity, partial conversion rollback to capacity limit
                         // alpha * t_ir = (c·q - LR_before)
                         if (tc.tR > 0) {
                             double alpha = (cycleTime * q - LR_before) / tc.tR;
@@ -222,9 +223,9 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
                         break;
                     }
 
-                    // 检查是否超过平衡点（停止条件iii）
+                    // Check if exceeds balance point (stop condition iii)
                     if (LR > LH) {
-                        // 超过平衡，部分转回到平衡点
+                        // Exceeds balance, partial conversion rollback to balance point
                         // LH_before - alpha * t_ih = LR_before + alpha * t_ir
                         double denom = tc.tH + tc.tR;
                         if (denom > 0) {
@@ -237,16 +238,16 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
                     }
                 }
             } else {
-                // 使用人机协同模式
+                // Use cooperative mode
                 if (tc.tC < 100000) {
                     double dh = tc.tH - tc.tC;
                     double dr = tc.tC;
 
-                    // 执行完全转换
+                    // Execute full conversion
                     LH -= dh;
                     LR += dr;
 
-                    // 检查是否超过容量上限（停止条件ii）
+                    // Check if exceeds capacity limit (stop condition ii)
                     // LR = c·q 表示所有可用机器人的总容量
                     if (LR > cycleTime * q) {
                         // 超过容量，部分转回到容量上限
@@ -282,23 +283,23 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
     }
 
     /**
-     * LB₂: 改进的装箱问题下界
-     * 核心思想：
-     * 第一步：让机器人先执行任务，消耗机器人容量 c·q
-     * 第二步：计算剩余任务（完全执行的移除，部分执行的需要转换时间）
-     * 第三步：对剩余任务进行装箱，估计需要的工位数
+     * LB₂: Improved bin packing lower bound
+     * Core idea:
+     * Step 1: Let robots execute tasks first, consume robot capacity c·q
+     * Step 2: Calculate remaining tasks (remove fully executed, need conversion time for partially executed)
+     * Step 3: Perform bin packing on remaining tasks, estimate stations needed
      *
-     * 关键点：机器人部分执行任务后，剩余工作量转换为人工时间时：
-     * 机器人模式：剩余机器人时间 / 2 = 人工时间（因为 tH = tR / 2）
-     * 人机协同模式：剩余工作量按比例计算人工时间
-     * 装箱策略：
-     *  大任务: t > c/2，各占一个箱子（工位）
-     *  中等任务: c/3 < t ≤ c/2，优先填充大任务箱子的剩余容量，无法填充的成对装箱
-     *  小任务: t ≤ c/3，填充所有剩余容量
+     * Key point: After robots partially execute task, remaining workload converts to human time as:
+     * Robot mode: remaining robot time / 2 = human time (because tH = tR / 2)
+     * Cooperative mode: remaining workload calculated proportionally
+     * Bin packing strategy:
+     *  Large tasks: t > c/2, each occupies one bin (station)
+     *  Medium tasks: c/3 < t ≤ c/2, prioritize filling remaining capacity of large task bins, pair if cannot fill
+     *  Small tasks: t ≤ c/3, fill all remaining capacity
      *
-     * @param remainingTasks 剩余任务集合
-     * @param q 可用机器人数
-     * @return LB₂下界值
+     * @param remainingTasks Remaining task set
+     * @param q Available robots count
+     * @return LB₂ lower bound value
      */
     private double computeLB2(Set<Integer> remainingTasks, int q) {
         if (remainingTasks.isEmpty()) {
@@ -307,39 +308,39 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
 
         int c = cycleTime;
 
-        // ========== 第一步：让机器人先执行任务 ==========
-        // 机器人总容量
+        // ========== Step 1: Let robots execute tasks first ==========
+        // Total robot capacity
         double robotCapacity = c * q;
 
-        // 按转换系数排序（与LB₁相同的顺序）
-        // 优先让机器人执行转换效率高的任务
+        // Sort by conversion coefficient (same order as LB₁)
+        // Prioritize letting robots execute high-conversion-efficiency tasks
         List<TaskRobotInfo> tasksByRobotTime = new ArrayList<>();
         for (int task : remainingTasks) {
             int tH = humanDur[task];
             int tR = robotDur[task];
             int tC = collabDur[task];
 
-            // 计算转换系数
+            // Calculate conversion coefficient
             double theta_ir = (tR < 100000 && tH > 0) ? ((double) tR / tH) : Double.POSITIVE_INFINITY;
             double theta_ic = (tC < 100000 && tH > tC) ? ((double) tC / (tH - tC)) : Double.POSITIVE_INFINITY;
             double theta = Math.min(theta_ir, theta_ic);
 
-            // 选择更优的机器人执行模式
+            // Choose better robot execution mode
             boolean useRobotMode = (theta_ir <= theta_ic);
             int robotTime = useRobotMode ? tR : tC;
 
             tasksByRobotTime.add(new TaskRobotInfo(task, tH, tR, tC, robotTime, theta, useRobotMode));
         }
-        // 按转换系数升序排序（与LB₁一致）
+        // Sort by conversion coefficient ascending (consistent with LB₁)
         tasksByRobotTime.sort(Comparator.comparingDouble(t -> t.theta));
 
-        // 让机器人执行任务，直到容量用完
+        // Let robots execute tasks until capacity is exhausted
         double usedRobotCapacity = 0.0;
         Map<Integer, Double> remainingHumanTime = new HashMap<>();
 
         for (TaskRobotInfo tri : tasksByRobotTime) {
             if (tri.robotTime >= 100000) {
-                // 机器人不能执行这个任务
+                // Robot cannot execute this task
                 remainingHumanTime.put(tri.task, (double) tri.humanTime);
                 continue;
             }
@@ -347,46 +348,46 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             double availableCapacity = robotCapacity - usedRobotCapacity;
 
             if (availableCapacity <= 0) {
-                // 机器人容量已用完，剩余任务全部由人工完成
+                // Robot capacity exhausted, remaining tasks fully executed by humans
                 remainingHumanTime.put(tri.task, (double) tri.humanTime);
             } else if (tri.robotTime <= availableCapacity) {
-                // 机器人可以完全执行这个任务
+                // Robot can completely execute this task
                 usedRobotCapacity += tri.robotTime;
-                // 这个任务不需要人工时间了（完全由机器人完成）
+                // This task doesn't need human time anymore (fully executed by robot)
             } else {
-                // 🔥 关键点：机器人只能部分执行这个任务
-                // 机器人执行了 availableCapacity，剩余部分需要转换为人工时间
+                // Key point: Robot can only partially execute this task
+                // Robot executed availableCapacity, remaining needs conversion to human time
 
-                double robotExecuted = availableCapacity;  // 机器人已执行的时间
-                double robotRemaining = tri.robotTime - robotExecuted;  // 机器人剩余时间
+                double robotExecuted = availableCapacity;  // Robot executed time
+                double robotRemaining = tri.robotTime - robotExecuted;  // Robot remaining time
                 double humanTimeForRemaining;
 
                 if (tri.useRobotMode) {
-                    // 🔥 机器人模式：tH = tR / 2
-                    // 剩余机器人时间转换为人工时间：robotRemaining / 2
+                    // Robot mode: tH = tR / 2
+                    // Remaining robot time converts to human time: robotRemaining / 2
                     humanTimeForRemaining = robotRemaining / 2.0;
                 } else {
-                    // 🔥 人机协同模式：剩余工作量按比例计算
-                    // 机器人执行比例（完成了多少比例的工作量）
+                    // Cooperative mode: remaining workload calculated proportionally
+                    // Robot execution ratio (how much proportion of workload completed)
                     double robotRatio = robotExecuted / tri.robotTime;
-                    // 剩余工作量比例（还剩多少比例的工作量）
+                    // Remaining workload ratio (how much proportion remaining)
                     double humanRatio = 1.0 - robotRatio;
-                    // 人工剩余时间 = 原始协同时间 × 剩余比例
+                    // Remaining human time = original cooperative time × remaining ratio
                     humanTimeForRemaining = tri.collabTime * humanRatio;
                 }
 
                 remainingHumanTime.put(tri.task, humanTimeForRemaining);
-                usedRobotCapacity = robotCapacity; // 容量用完
+                usedRobotCapacity = robotCapacity; // Capacity exhausted
             }
         }
 
-        // ========== 第二步：对剩余任务进行装箱 ==========
+        // ========== Step 2: Perform bin packing on remaining tasks ==========
         if (remainingHumanTime.isEmpty()) {
-            // 所有任务都被机器人执行完了
+            // All tasks executed by robots
             return 0;
         }
 
-        // 分类任务
+        // Classify tasks
         List<Integer> largeTasks = new ArrayList<>();
         List<Integer> mediumTasks = new ArrayList<>();
         List<Integer> smallTasks = new ArrayList<>();
@@ -404,17 +405,17 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             }
         }
 
-        // D₁: 大任务的箱子数
+        // D₁: Number of bins for large tasks
         int d1 = largeTasks.size();
         double remainingCapacityD1 = 0.0;
         for (int task : largeTasks) {
             remainingCapacityD1 += (c - remainingHumanTime.get(task));
         }
 
-        // D₂: 中等任务的箱子数
+        // D₂: Number of bins for medium tasks
         mediumTasks.sort(Comparator.comparingDouble(t -> remainingHumanTime.get(t)));
 
-        // 尝试将中等任务分配到 D₁ 的剩余容量
+        // Try to assign medium tasks to remaining capacity of D₁
         double usedCapacityD1 = 0.0;
         List<Integer> unassignedMedium = new ArrayList<>();
 
@@ -427,7 +428,7 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             }
         }
 
-        // 未分配的中等任务装箱（每个箱子最多2个任务）
+        // Bin packing unassigned medium tasks (at most 2 tasks per bin)
         int d2 = 0;
         double remainingCapacityD2 = 0.0;
 
@@ -442,18 +443,18 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
                     double t2 = remainingHumanTime.get(task2);
 
                     if (t1 + t2 <= c) {
-                        // 两个任务放在一个箱子
+                        // Two tasks in one bin
                         d2++;
                         remainingCapacityD2 += (c - t1 - t2);
                         i += 2;
                     } else {
-                        // 只放一个任务
+                        // Only one task
                         d2++;
                         remainingCapacityD2 += (c - t1);
                         i++;
                     }
                 } else {
-                    // 最后一个任务
+                    // Last task
                     d2++;
                     remainingCapacityD2 += (c - t1);
                     i++;
@@ -461,7 +462,7 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             }
         }
 
-        // d₃: 小任务需要的箱子数
+        // d₃: Number of bins needed for small tasks
         double Ws = 0.0;
         for (int task : smallTasks) {
             Ws += remainingHumanTime.get(task);
@@ -473,8 +474,8 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         // LB₂ = d₁ + d₂ + d₃
         int LB2 = d1 + d2 + d3;
 
-        // 关键：如果 LB2 < q，说明机器人数量过多，需要减少机器人数重新计算
-        // 这确保了机器人资源被充分利用，避免下界过于乐观
+        // Key: If LB2 < q, means too many robots, need to reduce robot count and recalculate
+        // This ensures robot resources are fully utilized, avoid overly optimistic lower bound
         if (LB2 < q && q > 0) {
             return computeLB2(remainingTasks, q - 1);
         }
@@ -482,19 +483,19 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         return LB2;
     }
 
-    // ==================== 辅助方法 ====================
+    // ==================== Helper Methods ====================
 
     /**
-     * 任务的机器人执行时间信息
+     * Robot execution time information for a task
      */
     private static class TaskRobotInfo {
         final int task;
-        final int humanTime;      // 人工时间 tH
-        final int robotOnlyTime;  // 纯机器人时间 tR
-        final int collabTime;     // 人机协同时间 tC
-        final int robotTime;      // 实际选择的机器人执行时间（tR或tC中较优的）
-        final double theta;       // 转换系数
-        final boolean useRobotMode;  // true=机器人模式，false=人机协同模式
+        final int humanTime;      // Human time tH
+        final int robotOnlyTime;  // Pure robot time tR
+        final int collabTime;     // Cooperative time tC
+        final int robotTime;      // Actual chosen robot execution time (better of tR or tC)
+        final double theta;       // Conversion coefficient
+        final boolean useRobotMode;  // true=robot mode, false=cooperative mode
 
         TaskRobotInfo(int task, int humanTime, int robotOnlyTime, int collabTime,
                       int robotTime, double theta, boolean useRobotMode) {
@@ -508,18 +509,18 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
         }
     }
 
-    // ==================== 内部类 ====================
+    // ==================== Inner Classes ====================
 
     /**
-     * 任务转换信息
+     * Task conversion information
      *
-     * <p>用于 LB₁ 计算中存储任务的转换系数和时间信息。</p>
+     * <p>Used to store conversion coefficients and time information for tasks in LB₁ calculation.</p>
      */
     private static class TaskConversion {
-        final int task;           // 任务索引
-        final double theta_ir;    // 机器人模式转换系数
-        final double theta_ic;    // 人机协同模式转换系数
-        final int tH, tR, tC;     // 三种模式的处理时间
+        final int task;           // Task index
+        final double theta_ir;    // Robot mode conversion coefficient
+        final double theta_ic;    // Cooperative mode conversion coefficient
+        final int tH, tR, tC;     // Processing time for three modes
 
         TaskConversion(int task, double theta_ir, double theta_ic, int tH, int tR, int tC) {
             this.task = task;

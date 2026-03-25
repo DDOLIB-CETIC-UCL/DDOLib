@@ -6,14 +6,14 @@ import org.ddolib.modeling.Relaxation;
 import java.util.*;
 
 /**
- * 外层问题的松弛：合并状态
+ * Relaxation of outer problem: merge states
  * 
- * 合并策略（创建真正的Relax状态）：
- * - completedTasks: 取交集（只有所有状态都认为已完成的任务）
- * - currentStationTasks: 取交集（只有所有状态都认为在当前工位的任务）
- * - maybeCompletedTasks: 取并集-交集（在某些状态中已完成或在当前工位，但不是所有状态）
- * - currentStationHasRobot: 取OR（任一为true则为true，容量更大）
- * - usedRobots: 取最小值（剩余机器人更多，更灵活）
+ * Merge strategy (create true Relax state):
+ * - completedTasks: take intersection (only tasks all states consider completed)
+ * - currentStationTasks: take intersection (only tasks all states consider in current station)
+ * - maybeCompletedTasks: take union minus intersection (tasks in some states completed or in current station, but not all)
+ * - currentStationHasRobot: take OR (if any is true then true, larger capacity)
+ * - usedRobots: take minimum (more remaining robots, more flexibility)
  */
 public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
 
@@ -27,23 +27,23 @@ public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
         states.forEachRemaining(stateList::add);
         
         if (stateList.size() == 1) {
-            return stateList.get(0);  // 只有一个状态，直接返回
+            return stateList.get(0);  // Only one state, return directly
         }
 
-        // ========== 1. completedTasks: 取交集（保守） ==========
+        // ========== 1. completedTasks: take intersection (conservative) ==========
         Set<Integer> mergedCompleted = new LinkedHashSet<>(stateList.get(0).completedTasks());
         for (int i = 1; i < stateList.size(); i++) {
             mergedCompleted.retainAll(stateList.get(i).completedTasks());
         }
 
-        // ========== 2. currentStationTasks: 取交集（乐观） ==========
+        // ========== 2. currentStationTasks: take intersection (optimistic) ==========
         Set<Integer> mergedCurrent = new LinkedHashSet<>(stateList.get(0).currentStationTasks());
         for (int i = 1; i < stateList.size(); i++) {
             mergedCurrent.retainAll(stateList.get(i).currentStationTasks());
         }
 
-        // ========== 3. maybeCompletedTasks: 并集 - 交集 ==========
-        // 收集所有已分配的任务（包括原有的 maybeCompletedTasks）
+        // ========== 3. maybeCompletedTasks: union minus intersection ==========
+        // Collect all assigned tasks (including original maybeCompletedTasks)
         Set<Integer> allAssigned = new LinkedHashSet<>();
         for (NestedSALBPState s : stateList) {
             allAssigned.addAll(s.completedTasks());
@@ -51,16 +51,16 @@ public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
             allAssigned.addAll(s.maybeCompletedTasks());
         }
 
-        // maybeCompletedTasks = 所有已分配的任务 - 确定完成的 - 确定在当前工位的
+        // maybeCompletedTasks = all assigned tasks - confirmed completed - confirmed in current station
         Set<Integer> mergedMaybe = new LinkedHashSet<>(allAssigned);
         mergedMaybe.removeAll(mergedCompleted);
         mergedMaybe.removeAll(mergedCurrent);
 
-        // ========== 4. currentStationHasRobot: 取OR（任一为true则为true） ==========
+        // ========== 4. currentStationHasRobot: take OR (if any is true then true) ==========
         boolean mergedHasRobot = stateList.stream()
             .anyMatch(NestedSALBPState::currentStationHasRobot);
 
-        // ========== 5. usedRobots: 取最小值（最乐观） ==========
+        // ========== 5. usedRobots: take minimum (most optimistic) ==========
         int mergedUsedRobots = stateList.stream()
             .mapToInt(NestedSALBPState::usedRobots)
             .min()

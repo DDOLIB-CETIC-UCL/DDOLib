@@ -3,20 +3,20 @@ package org.ddolib.examples.ssalbrb1207nested;
 import java.util.*;
 
 /**
- * 不可行任务子集缓存
- * 用于剪枝：如果任务集合S不可行，则任何包含S的超集也不可行
+ * Infeasible task subset cache
+ * Used for pruning: if task set S is infeasible, then any superset containing S is also infeasible
  *
- * 优化策略：
- * 1. 记录不可行的最小任务子集（minimal infeasible sets）
- * 2. 在判断可行性前，先检查是否包含已知的不可行子集
- * 3. 减少内层DDO调用次数
+ * Optimization strategies:
+ * 1. Record minimal infeasible task subsets
+ * 2. Before checking feasibility, first check if it contains known infeasible subsets
+ * 3. Reduce number of inner DDO calls
  */
 public class InfeasibilityCache {
 
-    // 存储不可行的任务子集（按大小分组，便于快速查找）
+    // Store infeasible task subsets (grouped by size for fast lookup)
     private final Map<Integer, Set<Set<Integer>>> infeasibleSets;
 
-    // 统计信息
+    // Statistics
     private long pruneCount = 0;
     private long checkCount = 0;
 
@@ -25,53 +25,53 @@ public class InfeasibilityCache {
     }
 
     /**
-     * 记录一个不可行的任务集合
-     * 只记录最小不可行子集（minimal infeasible set）
+     * Record an infeasible task set
+     * Only records minimal infeasible subsets
      *
-     * @param tasks 不可行的任务集合
-     * @param hasRobot 是否有机器人
+     * @param tasks Infeasible task set
+     * @param hasRobot Whether robot is available
      */
     public void recordInfeasible(Set<Integer> tasks, boolean hasRobot) {
         if (tasks.isEmpty()) return;
 
-        // 只记录有机器人情况下的不可行集合
-        // 因为无机器人的不可行不能推广到有机器人的情况
+        // Only record infeasible sets with robot
+        // Because infeasibility without robot cannot be generalized to with robot
         if (!hasRobot) return;
 
-        // 检查是否已经有更小的不可行子集
+        // Check if there is already a smaller infeasible subset
         if (containsInfeasibleSubset(tasks)) {
-            return; // 已经有更小的不可行子集，不需要记录
+            return; // Already have smaller infeasible subset, no need to record
         }
 
-        // 移除所有包含当前集合的更大不可行集合（它们是冗余的）
+        // Remove all supersets of current set (they are redundant)
         removeSupersetsOf(tasks);
 
-        // 记录当前不可行集合
+        // Record current infeasible set
         int size = tasks.size();
         infeasibleSets.computeIfAbsent(size, k -> new HashSet<>()).add(Set.copyOf(tasks));
     }
 
     /**
-     * 检查任务集合是否包含已知的不可行子集
+     * Check if task set contains known infeasible subsets
      *
-     * @param tasks 要检查的任务集合
-     * @return true 如果包含不可行子集（可以剪枝）
+     * @param tasks Task set to check
+     * @return true if contains infeasible subset (can prune)
      */
     public boolean containsInfeasibleSubset(Set<Integer> tasks) {
         checkCount++;
 
         if (tasks.isEmpty()) return false;
 
-        // 只需要检查大小 <= tasks.size() 的不可行集合
+        // Only need to check infeasible sets with size <= tasks.size()
         for (int size = 1; size <= tasks.size(); size++) {
             Set<Set<Integer>> setsOfSize = infeasibleSets.get(size);
             if (setsOfSize == null) continue;
 
             for (Set<Integer> infeasibleSet : setsOfSize) {
-                // 检查 infeasibleSet 是否是 tasks 的子集
+                // Check if infeasibleSet is subset of tasks
                 if (tasks.containsAll(infeasibleSet)) {
                     pruneCount++;
-                    return true; // 找到不可行子集，可以剪枝
+                    return true; // Found infeasible subset, can prune
                 }
             }
         }
@@ -80,10 +80,10 @@ public class InfeasibilityCache {
     }
 
     /**
-     * 移除所有包含给定集合的超集（它们是冗余的）
+     * Remove all supersets of given set (they are redundant)
      */
     private void removeSupersetsOf(Set<Integer> tasks) {
-        for (int size = tasks.size() + 1; size <= 20; size++) { // 假设最大工位任务数不超过20
+        for (int size = tasks.size() + 1; size <= 20; size++) { // Assume max station tasks <= 20
             Set<Set<Integer>> setsOfSize = infeasibleSets.get(size);
             if (setsOfSize == null) continue;
 
@@ -92,21 +92,21 @@ public class InfeasibilityCache {
     }
 
     /**
-     * 获取剪枝次数（用于外部统计）
+     * Get prune count (for external statistics)
      */
     public long getPruneCount() {
         return pruneCount;
     }
 
     /**
-     * 获取检查次数（用于外部统计）
+     * Get check count (for external statistics)
      */
     public long getCheckCount() {
         return checkCount;
     }
 
     /**
-     * 获取存储的不可行集合数量
+     * Get number of stored infeasible sets
      */
     public int getStoredCount() {
         return infeasibleSets.values().stream()
@@ -115,7 +115,7 @@ public class InfeasibilityCache {
     }
 
     /**
-     * 获取统计信息
+     * Get statistics information
      */
     public String getStatistics() {
         int totalInfeasibleSets = getStoredCount();
@@ -126,7 +126,7 @@ public class InfeasibilityCache {
     }
 
     /**
-     * 清空缓存
+     * Clear cache
      */
     public void clear() {
         infeasibleSets.clear();

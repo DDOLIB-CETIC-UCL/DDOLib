@@ -4,34 +4,34 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 嵌套SALBP状态（支持机器人分配决策）- 支持Relax的版本
+ * Nested SALBP State (supports robot allocation decisions) - Version supporting Relax
  *
- * 状态表示：
- * - completedTasks: 确定已完成工位中的任务（Relax时取交集）
- * - currentStationTasks: 确定在当前工位的任务（Relax时取交集）
- * - maybeCompletedTasks: 可能已完成或在当前工位的任务（Relax时取并集-交集）
- * - currentStationHasRobot: 当前工位是否有机器人
- * - usedRobots: 已使用的机器人数量（包括已完成工位，不包括当前工位）
+ * State representation:
+ * - completedTasks: Tasks confirmed completed in closed stations (Relax takes intersection)
+ * - currentStationTasks: Tasks confirmed in current station (Relax takes intersection)
+ * - maybeCompletedTasks: Tasks possibly completed or in current station (Relax takes union minus intersection)
+ * - currentStationHasRobot: Whether current station has robot
+ * - usedRobots: Number of robots used (includes closed stations, excludes current station)
  *
- * maybeCompletedTasks 的作用：
- * - 只在Relax合并时产生
- * - 在transition时可能减少（当分配了其中的任务）
- * - 用于下界计算的乐观估计
+ * Purpose of maybeCompletedTasks:
+ * - Only produced during Relax merge
+ * - May decrease during transition (when assigning those tasks)
+ * - Used for optimistic estimation in lower bound calculation
  */
 public record NestedSALBPState(
-        Set<Integer> completedTasks,                // 确定已完成的任务
-        Set<Integer> currentStationTasks,           // 确定在当前工位的任务
-        Set<Integer> maybeCompletedTasks,           // 可能已完成的任务
-        boolean currentStationHasRobot,             // 当前工位是否有机器人
-        int usedRobots) {                           // 已使用的机器人数
+        Set<Integer> completedTasks,                // Tasks confirmed completed
+        Set<Integer> currentStationTasks,           // Tasks confirmed in current station
+        Set<Integer> maybeCompletedTasks,           // Tasks possibly completed
+        boolean currentStationHasRobot,             // Whether current station has robot
+        int usedRobots) {                           // Number of robots used
 
     public NestedSALBPState {
-        // 防御性复制
+        // Defensive copy
         completedTasks = Set.copyOf(completedTasks);
         currentStationTasks = Set.copyOf(currentStationTasks);
         maybeCompletedTasks = Set.copyOf(maybeCompletedTasks);
         
-        // 不变式检查：三个集合应该互不相交
+        // Invariant check: three sets should be mutually disjoint
         Set<Integer> intersection1 = new HashSet<>(completedTasks);
         intersection1.retainAll(currentStationTasks);
         if (!intersection1.isEmpty()) {
@@ -55,53 +55,53 @@ public record NestedSALBPState(
     }
 
     /**
-     * 检查是否所有任务都已分配
+     * Check if all tasks are allocated
      * 
-     * 🔥 关键：不包括 maybeCompletedTasks
-     * 因为这些任务可能还需要被重新分配
+     * Key point: Does NOT include maybeCompletedTasks
+     * Because these tasks may still need to be reassigned
      */
     public boolean isComplete(int totalTasks) {
         return completedTasks.size() + currentStationTasks.size() == totalTasks;
     }
 
     /**
-     * 获取剩余任务集合（用于 domain 生成决策）
+     * Get remaining tasks set (for domain generation)
      * 
-     * 🔥 关键：maybeCompletedTasks 中的任务仍然在 remaining 中！
-     * 因为这些任务可能还没有被完成，需要继续分配
+     * Key point: Tasks in maybeCompletedTasks are STILL in remaining!
+     * Because these tasks may not be completed yet, need continued assignment
      */
     public Set<Integer> getRemainingTasks(int totalTasks) {
         java.util.Set<Integer> remaining = new java.util.LinkedHashSet<>();
         for (int i = 0; i < totalTasks; i++) {
             remaining.add(i);
         }
-        // 只移除确定已完成的和确定在当前工位的任务
+        // Only remove tasks confirmed completed and in current station
         remaining.removeAll(completedTasks);
         remaining.removeAll(currentStationTasks);
-        // 🔥 不移除 maybeCompletedTasks（这些任务可能还需要分配）
+        // DO NOT remove maybeCompletedTasks (these tasks may still need assignment)
         return remaining;
     }
 
     /**
-     * 获取剩余任务集合（用于下界计算）
+     * Get remaining tasks set (for lower bound calculation)
      * 
-     * 🔥 关键：maybeCompletedTasks 中的任务不在这个集合中！
-     * 因为下界计算时，我们乐观地假设这些任务已经被高效地完成了
+     * Key point: Tasks in maybeCompletedTasks are NOT in this set!
+     * Because for lower bound calculation, we optimistically assume these tasks are efficiently completed
      */
     public Set<Integer> getRemainingTasksForLowerBound(int totalTasks) {
         java.util.Set<Integer> remaining = new java.util.LinkedHashSet<>();
         for (int i = 0; i < totalTasks; i++) {
             remaining.add(i);
         }
-        // 移除所有已分配的任务（包括 maybe）
+        // Remove all assigned tasks (including maybe)
         remaining.removeAll(completedTasks);
         remaining.removeAll(currentStationTasks);
-        remaining.removeAll(maybeCompletedTasks);  // 🔥 下界计算时移除 maybe
+        remaining.removeAll(maybeCompletedTasks);  // Remove maybe for lower bound calculation
         return remaining;
     }
 
     /**
-     * 剩余机器人数（需要传入总机器人数）
+     * Remaining robots (needs total robots count to be passed in)
      */
     public int remainingRobots(int totalRobots) {
         int currentUsed = currentStationHasRobot() ? 1 : 0;

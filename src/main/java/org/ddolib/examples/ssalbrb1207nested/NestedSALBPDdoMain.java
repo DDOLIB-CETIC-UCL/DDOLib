@@ -16,25 +16,25 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * 嵌套动态规划模型的主程序
- * 外层：装配线平衡（最小化工位数）
- * 内层：单工位人机协同调度
+ * Main program for nested dynamic programming model
+ * Outer: Assembly line balancing (minimize number of stations)
+ * Inner: Single-station human-robot collaborative scheduling
  */
 public class NestedSALBPDdoMain {
     public static void main(String[] args) throws IOException {
-        // ==================== 优化开关配置 ====================
-        // 设置为 true 启用优化，设置为 false 禁用（用于对比实验）
-        final boolean USE_INFEASIBILITY_CACHE = true;   // ← 不可行子集缓存
-        final boolean USE_CAPACITY_CUT = true;          // ← 容量割平面
-        final boolean USE_BOUND_PROPAGATION = true;     // ← 上界传播
-        final boolean USE_SYMMETRY_BREAKING = true;     // ← 对称性破坏
+        // ==================== Optimization switch configuration ====================
+        // Set to true to enable optimization, false to disable (for comparison experiments)
+        final boolean USE_INFEASIBILITY_CACHE = true;   // ← Infeasibility cache
+        final boolean USE_CAPACITY_CUT = true;          // ← Capacity cut
+        final boolean USE_BOUND_PROPAGATION = true;     // ← Bound propagation
+        final boolean USE_SYMMETRY_BREAKING = true;     // ← Symmetry breaking
 
-        // ==================== 数据文件路径配置 ====================
-        // 支持两种格式：
-        // 1. .csv 格式（新格式）：task,th,tr,tc,successor
-        // 2. .alb 格式（原始格式）
+        // ==================== Data file path configuration ====================
+        // Supports two formats:
+        // 1. .csv format (new format): task,th,tr,tc,successor
+        // 2. .alb format (original format)
 
-        // 【当前使用】CSV格式 - 20任务数据集
+        // [Currently using] CSV format - 20-task dataset
 //        final String instance = args.length == 0
 //                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_324.csv").toString()
 //                : args[0];
@@ -47,16 +47,16 @@ public class NestedSALBPDdoMain {
                 ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_11.csv").toString()
                 : args[0];
 
-        // 【备选】ALB格式 - 数据集
+        // [Alternative] ALB format - dataset
 //        final String instance = args.length == 0
 //                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_106.alb").toString()
 //                : args[0];
 
-        // 循环时间（cycle time）
+        // Cycle time
         final int cycleTime = args.length >= 2 ?
                 Integer.parseInt(args[1]) : 1000;
 
-        // 可用机器人总数
+        // Total available robots
         final int totalRobots = args.length >= 3 ?
                 Integer.parseInt(args[2]) : 5;
 
@@ -119,20 +119,20 @@ public class NestedSALBPDdoMain {
 
         Solution solution = Solvers.minimizeDdo(model,
                 (sol, searchStats) -> {
-                    // 每次找到更好的解时都会调用这个callback
+                    // Callback invoked every time a better solution is found
                     System.out.println("\n===== New Incumbent Solution =====");
 
-                    // 更新上界传播的最优解
+                    // Update best solution for bound propagation
                     if (sol != null && sol.length > 0) {
                         try {
                             int solutionValue = (int) problem.evaluate(sol);
                             problem.updateBestSolution(solutionValue);
                         } catch (Exception e) {
-                            // 忽略评估错误
+                            // Ignore evaluation errors
                         }
                     }
 
-                    // 计算全局下界
+                    // Calculate global lower bound
                     double globalLB = searchStats.incumbent() * (1.0 - searchStats.gap() / 100.0);
                     System.out.printf("Global Lower Bound: %.2f (from gap calculation)%n", globalLB);
 
@@ -147,45 +147,45 @@ public class NestedSALBPDdoMain {
 
         System.out.println("\n" + solution.statistics());
 
-        // 打印缓存统计信息
+        // Print cache statistics
         problem.printCacheStatistics();
 
-        // 打印优化统计信息
+        // Print optimization statistics
         problem.printOptimizationStatistics();
     }
 
     /**
-     * 打印嵌套解决方案
+     * Print nested solution details
      */
     private static void printNestedSolution(NestedSALBPProblem problem, int[] solution) {
         System.out.println("\n=== Solution Details ===");
 
-        // 将任务索引转换为真实序号（解码decision后 索引+1）
+        // Convert task indices to real numbers (after decoding decision, index+1)
         int[] taskNumbers = new int[solution.length];
         for (int i = 0; i < solution.length; i++) {
-            int task = solution[i] / 2;  // 解码decision
+            int task = solution[i] / 2;  // Decode decision
             taskNumbers[i] = task + 1;
         }
         System.out.println("Task assignment sequence: " + java.util.Arrays.toString(taskNumbers));
 
-        // 重建状态以获取每个工位的详细信息
+        // Reconstruct state to get detailed information for each station
         NestedSALBPState state = problem.initialState();
         int stationNum = 1;
 
         for (int decisionVal : solution) {
-            // 解码决策
+            // Decode decision
             int task = decisionVal / 2;
             int robotFlag = decisionVal % 2;
             boolean assignRobot = (robotFlag == 1);
 
-            // 判断：是否新开工位
+            // Check: whether to open new station
             boolean willOpenNewStation = false;
 
             if (state.currentStationTasks().isEmpty()) {
-                // 当前工位为空：开启新工位
+                // Current station is empty: open new station
                 willOpenNewStation = true;
             } else {
-                // 检查加入任务后是否超时
+                // Check if adding task exceeds time limit
                 java.util.Set<Integer> testTasks = new java.util.LinkedHashSet<>(state.currentStationTasks());
                 testTasks.add(task);
                 int makespan = problem.computeStationMakespan(testTasks, state.currentStationHasRobot());
@@ -193,16 +193,16 @@ public class NestedSALBPDdoMain {
             }
 
             if (willOpenNewStation && !state.currentStationTasks().isEmpty()) {
-                // 打印当前工位
+                // Print current station
                 System.out.printf("\nStation %d:%n", stationNum);
 
-                // 获取内层DDO的调度顺序和操作模式
+                // Get scheduling order and operation modes from inner DDO
                 NestedSALBPProblem.InnerSolution innerSolution = problem.solveInnerProblemWithModes(
                         state.currentStationTasks(),
                         state.currentStationHasRobot()
                 );
 
-                // 将任务索引转换为真实序号（按调度顺序）
+                // Convert task indices to real numbers (in scheduling order)
                 java.util.List<Integer> stationTaskNumbers = new java.util.ArrayList<>();
                 java.util.List<String> taskModeDetails = new java.util.ArrayList<>();
                 String[] modeNames = {"Human", "Robot", "Collaboration"};
@@ -215,7 +215,7 @@ public class NestedSALBPDdoMain {
                         taskModeDetails.add("Task " + taskNum + ": " + modeNames[mode]);
                     }
                 } else {
-                    // 如果没有解，按原顺序
+                    // If no solution, use original order
                     for (int t : state.currentStationTasks()) {
                         stationTaskNumbers.add(t + 1);
                     }
@@ -231,25 +231,25 @@ public class NestedSALBPDdoMain {
                 stationNum++;
             }
 
-            // 手动模拟状态转移
+            // Manually simulate state transition
             if (!willOpenNewStation) {
-                // 加入当前工位
+                // Join current station
                 java.util.Set<Integer> newStationTasks = new java.util.LinkedHashSet<>(state.currentStationTasks());
                 newStationTasks.add(task);
 
                 state = new NestedSALBPState(
                         state.completedTasks(),
                         newStationTasks,
-                        state.maybeCompletedTasks(),  // 🔥 保持不变
+                        state.maybeCompletedTasks(),  // Keep unchanged
                         state.currentStationHasRobot(),
                         state.usedRobots());
             } else {
-                // 新开工位
+                // Open new station
                 java.util.Set<Integer> newCompletedTasks =
                         new java.util.LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
 
-                // 只有当前工位不为空时，才将其任务加入已完成集合
+                // Only add tasks to completed set if current station is not empty
                 if (!state.currentStationTasks().isEmpty()) {
                     newCompletedTasks.addAll(state.currentStationTasks());
                     if (state.currentStationHasRobot()) {
@@ -261,23 +261,23 @@ public class NestedSALBPDdoMain {
                 state = new NestedSALBPState(
                         newCompletedTasks,
                         freshStationTasks,
-                        state.maybeCompletedTasks(),  // 🔥 保持不变
+                        state.maybeCompletedTasks(),  // Keep unchanged
                         assignRobot,
                         newUsedRobots);
             }
         }
 
-        // 打印最后一个工位
+        // Print last station
         if (!state.currentStationTasks().isEmpty()) {
             System.out.printf("\nStation %d:%n", stationNum);
 
-            // 获取内层DDO的调度顺序和操作模式
+            // Get scheduling order and operation modes from inner DDO
             NestedSALBPProblem.InnerSolution innerSolution = problem.solveInnerProblemWithModes(
                     state.currentStationTasks(),
                     state.currentStationHasRobot()
             );
 
-            // 将任务索引转换为真实序号（按调度顺序）
+            // Convert task indices to real numbers (in scheduling order)
             java.util.List<Integer> lastStationTaskNumbers = new java.util.ArrayList<>();
             java.util.List<String> taskModeDetails = new java.util.ArrayList<>();
             String[] modeNames = {"Human", "Robot", "Collaboration"};
@@ -290,7 +290,7 @@ public class NestedSALBPDdoMain {
                     taskModeDetails.add("Task " + taskNum + ": " + modeNames[mode]);
                 }
             } else {
-                // 如果没有解，按原顺序
+                // If no solution, use original order
                 for (int t : state.currentStationTasks()) {
                     lastStationTaskNumbers.add(t + 1);
                 }

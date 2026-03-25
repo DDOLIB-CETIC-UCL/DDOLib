@@ -5,62 +5,63 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 支配规则 - Memory-based Dominance Rule
+ * Dominance Rule - Memory-based Dominance Rule
  *
- * 状态支配规则用于剪枝，当一个状态被另一个状态支配时，可以安全地丢弃被支配的状态。
+ * State dominance rule for pruning: when one state is dominated by another, 
+ * the dominated state can be safely discarded.
  *
- * 支配规则设计：
+ * Dominance rule design:
  *
- * 前提条件：
- *   - 已分配任务集合（completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks）相同
+ * Prerequisite:
+ *   - Already assigned tasks (completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks) are the same
  *
- * 支配判断规则：
- *   规则1 - 机器人资源：剩余机器人更多的状态优于剩余机器人更少的状态
- *           （因为未来有更多选择）
+ * Dominance judgment rules:
+ *   Rule 1 - Robot resources: state with more remaining robots dominates state with fewer remaining robots
+ *            (because it has more future choices)
  *
- *   规则2 - 机器人优势：当总使用机器人相等时，有机器人的当前工位优于没机器人的工位
- *           （因为有机器人的工位可以接受更多任务，搜索空间更大）
+ *   Rule 2 - Robot advantage: when total robots used equal, state with robot in current station dominates state without
+ *            (because station with robot can accept more tasks, larger search space)
  *
- *   综合规则：s2 dominate s1 当且仅当 s2 的"总消耗机器人"不多于 s1 的
- *           且 s2 当前工位的机器人状态不差于 s1
+ *   Combined rule: s2 dominates s1 if and only if s2's "total robots used" not more than s1's
+ *                 AND s2's current station robot status not worse than s1's
  *
- * 改进说明：
- *   相比严格版本（要求 completedTasks 和 currentStationTasks 都完全相同），
- *   宽松版本只要求"已分配任务集合"相同，能够比较更多的状态对，剪枝效果更强。
+ * Improvement explanation:
+ *   Compared to strict version (require completedTasks and currentStationTasks exactly the same),
+ *   relaxed version only requires "assigned task set" to be the same, can compare more state pairs, stronger pruning effect.
  *
- * 理论正确性：
- *   如果两个状态的"已分配任务集合"相同，则它们面临相同的"剩余任务分配问题"。
- *   此时，使用更少机器人的状态拥有更多未来选择，因此不会更差。
+ * Theoretical correctness:
+ *   If two states have the same "assigned task set", they face the same "remaining task assignment problem".
+ *   Then, state using fewer robots has more future choices, therefore not worse.
  */
 public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
 
     /**
-     * 支配关系的分组键
+     * Grouping key for dominance relationship
      *
-     * 策略选择：
-     * - 严格策略：completedTasks + currentStationTasks 都相同才比较
-     * - 宽松策略：只要"所有已分配任务"相同就比较
+     * Strategy choices:
+     * - Strict strategy: compare only if completedTasks + currentStationTasks are exactly the same
+     * - Relaxed strategy: compare if "all assigned tasks" are the same
      *
-     * 当前使用：宽松策略（Memory-based Dominance Rule）
+     * Current use: Relaxed strategy (Memory-based Dominance Rule)
      */
     private record DominanceKey(
             Set<Integer> allAssignedTasks  // completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks
     ) {}
 
     /**
-     * 返回用于分组的键。
-     * 只有相同 key 的状态才会进行支配关系比较。
+     * Return key for grouping.
+     * Only states with the same key will be compared for dominance relationship.
      *
-     * 采用文献中改进的Memory-based Dominance Rule：
-     * 只要"已分配任务集合"相同，就进行支配关系比较，
-     * 而不管这些任务是如何分配到工位的。
+     * Uses improved Memory-based Dominance Rule from literature:
+     * As long as "assigned task set" is the same, perform dominance comparison,
+     * regardless of how these tasks are distributed to stations.
      *
-     * @param state 当前状态
-     * @return 分组键（所有已分配任务）
+     * @param state Current state
+     * @return Grouping key (all assigned tasks)
      */
     @Override
     public Object getKey(NestedSALBPState state) {
-        // 合并 completedTasks, currentStationTasks 和 maybeCompletedTasks
+        // Merge completedTasks, currentStationTasks and maybeCompletedTasks
         Set<Integer> allAssigned = new HashSet<>(state.completedTasks());
         allAssigned.addAll(state.currentStationTasks());
         allAssigned.addAll(state.maybeCompletedTasks());
@@ -68,39 +69,39 @@ public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
     }
 
     /**
-     * @param state1 第一个状态
-     * @param state2 第二个状态
-     * @return true 如果 state1 被 state2 支配或两者等价
+     * @param state1 First state
+     * @param state2 Second state
+     * @return true if state1 is dominated by state2 or they are equivalent
      */
     @Override
     public boolean isDominatedOrEqual(NestedSALBPState state1, NestedSALBPState state2) {
-        // 计算总使用机器人数（包括当前工位）
+        // Compute total robots used (including current station)
         int totalUsed1 = state1.usedRobots() + (state1.currentStationHasRobot() ? 1 : 0);
         int totalUsed2 = state2.usedRobots() + (state2.currentStationHasRobot() ? 1 : 0);
 
-        // 规则2：state2 使用更少的机器人 -> state2 更优 -> state1 被支配
+        // Rule 2: state2 uses fewer robots -> state2 is better -> state1 is dominated
         if (totalUsed2 < totalUsed1) {
             return true;
         }
 
-        // 规则1：总使用机器人相等时，比较当前工位的机器人状态
+        // Rule 1: when total robots used equal, compare current station robot status
         if (totalUsed1 == totalUsed2) {
-            // usedRobots 相等的情况
+            // Case when usedRobots is equal
             if (state1.usedRobots() == state2.usedRobots()) {
-                // 若 state2 有机器人而 state1 没有 -> state1 被支配
-                // 若两者机器人状态相同 -> 等价
-                // 若 state1 有机器人而 state2 没有 -> state1 不被支配
+                // If state2 has robot but state1 doesn't -> state1 is dominated
+                // If both have same robot status -> equivalent
+                // If state1 has robot but state2 doesn't -> state1 is not dominated
                 if (!state1.currentStationHasRobot() && state2.currentStationHasRobot()) {
-                    return true;  // state1 被 state2 支配
+                    return true;  // state1 is dominated by state2
                 }
                 if (state1.currentStationHasRobot() == state2.currentStationHasRobot()) {
-                    return true;  // 等价
+                    return true;  // equivalent
                 }
             }
-            // usedRobots 不等但 totalUsed 相等的情况
-            // 例如：state1(usedRobots=2, hasRobot=false) vs state2(usedRobots=1, hasRobot=true)
-            // 两者 totalUsed=2，但 state2 当前有机器人，未来更灵活
-            // 这种情况下 state2 略优，但不是严格支配，保守起见不剪枝
+            // Case when usedRobots not equal but totalUsed equal
+            // E.g.: state1(usedRobots=2, hasRobot=false) vs state2(usedRobots=1, hasRobot=true)
+            // Both totalUsed=2, but state2 has robot currently, more flexible in future
+            // In this case state2 slightly better, but not strict dominance, conservatively don't prune
         }
 
         return false;

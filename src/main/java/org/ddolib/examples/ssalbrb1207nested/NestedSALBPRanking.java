@@ -3,7 +3,7 @@ package org.ddolib.examples.ssalbrb1207nested;
 import org.ddolib.modeling.StateRanking;
 
 /**
- * 外层状态排序：优先选择工位数少的状态
+ * Outer state ranking: prioritize states with fewer stations
  */
 public class NestedSALBPRanking implements StateRanking<NestedSALBPState> {
 
@@ -15,7 +15,7 @@ public class NestedSALBPRanking implements StateRanking<NestedSALBPState> {
 
     @Override
     public int compare(NestedSALBPState first, NestedSALBPState second) {
-        // 首先比较已完成任务数（越少越好，近似工位数）
+        // First compare number of completed tasks (fewer is better, approximates station count)
         int completedCompare = Integer.compare(
                 first.completedTasks().size(),
                 second.completedTasks().size()
@@ -24,43 +24,43 @@ public class NestedSALBPRanking implements StateRanking<NestedSALBPState> {
             return completedCompare;
         }
 
-        // 其次比较当前工位任务数（越多越好 - 在当前工位塞入更多任务意味着更少的总工位数）
+        // Next compare current station task count (more is better - fitting more tasks in current station means fewer total stations)
         int currentTasksCompare = Integer.compare(
-                second.currentStationTasks().size(),  // 注意：second 在前，表示越大越好
+                second.currentStationTasks().size(),  // Note: second first means larger is better
                 first.currentStationTasks().size()
         );
         if (currentTasksCompare != 0) {
             return currentTasksCompare;
         }
 
-        // 第三，比较 maybeCompletedTasks 数量（越多越好 - 表示更多任务可能已完成）
+        // Third, compare maybeCompletedTasks count (more is better - means more tasks may be completed)
         int maybeCompare = Integer.compare(
-                second.maybeCompletedTasks().size(),  // 注意：second 在前，表示越大越好
+                second.maybeCompletedTasks().size(),  // Note: second first means larger is better
                 first.maybeCompletedTasks().size()
         );
         if (maybeCompare != 0) {
             return maybeCompare;
         }
 
-        // 第四，如果当前工位有机器人，优先（提高当前工位容量，能塞入更多任务）
+        // Fourth, if current station has robot, prioritize (increases current station capacity, can fit more tasks)
         int currentRobotCompare = Boolean.compare(
-                second.currentStationHasRobot(),  // 注意顺序：true > false
+                second.currentStationHasRobot(),  // Note order: true > false
                 first.currentStationHasRobot()
         );
         if (currentRobotCompare != 0) {
             return currentRobotCompare;
         }
 
-        // 第五，比较已使用的机器人数（越少越好 - 保留更多机器人给未来）
+        // Fifth, compare robots used (fewer is better - preserve more robots for future)
         int usedRobotsCompare = Integer.compare(
-                first.usedRobots(),  // 注意顺序：first 在前表示越小越好
+                first.usedRobots(),  // Note order: first means smaller is better
                 second.usedRobots()
         );
         if (usedRobotsCompare != 0) {
             return usedRobotsCompare;
         }
 
-        // 最后比较剩余机器人数（越多越好）
+        // Finally compare remaining robots (more is better)
         return Integer.compare(second.remainingRobots(totalRobots), first.remainingRobots(totalRobots));
     }
 }

@@ -1,14 +1,14 @@
 package org.ddolib.examples.ssalbrb1207nested;
 
 /**
- * 上界传播（Bound Propagation）
+ * Bound Propagation
  * 
- * 原理：利用已知的最优解上界进行剪枝
- * 如果当前状态的下界 ≥ 已知上界，则可以剪枝
+ * Principle: Use known optimal solution upper bound for pruning
+ * If current state's lower bound ≥ known upper bound, can prune
  * 
- * 对应MIP中的分支定界：
- * - MIP: 如果节点的LP松弛值 ≥ 当前最优解，剪枝
- * - DDO: 如果状态的下界 + 当前代价 ≥ 当前最优解，剪枝
+ * Corresponds to Branch and Bound in MIP:
+ * - MIP: If node's LP relaxation ≥ current best solution, prune
+ * - DDO: If state's lower bound + current cost ≥ current best solution, prune
  */
 public class BoundPropagation {
     
@@ -18,9 +18,9 @@ public class BoundPropagation {
     private long pruneCount = 0;
     
     /**
-     * 更新最优解上界
+     * Update best solution upper bound
      * 
-     * @param solutionValue 新找到的解的目标值
+     * @param solutionValue Objective value of newly found solution
      */
     public void updateBestSolution(int solutionValue) {
         if (solutionValue < currentBestSolution) {
@@ -28,30 +28,30 @@ public class BoundPropagation {
             currentBestSolution = solutionValue;
             updateCount++;
             
-            System.out.printf("[BoundProp] 更新上界: %d (改进: %d)%n", 
+            System.out.printf("[BoundProp] Update upper bound: %d (improvement: %d)%n", 
                     solutionValue, improvement == Integer.MAX_VALUE ? 0 : improvement);
         }
     }
     
     /**
-     * 检查是否可以剪枝
+     * Check if pruning is possible
      * 
-     * @param currentValue 当前已使用的工位数
-     * @param lowerBound 剩余任务需要的工位数下界
-     * @return true 如果可以剪枝
+     * @param currentValue Number of stations currently used
+     * @param lowerBound Lower bound on number of stations needed for remaining tasks
+     * @return true if can prune
      */
     public boolean canPrune(int currentValue, double lowerBound) {
         checkCount++;
         
-        // 如果还没有找到任何解，不能剪枝
+        // If no solution found yet, cannot prune
         if (currentBestSolution == Integer.MAX_VALUE) {
             return false;
         }
         
-        // 总下界 = 当前值 + 未来下界
+        // Total lower bound = current value + future lower bound
         double totalLowerBound = currentValue + lowerBound;
         
-        // 如果下界 ≥ 上界，剪枝
+        // If lower bound ≥ upper bound, prune
         if (totalLowerBound >= currentBestSolution) {
             pruneCount++;
             return true;
@@ -61,35 +61,35 @@ public class BoundPropagation {
     }
     
     /**
-     * 获取当前最优解
+     * Get current best solution
      */
     public int getCurrentBestSolution() {
         return currentBestSolution;
     }
     
     /**
-     * 获取剪枝次数
+     * Get prune count
      */
     public long getPruneCount() {
         return pruneCount;
     }
     
     /**
-     * 获取检查次数
+     * Get check count
      */
     public long getCheckCount() {
         return checkCount;
     }
     
     /**
-     * 获取更新次数
+     * Get update count
      */
     public long getUpdateCount() {
         return updateCount;
     }
     
     /**
-     * 获取统计信息
+     * Get statistics information
      */
     public String getStatistics() {
         return String.format("BoundPropagation: checks=%d, prunes=%d, updates=%d, bestUB=%d, pruneRate=%.2f%%",
@@ -99,7 +99,7 @@ public class BoundPropagation {
     }
     
     /**
-     * 重置统计信息
+     * Reset statistics
      */
     public void reset() {
         currentBestSolution = Integer.MAX_VALUE;
