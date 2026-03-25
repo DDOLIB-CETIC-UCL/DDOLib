@@ -970,22 +970,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         if (lastLayer) {
             node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
-        String nodeStr = "";
-        if (lastLayer) {
-            nodeStr = String.format(
-                    "\"%s\ng: %s\"",
-                    node.state,
-                    df.format(node.node.value)
-            );
-        } else {
-            nodeStr = String.format(
-                    "\"%s\nh: %s - g: %s\"",
-                    node.state,
-                    df.format(node.node.flb),
-                    df.format(node.node.value)
-            );
-        }
-
+        String nodeStr = "\"%s\nh: %s - g: %s\"".formatted(
+                node.state,
+                df.format(node.flb),
+                df.format(node.node.value)
+        );
 
         StringBuilder sb = new StringBuilder();
         sb.append(node.node.hashCode());
