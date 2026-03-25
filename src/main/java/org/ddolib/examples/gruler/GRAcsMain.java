@@ -2,6 +2,7 @@ package org.ddolib.examples.gruler;
 
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.AcsModel;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -42,6 +43,11 @@ public class GRAcsMain {
             @Override
             public Problem<GRState> problem() {
                 return problem;
+            }
+
+            @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new GRFastLowerBound();
             }
 
             @Override
