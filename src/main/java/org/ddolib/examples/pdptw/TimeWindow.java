@@ -1,10 +1,10 @@
 package org.ddolib.examples.pdptw;
 
-public record TimeWindow(int start, int end) {
-    public int entryTime(int arrivalTime){
+public record TimeWindow(double start, double end) {
+    public double entryTime(double arrivalTime){
         return Math.max(arrivalTime, start);
     }
-    public int waitTime(int arrivalTime){
+    public double waitTime(double arrivalTime){
         return Math.max(arrivalTime, start) - arrivalTime;
     }
 }

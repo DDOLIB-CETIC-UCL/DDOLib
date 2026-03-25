@@ -5,24 +5,43 @@ import java.util.Objects;
 
 public class PDPTWState {
 
-    //the nodes that we can visit, including
-    // all non-visited pick-up nodes
-    // all non-visited  delivery nodes such that the related pick-up has been reached
+    /**
+     * Nodes that can currently be visited.
+     * <p>
+     * Includes all unvisited pickup nodes and all unvisited delivery nodes whose
+     * corresponding pickup node has already been visited.
+     * </p>
+     */
     BitSet openToVisit;
 
-    //every node that has not been visited yet
+    /**
+     * All nodes that have not yet been visited, including those that cannot
+     * currently be visited due to pickup-delivery constraints.
+     */
     BitSet allToVisit;
 
-    //the current node. It is a set because in case of a fusion, we must take the union.
-    // However, most of the time, it is a singleton
+    /**
+     * The current node(s) of the vehicle.
+     * <p>
+     * Typically a singleton. In case of merged states (relaxation), it can contain multiple nodes.
+     * </p>
+     */
     BitSet current;
-
+    /**
+     * The minimum possible vehicle content (number of items) at this state.
+     */
     int minContent;
+    /**
+     * The maximum possible vehicle content (number of items) at this state.
+     */
     int maxContent ;
 
-    int currentTime;
+    /**
+     * The current time at this state, or earlier in case of fusion
+     */
+    double currentTime;
 
-    public PDPTWState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent, int currentTime) {
+    public PDPTWState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent, double currentTime) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
         this.current = current;
