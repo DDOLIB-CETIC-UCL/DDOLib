@@ -871,7 +871,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
 
-            mergedNode.flb = config.flb.fastLowerBound(merged, varSet(config));
+            mergedNode.node.flb = config.flb.fastLowerBound(merged, varSet(config));
             if (debugLevel != DebugLevel.OFF) {
                 checkRelaxation(cluster, mergedNode);
             }
@@ -966,11 +966,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         DecimalFormat df = new DecimalFormat("#.##########");
 
         if (lastLayer) {
-            node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
+            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
         }
         String nodeStr = "\"%s\nh: %s - g: %s\"".formatted(
                 node.state,
-                df.format(node.flb),
+                df.format(node.node.flb),
                 df.format(node.node.value)
         );
 
