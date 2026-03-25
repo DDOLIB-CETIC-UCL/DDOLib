@@ -212,12 +212,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (nextVar == null) {
                 // Some variables simply can't be assigned
                 return;
-            } else {
-                variables.remove(nextVar);
             }
 
-
-            // If the current layer is too large, we need to shrink it down. 
+            // If the current layer is too large, we need to shrink it down.
             // Whether this shrinking down means that we want to perform a restriction
             // or a relaxation depends on the type of compilation which has been 
             // requested from this decision diagram  
@@ -242,13 +239,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, relax, config.reductionStrategy);
+                        relax(maxWidth, relax, config.reductionStrategy, variables);
                         break;
                     case Exact:
                         /* nothing to do */
                         break;
                 }
             }
+
+            variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
                 if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
@@ -336,7 +335,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
         }
-
 
         if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed) {
             checkFlb(config.problem);
@@ -434,6 +432,339 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         dotStr.append("}");
         return dotStr.toString();
     }
+
+    // UTILITY METHODS -----------------------------------------------
+    private Set<Integer> varSet(final CompilationConfig<T> input) {
+        final HashSet<Integer> set = new HashSet<>();
+        for (int i = 0; i < config.problem.nbVars(); i++) {
+            set.add(i);
+        }
+
+        for (Decision d : input.residual.getPath()) {
+            set.remove(d.variable());
+        }
+        return set;
+    }
+
+    /**
+     * Performs a restriction of the current layer.
+     *
+     * @param maxWidth the maximum tolerated layer width
+     */
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
+
+        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.isEmpty()) continue;
+
+            cluster.sort(ranking);
+            currentLayer.add(cluster.getFirst());
+            cluster.clear();
+        }
+    }
+
+    /**
+     * Performs a restriction of the current layer.
+     *
+     * @param maxWidth the maximum tolerated layer width
+     * @param relax    the relaxation operators which we will use to merge nodes
+     */
+    private void relax(final int maxWidth,
+                       final Relaxation<T> relax,
+                       final ReductionStrategy<T> relaxStrategy,
+                       Set<Integer> variables) {
+        // generates clusters
+        List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
+
+        // For each cluster, merge all the nodes together and add the new node to the layer.
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
+            }
+
+            if (cluster.isEmpty()) {
+                continue;
+            }
+
+            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            NodeSubProblem<T> mergedNode = null;
+            for (NodeSubProblem<T> n : currentLayer) {
+                if (n.state.equals(merged)) {
+                    mergedNode = n;
+                    mergedNode.node.type = NodeType.RELAXED;
+                    break;
+                }
+            }
+
+            if (mergedNode == null) {
+                Node newNode = new Node(Double.POSITIVE_INFINITY);
+                newNode.type = NodeType.RELAXED;
+                mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
+                currentLayer.add(mergedNode);
+            }
+
+            // redirect and relax all arcs entering the merged node
+            for (NodeSubProblem<T> drop : cluster) {
+                mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
+
+                for (Edge e : drop.node.edges) {
+                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
+
+                    double value = saturatedAdd(e.origin.value, rcost);
+                    e.weight = rcost;
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                    if (e.origin.type == NodeType.RELAXED) {
+                        mergedNode.node.type = NodeType.RELAXED;
+                    }
+
+                    mergedNode.node.edges.add(e);
+                    if (value < mergedNode.node.value) {
+                        mergedNode.node.value = value;
+                        mergedNode.node.best = e;
+                    }
+                }
+            }
+
+            mergedNode.node.flb = config.flb.fastLowerBound(merged, variables);
+            if (debugLevel != DebugLevel.OFF) {
+                checkRelaxation(cluster, mergedNode);
+            }
+        }
+    }
+
+    /**
+     * This method performs the branching from the subproblem rooted in "node", making the given decision
+     * and behaving as per the problem definition.
+     *
+     * @param node     the origin of the transition
+     * @param decision the decision being made
+     * @param problem  the problem that defines the transition and transition cost functions
+     */
+    private void branchOn(final NodeSubProblem<T> node,
+                          final Decision decision,
+                          final Problem<T> problem) {
+        if (debugLevel != DebugLevel.OFF)
+            DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
+
+        T state = problem.transition(node.state, decision);
+        double cost = problem.transitionCost(node.state, decision);
+        double value = saturatedAdd(node.node.value, cost);
+
+        // when the origin is relaxed, the destination must be relaxed
+        Node n = nextLayer.get(state);
+        if (n == null) {
+            n = new Node(value);
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
+            }
+            nextLayer.put(state, n);
+        } else {
+            if (node.node.type == NodeType.RELAXED) {
+                n.type = NodeType.RELAXED;
+            }
+        }
+
+        Edge edge = new Edge(node.node, decision, cost);
+        n.edges.add(edge);
+        if (value <= n.value) {
+            n.best = edge;
+            n.value = value;
+        }
+    }
+
+    /**
+     * Performs a bottom up traversal of the mdd to compute the local bounds
+     */
+    private void computeLocalBounds() {
+        HashSet<Node> current = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>(nextLayer.values());
+
+        for (Node n : parent) {
+            n.suffix = 0.0;
+            n.isMarked = true;
+        }
+
+        while (!parent.isEmpty()) {
+            HashSet<Node> tmp = current;
+            current = parent;
+            parent = tmp;
+            parent.clear();
+
+            for (Node n : current) {
+                if (n.isMarked) {
+                    for (Edge e : n.edges) {
+                        // Note: we might want to do something and stop as soon as the lel has been reached
+                        Node origin = e.origin;
+                        parent.add(origin);
+
+                        if (origin.suffix == null) {
+                            origin.suffix = saturatedAdd(n.suffix, e.weight);
+                        } else {
+                            origin.suffix = Math.min(origin.suffix, saturatedAdd(n.suffix, e.weight));
+                        }
+                        origin.isMarked = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
+        HashSet<Node> current = new HashSet<>();
+        HashSet<Node> parent = new HashSet<>();
+
+        if (cutSetType == CutSetType.LastExactLayer) {
+            for (NodeSubProblem<T> n : nodePerLayer.get(depthLEL)) {
+                parent.add(n.node);
+            }
+        } else {
+            parent.addAll(nextLayer.values());
+        }
+
+        while (!parent.isEmpty()) {
+            HashSet<Node> tmp = current;
+            current = parent;
+            parent = tmp;
+            parent.clear();
+
+            for (Node n : current) {
+                for (Edge e : n.edges) {
+                    // Note: we might want to do something and stop as soon as the lel has been reached
+                    Node origin = e.origin;
+                    parent.add(origin);
+                    if ((n.isInExactCutSet || n.isAboveExactCutSet)
+                            && origin.type == NodeType.EXACT
+                            && !origin.isInExactCutSet) {
+                        origin.isAboveExactCutSet = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Performs the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache,
+                                           ArrayList<Integer> listDepth,
+                                           ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer,
+                                           ArrayList<ArrayList<Threshold>> currentCache,
+                                           double ub,
+                                           CutSetType cutSetType) {
+        for (int j = listDepth.size() - 1; j >= 0; j--) {
+            int depth = listDepth.get(j);
+            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
+                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
+                if (simpleCache.getLayer(depth).containsKey(sub.state)
+                        && simpleCache.getLayer(depth).get(sub.state).isPresent()
+                        && sub.node.value >= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
+                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
+                    currentCache.get(j).get(i).setValue(value);
+                } else {
+                    if (sub.lb >= ub) {
+                        double rlb = saturatedDiff(sub.lb, sub.node.value);
+                        double value = saturatedDiff(ub, rlb);
+                        currentCache.get(j).get(i).setValue(value);
+                    } else if (sub.node.isInExactCutSet) {
+                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) >= ub) {
+                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(ub, sub.node.suffix));
+                            currentCache.get(j).get(i).setValue(value);
+                        } else {
+                            currentCache.get(j).get(i).setValue(sub.node.value);
+                        }
+                    }
+                    if (sub.node.type == NodeType.EXACT) {
+                        if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
+                            currentCache.get(j).get(i).setExplored(true);
+                        }
+                        if (cutSetType == CutSetType.LastExactLayer
+                                && sub.node.value > currentCache.get(j).get(i).getValue()
+                                && sub.node.isInExactCutSet)
+                            currentCache.get(j).get(i).setExplored(true);
+                        if (currentCache.get(j).get(i).isExplored()) {
+                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
+                        }
+                    }
+                }
+                for (Edge e : sub.node.edges) {
+                    Node origin = e.origin;
+                    int index = -1;
+                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
+                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
+                            index = k;
+                            break;
+                        }
+                    }
+                    double value = Math.max(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
+                    currentCache.get(j - 1).get(index).setValue(value);
+                }
+            }
+        }
+    }
+
+
+    // ----- DEBUG AND EXPORT STUFF -----
+
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        if (lastLayer) {
+            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
+        }
+        String nodeStr = "\"%s\nh: %s - g: %s\"".formatted(
+                node.state,
+                df.format(node.node.flb),
+                df.format(node.node.value)
+        );
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.node.hashCode());
+        sb.append(" [label=").append(nodeStr);
+        if (node.node.type == NodeType.RELAXED) {
+            sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        } else {
+            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
+        }
+        if (lastLayer) {
+            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
+            sb.append(", tooltip=\"Terminal node\"");
+        }
+        sb.append("];\n");
+
+        for (Edge e : node.node.edges) {
+            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
+                    " [label=" + df.format(e.weight) +
+                    ", tooltip=\"" + e.decision.toString() + "\"";
+            edgesDotStr.put(e.hashCode(), edgeStr);
+        }
+        return sb;
+    }
+
+    /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     * @param color    HTML string for the color of the edge
+     */
+    private void updateBestEdgeColor(int edgeHash, String color) {
+        String edgeStr = edgesDotStr.get(edgeHash);
+        if (edgeStr != null) {
+            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
+            edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
+
 
     /**
      * Finds the shortest path between two nodes in the decision diagram using a Dijkstra variant.
@@ -535,8 +866,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
-    // ------ METHODS FOR DEBUG ------
-
     /**
      * Given a list of decisions returns string describing the states from root.
      *
@@ -549,16 +878,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         LinkedList<String> states = new LinkedList<>();
         T current = problem.initialState();
         int depth = 0;
-        StringBuilder msg = new StringBuilder(String.format("%-23s", depth + "."));
+        StringBuilder msg = new StringBuilder("%-23s".formatted(depth + "."));
         for (PathInfo pathInfo : pathFromRoot) {
-            msg.append(String.format("length to end: %6s", pathInfo.lengthToEnd));
-            msg.append(String.format(" - flb: %6s", pathInfo.flbOfOrigin));
+            msg.append("length to end: %6s".formatted(pathInfo.lengthToEnd));
+            msg.append(" - flb: %6s".formatted(pathInfo.flbOfOrigin));
             if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg.append("!");
             msg.append(" - ").append(current.toString());
             msg.append("\n").append(pathInfo.decision);
             states.addLast(msg.toString());
             depth++;
-            msg = new StringBuilder(String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+            msg = new StringBuilder("%-20s - ".formatted(depth + ". cost: " + problem.transitionCost(current,
                     pathInfo.decision)));
             current = problem.transition(current, pathInfo.decision);
 
@@ -592,20 +921,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
                     LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
                     String lastState = failedState.getLast();
-                    lastState =
-                            String.format(" - flb: %6s", current.getKey().flb) + "! - " + lastState;
-                    lastState =
-                            String.format("length to end: %6s", current.getValue()) + lastState;
+                    lastState = " - flb: %6s".formatted(current.getKey().flb) + "! - " + lastState;
+                    lastState = "length to end: %6s".formatted(current.getValue()) + lastState;
                     failedState.removeLast();
                     lastState = failedState.getLast() + lastState;
                     failedState.removeLast();
                     failedState.addLast(lastState);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
-                    String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
-                                    " its shortest path (%s)\n", df.format(current.getKey().flb),
+                    String failureMsg = ("Found node with lower bound (%s) bigger than its " +
+                            "shortest path (%s)\n").formatted(df.format(current.getKey().flb),
                             df.format(current.getValue()));
-                    failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
-                    failureMsg += String.format("Failing state: %s\n", failedState.getLast());
+                    failureMsg += "Path from root: \n\t%s\n\n".formatted(statesStr);
+                    failureMsg += "Failing state: %s\n".formatted(failedState.getLast());
                     failureMsg += "\nFull failing path:\n";
                     failureMsg += fullPath
                             .stream()
@@ -669,20 +996,20 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     && bestWithNode.isPresent()
                     && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
 
-                failureMsg = String.format("Found relaxed node that lead to worst solution" +
-                                " (%s) than one of the merged nodes (%s).\n",
-                        df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
+                failureMsg = "Found relaxed node that lead to worst solution" +
+                        " (%s) than one of the merged nodes (%s).\n".formatted(
+                                df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
 
                 failureMsg += "Depth: " + relaxationDepth + "\n";
                 failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
                 failureMsg += "Merged states state:\n\t" + nodesToMerge
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
-                failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
+                failureMsg += "\n\nPath by relaxed node : %s - value: %s\n".formatted(
                         relaxedNode.state, df.format(bestWithRelaxed.get()));
                 failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
                         Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
 
-                failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
+                failureMsg += "\n\nPath by exact node : %s - value: %s\n".formatted(
                         node.state, df.format(bestWithNode.get()));
                 failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
                         Optional.empty());
@@ -757,7 +1084,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::variable)).toList();
         T current = config.problem.initialState();
         int depth = 0;
-        StringBuilder msg = new StringBuilder(String.format("\t\t%-23s", depth + "."));
+        StringBuilder msg = new StringBuilder("\t\t%-23s".formatted(depth + "."));
         for (Decision decision : path) {
             msg.append(current).append("\n\t");
             msg.append(decision);
@@ -773,347 +1100,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 current = config.problem.transition(current, decision);
             }
 
-            msg.append(String.format("\t\t%-20s - ", depth + ". cost: " + cost));
+            msg.append("\t\t%-20s - ".formatted(depth + ". cost: " + cost));
 
         }
         msg.append(current);
         return msg.toString();
     }
 
-    // UTILITY METHODS -----------------------------------------------
-    private Set<Integer> varSet(final CompilationConfig<T> input) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < config.problem.nbVars(); i++) {
-            set.add(i);
-        }
-
-        for (Decision d : input.residual.getPath()) {
-            set.remove(d.variable());
-        }
-        return set;
-    }
-
-    /**
-     * Performs a restriction of the current layer.
-     *
-     * @param maxWidth the maximum tolerated layer width
-     */
-    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
-        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
-        currentLayer.clear();
-
-        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
-        for (List<NodeSubProblem<T>> cluster : clusters) {
-            if (cluster.isEmpty()) continue;
-
-            cluster.sort(ranking);
-            currentLayer.add(cluster.getFirst());
-            cluster.clear();
-        }
-    }
-
-    /**
-     * Performs a restriction of the current layer.
-     *
-     * @param maxWidth the maximum tolerated layer width
-     * @param relax    the relaxation operators which we will use to merge nodes
-     */
-    private void relax(final int maxWidth, final Relaxation<T> relax, final ReductionStrategy<T> relaxStrategy) {
-        // generates clusters
-        List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
-        currentLayer.clear();
-
-        // For each cluster, merge all the nodes together and add the new node to the layer.
-        for (List<NodeSubProblem<T>> cluster : clusters) {
-            if (cluster.size() == 1) {
-                currentLayer.add(cluster.getFirst());
-                continue;
-            }
-
-            if (cluster.isEmpty()) {
-                continue;
-            }
-
-            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
-            NodeSubProblem<T> mergedNode = null;
-            for (NodeSubProblem<T> n : currentLayer) {
-                if (n.state.equals(merged)) {
-                    mergedNode = n;
-                    mergedNode.node.type = NodeType.RELAXED;
-                    break;
-                }
-            }
-
-            if (mergedNode == null) {
-                Node newNode = new Node(Double.POSITIVE_INFINITY);
-                newNode.type = NodeType.RELAXED;
-                mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
-                currentLayer.add(mergedNode);
-            }
-
-            // redirect and relax all arcs entering the merged node
-            for (NodeSubProblem<T> drop : cluster) {
-                mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
-
-                for (Edge e : drop.node.edges) {
-                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
-
-                    double value = saturatedAdd(e.origin.value, rcost);
-                    e.weight = rcost;
-                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                    if (e.origin.type == NodeType.RELAXED) {
-                        mergedNode.node.type = NodeType.RELAXED;
-                    }
-
-                    mergedNode.node.edges.add(e);
-                    if (value < mergedNode.node.value) {
-                        mergedNode.node.value = value;
-                        mergedNode.node.best = e;
-                    }
-                }
-            }
-            if (debugLevel != DebugLevel.OFF) {
-                checkRelaxation(cluster, mergedNode);
-            }
-        }
-    }
-
-    /**
-     * This method performs the branching from the subproblem rooted in "node", making the given decision
-     * and behaving as per the problem definition.
-     *
-     * @param node     the origin of the transition
-     * @param decision the decision being made
-     * @param problem  the problem that defines the transition and transition cost functions
-     */
-    private void branchOn(final NodeSubProblem<T> node,
-                          final Decision decision,
-                          final Problem<T> problem) {
-        if (debugLevel != DebugLevel.OFF)
-            DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
-
-        T state = problem.transition(node.state, decision);
-        double cost = problem.transitionCost(node.state, decision);
-        double value = saturatedAdd(node.node.value, cost);
-
-        // when the origin is relaxed, the destination must be relaxed
-        Node n = nextLayer.get(state);
-        if (n == null) {
-            n = new Node(value);
-            if (node.node.type == NodeType.RELAXED) {
-                n.type = NodeType.RELAXED;
-            }
-            nextLayer.put(state, n);
-        } else {
-            if (node.node.type == NodeType.RELAXED) {
-                n.type = NodeType.RELAXED;
-            }
-        }
-
-        Edge edge = new Edge(node.node, decision, cost);
-        n.edges.add(edge);
-        if (value <= n.value) {
-            n.best = edge;
-            n.value = value;
-        }
-    }
-
-    /**
-     * Performs a bottom up traversal of the mdd to compute the local bounds
-     */
-    private void computeLocalBounds() {
-        HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent = new HashSet<>(nextLayer.values());
-
-        for (Node n : parent) {
-            n.suffix = 0.0;
-            n.isMarked = true;
-        }
-
-        while (!parent.isEmpty()) {
-            HashSet<Node> tmp = current;
-            current = parent;
-            parent = tmp;
-            parent.clear();
-
-            for (Node n : current) {
-                if (n.isMarked) {
-                    for (Edge e : n.edges) {
-                        // Note: we might want to do something and stop as soon as the lel has been reached
-                        Node origin = e.origin;
-                        parent.add(origin);
-
-                        if (origin.suffix == null) {
-                            origin.suffix = saturatedAdd(n.suffix, e.weight);
-                        } else {
-                            origin.suffix = Math.min(origin.suffix, saturatedAdd(n.suffix, e.weight));
-                        }
-                        origin.isMarked = true;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
-     *
-     * @param node      The node to add to the .dot string
-     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
-     * @return A .dot formatted string containing the node and the edges leading to this node.
-     */
-    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
-        DecimalFormat df = new DecimalFormat("#.##########");
-
-        if (lastLayer) {
-            node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
-        }
-        String nodeStr = "";
-        if (lastLayer) {
-            nodeStr = String.format(
-                    "\"%s\ng: %s\"",
-                    node.state,
-                    df.format(node.node.value)
-            );
-        } else {
-            nodeStr = String.format(
-                    "\"%s\nh: %s - g: %s\"",
-                    node.state,
-                    df.format(node.node.flb),
-                    df.format(node.node.value)
-            );
-        }
-
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.node.hashCode());
-        sb.append(" [label=").append(nodeStr);
-        if (node.node.type == NodeType.RELAXED) {
-            sb.append(", shape=box, tooltip=\"Relaxed node\"");
-        } else {
-            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
-        }
-        if (lastLayer) {
-            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
-            sb.append(", tooltip=\"Terminal node\"");
-        }
-        sb.append("];\n");
-
-        for (Edge e : node.node.edges) {
-            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
-                    " [label=" + df.format(e.weight) +
-                    ", tooltip=\"" + e.decision.toString() + "\"";
-            edgesDotStr.put(e.hashCode(), edgeStr);
-        }
-        return sb;
-    }
-
-    /**
-     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
-     *
-     * @param edgeHash The hashcode of the edge to color.
-     * @param color    HTML string for the color of the edge
-     */
-    private void updateBestEdgeColor(int edgeHash, String color) {
-        String edgeStr = edgesDotStr.get(edgeHash);
-        if (edgeStr != null) {
-            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
-            edgesDotStr.replace(edgeHash, edgeStr);
-        }
-    }
-
-    private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
-        HashSet<Node> current = new HashSet<>();
-        HashSet<Node> parent = new HashSet<>();
-
-        if (cutSetType == CutSetType.LastExactLayer) {
-            for (NodeSubProblem<T> n : nodePerLayer.get(depthLEL)) {
-                parent.add(n.node);
-            }
-        } else {
-            parent.addAll(nextLayer.values());
-        }
-
-        while (!parent.isEmpty()) {
-            HashSet<Node> tmp = current;
-            current = parent;
-            parent = tmp;
-            parent.clear();
-
-            for (Node n : current) {
-                for (Edge e : n.edges) {
-                    // Note: we might want to do something and stop as soon as the lel has been reached
-                    Node origin = e.origin;
-                    parent.add(origin);
-                    if ((n.isInExactCutSet || n.isAboveExactCutSet)
-                            && origin.type == NodeType.EXACT
-                            && !origin.isInExactCutSet) {
-                        origin.isAboveExactCutSet = true;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Performs the bottom up traversal of the mdd to compute and update the cache
-     */
-    private void computeAndUpdateThreshold(SimpleCache<T> simpleCache,
-                                           ArrayList<Integer> listDepth,
-                                           ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer,
-                                           ArrayList<ArrayList<Threshold>> currentCache,
-                                           double ub,
-                                           CutSetType cutSetType) {
-        for (int j = listDepth.size() - 1; j >= 0; j--) {
-            int depth = listDepth.get(j);
-            for (int i = 0; i < nodePerLayer.get(j).size(); i++) {
-                NodeSubProblem<T> sub = nodePerLayer.get(j).get(i);
-                if (simpleCache.getLayer(depth).containsKey(sub.state)
-                        && simpleCache.getLayer(depth).get(sub.state).isPresent()
-                        && sub.node.value >= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {
-                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();
-                    currentCache.get(j).get(i).setValue(value);
-                } else {
-                    if (sub.lb >= ub) {
-                        double rlb = saturatedDiff(sub.lb, sub.node.value);
-                        double value = saturatedDiff(ub, rlb);
-                        currentCache.get(j).get(i).setValue(value);
-                    } else if (sub.node.isInExactCutSet) {
-                        if (sub.node.suffix != null && saturatedAdd(sub.node.value, sub.node.suffix) >= ub) {
-                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(ub, sub.node.suffix));
-                            currentCache.get(j).get(i).setValue(value);
-                        } else {
-                            currentCache.get(j).get(i).setValue(sub.node.value);
-                        }
-                    }
-                    if (sub.node.type == NodeType.EXACT) {
-                        if (sub.node.isAboveExactCutSet && !sub.node.isInExactCutSet) {
-                            currentCache.get(j).get(i).setExplored(true);
-                        }
-                        if (cutSetType == CutSetType.LastExactLayer
-                                && sub.node.value > currentCache.get(j).get(i).getValue()
-                                && sub.node.isInExactCutSet)
-                            currentCache.get(j).get(i).setExplored(true);
-                        if (currentCache.get(j).get(i).isExplored()) {
-                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));
-                        }
-                    }
-                }
-                for (Edge e : sub.node.edges) {
-                    Node origin = e.origin;
-                    int index = -1;
-                    for (int k = 0; k < nodePerLayer.get(j - 1).size(); k++) {
-                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {
-                            index = k;
-                            break;
-                        }
-                    }
-                    double value = Math.max(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));
-                    currentCache.get(j - 1).get(index).setValue(value);
-                }
-            }
-        }
-    }
 
     private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
     }
