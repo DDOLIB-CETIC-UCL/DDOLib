@@ -188,8 +188,7 @@ public class NestedSALBPDdoMain {
                 // Check if adding task exceeds time limit
                 java.util.Set<Integer> testTasks = new java.util.LinkedHashSet<>(state.currentStationTasks());
                 testTasks.add(task);
-                int makespan = problem.computeStationMakespan(testTasks, state.currentStationHasRobot());
-                willOpenNewStation = (makespan > problem.cycleTime);
+                willOpenNewStation = !problem.isStationSchedulable(testTasks, state.currentStationHasRobot());
             }
 
             if (willOpenNewStation && !state.currentStationTasks().isEmpty()) {
@@ -226,7 +225,6 @@ public class NestedSALBPDdoMain {
                 if (!taskModeDetails.isEmpty()) {
                     System.out.printf("  Task Modes: %s%n", String.join(", ", taskModeDetails));
                 }
-                System.out.printf("  Makespan: %d%n", problem.computeStationMakespan(state.currentStationTasks(), state.currentStationHasRobot()));
 
                 stationNum++;
             }
@@ -301,7 +299,6 @@ public class NestedSALBPDdoMain {
             if (!taskModeDetails.isEmpty()) {
                 System.out.printf("  Task Modes: %s%n", String.join(", ", taskModeDetails));
             }
-            System.out.printf("  Makespan: %d%n", problem.computeStationMakespan(state.currentStationTasks(), state.currentStationHasRobot()));
         }
 
         System.out.println("\nTotal stations used: " + stationNum);

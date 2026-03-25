@@ -28,6 +28,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
     public final Map<Integer, List<Integer>> successors;
     public final Map<Integer, List<Integer>> predecessors;
     private final Optional<Double> optimal;
+    public final int cycleTime; // Maximum allowed makespan (Integer.MAX_VALUE means no constraint)
 
     public SSALBRBProblem(int nbTasks,
                           int[] humanDurations,
@@ -35,10 +36,21 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                           int[] collaborationDurations,
                           Map<Integer, List<Integer>> successors,
                           Optional<Double> optimal) {
+        this(nbTasks, humanDurations, robotDurations, collaborationDurations, successors, optimal, Integer.MAX_VALUE);
+    }
+
+    public SSALBRBProblem(int nbTasks,
+                          int[] humanDurations,
+                          int[] robotDurations,
+                          int[] collaborationDurations,
+                          Map<Integer, List<Integer>> successors,
+                          Optional<Double> optimal,
+                          int cycleTime) {
         this.nbTasks = nbTasks;
         this.humanDurations = humanDurations;
         this.robotDurations = robotDurations;
         this.collaborationDurations = collaborationDurations;
+        this.cycleTime = cycleTime;
         this.successors = new HashMap<>();
 
         for (int task = 0; task < nbTasks; task++) {
@@ -54,10 +66,20 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
                           int[] robotDurations,
                           int[] collaborationDurations,
                           Map<Integer, List<Integer>> successors) {
+        this(nbTasks, humanDurations, robotDurations, collaborationDurations, successors, Integer.MAX_VALUE);
+    }
+
+    public SSALBRBProblem(int nbTasks,
+                          int[] humanDurations,
+                          int[] robotDurations,
+                          int[] collaborationDurations,
+                          Map<Integer, List<Integer>> successors,
+                          int cycleTime) {
         this.nbTasks = nbTasks;
         this.humanDurations = humanDurations;
         this.robotDurations = robotDurations;
         this.collaborationDurations = collaborationDurations;
+        this.cycleTime = cycleTime;
         this.successors = new HashMap<>();
 
         for (int task = 0; task < nbTasks; task++) {
@@ -93,6 +115,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
         this.successors = data.successors;
         this.predecessors = buildPredecessors(this.successors, this.nbTasks);
         this.optimal = data.optimal;
+        this.cycleTime = Integer.MAX_VALUE;
     }
 
     /**
@@ -325,9 +348,23 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
         // Check all tasks for eligibility
         for (int task = 0; task < nbTasks; task++) {
             if (isEligible(task, state)) {
-                domain.add(task * 3 + MODE_HUMAN);
-                domain.add(task * 3 + MODE_ROBOT);
-                domain.add(task * 3 + MODE_COLLABORATION);
+                // For each eligible task, only add modes whose completion does not exceed cycleTime
+                int taskEarliestStart = state.earliestStartTimes().get(task);
+
+                int humanStart = Math.max(state.humanAvailable(), taskEarliestStart);
+                if (humanStart + humanDurations[task] <= cycleTime) {
+                    domain.add(task * 3 + MODE_HUMAN);
+                }
+
+                int robotStart = Math.max(state.robotAvailable(), taskEarliestStart);
+                if (robotStart + robotDurations[task] <= cycleTime) {
+                    domain.add(task * 3 + MODE_ROBOT);
+                }
+
+                int collabStart = Math.max(Math.max(state.humanAvailable(), state.robotAvailable()), taskEarliestStart);
+                if (collabStart + collaborationDurations[task] <= cycleTime) {
+                    domain.add(task * 3 + MODE_COLLABORATION);
+                }
             }
         }
         return domain.iterator();

@@ -1,5 +1,6 @@
 package org.ddolib.examples.ssalbrb1207nested;
 
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Problem;
 import org.ddolib.examples.ssalbrb.*;
@@ -74,10 +75,10 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
     // ==================== Cache System ====================
     /**
-     * Makespan cache: task subset -> (has robot -> makespan)
-     * Purpose: Avoid repeated calls to inner DDO solver for same station makespan computation
+     * Feasibility cache: task subset -> (has robot -> feasible)
+     * Purpose: Avoid repeated calls to inner DDO solver for same station feasibility check
      */
-    private final Map<Set<Integer>, Map<Boolean, Integer>> makespanCache;
+    private final Map<Set<Integer>, Map<Boolean, Boolean>> makespanCache;
 
     /**
      * Solution sequence cache: task subset -> (has robot -> solution sequence)
@@ -1055,10 +1056,9 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             return false;  // No robot and sumHuman > cycleTime
         }
 
-        // ========== Optimization 3: Query makespan cache, Optimization 4: Call inner DDO ==========
+        // ========== Optimization 3: Query feasibility cache, Optimization 4: Call inner DDO ==========
         // Has robot: need exact calculation
-        int makespan = computeStationMakespan(tasks, true);
-        boolean feasible = makespan <= cycleTime;
+        boolean feasible = isStationSchedulable(tasks, true);
 
         // ========== Record infeasible subset ==========
         if (useInfeasibilityCache && !feasible) {
@@ -1103,64 +1103,49 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     // ==================== Inner DDO Solving ====================
 
     /**
-     * Call inner model to calculate single-station makespan
-     *
-     * Optimization: Cache both makespan and solution sequence simultaneously, avoid repeated DDO solver calls
+     * Check if a set of tasks can be scheduled within the cycle time on a single station.
      *
      * Workflow:
-     * 1. Query makespan cache, if hit return directly
-     * 2. If no robot: directly calculate human time sum (no need to call DDO)
-     * 3. If has robot: call inner DDO solver
-     *    - Create sub-problem (only include specified tasks)
-     *    - Call DDO solver to get optimal scheduling scheme
-     *    - Cache makespan and solution sequence simultaneously
+     * 1. Query feasibility cache, if hit return directly
+     * 2. If no robot: check if human time sum fits within cycle time
+     * 3. If has robot: call inner DDO solver with cycleTime constraint
+     *    - Create sub-problem with cycleTime bound
+     *    - Stop at first feasible solution (SAT)
      *
      * @param tasks Task set
      * @param hasRobot Whether has robot
-     * @return makespan (if infeasible return Integer.MAX_VALUE)
+     * @return true if tasks can be scheduled within cycle time
      */
-    public int computeStationMakespan(Set<Integer> tasks, boolean hasRobot) {
-        // Query makespan cache
+    public boolean isStationSchedulable(Set<Integer> tasks, boolean hasRobot) {
+        // Query feasibility cache
         if (makespanCache.containsKey(tasks) && makespanCache.get(tasks).containsKey(hasRobot)) {
             cacheHitCount++;
             return makespanCache.get(tasks).get(hasRobot);
         }
         cacheMissCount++;
 
-        int makespan;
+        boolean feasible;
 
         if (!hasRobot) {
             // Optimization: Without robot, all tasks can only use human mode, directly calculate total time
-            makespan = 0;
+            int makespan = 0;
             for (int task : tasks) {
                 makespan += innerProblem.humanDurations[task];
             }
-            // No need to cache solution sequence for no-robot case (order doesn't matter)
+            feasible = makespan <= cycleTime;
         } else {
-            // Has robot: need to call inner DDO solver
+            // Has robot: call inner DDO solver with cycleTime constraint to check feasibility
             innerDdoCallCount++;
             SSALBRBProblem subProblem = createSubProblem(tasks, true);
 
-            // Call unified solving method, get both makespan and solution sequence
-            int[] solution = solveDDOForSolution(subProblem);
-
-            if (solution != null && solution.length > 0) {
-                try {
-                    makespan = (int) subProblem.evaluate(solution);
-                    // Cache solution sequence simultaneously for printing use
-                    solutionCache.computeIfAbsent(tasks, k -> new HashMap<>()).put(hasRobot, solution);
-                } catch (Exception e) {
-                    makespan = Integer.MAX_VALUE;
-                }
-            } else {
-                makespan = Integer.MAX_VALUE;
-            }
+            // Check feasibility: stop at first solution found (SAT)
+            feasible = solveDDOIsFeasible(subProblem);
         }
 
-        // Cache makespan result
-        makespanCache.computeIfAbsent(tasks, k -> new HashMap<>()).put(hasRobot, makespan);
+        // Cache feasibility result
+        makespanCache.computeIfAbsent(tasks, k -> new HashMap<>()).put(hasRobot, feasible);
 
-        return makespan;
+        return feasible;
     }
 
     /**
@@ -1215,26 +1200,59 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             subSuccessors.put(i, subSuccs);
         }
 
-        return new SSALBRBProblem(subNbTasks, subHDurations, subRDurations, subCDurations, subSuccessors);
+        return new SSALBRBProblem(subNbTasks, subHDurations, subRDurations, subCDurations, subSuccessors, cycleTime);
     }
 
     /**
-     * Use DDO solver to solve single-station scheduling problem, return decision sequence
+     * Check if the inner DDO problem is feasible (has any solution within cycleTime).
      *
-     * This is unified solving method, used for both computing makespan and getting detailed solution
+     * Uses minimizeDdo with a predicate that stops at the first solution found (SAT status).
+     * This avoids solving to optimality when we only need to check feasibility.
      *
-     * Configuration:
-     * - Relaxation: SSALBRBRelax (relaxation merge strategy)
-     * - Ranking: SSALBRBRanking (state ranking strategy)
-     * - FastLowerBound: SSALBRBFastLowerBound (fast lower bound)
-     * - Width: FixedWidth(10) (fixed width 10)
+     * @param problem Inner problem instance (with cycleTime constraint)
+     * @return true if a feasible schedule exists
+     */
+    private boolean solveDDOIsFeasible(SSALBRBProblem problem) {
+        // Build inner DDO model
+        DdoModel<SSALBRBState> innerModel = buildInnerModel(problem);
+
+        // Stop at first feasible solution (SAT status)
+        Solution solution = Solvers.minimizeDdo(innerModel,
+                stats -> stats.status() == org.ddolib.common.solver.SearchStatus.SAT);
+
+        return solution.statistics().status() == org.ddolib.common.solver.SearchStatus.SAT
+                || solution.statistics().status() == org.ddolib.common.solver.SearchStatus.OPTIMAL;
+    }
+
+    /**
+     * Use DDO solver to solve single-station scheduling problem optimally, return decision sequence.
+     *
+     * Used for getting detailed solution for printing (solveInnerProblemWithModes).
      *
      * @param problem Inner problem instance
-     * @return Solution sequence (decision array)
+     * @return Solution sequence (decision array), or null if infeasible
      */
     private int[] solveDDOForSolution(SSALBRBProblem problem) {
         // Build inner DDO model
-        DdoModel<SSALBRBState> innerModel = new DdoModel<>() {
+        DdoModel<SSALBRBState> innerModel = buildInnerModel(problem);
+
+        final int[][] resultSolution = {null};
+
+        // Call DDO solver (solve to optimality for detailed solution)
+        Solution solution = Solvers.minimizeDdo(innerModel, s -> s.status() == SearchStatus.SAT, (sol, searchStats) -> {
+            if (sol != null && sol.length > 0) {
+                resultSolution[0] = sol;
+            }
+        });
+
+        return resultSolution[0];
+    }
+
+    /**
+     * Build the inner DDO model for a sub-problem.
+     */
+    private DdoModel<SSALBRBState> buildInnerModel(SSALBRBProblem problem) {
+        return new DdoModel<>() {
             @Override
             public Problem<SSALBRBState> problem() {
                 return problem;
@@ -1265,17 +1283,6 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 return false;
             }
         };
-
-        final int[][] resultSolution = {null};
-
-        // Call DDO solver
-        Solution solution = Solvers.minimizeDdo(innerModel, (sol, searchStats) -> {
-            if (sol != null && sol.length > 0) {
-                resultSolution[0] = sol;
-            }
-        });
-
-        return resultSolution[0];
     }
 
     // ==================== Inner Problem Solution Details ====================
@@ -1323,7 +1330,11 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         } else {
             // Cache miss, call DDO solver
             SSALBRBProblem subProblem = createSubProblem(stationTasks, hasRobot);
+            long t0 = System.currentTimeMillis();
             subSolution = solveDDOForSolution(subProblem);
+            if (System.currentTimeMillis() - t0 > 1000) {
+                System.out.println("slow... "+stationTasks.size());
+            };
 
             // Cache solution sequence
             if (subSolution != null && subSolution.length > 0) {
@@ -1377,19 +1388,19 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     public void printCacheStatistics() {
         System.out.println("\n=== Cache Statistics ===");
-        System.out.printf("Makespan cache entries: %d%n", makespanCache.size());
+        System.out.printf("Feasibility cache entries: %d%n", makespanCache.size());
         System.out.printf("Solution cache entries: %d%n", solutionCache.size());
         System.out.printf("Cache hits: %d%n", cacheHitCount);
         System.out.printf("Cache misses: %d%n", cacheMissCount);
         System.out.printf("Inner DDO calls: %d%n", innerDdoCallCount);
 
         // Estimate memory usage
-        long makespanMemory = makespanCache.size() * 200;  // bytes per entry
+        long feasibilityMemory = makespanCache.size() * 200;  // bytes per entry
         long solutionMemory = solutionCache.size() * 300;  // bytes per entry (approximate)
-        System.out.printf("Estimated memory: makespan=%.2f KB, solution=%.2f KB, total=%.2f KB%n",
-                makespanMemory / 1024.0,
+        System.out.printf("Estimated memory: feasibility=%.2f KB, solution=%.2f KB, total=%.2f KB%n",
+                feasibilityMemory / 1024.0,
                 solutionMemory / 1024.0,
-                (makespanMemory + solutionMemory) / 1024.0);
+                (feasibilityMemory + solutionMemory) / 1024.0);
     }
 
     /**

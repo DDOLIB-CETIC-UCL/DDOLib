@@ -183,8 +183,7 @@ public class NestedSALBPAcsMain {
             } else {
                 java.util.Set<Integer> testTasks = new java.util.LinkedHashSet<>(state.currentStationTasks());
                 testTasks.add(task);
-                int makespan = problem.computeStationMakespan(testTasks, state.currentStationHasRobot());
-                willOpenNewStation = (makespan > problem.cycleTime);
+                willOpenNewStation = !problem.isStationSchedulable(testTasks, state.currentStationHasRobot());
             }
 
             if (willOpenNewStation && !state.currentStationTasks().isEmpty()) {
@@ -269,7 +268,6 @@ public class NestedSALBPAcsMain {
         if (!taskModeDetails.isEmpty()) {
             System.out.println("  Task Modes: " + String.join(", ", taskModeDetails));
         }
-        System.out.println("  Completion Time: " + problem.computeStationMakespan(state.currentStationTasks(), state.currentStationHasRobot()));
     }
 }
 
