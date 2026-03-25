@@ -82,7 +82,6 @@ public class PDPProblem implements Problem<PDPState> {
      * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
      * @param maxCapa                    maximum capacity of the vehicle
      */
-
     public PDPProblem(final double[][] distanceMatrix,
                       HashMap<Integer, Integer> pickupToAssociatedDelivery, int maxCapa) {
         this.distanceMatrix = distanceMatrix;

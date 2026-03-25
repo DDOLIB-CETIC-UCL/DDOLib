@@ -24,7 +24,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
             double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
-                    min = Math.min(min, problem.instance.timeAndDistanceMatrix[i][j]);
+                    min = Math.min(min, problem.instance.timeMatrix[i][j]);
                 }
             }
             leastIncidentEdge[i] = min;

@@ -16,7 +16,7 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.ddolib.examples.pdptw.PDPTWMain.genInstance3;
+import static org.ddolib.examples.pdptw.PDPTWMain.genInstance;
 
 public class PDPTWTests {
 
@@ -32,7 +32,7 @@ public class PDPTWTests {
             int nbTests = 10;
 
             return IntStream.range(0, nbTests).boxed().map(
-                     i -> new PDPTWProblem(genInstance3(8, 1, 2, random))
+                     i -> new PDPTWProblem(genInstance(8, 1, 2, random))
             ).toList();
         }
 
