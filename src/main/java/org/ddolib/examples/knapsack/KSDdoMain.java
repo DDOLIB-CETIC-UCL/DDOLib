@@ -48,6 +48,8 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSDdoMain {
+
+
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
      *
@@ -58,6 +60,7 @@ public class KSDdoMain {
         final String instance = args.length == 0 ? Path.of("data", "Knapsack",
                 "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
+
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -72,11 +75,6 @@ public class KSDdoMain {
             @Override
             public DominanceChecker<Integer> dominance() {
                 return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
-
-            @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
             }
 
             @Override

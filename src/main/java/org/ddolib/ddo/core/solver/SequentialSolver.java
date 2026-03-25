@@ -166,7 +166,7 @@ public final class SequentialSolver<T> implements Solver {
         this.width = model.widthHeuristic();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.frontier = model.frontier();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);

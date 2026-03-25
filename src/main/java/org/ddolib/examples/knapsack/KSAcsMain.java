@@ -45,6 +45,7 @@ public class KSAcsMain {
         final String instance = args.length == 0 ? Path.of("data", "Knapsack",
                 "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
+
         final AcsModel<Integer> model = new AcsModel<>() {
             @Override
             public Problem<Integer> problem() {
