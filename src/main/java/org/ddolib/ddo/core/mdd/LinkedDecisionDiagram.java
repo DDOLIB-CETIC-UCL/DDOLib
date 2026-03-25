@@ -872,6 +872,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     }
                 }
             }
+
+            mergedNode.flb = config.flb.fastLowerBound(merged, varSet(config));
             if (debugLevel != DebugLevel.OFF) {
                 checkRelaxation(cluster, mergedNode);
             }
