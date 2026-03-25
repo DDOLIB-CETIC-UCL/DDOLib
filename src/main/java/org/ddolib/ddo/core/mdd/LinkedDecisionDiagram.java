@@ -549,16 +549,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         LinkedList<String> states = new LinkedList<>();
         T current = problem.initialState();
         int depth = 0;
-        StringBuilder msg = new StringBuilder(String.format("%-23s", depth + "."));
+        StringBuilder msg = new StringBuilder("%-23s".formatted(depth + "."));
         for (PathInfo pathInfo : pathFromRoot) {
-            msg.append(String.format("length to end: %6s", pathInfo.lengthToEnd));
-            msg.append(String.format(" - flb: %6s", pathInfo.flbOfOrigin));
+            msg.append("length to end: %6s".formatted(pathInfo.lengthToEnd));
+            msg.append(" - flb: %6s".formatted(pathInfo.flbOfOrigin));
             if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg.append("!");
             msg.append(" - ").append(current.toString());
             msg.append("\n").append(pathInfo.decision);
             states.addLast(msg.toString());
             depth++;
-            msg = new StringBuilder(String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
+            msg = new StringBuilder("%-20s - ".formatted(depth + ". cost: " + problem.transitionCost(current,
                     pathInfo.decision)));
             current = problem.transition(current, pathInfo.decision);
 
@@ -592,20 +592,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
                     LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
                     String lastState = failedState.getLast();
-                    lastState =
-                            String.format(" - flb: %6s", current.getKey().flb) + "! - " + lastState;
-                    lastState =
-                            String.format("length to end: %6s", current.getValue()) + lastState;
+                    lastState = " - flb: %6s".formatted(current.getKey().flb) + "! - " + lastState;
+                    lastState = "length to end: %6s".formatted(current.getValue()) + lastState;
                     failedState.removeLast();
                     lastState = failedState.getLast() + lastState;
                     failedState.removeLast();
                     failedState.addLast(lastState);
                     String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
-                    String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
-                                    " its shortest path (%s)\n", df.format(current.getKey().flb),
+                    String failureMsg = ("Found node with lower bound (%s) bigger than its " +
+                            "shortest path (%s)\n").formatted(df.format(current.getKey().flb),
                             df.format(current.getValue()));
-                    failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
-                    failureMsg += String.format("Failing state: %s\n", failedState.getLast());
+                    failureMsg += "Path from root: \n\t%s\n\n".formatted(statesStr);
+                    failureMsg += "Failing state: %s\n".formatted(failedState.getLast());
                     failureMsg += "\nFull failing path:\n";
                     failureMsg += fullPath
                             .stream()
@@ -669,20 +667,20 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     && bestWithNode.isPresent()
                     && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
 
-                failureMsg = String.format("Found relaxed node that lead to worst solution" +
-                                " (%s) than one of the merged nodes (%s).\n",
-                        df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
+                failureMsg = "Found relaxed node that lead to worst solution" +
+                        " (%s) than one of the merged nodes (%s).\n".formatted(
+                                df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
 
                 failureMsg += "Depth: " + relaxationDepth + "\n";
                 failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
                 failureMsg += "Merged states state:\n\t" + nodesToMerge
                         .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
-                failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
+                failureMsg += "\n\nPath by relaxed node : %s - value: %s\n".formatted(
                         relaxedNode.state, df.format(bestWithRelaxed.get()));
                 failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
                         Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
 
-                failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
+                failureMsg += "\n\nPath by exact node : %s - value: %s\n".formatted(
                         node.state, df.format(bestWithNode.get()));
                 failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
                         Optional.empty());
@@ -757,7 +755,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::variable)).toList();
         T current = config.problem.initialState();
         int depth = 0;
-        StringBuilder msg = new StringBuilder(String.format("\t\t%-23s", depth + "."));
+        StringBuilder msg = new StringBuilder("\t\t%-23s".formatted(depth + "."));
         for (Decision decision : path) {
             msg.append(current).append("\n\t");
             msg.append(decision);
@@ -773,7 +771,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 current = config.problem.transition(current, decision);
             }
 
-            msg.append(String.format("\t\t%-20s - ", depth + ". cost: " + cost));
+            msg.append("\t\t%-20s - ".formatted(depth + ". cost: " + cost));
 
         }
         msg.append(current);
