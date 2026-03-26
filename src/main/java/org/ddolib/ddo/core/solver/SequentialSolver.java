@@ -278,7 +278,7 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(status == SearchStatus.SAT ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
                 end - start, bestUB, 0);
         return new Solution(bestSolution(), stats);
     }
