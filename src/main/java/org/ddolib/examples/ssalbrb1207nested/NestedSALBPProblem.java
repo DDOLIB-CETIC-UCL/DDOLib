@@ -1213,23 +1213,42 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      * @return true if a feasible schedule exists
      */
     private boolean solveDDOIsFeasible(SSALBRBProblem problem) {
+
+        long t0 = System.currentTimeMillis();
         // Build inner DDO model
         DdoModel<SSALBRBState> innerModel = buildInnerModel(problem);
 
         // Stop at first feasible solution (SAT status)
         Solution solution = Solvers.minimizeDdo(innerModel,
-                stats -> stats.status() == org.ddolib.common.solver.SearchStatus.SAT);
+                stats -> stats.status() == SearchStatus.SAT || stats.status() == SearchStatus.OPTIMAL);
 
-        return solution.statistics().status() == org.ddolib.common.solver.SearchStatus.SAT
-                || solution.statistics().status() == org.ddolib.common.solver.SearchStatus.OPTIMAL;
+        long time =  System.currentTimeMillis() - t0;
+        if (time > 1000) {
+            System.out.println("--------");
+            System.out.println("DDO time... "+problem.nbTasks+" "+time);
+            solution = Solvers.minimizeDdo(innerModel,
+                    stats -> stats.status() == SearchStatus.SAT || stats.status() == SearchStatus.OPTIMAL);
+            System.out.println(solution.statistics());
+            System.out.println("===");
+            solution = Solvers.minimizeDdo(innerModel,(stat,sol) -> {
+                System.out.println(stat);
+                System.out.println("~~~");
+            });
+            System.out.println(solution.statistics());
+
+        }
+
+        return solution.statistics().status() == SearchStatus.SAT
+                || solution.statistics().status() == SearchStatus.OPTIMAL;
     }
 
     /**
-     * Use DDO solver to solve single-station scheduling problem optimally, return decision sequence.
+     * Use DDO solver to find a feasible solution for a single-station scheduling problem.
      *
+     * Returns the first feasible decision sequence found (stops at SAT).
      * Used for getting detailed solution for printing (solveInnerProblemWithModes).
      *
-     * @param problem Inner problem instance
+     * @param problem Inner problem instance (with cycleTime constraint)
      * @return Solution sequence (decision array), or null if infeasible
      */
     private int[] solveDDOForSolution(SSALBRBProblem problem) {
@@ -1238,7 +1257,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
         final int[][] resultSolution = {null};
 
-        // Call DDO solver (solve to optimality for detailed solution)
+        // Call DDO solver (stop at first feasible solution)
         Solution solution = Solvers.minimizeDdo(innerModel, s -> s.status() == SearchStatus.SAT, (sol, searchStats) -> {
             if (sol != null && sol.length > 0) {
                 resultSolution[0] = sol;
@@ -1321,7 +1340,6 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     public InnerSolution solveInnerProblemWithModes(Set<Integer> stationTasks, boolean hasRobot) {
         List<Integer> taskList = new ArrayList<>(stationTasks);
-
         // First query solution sequence cache
         int[] subSolution = null;
         if (solutionCache.containsKey(stationTasks) &&
@@ -1332,6 +1350,8 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             SSALBRBProblem subProblem = createSubProblem(stationTasks, hasRobot);
             long t0 = System.currentTimeMillis();
             subSolution = solveDDOForSolution(subProblem);
+
+            System.out.println("time... "+stationTasks.size()+" "+(System.currentTimeMillis() - t0));
             if (System.currentTimeMillis() - t0 > 1000) {
                 System.out.println("slow... "+stationTasks.size());
             };

@@ -432,6 +432,7 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
         // Compute actual start time based on mode
         int startTime;
+
         if (mode == MODE_HUMAN) {
             startTime = Math.max(humanReady, taskEarliestStart);
         } else if (mode == MODE_ROBOT) {
