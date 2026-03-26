@@ -172,7 +172,7 @@ public final class AStarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
         return new Solution(bestSolution(), statistics);
