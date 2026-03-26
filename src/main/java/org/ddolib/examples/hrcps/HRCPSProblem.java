@@ -5,6 +5,7 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.*;
+import org.ddolib.examples.hrc.*;
 import org.ddolib.examples.hrcp.*;
 
 import java.io.IOException;
@@ -58,6 +59,8 @@ public class HRCPSProblem implements Problem<HRCPSState> {
     // ==================== Statistics ====================
     private long domainCallCount = 0;
     private long innerSolverCallCount = 0;
+    private long hrcSolverCallCount = 0;
+    private long hrcPrunedCount = 0;
     private long cacheHitCount = 0;
     private long cacheMissCount = 0;
     private long lastLogTime = System.currentTimeMillis();
@@ -407,6 +410,17 @@ public class HRCPSProblem implements Problem<HRCPSState> {
     /**
      * Solve the HRCP sub-problem for the given task set and check whether the
      * optimal makespan ≤ cycleTime.
+     * <p>
+     * Two-phase approach for speed:
+     * <ol>
+     *   <li><b>Phase 1 (HRC, no precedences)</b> – solve the relaxed problem
+     *       that ignores precedence constraints.  Because removing precedences
+     *       can only decrease the makespan, this gives a lower bound.  If the
+     *       lower bound already exceeds the cycle time the station is
+     *       infeasible and we skip the expensive Phase 2.</li>
+     *   <li><b>Phase 2 (HRCP, with precedences)</b> – solve the full problem.
+     *       Only reached when Phase 1 reports feasible.</li>
+     * </ol>
      */
     public boolean isStationSchedulable(Set<Integer> tasks) {
         if (feasibilityCache.containsKey(tasks)) {
@@ -415,6 +429,21 @@ public class HRCPSProblem implements Problem<HRCPSState> {
         }
         cacheMissCount++;
 
+        // ---- Phase 1: HRC (no precedences) – quick lower-bound check ----
+        hrcSolverCallCount++;
+        HRCProblem hrcProblem = createHRCSubProblem(tasks);
+        Model<HRCState> hrcModel = buildHRCModel(hrcProblem);
+        Solution hrcSolution = Solvers.minimizeAstar(hrcModel);
+        double hrcMakespan = hrcSolution.statistics().incumbent();
+
+        if (hrcMakespan > cycleTime) {
+            // Precedence-free lower bound already exceeds cycle time → infeasible
+            hrcPrunedCount++;
+            feasibilityCache.put(Set.copyOf(tasks), false);
+            return false;
+        }
+
+        // ---- Phase 2: HRCP (with precedences) – exact check ----
         innerSolverCallCount++;
         HRCPProblem subProblem = createSubProblem(tasks);
         Model<HRCPState> model = buildInnerModel(subProblem);
@@ -423,6 +452,33 @@ public class HRCPSProblem implements Problem<HRCPSState> {
 
         feasibilityCache.put(Set.copyOf(tasks), feasible);
         return feasible;
+    }
+
+    /** Create a precedence-free HRC sub-problem for the given tasks. */
+    private HRCProblem createHRCSubProblem(Set<Integer> tasks) {
+        List<Integer> taskList = new ArrayList<>(tasks);
+        int subN = taskList.size();
+        int[] subH = new int[subN];
+        int[] subR = new int[subN];
+        int[] subC = new int[subN];
+        for (int i = 0; i < subN; i++) {
+            int orig = taskList.get(i);
+            subH[i] = innerProblem.humanDurations[orig];
+            subR[i] = innerProblem.robotDurations[orig];
+            subC[i] = innerProblem.collaborationDurations[orig];
+        }
+        return new HRCProblem(subH, subR, subC);
+    }
+
+    /** Build an A* model for the precedence-free HRC problem. */
+    private Model<HRCState> buildHRCModel(HRCProblem problem) {
+        return new Model<>() {
+            @Override public Problem<HRCState> problem() { return problem; }
+            @Override public FastLowerBound<HRCState> lowerBound() { return new HRCFastLowerBound(problem); }
+            @Override public DominanceChecker<HRCState> dominance() {
+                return new SimpleDominanceChecker<>(new HRCDominance(), problem.nbVars());
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")
@@ -556,7 +612,8 @@ public class HRCPSProblem implements Problem<HRCPSState> {
         System.out.printf("Feasibility cache entries: %d%n", feasibilityCache.size());
         System.out.printf("Solution cache entries: %d%n", solutionCache.size());
         System.out.printf("Cache hits: %d, misses: %d%n", cacheHitCount, cacheMissCount);
-        System.out.printf("Inner HRCP solver calls: %d%n", innerSolverCallCount);
+        System.out.printf("HRC solver calls (no precedences): %d, pruned: %d%n", hrcSolverCallCount, hrcPrunedCount);
+        System.out.printf("HRCP solver calls (with precedences): %d%n", innerSolverCallCount);
     }
 
     public void printOptimizationStatistics() {

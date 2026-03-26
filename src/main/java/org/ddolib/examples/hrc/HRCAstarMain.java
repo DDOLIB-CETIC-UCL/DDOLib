@@ -32,7 +32,7 @@ public class HRCAstarMain {
      */
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0
-                ? Path.of("data", "HRC", "example_8").toString()
+                ? Path.of("data", "HRC", "example_20").toString()
                 : args[0];
         final HRCProblem problem = new HRCProblem(instance);
 
