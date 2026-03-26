@@ -77,7 +77,7 @@ public class SSALBRBDdoMainTest {
             SolutionPrinter.printSolution(s, sol);
 //            SSALBRBSolutionPrinter.printSolution(problem, sol);
         });
-
+        System.out.println("done");
         System.out.println("\n" + solution.statistics());
     }
 }
