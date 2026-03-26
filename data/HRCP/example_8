@@ -1,0 +1,14 @@
+# HRCP instance – 8 tasks (from SSALBRB benchmark)
+# Format: first line = n [optimal]
+# then n lines of: humanDur robotDur collabDur numPreds [pred1 pred2 ...]
+# No precedences here
+8 610
+50 100000 100000 0
+121 100000 100000 0
+214 428 150 0
+140 280 98 0
+34 68 24 0
+142 284 99 0
+69 100000 100000 0
+132 264 100000 0
+

@@ -12,11 +12,9 @@ import java.nio.file.Path;
 
 public class SSALBRBDdoMain {
     public static void main(String[] args) throws IOException {
-//        final String instance = args.length == 0
-//                ? Path.of("data", "SALBP1", "small data set_n=20", "instance_n=20_441.alb").toString()
-//                : args[0];
+
         final String instance = args.length == 0 ?
-                Path.of("data", "test_10tasks_3.alb").toString() : args[0];
+                Path.of("data", "HRCP", "example_11").toString() : args[0];
 
         final SSALBRBProblem problem = new SSALBRBProblem(instance);
 
@@ -48,7 +46,7 @@ public class SSALBRBDdoMain {
 
             @Override
             public boolean exportDot() {
-                return true;
+                return false;
             }
         };
 

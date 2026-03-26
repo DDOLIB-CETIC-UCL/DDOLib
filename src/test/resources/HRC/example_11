@@ -1,0 +1,15 @@
+# HRC instance – 11 tasks (from SSALBRB benchmark, no precedences)
+# Format: first line = n [optimal], then n lines of: humanDur robotDur collabDur
+11 1075
+50 100000 100000
+121 100000 100000
+214 428 150
+140 280 98
+34 68 24
+142 284 99
+69 100000 100000
+132 264 100000
+129 258 100000
+282 564 100000
+279 100000 100000
+

@@ -92,221 +92,65 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
 
     /**
-     * 从文件读取数据（支持CSV和ALB两种格式）
-     * - CSV格式：task,th,tr,tc,successor
-     * - ALB格式：传统的装配线平衡问题格式
+     * Constructs an SSALBRBProblem from an HRCP file.
+     * <p>
+     * File format (lines starting with {@code #} are comments):
+     * <ul>
+     *   <li>First data line: {@code n [optimal]}</li>
+     *   <li>Next {@code n} lines: {@code humanDur robotDur collabDur numPreds [pred0 pred1 ...]}</li>
+     * </ul>
+     * Tasks are 0-indexed and precedences are given as <em>predecessors</em>.
+     *
+     * @param file path to the instance file
+     * @throws IOException if the file cannot be read
      */
     public SSALBRBProblem(final String file) throws IOException {
-        // 检查文件扩展名，决定使用哪种读取方式
-        DataHolder data;
-        if (file.endsWith(".csv")) {
-            // 读取CSV格式文件
-            data = readFromCSV(file);
-        } else {
-            // 读取原来的.alb格式文件
-            data = readFromALB(file);
+        // Read all non-empty, non-comment lines
+        List<String> lines = new ArrayList<>();
+        try (Scanner scanner = new Scanner(new File(file))) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+                if (!line.isEmpty() && !line.startsWith("#")) {
+                    lines.add(line);
+                }
+            }
         }
 
-        // 初始化final字段（只能在构造函数中初始化一次）
-        this.nbTasks = data.nbTasks;
-        this.humanDurations = data.humanDurations;
-        this.robotDurations = data.robotDurations;
-        this.collaborationDurations = data.collaborationDurations;
-        this.successors = data.successors;
-        this.predecessors = buildPredecessors(this.successors, this.nbTasks);
-        this.optimal = data.optimal;
+        // Parse header: n [optimal]
+        String[] header = lines.get(0).split("\\s+");
+        int n = Integer.parseInt(header[0]);
+        this.optimal = header.length >= 2
+                ? Optional.of(Double.parseDouble(header[1]))
+                : Optional.empty();
+
+        this.nbTasks = n;
+        this.humanDurations = new int[n];
+        this.robotDurations = new int[n];
+        this.collaborationDurations = new int[n];
         this.cycleTime = Integer.MAX_VALUE;
-    }
 
-    /**
-     * 临时数据持有类，用于从文件读取数据后返回
-     * 因为final字段只能在构造函数中初始化一次，所以需要这个辅助类
-     */
-    private static class DataHolder {
-        int nbTasks;
-        int[] humanDurations;
-        int[] robotDurations;
-        int[] collaborationDurations;
-        Map<Integer, List<Integer>> successors;
-        Optional<Double> optimal;
-    }
-
-    /**
-     * 从CSV文件读取数据
-     * CSV格式：task,th,tr,tc,successor
-     * 例如：1,132,264,100000,[]
-     */
-    private static DataHolder readFromCSV(String file) throws IOException {
-        try (Scanner scanner = new Scanner(new File(file))) {
-            // 跳过表头
-            scanner.nextLine();
-
-            // 先读取所有数据到临时列表
-            List<int[]> taskData = new ArrayList<>();
-            List<String> successorStrings = new ArrayList<>();
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine().trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                // 解析CSV行：task,th,tr,tc,successor
-                String[] parts = line.split(",", 5);  // 最多分割成5部分
-                if (parts.length < 5) {
-                    continue;
-                }
-
-                int taskId = Integer.parseInt(parts[0].trim());
-                int th = Integer.parseInt(parts[1].trim());
-                int tr = Integer.parseInt(parts[2].trim());
-                int tc = Integer.parseInt(parts[3].trim());
-                String successorStr = parts[4].trim();
-
-                taskData.add(new int[]{taskId, th, tr, tc});
-                successorStrings.add(successorStr);
-            }
-
-            // 初始化数据结构
-            int n = taskData.size();
-            int[] hDurations = new int[n];
-            int[] rDurations = new int[n];
-            int[] cDurations = new int[n];
-            Map<Integer, List<Integer>> succ = new HashMap<>();
-
-            for (int i = 0; i < n; i++) {
-                succ.put(i, new ArrayList<>());
-            }
-
-            // 填充时间数据
-            for (int i = 0; i < n; i++) {
-                int[] data = taskData.get(i);
-                int taskId = data[0];
-                int taskIndex = taskId - 1;  // 任务ID从1开始，索引从0开始
-
-                hDurations[taskIndex] = data[1];
-                rDurations[taskIndex] = data[2];
-                cDurations[taskIndex] = data[3];
-            }
-
-            // 解析后继关系
-            for (int i = 0; i < n; i++) {
-                int[] data = taskData.get(i);
-                int taskId = data[0];
-                int taskIndex = taskId - 1;
-
-                String successorStr = successorStrings.get(i);
-                // 解析后继列表，格式如：[] 或 [5, 7, 8, 9] 或 "[5, 7, 8, 9]"
-                successorStr = successorStr.replace("\"", "").trim();
-
-                if (!successorStr.equals("[]")) {
-                    // 移除方括号
-                    successorStr = successorStr.substring(1, successorStr.length() - 1);
-                    String[] successorIds = successorStr.split(",");
-
-                    for (String succId : successorIds) {
-                        succId = succId.trim();
-                        if (!succId.isEmpty()) {
-                            int successorTaskId = Integer.parseInt(succId);
-                            int successorIndex = successorTaskId - 1;
-                            succ.get(taskIndex).add(successorIndex);
-                        }
-                    }
-                }
-            }
-
-            // 创建并返回数据持有对象
-            DataHolder holder = new DataHolder();
-            holder.nbTasks = n;
-            holder.humanDurations = hDurations;
-            holder.robotDurations = rDurations;
-            holder.collaborationDurations = cDurations;
-            holder.successors = succ;
-            holder.optimal = Optional.empty();  // CSV文件中没有最优解信息
-
-            return holder;
+        // Initialise successor map
+        Map<Integer, List<Integer>> succ = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            succ.put(i, new ArrayList<>());
         }
-    }
 
-    /**
-     * 从ALB格式文件读取数据
-     * ALB格式是传统的装配线平衡问题格式
-     */
-    private static DataHolder readFromALB(String file) throws IOException {
-        try (Scanner scanner = new Scanner(new File(file))) {
-            scanner.nextLine();
-            int n = scanner.nextInt();
-            scanner.nextLine();
-            scanner.nextLine();
-
-            scanner.nextLine();
-            scanner.nextInt();
-            scanner.nextLine();
-            scanner.nextLine();
-
-            scanner.nextLine();
-            scanner.nextLine();
-            scanner.nextLine();
-            scanner.nextLine();
-            scanner.nextLine();  // Extra empty line before <task times>
-
-            int[] hDurations = new int[n];
-            int[] rDurations = new int[n];
-            int[] cDurations = new int[n];
-            Map<Integer, List<Integer>> succ = new HashMap<>();
-            for (int i = 0; i < n; i++) {
-                succ.put(i, new ArrayList<>());
+        // Parse each task line: humanDur robotDur collabDur numPreds [pred0 pred1 ...]
+        for (int i = 0; i < n; i++) {
+            String[] tok = lines.get(1 + i).split("\\s+");
+            humanDurations[i] = Integer.parseInt(tok[0]);
+            robotDurations[i] = Integer.parseInt(tok[1]);
+            collaborationDurations[i] = Integer.parseInt(tok[2]);
+            int numPreds = Integer.parseInt(tok[3]);
+            for (int p = 0; p < numPreds; p++) {
+                int pred = Integer.parseInt(tok[4 + p]);
+                // predecessor → current task  ⟹  succ[pred] contains i
+                succ.get(pred).add(i);
             }
-
-            // <task times> header already read, start reading task data directly
-            for (int i = 0; i < n; i++) {
-                String[] line = scanner.nextLine().trim().split("\\s+");
-                int baseTime = Integer.parseInt(line[1]);
-                hDurations[i] = baseTime;
-                rDurations[i] = (int) Math.round(baseTime * 2.0);
-                cDurations[i] = (int) Math.round(baseTime * 0.7);
-            }
-
-            scanner.nextLine();
-            scanner.nextLine();
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine().trim();
-                if (line.isEmpty()) {
-                    break;
-                }
-
-                String[] parts = line.split(",");
-                if (parts.length == 2) {
-                    int a = Integer.parseInt(parts[0].trim()) - 1;
-                    int b = Integer.parseInt(parts[1].trim()) - 1;
-                    succ.get(a).add(b);
-                }
-            }
-
-            Optional<Double> optimalValue = Optional.empty();
-            if (scanner.hasNextLine()) {
-                String li = scanner.nextLine().trim();
-                if (!li.equals("<end>") && scanner.hasNextLine()) {
-                    String lin = scanner.nextLine().trim();
-                    if (!lin.isEmpty()) {
-                        double optimal = Integer.parseInt(lin);
-                        optimalValue = Optional.of(optimal);
-                    }
-                }
-            }
-
-            // 创建并返回数据持有对象
-            DataHolder holder = new DataHolder();
-            holder.nbTasks = n;
-            holder.humanDurations = hDurations;
-            holder.robotDurations = rDurations;
-            holder.collaborationDurations = cDurations;
-            holder.successors = succ;
-            holder.optimal = optimalValue;
-
-            return holder;
         }
+
+        this.successors = succ;
+        this.predecessors = buildPredecessors(this.successors, this.nbTasks);
     }
 
     private static Map<Integer, List<Integer>> buildPredecessors(Map<Integer, List<Integer>> successors,
