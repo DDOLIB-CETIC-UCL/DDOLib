@@ -42,7 +42,7 @@ public final class AStarSolver<T> implements Solver {
             Comparator.comparingDouble(SubProblem<T>::f));
     private final SubProblem<T> root;
     /**
-     * <ul>g
+     * <ul>
      *     <li>0: no verbosity</li>
      *     <li>1: display newBest whenever there is a newBest</li>
      *     <li>2: 1 + statistics about the front every half a second (or so)</li>
@@ -76,7 +76,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -103,7 +103,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -135,7 +135,7 @@ public final class AStarSolver<T> implements Solver {
                     queueMaxSize,
                     System.currentTimeMillis() - t0,
                     bestValue().orElse(Double.POSITIVE_INFINITY),
-                    0);
+                    gap());
 
 
             if (limit.test(stats)) { // user-defined stopping criterion
@@ -144,26 +144,21 @@ public final class AStarSolver<T> implements Solver {
             // -- end debug, stats, verbosity, stopping  ---
 
             SubProblem<T> sub = open.poll();
+            // if the new state is dominated, we skip it
+            if (sub.getState() != null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                continue;
+            }
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             present.remove(subKey);
             if (closed.containsKey(subKey)) {
                 continue;
             }
 
-            if (sub.getPath().size() == problem.nbVars()) { // target node reached
+            if (sub.getPath().size() == problem.nbVars()) {// target node reached
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
-                SearchStatistics statistics = new SearchStatistics(
-                        SearchStatus.OPTIMAL,
-                        nbIter,
-                        queueMaxSize,
-                        System.currentTimeMillis() - t0,
-                        bestUB,
-                        gap()
-                );
-
-                return new Solution(bestSol, statistics);
+                break;
 
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(nbIter, sub);
@@ -171,6 +166,7 @@ public final class AStarSolver<T> implements Solver {
                 closed.put(subKey, sub.f());
             }
         }
+
         if (debugLevel != DebugLevel.OFF) {
             checkFLBAdmissibility();
         }
@@ -240,11 +236,6 @@ public final class AStarSolver<T> implements Solver {
             double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
 
 
-            // if the new state is dominated, we skip it
-            if (dominance.updateDominance(newState, path.size(), value)) {
-                continue;
-            }
-
             SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
@@ -254,13 +245,13 @@ public final class AStarSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.add(newSub);
                 present.put(newKey, newSub.f());
-            } else {
+            } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.add(newSub);
                     closed.remove(newKey);
                     present.put(newKey, newSub.f());
-                } else {
+                } else if (closedValue == null) {
                     open.add(newSub);
                     present.put(newKey, newSub.f());
                 }
@@ -271,7 +262,7 @@ public final class AStarSolver<T> implements Solver {
                 assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
+                SearchStatistics stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
                 onSolution.accept(constructSolution(path), stats);
                 verboseMode.newBest(bestUB);
             }
@@ -284,7 +275,7 @@ public final class AStarSolver<T> implements Solver {
             set.add(i);
         }
         for (Decision d : path) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }
@@ -318,11 +309,11 @@ public final class AStarSolver<T> implements Solver {
 
 
     private double gap() {
-        if (open.isEmpty()) {
-            return 0.0;
+        if (open.isEmpty() | bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
         } else {
             double bestInFrontier = open.peek().f();
-            return (bestUB - bestInFrontier) / Math.abs(bestUB);
+            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 

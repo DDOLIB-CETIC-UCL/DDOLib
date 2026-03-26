@@ -124,7 +124,7 @@ public final class ACSSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Integer.MAX_VALUE;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.columnWidth = model.columnWidth();
 
@@ -217,11 +217,15 @@ public final class ACSSolver<T> implements Solver {
                 return new Solution(bestSolution(), stats);
             }
 
-            for (int i = 0; i < problem.nbVars() + 1; i++) {
+            for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) {
+                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
+                    // if the new state is dominated, we skip it
+                    if (sub.getState() != null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                        continue;
+                    }
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
                     if (sub.f() < bestUB) {
@@ -340,30 +344,28 @@ public final class ACSSolver<T> implements Solver {
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
 
-            // if the new state is dominated, we skip it
-            if (!dominance.updateDominance(newState, path.size(), value)) {
-                SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
-                if (debugLevel == DebugLevel.EXTENDED) {
-                    DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
-                }
-                StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
-                Double presentValue = present.get(newKey);
-                if (presentValue != null && presentValue > newSub.f()) {
+            SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+            if (debugLevel == DebugLevel.EXTENDED) {
+                DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
+            }
+            StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
+            Double presentValue = present.get(newKey);
+            if (presentValue != null && presentValue > newSub.f()) {
+                open.get(newSub.getDepth()).add(newSub);
+                present.put(newKey, newSub.f());
+            } else if (presentValue == null) {
+                Double closedValue = closed.get(newKey);
+                if (closedValue != null && closedValue > newSub.f()) {
+                    open.get(newSub.getDepth()).add(newSub);
+                    closed.remove(newKey);
+                    present.put(newKey, newSub.f());
+                } else if (closedValue == null) {
                     open.get(newSub.getDepth()).add(newSub);
                     present.put(newKey, newSub.f());
-                } else {
-                    Double closedValue = closed.get(newKey);
-                    if (closedValue != null && closedValue > newSub.f()) {
-                        open.get(newSub.getDepth()).add(newSub);
-                        closed.remove(newKey);
-                        present.put(newKey, newSub.f());
-                    } else {
-                        open.get(newSub.getDepth()).add(newSub);
-                        present.put(newKey, newSub.f());
-                    }
                 }
-
             }
+
+
         }
     }
 
@@ -379,7 +381,7 @@ public final class ACSSolver<T> implements Solver {
             set.add(i);
         }
         for (Decision d : path) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }
@@ -426,17 +428,21 @@ public final class ACSSolver<T> implements Solver {
         if (defaultLowerBoundValue) {
             return Double.NaN;
         } else {
-            double maxLB = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < problem.nbVars(); i++) {
-                if (!open.get(i).isEmpty()) {
-                    if (negativeTransitionCosts) {
-                        maxLB = Math.max(maxLB, Math.abs(open.get(i).peek().f()));
-                    } else {
-                        maxLB = Math.max(maxLB, open.get(i).peek().f());
+            if (allEmpty()) {
+                return 0;
+            } else {
+                double minLB = Double.POSITIVE_INFINITY;
+                for (int i = 0; i < problem.nbVars(); i++) {
+                    if (!open.get(i).isEmpty()) {
+                        minLB = Math.min(minLB, open.get(i).peek().f());
                     }
                 }
+                if (negativeTransitionCosts) {
+                    return Math.abs(100.0 * (bestUB + Math.abs(minLB)) / Math.max(Math.abs(minLB), Math.abs(bestUB)));
+                } else {
+                    return Math.abs(100.0 * (bestUB - Math.abs(minLB)) / Math.abs(bestUB));
+                }
             }
-            return Math.abs(100.0 * (bestUB - maxLB) / Math.abs(bestUB));
         }
     }
 }

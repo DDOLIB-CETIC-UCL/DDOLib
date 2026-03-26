@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
+import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
 /**
@@ -45,6 +46,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
         this.numVar = problem.distance.length;
         cheapestEdges = precomputeCheapestEdges();
     }
+
     /**
      * Computes a fast lower bound on the remaining tour cost from the given state.
      *
@@ -59,7 +61,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
      * </ul>
      * The calculation respects the time window constraints; if a tour is infeasible, {@code INFINITY} is returned.
      *
-     * @param state The current state in the TSPTW problem.
+     * @param state     The current state in the TSPTW problem.
      * @param variables The set of unassigned variables (nodes) to consider for the lower bound.
      * @return A fast lower bound on the tour cost from the current state, or {@link Integer#MAX_VALUE} if infeasible.
      */
@@ -67,28 +69,28 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
     public double fastLowerBound(TSPTWState state, Set<Integer> variables) {
         // This lower bound assumes that we will always select the cheapest edges from each node
 
-        int completeTour = numVar - state.depth() - 1;
-        //From the current state we go to the closest node
-        int start = switch (state.position()) {
-            case TSPNode(int value) -> cheapestEdges[value];
+        int travelCost = switch (state.position()) {
+            case TSPNode(int pos) -> cheapestEdges[pos];
             case VirtualNodes(Set<Integer> nodes) ->
-                    nodes.stream().mapToInt(x -> cheapestEdges[x]).min().getAsInt();
-        };
-        int mandatory = 0; // The sum of shortest edges
-        int backToDepot = 0; // The shortest edges to the depot
+                    nodes.stream().mapToInt(pos -> cheapestEdges[pos]).min().getAsInt();
+
+        }; // The sum of shortest edges, starting from the current position
+        int backToDepot = Integer.MAX_VALUE; // The shortest edges to the depot
+        int maxEdge = travelCost;
 
 
         var mustIt = state.mustVisit().stream().iterator();
         while (mustIt.hasNext()) {
             int i = mustIt.nextInt();
             if (!problem.reachable(state, i)) return INFINITY;
-            completeTour--;
-            mandatory += cheapestEdges[i];
+            travelCost += cheapestEdges[i];
+            maxEdge = max(maxEdge, cheapestEdges[i]);
             backToDepot = min(backToDepot, problem.distance[i][0]);
         }
 
 
-        if (completeTour > 0) { // There are not enough mustVisit nodes. We complete the tour with the
+        int numToCompleteTour = numVar - state.depth() - 1 - state.mustVisit().cardinality();
+        if (numToCompleteTour > 0) { // There are not enough mustVisit nodes. We complete the tour with the
             // possiblyVisit nodes
             ArrayList<Integer> candidatesToCompleteTour = new ArrayList<>();
             int violation = 0;
@@ -100,26 +102,26 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
                 backToDepot = min(backToDepot, problem.distance[i][0]);
                 if (!problem.reachable(state, i)) violation++;
             }
-            if (candidatesToCompleteTour.size() - violation < completeTour) return INFINITY;
+            if (candidatesToCompleteTour.size() - violation < numToCompleteTour) return INFINITY;
 
             Collections.sort(candidatesToCompleteTour);
-            mandatory += candidatesToCompleteTour
-                    .subList(0, completeTour)
-                    .stream()
-                    .mapToInt(x -> x)
-                    .sum();
+
+            for (int maybeEdge : candidatesToCompleteTour.subList(0, numToCompleteTour)) {
+                travelCost += maybeEdge;
+                maxEdge = max(maxEdge, maybeEdge);
+            }
         }
 
-        // No node can be visited. We just need to go back to the depot
-        if (mandatory == 0) {
-            backToDepot = problem.minDuration(state, 0);
-            start = 0;
-        }
+        // Currently travelCost contains all the travel for going from a city to another.
+        // However, after visiting the last city, we do not go to another but to the depot. We
+        // assume that the longest edge will be replaced by the return to the depot
+        travelCost -= maxEdge;
 
-        int total = start + mandatory + backToDepot;
+        int total = travelCost == 0 ? problem.minDuration(state, 0) : travelCost + backToDepot;
         if (state.time() + total > problem.timeWindows[0].end()) return INFINITY;
         else return total;
     }
+
     /**
      * Precomputes the cheapest outgoing edge for each node in the problem.
      *

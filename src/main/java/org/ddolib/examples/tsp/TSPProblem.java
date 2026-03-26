@@ -45,15 +45,13 @@ import java.util.stream.Collectors;
 public class TSPProblem implements Problem<TSPState> {
 
     /**
+     * Distance matrix between nodes
+     */
+    public final double[][] distanceMatrix;
+    /**
      * Number of nodes (cities)
      */
     final int n;
-
-    /**
-     * Distance matrix between nodes
-     */
-   public final double[][] distanceMatrix;
-
     /**
      * Optional value of the known optimal solution
      */
@@ -63,21 +61,6 @@ public class TSPProblem implements Problem<TSPState> {
      * Optional name for easier readability of tests
      */
     private Optional<String> name = Optional.empty();
-
-    /**
-     * Evaluates the total tour cost for a given solution.
-     *
-     * @param solution an array representing the node visit order
-     * @return the total cost of the tour including return to the starting node
-     */
-    public double eval(int[] solution) {
-        double toReturn = 0;
-        for (int i = 1; i < solution.length; i++) {
-            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
-        }
-        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
-        return toReturn;
-    }
 
     /**
      * Constructs a TSP instance from a given distance matrix.
@@ -100,7 +83,6 @@ public class TSPProblem implements Problem<TSPState> {
         this.n = distanceMatrix.length;
         this.optimal = Optional.of(optimal);
     }
-
 
     /**
      * Constructs a TSP instance by reading an XML file in the XML-TSPLIB format.
@@ -162,6 +144,21 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     /**
+     * Evaluates the total tour cost for a given solution.
+     *
+     * @param solution an array representing the node visit order
+     * @return the total cost of the tour including return to the starting node
+     */
+    public double eval(int[] solution) {
+        double toReturn = 0;
+        for (int i = 1; i < solution.length; i++) {
+            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];
+        }
+        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
+        return toReturn;
+    }
+
+    /**
      * Returns the number of decision variables in the problem.
      *
      * @return number of variables (equal to number of nodes)
@@ -183,18 +180,6 @@ public class TSPProblem implements Problem<TSPState> {
         toVisit.set(1, n);
 
         return new TSPState(singleton(0), toVisit);
-    }
-
-    /**
-     * Creates a BitSet containing only a single node.
-     *
-     * @param singletonValue the node to include
-     * @return a BitSet with only the specified node set
-     */
-    public BitSet singleton(int singletonValue) {
-        BitSet toReturn = new BitSet(n);
-        toReturn.set(singletonValue);
-        return toReturn;
     }
 
     /**
@@ -235,7 +220,7 @@ public class TSPProblem implements Problem<TSPState> {
      */
     @Override
     public TSPState transition(TSPState state, Decision decision) {
-        int node = decision.val();
+        int node = decision.value();
 
 
         BitSet newToVisit = (BitSet) state.toVisit.clone();
@@ -255,8 +240,8 @@ public class TSPProblem implements Problem<TSPState> {
     @Override
     public double transitionCost(TSPState state, Decision decision) {
         return state.current.stream()
-                .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
-                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])
+                .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
+                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.value()])
                 .min()
                 .getAsDouble();
     }
@@ -270,20 +255,6 @@ public class TSPProblem implements Problem<TSPState> {
     public Optional<Double> optimalValue() {
         return optimal;
     }
-
-    /**
-     * Returns a string representation of the instance.
-     * If a name is set, it returns the name; otherwise, it prints the size and distance matrix.
-     *
-     * @return string representation of the TSPProblem
-     */
-    @Override
-    public String toString() {
-        String defaultStr = "TSP(n:" + n + "\n" +
-                "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
-        return name.orElse(defaultStr);
-    }
-
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
@@ -308,5 +279,30 @@ public class TSPProblem implements Problem<TSPState> {
 
 
         return value;
+    }
+
+    /**
+     * Creates a BitSet containing only a single node.
+     *
+     * @param singletonValue the node to include
+     * @return a BitSet with only the specified node set
+     */
+    public BitSet singleton(int singletonValue) {
+        BitSet toReturn = new BitSet(n);
+        toReturn.set(singletonValue);
+        return toReturn;
+    }
+
+    /**
+     * Returns a string representation of the instance.
+     * If a name is set, it returns the name; otherwise, it prints the size and distance matrix.
+     *
+     * @return string representation of the TSPProblem
+     */
+    @Override
+    public String toString() {
+        String defaultStr = "TSP(n:" + n + "\n" +
+                "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList() + "\n)";
+        return name.orElse(defaultStr);
     }
 }

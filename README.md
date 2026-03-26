@@ -9,6 +9,8 @@ by the [CETIC](https://www.cetic.be/) (team of [Renaud De Landtsheer](https://ww
 the [UCLouvain](https://uclouvain.be/en/index.html) (team of [Pierre Schaus](https://pschaus.github.io/)).
 It includes a modeling API for users to define their DP problem and solve them efficiently.
 
+A Scala API for this library can be found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib-Scala).
+
 # Theoretical Foundations
 
 The technique of using decision diagrams for solving combinatorial problems is based on the work of several researchers.
@@ -47,10 +49,10 @@ If you use this Java version, please cite the DDO paper:
 
 ## Examples
 
-The project contains two sets of example models located in the [examples](./src/main/java/org/ddolib/ddo/examples/)
+The project contains a set of example models located in the [examples](./src/main/java/org/ddolib/ddo/examples/)
 package.
 
-The Knapsack problem is a classic optimization problem where the goal is to maximize the total value of items while
+The Knapsack problem (KP) is a classic optimization problem where the goal is to maximize the total value of items while
 staying within a given weight limit. The dynamic programming model used to solve this problem uses the recurrence
 relation:
 
@@ -59,14 +61,27 @@ relation:
 where `KS(i, c)` is the maximum value of the first `i` items with a knapsack capacity of `c`,
 `p[i]` is the profit of item `i`, and `w[i]` is the weight of item `i`.
 
-For modeling this problem in DDOLib, we define the `KSProblem` class that implements the `Problem` interface.
-This interface requires to define a state. This state is the remaining capacity of the knapsack (an Integer).
-We also define the `initialState` method to return the initial capacity of the knapsack, and the `initialValue` method
-to return 0 as the initial value of the knapsack.
+Several search strategies are available in DDOLib, and they share the same modeling interface.
+These include the classic branch-and-bound (B&B) approach denoted Ddo, the Astar (A*) approach, and the Anytime Column
+Search (ACS).
+For modeling this problem in DDOLib, the state is the remaining capacity of the knapsack (an Integer).
+We define the `KSProblem` class that implements the `Problem` interface. This interface requires defining the
+number of variables 'nbVars' method, the initial state `initialState` method, the `initialValue` method, the `domain`
+method, the `transition` and `transitionCost` methods.
 The `nbVars` method returns the number of items, which is the same as the number of variables in the problem.
+The `initialState` method returns the weight limit of the problem, and the `initialValue` method returns 0.
 The `domain` method defines the possible decisions for each item (take or not take), and the `transition` method updates
 the state of the knapsack based on the decision made.
-The `transitionCost` method returns the profit of the item if it is taken, and 0 otherwise.
+The `transitionCost` method returns the profit of the item if it is taken, and 0 otherwise. These transition costs are
+negative, since the KP is a maximization problem and we model it as a minimization.
+We define the `KSRelax` class that implements the `Relaxation` interface.
+This interface requires defining the `mergeStates` method and the `relaxEdge` method.
+The `mergeStates` method returns the maximum capacity state among the states to be merged, while the `relaxEdge` method
+returns
+the cost of the selected state.
+We finaly define the `KSRanking` class that implements the `StateRanking` interface.
+This interface requires defining the `compare` method where two state are compared.
+For complex states, it is important to specify the `hashCode` and the `equals` methods in the state.
 This implicitely define a decision diagram where the optimal solution is the longest path from the root to a leaf node.
 
 ```java
@@ -83,6 +98,44 @@ public class KSProblem implements Problem<Integer> {
 
     public KSProblem(final int capa, final int[] profit, final int[] weight, final Integer optimal) {
         this.capa = capa;
+        this.profit = profit;
+        this.weight = weight;
+        this.optimal = optimal;
+    }
+
+    public KSProblem(final String fname) throws IOException {
+        boolean isFirst = true;
+        int count = 0;
+        int n = 0;
+        final File f = new File(fname);
+        String line;
+        int c = 0;
+        int[] profit = new int[0];
+        int[] weight = new int[0];
+        Optional<Double> optimal = Optional.empty();
+        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
+            while ((line = bf.readLine()) != null) {
+                if (isFirst) {
+                    isFirst = false;
+                    String[] tokens = line.split("\\s");
+                    n = Integer.parseInt(tokens[0]);
+                    c = Integer.parseInt(tokens[1]);
+                    if (tokens.length == 3) {
+                        optimal = Optional.of(Double.parseDouble(tokens[2]));
+                    }
+                    profit = new int[n];
+                    weight = new int[n];
+                } else {
+                    if (count < n) {
+                        String[] tokens = line.split("\\s");
+                        profit[count] = Integer.parseInt(tokens[0]);
+                        weight[count] = Integer.parseInt(tokens[1]);
+                        count++;
+                    }
+                }
+            }
+        }
+        this.capa = c;
         this.profit = profit;
         this.weight = weight;
         this.optimal = optimal;
@@ -126,6 +179,85 @@ public class KSProblem implements Problem<Integer> {
 }
 ```
 
+```java
+public class KSRelax implements Relaxation<Integer> {
+    /**
+     * Merges multiple states into a single relaxed state.
+     * <p>
+     * For the Knapsack problem, the merged state is defined as the maximum remaining capacity
+     * among the states being merged.
+     * </p>
+     */
+    @Override
+    public Integer mergeStates(final Iterator<Integer> states) {
+        int capa = 0;
+        while (states.hasNext()) {
+            final Integer state = states.next();
+            capa = Math.max(capa, state);
+        }
+        return capa;
+    }
+    /**
+     * Relaxes the cost of an edge between states in the decision diagram.
+     * <p>
+     * For the Knapsack problem, the cost is not modified by the relaxation.
+     * </p>
+     */
+    @Override
+    public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
+        return cost;
+    }
+
+}
+```
+
+```java
+/** DDO Model */
+public class KSDdoMain {
+    /**
+     * Entry point of the DDO demonstration for the Knapsack Problem.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if the instance file cannot be read
+     */
+    public static void main(final String[] args) throws IOException {
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final KSProblem problem = new KSProblem(instance);
+        final DdoModel<Integer> model = new DdoModel<>() {
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.LARGE;
+            }
+
+            @Override
+            public Relaxation<Integer> relaxation() {
+                return new KSRelax();
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+        };
+
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
+        });
+
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
+
+
+    }
+}
+
+```
+
 ### Recommended IDE: IntelliJ IDEA
 
 We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
@@ -140,13 +272,14 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 2. **Clone the Repository**:
    Launch IntelliJ IDEA.
-   Select File > Open and navigate to the maxicp folder you cloned.
+   Select File > Open and navigate to the DDOLib folder you cloned.
    Open the `pom.xml` file.
 
 3. **Running the tests**:
 
-   From the IntelliJ IDEA editor, navigate to the `src/test/java` directory.
-   Right-click then select `Run 'All Tests'` to run all the tests.
+   For the IntelliJ IDEA editor, take a look at our [wiki page](https://github.com/DDOLIB-CETIC-UCL/DDOLib/wiki/Conventions-for-tests) to learn about our tests
+   convention and
+   how to configure your IDE properly.
 
    From the terminal, navigate to the root directory of the project and run the following command:
     ```bash

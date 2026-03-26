@@ -7,8 +7,7 @@ import org.ddolib.modeling.Model;
 import org.ddolib.util.StateAndDepth;
 
 import java.text.DecimalFormat;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -86,13 +85,20 @@ public class DebugUtil {
             internalSolver.minimize(s -> false, (sol, stats) -> {
             });
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
+            Optional<Set<Decision>> shortestPath = internalSolver.bestSolution();
             if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
+                List<Decision> sortedDecisions = new ArrayList<>(shortestPath.get());
+                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));
+
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your lower bound is not admissible.\n" +
                         "State: " + current.state().toString() + "\n" +
                         "Depth: " + current.depth() + "\n" +
                         "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Longest path to end: " + df.format(shortestFromCurrent.get()) + "\n";
+                        "Shortest path length to end: " + df.format(shortestFromCurrent.get())
+                        + "\n\nFull Path to end:\n" +
+                        sortedDecisions.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
+                        + "\n";
 
                 throw new RuntimeException(failureMsg);
             }

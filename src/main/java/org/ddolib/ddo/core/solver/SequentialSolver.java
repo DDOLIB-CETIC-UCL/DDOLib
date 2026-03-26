@@ -155,7 +155,6 @@ public final class SequentialSolver<T> implements Solver {
 
     private DominanceChecker<T> dominance;
 
-
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
@@ -167,7 +166,7 @@ public final class SequentialSolver<T> implements Solver {
         this.width = model.widthHeuristic();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.frontier = model.frontier();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
@@ -196,9 +195,8 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize, end - start, bestUB, 100);
-            if (bestUB != Double.POSITIVE_INFINITY)
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, end - start, bestUB, gap());
+            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter,
+                    queueMaxSize, end - start, bestUB, gap());
 
             if (limit.test(stats)) {
                 return new Solution(bestSolution(), stats);
@@ -346,11 +344,11 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (frontier.isEmpty()) {
+        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
             return 100.0;
         } else {
             double bestInFrontier = frontier.bestInFrontier();
-            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);
+            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
         }
     }
 
@@ -380,6 +378,12 @@ public final class SequentialSolver<T> implements Solver {
         compilation.cutSetType = frontier.cutSetType();
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
+
+        if (type == CompilationType.Relaxed) {
+            compilation.reductionStrategy = model.relaxStrategy();
+        } else if (type == CompilationType.Restricted) {
+            compilation.reductionStrategy = model.restrictStrategy();
+        }
 
         return compilation;
     }

@@ -10,19 +10,17 @@ import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;
 import org.ddolib.examples.knapsack.KSFastLowerBound;
 import org.ddolib.examples.knapsack.KSProblem;
+import org.ddolib.examples.misp.MispProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.BitSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,7 +67,7 @@ class AStarSolverTest {
             }
             assertTrue(computedWeight <= problem.capa);
             assertEquals(-computedProfit, s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
@@ -100,12 +98,7 @@ class AStarSolverTest {
 
             @Override
             public FastLowerBound<GRState> lowerBound() {
-                return new FastLowerBound<GRState>() {
-                    @Override
-                    public double fastLowerBound(GRState state, Set<Integer> variables) {
-                        return 0;
-                    }
-                };
+                return (state, variables) -> 0;
             }
         };
 
@@ -114,7 +107,7 @@ class AStarSolverTest {
             // verify that each found solution is valid
             assertEquals(n - 1, sol.length);
             assertEquals(sol[n - 2], s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
@@ -137,7 +130,7 @@ class AStarSolverTest {
         // It can thus stop at the first found solution.
         final String instance = Path.of("data", "TSP", "instance_18_0.xml").toString();
         final TSPProblem problem = new TSPProblem(instance);
-        Model<TSPState> model = new Model<TSPState>() {
+        Model<TSPState> model = new Model<>() {
             @Override
             public Problem<TSPState> problem() {
                 return problem;
@@ -155,7 +148,7 @@ class AStarSolverTest {
             double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
             assertEquals(problem.nbVars(), sol.length);
             assertEquals(computedCost, s.incumbent());
-            assertEquals(SearchStatus.UNKNOWN, s.status());
+            assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
 
@@ -169,5 +162,26 @@ class AStarSolverTest {
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
+    }
+
+
+    @Test
+    void testMaxProblemWithDefaultLFlb() throws IOException {
+        String instance = Path.of("data", "MISP", "weighted.dot").toString();
+        final MispProblem problem = new MispProblem(instance);
+        Model<BitSet> model = new Model<>() {
+            @Override
+            public Problem<BitSet> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<BitSet> lowerBound() {
+                return new DefaultFastLowerBound<>();
+            }
+        };
+
+        Solution bestSolution = Solvers.minimizeAstar(model);
+        assertEquals(-11.0, bestSolution.value(), 1e-10);
     }
 }

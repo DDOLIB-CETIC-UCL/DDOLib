@@ -3,9 +3,8 @@ package org.ddolib.examples.smic;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+
 /**
  * The {@code SMICRelax} class implements a relaxation operator for the
  * {@link SMICProblem}, used in Decision Diagram Optimization (DDO)-based solvers.
@@ -66,23 +65,18 @@ public class SMICRelax implements Relaxation<SMICState> {
      */
     @Override
     public SMICState mergeStates(final Iterator<SMICState> states) {
-
-//        SMICState state = states.next();
-        Set<Integer> unionJobs = new HashSet<>(/*state.remainingJobs()*/);
-        int minCurrentTime = Integer.MAX_VALUE;
-        int minCurrentInventory = Integer.MIN_VALUE;
-        int maxCurrentInventory = Integer.MAX_VALUE;
-
+        BitSet remaining = new BitSet();
+        int currentTime = Integer.MAX_VALUE;
+        int minCurrentInventory = Integer.MAX_VALUE;
+        int maxCurrentInventory = Integer.MIN_VALUE;
         while (states.hasNext()) {
             final SMICState state = states.next();
-            unionJobs.addAll(state.remainingJobs());
-            minCurrentTime = Math.min(minCurrentTime, state.currentTime());
-            minCurrentInventory = Math.max(minCurrentInventory, state.minCurrentInventory());
-            maxCurrentInventory = Math.min(maxCurrentInventory, state.maxCurrentInventory());
+            remaining.or(state.remainingJobs());
+            currentTime = Math.min(currentTime, state.currentTime());
+            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());
+            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());
         }
-        if (minCurrentInventory <= maxCurrentInventory)
-            return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, maxCurrentInventory);
-        return new SMICState(unionJobs, minCurrentTime, minCurrentInventory, minCurrentInventory);
+        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
     /**
      * Relaxes the cost of an edge between two states.
@@ -102,5 +96,6 @@ public class SMICRelax implements Relaxation<SMICState> {
     public double relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, double cost) {
         return cost;
     }
+
 }
 

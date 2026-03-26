@@ -107,7 +107,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      */
     private void testSolverResult(Model<T> model, int width) throws InvalidSolutionException {
         Solution bestSolution = switch (model) {
-            case DdoModel<T> ddoModel when width == -1 -> Solvers.minimizeExact(ddoModel);
+            case ExactModel<T> exactModel -> Solvers.minimizeExact(exactModel);
             case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
             case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
             default -> Solvers.minimizeAstar(model);
@@ -134,14 +134,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      * @param problem the instance to test
      */
     private void testTransitionModel(P problem) throws InvalidSolutionException {
-
-        DdoModel<T> globalModel = model.apply(problem);
-
-        DdoModel<T> testModel = new DdoModel<T>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        ExactModel<T> testModel = new ExactModel<>() {
 
             @Override
             public Problem<T> problem() {
@@ -162,11 +155,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         DdoModel<T> globalModel = model.apply(problem);
 
-        DdoModel<T> testModel = new DdoModel<>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        ExactModel<T> testModel = new ExactModel<>() {
 
             @Override
             public Problem<T> problem() {
@@ -400,11 +389,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     private void testDominance(P problem) throws InvalidSolutionException {
         DdoModel<T> globalModel = model.apply(problem);
 
-        DdoModel<T> testModel = new DdoModel<>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        ExactModel<T> testModel = new ExactModel<>() {
 
             @Override
             public Problem<T> problem() {
@@ -416,6 +401,8 @@ public class ProblemTestBench<T, P extends Problem<T>> {
                 return globalModel.dominance();
             }
         };
+
+        testSolverResult(testModel);
 
 
     }

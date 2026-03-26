@@ -27,7 +27,7 @@ class ALPSolution implements Iterable<ALPSchedule> {
         for (int i = 0; i < problem.nbVars(); i++) {
             RunwayState[] runwayStates = curState.runwayStates;
             Decision d = new Decision(i, solution[i]);
-            ALPDecision alpD = problem.fromDecision(d.val());
+            ALPDecision alpD = problem.fromDecision(d.value());
             int aircraft = problem.latestToEarliestAircraftByClass
                     .get(alpD.aircraftClass)
                     .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
