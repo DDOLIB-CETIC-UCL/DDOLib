@@ -13,7 +13,9 @@ import org.ddolib.examples.gruler.GRRelax;
 import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.examples.tsp.*;
+import org.ddolib.examples.tsptw.*;
 import org.ddolib.modeling.*;
+import org.ddolib.util.io.SolutionPrinter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -197,5 +199,38 @@ class DdoSolverTest {
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
+    }
+
+
+    @Test
+    void testUnsat() throws IOException {
+        String instance = Path.of("data", "TSPTW", "impossible_to_finish.txt").toString();
+        final TSPTWProblem problem = new TSPTWProblem(instance);
+        DdoModel<TSPTWState> model = new DdoModel<TSPTWState>() {
+            @Override
+            public Problem<TSPTWState> problem() {
+                return problem;
+            }
+
+            @Override
+            public TSPTWFastLowerBound lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            }
+
+            @Override
+            public Relaxation<TSPTWState> relaxation() {
+                return new TSPTWRelax(problem);
+            }
+        };
+
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
+        });
+        assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 }

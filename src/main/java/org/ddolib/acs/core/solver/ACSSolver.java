@@ -198,7 +198,7 @@ public final class ACSSolver<T> implements Solver {
         if (root.f() == Integer.MIN_VALUE) {
             defaultLowerBoundValue = true;
         }
-
+        boolean sat = false;
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             verboseMode.detailedSearchState(nbIter,
@@ -210,7 +210,7 @@ public final class ACSSolver<T> implements Solver {
                     100 * gap());
 
 
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+            SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.SAT: SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
 
             if (limit.test(stats)) {
@@ -245,6 +245,7 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
+                            sat = true;
                             stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
                                     System.currentTimeMillis() - t0, bestUB, gap());
                             onSolution.accept(constructSolution(bestSol.get()), stats);
@@ -264,7 +265,7 @@ public final class ACSSolver<T> implements Solver {
             checkAdmissibility();
         }
 
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
         return new Solution(bestSolution(), stats);
     }

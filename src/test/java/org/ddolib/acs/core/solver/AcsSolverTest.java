@@ -16,7 +16,12 @@ import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
+import org.ddolib.examples.tsptw.TSPTWDominance;
+import org.ddolib.examples.tsptw.TSPTWFastLowerBound;
+import org.ddolib.examples.tsptw.TSPTWProblem;
+import org.ddolib.examples.tsptw.TSPTWState;
 import org.ddolib.modeling.*;
+import org.ddolib.util.io.SolutionPrinter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -206,5 +211,32 @@ class AcsSolverTest {
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
+    }
+
+    @Test
+    void testUnsat() throws IOException {
+        String instance = Path.of("data", "TSPTW", "impossible_to_finish.txt").toString();
+        final TSPTWProblem problem = new TSPTWProblem(instance);
+        AcsModel<TSPTWState> model = new AcsModel<TSPTWState>() {
+            @Override
+            public Problem<TSPTWState> problem() {
+                return problem;
+            }
+
+            @Override
+            public TSPTWFastLowerBound lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            }
+        };
+
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
+            SolutionPrinter.printSolution(s, sol);
+        });
+        assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 }
