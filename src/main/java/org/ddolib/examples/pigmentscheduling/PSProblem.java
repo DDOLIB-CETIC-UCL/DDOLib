@@ -308,7 +308,7 @@ public class PSProblem implements Problem<PSState> {
     public PSState transition(PSState state, Decision decision) {
         PSState ret = state.clone();
         int item = decision.val();
-        if (item != IDLE) {
+        if (item != IDLE && state.previousDemands[item] != IDLE) {
             ret.next = item;
             ret.previousDemands[item] = previousDemands[item][state.previousDemands[item]];
         }

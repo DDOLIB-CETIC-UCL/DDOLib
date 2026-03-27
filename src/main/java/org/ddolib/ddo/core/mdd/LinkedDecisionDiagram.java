@@ -105,6 +105,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private int depthLEL = -1;
 
+    ArrayList<T> stateInSolutionAtDepth;
+    double[] costInSolutionAtDepth;
+
+    private double lowerBound;
+
     /**
      * Creates a new linked decision diagram.
      *
@@ -118,6 +123,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.nextLayer.put(residual.getState(), root);
         this.debugLevel = config.debugLevel;
         this.config = config;
+
+        this.stateInSolutionAtDepth = new ArrayList<>();
+        this.costInSolutionAtDepth = new double[config.problem.nbVars()];
+        this.lowerBound = Double.MAX_VALUE;
 
     }
 
@@ -228,25 +237,27 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
-                switch (config.compilationType) {
-                    case Restricted:
-                        exact = false;
-                        restrict(maxWidth, ranking, config.reductionStrategy);
-                        break;
-                    case Relaxed:
-                        if (exact) {
+            if (!config.useLNS) {
+                if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
+                    switch (config.compilationType) {
+                        case Restricted:
                             exact = false;
-                            if (config.cutSetType == CutSetType.LastExactLayer) {
-                                cutset.addAll(prevLayer.values());
-                                depthLEL = depthCurrentDD - 1;
+                            restrict(maxWidth, ranking, config.reductionStrategy, 0);
+                            break;
+                        case Relaxed:
+                            if (exact) {
+                                exact = false;
+                                if (config.cutSetType == CutSetType.LastExactLayer) {
+                                    cutset.addAll(prevLayer.values());
+                                    depthLEL = depthCurrentDD - 1;
+                                }
                             }
-                        }
-                        relax(maxWidth, relax, config.reductionStrategy);
-                        break;
-                    case Exact:
-                        /* nothing to do */
-                        break;
+                            relax(maxWidth, relax, config.reductionStrategy);
+                            break;
+                        case Exact:
+                            /* nothing to do */
+                            break;
+                    }
                 }
             }
 
@@ -257,6 +268,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 if (n.lb >= config.bestUB) {
                     continue;
                 } else {
+                    lowerBound = Math.min(lowerBound, n.lb);
                     final Iterator<Integer> domain = problem.domain(n.state, nextVar);
                     while (domain.hasNext()) {
                         final int val = domain.next();
@@ -281,6 +293,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     }
                 }
             }
+            if (config.useLNS) {
+                if (currentLayer.size() > maxWidth) {
+                    exact = false;
+                    restrict(maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
+                }
+            }
+
 
             if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
                 listDepths.add(depthGlobalDD);
@@ -344,6 +363,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
+     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
+     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
+     */
+
+    @Override
+    public double minLowerBound() { return lowerBound;}
+
+
+    /**
      * Returns whether the decision diagram is exact.
      *
      * @return {@code true} if the MDD is exact, {@code false} if relaxed/restricted nodes exist
@@ -352,6 +380,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     public boolean isExact() {
         return exact;
     }
+
 
     /**
      * Returns the value of the best solution found in this decision diagram, if any.
@@ -710,19 +739,74 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      *
      * @param maxWidth the maximum tolerated layer width
      */
-    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
-        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
-        currentLayer.clear();
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy, int depth) {
+        if (config.useLNS) {
+            if (config.solution == null) {
+                List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+                currentLayer.clear();
 
-        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
-        for (List<NodeSubProblem<T>> cluster : clusters) {
-            if (cluster.isEmpty()) continue;
+                // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+                for (List<NodeSubProblem<T>> cluster : clusters) {
+                    if (cluster.isEmpty()) continue;
 
-            cluster.sort(ranking);
-            currentLayer.add(cluster.getFirst());
-            cluster.clear();
+                    cluster.sort(ranking);
+                    currentLayer.add(cluster.getFirst());
+                    cluster.clear();
+                }
+            } else {
+                List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
+                currentLayer.clear();
+                int frontier = 0;
+                Random random = new Random();
+                for (int k = 0; k < layer.size(); k++) {
+                    if (layer.get(k).getValue()  == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
+                        swap(layer, frontier, k);
+                        frontier++;
+                    }
+                }
+                List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
+                List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
+                if (keep.size() + candidates.size() > maxWidth) {
+                    candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
+                    candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
+                }
+                keep.addAll(candidates);
+                currentLayer.addAll(keep);
+            }
+        } else {
+            List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+            currentLayer.clear();
+
+            // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+            for (List<NodeSubProblem<T>> cluster : clusters) {
+                if (cluster.isEmpty()) continue;
+
+                cluster.sort(ranking);
+                currentLayer.add(cluster.getFirst());
+                cluster.clear();
+            }
         }
     }
+
+    private void swap(List<NodeSubProblem<T>> layer, int f, int k) {
+        NodeSubProblem<T> temp = layer.get(f);
+        layer.set(f, layer.get(k));
+        layer.set(k, temp);
+    }
+
+    private double costInSolutionAtDepth(int[] solution, int depth) {
+        double sum = config.problem.initialValue();
+        T state = config.problem.initialState();
+        int k = 0;
+        while (k < depth) {
+            Decision dec = new Decision(k, solution[k]);
+            sum += config.problem.transitionCost(state, dec);
+            state = config.problem.transition(state, dec);
+            k++;
+        }
+        return sum;
+    }
+
 
     /**
      * Performs a restriction of the current layer.
