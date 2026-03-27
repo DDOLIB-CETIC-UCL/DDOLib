@@ -12,12 +12,12 @@ jobs:
       contents: write
     steps:
       - name: Step0 - Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Step1 - Set up Python 3.8
-        uses: actions/setup-python@v2
+      - name: Step1 - Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: '3.10'
 
       - name: Step2 - Install python dependencies
         run: |
@@ -28,28 +28,18 @@ jobs:
         run: |
           cd userguide
           make html
-          mv build/html /tmp/.
 
-      - name: Step4 - Checkout gh-pages branch
-        uses: actions/checkout@v3
+      # Deploy to the organisation's GitHub Pages repo so the site is served
+      # at https://ddolib-cetic-ucl.github.io/ (root, no /DDOLib/ prefix).
+      #
+      # Setup: generate an SSH deploy key and add the *public* key as a
+      # deploy key (with write access) on DDOLIB-CETIC-UCL.github.io,
+      # and the *private* key as a secret named PAGES_DEPLOY_KEY on DDOLib.
+      - name: Step4 - Deploy to DDOLIB-CETIC-UCL.github.io
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          ref: gh-pages
-
-      - name: Step5 - Add html
-        run: |
-          git config --local user.email "github-actions@users.noreply.github.com"
-          git config --local user.name "github-actions"
-          if [ -z "$(ls -A .)" ]; then
-            git rm -r *
-          fi
-          cp -r /tmp/html/* .
-          touch .nojekyll
-          git add -A
-          git commit -m "update userguide" || echo "No changes to commit"
-
-      - name: Step6 - Push changes to gh-pages branch
-        uses: ad-m/github-push-action@master
-        with:
-          branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
+          deploy_key: ${{ secrets.PAGES_DEPLOY_KEY }}
+          external_repository: DDOLIB-CETIC-UCL/DDOLIB-CETIC-UCL.github.io
+          publish_branch: main
+          publish_dir: ./userguide/build/html
+          enable_jekyll: false
