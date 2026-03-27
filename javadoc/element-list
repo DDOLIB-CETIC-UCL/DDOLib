@@ -37,6 +37,7 @@ org.ddolib.examples.srflp
 org.ddolib.examples.talentscheduling
 org.ddolib.examples.tsp
 org.ddolib.examples.tsptw
+org.ddolib.lns.core.solver
 org.ddolib.modeling
 org.ddolib.util
 org.ddolib.util.debug
