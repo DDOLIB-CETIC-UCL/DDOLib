@@ -1,0 +1,569 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Tutorial: Solving the Knapsack Problem &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Solver Strategies" href="solvers.html" />
+    <link rel="prev" title="Core Concepts" href="concepts.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="solvers.html" title="Solver Strategies"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="concepts.html" title="Core Concepts"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tutorial: Solving the Knapsack Problem</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="tutorial-solving-the-knapsack-problem">
+<span id="knapsack"></span><h1>Tutorial: Solving the Knapsack Problem<a class="headerlink" href="#tutorial-solving-the-knapsack-problem" title="Permalink to this heading">¶</a></h1>
+<p>In this chapter we build a complete DDOLib model for the classic
+<strong>0/1 Knapsack Problem</strong> (KP). By the end you will have implemented every
+interface introduced in <a class="reference internal" href="concepts.html#concepts"><span class="std std-ref">Core Concepts</span></a> and will be able to run the solver
+with three different strategies.</p>
+<p>The full source code lives in the package
+<code class="docutils literal notranslate"><span class="pre">org.ddolib.examples.knapsack</span></code>.</p>
+<section id="problem-description">
+<h2>Problem description<a class="headerlink" href="#problem-description" title="Permalink to this heading">¶</a></h2>
+<p>You are given a knapsack with capacity <span class="math">C</span> and <span class="math">n</span> items.
+Item <span class="math">i</span> has profit <span class="math">p_i</span> and weight <span class="math">w_i</span>.
+Select a subset of items that <strong>maximises</strong> the total profit without
+exceeding the capacity.</p>
+<p>The classic DP recurrence is:</p>
+<div class="math">
+<p><span class="math">KS(i, c) = \max\bigl( KS(i{-}1,\, c),\;
+                       KS(i{-}1,\, c - w_i) + p_i \bigr)</span></p>
+</div><p>where <span class="math">KS(i, c)</span> is the best profit achievable using items
+<span class="math">0 \ldots i{-}1</span> with remaining capacity <span class="math">c</span>.</p>
+</section>
+<section id="step-1-define-the-state">
+<h2>Step 1 — Define the state<a class="headerlink" href="#step-1-define-the-state" title="Permalink to this heading">¶</a></h2>
+<p>For the Knapsack the state is simply the <strong>remaining capacity</strong> of the
+knapsack — a single <code class="docutils literal notranslate"><span class="pre">Integer</span></code>. This is about as simple as a state can get,
+which makes KP an ideal first example.</p>
+</section>
+<section id="step-2-implement-problem-integer">
+<h2>Step 2 — Implement <code class="docutils literal notranslate"><span class="pre">Problem&lt;Integer&gt;</span></code><a class="headerlink" href="#step-2-implement-problem-integer" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">KSProblem</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w">   </span><span class="n">capa</span><span class="p">;</span><span class="w">      </span><span class="c1">// maximum capacity</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">profit</span><span class="p">;</span><span class="w">    </span><span class="c1">// profit of each item</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">weight</span><span class="p">;</span><span class="w">    </span><span class="c1">// weight of each item</span>
+
+<span class="w">    </span><span class="cm">/* --- constructors omitted for brevity --- */</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">nbVars</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">profit</span><span class="p">.</span><span class="na">length</span><span class="p">;</span><span class="w">       </span><span class="c1">// one decision variable per item</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="nf">initialState</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">capa</span><span class="p">;</span><span class="w">                </span><span class="c1">// the knapsack starts empty</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">initialValue</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">                   </span><span class="c1">// no profit collected yet</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Iterator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">domain</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">var</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">weight</span><span class="o">[</span><span class="n">var</span><span class="o">]</span><span class="p">)</span><span class="w">          </span><span class="c1">// item fits</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">).</span><span class="na">iterator</span><span class="p">();</span><span class="w">  </span><span class="c1">// take it or not</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">iterator</span><span class="p">();</span><span class="w">  </span><span class="c1">// cannot take it</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="nf">transition</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">decision</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// decrease capacity when the item is taken</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">weight</span><span class="o">[</span><span class="n">decision</span><span class="p">.</span><span class="na">variable</span><span class="p">()</span><span class="o">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">decision</span><span class="p">.</span><span class="na">value</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">transitionCost</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">decision</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// negate profit because DDOLib minimises</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">profit</span><span class="o">[</span><span class="n">decision</span><span class="p">.</span><span class="na">variable</span><span class="p">()</span><span class="o">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">decision</span><span class="p">.</span><span class="na">value</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Important points:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nbVars()</span></code> returns the total number of items. Each item corresponds to
+one <em>layer</em> of the decision diagram.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">domain()</span></code> returns <code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">0}</span></code> when the item fits (prefer <code class="docutils literal notranslate"><span class="pre">1</span></code> first so
+the solver tries taking the item before skipping it) and <code class="docutils literal notranslate"><span class="pre">{0}</span></code> otherwise.</p></li>
+<li><p>Costs are <strong>negated</strong> profits. DDOLib always minimises, so we convert
+maximisation into minimisation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transition()</span></code> returns a <strong>new</strong> <code class="docutils literal notranslate"><span class="pre">Integer</span></code> — it never mutates the input.</p></li>
+</ul>
+</section>
+<section id="step-3-implement-relaxation-integer">
+<h2>Step 3 — Implement <code class="docutils literal notranslate"><span class="pre">Relaxation&lt;Integer&gt;</span></code><a class="headerlink" href="#step-3-implement-relaxation-integer" title="Permalink to this heading">¶</a></h2>
+<p>The relaxation merges several states into one that <em>over-approximates</em> all
+of them. For KP the natural relaxation is to keep the <strong>maximum</strong> remaining
+capacity:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">KSRelax</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Relaxation</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="nf">mergeStates</span><span class="p">(</span><span class="n">Iterator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">states</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">capa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">states</span><span class="p">.</span><span class="na">hasNext</span><span class="p">())</span>
+<span class="w">            </span><span class="n">capa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">max</span><span class="p">(</span><span class="n">capa</span><span class="p">,</span><span class="w"> </span><span class="n">states</span><span class="p">.</span><span class="na">next</span><span class="p">());</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">capa</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">relaxEdge</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">to</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">Integer</span><span class="w"> </span><span class="n">merged</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">cost</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">cost</span><span class="p">;</span><span class="w">   </span><span class="c1">// cost is independent of the capacity state</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Why does this produce a valid relaxation? Because a higher remaining capacity
+can never <em>decrease</em> the set of feasible continuations. The merged state
+therefore admits <em>at least</em> all the solutions that were reachable from the
+original states — exactly what the solver needs for a sound lower bound.</p>
+</section>
+<section id="step-4-implement-stateranking-integer">
+<h2>Step 4 — Implement <code class="docutils literal notranslate"><span class="pre">StateRanking&lt;Integer&gt;</span></code><a class="headerlink" href="#step-4-implement-stateranking-integer" title="Permalink to this heading">¶</a></h2>
+<p>When a layer of the decision diagram grows too wide, the solver needs to
+choose which states to keep. We rank by remaining capacity — more capacity
+means more potential:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">KSRanking</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">StateRanking</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">o1</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">o2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">o1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">o2</span><span class="p">;</span><span class="w">   </span><span class="c1">// higher capacity → higher rank</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-implement-fastlowerbound-integer">
+<h2>Step 5 — Implement <code class="docutils literal notranslate"><span class="pre">FastLowerBound&lt;Integer&gt;</span></code><a class="headerlink" href="#step-5-implement-fastlowerbound-integer" title="Permalink to this heading">¶</a></h2>
+<p>A good lower bound lets the solver prune subtrees early. For KP we use the
+classic <em>fractional relaxation</em>: fill the remaining capacity greedily by
+profit-to-weight ratio.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">KSFastLowerBound</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">KSProblem</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">KSFastLowerBound</span><span class="p">(</span><span class="n">KSProblem</span><span class="w"> </span><span class="n">problem</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">problem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="nf">fastLowerBound</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">variables</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// sort remaining items by decreasing profit/weight ratio</span>
+<span class="w">        </span><span class="n">Integer</span><span class="o">[]</span><span class="w"> </span><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variables</span><span class="p">.</span><span class="na">toArray</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Integer</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="o">[]</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">double</span><span class="o">[</span><span class="n">problem</span><span class="p">.</span><span class="na">nbVars</span><span class="p">()</span><span class="o">]</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">variables</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ratio</span><span class="o">[</span><span class="n">v</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">profit</span><span class="o">[</span><span class="n">v</span><span class="o">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">weight</span><span class="o">[</span><span class="n">v</span><span class="o">]</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Arrays</span><span class="p">.</span><span class="na">sort</span><span class="p">(</span><span class="n">sorted</span><span class="p">,</span>
+<span class="w">            </span><span class="n">Comparator</span><span class="p">.</span><span class="na">comparingDouble</span><span class="p">((</span><span class="n">Integer</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ratio</span><span class="o">[</span><span class="n">v</span><span class="o">]</span><span class="p">).</span><span class="na">reversed</span><span class="p">());</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">maxProfit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">sorted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">capacity</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">capacity</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">weight</span><span class="o">[</span><span class="n">item</span><span class="o">]</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">maxProfit</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">profit</span><span class="o">[</span><span class="n">item</span><span class="o">]</span><span class="p">;</span>
+<span class="w">                </span><span class="n">capacity</span><span class="w">  </span><span class="o">-=</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">weight</span><span class="o">[</span><span class="n">item</span><span class="o">]</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">maxProfit</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">floor</span><span class="p">(</span><span class="n">ratio</span><span class="o">[</span><span class="n">item</span><span class="o">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">capacity</span><span class="p">);</span>
+<span class="w">                </span><span class="n">capacity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">maxProfit</span><span class="p">;</span><span class="w">   </span><span class="c1">// negated because we minimise</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The returned value must be a <strong>lower bound</strong> on the cost (which is the
+negated profit). Since the fractional relaxation gives an <em>upper</em> bound on
+profit, negating it gives a valid lower bound on cost.</p>
+</div>
+</section>
+<section id="step-6-implement-dominance-integer">
+<h2>Step 6 — Implement <code class="docutils literal notranslate"><span class="pre">Dominance&lt;Integer&gt;</span></code><a class="headerlink" href="#step-6-implement-dominance-integer" title="Permalink to this heading">¶</a></h2>
+<p>A state with <em>more</em> remaining capacity is always at least as good as one
+with less (assuming the same items have been considered). Therefore:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">KSDominance</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Dominance</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="nf">getKey</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">capa</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">   </span><span class="c1">// all states are comparable</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">isDominatedOrEqual</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">capa1</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">capa2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">capa1</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">capa2</span><span class="p">;</span><span class="w">   </span><span class="c1">// less capacity → dominated</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The key is constant because in KP, after the same number of decisions, any
+two states are directly comparable. For problems with richer states (e.g. TSP)
+the key is used to partition states into groups where dominance makes sense.</p>
+</section>
+<section id="step-7-wire-everything-into-a-model-and-solve">
+<h2>Step 7 — Wire everything into a model and solve<a class="headerlink" href="#step-7-wire-everything-into-a-model-and-solve" title="Permalink to this heading">¶</a></h2>
+<p>Now we assemble the pieces and call a solver.</p>
+<section id="solving-with-ddo-branch-and-bound-with-decision-diagrams">
+<h3>Solving with DDO (branch-and-bound with decision diagrams)<a class="headerlink" href="#solving-with-ddo-branch-and-bound-with-decision-diagrams" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">KSProblem</span><span class="w"> </span><span class="n">problem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSProblem</span><span class="p">(</span><span class="s">&quot;data/Knapsack/example&quot;</span><span class="p">);</span>
+
+<span class="n">DdoModel</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DdoModel</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">problem</span><span class="p">()</span><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Relaxation</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">     </span><span class="nf">relaxation</span><span class="p">()</span><span class="w">     </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSRelax</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">KSRanking</span><span class="w">               </span><span class="nf">ranking</span><span class="p">()</span><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSRanking</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">  </span><span class="nf">lowerBound</span><span class="p">()</span><span class="w">     </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSFastLowerBound</span><span class="p">(</span><span class="n">problem</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">DominanceChecker</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">dominance</span><span class="p">()</span><span class="w">     </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SimpleDominanceChecker</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">KSDominance</span><span class="p">(),</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">nbVars</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">WidthHeuristic</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">widthHeuristic</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FixedWidth</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="mi">50</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Frontier</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">frontier</span><span class="p">()</span><span class="w">       </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SimpleFrontier</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">ranking</span><span class="p">(),</span><span class="w"> </span><span class="n">CutSetType</span><span class="p">.</span><span class="na">Frontier</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">useCache</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">bestSolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">bestSolution</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The DDO solver builds <em>restricted</em> and <em>relaxed</em> decision diagrams in a
+branch-and-bound loop. The width heuristic controls the maximum number of
+nodes per layer. Larger widths give tighter bounds but cost more memory.</p>
+</section>
+<section id="solving-with-a">
+<h3>Solving with A*<a class="headerlink" href="#solving-with-a" title="Permalink to this heading">¶</a></h3>
+<p>A* needs only a <code class="docutils literal notranslate"><span class="pre">Model</span></code> (no relaxation or ranking):</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Model</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">problem</span><span class="p">()</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lowerBound</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSFastLowerBound</span><span class="p">(</span><span class="n">problem</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">DominanceChecker</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">dominance</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SimpleDominanceChecker</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">KSDominance</span><span class="p">(),</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">nbVars</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">bestSolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAstar</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>A* explores states in best-first order guided by the lower bound. It
+guarantees optimality as long as the lower bound is <em>admissible</em> (never
+over-estimates the remaining cost).</p>
+</section>
+<section id="solving-with-acs-anytime-column-search">
+<h3>Solving with ACS (Anytime Column Search)<a class="headerlink" href="#solving-with-acs-anytime-column-search" title="Permalink to this heading">¶</a></h3>
+<p>ACS iteratively refines solutions using bounded-width decision diagrams:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AcsModel</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AcsModel</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">problem</span><span class="p">()</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lowerBound</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSFastLowerBound</span><span class="p">(</span><span class="n">problem</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">DominanceChecker</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">dominance</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SimpleDominanceChecker</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">KSDominance</span><span class="p">(),</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">nbVars</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">columnWidth</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">bestSolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAcs</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>ACS is a good choice when you want an <em>anytime</em> algorithm that quickly finds
+good solutions and keeps improving them over time.</p>
+</section>
+</section>
+<section id="data-file-format">
+<h2>Data file format<a class="headerlink" href="#data-file-format" title="Permalink to this heading">¶</a></h2>
+<p>The knapsack data file used by <code class="docutils literal notranslate"><span class="pre">KSProblem</span></code> has a simple text format:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>4 5
+2 1
+3 3
+3 3
+2 3
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Line 1</strong>: <code class="docutils literal notranslate"><span class="pre">n</span></code> (number of items) and <code class="docutils literal notranslate"><span class="pre">C</span></code> (knapsack capacity). An
+optional third column gives the known optimal value.</p></li>
+<li><p><strong>Lines 2 to n+1</strong>: <code class="docutils literal notranslate"><span class="pre">profit</span>&#160; <span class="pre">weight</span></code> for each item.</p></li>
+</ul>
+<p>The example above has 4 items with capacity 5. Items have
+profits [2, 3, 3, 2] and weights [1, 3, 3, 3].</p>
+</section>
+<section id="running-the-examples">
+<h2>Running the examples<a class="headerlink" href="#running-the-examples" title="Permalink to this heading">¶</a></h2>
+<p>You can run the three main classes directly from the command line (Maven):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># DDO solver</span>
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;org.ddolib.examples.knapsack.KSDdoMain&quot;</span>
+
+<span class="c1"># A* solver</span>
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;org.ddolib.examples.knapsack.KSAstarMain&quot;</span>
+
+<span class="c1"># ACS solver</span>
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;org.ddolib.examples.knapsack.KSAcsMain&quot;</span>
+</pre></div>
+</div>
+<p>Or open any of the <code class="docutils literal notranslate"><span class="pre">*Main.java</span></code> files in IntelliJ and click the green
+<em>Run</em> button.</p>
+</section>
+<section id="time-and-stop-conditions">
+<h2>Time and stop conditions<a class="headerlink" href="#time-and-stop-conditions" title="Permalink to this heading">¶</a></h2>
+<p>All solver methods accept an optional <code class="docutils literal notranslate"><span class="pre">Predicate&lt;SearchStatistics&gt;</span></code> to
+control when to stop:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Stop after 10 seconds</span>
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+<span class="w">    </span><span class="n">stats</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">elapsedMs</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10_000</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>You can also pass a callback that is invoked every time the solver finds a
+better solution:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+<span class="w">    </span><span class="n">stats</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">elapsedMs</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10_000</span><span class="p">,</span>
+<span class="w">    </span><span class="p">(</span><span class="n">solution</span><span class="p">,</span><span class="w"> </span><span class="n">stats</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;New best: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">incumbent</span><span class="p">());</span>
+<span class="w">    </span><span class="p">});</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Class</p></th>
+<th class="head"><p>Role</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Problem</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSProblem</span></code></p></td>
+<td><p>States, transitions, costs</p></td>
+</tr>
+<tr class="row-odd"><td><p>Relaxation</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSRelax</span></code></p></td>
+<td><p>Merge states for relaxed DDs</p></td>
+</tr>
+<tr class="row-even"><td><p>Ranking</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSRanking</span></code></p></td>
+<td><p>Choose which states to keep</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lower bound</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSFastLowerBound</span></code></p></td>
+<td><p>Greedy fractional bound for pruning</p></td>
+</tr>
+<tr class="row-even"><td><p>Dominance</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSDominance</span></code></p></td>
+<td><p>Discard inferior states</p></td>
+</tr>
+<tr class="row-odd"><td><p>DDO entry</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSDdoMain</span></code></p></td>
+<td><p>DDO solver demo</p></td>
+</tr>
+<tr class="row-even"><td><p>A* entry</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSAstarMain</span></code></p></td>
+<td><p>A* solver demo</p></td>
+</tr>
+<tr class="row-odd"><td><p>ACS entry</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">KSAcsMain</span></code></p></td>
+<td><p>ACS solver demo</p></td>
+</tr>
+</tbody>
+</table>
+<p>You now have all the building blocks to model your own problem. Check out the
+<a class="reference internal" href="solvers.html#solvers"><span class="std std-ref">Solver Strategies</span></a> chapter for a deeper comparison of DDO, A*, and ACS, or browse
+the <a class="reference internal" href="allmodels.html#allmodels"><span class="std std-ref">Catalogue of Example Models</span></a> catalogue for more advanced examples.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Tutorial: Solving the Knapsack Problem</a><ul>
+<li><a class="reference internal" href="#problem-description">Problem description</a></li>
+<li><a class="reference internal" href="#step-1-define-the-state">Step 1 — Define the state</a></li>
+<li><a class="reference internal" href="#step-2-implement-problem-integer">Step 2 — Implement <code class="docutils literal notranslate"><span class="pre">Problem&lt;Integer&gt;</span></code></a></li>
+<li><a class="reference internal" href="#step-3-implement-relaxation-integer">Step 3 — Implement <code class="docutils literal notranslate"><span class="pre">Relaxation&lt;Integer&gt;</span></code></a></li>
+<li><a class="reference internal" href="#step-4-implement-stateranking-integer">Step 4 — Implement <code class="docutils literal notranslate"><span class="pre">StateRanking&lt;Integer&gt;</span></code></a></li>
+<li><a class="reference internal" href="#step-5-implement-fastlowerbound-integer">Step 5 — Implement <code class="docutils literal notranslate"><span class="pre">FastLowerBound&lt;Integer&gt;</span></code></a></li>
+<li><a class="reference internal" href="#step-6-implement-dominance-integer">Step 6 — Implement <code class="docutils literal notranslate"><span class="pre">Dominance&lt;Integer&gt;</span></code></a></li>
+<li><a class="reference internal" href="#step-7-wire-everything-into-a-model-and-solve">Step 7 — Wire everything into a model and solve</a><ul>
+<li><a class="reference internal" href="#solving-with-ddo-branch-and-bound-with-decision-diagrams">Solving with DDO (branch-and-bound with decision diagrams)</a></li>
+<li><a class="reference internal" href="#solving-with-a">Solving with A*</a></li>
+<li><a class="reference internal" href="#solving-with-acs-anytime-column-search">Solving with ACS (Anytime Column Search)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-file-format">Data file format</a></li>
+<li><a class="reference internal" href="#running-the-examples">Running the examples</a></li>
+<li><a class="reference internal" href="#time-and-stop-conditions">Time and stop conditions</a></li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="concepts.html"
+                          title="previous chapter">Core Concepts</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="solvers.html"
+                          title="next chapter">Solver Strategies</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/knapsack.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="solvers.html" title="Solver Strategies"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="concepts.html" title="Core Concepts"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tutorial: Solving the Knapsack Problem</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>

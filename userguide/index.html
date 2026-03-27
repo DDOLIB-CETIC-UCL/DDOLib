@@ -1,0 +1,226 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>DDOLib: Decision Diagram Optimisation Library &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Preface &amp; Overview" href="intro.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Preface &amp; Overview"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">DDOLib: Decision Diagram Optimisation Library</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="ddolib-decision-diagram-optimisation-library">
+<h1>DDOLib: Decision Diagram Optimisation Library<a class="headerlink" href="#ddolib-decision-diagram-optimisation-library" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Preface &amp; Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#what-is-ddolib">What is DDOLib?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#theoretical-foundations">Theoretical Foundations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#javadoc">Javadoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#citing-ddolib">Citing DDOLib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">Core Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#the-big-picture">The Big Picture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#problem-the-transition-system">Problem — the transition system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#decisions">Decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#state">State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#relaxation-building-relaxed-decision-diagrams">Relaxation — building relaxed decision diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#stateranking-choosing-which-states-to-keep">StateRanking — choosing which states to keep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#fastlowerbound-pruning-by-bounding">FastLowerBound — pruning by bounding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#dominance-discarding-inferior-states">Dominance — discarding inferior states</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#models-packaging-everything-together">Models — packaging everything together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#putting-it-all-together">Putting it all together</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#what-s-next">What’s next?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="knapsack.html">Tutorial: Solving the Knapsack Problem</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#problem-description">Problem description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-1-define-the-state">Step 1 — Define the state</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-2-implement-problem-integer">Step 2 — Implement <code class="docutils literal notranslate"><span class="pre">Problem&lt;Integer&gt;</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-3-implement-relaxation-integer">Step 3 — Implement <code class="docutils literal notranslate"><span class="pre">Relaxation&lt;Integer&gt;</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-4-implement-stateranking-integer">Step 4 — Implement <code class="docutils literal notranslate"><span class="pre">StateRanking&lt;Integer&gt;</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-5-implement-fastlowerbound-integer">Step 5 — Implement <code class="docutils literal notranslate"><span class="pre">FastLowerBound&lt;Integer&gt;</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-6-implement-dominance-integer">Step 6 — Implement <code class="docutils literal notranslate"><span class="pre">Dominance&lt;Integer&gt;</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#step-7-wire-everything-into-a-model-and-solve">Step 7 — Wire everything into a model and solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#data-file-format">Data file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#running-the-examples">Running the examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#time-and-stop-conditions">Time and stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="knapsack.html#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="solvers.html">Solver Strategies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#ddo-branch-and-bound-with-decision-diagrams">DDO — Branch-and-Bound with Decision Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#a-best-first-search">A* — Best-First Search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#acs-anytime-column-search">ACS — Anytime Column Search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#exact-mdd-solver">Exact MDD Solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#stopping-conditions-and-callbacks">Stopping conditions and callbacks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="solvers.html#choosing-a-solver-rules-of-thumb">Choosing a solver — rules of thumb</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="allmodels.html">Catalogue of Example Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#packing-knapsack-problems">Packing &amp; Knapsack Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#graph-partition-problems">Graph &amp; Partition Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#routing-problems">Routing Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#scheduling-problems">Scheduling Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#sequencing-layout-problems">Sequencing &amp; Layout Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#running-an-example">Running an example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="allmodels.html#adding-your-own-model">Adding your own model</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="intro.html"
+                          title="next chapter">Preface &amp; Overview</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Preface &amp; Overview"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">DDOLib: Decision Diagram Optimisation Library</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>
