@@ -1,5 +1,5 @@
 [![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
-[![Userguide](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/userguide.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/)
+[![Userguide](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/userguide.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)
 ![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
 <!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
 
@@ -10,7 +10,7 @@ by the [CETIC](https://www.cetic.be/) (team of [Renaud De Landtsheer](https://ww
 the [UCLouvain](https://uclouvain.be/en/index.html) (team of [Pierre Schaus](https://pschaus.github.io/)).
 It includes a modeling API for users to define their DP problem and solve them efficiently.
 
-📖 **[User Guide & Documentation](https://ddolib-cetic-ucl.github.io/)**
+📖 **[User Guide & Documentation](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)**
 
 A Scala API for this library can be found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib-Scala).
 
