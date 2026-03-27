@@ -1,0 +1,283 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Preface &amp; Overview &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core Concepts" href="concepts.html" />
+    <link rel="prev" title="DDOLib: Decision Diagram Optimisation Library" href="index.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="concepts.html" title="Core Concepts"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="DDOLib: Decision Diagram Optimisation Library"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Preface &amp; Overview</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="preface-overview">
+<span id="intro"></span><h1>Preface &amp; Overview<a class="headerlink" href="#preface-overview" title="Permalink to this heading">¶</a></h1>
+<p>This guide is the official documentation for <strong>DDOLib</strong>, a Java library for
+solving combinatorial optimisation problems using Decision Diagrams and
+Dynamic Programming.</p>
+<section id="what-is-ddolib">
+<h2>What is DDOLib?<a class="headerlink" href="#what-is-ddolib" title="Permalink to this heading">¶</a></h2>
+<p><strong>DDOLib</strong> is an open-source (MIT licence) Java solver for formulating and
+solving dynamic-programming (DP) problems.
+It was developed jointly by <a class="reference external" href="https://uclouvain.be/en/index.html">UCLouvain</a>
+(team of <a class="reference external" href="https://pschaus.github.io/">Pierre Schaus</a>) and <a class="reference external" href="https://www.cetic.be/">CETIC</a>
+(team of <a class="reference external" href="https://www.cetic.be/Renaud-DE-LANDTSHEER">Renaud De Landtsheer</a>).</p>
+<p>DDOLib provides a clean modelling API: you describe your problem as a
+labelled transition system (states, transitions, costs) and the library
+takes care of building and searching decision diagrams for you.</p>
+<section id="key-features">
+<h3>Key features<a class="headerlink" href="#key-features" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Multiple search strategies</strong> – branch-and-bound with relaxed/restricted
+decision diagrams (DDO), A* search, Anytime Column Search (ACS), and exact
+MDD enumeration.</p></li>
+<li><p><strong>Dominance pruning</strong> – discard states that can never improve on another.</p></li>
+<li><p><strong>Caching</strong> – avoid revisiting the same sub-problems.</p></li>
+<li><p><strong>Relaxation framework</strong> – build relaxed decision diagrams for strong
+lower bounds.</p></li>
+<li><p><strong>Rich example library</strong> – Knapsack, TSP, TSPTW, Maximum Independent Set,
+Scheduling, and many more.</p></li>
+</ul>
+</section>
+</section>
+<section id="theoretical-foundations">
+<h2>Theoretical Foundations<a class="headerlink" href="#theoretical-foundations" title="Permalink to this heading">¶</a></h2>
+<p>The technique of using decision diagrams for combinatorial optimisation was
+introduced in:</p>
+<blockquote>
+<div><p>Bergman, D., Cire, A. A., Van Hoeve, W. J., &amp; Hooker, J. N. (2016).
+<em>Discrete optimization with decision diagrams.</em>
+INFORMS Journal on Computing.</p>
+</div></blockquote>
+<p>The library also implements ideas from the following papers:</p>
+<ul class="simple">
+<li><p>Alice Burlat, Roger Kameugne, Cristel Pelsser, Pierre Schaus (2026). <em>Clustering for Relaxed and Restricted Decision Diagram Bounds: When It Works and Why.</em>
+CPAIOR.</p></li>
+<li><p>Coppé, V., Gillard, X., &amp; Schaus, P. (2024). <em>Decision diagram-based
+branch-and-bound with caching for dominance and suboptimality detection.</em>
+INFORMS Journal on Computing.</p></li>
+<li><p>Coppé, V., Gillard, X., &amp; Schaus, P. (2024). <em>Modeling and Exploiting
+Dominance Rules for Discrete Optimization with Decision Diagrams.</em> CPAIOR.</p></li>
+<li><p>Gillard, X., &amp; Schaus, P. (2022). <em>Large Neighborhood Search with
+Decision Diagrams.</em> IJCAI.</p></li>
+<li><p>Gillard, X., Schaus, P., &amp; Coppé, V. (2021). <em>Ddo, a generic and
+efficient framework for MDD-based optimization.</em> IJCAI.</p></li>
+</ul>
+<p>DDOLib is a Java port of the original <a class="reference external" href="https://github.com/xgillard/ddo">DDO</a>
+project implemented in Rust.</p>
+</section>
+<section id="javadoc">
+<h2>Javadoc<a class="headerlink" href="#javadoc" title="Permalink to this heading">¶</a></h2>
+<p>The full <a class="reference external" href="https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html">Javadoc API</a>.</p>
+</section>
+<section id="installation">
+<span id="install"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
+<p>DDOLib source code is hosted on <a class="reference external" href="https://github.com/DDOLIB-CETIC-UCL/DDOLib">GitHub</a>.</p>
+<p><strong>Using an IDE (IntelliJ IDEA recommended)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DDOLIB-CETIC-UCL/DDOLib
+<span class="c1"># Open IntelliJ → File → Open → select pom.xml → Open as Project</span>
+</pre></div>
+</div>
+<p><strong>From the command line (Maven)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mvn<span class="w"> </span>compile<span class="w">   </span><span class="c1"># compile the project</span>
+mvn<span class="w"> </span><span class="nb">test</span><span class="w">      </span><span class="c1"># run all tests</span>
+</pre></div>
+</div>
+</section>
+<section id="citing-ddolib">
+<h2>Citing DDOLib<a class="headerlink" href="#citing-ddolib" title="Permalink to this heading">¶</a></h2>
+<p>If you use DDOLib in your research, please cite:</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@inproceedings</span><span class="p">{</span><span class="nl">gillard2021ddo</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Ddo, a generic and efficient framework for MDD-based optimization}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Gillard, X. and Schaus, P. and Copp{\&#39;e}, V.}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">booktitle</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{IJCAI}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2021}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this heading">¶</a></h2>
+<p>This project is funded by the Walloon Region (Belgium) as part of the
+Win4Collective project (Convention 2410118).</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Preface &amp; Overview</a><ul>
+<li><a class="reference internal" href="#what-is-ddolib">What is DDOLib?</a><ul>
+<li><a class="reference internal" href="#key-features">Key features</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#theoretical-foundations">Theoretical Foundations</a></li>
+<li><a class="reference internal" href="#javadoc">Javadoc</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#citing-ddolib">Citing DDOLib</a></li>
+<li><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">DDOLib: Decision Diagram Optimisation Library</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="concepts.html"
+                          title="next chapter">Core Concepts</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/intro.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="concepts.html" title="Core Concepts"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="DDOLib: Decision Diagram Optimisation Library"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Preface &amp; Overview</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>

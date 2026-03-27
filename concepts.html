@@ -1,0 +1,445 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Core Concepts &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial: Solving the Knapsack Problem" href="knapsack.html" />
+    <link rel="prev" title="Preface &amp; Overview" href="intro.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="knapsack.html" title="Tutorial: Solving the Knapsack Problem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Preface &amp; Overview"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Core Concepts</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-concepts">
+<span id="concepts"></span><h1>Core Concepts<a class="headerlink" href="#core-concepts" title="Permalink to this heading">¶</a></h1>
+<p>This chapter introduces the main abstractions you need to understand before
+modelling a problem with DDOLib. Everything revolves around a small set of
+interfaces; once you know what each one does, wiring up a new problem is
+straightforward.</p>
+<section id="the-big-picture">
+<h2>The Big Picture<a class="headerlink" href="#the-big-picture" title="Permalink to this heading">¶</a></h2>
+<p>DDOLib solves <strong>combinatorial optimisation problems</strong> that can be expressed as
+dynamic programs (DPs). You describe your problem as a <em>labelled transition
+system</em>: a set of <strong>states</strong>, a set of <strong>decisions</strong> that move from one state
+to the next, and a <strong>cost</strong> associated with every transition. The library
+then explores this transition system with different search strategies —
+building <em>decision diagrams</em> on the fly — to find an optimal solution.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>  ┌──────────┐
+  │   root   │  (initial state)
+  └──┬───┬───┘
+ d=1 │   │ d=0       ← decision on variable 0
+┌────▼┐ ┌▼────┐
+│ s1  │ │ s2  │      (layer 1 states)
+└─┬─┬┘ └┬──┬─┘
+  │ │   │  │         ← decisions on variable 1
+  ...   ...
+  └──┬──┘
+  ┌──▼──┐
+  │ terminal │       (solution)
+  └─────┘
+</pre></div>
+</div>
+<p>A decision diagram encodes a set of solutions as paths from the <em>root</em>
+(initial state) to a <em>terminal</em> node. Each arc carries a decision and
+its associated cost.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are familiar with the book
+<em>Bergman, Cire, Van Hoeve &amp; Hooker (2016). Decision Diagrams for Optimization</em>,
+DDOLib implements the algorithms described there, extended with dominance
+pruning, caching, and anytime column search.</p>
+</div>
+</section>
+<section id="problem-the-transition-system">
+<h2>Problem — the transition system<a class="headerlink" href="#problem-the-transition-system" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Problem&lt;T&gt;</span></code> interface is the <strong>most important</strong> abstraction you will
+implement. It tells the solver everything about your problem.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">Problem</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="nf">nbVars</span><span class="p">();</span><span class="w">                                       </span><span class="c1">// number of decision variables</span>
+<span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="nf">initialState</span><span class="p">();</span><span class="w">                                   </span><span class="c1">// starting state</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">initialValue</span><span class="p">();</span><span class="w">                              </span><span class="c1">// objective value at the root</span>
+<span class="w">    </span><span class="n">Iterator</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">domain</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">var</span><span class="p">);</span><span class="w">         </span><span class="c1">// feasible values for variable `var`</span>
+<span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="nf">transition</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">decision</span><span class="p">);</span><span class="w">           </span><span class="c1">// next state after a decision</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">transitionCost</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">decision</span><span class="p">);</span><span class="w">  </span><span class="c1">// cost of that transition</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The type parameter <code class="docutils literal notranslate"><span class="pre">T</span></code> is the <strong>state type</strong> — it can be any Java object.
+For instance, the Knapsack problem uses a plain <code class="docutils literal notranslate"><span class="pre">Integer</span></code> (remaining
+capacity), while other problems use records that hold sets, arrays, or
+combinations thereof.</p>
+<p>Key rules to remember:</p>
+<ul class="simple">
+<li><p><strong>Minimisation convention</strong> – DDOLib always <em>minimises</em>. If your problem is
+a maximisation, negate the costs. For example, in the Knapsack problem the
+transition cost is <code class="docutils literal notranslate"><span class="pre">-profit[i]</span></code>.</p></li>
+<li><p><strong>Immutability</strong> – <code class="docutils literal notranslate"><span class="pre">transition()</span></code> must return a <strong>new</strong> state object. Never
+mutate the state in place; the solver may reuse it in several branches.</p></li>
+<li><p><strong>hashCode / equals</strong> – If your state is anything other than a primitive
+wrapper, make sure <code class="docutils literal notranslate"><span class="pre">hashCode</span></code> and <code class="docutils literal notranslate"><span class="pre">equals</span></code> are correctly implemented.
+They are needed for caching and dominance.</p></li>
+</ul>
+</section>
+<section id="decisions">
+<h2>Decisions<a class="headerlink" href="#decisions" title="Permalink to this heading">¶</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Decision</span></code> is a (variable, value) pair. The <code class="docutils literal notranslate"><span class="pre">variable</span></code> field tells the
+solver <em>which</em> decision variable is being assigned, and <code class="docutils literal notranslate"><span class="pre">value</span></code> tells it
+<em>what</em> value that variable takes.</p>
+<p>In a layer-by-layer solver the variable is determined by the current layer;
+you only need to enumerate the feasible <em>values</em> in <code class="docutils literal notranslate"><span class="pre">domain()</span></code>.</p>
+</section>
+<section id="state">
+<h2>State<a class="headerlink" href="#state" title="Permalink to this heading">¶</a></h2>
+<p>The state captures all the information about “where you are” in the problem
+after a sequence of decisions. A good state representation is:</p>
+<ol class="arabic simple">
+<li><p><strong>Complete</strong> – it must carry enough information so that <code class="docutils literal notranslate"><span class="pre">domain()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">transition()</span></code> and <code class="docutils literal notranslate"><span class="pre">transitionCost()</span></code> can be computed without looking
+at the decisions already taken.</p></li>
+<li><p><strong>Compact</strong> – the fewer distinct states there are, the smaller the
+decision diagram will be and the faster the solver can work.</p></li>
+</ol>
+<p>For the Knapsack problem the state is simply the <em>remaining capacity</em>.
+For a TSP the state is the <em>set of visited cities</em> together with the
+<em>current city</em>.</p>
+</section>
+<section id="relaxation-building-relaxed-decision-diagrams">
+<h2>Relaxation — building relaxed decision diagrams<a class="headerlink" href="#relaxation-building-relaxed-decision-diagrams" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Relaxation&lt;T&gt;</span></code> interface is required by the DDO solver
+(branch-and-bound with decision diagrams). It specifies how to
+<strong>merge</strong> states when a layer in the decision diagram exceeds the
+allowed width.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">Relaxation</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">T</span><span class="w"> </span><span class="nf">mergeStates</span><span class="p">(</span><span class="n">Iterator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">states</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">relaxEdge</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="n">merged</span><span class="p">,</span><span class="w"> </span><span class="n">Decision</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">cost</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mergeStates</span></code> receives the states to merge and returns a single state that
+<em>over-approximates</em> all of them. For the Knapsack this is simply the
+maximum remaining capacity.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">relaxEdge</span></code> adjusts the edge cost that used to arrive at state <code class="docutils literal notranslate"><span class="pre">to</span></code> so
+that it correctly arrives at <code class="docutils literal notranslate"><span class="pre">merged</span></code>. In many problems (including the
+Knapsack) the cost does not change, so it just returns <code class="docutils literal notranslate"><span class="pre">cost</span></code>.</p></li>
+</ul>
+<p>A good relaxation provides <strong>tight lower bounds</strong>: the closer the merged state
+is to the real states, the more pruning the solver can do.</p>
+</section>
+<section id="stateranking-choosing-which-states-to-keep">
+<h2>StateRanking — choosing which states to keep<a class="headerlink" href="#stateranking-choosing-which-states-to-keep" title="Permalink to this heading">¶</a></h2>
+<p>When a layer exceeds the maximum width, the solver must decide which states
+to <em>keep</em> and which to <em>merge</em> (in a relaxed DD) or <em>discard</em> (in a
+restricted DD). The <code class="docutils literal notranslate"><span class="pre">StateRanking&lt;T&gt;</span></code> interface is a <code class="docutils literal notranslate"><span class="pre">Comparator&lt;T&gt;</span></code>
+that ranks states:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">StateRanking</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Comparator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>States with a <em>higher</em> compare value are more likely to be kept intact.
+For example, in the Knapsack problem, states with <em>more</em> remaining capacity
+are ranked higher because they have more potential for future profit.</p>
+</section>
+<section id="fastlowerbound-pruning-by-bounding">
+<h2>FastLowerBound — pruning by bounding<a class="headerlink" href="#fastlowerbound-pruning-by-bounding" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">FastLowerBound&lt;T&gt;</span></code> interface provides a quick heuristic estimate of
+the best objective value reachable from a given state:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">FastLowerBound</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="nf">fastLowerBound</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">variables</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">variables</span></code> parameter is the set of decision variables not yet assigned.
+The returned value must be a <strong>valid lower bound</strong> (i.e. no better than the
+true optimum from that state). If the current accumulated cost plus this
+lower bound already exceeds the best known solution, the solver prunes the
+entire subtree.</p>
+<p>For the Knapsack problem, the fast lower bound is a greedy heuristic that
+fills the remaining capacity with items sorted by profit-to-weight ratio
+(the <em>fractional relaxation</em>).</p>
+</section>
+<section id="dominance-discarding-inferior-states">
+<h2>Dominance — discarding inferior states<a class="headerlink" href="#dominance-discarding-inferior-states" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Dominance&lt;T&gt;</span></code> interface lets you declare when one state is <em>at least
+as good as</em> another in every possible continuation:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">Dominance</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="nf">getKey</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">isDominatedOrEqual</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">state1</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="n">state2</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">getKey</span></code> partitions states into groups. Only states with the <strong>same key</strong>
+are compared. Return a constant (e.g. <code class="docutils literal notranslate"><span class="pre">0</span></code>) if all states are comparable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isDominatedOrEqual</span></code> returns <code class="docutils literal notranslate"><span class="pre">true</span></code> when <code class="docutils literal notranslate"><span class="pre">state1</span></code> can never lead to a
+better solution than <code class="docutils literal notranslate"><span class="pre">state2</span></code>. The solver then safely discards <code class="docutils literal notranslate"><span class="pre">state1</span></code>.</p></li>
+</ul>
+<p>For the Knapsack, state <code class="docutils literal notranslate"><span class="pre">c1</span></code> is dominated by <code class="docutils literal notranslate"><span class="pre">c2</span></code> whenever <code class="docutils literal notranslate"><span class="pre">c1</span> <span class="pre">≤</span> <span class="pre">c2</span></code>
+(less remaining capacity means fewer items can be added).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Dominance checking can drastically reduce the search space. Take the time
+to define it — it often makes the difference between solving in seconds
+and timing out.</p>
+</div>
+</section>
+<section id="models-packaging-everything-together">
+<h2>Models — packaging everything together<a class="headerlink" href="#models-packaging-everything-together" title="Permalink to this heading">¶</a></h2>
+<p>DDOLib provides three <strong>model interfaces</strong> that bundle the components above
+depending on which solver you want to use:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Interface</p></th>
+<th class="head"><p>Solver</p></th>
+<th class="head"><p>Additional requirements</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Model&lt;T&gt;</span></code></p></td>
+<td><p>A*</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Problem</span></code>, optional <code class="docutils literal notranslate"><span class="pre">FastLowerBound</span></code>, <code class="docutils literal notranslate"><span class="pre">Dominance</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DdoModel&lt;T&gt;</span></code></p></td>
+<td><p>DDO (B&amp;B with DDs)</p></td>
+<td><p>Everything in <code class="docutils literal notranslate"><span class="pre">Model</span></code> plus <code class="docutils literal notranslate"><span class="pre">Relaxation</span></code>, <code class="docutils literal notranslate"><span class="pre">StateRanking</span></code>,
+width heuristic, frontier strategy</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">AcsModel&lt;T&gt;</span></code></p></td>
+<td><p>Anytime Column Search</p></td>
+<td><p>Same as <code class="docutils literal notranslate"><span class="pre">Model</span></code> plus <code class="docutils literal notranslate"><span class="pre">columnWidth</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>All three extend <code class="docutils literal notranslate"><span class="pre">Model&lt;T&gt;</span></code>, so the core components (problem, lower bound,
+dominance) are shared. If you implement <code class="docutils literal notranslate"><span class="pre">DdoModel</span></code> you automatically have
+everything needed for A* and ACS too.</p>
+<p>Each model interface provides sensible <strong>defaults</strong>: no dominance checking, a
+trivial lower bound, fixed DD width of 10, etc. You override only what you
+need.</p>
+</section>
+<section id="putting-it-all-together">
+<h2>Putting it all together<a class="headerlink" href="#putting-it-all-together" title="Permalink to this heading">¶</a></h2>
+<p>Here is a bird’s-eye view of how the pieces connect:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────┐
+│                  Solver                     │
+│  (DDO / A* / ACS / Exact)                  │
+└───────────────┬────────────────────────────┘
+                │  uses
+┌───────────────▼────────────────────────────┐
+│              Model                          │
+│  ┌─────────────┐  ┌────────────────────┐   │
+│  │  Problem     │  │  FastLowerBound    │   │
+│  │  (states,    │  │  (pruning heur.)   │   │
+│  │   transitions│  └────────────────────┘   │
+│  │   costs)     │  ┌────────────────────┐   │
+│  └─────────────┘  │  Dominance          │   │
+│                    │  (state pruning)    │   │
+│  ┌─────────────┐  └────────────────────┘   │
+│  │ Relaxation   │  ┌────────────────────┐   │
+│  │ (DDO only)   │  │  StateRanking      │   │
+│  └─────────────┘  │  (DDO only)         │   │
+│                    └────────────────────┘   │
+└─────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p>After defining the model you hand it to <code class="docutils literal notranslate"><span class="pre">Solvers</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">   </span><span class="c1">// DDO solver</span>
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAstar</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">  </span><span class="c1">// A* solver</span>
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAcs</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">    </span><span class="c1">// ACS solver</span>
+</pre></div>
+</div>
+<p>Each method returns a <code class="docutils literal notranslate"><span class="pre">Solution</span></code> object containing the best solution found,
+its objective value, and detailed search statistics (time, nodes explored,
+etc.).</p>
+</section>
+<section id="what-s-next">
+<h2>What’s next?<a class="headerlink" href="#what-s-next" title="Permalink to this heading">¶</a></h2>
+<p>In the next chapter we walk through a <strong>complete example</strong> — the 0/1 Knapsack
+Problem — showing every interface implementation step by step.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Core Concepts</a><ul>
+<li><a class="reference internal" href="#the-big-picture">The Big Picture</a></li>
+<li><a class="reference internal" href="#problem-the-transition-system">Problem — the transition system</a></li>
+<li><a class="reference internal" href="#decisions">Decisions</a></li>
+<li><a class="reference internal" href="#state">State</a></li>
+<li><a class="reference internal" href="#relaxation-building-relaxed-decision-diagrams">Relaxation — building relaxed decision diagrams</a></li>
+<li><a class="reference internal" href="#stateranking-choosing-which-states-to-keep">StateRanking — choosing which states to keep</a></li>
+<li><a class="reference internal" href="#fastlowerbound-pruning-by-bounding">FastLowerBound — pruning by bounding</a></li>
+<li><a class="reference internal" href="#dominance-discarding-inferior-states">Dominance — discarding inferior states</a></li>
+<li><a class="reference internal" href="#models-packaging-everything-together">Models — packaging everything together</a></li>
+<li><a class="reference internal" href="#putting-it-all-together">Putting it all together</a></li>
+<li><a class="reference internal" href="#what-s-next">What’s next?</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="intro.html"
+                          title="previous chapter">Preface &amp; Overview</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="knapsack.html"
+                          title="next chapter">Tutorial: Solving the Knapsack Problem</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/concepts.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="knapsack.html" title="Tutorial: Solving the Knapsack Problem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Preface &amp; Overview"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Core Concepts</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>

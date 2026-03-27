@@ -1,0 +1,472 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Solver Strategies &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Catalogue of Example Models" href="allmodels.html" />
+    <link rel="prev" title="Tutorial: Solving the Knapsack Problem" href="knapsack.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="allmodels.html" title="Catalogue of Example Models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="knapsack.html" title="Tutorial: Solving the Knapsack Problem"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Solver Strategies</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="solver-strategies">
+<span id="solvers"></span><h1>Solver Strategies<a class="headerlink" href="#solver-strategies" title="Permalink to this heading">¶</a></h1>
+<p>DDOLib ships with four solver strategies. All share the same <code class="docutils literal notranslate"><span class="pre">Problem</span></code>
+definition; they differ in how they explore the search space and what
+additional components they require.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 35%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Strategy</p></th>
+<th class="head"><p>Entry point</p></th>
+<th class="head"><p>Strengths</p></th>
+<th class="head"><p>Requirements</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>DDO</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Solvers.minimizeDdo</span></code></p></td>
+<td><p>Tight bounds via relaxed DDs, strong pruning, scalable</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">DdoModel</span></code> (Problem + Relaxation + Ranking + width + frontier)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>A*</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Solvers.minimizeAstar</span></code></p></td>
+<td><p>Optimal first-solution guarantee, simple to set up</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Model</span></code> (Problem, optional LowerBound + Dominance)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>ACS</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Solvers.minimizeAcs</span></code></p></td>
+<td><p>Anytime behaviour, quickly finds good solutions</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AcsModel</span></code> (Problem + columnWidth, optional LowerBound + Dominance)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Exact</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Solvers.minimizeExact</span></code></p></td>
+<td><p>Enumerates the full exact MDD — useful for debugging</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ExactModel</span></code> (Problem only)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ddo-branch-and-bound-with-decision-diagrams">
+<h2>DDO — Branch-and-Bound with Decision Diagrams<a class="headerlink" href="#ddo-branch-and-bound-with-decision-diagrams" title="Permalink to this heading">¶</a></h2>
+<p>The DDO solver is the flagship algorithm of the library. It works by
+alternating two phases:</p>
+<ol class="arabic simple">
+<li><p><strong>Restricted DD</strong> — build a decision diagram of bounded width. Because
+some states are <em>dropped</em>, the diagram may miss the optimal solution, but
+every path it does contain is a feasible solution. The best path provides
+an <em>upper bound</em>.</p></li>
+<li><p><strong>Relaxed DD</strong> — build a decision diagram of bounded width where excess
+states are <em>merged</em> rather than dropped. Every feasible solution is
+reachable in the relaxed DD, but some paths may correspond to infeasible
+solutions. The best path provides a <em>lower bound</em>.</p></li>
+</ol>
+<p>The solver maintains a <em>frontier</em> of sub-problems (states whose subtrees
+have not yet been fully explored). At each iteration it picks the most
+promising sub-problem, compiles both a restricted and a relaxed DD, and
+updates the global bounds. The search terminates when the best lower bound
+meets the best upper bound.</p>
+<section id="when-to-use-ddo">
+<h3>When to use DDO<a class="headerlink" href="#when-to-use-ddo" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Your problem has a natural state-merging operator (relaxation).</p></li>
+<li><p>You want a complete solver that proves optimality.</p></li>
+<li><p>You need strong dual bounds for large instances.</p></li>
+</ul>
+</section>
+<section id="ddo-configuration-knobs">
+<h3>DDO configuration knobs<a class="headerlink" href="#ddo-configuration-knobs" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">WidthHeuristic</span></code></dt><dd><p>Controls the maximum number of nodes per DD layer.
+<code class="docutils literal notranslate"><span class="pre">FixedWidth(w)</span></code> sets a constant width.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Frontier</span></code></dt><dd><p>Determines the order in which sub-problems are explored.
+<code class="docutils literal notranslate"><span class="pre">SimpleFrontier</span></code> with <code class="docutils literal notranslate"><span class="pre">CutSetType.Frontier</span></code> is a good default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">useCache()</span></code></dt><dd><p>Enable or disable sub-problem caching (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).
+Caching avoids re-expanding identical states at the cost of memory.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">StateRanking</span></code></dt><dd><p>Decides which states to keep and which to merge/discard.</p>
+</dd>
+</dl>
+</section>
+<section id="ddo-example">
+<h3>DDO example<a class="headerlink" href="#ddo-example" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">DdoModel</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DdoModel</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">   </span><span class="nf">problem</span><span class="p">()</span><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Relaxation</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">relaxation</span><span class="p">()</span><span class="w">     </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSRelax</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">KSRanking</span><span class="w">           </span><span class="nf">ranking</span><span class="p">()</span><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSRanking</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">WidthHeuristic</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">widthHeuristic</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FixedWidth</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">useCache</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="a-best-first-search">
+<h2>A* — Best-First Search<a class="headerlink" href="#a-best-first-search" title="Permalink to this heading">¶</a></h2>
+<p>The A* solver explores states one at a time, always expanding the state
+with the smallest estimated total cost (accumulated cost + lower-bound
+estimate). It guarantees that the <strong>first</strong> complete solution found is
+optimal, provided the lower bound is <em>admissible</em> (never over-estimates
+the true remaining cost).</p>
+<section id="when-to-use-a">
+<h3>When to use A*<a class="headerlink" href="#when-to-use-a" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The state space is moderate or your dominance / lower bound is very
+effective at pruning.</p></li>
+<li><p>You want a simple setup without having to design a relaxation.</p></li>
+<li><p>You care about finding the proven-optimal solution and can afford the
+memory to store the open list.</p></li>
+</ul>
+</section>
+<section id="a-configuration-knobs">
+<h3>A* configuration knobs<a class="headerlink" href="#a-configuration-knobs" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">FastLowerBound</span></code></dt><dd><p>The admissible heuristic guiding the search. A better bound means
+fewer states expanded.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">DominanceChecker</span></code></dt><dd><p>Prunes states that are provably worse than or equal to another
+already-seen state.</p>
+</dd>
+</dl>
+</section>
+<section id="a-example">
+<h3>A* example<a class="headerlink" href="#a-example" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Model</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">problem</span><span class="p">()</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lowerBound</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSFastLowerBound</span><span class="p">(</span><span class="n">problem</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">DominanceChecker</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">dominance</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SimpleDominanceChecker</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">KSDominance</span><span class="p">(),</span><span class="w"> </span><span class="n">problem</span><span class="p">.</span><span class="na">nbVars</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAstar</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="acs-anytime-column-search">
+<h2>ACS — Anytime Column Search<a class="headerlink" href="#acs-anytime-column-search" title="Permalink to this heading">¶</a></h2>
+<p>ACS is an iterative algorithm that builds bounded-width decision diagrams
+column by column. At each iteration it refines the current solution by
+exploring a neighbourhood defined by the diagram. It is an <em>anytime</em>
+algorithm: it quickly finds a first feasible solution and keeps improving
+it until it proves optimality or reaches a time limit.</p>
+<section id="when-to-use-acs">
+<h3>When to use ACS<a class="headerlink" href="#when-to-use-acs" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>You need a good solution fast and can tolerate a gap.</p></li>
+<li><p>The instance is large and DDO / A* take too long.</p></li>
+<li><p>You want to monitor progress and stop when satisfied.</p></li>
+</ul>
+</section>
+<section id="acs-configuration-knobs">
+<h3>ACS configuration knobs<a class="headerlink" href="#acs-configuration-knobs" title="Permalink to this heading">¶</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">columnWidth</span></code></dt><dd><p>Width of the decision diagrams built at each ACS iteration (default: 5).</p>
+</dd>
+</dl>
+</section>
+<section id="acs-example">
+<h3>ACS example<a class="headerlink" href="#acs-example" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AcsModel</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AcsModel</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w">       </span><span class="nf">problem</span><span class="p">()</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">FastLowerBound</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lowerBound</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KSFastLowerBound</span><span class="p">(</span><span class="n">problem</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">columnWidth</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeAcs</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+<span class="w">    </span><span class="n">stats</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">elapsedMs</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">30_000</span><span class="p">);</span><span class="w">   </span><span class="c1">// stop after 30 s</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="exact-mdd-solver">
+<h2>Exact MDD Solver<a class="headerlink" href="#exact-mdd-solver" title="Permalink to this heading">¶</a></h2>
+<p>The exact solver builds a <strong>full</strong> decision diagram without any width
+restriction. Every feasible solution appears as a path. Because the diagram
+can grow exponentially, this solver is intended for <strong>small instances</strong> or
+for <strong>testing</strong> your <code class="docutils literal notranslate"><span class="pre">Problem</span></code> implementation.</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">ExactModel</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ExactModel</span><span class="o">&lt;&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nd">@Override</span><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="n">Problem</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">problem</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">problem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeExact</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Exact MDDs can consume a very large amount of memory.
+Prefer <code class="docutils literal notranslate"><span class="pre">minimizeDdo</span></code> or <code class="docutils literal notranslate"><span class="pre">minimizeAstar</span></code> for anything beyond toy sizes.</p>
+</div>
+</section>
+<section id="stopping-conditions-and-callbacks">
+<h2>Stopping conditions and callbacks<a class="headerlink" href="#stopping-conditions-and-callbacks" title="Permalink to this heading">¶</a></h2>
+<p>Every solver method accepts two optional parameters:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Predicate&lt;SearchStatistics&gt;</span> <span class="pre">limit</span></code></dt><dd><p>A predicate evaluated after each iteration. Return <code class="docutils literal notranslate"><span class="pre">true</span></code> to stop.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">BiConsumer&lt;int[],</span> <span class="pre">SearchStatistics&gt;</span> <span class="pre">onSolution</span></code></dt><dd><p>A callback invoked every time a new incumbent (best-so-far) solution is
+found.</p>
+</dd>
+</dl>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Solution</span><span class="w"> </span><span class="n">sol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Solvers</span><span class="p">.</span><span class="na">minimizeDdo</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+<span class="w">    </span><span class="n">stats</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">elapsedMs</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">60_000</span><span class="p">,</span><span class="w">          </span><span class="c1">// 1-minute timeout</span>
+<span class="w">    </span><span class="p">(</span><span class="n">solution</span><span class="p">,</span><span class="w"> </span><span class="n">stats</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;New best %f at %d ms%n&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">stats</span><span class="p">.</span><span class="na">incumbent</span><span class="p">(),</span><span class="w"> </span><span class="n">stats</span><span class="p">.</span><span class="na">elapsedMs</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">SearchStatistics</span></code> object gives you access to:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">incumbent()</span></code> — current best objective value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elapsedMs()</span></code> — wall-clock time since the solver started</p></li>
+<li><p>and more runtime metrics</p></li>
+</ul>
+</section>
+<section id="choosing-a-solver-rules-of-thumb">
+<h2>Choosing a solver — rules of thumb<a class="headerlink" href="#choosing-a-solver-rules-of-thumb" title="Permalink to this heading">¶</a></h2>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Situation</p></th>
+<th class="head"><p>Recommendation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Small instance, need proof of optimality</p></td>
+<td><p><strong>A*</strong> or <strong>DDO</strong> with moderate width</p></td>
+</tr>
+<tr class="row-odd"><td><p>Large instance, good relaxation available</p></td>
+<td><p><strong>DDO</strong> with large width and caching</p></td>
+</tr>
+<tr class="row-even"><td><p>Need a good solution quickly</p></td>
+<td><p><strong>ACS</strong> with a time limit</p></td>
+</tr>
+<tr class="row-odd"><td><p>Debugging / validating a <code class="docutils literal notranslate"><span class="pre">Problem</span></code> impl.</p></td>
+<td><p><strong>Exact</strong> solver on tiny instances</p></td>
+</tr>
+<tr class="row-even"><td><p>No relaxation available</p></td>
+<td><p><strong>A*</strong> (only needs <code class="docutils literal notranslate"><span class="pre">Problem</span></code> + optional LB/dominance)</p></td>
+</tr>
+</tbody>
+</table>
+<p>In practice, many users start with <strong>A*</strong> for simplicity, then add a
+relaxation and switch to <strong>DDO</strong> when they need stronger bounds on harder
+instances.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Solver Strategies</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#ddo-branch-and-bound-with-decision-diagrams">DDO — Branch-and-Bound with Decision Diagrams</a><ul>
+<li><a class="reference internal" href="#when-to-use-ddo">When to use DDO</a></li>
+<li><a class="reference internal" href="#ddo-configuration-knobs">DDO configuration knobs</a></li>
+<li><a class="reference internal" href="#ddo-example">DDO example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#a-best-first-search">A* — Best-First Search</a><ul>
+<li><a class="reference internal" href="#when-to-use-a">When to use A*</a></li>
+<li><a class="reference internal" href="#a-configuration-knobs">A* configuration knobs</a></li>
+<li><a class="reference internal" href="#a-example">A* example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#acs-anytime-column-search">ACS — Anytime Column Search</a><ul>
+<li><a class="reference internal" href="#when-to-use-acs">When to use ACS</a></li>
+<li><a class="reference internal" href="#acs-configuration-knobs">ACS configuration knobs</a></li>
+<li><a class="reference internal" href="#acs-example">ACS example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exact-mdd-solver">Exact MDD Solver</a></li>
+<li><a class="reference internal" href="#stopping-conditions-and-callbacks">Stopping conditions and callbacks</a></li>
+<li><a class="reference internal" href="#choosing-a-solver-rules-of-thumb">Choosing a solver — rules of thumb</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="knapsack.html"
+                          title="previous chapter">Tutorial: Solving the Knapsack Problem</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="allmodels.html"
+                          title="next chapter">Catalogue of Example Models</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/solvers.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="allmodels.html" title="Catalogue of Example Models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="knapsack.html" title="Tutorial: Solving the Knapsack Problem"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Solver Strategies</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,558 @@
+
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Catalogue of Example Models &#8212; DDOLib User-Guide 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Solver Strategies" href="solvers.html" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+<!--
+  ~ MaxiCP is under MIT License
+  ~ Copyright (c)  2023 UCLouvain
+  -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-125847974-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="solvers.html" title="Solver Strategies"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Catalogue of Example Models</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="catalogue-of-example-models">
+<span id="allmodels"></span><h1>Catalogue of Example Models<a class="headerlink" href="#catalogue-of-example-models" title="Permalink to this heading">¶</a></h1>
+<p>DDOLib ships with a rich set of example models covering scheduling, routing,
+packing, graph, and sequencing problems. Each example lives in its own
+sub-package under <code class="docutils literal notranslate"><span class="pre">org.ddolib.examples</span></code> and comes with DDO, A*, and ACS
+main classes ready to run. Browse the
+<a class="reference external" href="https://github.com/DDOLIB-CETIC-UCL/DDOLib/tree/main/src/main/java/org/ddolib/examples">source on GitHub</a>
+for the complete code.</p>
+<p>Below is a quick-reference card for every model.</p>
+<section id="packing-knapsack-problems">
+<h2>Packing &amp; Knapsack Problems<a class="headerlink" href="#packing-knapsack-problems" title="Permalink to this heading">¶</a></h2>
+<section id="knapsack-problem-kp">
+<h3>Knapsack Problem (KP)<a class="headerlink" href="#knapsack-problem-kp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">knapsack</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total profit</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining capacity (<code class="docutils literal notranslate"><span class="pre">Integer</span></code>)</p>
+</dd>
+<dt class="field-even">Reference</dt>
+<dd class="field-even"><p>Classic DP recurrence</p>
+</dd>
+</dl>
+<p>Select a subset of items to maximise profit without exceeding the knapsack
+capacity.
+See the <a class="reference internal" href="knapsack.html#knapsack"><span class="std std-ref">Tutorial: Solving the Knapsack Problem</span></a> chapter for a full tutorial.</p>
+</section>
+<section id="bounded-knapsack-problem-bkp">
+<h3>Bounded Knapsack Problem (BKP)<a class="headerlink" href="#bounded-knapsack-problem-bkp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">boundedknapsack</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total profit</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining capacity</p>
+</dd>
+</dl>
+<p>A variation where each item type can be included up to a given number of
+copies.</p>
+</section>
+<section id="multidimensional-knapsack-problem-mkp">
+<h3>Multidimensional Knapsack Problem (MKP)<a class="headerlink" href="#multidimensional-knapsack-problem-mkp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">mks</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total profit</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining capacity vector</p>
+</dd>
+</dl>
+<p>Generalisation of KP to <em>m</em> capacity constraints. An item occupies a weight
+in each dimension; all capacity bounds must hold simultaneously.</p>
+</section>
+</section>
+<section id="graph-partition-problems">
+<h2>Graph &amp; Partition Problems<a class="headerlink" href="#graph-partition-problems" title="Permalink to this heading">¶</a></h2>
+<section id="maximum-independent-set-problem-misp">
+<h3>Maximum Independent Set Problem (MISP)<a class="headerlink" href="#maximum-independent-set-problem-misp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">misp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total weight of selected nodes</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Set of candidate vertices</p>
+</dd>
+</dl>
+<p>Find a subset of vertices in a weighted graph such that no two selected
+vertices are adjacent and the total weight is maximal.</p>
+<p><em>Reference:</em> Bergman et al., <em>Decision Diagrams for Optimization</em> (2016).</p>
+</section>
+<section id="maximum-cut-problem-mcp">
+<h3>Maximum Cut Problem (MCP)<a class="headerlink" href="#maximum-cut-problem-mcp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">mcp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total weight of cut edges</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Partition assignment + benefit vector</p>
+</dd>
+</dl>
+<p>Partition the vertices of a weighted graph into two sets so as to maximise
+the total weight of edges crossing the partition.</p>
+<p><em>Reference:</em> Bergman et al., <em>Decision Diagrams for Optimization</em> (2016).</p>
+</section>
+<section id="maximum-2-satisfiability-max-2sat">
+<h3>Maximum 2-Satisfiability (MAX-2SAT)<a class="headerlink" href="#maximum-2-satisfiability-max-2sat" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">max2sat</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise total weight of satisfied clauses</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Partial assignment + clause weights</p>
+</dd>
+</dl>
+<p>Given a weighted CNF formula with at most two literals per clause, find an
+assignment that maximises the weight of satisfied clauses.</p>
+<p><em>Reference:</em> Bergman et al., <em>Discrete Optimization with Decision Diagrams</em> (2016).</p>
+</section>
+<section id="maximum-coverage-problem">
+<h3>Maximum Coverage Problem<a class="headerlink" href="#maximum-coverage-problem" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">maximumcoverage</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise covered elements</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Covered-element bitset</p>
+</dd>
+</dl>
+<p>Select a limited number of sets from a collection to maximise the number of
+elements covered by the union of the selected sets.</p>
+</section>
+</section>
+<section id="routing-problems">
+<h2>Routing Problems<a class="headerlink" href="#routing-problems" title="Permalink to this heading">¶</a></h2>
+<section id="travelling-salesman-problem-tsp">
+<h3>Travelling Salesman Problem (TSP)<a class="headerlink" href="#travelling-salesman-problem-tsp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">tsp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise tour length</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Set of visited cities + current city</p>
+</dd>
+</dl>
+<p>Find the shortest Hamiltonian cycle visiting every city exactly once.</p>
+</section>
+<section id="tsp-with-time-windows-tsptw">
+<h3>TSP with Time Windows (TSPTW)<a class="headerlink" href="#tsp-with-time-windows-tsptw" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">tsptw</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise tour length</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Visited cities + current city + current time</p>
+</dd>
+</dl>
+<p>TSP variant where each city must be visited within a specified time window.</p>
+</section>
+<section id="single-vehicle-pick-up-and-delivery-pdp">
+<h3>Single Vehicle Pick-up and Delivery (PDP)<a class="headerlink" href="#single-vehicle-pick-up-and-delivery-pdp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pdp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise total travel cost</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Visited nodes + current node</p>
+</dd>
+</dl>
+<p>A TSP-like problem where nodes are grouped into pick-up/delivery pairs; each
+pick-up must be visited before its corresponding delivery.</p>
+</section>
+</section>
+<section id="scheduling-problems">
+<h2>Scheduling Problems<a class="headerlink" href="#scheduling-problems" title="Permalink to this heading">¶</a></h2>
+<section id="aircraft-landing-problem-alp">
+<h3>Aircraft Landing Problem (ALP)<a class="headerlink" href="#aircraft-landing-problem-alp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">alp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise total waiting time</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Scheduled aircraft set + runway last-landing times</p>
+</dd>
+</dl>
+<p>Schedule aircraft landings on multiple runways respecting separation times,
+earliest/latest landing times, and aircraft class constraints.</p>
+</section>
+<section id="minimum-sum-of-completion-times-msct">
+<h3>Minimum Sum of Completion Times (MSCT)<a class="headerlink" href="#minimum-sum-of-completion-times-msct" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">msct</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise sum of completion times</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Set of remaining jobs + current time</p>
+</dd>
+</dl>
+<p>Sequence <em>n</em> jobs on a single machine respecting release dates so as to
+minimise the total sum of completion times.</p>
+<p><em>Reference:</em> Beck et al., <em>Transition Dominance in Domain-Independent DP</em> (CP 2025).</p>
+</section>
+<section id="single-machine-with-inventory-constraints-smic">
+<h3>Single Machine with Inventory Constraints (SMIC)<a class="headerlink" href="#single-machine-with-inventory-constraints-smic" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">smic</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise makespan</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining jobs + current time + inventory level</p>
+</dd>
+</dl>
+<p>Schedule loading and unloading jobs on a single machine so that the
+inventory level stays within bounds and the makespan is minimised.</p>
+<p><em>Reference:</em> Davari et al., <em>Minimizing makespan on a single machine with
+release dates and inventory constraints</em> (EJOR 2020).</p>
+</section>
+<section id="talent-scheduling-problem">
+<h3>Talent Scheduling Problem<a class="headerlink" href="#talent-scheduling-problem" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">talentscheduling</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise total actor wages</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining scenes + actor presence intervals</p>
+</dd>
+</dl>
+<p>Order the shooting of movie scenes to minimise the total wages paid to
+actors, who are paid for every day between their first and last scene.</p>
+</section>
+<section id="pigment-sequencing-problem-psp">
+<h3>Pigment Sequencing Problem (PSP)<a class="headerlink" href="#pigment-sequencing-problem-psp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pigmentscheduling</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise stocking + changeover costs</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Remaining orders + last produced item type</p>
+</dd>
+</dl>
+<p>Plan single-machine production of different item types to minimise the sum
+of stocking costs (holding orders until their deadline) and changeover costs
+(switching between item types).</p>
+</section>
+</section>
+<section id="sequencing-layout-problems">
+<h2>Sequencing &amp; Layout Problems<a class="headerlink" href="#sequencing-layout-problems" title="Permalink to this heading">¶</a></h2>
+<section id="longest-common-subsequence-lcs">
+<h3>Longest Common Subsequence (LCS)<a class="headerlink" href="#longest-common-subsequence-lcs" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">lcs</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Maximise subsequence length</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Position indices in each input string</p>
+</dd>
+</dl>
+<p>Find the longest subsequence that appears in all given input strings.</p>
+</section>
+<section id="single-row-facility-layout-problem-srflp">
+<h3>Single-Row Facility Layout Problem (SRFLP)<a class="headerlink" href="#single-row-facility-layout-problem-srflp" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">srflp</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise weighted sum of inter-department distances</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Set of placed departments + accumulated half-lengths</p>
+</dd>
+</dl>
+<p>Arrange departments along a single row to minimise the weighted
+inter-department distances.</p>
+<p><em>Reference:</em> Coppé, Gillard &amp; Schaus, <em>Solving the Constrained SRFLP with
+Decision Diagrams</em> (CP 2022).</p>
+</section>
+<section id="golomb-ruler">
+<h3>Golomb Ruler<a class="headerlink" href="#golomb-ruler" title="Permalink to this heading">¶</a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Package</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">gruler</span></code></p>
+</dd>
+<dt class="field-even">Objective</dt>
+<dd class="field-even"><p>Minimise ruler length</p>
+</dd>
+<dt class="field-odd">State</dt>
+<dd class="field-odd"><p>Placed marks + distance set</p>
+</dd>
+</dl>
+<p>Place marks on a ruler so that no two pairs of marks share the same
+distance. Minimise the total ruler length.</p>
+<p><em>Model by:</em> Willem-Jan van Hoeve.</p>
+</section>
+</section>
+<section id="running-an-example">
+<h2>Running an example<a class="headerlink" href="#running-an-example" title="Permalink to this heading">¶</a></h2>
+<p>Every example package contains at least one <code class="docutils literal notranslate"><span class="pre">*DdoMain.java</span></code>,
+<code class="docutils literal notranslate"><span class="pre">*AstarMain.java</span></code>, and <code class="docutils literal notranslate"><span class="pre">*AcsMain.java</span></code>. Run them with Maven:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: run the TSP DDO solver</span>
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;org.ddolib.examples.tsp.TSPDdoMain&quot;</span>
+
+<span class="c1"># Example: run the MISP A* solver</span>
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;org.ddolib.examples.misp.MISPAstarMain&quot;</span>
+</pre></div>
+</div>
+<p>Or open the relevant <code class="docutils literal notranslate"><span class="pre">*Main.java</span></code> file in IntelliJ and click <strong>Run</strong>.
+Data files are in the <code class="docutils literal notranslate"><span class="pre">data/</span></code> directory at the project root.</p>
+</section>
+<section id="adding-your-own-model">
+<h2>Adding your own model<a class="headerlink" href="#adding-your-own-model" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Create a new package under <code class="docutils literal notranslate"><span class="pre">org.ddolib.examples</span></code>.</p></li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">Problem&lt;T&gt;</span></code> — define your state, transitions, and costs.</p></li>
+<li><p>Optionally implement <code class="docutils literal notranslate"><span class="pre">Relaxation&lt;T&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">Dominance&lt;T&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FastLowerBound&lt;T&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">StateRanking&lt;T&gt;</span></code>.</p></li>
+<li><p>Write a <code class="docutils literal notranslate"><span class="pre">Main</span></code> class that assembles a <code class="docutils literal notranslate"><span class="pre">Model</span></code> / <code class="docutils literal notranslate"><span class="pre">DdoModel</span></code> /
+<code class="docutils literal notranslate"><span class="pre">AcsModel</span></code> and calls the appropriate <code class="docutils literal notranslate"><span class="pre">Solvers.minimize*</span></code> method.</p></li>
+<li><p>Add test instances in <code class="docutils literal notranslate"><span class="pre">data/</span></code> and unit tests in
+<code class="docutils literal notranslate"><span class="pre">src/test/java/org/ddolib/examples/</span></code>.</p></li>
+</ol>
+<p>Use the Knapsack package as a template — it covers every interface in the
+simplest possible way.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Catalogue of Example Models</a><ul>
+<li><a class="reference internal" href="#packing-knapsack-problems">Packing &amp; Knapsack Problems</a><ul>
+<li><a class="reference internal" href="#knapsack-problem-kp">Knapsack Problem (KP)</a></li>
+<li><a class="reference internal" href="#bounded-knapsack-problem-bkp">Bounded Knapsack Problem (BKP)</a></li>
+<li><a class="reference internal" href="#multidimensional-knapsack-problem-mkp">Multidimensional Knapsack Problem (MKP)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#graph-partition-problems">Graph &amp; Partition Problems</a><ul>
+<li><a class="reference internal" href="#maximum-independent-set-problem-misp">Maximum Independent Set Problem (MISP)</a></li>
+<li><a class="reference internal" href="#maximum-cut-problem-mcp">Maximum Cut Problem (MCP)</a></li>
+<li><a class="reference internal" href="#maximum-2-satisfiability-max-2sat">Maximum 2-Satisfiability (MAX-2SAT)</a></li>
+<li><a class="reference internal" href="#maximum-coverage-problem">Maximum Coverage Problem</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#routing-problems">Routing Problems</a><ul>
+<li><a class="reference internal" href="#travelling-salesman-problem-tsp">Travelling Salesman Problem (TSP)</a></li>
+<li><a class="reference internal" href="#tsp-with-time-windows-tsptw">TSP with Time Windows (TSPTW)</a></li>
+<li><a class="reference internal" href="#single-vehicle-pick-up-and-delivery-pdp">Single Vehicle Pick-up and Delivery (PDP)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scheduling-problems">Scheduling Problems</a><ul>
+<li><a class="reference internal" href="#aircraft-landing-problem-alp">Aircraft Landing Problem (ALP)</a></li>
+<li><a class="reference internal" href="#minimum-sum-of-completion-times-msct">Minimum Sum of Completion Times (MSCT)</a></li>
+<li><a class="reference internal" href="#single-machine-with-inventory-constraints-smic">Single Machine with Inventory Constraints (SMIC)</a></li>
+<li><a class="reference internal" href="#talent-scheduling-problem">Talent Scheduling Problem</a></li>
+<li><a class="reference internal" href="#pigment-sequencing-problem-psp">Pigment Sequencing Problem (PSP)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sequencing-layout-problems">Sequencing &amp; Layout Problems</a><ul>
+<li><a class="reference internal" href="#longest-common-subsequence-lcs">Longest Common Subsequence (LCS)</a></li>
+<li><a class="reference internal" href="#single-row-facility-layout-problem-srflp">Single-Row Facility Layout Problem (SRFLP)</a></li>
+<li><a class="reference internal" href="#golomb-ruler">Golomb Ruler</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-an-example">Running an example</a></li>
+<li><a class="reference internal" href="#adding-your-own-model">Adding your own model</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="solvers.html"
+                          title="previous chapter">Solver Strategies</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/allmodels.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="solvers.html" title="Solver Strategies"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DDOLib User-Guide 1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Catalogue of Example Models</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, DDOLib – CETIC &amp; UCLouvain.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+    </div>
+<div class="footer">
+    <script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+<script>
+//open external links in a new window
+function external_new_window() {
+    for(var c = document.getElementsByTagName("a"), a = 0;a < c.length;a++) {
+        var b = c[a];
+        if(b.getAttribute("href") && b.hostname !== location.hostname) {
+            b.target = "_blank";
+            b.rel = "noopener";
+        }
+    }
+}
+//open PDF links in a new window
+function pdf_new_window ()
+{
+    if (!document.getElementsByTagName) return false;
+    var links = document.getElementsByTagName("a");
+    for (var eleLink=0; eleLink < links.length; eleLink ++) {
+    if ((links[eleLink].href.indexOf('.pdf') !== -1)||(links[eleLink].href.indexOf('.doc') !== -1)||(links[eleLink].href.indexOf('.docx') !== -1)) {
+        links[eleLink].onclick =
+        function() {
+            window.open(this.href);
+            return false;
+        }
+    }
+    }
+}
+pdf_new_window();
+external_new_window();
+</script>
+
+
+  </body>
+</html>
