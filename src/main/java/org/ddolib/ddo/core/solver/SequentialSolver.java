@@ -389,6 +389,7 @@ public final class SequentialSolver<T> implements Solver {
         } else if (type == CompilationType.Restricted) {
             compilation.reductionStrategy = model.restrictStrategy();
         }
+        compilation.useLNS = false;
 
         return compilation;
     }

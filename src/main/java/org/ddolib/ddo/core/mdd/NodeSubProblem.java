@@ -89,4 +89,6 @@ public final class NodeSubProblem<T> {
         return node.value;
     }
 
+    public double getLb() {return lb;}
+
 }

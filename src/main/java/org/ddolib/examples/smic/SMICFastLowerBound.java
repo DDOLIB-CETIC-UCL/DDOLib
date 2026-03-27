@@ -73,7 +73,8 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
             queue.add(problem.processing[j]);
         }
         for (int i = 0; i < variables.size(); i++) {
-            lowerBound += queue.poll();
+            if (!queue.isEmpty())
+                lowerBound += queue.poll();
         }
         return lowerBound;
     }

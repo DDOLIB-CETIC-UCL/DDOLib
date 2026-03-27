@@ -49,14 +49,17 @@ public class PSProblem implements Problem<PSState> {
      * Number of distinct item types.
      */
     final int nItems;
+
     /**
      * Total number of discrete time periods in the planning horizon.
      */
     final int horizon;
+
     /**
      * Stocking cost for each item type (per unit time of early production).
      */
     final int[] stockingCost;
+
     /**
      * Changeover cost matrix: cost of switching from item {@code i} to item {@code j}.
      */
@@ -69,11 +72,13 @@ public class PSProblem implements Problem<PSState> {
      * </p>
      */
     final int[][] previousDemands;
+
     /**
      * For each item {@code i} and time {@code t}, stores the total number of remaining
      * demands for item {@code i} in the time interval {@code [0..t]}.
      */
     int[][] remainingDemands;
+
     /**
      * Optional known optimal objective value for benchmarking or validation purposes.
      */
@@ -204,6 +209,14 @@ public class PSProblem implements Problem<PSState> {
      * {@inheritDoc}
      */
     @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String toString() {
         return name.orElse(super.toString());
     }
@@ -214,6 +227,14 @@ public class PSProblem implements Problem<PSState> {
     @Override
     public int nbVars() {
         return horizon;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double initialValue() {
+        return 0;
     }
 
     /**
@@ -229,14 +250,6 @@ public class PSProblem implements Problem<PSState> {
             prevDemands[i] = previousDemands[i][horizon];
         }
         return new PSState(horizon, IDLE, prevDemands);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public double initialValue() {
-        return 0;
     }
 
     /**
@@ -329,13 +342,6 @@ public class PSProblem implements Problem<PSState> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {

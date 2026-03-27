@@ -123,7 +123,8 @@ public class GRProblem implements Problem<GRState> {
         int nextMark = state.getLastMark() + 1;
         int n2 = n * n;
         return IntStream.range(nextMark, n2)
-                .filter(i -> state.getMarks().stream().noneMatch(j -> state.getDistances().get(i - j)))
+                .filter(i -> state.getMarks().stream()
+                .noneMatch(j -> state.getDistances().get(i - j)))
                 .boxed()
                 .iterator();
     }
@@ -148,7 +149,8 @@ public class GRProblem implements Problem<GRState> {
              i >= 0;
              i = state.getMarks().nextSetBit(i + 1)) {
             assert !newDistances.get(newMark - i);
-            newDistances.set(newMark - i);
+            if (newMark > i)
+                newDistances.set(newMark - i);
         }
         assert (newMark >= newState.getLastMark());
         newState.getMarks().set(newMark);
