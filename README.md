@@ -47,7 +47,7 @@ Then the technique was improved in several papers that are also implemented in t
 * *Gillard, X., & Schaus, P. (2022). Large Neighborhood Search with Decision Diagrams. In IJCAI.*
 * *Gillard, X., Coppé, V., Schaus, P., & Cire, A. A. (2021). Improving the filtering of branch-and-bound MDD solver.
   CPAIOR*
-* *Gillard, X., Schaus, P., & Coppé, V. (2014). Ddo, a generic and efficient framework for mdd-based optimization.
+* *Gillard, X., Schaus, P., & Coppé, V. (2020). Ddo, a generic and efficient framework for mdd-based optimization.
   IJCAI.*
 
 # At the origin: The DDO Project
@@ -61,7 +61,7 @@ If you use this Java version, please cite the DDO paper:
   title={Ddo, a generic and efficient framework for mdd-based optimization},
   author={Gillard, X. and Schaus, P. and Copp{\'e}, V.},
   booktitle={IJCAI},
-  year={2014}
+  year={2020}
 }
 ```
 
