@@ -14,6 +14,19 @@ It includes a modeling API for users to define their DP problem and solve them e
 
 A Scala API for this library can be found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib-Scala).
 
+## Using DDOLib as a Dependency
+
+DDOLib is published on [Maven Central](https://central.sonatype.com/artifact/io.github.ddolib-cetic-ucl/ddolib).
+Add the following to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>io.github.ddolib-cetic-ucl</groupId>
+    <artifactId>ddolib</artifactId>
+    <version>0.0.5</version>
+</dependency>
+```
+
 # Theoretical Foundations
 
 The technique of using decision diagrams for solving combinatorial problems is based on the work of several researchers.
