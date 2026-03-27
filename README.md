@@ -22,6 +22,8 @@ INFORMS Journal on Computing.*
 
 Then the technique was improved in several papers that are also implemented in this project or will eventually be:
 
+* Alice Burlat, Roger Kameugne, Cristel Pelsser, Pierre Schaus (2026). *Clustering for Relaxed and Restricted Decision Diagram Bounds: When It Works and Why.*
+  CPAIOR.
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Decision diagram-based branch-and-bound with caching for
   dominance and suboptimality detection. INFORMS Journal on Computing.*
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Modeling and Exploiting Dominance Rules for Discrete Optimization with

@@ -1,6 +1,44 @@
-.idea
+# IntelliJ IDEA
+.idea/
 *.iml
+
+# Build directories
 target/
-*.DS_Store
 output/
+
+# macOS system files
+.DS_Store
+*/.DS_Store
+._
+.Spotlight-V100
+.Trashes
+
+# Java / JVM
+*.class
+*.log
+.jar
+.war
+.ear
+hs_err_pid
+replay_pid
+
+# Maven
+dependency-reduced-pom.xml
+
+# Bench directory (generated / temporary)
 bench/
+
+# Sphinx userguide (keep only sources, ignore builds)
+userguide/_build/
+userguide/build/
+userguide/doctrees/
+userguide/.log
+
+# Optional: ignore virtual environments if any (Sphinx tooling)
+userguide/myvenv/
+userguide/venv/
+venv/
+
+# Misc
+.swp
+*~
