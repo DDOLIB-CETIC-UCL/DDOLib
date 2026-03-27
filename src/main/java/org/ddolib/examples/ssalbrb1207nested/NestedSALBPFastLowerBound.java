@@ -283,18 +283,8 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
 
     /**
      * LB₂: 改进的装箱问题下界
-     * 核心思想：
-     * 第一步：让机器人先执行任务，消耗机器人容量 c·q
-     * 第二步：计算剩余任务（完全执行的移除，部分执行的需要转换时间）
-     * 第三步：对剩余任务进行装箱，估计需要的工位数
-     *
-     * 关键点：机器人部分执行任务后，剩余工作量转换为人工时间时：
-     * 机器人模式：剩余机器人时间 / 2 = 人工时间（因为 tH = tR / 2）
-     * 人机协同模式：剩余工作量按比例计算人工时间
-     * 装箱策略：
-     *  大任务: t > c/2，各占一个箱子（工位）
-     *  中等任务: c/3 < t ≤ c/2，优先填充大任务箱子的剩余容量，无法填充的成对装箱
-     *  小任务: t ≤ c/3，填充所有剩余容量
+     * 第一步：修正任务列表
+     * 第二步：装箱计算
      *
      * @param remainingTasks 剩余任务集合
      * @param q 可用机器人数
@@ -305,208 +295,355 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             return 0;
         }
 
-        int c = cycleTime;
+        int currentQ = q;
+        double lb2;
 
-        // ========== 第一步：让机器人先执行任务 ==========
-        // 机器人总容量
-        double robotCapacity = c * q;
+        do {
+            // 第一步：修正任务列表
+            List<ModifiedTask> modifiedTasks = modifyTaskList(remainingTasks, currentQ);
 
-        // 按转换系数排序（与LB₁相同的顺序）
-        // 优先让机器人执行转换效率高的任务
-        List<TaskRobotInfo> tasksByRobotTime = new ArrayList<>();
+            // 第二步：装箱计算
+            lb2 = binPacking(modifiedTasks);
+
+            // 如果 LB2 < q，减少机器人数量并重新计算
+            if (lb2 < currentQ) {
+                currentQ = currentQ - 1;
+            } else {
+                break;
+            }
+        } while (true);
+
+        return lb2;
+    }
+
+    /**
+     * 修正任务列表：根据机器人容量和任务操作模式修正任务
+     * 新思路：优先将大任务转化为中任务，再将中任务转化为小任务
+     *
+     * @param remainingTasks 剩余任务集合
+     * @param q 可用机器人数
+     * @return 修正后的任务列表
+     */
+    private List<ModifiedTask> modifyTaskList(Set<Integer> remainingTasks, int q) {
+        double robotCapacity = cycleTime * q;  // 机器人总容量
+
+        // 初始化任务列表（所有任务保持人工模式）
+        Map<Integer, Double> taskTimes = new HashMap<>();
         for (int task : remainingTasks) {
+            taskTimes.put(task, (double) humanDur[task]);
+        }
+
+        double mediumThreshold = cycleTime / 2.0;
+        double smallThreshold = cycleTime / 3.0;
+
+        // ===== 阶段1：将大任务转化为中任务 =====
+        robotCapacity = convertLargeToMedium(taskTimes, robotCapacity, mediumThreshold);
+
+        // ===== 阶段2：将中任务转化为小任务 =====
+        robotCapacity = convertMediumToSmall(taskTimes, robotCapacity, mediumThreshold, smallThreshold);
+
+        // ===== 阶段3：消耗剩余机器人容量处理小任务 =====
+        if (robotCapacity > 0) {
+            consumeRemainingCapacity(taskTimes, robotCapacity, smallThreshold);
+        }
+
+        // 转换为ModifiedTask列表
+        List<ModifiedTask> modifiedTasks = new ArrayList<>();
+        for (Map.Entry<Integer, Double> entry : taskTimes.entrySet()) {
+            modifiedTasks.add(new ModifiedTask(entry.getKey(), entry.getValue()));
+        }
+
+        return modifiedTasks;
+    }
+
+    /**
+     * 阶段1：将大任务转化为中任务
+     */
+    private double convertLargeToMedium(Map<Integer, Double> taskTimes, double robotCapacity, double mediumThreshold) {
+        List<TaskConversionCost> conversionCosts = new ArrayList<>();
+
+        for (Map.Entry<Integer, Double> entry : taskTimes.entrySet()) {
+            int task = entry.getKey();
+            double currentTime = entry.getValue();
+
+            // 只处理大任务
+            if (currentTime <= mediumThreshold) continue;
+
+            double targetTime = mediumThreshold;
+            double humanTimeToReduce = currentTime - targetTime;
+
             int tH = humanDur[task];
             int tR = robotDur[task];
             int tC = collabDur[task];
 
-            // 计算转换系数
+            // 计算转化所需的机器人时间
+            double robotTimeNeeded = Double.POSITIVE_INFINITY;
+            boolean useRobotMode = false;
+
+            // 机器人模式
+            if (tR < 100000) {
+                double robotTime = humanTimeToReduce / tH * tR;
+                if (robotTime < robotTimeNeeded) {
+                    robotTimeNeeded = robotTime;
+                    useRobotMode = true;
+                }
+            }
+
+            // 人机协同模式（协作时间必须 <= mediumThreshold）
+            if (tC < 100000 && tC <= mediumThreshold) {
+                double robotTime = humanTimeToReduce / (tH - tC) * tC;
+                if (robotTime < robotTimeNeeded) {
+                    robotTimeNeeded = robotTime;
+                    useRobotMode = false;
+                }
+            }
+
+            if (robotTimeNeeded < Double.POSITIVE_INFINITY) {
+                conversionCosts.add(new TaskConversionCost(task, robotTimeNeeded, targetTime, useRobotMode));
+            }
+        }
+
+        // 按消耗机器人时间升序排序
+        conversionCosts.sort(Comparator.comparingDouble(c -> c.robotTimeNeeded));
+
+        // 依次转化
+        for (TaskConversionCost cost : conversionCosts) {
+            if (robotCapacity >= cost.robotTimeNeeded) {
+                taskTimes.put(cost.task, cost.targetTime);
+                robotCapacity -= cost.robotTimeNeeded;
+            } else {
+                break;
+            }
+        }
+
+        return robotCapacity;
+    }
+
+    /**
+     * 阶段2：将中任务转化为小任务
+     */
+    private double convertMediumToSmall(Map<Integer, Double> taskTimes, double robotCapacity,
+                                        double mediumThreshold, double smallThreshold) {
+        List<TaskConversionCost> conversionCosts = new ArrayList<>();
+
+        for (Map.Entry<Integer, Double> entry : taskTimes.entrySet()) {
+            int task = entry.getKey();
+            double currentTime = entry.getValue();
+
+            // 只处理中任务
+            if (currentTime <= smallThreshold || currentTime > mediumThreshold) continue;
+
+            double targetTime = smallThreshold;
+            double humanTimeToReduce = currentTime - targetTime;
+
+            int tH = humanDur[task];
+            int tR = robotDur[task];
+            int tC = collabDur[task];
+
+            // 计算转化所需的机器人时间
+            double robotTimeNeeded = Double.POSITIVE_INFINITY;
+            boolean useRobotMode = false;
+
+            // 机器人模式
+            if (tR < 100000) {
+                double robotTime = humanTimeToReduce / tH * tR;
+                if (robotTime < robotTimeNeeded) {
+                    robotTimeNeeded = robotTime;
+                    useRobotMode = true;
+                }
+            }
+
+            // 人机协同模式（协作时间必须 <= smallThreshold）
+            if (tC < 100000 && tC <= smallThreshold) {
+                double robotTime = humanTimeToReduce / (tH - tC) * tC;
+                if (robotTime < robotTimeNeeded) {
+                    robotTimeNeeded = robotTime;
+                    useRobotMode = false;
+                }
+            }
+
+            if (robotTimeNeeded < Double.POSITIVE_INFINITY) {
+                conversionCosts.add(new TaskConversionCost(task, robotTimeNeeded, targetTime, useRobotMode));
+            }
+        }
+
+        // 按消耗机器人时间升序排序
+        conversionCosts.sort(Comparator.comparingDouble(c -> c.robotTimeNeeded));
+
+        // 依次转化
+        for (TaskConversionCost cost : conversionCosts) {
+            if (robotCapacity >= cost.robotTimeNeeded) {
+                taskTimes.put(cost.task, cost.targetTime);
+                robotCapacity -= cost.robotTimeNeeded;
+            } else {
+                break;
+            }
+        }
+
+        return robotCapacity;
+    }
+
+    /**
+     * 阶段3：消耗剩余机器人容量处理小任务
+     */
+    private void consumeRemainingCapacity(Map<Integer, Double> taskTimes, double robotCapacity, double smallThreshold) {
+        // 收集所有小任务
+        List<TaskConversionRate> smallTasks = new ArrayList<>();
+
+        for (Map.Entry<Integer, Double> entry : taskTimes.entrySet()) {
+            int task = entry.getKey();
+            double currentTime = entry.getValue();
+
+            // 只处理小任务
+            if (currentTime > smallThreshold) continue;
+
+            int tH = humanDur[task];
+            int tR = robotDur[task];
+            int tC = collabDur[task];
+
+            // 计算转化率
             double theta_ir = (tR < 100000 && tH > 0) ? ((double) tR / tH) : Double.POSITIVE_INFINITY;
             double theta_ic = (tC < 100000 && tH > tC) ? ((double) tC / (tH - tC)) : Double.POSITIVE_INFINITY;
-            double theta = Math.min(theta_ir, theta_ic);
 
-            // 选择更优的机器人执行模式
+            double minTheta = Math.min(theta_ir, theta_ic);
             boolean useRobotMode = (theta_ir <= theta_ic);
-            int robotTime = useRobotMode ? tR : tC;
 
-            tasksByRobotTime.add(new TaskRobotInfo(task, tH, tR, tC, robotTime, theta, useRobotMode));
+            smallTasks.add(new TaskConversionRate(task, minTheta, useRobotMode, tH, tR, tC));
         }
-        // 按转换系数升序排序（与LB₁一致）
-        tasksByRobotTime.sort(Comparator.comparingDouble(t -> t.theta));
 
-        // 让机器人执行任务，直到容量用完
-        double usedRobotCapacity = 0.0;
-        Map<Integer, Double> remainingHumanTime = new HashMap<>();
+        // 按转化率升序排序
+        smallTasks.sort(Comparator.comparingDouble(t -> t.theta));
 
-        for (TaskRobotInfo tri : tasksByRobotTime) {
-            if (tri.robotTime >= 100000) {
-                // 机器人不能执行这个任务
-                remainingHumanTime.put(tri.task, (double) tri.humanTime);
-                continue;
-            }
+        // 消耗剩余机器人容量
+        for (TaskConversionRate taskInfo : smallTasks) {
+            if (robotCapacity <= 0) break;
 
-            double availableCapacity = robotCapacity - usedRobotCapacity;
+            double currentTime = taskTimes.get(taskInfo.task);
 
-            if (availableCapacity <= 0) {
-                // 机器人容量已用完，剩余任务全部由人工完成
-                remainingHumanTime.put(tri.task, (double) tri.humanTime);
-            } else if (tri.robotTime <= availableCapacity) {
-                // 机器人可以完全执行这个任务
-                usedRobotCapacity += tri.robotTime;
-                // 这个任务不需要人工时间了（完全由机器人完成）
-            } else {
-                // 🔥 关键点：机器人只能部分执行这个任务
-                // 机器人执行了 availableCapacity，剩余部分需要转换为人工时间
-
-                double robotExecuted = availableCapacity;  // 机器人已执行的时间
-                double robotRemaining = tri.robotTime - robotExecuted;  // 机器人剩余时间
-                double humanTimeForRemaining;
-
-                if (tri.useRobotMode) {
-                    // 🔥 机器人模式：tH = tR / 2
-                    // 剩余机器人时间转换为人工时间：robotRemaining / 2
-                    humanTimeForRemaining = robotRemaining / 2.0;
+            if (taskInfo.useRobotMode && taskInfo.tR < 100000) {
+                // 机器人模式
+                if (robotCapacity >= taskInfo.tR) {
+                    // 完全转化，任务被删除
+                    taskTimes.remove(taskInfo.task);
+                    robotCapacity -= taskInfo.tR;
                 } else {
-                    // 🔥 人机协同模式：剩余工作量按比例计算
-                    // 机器人执行比例（完成了多少比例的工作量）
-                    double robotRatio = robotExecuted / tri.robotTime;
-                    // 剩余工作量比例（还剩多少比例的工作量）
-                    double humanRatio = 1.0 - robotRatio;
-                    // 人工剩余时间 = 原始协同时间 × 剩余比例
-                    humanTimeForRemaining = tri.collabTime * humanRatio;
+                    // 部分转化
+                    double newTime = taskInfo.tH * (1 - robotCapacity / taskInfo.tR);
+                    taskTimes.put(taskInfo.task, newTime);
+                    robotCapacity = 0;
                 }
-
-                remainingHumanTime.put(tri.task, humanTimeForRemaining);
-                usedRobotCapacity = robotCapacity; // 容量用完
+            } else if (!taskInfo.useRobotMode && taskInfo.tC < 100000) {
+                // 人机协同模式
+                if (robotCapacity >= taskInfo.tC) {
+                    // 完全转化
+                    taskTimes.put(taskInfo.task, (double) taskInfo.tC);
+                    robotCapacity -= taskInfo.tC;
+                } else {
+                    // 部分转化
+                    double newTime = taskInfo.tH - (taskInfo.tH - taskInfo.tC) / taskInfo.tC * robotCapacity;
+                    taskTimes.put(taskInfo.task, newTime);
+                    robotCapacity = 0;
+                }
             }
         }
+    }
 
-        // ========== 第二步：对剩余任务进行装箱 ==========
-        if (remainingHumanTime.isEmpty()) {
-            // 所有任务都被机器人执行完了
+    /**
+     * 装箱计算：将修正后的任务按大中小分类并装箱
+     *
+     * @param modifiedTasks 修正后的任务列表
+     * @return 需要的箱子数（工位数）
+     */
+    private double binPacking(List<ModifiedTask> modifiedTasks) {
+        if (modifiedTasks.isEmpty()) {
             return 0;
         }
 
-        // 分类任务
-        List<Integer> largeTasks = new ArrayList<>();
-        List<Integer> mediumTasks = new ArrayList<>();
-        List<Integer> smallTasks = new ArrayList<>();
+        // 分类：大、中、小任务
+        List<ModifiedTask> largeTasks = new ArrayList<>();
+        List<ModifiedTask> mediumTasks = new ArrayList<>();
+        List<ModifiedTask> smallTasks = new ArrayList<>();
 
-        for (Map.Entry<Integer, Double> entry : remainingHumanTime.entrySet()) {
-            int task = entry.getKey();
-            double taskTime = entry.getValue();
-
-            if (taskTime > c / 2.0) {
+        for (ModifiedTask task : modifiedTasks) {
+            if (task.modifiedTime > cycleTime / 2.0) {
                 largeTasks.add(task);
-            } else if (taskTime > c / 3.0) {
+            } else if (task.modifiedTime > cycleTime / 3.0) {
                 mediumTasks.add(task);
             } else {
                 smallTasks.add(task);
             }
         }
 
-        // D₁: 大任务的箱子数
+
+        // D1: 大任务，每个占一个箱子
         int d1 = largeTasks.size();
-        double remainingCapacityD1 = 0.0;
-        for (int task : largeTasks) {
-            remainingCapacityD1 += (c - remainingHumanTime.get(task));
+        List<Double> D1_remainingCapacity = new ArrayList<>();
+        for (ModifiedTask largeTask : largeTasks) {
+            D1_remainingCapacity.add(cycleTime - largeTask.modifiedTime);
         }
 
-        // D₂: 中等任务的箱子数
-        mediumTasks.sort(Comparator.comparingDouble(t -> remainingHumanTime.get(t)));
+        // 中任务按时间升序排序（小→大）
+        mediumTasks.sort(Comparator.comparingDouble(t -> t.modifiedTime));
 
-        // 尝试将中等任务分配到 D₁ 的剩余容量
-        double usedCapacityD1 = 0.0;
-        List<Integer> unassignedMedium = new ArrayList<>();
+        // 大箱子剩余容量按升序排序（小→大）
+        D1_remainingCapacity.sort(Comparator.naturalOrder());
 
-        for (int task : mediumTasks) {
-            double taskTime = remainingHumanTime.get(task);
-            if (usedCapacityD1 + taskTime <= remainingCapacityD1) {
-                usedCapacityD1 += taskTime;
-            } else {
-                unassignedMedium.add(task);
-            }
-        }
+        // 双指针贪心：最小中任务 → 最小剩余容量的大箱子
+        List<ModifiedTask> unassignedMediumTasks = new ArrayList<>();
+        int binIndex = 0;  // 当前考虑的大箱子索引
 
-        // 未分配的中等任务装箱（每个箱子最多2个任务）
-        int d2 = 0;
-        double remainingCapacityD2 = 0.0;
+        for (ModifiedTask mediumTask : mediumTasks) {
+            boolean assigned = false;
 
-        if (!unassignedMedium.isEmpty()) {
-            int i = 0;
-            while (i < unassignedMedium.size()) {
-                int task1 = unassignedMedium.get(i);
-                double t1 = remainingHumanTime.get(task1);
-
-                if (i + 1 < unassignedMedium.size()) {
-                    int task2 = unassignedMedium.get(i + 1);
-                    double t2 = remainingHumanTime.get(task2);
-
-                    if (t1 + t2 <= c) {
-                        // 两个任务放在一个箱子
-                        d2++;
-                        remainingCapacityD2 += (c - t1 - t2);
-                        i += 2;
-                    } else {
-                        // 只放一个任务
-                        d2++;
-                        remainingCapacityD2 += (c - t1);
-                        i++;
-                    }
+            // 从当前箱子开始，找第一个能装下的箱子
+            while (binIndex < D1_remainingCapacity.size()) {
+                if (D1_remainingCapacity.get(binIndex) >= mediumTask.modifiedTime) {
+                    // 找到能装下的箱子，分配
+                    D1_remainingCapacity.set(binIndex, D1_remainingCapacity.get(binIndex) - mediumTask.modifiedTime);
+                    assigned = true;
+                    binIndex++;  // 下一个中任务从下一个箱子开始尝试
+                    break;
                 } else {
-                    // 最后一个任务
-                    d2++;
-                    remainingCapacityD2 += (c - t1);
-                    i++;
+                    // 当前箱子装不下，跳过（它也装不下后面更大的中任务）
+                    binIndex++;
                 }
             }
+
+            if (!assigned) {
+                // 所有箱子都装不下
+                unassignedMediumTasks.add(mediumTask);
+            }
         }
 
-        // d₃: 小任务需要的箱子数
-        double Ws = 0.0;
-        for (int task : smallTasks) {
-            Ws += remainingHumanTime.get(task);
+        // D2: 未分配的中任务，每个箱子最多放2个
+        int f = unassignedMediumTasks.size();
+        int d2 = (int) Math.ceil(f / 2.0);
+
+        // 计算大任务和中任务的总时间
+        double totalLargeMediumTime = 0;
+        for (ModifiedTask largeTask : largeTasks) {
+            totalLargeMediumTime += largeTask.modifiedTime;
+        }
+        for (ModifiedTask mediumTask : mediumTasks) {
+            totalLargeMediumTime += mediumTask.modifiedTime;
         }
 
-        double Wr = remainingCapacityD1 - usedCapacityD1 + remainingCapacityD2;
-        int d3 = (int) Math.max(0, Math.ceil((Ws - Wr) / c));
+        // 计算D1和D2的总剩余容量
+        double Wr = cycleTime * (d1 + d2) - totalLargeMediumTime;
 
-        // LB₂ = d₁ + d₂ + d₃
-        int LB2 = d1 + d2 + d3;
-
-        // 关键：如果 LB2 < q，说明机器人数量过多，需要减少机器人数重新计算
-        // 这确保了机器人资源被充分利用，避免下界过于乐观
-        if (LB2 < q && q > 0) {
-            return computeLB2(remainingTasks, q - 1);
+        // 小任务：计算总工作量
+        double Ws = 0;
+        for (ModifiedTask smallTask : smallTasks) {
+            Ws += smallTask.modifiedTime;
         }
 
-        return LB2;
+        // D3: 小任务需要的箱子数
+        int d3 = (int) Math.max(0, Math.ceil((Ws - Wr) / cycleTime));
+
+        // LB2 = d1 + d2 + d3
+        return d1 + d2 + d3;
     }
 
-    // ==================== 辅助方法 ====================
-
-    /**
-     * 任务的机器人执行时间信息
-     */
-    private static class TaskRobotInfo {
-        final int task;
-        final int humanTime;      // 人工时间 tH
-        final int robotOnlyTime;  // 纯机器人时间 tR
-        final int collabTime;     // 人机协同时间 tC
-        final int robotTime;      // 实际选择的机器人执行时间（tR或tC中较优的）
-        final double theta;       // 转换系数
-        final boolean useRobotMode;  // true=机器人模式，false=人机协同模式
-
-        TaskRobotInfo(int task, int humanTime, int robotOnlyTime, int collabTime,
-                      int robotTime, double theta, boolean useRobotMode) {
-            this.task = task;
-            this.humanTime = humanTime;
-            this.robotOnlyTime = robotOnlyTime;
-            this.collabTime = collabTime;
-            this.robotTime = robotTime;
-            this.theta = theta;
-            this.useRobotMode = useRobotMode;
-        }
-    }
 
     // ==================== 内部类 ====================
 
@@ -525,6 +662,57 @@ public class NestedSALBPFastLowerBound implements FastLowerBound<NestedSALBPStat
             this.task = task;
             this.theta_ir = theta_ir;
             this.theta_ic = theta_ic;
+            this.tH = tH;
+            this.tR = tR;
+            this.tC = tC;
+        }
+    }
+
+    /**
+     * 修正后的任务信息
+     *
+     * <p>用于 LB₂ 计算中存储修正后的任务时间。</p>
+     */
+    private static class ModifiedTask {
+        final int task;              // 任务索引
+        final double modifiedTime;   // 修正后的时间
+
+        ModifiedTask(int task, double modifiedTime) {
+            this.task = task;
+            this.modifiedTime = modifiedTime;
+        }
+    }
+
+    /**
+     * 任务转化成本信息
+     */
+    private static class TaskConversionCost {
+        final int task;
+        final double robotTimeNeeded;
+        final double targetTime;
+        final boolean useRobotMode;
+
+        TaskConversionCost(int task, double robotTimeNeeded, double targetTime, boolean useRobotMode) {
+            this.task = task;
+            this.robotTimeNeeded = robotTimeNeeded;
+            this.targetTime = targetTime;
+            this.useRobotMode = useRobotMode;
+        }
+    }
+
+    /**
+     * 任务转化率信息
+     */
+    private static class TaskConversionRate {
+        final int task;
+        final double theta;
+        final boolean useRobotMode;
+        final int tH, tR, tC;
+
+        TaskConversionRate(int task, double theta, boolean useRobotMode, int tH, int tR, int tC) {
+            this.task = task;
+            this.theta = theta;
+            this.useRobotMode = useRobotMode;
             this.tH = tH;
             this.tR = tR;
             this.tC = tC;

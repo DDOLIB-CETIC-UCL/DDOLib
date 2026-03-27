@@ -11,233 +11,156 @@ import java.util.Set;
 public class SSALBRBFastLowerBound implements FastLowerBound<SSALBRBState> {
 
     private final SSALBRBProblem problem;
-    private final int[] minDur;
-    private final int[] tail;
+    private final int cycleTime;
 
     public SSALBRBFastLowerBound(SSALBRBProblem problem) {
-        this.problem = problem;
-        this.minDur = new int[problem.nbTasks];
-        for (int i = 0; i < problem.nbTasks; i++) {
-            int tH = problem.humanDurations[i];
-            int tR = problem.robotDurations[i];
-            int tC = problem.collaborationDurations[i];
-            this.minDur[i] = Math.min(tH, Math.min(tR, tC));
-        }
-
-        this.tail = new int[problem.nbTasks];
-        List<Integer> topo = topologicalOrder(problem.nbTasks, problem.successors);
-        for (int idx = topo.size() - 1; idx >= 0; idx--) {
-            int task = topo.get(idx);
-            int bestSucc = 0;
-            for (int succ : problem.successors.getOrDefault(task, List.of())) {
-                bestSucc = Math.max(bestSucc, tail[succ]);
-            }
-            tail[task] = minDur[task] + bestSucc;
-        }
+        this(problem, Integer.MAX_VALUE);
     }
 
-    private static List<Integer> topologicalOrder(int n, java.util.Map<Integer, java.util.List<Integer>> successors) {
-        int[] indeg = new int[n];
-        for (int i = 0; i < n; i++) {
-            for (int succ : successors.getOrDefault(i, List.of())) {
-                indeg[succ]++;
-            }
-        }
-
-        ArrayList<Integer> order = new ArrayList<>(n);
-        ArrayList<Integer> q = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            if (indeg[i] == 0) {
-                q.add(i);
-            }
-        }
-
-        for (int qi = 0; qi < q.size(); qi++) {
-            int u = q.get(qi);
-            order.add(u);
-            for (int v : successors.getOrDefault(u, List.of())) {
-                indeg[v]--;
-                if (indeg[v] == 0) {
-                    q.add(v);
-                }
-            }
-        }
-
-        return order;
+    public SSALBRBFastLowerBound(SSALBRBProblem problem, int cycleTime) {
+        this.problem = problem;
+        this.cycleTime = cycleTime;
     }
 
     @Override
     public double fastLowerBound(SSALBRBState state, Set<Integer> variables) {
-        // Lower bound based on workload balancing strategy (conversion rate Cr_i) from Section 3.3.1.
-        // To be consistent with the current DP model, we assume: m = 1 (one worker), q = 1 (one collaborative robot).
-
-        // Step 1: Get the "remaining tasks set"
-        Set<Integer> tasks;
-        if (variables.isEmpty()) {
-            // Extract unassigned tasks from state (E_t >= 0)
-            tasks = new HashSet<>();
-            for (int i = 0; i < state.earliestStartTimes().size(); i++) {
-                if (state.isUnassigned(i)) {
-                    tasks.add(i);
-                }
+        Set<Integer> tasks = new HashSet<>();
+        for (int i = 0; i < state.earliestStartTimes().size(); i++) {
+            if (state.isUnassigned(i)) {
+                tasks.add(i);
             }
-        } else {
-            tasks = variables;
         }
 
         if (tasks.isEmpty()) {
             return 0.0;
         }
 
-        final int m = 1;
-        final int q = 1;
+        return computeWorkloadBalancingLB(state, tasks);
+    }
 
-        // Candidates for "conversion operations" (robot or collaboration mode) to be sorted
-        record ConversionCandidate(int task, int mode, double cr) {}
-
-        double lh = 0.0;                // LH: current total workload for human
-        double sumMinProcessingTime = 0.0;
-        double maxMinProcessingTime = 0.0; // max{ min_p t_i^p }, maximum of minimum processing times across all tasks
-        List<ConversionCandidate> candidates = new ArrayList<>(tasks.size());
-
-        // Step 2: Initialize LH = Σ_i t_i^H, and compute Cr_i with optimal mode (robot or collaboration)
-        for (int task : tasks) {
-            int tH = problem.humanDurations[task];
-            int tR = problem.robotDurations[task];
-            int tC = problem.collaborationDurations[task];
-
-            lh += tH;
-
-            int best = Math.min(tH, Math.min(tR, tC));
-            sumMinProcessingTime += best;
-            if (best > maxMinProcessingTime) {
-                maxMinProcessingTime = best;
-            }
-
-            // Cr_i^R = t_i^R / t_i^H (conversion rate for robot mode)
-            double crR = tH > 0 ? ((double) tR) / ((double) tH) : Double.POSITIVE_INFINITY;
-
-            // Cr_i^C = t_i^C / (t_i^H - t_i^C), only meaningful when t_i^H > t_i^C
-            double crC;
-            if (tH > tC) {
-                crC = ((double) tC) / ((double) (tH - tC));
-            } else {
-                crC = Double.POSITIVE_INFINITY;
-            }
-
-            // Take Cr_i = min{Cr_i^R, Cr_i^C}, and record the corresponding mode
-            if (crR <= crC) {
-                candidates.add(new ConversionCandidate(task, SSALBRBProblem.MODE_ROBOT, crR));
-            } else {
-                candidates.add(new ConversionCandidate(task, SSALBRBProblem.MODE_COLLABORATION, crC));
-            }
-        }
-
-        // Step 3: Sort by Cr_i ascending (tasks with better "transfer from human to robot" efficiency first)
-        candidates.sort(Comparator.comparingDouble(ConversionCandidate::cr));
-
-        // Step 4: Iteratively apply "conversion", update LH / LR, until LR * m >= LH * q
-        double lr = 0.0;      // LR: current total workload for robot
-        boolean crossed = false;
-        int crossingTask = -1;
-        int crossingMode = -1;
-        double crossingLhBefore = 0.0;
-        double crossingLrBefore = 0.0;
-
-        for (ConversionCandidate cand : candidates) {
-            if (lr * m >= lh * q) {
-                break;
-            }
-
-            int task = cand.task();
-            int mode = cand.mode();
-
-            double lhBefore = lh;
-            double lrBefore = lr;
-
-            int tH = problem.humanDurations[task];
-            int tR = problem.robotDurations[task];
-            int tC = problem.collaborationDurations[task];
-
-            // Update LH / LR using equations (17), (18)
-            if (mode == SSALBRBProblem.MODE_ROBOT) {
-                // p_i in p_R (robot mode)
-                lh -= tH;
-                lr += tR;
-            } else {
-                // p_i in p_C (collaboration mode)
-                lh -= (tH - tC);
-                lr += tC;
-            }
-
-            // Record the first task that makes LR * m > LH * q, for "partial conversion" correction using equation (19)
-            if (!crossed && lr * m > lh * q) {
-                crossed = true;
-                crossingTask = task;
-                crossingMode = mode;
-                crossingLhBefore = lhBefore;
-                crossingLrBefore = lrBefore;
-                break;
-            }
-        }
-
-        // Step 5: If LR * m > LH * q occurred, apply linear interpolation correction to LH using equation (19)
-        if (crossed) {
-            int tH = problem.humanDurations[crossingTask];
-            int tR = problem.robotDurations[crossingTask];
-            int tC = problem.collaborationDurations[crossingTask];
-
-            if (crossingMode == SSALBRBProblem.MODE_ROBOT) {
-                double denom = m * ((double) tR) + q * ((double) tH);
-                if (denom > 0.0) {
-                    double alpha = (q * crossingLhBefore - m * crossingLrBefore) / denom;
-                    alpha = Math.max(0.0, Math.min(1.0, alpha));
-                    lh = crossingLhBefore - alpha * ((double) tH);
-                    lr = crossingLrBefore + alpha * ((double) tR);
-                }
-            } else {
-                double dh = (double) (tH - tC);
-                double dr = (double) tC;
-                double denom = m * dr + q * dh;
-                if (denom > 0.0) {
-                    double alpha = (q * crossingLhBefore - m * crossingLrBefore) / denom;
-                    alpha = Math.max(0.0, Math.min(1.0, alpha));
-                    lh = crossingLhBefore - alpha * dh;
-                    lr = crossingLrBefore + alpha * dr;
-                }
-            }
-        }
-
-        // Step 6: LC = max{ LH / m, max_i min_p t_i^p }
-        double lc = Math.max(lh / m, maxMinProcessingTime);
-
+    /**
+     * Workload balancing lower bound for the inner single-station scheduling problem.
+     *
+     * Mirrors the outer DDO LB1 algorithm (q=1, robot capacity = cycleTime),
+     * extended to account for the current resource availability times rh and rr.
+     *
+     * Initializes LH = sum of human durations for all unscheduled tasks, LR = 0.
+     * Sorts tasks by conversion rate theta_t = min(t_r/t_h, t_c/(t_h-t_c)) ascending.
+     * Iteratively converts tasks from human mode to robot or collaboration mode, stopping when:
+     *   (ii)  rr + LR > cycleTime (robot total load in this station exhausted), or
+     *   (iii) rr + LR >= rh + LH (both resources finish at the same time — balanced).
+     * Partial conversion is applied when either condition would be overshot.
+     *
+     * Final bound: max(0, max(rh + LH_final, rr + LR_final) - currentMakespan)
+     * Derivation: human finishes no earlier than rh + LH_final,
+     *             robot finishes no earlier than rr + LR_final.
+     */
+    private double computeWorkloadBalancingLB(SSALBRBState state, Set<Integer> tasks) {
         double currentMakespan = state.makespan();
-        double lbPrec = 0.0;
-        for (int task : tasks) {
-            int est = state.earliestStartTimes().get(task);
-            if (est < 0) {
-                continue;
-            }
+        double rh = state.humanAvailable();
+        double rr = state.robotAvailable();
 
-            lbPrec = Math.max(lbPrec, Math.max(0.0, ((double) est) + minDur[task] - currentMakespan));
+        record TaskConv(double theta_ir, double theta_ic, int tH, int tR, int tC) {}
+
+        double LH = 0.0;
+        List<TaskConv> conversions = new ArrayList<>(tasks.size());
+
+        for (int task : tasks) {
+            int tH = problem.humanDurations[task];
+            int tR = problem.robotDurations[task];
+            int tC = problem.collaborationDurations[task];
+
+            LH += tH;
+
+            double theta_ir = (tR < 100000 && tH > 0)
+                    ? (double) tR / tH : Double.POSITIVE_INFINITY;
+            double theta_ic = (tC < 100000 && tH > tC)
+                    ? (double) tC / (tH - tC) : Double.POSITIVE_INFINITY;
+
+            conversions.add(new TaskConv(theta_ir, theta_ic, tH, tR, tC));
         }
 
-        double cpAbs = 0.0;
-        for (int task : tasks) {
-            int est = state.earliestStartTimes().get(task);
-            if (est < 0) {
-                continue;
+        conversions.sort(Comparator.comparingDouble(tc -> Math.min(tc.theta_ir(), tc.theta_ic())));
+
+        double LR = 0.0;
+
+        for (TaskConv tc : conversions) {
+            // Condition (iii): robot side already catches up with human side
+            if (rr + LR >= rh + LH) break;
+
+            double LH_before = LH;
+            double LR_before = LR;
+
+            if (tc.theta_ir() <= tc.theta_ic()) {
+                // Robot mode
+                if (tc.tR() < 100000) {
+                    LH -= tc.tH();
+                    LR += tc.tR();
+
+                    // Condition (ii): robot capacity exceeded (rr + LR <= cycleTime)
+                    if (rr + LR > cycleTime) {
+                        if (tc.tR() > 0) {
+                            double alpha = (cycleTime - rr - LR_before) / tc.tR();
+                            alpha = Math.max(0.0, Math.min(1.0, alpha));
+                            LH = LH_before - alpha * tc.tH();
+                            LR = LR_before + alpha * tc.tR();
+                        }
+                        break;
+                    }
+
+                    // Condition (iii): overshot balance point (rr+LR = rh+LH)
+                    // rr + LR_before + alpha*tR = rh + LH_before - alpha*tH
+                    // alpha*(tR + tH) = (rh + LH_before) - (rr + LR_before)
+                    if (rr + LR > rh + LH) {
+                        double gap = (rh + LH_before) - (rr + LR_before);
+                        double denom = tc.tH() + tc.tR();
+                        if (denom > 0) {
+                            double alpha = gap / denom;
+                            alpha = Math.max(0.0, Math.min(1.0, alpha));
+                            LH = LH_before - alpha * tc.tH();
+                            LR = LR_before + alpha * tc.tR();
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // Collaboration mode
+                if (tc.tC() < 100000) {
+                    double dh = tc.tH() - tc.tC();
+                    double dr = tc.tC();
+
+                    LH -= dh;
+                    LR += dr;
+
+                    // Condition (ii): robot capacity exceeded (rr + LR <= cycleTime)
+                    if (rr + LR > cycleTime) {
+                        if (dr > 0) {
+                            double alpha = (cycleTime - rr - LR_before) / dr;
+                            alpha = Math.max(0.0, Math.min(1.0, alpha));
+                            LH = LH_before - alpha * dh;
+                            LR = LR_before + alpha * dr;
+                        }
+                        break;
+                    }
+
+                    // Condition (iii): overshot balance point (rr+LR = rh+LH)
+                    // rr + LR_before + alpha*dr = rh + LH_before - alpha*dh
+                    // alpha*(dr + dh) = (rh + LH_before) - (rr + LR_before)
+                    if (rr + LR > rh + LH) {
+                        double gap = (rh + LH_before) - (rr + LR_before);
+                        double denom = dh + dr;
+                        if (denom > 0) {
+                            double alpha = gap / denom;
+                            alpha = Math.max(0.0, Math.min(1.0, alpha));
+                            LH = LH_before - alpha * dh;
+                            LR = LR_before + alpha * dr;
+                        }
+                        break;
+                    }
+                }
             }
-            cpAbs = Math.max(cpAbs, ((double) est) + ((double) tail[task]));
         }
-        double lbCp = Math.max(0.0, cpAbs - currentMakespan);
 
-        double rh = (double) state.humanAvailable();
-        double rr = (double) state.robotAvailable();
-        double lbWork = Math.max(0.0, (rh + rr + sumMinProcessingTime) / 2.0 - currentMakespan);
-
-        // Return the lower bound of remaining makespan (increment), not total makespan;
-        // The DDO framework will automatically add the current accumulated cost (currentMakespan).
-        return Math.max(Math.max(lbPrec, lbWork), lbCp);
+        return Math.max(0.0, Math.max(rh + LH, rr + LR) - currentMakespan);
     }
 }

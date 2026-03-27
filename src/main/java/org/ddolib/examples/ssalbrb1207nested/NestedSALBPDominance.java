@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 支配规则 - Memory-based Dominance Rule
+ * 支配规则（Dominance Rule）
  *
  * 状态支配规则用于剪枝，当一个状态被另一个状态支配时，可以安全地丢弃被支配的状态。
  *
@@ -13,35 +13,34 @@ import java.util.Set;
  *
  * 前提条件：
  *   - 已分配任务集合（completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks）相同
+ *   - 即：两个状态面临相同的剩余任务分配问题
  *
- * 支配判断规则：
- *   规则1 - 机器人资源：剩余机器人更多的状态优于剩余机器人更少的状态
- *           （因为未来有更多选择）
+ * 支配判断规则（多维度资源支配）：
+ *   维度1 - 工位数：已使用的工位数越少越好
+ *           （工位数 = stationNumber + (当前工位非空 ? 1 : 0)）
  *
- *   规则2 - 机器人优势：当总使用机器人相等时，有机器人的当前工位优于没机器人的工位
- *           （因为有机器人的工位可以接受更多任务，搜索空间更大）
+ *   维度2 - 机器人总数：已使用的机器人总数越少越好
+ *           （机器人总数 = usedRobots + (当前工位有机器人 ? 1 : 0)）
  *
- *   综合规则：s2 dominate s1 当且仅当 s2 的"总消耗机器人"不多于 s1 的
- *           且 s2 当前工位的机器人状态不差于 s1
+ *   维度3 - 机器人分配灵活性：在总资源相同时，机器人在当前工位比在已关闭工位更优
+ *           （因为当前工位的机器人配置尚未固定，保留了更多调整空间）
  *
- * 改进说明：
- *   相比严格版本（要求 completedTasks 和 currentStationTasks 都完全相同），
- *   宽松版本只要求"已分配任务集合"相同，能够比较更多的状态对，剪枝效果更强。
+ * 支配情况（state2 支配 state1）：
+ *   情况1：state2 工位更少，且机器人不多于 state1
+ *   情况2：state2 机器人更少，且工位不多于 state1
+ *   情况3：工位数和机器人总数都相同，但 state2 的机器人分配更灵活
+ *          （更多机器人在当前工位，更少在已关闭工位）
  *
  * 理论正确性：
  *   如果两个状态的"已分配任务集合"相同，则它们面临相同的"剩余任务分配问题"。
- *   此时，使用更少机器人的状态拥有更多未来选择，因此不会更差。
+ *   此时，使用更少资源或资源分配更灵活的状态拥有更多未来选择，因此不会更差。
  */
 public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
 
     /**
      * 支配关系的分组键
      *
-     * 策略选择：
-     * - 严格策略：completedTasks + currentStationTasks 都相同才比较
-     * - 宽松策略：只要"所有已分配任务"相同就比较
-     *
-     * 当前使用：宽松策略（Memory-based Dominance Rule）
+     * 策略：只要"所有已分配任务"相同就比较，不管这些任务如何分配到工位
      */
     private record DominanceKey(
             Set<Integer> allAssignedTasks  // completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks
@@ -51,7 +50,6 @@ public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
      * 返回用于分组的键。
      * 只有相同 key 的状态才会进行支配关系比较。
      *
-     * 采用文献中改进的Memory-based Dominance Rule：
      * 只要"已分配任务集合"相同，就进行支配关系比较，
      * 而不管这些任务是如何分配到工位的。
      *
@@ -68,39 +66,43 @@ public class NestedSALBPDominance implements Dominance<NestedSALBPState> {
     }
 
     /**
+     * 判断 state1 是否被 state2 支配或等价
+     *
      * @param state1 第一个状态
      * @param state2 第二个状态
      * @return true 如果 state1 被 state2 支配或两者等价
      */
     @Override
     public boolean isDominatedOrEqual(NestedSALBPState state1, NestedSALBPState state2) {
-        // 计算总使用机器人数（包括当前工位）
+        // 计算维度1：已使用的工位数（精确值）
+        int stations1 = state1.stationNumber() + (state1.currentStationTasks().isEmpty() ? 0 : 1);
+        int stations2 = state2.stationNumber() + (state2.currentStationTasks().isEmpty() ? 0 : 1);
+
+        // 计算维度2：已使用的机器人总数（包括当前工位）
         int totalUsed1 = state1.usedRobots() + (state1.currentStationHasRobot() ? 1 : 0);
         int totalUsed2 = state2.usedRobots() + (state2.currentStationHasRobot() ? 1 : 0);
 
-        // 规则2：state2 使用更少的机器人 -> state2 更优 -> state1 被支配
-        if (totalUsed2 < totalUsed1) {
+        // 情况1：state2 工位更少，且机器人不多于 state1 → state2 支配 state1
+        if (stations2 < stations1 && totalUsed2 <= totalUsed1) {
             return true;
         }
 
-        // 规则1：总使用机器人相等时，比较当前工位的机器人状态
-        if (totalUsed1 == totalUsed2) {
-            // usedRobots 相等的情况
-            if (state1.usedRobots() == state2.usedRobots()) {
-                // 若 state2 有机器人而 state1 没有 -> state1 被支配
-                // 若两者机器人状态相同 -> 等价
-                // 若 state1 有机器人而 state2 没有 -> state1 不被支配
-                if (!state1.currentStationHasRobot() && state2.currentStationHasRobot()) {
-                    return true;  // state1 被 state2 支配
-                }
-                if (state1.currentStationHasRobot() == state2.currentStationHasRobot()) {
-                    return true;  // 等价
-                }
+        // 情况2：state2 机器人更少，且工位不多于 state1 → state2 支配 state1
+        if (stations2 <= stations1 && totalUsed2 < totalUsed1) {
+            return true;
+        }
+
+        // 情况3：工位数和机器人总数都相同，比较机器人分配的灵活性
+        if (stations2 == stations1 && totalUsed2 == totalUsed1) {
+            // state2 的已关闭工位使用更少机器人 → state2 的当前工位有机器人 → 更灵活
+            // 因为当前工位的机器人配置尚未固定，可以根据后续任务调整
+            if (state2.usedRobots() < state1.usedRobots()) {
+                return true;  // state2 支配 state1
             }
-            // usedRobots 不等但 totalUsed 相等的情况
-            // 例如：state1(usedRobots=2, hasRobot=false) vs state2(usedRobots=1, hasRobot=true)
-            // 两者 totalUsed=2，但 state2 当前有机器人，未来更灵活
-            // 这种情况下 state2 略优，但不是严格支配，保守起见不剪枝
+            // 机器人分配方式也相同 → 两者等价
+            if (state2.usedRobots() == state1.usedRobots()) {
+                return true;  // 等价
+            }
         }
 
         return false;

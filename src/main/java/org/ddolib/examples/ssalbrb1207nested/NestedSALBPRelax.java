@@ -14,6 +14,7 @@ import java.util.*;
  * - maybeCompletedTasks: 取并集-交集（在某些状态中已完成或在当前工位，但不是所有状态）
  * - currentStationHasRobot: 取OR（任一为true则为true，容量更大）
  * - usedRobots: 取最小值（剩余机器人更多，更灵活）
+ * - stationNumber: 取最小值（乐观估计，认为用了更少的工位）
  */
 public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
 
@@ -66,12 +67,20 @@ public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
             .min()
             .orElse(0);
 
+        // ========== 6. stationNumber: 取最小值（最乐观） ==========
+        // 🔥 新增：合并工位数，取最小值（乐观估计，认为用了更少的工位）
+        int mergedStationNumber = stateList.stream()
+            .mapToInt(NestedSALBPState::stationNumber)
+            .min()
+            .orElse(0);
+
         return new NestedSALBPState(
             mergedCompleted,
             mergedCurrent,
             mergedMaybe,
             mergedHasRobot,
-            mergedUsedRobots
+            mergedUsedRobots,
+            mergedStationNumber  // 🔥 新增参数
         );
     }
 
@@ -81,6 +90,16 @@ public class NestedSALBPRelax implements Relaxation<NestedSALBPState> {
                             NestedSALBPState merged,
                             Decision decision,
                             double originalCost) {
+        // 🔥 关键：relaxEdge 不需要重新计算代价！
+        // 
+        // 原因：
+        // 1. transitionCost() 已经正确处理了 maybeCompletedTasks
+        // 2. 从 merged 状态出发的代价，应该由 transitionCost(merged, decision) 计算
+        // 3. DDO 框架会自动调用 transitionCost() 来计算从 merged 出发的边
+        // 
+        // 因此，relaxEdge() 只需要返回 originalCost（保持原有代价）
+        // 或者返回所有被合并边的最小代价（乐观估计）
+        
         return originalCost;
     }
 }

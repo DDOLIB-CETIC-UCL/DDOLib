@@ -85,6 +85,13 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     private final Map<Set<Integer>, Map<Boolean, int[]>> solutionCache;
 
+    /**
+     * taskList缓存：任务子集 -> (是否有机器人 -> 求解时使用的taskList)
+     * 用途：确保解码时使用与求解时完全相同的任务索引映射顺序
+     * 关键：solutionCache中的subSolution里的subTaskIndex是基于此taskList建立的
+     */
+    private final Map<Set<Integer>, Map<Boolean, List<Integer>>> taskListCache;
+
     // ==================== 优化组件 (Optimization Components) ====================
     /**
      * 不可行子集缓存：记录已知不可行的任务子集
@@ -175,6 +182,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         // 初始化缓存
         this.makespanCache = new HashMap<>();
         this.solutionCache = new HashMap<>();
+        this.taskListCache = new HashMap<>();
 
         // 初始化优化组件和开关
         this.useInfeasibilityCache = useInfeasibilityCache;
@@ -294,7 +302,8 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 Collections.emptySet(),         // currentStationTasks: 空
                 Collections.emptySet(),         // maybeCompletedTasks: 空
                 false,                          // currentStationHasRobot: false
-                0);                             // usedRobots: 0
+                0,                              // usedRobots: 0
+                0);                             // stationNumber: 0
     }
 
     /**
@@ -786,12 +795,14 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                     newStationTasks,                  // 增加任务
                     newMaybeCompleted,                // 可能减少
                     state.currentStationHasRobot(),   // 不变
-                    state.usedRobots());              // 不变
+                    state.usedRobots(),               // 不变
+                    state.stationNumber());           // 不变（没有关闭工位）
         } else {
             // ========== 情况2：新开工位 ==========
             Set<Integer> newCompletedTasks = new LinkedHashSet<>(state.completedTasks());
             Set<Integer> newMaybeCompleted = new LinkedHashSet<>(state.maybeCompletedTasks());
             int newUsedRobots = state.usedRobots();
+            int newStationNumber = state.stationNumber();  // 🔥 新增：工位数
 
             // 关闭当前工位（如果非空）
             if (!state.currentStationTasks().isEmpty()) {
@@ -800,6 +811,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                 if (state.currentStationHasRobot()) {
                     newUsedRobots++;
                 }
+                newStationNumber++;  // 🔥 关闭一个工位，工位数 +1
             }
 
             // 开启新工位
@@ -826,7 +838,8 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                     freshStationTasks,                // 新工位只有一个任务
                     newMaybeCompleted,                // 可能减少
                     newStationHasRobot,
-                    newUsedRobots);
+                    newUsedRobots,
+                    newStationNumber);                // 🔥 更新工位数
         }
     }
 
@@ -878,7 +891,6 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     @Override
     public double evaluate(int[] solution) throws org.ddolib.modeling.InvalidSolutionException {
         NestedSALBPState state = initialState();
-        int stationCount = 0;
 
         // 模拟整个决策序列
         for (int decisionVal : solution) {
@@ -906,15 +918,17 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                         newStationTasks,
                         state.maybeCompletedTasks(),  // 保持不变
                         state.currentStationHasRobot(),
-                        state.usedRobots());
+                        state.usedRobots(),
+                        state.stationNumber());       // 保持不变
             } else {
                 // 新开工位
                 Set<Integer> newCompletedTasks = new LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
+                int newStationNumber = state.stationNumber();
 
                 if (!state.currentStationTasks().isEmpty()) {
                     newCompletedTasks.addAll(state.currentStationTasks());
-                    stationCount++;
+                    newStationNumber++;  // 🔥 关闭工位，工位数 +1
                     if (state.currentStationHasRobot()) {
                         newUsedRobots++;
                     }
@@ -926,15 +940,13 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
                         freshStationTasks,
                         state.maybeCompletedTasks(),  // 保持不变
                         assignRobot,
-                        newUsedRobots);
+                        newUsedRobots,
+                        newStationNumber);            // 🔥 更新工位数
             }
         }
 
-        // 最后一个工位
-        if (!state.currentStationTasks().isEmpty()) {
-            stationCount++;
-        }
-        return stationCount;
+        // 🔥 最终工位数 = stationNumber + (当前工位非空 ? 1 : 0)
+        return state.totalStations();
     }
 
     // ==================== 工位可行性判断 (Station Feasibility Check) ====================
@@ -1139,7 +1151,9 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         } else {
             // 有机器人时，需要调用内层DDO求解器
             innerDdoCallCount++;
-            SSALBRBProblem subProblem = createSubProblem(tasks, true);
+            // 🔥 先建立 taskList，同时传给 createSubProblem 和缓存，确保解码时顺序一致
+            List<Integer> taskList = new ArrayList<>(tasks);
+            SSALBRBProblem subProblem = createSubProblemFromList(taskList, true);
 
             // 调用统一的求解方法，同时获取makespan和解序列
             int[] solution = solveDDOForSolution(subProblem);
@@ -1147,8 +1161,9 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
             if (solution != null && solution.length > 0) {
                 try {
                     makespan = (int) subProblem.evaluate(solution);
-                    // 同时缓存解序列，供打印时使用
+                    // 🔥 同时缓存解序列和taskList，供打印时解码使用
                     solutionCache.computeIfAbsent(tasks, k -> new HashMap<>()).put(hasRobot, solution);
+                    taskListCache.computeIfAbsent(tasks, k -> new HashMap<>()).put(hasRobot, taskList);
                 } catch (Exception e) {
                     makespan = Integer.MAX_VALUE;
                 }
@@ -1178,6 +1193,16 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     private SSALBRBProblem createSubProblem(Set<Integer> tasks, boolean hasRobot) {
         List<Integer> taskList = new ArrayList<>(tasks);
+        return createSubProblemFromList(taskList, hasRobot);
+    }
+
+    /**
+     * 创建子问题（从已排好序的taskList创建）
+     *
+     * 与 createSubProblem(Set, boolean) 的区别：
+     * 调用方提供已建好的 taskList，确保解码时索引顺序与求解时完全一致。
+     */
+    private SSALBRBProblem createSubProblemFromList(List<Integer> taskList, boolean hasRobot) {
         int subNbTasks = taskList.size();
 
         // 提取子问题的任务时间数据
@@ -1242,7 +1267,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
             @Override
             public Relaxation<SSALBRBState> relaxation() {
-                return new SSALBRBRelax(problem.humanDurations, problem.robotDurations, problem.collaborationDurations);
+                return new SSALBRBRelax(problem.humanDurations, problem.robotDurations, problem.collaborationDurations, problem.predecessors);
             }
 
             @Override
@@ -1252,7 +1277,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
 
             @Override
             public FastLowerBound<SSALBRBState> lowerBound() {
-                return new SSALBRBFastLowerBound(problem);
+                return new SSALBRBFastLowerBound(problem, cycleTime);
             }
 
             @Override
@@ -1313,22 +1338,34 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      * @return 内层解（包含任务序列和操作模式）
      */
     public InnerSolution solveInnerProblemWithModes(Set<Integer> stationTasks, boolean hasRobot) {
-        List<Integer> taskList = new ArrayList<>(stationTasks);
-
         // 先查解序列缓存
         int[] subSolution = null;
+        List<Integer> taskList = null;
+
         if (solutionCache.containsKey(stationTasks) &&
                 solutionCache.get(stationTasks).containsKey(hasRobot)) {
             subSolution = solutionCache.get(stationTasks).get(hasRobot);
+            // 🔥 使用缓存中保存的 taskList，确保解码时索引顺序与求解时完全一致
+            if (taskListCache.containsKey(stationTasks) &&
+                    taskListCache.get(stationTasks).containsKey(hasRobot)) {
+                taskList = taskListCache.get(stationTasks).get(hasRobot);
+            } else {
+                // 兜底：缓存中没有 taskList（理论上不应发生），重新建
+                taskList = new ArrayList<>(stationTasks);
+            }
         } else {
             // 缓存未命中，调用DDO求解器
-            SSALBRBProblem subProblem = createSubProblem(stationTasks, hasRobot);
+            // 🔥 先建立 taskList，求解和解码共用同一个实例
+            taskList = new ArrayList<>(stationTasks);
+            SSALBRBProblem subProblem = createSubProblemFromList(taskList, hasRobot);
             subSolution = solveDDOForSolution(subProblem);
 
-            // 缓存解序列
+            // 缓存解序列和 taskList
             if (subSolution != null && subSolution.length > 0) {
                 solutionCache.computeIfAbsent(stationTasks, k -> new HashMap<>())
                         .put(hasRobot, subSolution);
+                taskListCache.computeIfAbsent(stationTasks, k -> new HashMap<>())
+                        .put(hasRobot, taskList);
             }
         }
 
@@ -1337,6 +1374,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
         }
 
         // 将子问题的决策值解码并映射回原始索引
+        // 🔥 使用与求解时相同的 taskList，确保 subTaskIndex 映射正确
         int[] originalTasks = new int[subSolution.length];
         int[] modes = new int[subSolution.length];
 
@@ -1393,41 +1431,18 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
     }
 
     /**
-     * 计算已完成的工位数（保守估计，确保是下界）
+     * 计算已完成的工位数（现在直接使用状态中的精确值）
      *
      * ============================================================================
-     * 思路：使用 FastLowerBound 的专业算法（LB1 和 LB2）来计算已完成任务至少需要多少个工位
+     * 改进：使用 stationNumber 字段，不再需要估计
      * ============================================================================
-     *
-     * 优势：
-     * - 使用与未完成任务相同的下界算法（LB1 和 LB2）
-     * - 考虑了已使用的机器人数量
-     * - 比简单的任务数量或工作量估计更准确
-     *
-     * 关键：必须保证是下界（不能高估已完成的工位数）
-     * - 如果高估了已完成工位数，会导致总下界偏大，可能错误剪枝掉最优解
      *
      * @param state 当前状态
-     * @return 已完成的工位数下界
+     * @return 已完成的工位数（精确值）
      */
     private int computeCompletedStations(NestedSALBPState state) {
-        // 如果没有完成任何任务，则完成的工位数为0
-        if (state.completedTasks().isEmpty()) {
-            return 0;
-        }
-
-        // 使用 FastLowerBound 的专业算法计算已完成任务的下界
-        NestedSALBPFastLowerBound lbCalculator = new NestedSALBPFastLowerBound(this);
-
-        // 直接调用 computeLowerBound 方法（现在是 public 的）
-        // 参数：已完成的任务集合 + 已使用的机器人数量
-        double completedStationsLB = lbCalculator.computeLowerBound(
-                state.completedTasks(),
-                state.usedRobots()
-        );
-
-        // 向上取整，确保是整数工位数
-        return (int) Math.ceil(completedStationsLB);
+        // 🔥 直接返回状态中记录的精确工位数
+        return state.stationNumber();
     }
 
     /**

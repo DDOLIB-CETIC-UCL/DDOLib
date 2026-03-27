@@ -49,13 +49,13 @@ public class NestedSALBPAstarMain {
         final boolean USE_SYMMETRY_BREAKING = true;     // 对称性破坏
 
         // ==================== 数据文件路径配置 ====================
-        final String instance = args.length == 0
-                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_246.csv").toString()
-                : args[0];
-
 //        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_180.csv").toString()
+//                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_246.csv").toString()
 //                : args[0];
+
+        final String instance = args.length == 0
+                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_101.csv").toString()
+                : args[0];
 
         // 节拍时间
         final int cycleTime = args.length >= 2 ?
@@ -63,7 +63,7 @@ public class NestedSALBPAstarMain {
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 3;
+                Integer.parseInt(args[2]) : 6;
 
         System.out.println("=".repeat(80));
         System.out.println("嵌套装配线平衡问题 - A*求解器");
@@ -193,16 +193,19 @@ public class NestedSALBPAstarMain {
                         newStationTasks,
                         state.maybeCompletedTasks(),  // 🔥 保持不变
                         state.currentStationHasRobot(),
-                        state.usedRobots());
+                        state.usedRobots(),
+                        state.stationNumber());       // 🔥 保持不变
             } else {
                 java.util.Set<Integer> newCompletedTasks = new java.util.LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
+                int newStationNumber = state.stationNumber();
 
                 if (!state.currentStationTasks().isEmpty()) {
                     newCompletedTasks.addAll(state.currentStationTasks());
                     if (state.currentStationHasRobot()) {
                         newUsedRobots++;
                     }
+                    newStationNumber++;  // 🔥 关闭工位，工位数 +1
                 }
 
                 java.util.Set<Integer> freshStationTasks = java.util.Set.of(task);
@@ -211,7 +214,8 @@ public class NestedSALBPAstarMain {
                         freshStationTasks,
                         state.maybeCompletedTasks(),  // 🔥 保持不变
                         assignRobot,
-                        newUsedRobots);
+                        newUsedRobots,
+                        newStationNumber);            // 🔥 更新工位数
             }
         }
 

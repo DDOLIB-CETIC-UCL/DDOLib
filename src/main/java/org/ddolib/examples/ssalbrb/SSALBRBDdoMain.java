@@ -28,7 +28,7 @@ public class SSALBRBDdoMain {
 
             @Override
             public Relaxation<SSALBRBState> relaxation() {
-                return new SSALBRBRelax(problem.humanDurations, problem.robotDurations, problem.collaborationDurations);
+                return new SSALBRBRelax(problem.humanDurations, problem.robotDurations, problem.collaborationDurations, problem.predecessors);
             }
 
             @Override

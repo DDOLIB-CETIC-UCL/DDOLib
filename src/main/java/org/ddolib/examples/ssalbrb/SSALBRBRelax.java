@@ -5,25 +5,32 @@ import org.ddolib.modeling.Relaxation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Relaxation for state representation <r_h, r_r, E> where E encodes both
  * assignment status and timing. Merging keeps optimistic (minimum) resource
  * availability and relaxed earliest start times.
+ *
+ * Precedence feasibility is enforced during state merging: after selecting the
+ * top k* candidate tasks by frequency and completion time, a precedence closure
+ * step iteratively adds any predecessor that is not yet in the selected set,
+ * ensuring the merged state corresponds to a valid partial schedule.
  */
 public class SSALBRBRelax implements Relaxation<SSALBRBState> {
 
     private final int[] humanDurations;
     private final int[] robotDurations;
     private final int[] collaborationDurations;
+    private final Map<Integer, List<Integer>> predecessors;
 
-    public SSALBRBRelax(int[] humanDurations, int[] robotDurations, int[] collaborationDurations) {
+    public SSALBRBRelax(int[] humanDurations, int[] robotDurations, int[] collaborationDurations,
+                        Map<Integer, List<Integer>> predecessors) {
         this.humanDurations = humanDurations;
         this.robotDurations = robotDurations;
         this.collaborationDurations = collaborationDurations;
+        this.predecessors = predecessors;
     }
 
     @Override
@@ -52,6 +59,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             bestUnassignedE[i] = Integer.MAX_VALUE;
         }
 
+        // Compute k*: minimum number of assigned tasks across all merged states
         int k = Integer.MAX_VALUE;
         for (SSALBRBState state : stateList) {
             int cnt = 0;
@@ -64,6 +72,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             k = Math.min(k, cnt);
         }
 
+        // Collect per-task statistics across all merged states
         for (SSALBRBState state : stateList) {
             bestHumanReady = Math.min(bestHumanReady, state.humanAvailable());
             bestRobotReady = Math.min(bestRobotReady, state.robotAvailable());
@@ -80,6 +89,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             }
         }
 
+        // Step 1: Sort candidates by (assignedCount desc, bestAssignedE desc) and select top k*
         boolean[] chosenAssigned = new boolean[n];
         int chosen = 0;
 
@@ -105,6 +115,26 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             chosen++;
         }
 
+        // Step 2: Precedence closure
+        // If a selected task has a predecessor not yet selected, add it.
+        // Repeat until no more predecessors need to be added.
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (int i = 0; i < n; i++) {
+                if (!chosenAssigned[i]) continue;
+                List<Integer> preds = predecessors.get(i);
+                if (preds == null) continue;
+                for (int pred : preds) {
+                    if (!chosenAssigned[pred]) {
+                        chosenAssigned[pred] = true;
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        // Compute max completion time among chosen assigned tasks (for resource consistency check)
         int maxCompletion = 0;
         for (int i = 0; i < n; i++) {
             if (chosenAssigned[i] && bestAssignedE[i] != Integer.MIN_VALUE) {
@@ -112,6 +142,7 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             }
         }
 
+        // Resource consistency adjustment
         int mergedHumanReady = bestHumanReady;
         int mergedRobotReady = bestRobotReady;
         if (Math.max(mergedHumanReady, mergedRobotReady) < maxCompletion) {
@@ -122,19 +153,23 @@ public class SSALBRBRelax implements Relaxation<SSALBRBState> {
             }
         }
 
+        // Build merged E vector
         List<Integer> mergedE = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             if (chosenAssigned[i]) {
+                // Assigned: use optimistic (least negative = earliest) completion time
                 mergedE.add(bestAssignedE[i]);
             } else {
+                // Unassigned: use optimistic (earliest) start time
                 int est = bestUnassignedE[i];
                 if (est == Integer.MAX_VALUE) {
                     est = 0;
                 }
+                // Further tighten EST using completion times from states where task was assigned
                 if (assignedCount[i] > 0 && bestAssignedE[i] != Integer.MIN_VALUE) {
                     int completionTime = -bestAssignedE[i];
-                    int minDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
-                    int earliestFromAssigned = Math.max(0, completionTime - minDuration);
+                    int maxDuration = Math.max(Math.max(humanDurations[i], robotDurations[i]), collaborationDurations[i]);
+                    int earliestFromAssigned = Math.max(0, completionTime - maxDuration);
                     est = Math.min(est, earliestFromAssigned);
                 }
                 mergedE.add(est);

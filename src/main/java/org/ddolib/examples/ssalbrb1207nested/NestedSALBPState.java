@@ -12,18 +12,30 @@ import java.util.Set;
  * - maybeCompletedTasks: 可能已完成或在当前工位的任务（Relax时取并集-交集）
  * - currentStationHasRobot: 当前工位是否有机器人
  * - usedRobots: 已使用的机器人数量（包括已完成工位，不包括当前工位）
+ * - stationNumber: 已完成的工位数（精确值，不包括当前工位）
+ *
+ * 推导信息：
+ * - remainingTasks = allTasks \ (completedTasks ∪ currentStationTasks ∪ maybeCompletedTasks)
+ * - remainingRobots = totalRobots - usedRobots - (currentStationHasRobot ? 1 : 0)
+ * - totalStations = stationNumber + (currentStationTasks.isEmpty() ? 0 : 1)
  *
  * maybeCompletedTasks 的作用：
  * - 只在Relax合并时产生
  * - 在transition时可能减少（当分配了其中的任务）
  * - 用于下界计算的乐观估计
+ *
+ * stationNumber 的作用：
+ * - 精确记录已完成的工位数（包括有机器人和无机器人的工位）
+ * - 用于Dominance规则的准确判断
+ * - 用于上界传播的精确下界计算
  */
 public record NestedSALBPState(
         Set<Integer> completedTasks,                // 确定已完成的任务
         Set<Integer> currentStationTasks,           // 确定在当前工位的任务
         Set<Integer> maybeCompletedTasks,           // 可能已完成的任务
         boolean currentStationHasRobot,             // 当前工位是否有机器人
-        int usedRobots) {                           // 已使用的机器人数
+        int usedRobots,                             // 已使用的机器人数
+        int stationNumber) {                        // 已完成的工位数（精确值）
 
     public NestedSALBPState {
         // 防御性复制
@@ -108,9 +120,17 @@ public record NestedSALBPState(
         return Math.max(0, totalRobots - usedRobots() - currentUsed);
     }
 
+    /**
+     * 获取总工位数（已完成 + 当前工位）
+     */
+    public int totalStations() {
+        return stationNumber + (currentStationTasks.isEmpty() ? 0 : 1);
+    }
+
     @Override
     public String toString() {
-        return String.format("<Completed=%d, CS=%s, Maybe=%d, CSRobot=%s, usedRobots=%d>",
+        return String.format("<Stations=%d, Completed=%d, CS=%s, Maybe=%d, CSRobot=%s, usedRobots=%d>",
+                stationNumber,
                 completedTasks.size(), currentStationTasks,
                 maybeCompletedTasks.size(),
                 currentStationHasRobot ? "Y" : "N",

@@ -35,17 +35,17 @@ public class NestedSALBPDdoMain {
         // 2. .alb 格式（原始格式）
 
         // 【当前使用】CSV格式 - 20任务数据集
-//        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_324.csv").toString()
-//                : args[0];
-
-//        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_476.csv").toString()
-//                : args[0];
-
         final String instance = args.length == 0
-                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_11.csv").toString()
+                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_212.csv").toString()
                 : args[0];
+
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_56.csv").toString()
+//                : args[0];
+
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_318.csv").toString()
+//                : args[0];
 
         // 【备选】ALB格式 - 数据集
 //        final String instance = args.length == 0
@@ -58,7 +58,7 @@ public class NestedSALBPDdoMain {
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 5;
+                Integer.parseInt(args[2]) : 2;
 
 
         System.out.println("Instance: " + instance);
@@ -93,7 +93,7 @@ public class NestedSALBPDdoMain {
 
             @Override
             public WidthHeuristic<NestedSALBPState> widthHeuristic() {
-                return new FixedWidth<>(10);
+                return new FixedWidth<>(100);
             }
 
             @Override
@@ -108,12 +108,12 @@ public class NestedSALBPDdoMain {
 
             @Override
             public boolean useCache() {
-                return true;
+                return false;
             }
 
             @Override
             public boolean exportDot() {
-                return false;
+                return true;
             }
         };
 
@@ -242,12 +242,14 @@ public class NestedSALBPDdoMain {
                         newStationTasks,
                         state.maybeCompletedTasks(),  // 🔥 保持不变
                         state.currentStationHasRobot(),
-                        state.usedRobots());
+                        state.usedRobots(),
+                        state.stationNumber());       // 🔥 保持不变
             } else {
                 // 新开工位
                 java.util.Set<Integer> newCompletedTasks =
                         new java.util.LinkedHashSet<>(state.completedTasks());
                 int newUsedRobots = state.usedRobots();
+                int newStationNumber = state.stationNumber();
 
                 // 只有当前工位不为空时，才将其任务加入已完成集合
                 if (!state.currentStationTasks().isEmpty()) {
@@ -255,6 +257,7 @@ public class NestedSALBPDdoMain {
                     if (state.currentStationHasRobot()) {
                         newUsedRobots++;
                     }
+                    newStationNumber++;  // 🔥 关闭工位，工位数 +1
                 }
 
                 java.util.Set<Integer> freshStationTasks = java.util.Set.of(task);
@@ -263,7 +266,8 @@ public class NestedSALBPDdoMain {
                         freshStationTasks,
                         state.maybeCompletedTasks(),  // 🔥 保持不变
                         assignRobot,
-                        newUsedRobots);
+                        newUsedRobots,
+                        newStationNumber);            // 🔥 更新工位数
             }
         }
 
