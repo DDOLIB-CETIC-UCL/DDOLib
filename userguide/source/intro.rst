@@ -75,6 +75,24 @@ The full `Javadoc API <https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.h
 Installation
 ============
 
+Using DDOLib as a dependency
+-----------------------------
+
+DDOLib is published on
+`Maven Central <https://central.sonatype.com/artifact/io.github.ddolib-cetic-ucl/ddolib>`_.
+Add the following to your project's ``pom.xml``:
+
+.. code-block:: xml
+
+   <dependency>
+       <groupId>io.github.ddolib-cetic-ucl</groupId>
+       <artifactId>ddolib</artifactId>
+       <version>0.0.5</version>
+   </dependency>
+
+Building from source
+---------------------
+
 DDOLib source code is hosted on `GitHub <https://github.com/DDOLIB-CETIC-UCL/DDOLib>`_.
 
 **Using an IDE (IntelliJ IDEA recommended)**
