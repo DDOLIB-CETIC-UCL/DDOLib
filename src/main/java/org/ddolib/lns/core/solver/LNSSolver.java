@@ -207,7 +207,7 @@ public final class LNSSolver<T> implements Solver {
                 sum += problem.transitionCost(state, dec);
                 state = problem.transition(state, dec);
             } else {
-                vars.add(dec.var());
+                vars.add(dec.variable());
             }
             k++;
         }

@@ -215,8 +215,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (nextVar == null) {
                 // Some variables simply can't be assigned
                 return;
-            } else {
-                variables.remove(nextVar);
             }
 
 
@@ -246,7 +244,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                     depthLEL = depthCurrentDD - 1;
                                 }
                             }
-                            relax(maxWidth, relax, config.reductionStrategy);
+                            relax(maxWidth, relax, config.reductionStrategy,variables);
                             break;
                         case Exact:
                             /* nothing to do */
@@ -254,6 +252,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     }
                 }
             }
+            variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
                 if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
