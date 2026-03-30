@@ -48,7 +48,7 @@ public class NestedSALBPAcsMain {
 
         // ==================== 数据文件路径配置 ====================
         final String instance = args.length == 0
-                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_247.csv").toString()
+                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_1.csv").toString()
                 : args[0];
 
 //        final String instance = args.length == 0
@@ -65,7 +65,7 @@ public class NestedSALBPAcsMain {
 
         // 可用机器人总数
         final int totalRobots = args.length >= 3 ?
-                Integer.parseInt(args[2]) : 2;
+                Integer.parseInt(args[2]) : 1;
 
         System.out.println("=".repeat(80));
         System.out.println("嵌套装配线平衡问题 - ACS求解器");

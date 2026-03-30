@@ -6,6 +6,8 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -66,7 +68,7 @@ public class SMICDdoMain {
      * @throws IOException if an error occurs while reading the instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_2.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data","SMIC","example.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         DdoModel<SMICState> model = new DdoModel<>() {
             @Override
@@ -96,15 +98,22 @@ public class SMICDdoMain {
 
             @Override
             public Frontier<SMICState> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+                return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
             }
 
             @Override
             public boolean useCache() {
                 return true;
             }
-        };
 
+            @Override
+            public boolean exportDot() {return true;}
+
+            @Override
+            public WidthHeuristic<SMICState> widthHeuristic() {
+                return new FixedWidth<>(2);
+            }
+        };
         Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });

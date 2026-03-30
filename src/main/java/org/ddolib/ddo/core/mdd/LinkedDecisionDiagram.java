@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.cache.Threshold;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -103,7 +104,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
-
 
     /**
      * Creates a new linked decision diagram.
@@ -212,12 +212,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (nextVar == null) {
                 // Some variables simply can't be assigned
                 return;
-            } else {
-                variables.remove(nextVar);
             }
 
-
-            // If the current layer is too large, we need to shrink it down. 
+            // If the current layer is too large, we need to shrink it down.
             // Whether this shrinking down means that we want to perform a restriction
             // or a relaxation depends on the type of compilation which has been 
             // requested from this decision diagram  
@@ -232,7 +229,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 switch (config.compilationType) {
                     case Restricted:
                         exact = false;
-                        restrict(maxWidth, ranking);
+                        restrict(maxWidth, ranking, config.reductionStrategy);
                         break;
                     case Relaxed:
                         if (exact) {
@@ -242,13 +239,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                 depthLEL = depthCurrentDD - 1;
                             }
                         }
-                        relax(maxWidth, ranking, relax);
+                        relax(maxWidth, relax, config.reductionStrategy, variables);
                         break;
                     case Exact:
                         /* nothing to do */
                         break;
                 }
             }
+
+            variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
                 if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
@@ -336,7 +335,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
         }
-
 
         if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed) {
             checkFlb(config.problem);
@@ -435,263 +433,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return dotStr.toString();
     }
 
-    /**
-     * Given a node, returns the list of decisions taken from the root to reach this node.
-     *
-     * @param node A node of the mdd
-     * @return The list of decisions took from the root to reach the input node.
-     */
-    private LinkedList<PathInfo> constructPathFromRoot(Node node, double lengthToEnd) {
-        LinkedList<PathInfo> path = new LinkedList<>();
-        Edge eb = node.best;
-        double currentLength = lengthToEnd;
-        while (eb != null) {
-            currentLength += eb.weight;
-            PathInfo info = new PathInfo(eb.decision, eb.origin.flb, currentLength);
-            path.addFirst(info);
-            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(eb.hashCode(), "#ff0000");
-            eb = eb.origin == null ? null : eb.origin.best;
-
-        }
-        return path;
-    }
-
-
-    // ------ METHODS FOR DEBUG ------
-
-    /**
-     * Given a list of decisions returns string describing the states from root.
-     *
-     * @param pathFromRoot A list of decision.
-     * @param problem      The problem linked to this mdd.
-     * @return A list of decisions of the generated states from root.
-     */
-    private LinkedList<String> constructStateDescriptionFromRoot(LinkedList<PathInfo> pathFromRoot,
-                                                                 Problem<T> problem) {
-        LinkedList<String> states = new LinkedList<>();
-        T current = problem.initialState();
-        int depth = 0;
-        String msg = String.format("%-23s", depth + ".");
-        for (PathInfo pathInfo : pathFromRoot) {
-            msg += String.format("length to end: %6s", pathInfo.lengthToEnd);
-            msg += String.format(" - flb: %6s", pathInfo.flbOfOrigin);
-            if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg += "!";
-            msg += " - " + current.toString();
-            msg += "\n" + pathInfo.decision;
-            states.addLast(msg);
-            depth++;
-            msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
-                    pathInfo.decision));
-            current = problem.transition(current, pathInfo.decision);
-
-
-        }
-        states.addLast(msg);
-        states.addLast(current.toString());
-        return states;
-    }
-
-    /**
-     * Checks if the {@link FastLowerBound} is well-defined.
-     * This method constructs longest path from terminal nodes and checks for each node the mdd
-     * if the associated fast lower bound is larger than the identified path.
-     *
-     */
-    private void checkFlb(Problem<T> problem) {
-        DecimalFormat df = new DecimalFormat("#.##########");
-        for (Node last : nextLayer.values()) {
-            //For each node we save the longest path to last
-            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
-            parent.put(last, 0.0);
-            while (!parent.isEmpty()) {
-                Entry<Node, Double> current = parent.pollFirstEntry();
-                if (current.getKey().flb - 1e-10 > current.getValue()) {
-                    LinkedList<PathInfo> pathFromRoot = constructPathFromRoot(current.getKey(),
-                            current.getValue());
-                    LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
-                    String lastState = failedState.getLast();
-                    lastState =
-                            String.format(" - flb: %6s", current.getKey().flb) + "! - " + lastState;
-                    lastState =
-                            String.format("length to end: %6s", current.getValue()) + lastState;
-                    failedState.removeLast();
-                    lastState = failedState.getLast() + lastState;
-                    failedState.removeLast();
-                    failedState.addLast(lastState);
-                    String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
-                    String failureMsg = String.format("Found node with lower bound (%s) bigger than" +
-                                    "its longest path (%s)\n", df.format(current.getKey().flb),
-                            df.format(current.getValue()));
-                    failureMsg += String.format("Path from root: \n\t%s\n\n", statesStr);
-                    failureMsg += String.format("Failing state: %s\n", failedState.getLast());
-                    if (debugLevel == DebugLevel.EXTENDED) {
-                        String dot = exportAsDot();
-                        try (BufferedWriter bw =
-                                     new BufferedWriter(new FileWriter(Paths.get("output",
-                                             "failed.dot").toString()))) {
-                            bw.write(dot);
-                            failureMsg += "MDD saved in output/failed.dot\n";
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    throw new RuntimeException(failureMsg);
-                }
-
-                for (Edge edge : current.getKey().edges) {
-                    double longestFromParent = parent.getOrDefault(edge.origin, Double.NEGATIVE_INFINITY);
-                    parent.put(edge.origin, Double.max(longestFromParent, edge.weight + current.getValue()));
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks whether the relaxation is coherent. This method compiles mdd starting from a
-     * relaxed node and each merged nodes. Then, it compares the best values of each solution.
-     * The path passing through the relaxed node must be a lower bound.
-     *
-     */
-    private void checkRelaxation(List<NodeSubProblem<T>> nodesToMerge,
-                                 NodeSubProblem<T> relaxedNode) {
-        DecimalFormat df = new DecimalFormat("#.##########");
-
-        Set<Decision> pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);
-        pathFromRelaxedToRoot.addAll(pathToRoot);
-        SubProblem<T> relaxedSub = new SubProblem<>(relaxedNode.state, relaxedNode.node.value,
-                relaxedNode.lb, pathFromRelaxedToRoot);
-
-        int relaxationDepth = relaxedSub.getDepth();
-        LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedSub);
-        Optional<Double> bestWithRelaxed = relaxedMdd.bestValue();
-        Optional<Set<Decision>> bestRelaxedSol = relaxedMdd.bestSolution();
-        Optional<Double> bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);
-
-        for (NodeSubProblem<T> node :
-                nodesToMerge.stream().filter(n -> n.node.type == NodeType.EXACT).toList()) {
-            Set<Decision> pathFromCurrentToRoot = constructPathToRoot(node.node);
-            pathFromCurrentToRoot.addAll(pathToRoot);
-            SubProblem<T> sub = new SubProblem<>(node.state, node.node.value, node.lb, pathFromCurrentToRoot);
-            LinkedDecisionDiagram<T> mdd = compileSubMdd(sub);
-            Optional<Double> bestWithNode = mdd.bestValue();
-            Optional<Set<Decision>> bestSol = mdd.bestSolution();
-            String failureMsg = "";
-            if (bestWithRelaxed.isPresent()
-                    && bestWithNode.isPresent()
-                    && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
-
-                failureMsg = String.format("Found relaxed node that lead to worst solution" +
-                                " (%s) than one of the merged nodes (%s).\n",
-                        df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
-
-                failureMsg += "Depth: " + relaxationDepth + "\n";
-                failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
-                failureMsg += "Merged states state:\n\t" + nodesToMerge
-                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
-                failureMsg += String.format("\n\nPath by relaxed node : %s - value: %s\n",
-                        relaxedNode.state, df.format(bestWithRelaxed.get()));
-                failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
-                        Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
-
-                failureMsg += String.format("\n\nPath by exact node : %s - value: %s\n",
-                        node.state, df.format(bestWithNode.get()));
-                failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
-                        Optional.empty());
-
-            } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
-                failureMsg = "Found relaxed node that lead to no solution but not the " +
-                        "merged ones.\n";
-                failureMsg += "Depth: " + relaxationDepth + "\n";
-                failureMsg += "Relaxed state: " + relaxedNode.state;
-                failureMsg += "\nMerged states state:\n\t" + nodesToMerge
-                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
-            }
-
-            if (!failureMsg.isEmpty()) {
-                failureMsg += "\n";
-                if (debugLevel == DebugLevel.EXTENDED) {
-                    dotStr.append(generateDotStr(relaxedNode, false));
-                    String dot = exportAsDot();
-                    try (BufferedWriter bw =
-                                 new BufferedWriter(new FileWriter(Paths.get("output",
-                                         "failed.dot").toString()))) {
-                        bw.write(dot);
-                        failureMsg += "MDD saved in output/failed.dot\n";
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                throw new RuntimeException(failureMsg);
-            }
-        }
-    }
-
-    /**
-     * Given a node sub-problem compiles the associated mdd and returns it.
-     */
-    private LinkedDecisionDiagram<T> compileSubMdd(SubProblem<T> sub) {
-        CompilationConfig<T> compilation = config.copy();
-        compilation.residual = sub;
-        compilation.exportAsDot = false;
-        compilation.debugLevel = DebugLevel.OFF;
-        compilation.compilationType = CompilationType.Exact;
-
-        LinkedDecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
-        mdd.compile();
-        return mdd;
-    }
-
-    /**
-     * Returns the set of decision leading the root to the input node.
-     *
-     * @param node The target node.
-     * @return The set of decision leading the root to the input node.
-     */
-    private Set<Decision> constructPathToRoot(Node node) {
-        Edge eb = node.best;
-        Set<Decision> path = new HashSet<>();
-        while (eb != null) {
-            Decision decision = eb.decision;
-            path.add(decision);
-            eb = eb.origin.best;
-        }
-        return path;
-    }
-
-    /**
-     * Given a set of decision going from the root to a terminal node, returns a description of
-     * the path.
-     *
-     */
-    private String describePath(Set<Decision> pathFromRoot, Optional<Integer> relaxationDepth,
-                                Optional<T> relaxedState, Optional<Double> relaxedCost) {
-        List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::var)).toList();
-        T current = config.problem.initialState();
-        int depth = 0;
-        StringBuilder msg = new StringBuilder(String.format("\t\t%-23s", depth + "."));
-        for (Decision decision : path) {
-            msg.append(current).append("\n\t");
-            msg.append(decision);
-            msg.append("\n");
-            depth++;
-
-            double cost;
-            if (relaxationDepth.isPresent() && depth == relaxationDepth.get()) {
-                cost = relaxedCost.get();
-                current = relaxedState.get();
-            } else {
-                cost = config.problem.transitionCost(current, decision);
-                current = config.problem.transition(current, decision);
-            }
-
-            msg.append(String.format("\t\t%-20s - ", depth + ". cost: " + cost));
-
-        }
-        msg.append(current);
-        return msg.toString();
-    }
-
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
@@ -700,7 +441,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
 
         for (Decision d : input.residual.getPath()) {
-            set.remove(d.var());
+            set.remove(d.variable());
         }
         return set;
     }
@@ -709,79 +450,89 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
      */
-    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking) {
-        this.currentLayer.sort(ranking);
-        this.currentLayer.subList(maxWidth, this.currentLayer.size()).clear(); // truncate
+    private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy) {
+        List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
+
+        // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.isEmpty()) continue;
+
+            cluster.sort(ranking);
+            currentLayer.add(cluster.getFirst());
+            cluster.clear();
+        }
     }
 
     /**
      * Performs a restriction of the current layer.
      *
      * @param maxWidth the maximum tolerated layer width
-     * @param ranking  a ranking that orders the nodes from the most promising (greatest)
-     *                 to the least promising (lowest)
      * @param relax    the relaxation operators which we will use to merge nodes
      */
-    private void relax(final int maxWidth, final NodeSubProblemComparator<T> ranking,
-                       final Relaxation<T> relax) {
-        this.currentLayer.sort(ranking);
+    private void relax(final int maxWidth,
+                       final Relaxation<T> relax,
+                       final ReductionStrategy<T> relaxStrategy,
+                       Set<Integer> variables) {
+        // generates clusters
+        List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
+        currentLayer.clear();
 
-        final List<NodeSubProblem<T>> keep = this.currentLayer.subList(0, maxWidth - 1);
-        final List<NodeSubProblem<T>> merge = this.currentLayer.subList(maxWidth - 1, currentLayer.size());
-        final T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(merge.iterator()));
-
-        // is there another state in the kept partition having the same state as the merged state ?
-        NodeSubProblem<T> mergedNode = null;
-        boolean fresh = true;
-        for (NodeSubProblem<T> n : keep) {
-            if (n.state.equals(merged)) {
-                mergedNode = n;
-                fresh = false;
-                break;
+        // For each cluster, merge all the nodes together and add the new node to the layer.
+        for (List<NodeSubProblem<T>> cluster : clusters) {
+            if (cluster.size() == 1) {
+                currentLayer.add(cluster.getFirst());
+                continue;
             }
-        }
-        // when the merged node is new, set its type to relaxed
-        if (mergedNode == null) {
-            Node newNode = new Node(Double.POSITIVE_INFINITY);
-            newNode.type = NodeType.RELAXED;
-            mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
-        }
 
-        // redirect and relax all arcs entering the merged node
-        for (NodeSubProblem<T> drop : merge) {
-            mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
+            if (cluster.isEmpty()) {
+                continue;
+            }
 
-            for (Edge e : drop.node.edges) {
-                double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
-
-                double value = saturatedAdd(e.origin.value, rcost);
-                e.weight = rcost;
-                // if there exists an entring arc with relaxed origin, set the merged node to relaxed
-                if (e.origin.type == NodeType.RELAXED) {
+            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator<>(cluster.iterator()));
+            NodeSubProblem<T> mergedNode = null;
+            for (NodeSubProblem<T> n : currentLayer) {
+                if (n.state.equals(merged)) {
+                    mergedNode = n;
                     mergedNode.node.type = NodeType.RELAXED;
-                }
-                mergedNode.node.edges.add(e);
-                if (value < mergedNode.node.value) {
-                    mergedNode.node.value = value;
-                    mergedNode.node.best = e;
+                    break;
                 }
             }
-        }
 
+            if (mergedNode == null) {
+                Node newNode = new Node(Double.POSITIVE_INFINITY);
+                newNode.type = NodeType.RELAXED;
+                mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
+                currentLayer.add(mergedNode);
+            }
 
-        if (debugLevel != DebugLevel.OFF) {
-            checkRelaxation(merge, mergedNode);
-        }
+            // redirect and relax all arcs entering the merged node
+            for (NodeSubProblem<T> drop : cluster) {
+                mergedNode.lb = Math.min(mergedNode.lb, drop.lb);
 
+                for (Edge e : drop.node.edges) {
+                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);
 
-        // delete the nodes that have been merged
-        merge.clear();
-        // append the newly merged node if needed
-        if (fresh) {
-            currentLayer.add(mergedNode);
+                    double value = saturatedAdd(e.origin.value, rcost);
+                    e.weight = rcost;
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+                    if (e.origin.type == NodeType.RELAXED) {
+                        mergedNode.node.type = NodeType.RELAXED;
+                    }
+
+                    mergedNode.node.edges.add(e);
+                    if (value < mergedNode.node.value) {
+                        mergedNode.node.value = value;
+                        mergedNode.node.best = e;
+                    }
+                }
+            }
+
+            mergedNode.node.flb = config.flb.fastLowerBound(merged, variables);
+            if (debugLevel != DebugLevel.OFF) {
+                checkRelaxation(cluster, mergedNode);
+            }
         }
     }
 
@@ -859,73 +610,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
-     *
-     * @param node      The node to add to the .dot string
-     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
-     * @return A .dot formatted string containing the node and the edges leading to this node.
-     */
-    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
-        DecimalFormat df = new DecimalFormat("#.##########");
-
-        if (lastLayer) {
-            node.lb = config.flb.fastLowerBound(node.state, new HashSet<>());
-        }
-        String nodeStr = "";
-        if (lastLayer) {
-            nodeStr = String.format(
-                    "\"%s\ng: %s\"",
-                    node.state,
-                    df.format(node.node.value)
-            );
-        } else {
-            nodeStr = String.format(
-                    "\"%s\nf: %s - g: %s\"",
-                    node.state,
-                    df.format(node.lb),
-                    df.format(node.node.value)
-            );
-        }
-
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.node.hashCode());
-        sb.append(" [label=").append(nodeStr);
-        if (node.node.type == NodeType.RELAXED) {
-            sb.append(", shape=box, tooltip=\"Relaxed node\"");
-        } else {
-            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
-        }
-        if (lastLayer) {
-            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
-            sb.append(", tooltip=\"Terminal node\"");
-        }
-        sb.append("];\n");
-
-        for (Edge e : node.node.edges) {
-            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
-                    " [label=" + df.format(e.weight) +
-                    ", tooltip=\"" + e.decision.toString() + "\"";
-            edgesDotStr.put(e.hashCode(), edgeStr);
-        }
-        return sb;
-    }
-
-    /**
-     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
-     *
-     * @param edgeHash The hashcode of the edge to color.
-     * @param color    HTML string for the color of the edge
-     */
-    private void updateBestEdgeColor(int edgeHash, String color) {
-        String edgeStr = edgesDotStr.get(edgeHash);
-        if (edgeStr != null) {
-            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
-            edgesDotStr.replace(edgeHash, edgeStr);
         }
     }
 
@@ -1021,6 +705,408 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
     }
+
+
+    // ----- DEBUG AND EXPORT STUFF -----
+
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
+    private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        if (lastLayer) {
+            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet<>());
+        }
+        String nodeStr = "\"%s\nh: %s - g: %s\"".formatted(
+                node.state,
+                df.format(node.node.flb),
+                df.format(node.node.value)
+        );
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.node.hashCode());
+        sb.append(" [label=").append(nodeStr);
+        if (node.node.type == NodeType.RELAXED) {
+            sb.append(", shape=box, tooltip=\"Relaxed node\"");
+        } else {
+            sb.append(", style=rounded, shape=rectangle, tooltip=\"Exact node\"");
+        }
+        if (lastLayer) {
+            sb.append(", style=\"filled, rounded\", shape=rectangle, color=black, fontcolor=white");
+            sb.append(", tooltip=\"Terminal node\"");
+        }
+        sb.append("];\n");
+
+        for (Edge e : node.node.edges) {
+            String edgeStr = e.origin.hashCode() + " -> " + node.node.hashCode() +
+                    " [label=" + df.format(e.weight) +
+                    ", tooltip=\"" + e.decision.toString() + "\"";
+            edgesDotStr.put(e.hashCode(), edgeStr);
+        }
+        return sb;
+    }
+
+    /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     * @param color    HTML string for the color of the edge
+     */
+    private void updateBestEdgeColor(int edgeHash, String color) {
+        String edgeStr = edgesDotStr.get(edgeHash);
+        if (edgeStr != null) {
+            edgeStr += ", color=\"" + color + "\", fontcolor=\"" + color + "\"";
+            edgesDotStr.replace(edgeHash, edgeStr);
+        }
+    }
+
+
+    /**
+     * Finds the shortest path between two nodes in the decision diagram using a Dijkstra variant.
+     * <p>
+     * Since nodes only store incoming edges, the search starts from the target node
+     * and explores the graph backwards until the source node is reached.
+     * </p>
+     *
+     * @param source the starting node of the path
+     * @param target the ending node of the path
+     * @return a list of decisions representing the shortest path from source to target
+     */
+    private List<Decision> shortestPath(Node source, Node target) {
+        if (source == null || target == null) {
+            return Collections.emptyList();
+        }
+
+        if (source.equals(target)) {
+            return Collections.emptyList();
+        }
+
+        record NodeDist(Node node, double dist) implements Comparable<NodeDist> {
+            @Override
+            public int compareTo(NodeDist o) {
+                return Double.compare(this.dist, o.dist);
+            }
+        }
+
+        final Map<Node, Double> distances = new HashMap<>();
+        final Map<Node, Edge> bestEdgeToSuccessor = new HashMap<>();
+        final Map<Node, Node> successors = new HashMap<>();
+        PriorityQueue<NodeDist> pq = new PriorityQueue<>();
+
+        distances.put(target, 0.0);
+        pq.add(new NodeDist(target, 0.0));
+
+        while (!pq.isEmpty()) {
+            NodeDist current = pq.poll();
+            Node u = current.node();
+            double d = current.dist();
+
+            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) {
+                continue;
+            }
+
+            if (u.equals(source)) {
+                break;
+            }
+
+            for (Edge e : u.edges) {
+                Node v = e.origin;
+                if (v == null) continue;
+
+                double newDist = d + e.weight;
+                if (newDist < distances.getOrDefault(v, Double.POSITIVE_INFINITY)) {
+                    distances.put(v, newDist);
+                    bestEdgeToSuccessor.put(v, e);
+                    successors.put(v, u);
+                    pq.add(new NodeDist(v, newDist));
+                }
+            }
+        }
+
+        if (!bestEdgeToSuccessor.containsKey(source)) {
+            return Collections.emptyList();
+        }
+
+        List<Decision> path = new ArrayList<>();
+        Node curr = source;
+        while (curr != null && !curr.equals(target)) {
+            Edge e = bestEdgeToSuccessor.get(curr);
+            if (e == null) break;
+            path.add(e.decision);
+            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(e.hashCode(), "#ff0000");
+            curr = successors.get(curr);
+        }
+        return path;
+    }
+
+    /**
+     * Given a node, returns the list of decisions taken from the root to reach this node.
+     *
+     * @param node A node of the mdd
+     * @return The list of decisions took from the root to reach the input node.
+     */
+    private LinkedList<PathInfo> constructPathFromRoot(Node node, double lengthToEnd) {
+        LinkedList<PathInfo> path = new LinkedList<>();
+        Edge eb = node.best;
+        double currentLength = lengthToEnd;
+        while (eb != null) {
+            currentLength += eb.weight;
+            PathInfo info = new PathInfo(eb.decision, eb.origin.flb, currentLength);
+            path.addFirst(info);
+            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(eb.hashCode(), "#ff0000");
+            eb = eb.origin.best;
+
+        }
+        return path;
+    }
+
+
+    /**
+     * Given a list of decisions returns string describing the states from root.
+     *
+     * @param pathFromRoot A list of decision.
+     * @param problem      The problem linked to this mdd.
+     * @return A list of decisions of the generated states from root.
+     */
+    private LinkedList<String> constructStateDescriptionFromRoot(LinkedList<PathInfo> pathFromRoot,
+                                                                 Problem<T> problem) {
+        LinkedList<String> states = new LinkedList<>();
+        T current = problem.initialState();
+        int depth = 0;
+        StringBuilder msg = new StringBuilder("%-23s".formatted(depth + "."));
+        for (PathInfo pathInfo : pathFromRoot) {
+            msg.append("length to end: %6s".formatted(pathInfo.lengthToEnd));
+            msg.append(" - flb: %6s".formatted(pathInfo.flbOfOrigin));
+            if (pathInfo.flbOfOrigin - 1e-10 > pathInfo.lengthToEnd) msg.append("!");
+            msg.append(" - ").append(current.toString());
+            msg.append("\n").append(pathInfo.decision);
+            states.addLast(msg.toString());
+            depth++;
+            msg = new StringBuilder("%-20s - ".formatted(depth + ". cost: " + problem.transitionCost(current,
+                    pathInfo.decision)));
+            current = problem.transition(current, pathInfo.decision);
+
+
+        }
+        states.addLast(msg.toString());
+        states.addLast(current.toString());
+        return states;
+    }
+
+    /**
+     * Checks if the {@link FastLowerBound} is well-defined.
+     * This method constructs longest path from terminal nodes and checks for each node the mdd
+     * if the associated fast lower bound is larger than the identified path.
+     *
+     */
+    private void checkFlb(Problem<T> problem) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+        for (Node last : nextLayer.values()) {
+            //For each node we save the shortest path to last
+            LinkedHashMap<Node, Double> parent = new LinkedHashMap<>();
+            parent.put(last, 0.0);
+            while (!parent.isEmpty()) {
+                Entry<Node, Double> current = parent.pollFirstEntry();
+                if (current.getKey().flb - 1e-10 > current.getValue()) {
+                    LinkedList<PathInfo> pathFromRoot = constructPathFromRoot(current.getKey(),
+                            current.getValue());
+                    List<Decision> fullPath = new ArrayList<>();
+                    pathFromRoot.forEach(pi -> fullPath.add(pi.decision()));
+                    fullPath.addAll(shortestPath(current.getKey(), last));
+
+                    LinkedList<String> failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);
+                    String lastState = failedState.getLast();
+                    lastState = " - flb: %6s".formatted(current.getKey().flb) + "! - " + lastState;
+                    lastState = "length to end: %6s".formatted(current.getValue()) + lastState;
+                    failedState.removeLast();
+                    lastState = failedState.getLast() + lastState;
+                    failedState.removeLast();
+                    failedState.addLast(lastState);
+                    String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining("\n\t"));
+                    String failureMsg = ("Found node with lower bound (%s) bigger than its " +
+                            "shortest path (%s)\n").formatted(df.format(current.getKey().flb),
+                            df.format(current.getValue()));
+                    failureMsg += "Path from root: \n\t%s\n\n".formatted(statesStr);
+                    failureMsg += "Failing state: %s\n".formatted(failedState.getLast());
+                    failureMsg += "\nFull failing path:\n";
+                    failureMsg += fullPath
+                            .stream()
+                            .map(d -> "\t" + d.toString())
+                            .collect(Collectors.joining("\n"));
+                    failureMsg += "\n";
+                    if (debugLevel == DebugLevel.EXTENDED) {
+                        String dot = exportAsDot();
+                        try (BufferedWriter bw =
+                                     new BufferedWriter(new FileWriter(Paths.get("output",
+                                             "failed.dot").toString()))) {
+                            bw.write(dot);
+                            failureMsg += "MDD saved in output/failed.dot\n";
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    throw new RuntimeException(failureMsg);
+                }
+
+                for (Edge edge : current.getKey().edges) {
+                    double shortestFromParent = parent.getOrDefault(edge.origin, Double.POSITIVE_INFINITY);
+                    parent.put(edge.origin, Double.min(shortestFromParent, edge.weight + current.getValue()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether the relaxation is coherent. This method compiles mdd starting from a
+     * relaxed node and each merged nodes. Then, it compares the best values of each solution.
+     * The path passing through the relaxed node must be a lower bound.
+     *
+     */
+    private void checkRelaxation(List<NodeSubProblem<T>> nodesToMerge,
+                                 NodeSubProblem<T> relaxedNode) {
+        DecimalFormat df = new DecimalFormat("#.##########");
+
+        Set<Decision> pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);
+        pathFromRelaxedToRoot.addAll(pathToRoot);
+        SubProblem<T> relaxedSub = new SubProblem<>(relaxedNode.state, relaxedNode.node.value,
+                relaxedNode.lb, pathFromRelaxedToRoot);
+
+        int relaxationDepth = relaxedSub.getDepth();
+        LinkedDecisionDiagram<T> relaxedMdd = compileSubMdd(relaxedSub);
+        Optional<Double> bestWithRelaxed = relaxedMdd.bestValue();
+        Optional<Set<Decision>> bestRelaxedSol = relaxedMdd.bestSolution();
+        Optional<Double> bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);
+
+        for (NodeSubProblem<T> node :
+                nodesToMerge.stream().filter(n -> n.node.type == NodeType.EXACT).toList()) {
+            Set<Decision> pathFromCurrentToRoot = constructPathToRoot(node.node);
+            pathFromCurrentToRoot.addAll(pathToRoot);
+            SubProblem<T> sub = new SubProblem<>(node.state, node.node.value, node.lb, pathFromCurrentToRoot);
+            LinkedDecisionDiagram<T> mdd = compileSubMdd(sub);
+            Optional<Double> bestWithNode = mdd.bestValue();
+            Optional<Set<Decision>> bestSol = mdd.bestSolution();
+            String failureMsg = "";
+            if (bestWithRelaxed.isPresent()
+                    && bestWithNode.isPresent()
+                    && bestWithRelaxed.get() - 1e-10 > bestWithNode.get()) {
+
+                failureMsg = "Found relaxed node that lead to worst solution" +
+                        " (%s) than one of the merged nodes (%s).\n".formatted(
+                                df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));
+
+                failureMsg += "Depth: " + relaxationDepth + "\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state + "\n";
+                failureMsg += "Merged states state:\n\t" + nodesToMerge
+                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
+                failureMsg += "\n\nPath by relaxed node : %s - value: %s\n".formatted(
+                        relaxedNode.state, df.format(bestWithRelaxed.get()));
+                failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),
+                        Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);
+
+                failureMsg += "\n\nPath by exact node : %s - value: %s\n".formatted(
+                        node.state, df.format(bestWithNode.get()));
+                failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),
+                        Optional.empty());
+
+            } else if (bestWithRelaxed.isEmpty() && bestWithNode.isPresent()) {
+                failureMsg = "Found relaxed node that lead to no solution but not the " +
+                        "merged ones.\n";
+                failureMsg += "Depth: " + relaxationDepth + "\n";
+                failureMsg += "Relaxed state: " + relaxedNode.state;
+                failureMsg += "\nMerged states state:\n\t" + nodesToMerge
+                        .stream().map(n -> n.state.toString()).collect(Collectors.joining("\n\t"));
+            }
+
+            if (!failureMsg.isEmpty()) {
+                failureMsg += "\n";
+                if (debugLevel == DebugLevel.EXTENDED) {
+                    dotStr.append(generateDotStr(relaxedNode, false));
+                    String dot = exportAsDot();
+                    try (BufferedWriter bw =
+                                 new BufferedWriter(new FileWriter(Paths.get("output",
+                                         "failed.dot").toString()))) {
+                        bw.write(dot);
+                        failureMsg += "MDD saved in output/failed.dot\n";
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                throw new RuntimeException(failureMsg);
+            }
+        }
+    }
+
+    /**
+     * Given a node sub-problem compiles the associated mdd and returns it.
+     */
+    private LinkedDecisionDiagram<T> compileSubMdd(SubProblem<T> sub) {
+        CompilationConfig<T> compilation = config.copy();
+        compilation.residual = sub;
+        compilation.exportAsDot = false;
+        compilation.debugLevel = DebugLevel.OFF;
+        compilation.compilationType = CompilationType.Exact;
+
+        LinkedDecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
+        mdd.compile();
+        return mdd;
+    }
+
+    /**
+     * Returns the set of decision leading the root to the input node.
+     *
+     * @param node The target node.
+     * @return The set of decision leading the root to the input node.
+     */
+    private Set<Decision> constructPathToRoot(Node node) {
+        Edge eb = node.best;
+        Set<Decision> path = new HashSet<>();
+        while (eb != null) {
+            Decision decision = eb.decision;
+            path.add(decision);
+            eb = eb.origin.best;
+        }
+        return path;
+    }
+
+    /**
+     * Given a set of decision going from the root to a terminal node, returns a description of
+     * the path.
+     *
+     */
+    private String describePath(Set<Decision> pathFromRoot, Optional<Integer> relaxationDepth,
+                                Optional<T> relaxedState, Optional<Double> relaxedCost) {
+        List<Decision> path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::variable)).toList();
+        T current = config.problem.initialState();
+        int depth = 0;
+        StringBuilder msg = new StringBuilder("\t\t%-23s".formatted(depth + "."));
+        for (Decision decision : path) {
+            msg.append(current).append("\n\t");
+            msg.append(decision);
+            msg.append("\n");
+            depth++;
+
+            double cost;
+            if (relaxationDepth.isPresent() && depth == relaxationDepth.get()) {
+                cost = relaxedCost.get();
+                current = relaxedState.get();
+            } else {
+                cost = config.problem.transitionCost(current, decision);
+                current = config.problem.transition(current, decision);
+            }
+
+            msg.append("\t\t%-20s - ".formatted(depth + ". cost: " + cost));
+
+        }
+        msg.append(current);
+        return msg.toString();
+    }
+
 
     private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
     }

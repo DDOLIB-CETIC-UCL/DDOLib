@@ -35,16 +35,16 @@ public class NestedSALBPDdoMain {
         // 2. .alb 格式（原始格式）
 
         // 【当前使用】CSV格式 - 20任务数据集
+//        final String instance = args.length == 0
+//                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_225.csv").toString()
+//                : args[0];
+
         final String instance = args.length == 0
-                ? Path.of("data", "generated_SALBP1", "small data set_n=20", "20_212.csv").toString()
+                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_225.csv").toString()
                 : args[0];
 
 //        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "medium data set_n=50", "50_56.csv").toString()
-//                : args[0];
-
-//        final String instance = args.length == 0
-//                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_318.csv").toString()
+//                ? Path.of("data", "generated_SALBP1", "large data set_n=100", "100_9.csv").toString()
 //                : args[0];
 
         // 【备选】ALB格式 - 数据集
@@ -108,12 +108,12 @@ public class NestedSALBPDdoMain {
 
             @Override
             public boolean useCache() {
-                return false;
+                return true;
             }
 
             @Override
             public boolean exportDot() {
-                return true;
+                return false;
             }
         };
 

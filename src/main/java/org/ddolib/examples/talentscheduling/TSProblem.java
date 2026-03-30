@@ -38,35 +38,29 @@ import java.util.Optional;
 public class TSProblem implements Problem<TSState> {
 
     /**
+     * The optimal solution value if known (optional, used for testing and benchmarking).
+     */
+    public final Optional<Double> optimal;
+    /**
      * Number of scenes in the instance.
      */
     final int nbScene;
-
     /**
      * Number of actors in the instance.
      */
     final int nbActors;
-
     /**
      * Cost for each actor per day.
      */
     final int[] costs;
-
     /**
      * Duration of each scene.
      */
     final int[] duration;
-
     /**
      * For each scene, the set of actors required to perform that scene.
      */
     final BitSet[] actors;
-
-    /**
-     * The optimal solution value if known (optional, used for testing and benchmarking).
-     */
-    public final Optional<Double> optimal;
-
     /**
      * Optional descriptive name for the instance.
      */
@@ -157,11 +151,6 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    @Override
     public int nbVars() {
         return nbScene;
     }
@@ -170,7 +159,8 @@ public class TSProblem implements Problem<TSState> {
     public TSState initialState() {
         BitSet scenes = new BitSet(nbScene);
         scenes.set(0, nbScene, true); // All scenes must be performed
-        return new TSState(scenes, new BitSet(nbScene));
+        // return new TSState(scenes, new BitSet(nbScene));
+        return new TSState(scenes, new BitSet(nbScene), onLocationActors(scenes, new BitSet(nbScene)));
     }
 
     @Override
@@ -202,15 +192,16 @@ public class TSProblem implements Problem<TSState> {
     public TSState transition(TSState state, Decision decision) {
         BitSet newRemaining = (BitSet) state.remainingScenes().clone();
         BitSet newMaybe = (BitSet) state.maybeScenes().clone();
-        newRemaining.set(decision.val(), false);
-        newMaybe.set(decision.val(), false);
+        newRemaining.set(decision.value(), false);
+        newMaybe.set(decision.value(), false);
 
-        return new TSState(newRemaining, newMaybe);
+        // return new TSState(newRemaining, newMaybe);
+        return new TSState(newRemaining, newMaybe, onLocationActors(newRemaining, newMaybe));
     }
 
     @Override
     public double transitionCost(TSState state, Decision decision) {
-        int scene = decision.val();
+        int scene = decision.value();
 
         // All the already present actors (playing for this scene or waiting)
         // Actors no longer needed are discarded from this BitSet.
@@ -222,48 +213,12 @@ public class TSProblem implements Problem<TSState> {
             cost += costs[actor] * duration[scene];
         }
 
-
         return cost;
     }
 
-
-    /**
-     * Returns the set of actors already present on location at the current state,
-     * i.e., actors involved in past scenes and needed for future scenes.
-     *
-     * @param state Current state of the MDD.
-     * @return BitSet of actors currently on location.
-     */
-    public BitSet onLocationActors(TSState state) {
-        BitSet before = new BitSet(); //Actors for past scenes
-        BitSet after = new BitSet(); // Actors for future scenes
-
-        for (int i = 0; i < nbScene; i++) {
-            if (!state.maybeScenes().get(i)) {
-                if (state.remainingScenes().get(i)) after.or(actors[i]);
-                else before.or(actors[i]);
-            }
-        }
-        after.and(before); // Already present actors
-        return after;
-    }
-
     @Override
-    public String toString() {
-        if (name.isPresent()) {
-            return name.get();
-        } else {
-            String nbSceneStr = String.format("Nb Scene: %d%n", nbScene);
-            String nbActorsStr = String.format("Nb Actors: %d%n", nbActors);
-            String costStr = String.format("Costs: %s%n", Arrays.toString(costs));
-            String durationStr = String.format("Duration: %s%n", Arrays.toString(duration));
-            StringBuilder actorsStr = new StringBuilder();
-            for (int i = 0; i < actors.length; i++) {
-                actorsStr.append(String.format("Scene %d needs actors: %s%n", i, actors[i]));
-            }
-
-            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
-        }
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override
@@ -304,5 +259,66 @@ public class TSProblem implements Problem<TSState> {
         }
 
         return value;
+    }
+
+    public int sceneCost(int scene) {
+        int sum = 0;
+        for (int actor = this.actors[scene].nextSetBit(0); actor >= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {
+            sum += costs[actor];
+        }
+        return sum;
+    }
+
+    /**
+     * Returns the set of actors already present on location at the current state,
+     * i.e., actors involved in past scenes and needed for future scenes.
+     *
+     * @param state Current state of the MDD.
+     * @return BitSet of actors currently on location.
+     */
+    public BitSet onLocationActors(TSState state) {
+        BitSet before = new BitSet(); //Actors for past scenes
+        BitSet after = new BitSet(); // Actors for future scenes
+
+        for (int i = 0; i < nbScene; i++) {
+            if (!state.maybeScenes().get(i)) {
+                if (state.remainingScenes().get(i)) after.or(actors[i]);
+                else before.or(actors[i]);
+            }
+        }
+        after.and(before); // Already present actors
+        return after;
+    }
+
+    public BitSet onLocationActors(BitSet remainingScenes, BitSet maybeScenes) {
+        BitSet before = new BitSet(); //Actors for past scenes
+        BitSet after = new BitSet(); // Actors for future scenes
+
+        for (int i = 0; i < nbScene; i++) {
+            if (!maybeScenes.get(i)) {
+                if (remainingScenes.get(i)) after.or(actors[i]);
+                else before.or(actors[i]);
+            }
+        }
+        after.and(before); // Already present actors
+        return after;
+    }
+
+    @Override
+    public String toString() {
+        if (name.isPresent()) {
+            return name.get();
+        } else {
+            String nbSceneStr = String.format("Nb Scene: %d%n", nbScene);
+            String nbActorsStr = String.format("Nb Actors: %d%n", nbActors);
+            String costStr = String.format("Costs: %s%n", Arrays.toString(costs));
+            String durationStr = String.format("Duration: %s%n", Arrays.toString(duration));
+            StringBuilder actorsStr = new StringBuilder();
+            for (int i = 0; i < actors.length; i++) {
+                actorsStr.append(String.format("Scene %d needs actors: %s%n", i, actors[i]));
+            }
+
+            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;
+        }
     }
 }

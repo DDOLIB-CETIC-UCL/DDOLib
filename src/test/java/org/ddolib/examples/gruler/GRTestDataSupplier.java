@@ -5,7 +5,6 @@ import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
@@ -25,6 +24,11 @@ public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
             }
 
             @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new GRFastLowerBound();
+            }
+
+            @Override
             public VerbosityLevel verbosityLevel() {
                 return VerbosityLevel.SILENT;
             }
@@ -37,16 +41,6 @@ public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
             @Override
             public StateRanking<GRState> ranking() {
                 return new GRRanking();
-            }
-
-            @Override
-            public FastLowerBound lowerBound() {
-                return new FastLowerBound() {
-                    @Override
-                    public double fastLowerBound(Object state, Set variables) {
-                        return 0;
-                    }
-                };
             }
         };
     }

@@ -756,7 +756,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     @Override
     public NestedSALBPState transition(NestedSALBPState state, Decision decision) {
-        int decisionVal = decision.val();
+        int decisionVal = decision.value();
         int task = decisionVal / 2;
         int robotFlag = decisionVal % 2;
         boolean assignRobot = (robotFlag == 1);
@@ -856,7 +856,7 @@ public class NestedSALBPProblem implements Problem<NestedSALBPState> {
      */
     @Override
     public double transitionCost(NestedSALBPState state, Decision decision) {
-        int decisionVal = decision.val();
+        int decisionVal = decision.value();
         int task = decisionVal / 2;
 
         // 🔥 如果任务在 maybeCompletedTasks 中，乐观估计代价为 0

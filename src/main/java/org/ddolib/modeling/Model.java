@@ -2,7 +2,6 @@ package org.ddolib.modeling;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.util.debug.DebugLevel;
@@ -52,6 +51,20 @@ public interface Model<T> {
     }
 
     /**
+     * Returns a precomputed upper bound on the optimal value.
+     *
+     * <p> This bound allows to start the search with a better upper bound and start pruning
+     * earlier.</p>
+     *
+     * <p>By default, it returns {@code Double.POSITIVE_INFINITY}</p>
+     *
+     * @return a precomputed upper bound on the optimal value
+     */
+    default double upperBound() {
+        return Double.POSITIVE_INFINITY;
+    }
+
+    /**
      * Returns the dominance checker used to prune dominated states from the search space.
      * <p>
      * By default, this method provides a {@link DefaultDominanceChecker} instance,
@@ -62,17 +75,6 @@ public interface Model<T> {
      */
     default DominanceChecker<T> dominance() {
         return new DefaultDominanceChecker<>();
-    }
-
-    /**
-     * Callback invoked when a new solution is found during the search process.
-     * <p>
-     * This method is a hook for monitoring or logging purposes and does nothing by default.
-     * </p>
-     *
-     * @param statistics a snapshot of the search statistics at the time the solution was found
-     */
-    default void onSolution(SearchStatistics statistics) {
     }
 
     /**
@@ -110,5 +112,75 @@ public interface Model<T> {
      */
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
+    }
+
+
+    /**
+     * Returns a copy of this model but without dominance.
+     *
+     * @return A copy of this model but without dominance.
+     */
+    default Model<T> disableDominance() {
+        return new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return Model.this.lowerBound();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return Model.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but without {@link FastLowerBound}.
+     *
+     * @return A copy of this model but without {@link FastLowerBound}.
+     */
+    default Model<T> disableLowerBound() {
+        return new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return Model.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return Model.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+        };
+
     }
 }

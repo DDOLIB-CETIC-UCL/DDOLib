@@ -1,6 +1,7 @@
 package org.ddolib.examples.gruler;
 
 import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -34,13 +35,17 @@ public class GRAstarMain {
      * @throws IOException if an I/O error occurs while printing the solution
      */
     public static void main(final String[] args) throws IOException {
-        GRProblem problem = new GRProblem(8);
+        GRProblem problem = new GRProblem(10);
         final Model<GRState> model = new Model<>() {
             @Override
             public Problem<GRState> problem() {
                 return problem;
             }
 
+            @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new GRFastLowerBound();
+            }
         };
 
         Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {

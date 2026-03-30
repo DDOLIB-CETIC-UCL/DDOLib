@@ -42,8 +42,10 @@ public class KSAstarMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
+                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
+
         final Model<Integer> model = new Model<>() {
             @Override
             public Problem<Integer> problem() {
@@ -64,6 +66,7 @@ public class KSAstarMain {
         Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
+
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

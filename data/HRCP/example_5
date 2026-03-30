@@ -1,0 +1,12 @@
+# HRCP instance – 5 tasks with precedences
+# Format: first line = n [optimal]
+# then n lines of: humanDur robotDur collabDur numPreds [pred1 pred2 ...]
+# Precedence graph:  0 -> 2 -> 4
+#                    1 -> 3 -> 4
+# optimal makespan = 13
+5 13
+5 100000 3 0
+3 4 2 0
+100000 2 3 1 0
+4 3 100000 1 1
+6 5 4 2 2 3

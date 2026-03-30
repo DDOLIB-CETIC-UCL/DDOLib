@@ -48,46 +48,40 @@ import java.util.stream.IntStream;
  * @see ALPDecision
  */
 public class ALPProblem implements Problem<ALPState> {
+    // When no plane has yet landed the previous class is -1.
+    public static final int DUMMY = -1;
     /**
      * Number of aircraft classes.
      */
     public final int nbClasses;
-
     /**
      * Total number of aircraft.
      */
     public final int nbAircraft;
-
     /**
      * Number of available runways.
      */
     public final int nbRunways;
-
     /**
      * Mapping of each aircraft to its class.
      */
     public final int[] aircraftClass;
-
     /**
      * Target landing time for each aircraft.
      */
     public final int[] aircraftTarget;
-
     /**
      * Deadline for each aircraft.
      */
     public final int[] aircraftDeadline;
-
     /**
      * Minimum separation times between aircraft classes.
      */
     public final int[][] classTransitionCost;
-
     /**
      * Known optimal value, if available.
      */
     public final Optional<Double> optimal;
-
     /**
      * Used to know which aircraft of each class will be next to land.
      */
@@ -96,7 +90,6 @@ public class ALPProblem implements Problem<ALPState> {
      * Minimal time between a "no_class" aircraft and "class" aircraft.
      */
     int[] minSeparationTo;
-
     private Optional<String> name = Optional.empty();
 
     /**
@@ -211,14 +204,6 @@ public class ALPProblem implements Problem<ALPState> {
         }
     }
 
-    // When no plane has yet landed the previous class is -1.
-    public static final int DUMMY = -1;
-
-    @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
     /**
      * Computes the arrival time of an aircraft on a given runway.
      *
@@ -324,12 +309,12 @@ public class ALPProblem implements Problem<ALPState> {
 
     @Override
     public ALPState transition(ALPState state, Decision decision) {
-        if (decision.val() == DUMMY) {
+        if (decision.value() == DUMMY) {
             // Latest decision says that there are no plane to land left.
             return new ALPState(state);
         } else {
             // Generating the new state.
-            ALPDecision alpDecision = fromDecision(decision.val());
+            ALPDecision alpDecision = fromDecision(decision.value());
             int aircraftClass = alpDecision.aircraftClass;
             int runway = alpDecision.runway;
             int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);
@@ -345,10 +330,10 @@ public class ALPProblem implements Problem<ALPState> {
     @Override
     public double transitionCost(ALPState state, Decision decision) {
         // The delta between the arrival time and the earliest arrival time.
-        if (decision.val() == DUMMY) {
+        if (decision.value() == DUMMY) {
             return 0;
         } else {
-            ALPDecision alpDecision = fromDecision(decision.val());
+            ALPDecision alpDecision = fromDecision(decision.value());
             int aircraftClass = alpDecision.aircraftClass;
             int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);
             return getArrivalTime(state.runwayStates, aircraft, alpDecision.runway) - aircraftTarget[aircraft];
@@ -356,10 +341,8 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     @Override
-    public String toString() {
-        String out = String.format("ALP problem with %d aircrafts, %d classes and %d runways",
-                nbAircraft, nbClasses, nbRunways);
-        return name.orElse(out);
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override
@@ -406,6 +389,13 @@ public class ALPProblem implements Problem<ALPState> {
         }
 
         return value;
+    }
+
+    @Override
+    public String toString() {
+        String out = String.format("ALP problem with %d aircrafts, %d classes and %d runways",
+                nbAircraft, nbClasses, nbRunways);
+        return name.orElse(out);
     }
 }
 

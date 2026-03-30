@@ -207,16 +207,16 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         int[] newCut = new int[nbVars()];
 
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
-            if (i != decision.val()) {
+            if (i != decision.value()) {
                 newMust.set(i);
-                newCut[i] = state.cut()[i] + flows[decision.val()][i];
+                newCut[i] = state.cut()[i] + flows[decision.value()][i];
             }
         }
 
         for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
-            if (i != decision.val()) {
+            if (i != decision.value()) {
                 newMaybe.set(i);
-                newCut[i] = state.cut()[i] + flows[decision.val()][i];
+                newCut[i] = state.cut()[i] + flows[decision.value()][i];
             }
         }
 
@@ -229,7 +229,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         int cut = 0;
         int complete = nbVars() - (state.depth() + 1);
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {
-            if (i != decision.val()) {
+            if (i != decision.value()) {
                 cut += state.cut()[i];
                 complete--;
             }
@@ -243,32 +243,14 @@ public class SRFLPProblem implements Problem<SRFLPState> {
             // values.
             ArrayList<Integer> maybesCut = new ArrayList<>();
             for (int i = state.maybe().nextSetBit(0); i >= 0; i = state.maybe().nextSetBit(i + 1)) {
-                if (i != decision.val()) maybesCut.add(i);
+                if (i != decision.value()) maybesCut.add(i);
             }
 
             Collections.sort(maybesCut);
             cut += maybesCut.subList(0, complete).stream().mapToInt(x -> x).sum();
         }
 
-        return cut * lengths[decision.val()];
-    }
-
-    @Override
-    public String toString() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("SRFLP Problem:\n");
-        String lengthsStr = Arrays.stream(lengths)
-                .mapToObj(x -> String.format("%2s", x))
-                .collect(Collectors.joining(", "));
-        sb.append("Lengths: ").append(lengthsStr).append("\n");
-        String flowStr = Arrays.stream(flows)
-                .map(row -> Arrays.stream(row)
-                        .mapToObj(x -> String.format("%2s", x))
-                        .collect(Collectors.joining(" ")))
-                .collect(Collectors.joining("\n"));
-        sb.append("Flows: \n").append(flowStr);
-        return name.orElse(sb.toString());
+        return cut * lengths[decision.value()];
     }
 
     @Override
@@ -303,5 +285,23 @@ public class SRFLPProblem implements Problem<SRFLPState> {
         }
 
         return value;
+    }
+
+    @Override
+    public String toString() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("SRFLP Problem:\n");
+        String lengthsStr = Arrays.stream(lengths)
+                .mapToObj(x -> String.format("%2s", x))
+                .collect(Collectors.joining(", "));
+        sb.append("Lengths: ").append(lengthsStr).append("\n");
+        String flowStr = Arrays.stream(flows)
+                .map(row -> Arrays.stream(row)
+                        .mapToObj(x -> String.format("%2s", x))
+                        .collect(Collectors.joining(" ")))
+                .collect(Collectors.joining("\n"));
+        sb.append("Flows: \n").append(flowStr);
+        return name.orElse(sb.toString());
     }
 }

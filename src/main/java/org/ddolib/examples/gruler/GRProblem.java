@@ -64,17 +64,6 @@ public class GRProblem implements Problem<GRState> {
     }
 
     /**
-     * Returns the known optimal value of the problem, if available.
-     *
-     * @return an {@link Optional} containing the optimal value (negated),
-     * or empty if the optimal value is unknown.
-     */
-    @Override
-    public Optional<Double> optimalValue() {
-        return optimal;
-    }
-
-    /**
      * Returns a human-readable representation of the problem instance.
      *
      * @return a string describing the Golomb Ruler instance.
@@ -96,16 +85,6 @@ public class GRProblem implements Problem<GRState> {
     }
 
     /**
-     * Returns the initial cost (always 0).
-     *
-     * @return the initial cost value.
-     */
-    @Override
-    public double initialValue() {
-        return 0;
-    }
-
-    /**
      * Returns the initial state of the problem, containing only the first mark at position 0.
      *
      * @return the initial {@link GRState}.
@@ -116,6 +95,16 @@ public class GRProblem implements Problem<GRState> {
         BitSet mark = new BitSet();
         mark.set(0);
         return new GRState(mark, new BitSet(), 0);
+    }
+
+    /**
+     * Returns the initial cost (always 0).
+     *
+     * @return the initial cost value.
+     */
+    @Override
+    public double initialValue() {
+        return 0;
     }
 
     /**
@@ -152,7 +141,7 @@ public class GRProblem implements Problem<GRState> {
     @Override
     public GRState transition(GRState state, Decision decision) {
         GRState newState = state.copy();
-        int newMark = decision.val();
+        int newMark = decision.value();
         // add distances between new mark and previous marks
         BitSet newDistances = new BitSet();
         for (int i = state.getMarks().nextSetBit(0);
@@ -180,7 +169,18 @@ public class GRProblem implements Problem<GRState> {
      */
     @Override
     public double transitionCost(GRState state, Decision decision) {
-        return decision.val() - state.getLastMark();
+        return decision.value() - state.getLastMark();
+    }
+
+    /**
+     * Returns the known optimal value of the problem, if available.
+     *
+     * @return an {@link Optional} containing the optimal value (negated),
+     * or empty if the optimal value is unknown.
+     */
+    @Override
+    public Optional<Double> optimalValue() {
+        return optimal;
     }
 
     @Override

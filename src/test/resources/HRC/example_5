@@ -1,0 +1,12 @@
+# HRC instance – 5 tasks, no precedences
+# Format: first line = n [optimal], then n lines of: humanDur robotDur collabDur
+# Task 0: human or collab (robot infeasible)
+# Task 2: robot or collab (human infeasible)
+# Task 3: human or robot  (collab infeasible)
+# optimal makespan = 10
+5 10
+5 100000 3
+3 4 2
+100000 2 3
+4 3 100000
+6 5 4
