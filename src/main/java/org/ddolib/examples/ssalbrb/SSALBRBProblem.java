@@ -352,12 +352,12 @@ public class SSALBRBProblem implements Problem<SSALBRBState> {
 
     @Override
     public SSALBRBState transition(SSALBRBState state, Decision decision) {
-        return simulateTransition(state, decision.val()).nextState();
+        return simulateTransition(state, decision.value()).nextState();
     }
 
     @Override
     public double transitionCost(SSALBRBState state, Decision decision) {
-        TransitionInfo info = simulateTransition(state, decision.val());
+        TransitionInfo info = simulateTransition(state, decision.value());
         return info.nextState().makespan() - state.makespan();
     }
 
