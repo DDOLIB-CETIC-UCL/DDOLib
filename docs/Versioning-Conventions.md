@@ -22,6 +22,12 @@ Before releasing a new version, you must complete the following steps:
 2. Update the version number in the `pom.xml` file.
 3. Update the `README.md` with the latest version number.
 4. Merge the `main` branch into the `release` branch.
+5. Create a tag on the `release` branch to trigger the automated deployment to Maven Central.
+
+> [!WARNING]
+>
+> The tag name MUST start with the letter `v` (e.g., `v0.0.6` or `v1.0.0`) for the automation script
+> to detect it.
 
 ## Releasing a Hotfix
 
