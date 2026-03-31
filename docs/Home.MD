@@ -3,4 +3,4 @@
 ## Code conventions
 
 * [[Conventions for tests]] - Conventions about unit tests
-* [[Versioning Conventions]]
+* [[Versioning Conventions]] - Conventions about versioning
