@@ -28,6 +28,15 @@ Before releasing a new version, you must complete the following steps:
 When a critical bug occurs, we release **only** the bug fix (a PATCH version) without including unfinished features from
 `main`.
 
-- Isolate the specific bug fix commit from `main` (for example, by using `git cherry-pick`).
-- Apply it directly to the `release` branch.
-- The other non-released changes currently on `main` will simply wait for the next monthly minor release.
+To apply a hotfix cleanly, we use the **Hotfix Branch** workflow:
+
+1. **Branch from release:** Create a new temporary hotfix branch starting from the `release` branch (e.g.,
+   `git switch -c hotfix-bug-name release`).
+2. **Fix the bug:** Commit your specific correction to this new hotfix branch.
+3. **Update release:** Merge your hotfix branch back into the `release` branch to publish the patch.
+4. **Update main (Crucial):** Merge the `release` branch (or the hotfix branch) back into the `main` branch. This
+   ensures the bug fix is integrated into ongoing development and prevents the bug from reappearing in the next monthly
+   minor release.
+
+*(Alternatively, if the fix is already isolated in a single commit on `main`, you can
+use `git cherry-pick <commit-hash>` while on the `release` branch to apply it directly.)*
