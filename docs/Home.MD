@@ -2,5 +2,5 @@
 
 ## Code conventions
 
-* [[Conventions for tests]] - What are the convention we are using to create unit tests
+* [[Conventions for tests]] - Conventions about unit tests
 * [[Versioning Conventions]]
