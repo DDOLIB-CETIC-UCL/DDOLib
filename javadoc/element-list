@@ -3,6 +3,8 @@ org.ddolib.acs.core
 org.ddolib.acs.core.solver
 org.ddolib.astar
 org.ddolib.astar.core.solver
+org.ddolib.awastar
+org.ddolib.awastar.core.solver
 org.ddolib.common
 org.ddolib.common.dominance
 org.ddolib.common.solver
