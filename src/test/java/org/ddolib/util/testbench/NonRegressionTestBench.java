@@ -93,7 +93,7 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
         for (int w = 600; w <= 1000; w += 100) {
             double ddo = solveAndChecksSolution(globalModel.fixWidth(w));
             assertEquals(ddoVal, ddo, 1e-10,
-                    "DDO: using width " + w + " changes the value"
+                    "DDO: using width %d changes the value".formatted(w)
             );
         }
 
@@ -130,7 +130,34 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
         for (int c = 6; c <= 20; c++) {
             double acs = solveAndChecksSolution(acsModel.setColumnWidth(c));
             assertEquals(acsVal, acs, 1e-10,
-                    "ACS: using column width " + c + " changes the value");
+                    "ACS: using column width %d changes the value".formatted(c)
+            );
+        }
+
+        AwAstarModel<T> awAstarModel = new AwAstarModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return globalModel.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+        };
+
+        double awAstarVal = solveAndChecksSolution(awAstarModel.disableDominance());
+        assertEquals(aStarVal, awAstarVal, 1e-10,
+                "A* and AWA* do not return the same value");
+        if (dominanceUsed) {
+            double awAStarWithDominance = solveAndChecksSolution(awAstarModel);
+            assertEquals(awAstarVal, awAStarWithDominance, 1e-10,
+                    "AWA*: the dominance change the value");
         }
     }
 
@@ -158,6 +185,10 @@ public class NonRegressionTestBench<T, P extends Problem<T>> {
             case AcsModel<T> acsModel -> {
                 solverStr = "ACS";
                 yield Solvers.minimizeAcs(acsModel);
+            }
+            case AwAstarModel<T> awAstarModel -> {
+                solverStr = "AWA*";
+                yield Solvers.minimizeAwAStar(awAstarModel);
             }
             default -> {
                 solverStr = "A*";
