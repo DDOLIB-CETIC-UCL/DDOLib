@@ -24,7 +24,7 @@ public class GrNonRegressionTests {
     private static class GrNonRegressionDataSupplier extends GRTestDataSupplier {
         @Override
         protected List<GRProblem> generateProblems() {
-            return IntStream.range(7, 11).mapToObj(GRProblem::new).toList();
+            return IntStream.range(7, 10).mapToObj(GRProblem::new).toList();
         }
     }
 

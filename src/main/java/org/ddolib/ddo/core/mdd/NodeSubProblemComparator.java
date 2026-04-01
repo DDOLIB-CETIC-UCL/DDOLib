@@ -14,7 +14,7 @@ import java.util.Comparator;
  *
  * @param <T> the type of state contained in the subproblems
  */
-final class NodeSubProblemComparator<T> implements Comparator<NodeSubProblem<T>> {
+public final class NodeSubProblemComparator<T> implements Comparator<NodeSubProblem<T>> {
     /** The decorated ranking used to break ties when node values are equal. */
     private final StateRanking<T> delegate;
 

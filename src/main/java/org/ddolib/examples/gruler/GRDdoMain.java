@@ -1,6 +1,8 @@
 package org.ddolib.examples.gruler;
 
 import org.ddolib.common.solver.Solution;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
 
@@ -45,6 +47,11 @@ public class GRDdoMain {
             }
 
             @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new GRFastLowerBound();
+            }
+
+            @Override
             public Relaxation<GRState> relaxation() {
                 return new GRRelax();
             }
@@ -52,6 +59,11 @@ public class GRDdoMain {
             @Override
             public StateRanking<GRState> ranking() {
                 return new GRRanking();
+            }
+
+            @Override
+            public WidthHeuristic<GRState> widthHeuristic() {
+                return new FixedWidth<>(500);
             }
         };
 

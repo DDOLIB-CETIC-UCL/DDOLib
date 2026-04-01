@@ -1,4 +1,5 @@
 [![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
+[![Userguide](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/userguide.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)
 ![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
 <!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
 
@@ -9,7 +10,22 @@ by the [CETIC](https://www.cetic.be/) (team of [Renaud De Landtsheer](https://ww
 the [UCLouvain](https://uclouvain.be/en/index.html) (team of [Pierre Schaus](https://pschaus.github.io/)).
 It includes a modeling API for users to define their DP problem and solve them efficiently.
 
+📖 **[User Guide & Documentation](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)**
+
 A Scala API for this library can be found [here](https://github.com/DDOLIB-CETIC-UCL/DDOLib-Scala).
+
+## Using DDOLib as a Dependency
+
+DDOLib is published on [Maven Central](https://central.sonatype.com/artifact/io.github.ddolib-cetic-ucl/ddolib).
+Add the following to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>io.github.ddolib-cetic-ucl</groupId>
+    <artifactId>ddolib</artifactId>
+    <version>0.0.5</version>
+</dependency>
+```
 
 # Theoretical Foundations
 
@@ -22,6 +38,8 @@ INFORMS Journal on Computing.*
 
 Then the technique was improved in several papers that are also implemented in this project or will eventually be:
 
+* Alice Burlat, Roger Kameugne, Cristel Pelsser, Pierre Schaus (2026). *Clustering for Relaxed and Restricted Decision Diagram Bounds: When It Works and Why.*
+  CPAIOR.
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Decision diagram-based branch-and-bound with caching for
   dominance and suboptimality detection. INFORMS Journal on Computing.*
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Modeling and Exploiting Dominance Rules for Discrete Optimization with
@@ -29,7 +47,7 @@ Then the technique was improved in several papers that are also implemented in t
 * *Gillard, X., & Schaus, P. (2022). Large Neighborhood Search with Decision Diagrams. In IJCAI.*
 * *Gillard, X., Coppé, V., Schaus, P., & Cire, A. A. (2021). Improving the filtering of branch-and-bound MDD solver.
   CPAIOR*
-* *Gillard, X., Schaus, P., & Coppé, V. (2014). Ddo, a generic and efficient framework for mdd-based optimization.
+* *Gillard, X., Schaus, P., & Coppé, V. (2020). Ddo, a generic and efficient framework for mdd-based optimization.
   IJCAI.*
 
 # At the origin: The DDO Project
@@ -43,7 +61,7 @@ If you use this Java version, please cite the DDO paper:
   title={Ddo, a generic and efficient framework for mdd-based optimization},
   author={Gillard, X. and Schaus, P. and Copp{\'e}, V.},
   booktitle={IJCAI},
-  year={2014}
+  year={2020}
 }
 ```
 

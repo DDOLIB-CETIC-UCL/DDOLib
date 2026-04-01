@@ -96,7 +96,7 @@ public class DebugUtil {
                         "Depth: " + current.depth() + "\n" +
                         "Path estimation: " + df.format(currentFLB) + "\n" +
                         "Shortest path length to end: " + df.format(shortestFromCurrent.get())
-                        + "\n\nWhole Path to end:\n" +
+                        + "\n\nFull Path to end:\n" +
                         sortedDecisions.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
                         + "\n";
 

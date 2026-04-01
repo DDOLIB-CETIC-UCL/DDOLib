@@ -9,7 +9,7 @@ import org.ddolib.ddo.core.Decision;
  * It is used to represent transitions between nodes in a decision diagram.
  * </p>
  */
-final class Edge {
+public final class Edge {
     /** The source node of this edge. */
     public final Node origin;
     /** The decision associated with this edge. */

@@ -55,7 +55,8 @@ public class KSDdoMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
+                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
         final DdoModel<Integer> model = new DdoModel<>() {
             @Override
@@ -74,11 +75,6 @@ public class KSDdoMain {
             }
 
             @Override
-            public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.LARGE;
-            }
-
-            @Override
             public Relaxation<Integer> relaxation() {
                 return new KSRelax();
             }
@@ -90,7 +86,7 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(1000);
+                return new FixedWidth<>(50);
             }
 
             @Override

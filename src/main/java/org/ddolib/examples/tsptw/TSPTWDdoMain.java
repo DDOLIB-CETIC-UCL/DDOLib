@@ -99,7 +99,7 @@ public class TSPTWDdoMain {
 
             @Override
             public WidthHeuristic<TSPTWState> widthHeuristic() {
-                return new FixedWidth<>(20);
+                return new FixedWidth<>(10);
             }
 
             @Override

@@ -135,6 +135,10 @@ public interface DdoModel<T> extends Model<T> {
         return (o1, o2) -> 0;
     }
 
+    default boolean useLNS() {
+        return false;
+    }
+
 
     /**
      * Returns a copy of this model but with a fixed width.
@@ -202,6 +206,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public boolean exportDot() {
                 return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -273,6 +282,11 @@ public interface DdoModel<T> extends Model<T> {
             public boolean exportDot() {
                 return DdoModel.this.exportDot();
             }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
+            }
         };
     }
 
@@ -343,6 +357,11 @@ public interface DdoModel<T> extends Model<T> {
             public boolean exportDot() {
                 return DdoModel.this.exportDot();
             }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
+            }
         };
     }
 
@@ -402,6 +421,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public boolean exportDot() {
                 return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -467,6 +491,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public DdoModel<T> fixWidth(int width) {
                 return DdoModel.this.fixWidth(width);
+            }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
             }
         };
     }

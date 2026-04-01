@@ -9,6 +9,7 @@ import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
 import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.lns.core.solver.LNSSolver;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -335,5 +336,56 @@ public class Solvers {
     public static <T> Solution minimizeExact(ExactModel<T> model,
                                              BiConsumer<int[], SearchStatistics> onSolution) {
         return new ExactSolver<>(model).minimize(s -> false, onSolution);
+    }
+    /**
+     * Runs a Large Neighborhood Search (LNS) on the specified model with a given
+     * termination condition and a callback for each solution found.
+     *
+     * @param <T>       the type of state used in the problem
+     * @param model     the {@link LnsModel} describing the problem and search heuristics
+     * @param limit     a {@link Predicate} on {@link SearchStatistics} defining when to stop the search.
+     *                  The search stops when {@code limit.test(stats)} returns {@code true}.
+     * @param onSolution a {@link BiConsumer} called each time a new solution is found.
+     *                  The first argument is the solution (array of variable assignments),
+     *                  and the second argument is the current search statistics.
+     * @return the best {@link Solution} found during the search
+     */
+
+    public static final <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        return new LNSSolver<>(model).minimize(limit, onSolution);
+    }
+    /**
+     * Runs a Large Neighborhood Search (LNS) on the specified model without any
+     * termination condition and without processing intermediate solutions.
+     * <p>
+     * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
+     * with {@code limit} always false and an empty callback.
+     *
+     * @param <T>       the type of state used in the problem
+     * @param model     the {@link LnsModel} describing the problem and search heuristics
+     * @param onSolution a {@link BiConsumer} called for each solution found (can be ignored)
+     * @return the best {@link Solution} found during the search
+     */
+
+    public static <T> Solution minimizeLns(LnsModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+        return minimizeLns(model, stats -> false, (sol, s) -> {
+        });
+    }
+    /**
+     * Runs a Large Neighborhood Search (LNS) on the specified model with a
+     * termination condition but without processing intermediate solutions.
+     * <p>
+     * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
+     * with the given {@code limit} and an empty callback.
+     *
+     * @param <T>       the type of state used in the problem
+     * @param model     the {@link LnsModel} describing the problem and search heuristics
+     * @param limit     a {@link Predicate} on {@link SearchStatistics} defining when to stop the search
+     * @return the best {@link Solution} found during the search
+     */
+
+    public static<T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit) {
+        return minimizeLns(model, limit, (sol, s) -> {
+        });
     }
 }

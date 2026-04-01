@@ -166,7 +166,7 @@ public final class SequentialSolver<T> implements Solver {
         this.width = model.widthHeuristic();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.frontier = model.frontier();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
@@ -184,6 +184,8 @@ public final class SequentialSolver<T> implements Solver {
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
+        SearchStatus status = SearchStatus.UNKNOWN;
+
         while (!frontier.isEmpty()) {
             nbIter++;
             verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
@@ -195,7 +197,7 @@ public final class SequentialSolver<T> implements Solver {
             double nodeLB = sub.getLowerBound();
 
             long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(SearchStatus.UNKNOWN, nbIter,
+            SearchStatistics stats = new SearchStatistics(status, nbIter,
                     queueMaxSize, end - start, bestUB, gap());
 
             if (limit.test(stats)) {
@@ -223,6 +225,7 @@ public final class SequentialSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
+                status = SearchStatus.SAT;
                 stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
@@ -247,6 +250,7 @@ public final class SequentialSolver<T> implements Solver {
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
+                    status = SearchStatus.SAT;
                     stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
@@ -261,6 +265,7 @@ public final class SequentialSolver<T> implements Solver {
             if (relaxedMdd.isExact()) {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
+                    status = SearchStatus.SAT;
                     stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
                     onSolution.accept(constructSolution(bestSol.get()), stats);
                 }
@@ -273,7 +278,7 @@ public final class SequentialSolver<T> implements Solver {
             }
         }
         long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(status == SearchStatus.SAT ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
                 end - start, bestUB, 0);
         return new Solution(bestSolution(), stats);
     }
@@ -385,6 +390,7 @@ public final class SequentialSolver<T> implements Solver {
         } else if (type == CompilationType.Restricted) {
             compilation.reductionStrategy = model.restrictStrategy();
         }
+        compilation.useLNS = false;
 
         return compilation;
     }

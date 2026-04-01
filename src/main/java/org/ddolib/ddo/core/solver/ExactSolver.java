@@ -130,6 +130,7 @@ public final class ExactSolver<T> implements Solver {
         compilation.cutSetType = CutSetType.LastExactLayer;
         compilation.exportAsDot = this.exportAsDot;
         compilation.debugLevel = model.debugMode();
+        compilation.useLNS = false;
 
         DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();

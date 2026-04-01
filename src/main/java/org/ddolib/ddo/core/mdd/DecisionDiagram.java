@@ -110,4 +110,6 @@ public interface DecisionDiagram<T> {
      * @return a {@link String} containing the DOT representation of the compiled decision diagram
      */
     String exportAsDot();
+
+    double minLowerBound();
 }

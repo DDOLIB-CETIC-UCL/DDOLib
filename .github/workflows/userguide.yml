@@ -1,0 +1,52 @@
+name: Userguide
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  userguide:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Step0 - Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Step1 - Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Step2 - Install python dependencies
+        run: |
+          cd userguide
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Step3 - Build user guide
+        run: |
+          cd userguide
+          make html
+          mv build/html /tmp/userguide
+
+      - name: Step4 - Checkout gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+
+      - name: Step5 - Add userguide HTML
+        run: |
+          git config --local user.email "github-actions@users.noreply.github.com"
+          git config --local user.name "github-actions"
+          rm -rf userguide
+          cp -r /tmp/userguide .
+          touch .nojekyll
+          git add -A
+          git commit -m "update userguide" || echo "No changes to commit"
+
+      - name: Step6 - Push changes to gh-pages branch
+        uses: ad-m/github-push-action@master
+        with:
+          branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}

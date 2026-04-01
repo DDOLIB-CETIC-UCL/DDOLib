@@ -21,4 +21,6 @@ jobs:
           cache: 'maven'
 
       - name: Run non-regressions tests
+        env:
+          MAVEN_OPTS: "-Xms4g -Xmx4g"
         run: mvn clean test -P non-regression-tests

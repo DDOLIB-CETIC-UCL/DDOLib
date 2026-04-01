@@ -51,6 +51,20 @@ public interface Model<T> {
     }
 
     /**
+     * Returns a precomputed upper bound on the optimal value.
+     *
+     * <p> This bound allows to start the search with a better upper bound and start pruning
+     * earlier.</p>
+     *
+     * <p>By default, it returns {@code Double.POSITIVE_INFINITY}</p>
+     *
+     * @return a precomputed upper bound on the optimal value
+     */
+    default double upperBound() {
+        return Double.POSITIVE_INFINITY;
+    }
+
+    /**
      * Returns the dominance checker used to prune dominated states from the search space.
      * <p>
      * By default, this method provides a {@link DefaultDominanceChecker} instance,

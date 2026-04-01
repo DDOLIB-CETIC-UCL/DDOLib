@@ -78,7 +78,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -105,7 +105,7 @@ public final class AStarSolver<T> implements Solver {
         this.varh = model.variableHeuristic();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -124,6 +124,7 @@ public final class AStarSolver<T> implements Solver {
         queueMaxSize = 0;
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
+        boolean sat = false; // problem satisfiable
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
             verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
@@ -165,7 +166,7 @@ public final class AStarSolver<T> implements Solver {
 
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(nbIter, sub);
-                addChildren(sub, onSolution);
+                sat = sat | addChildren(sub, onSolution);
                 closed.put(subKey, sub.f());
             }
         }
@@ -174,7 +175,7 @@ public final class AStarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
+        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
         return new Solution(bestSolution(), statistics);
@@ -231,10 +232,13 @@ public final class AStarSolver<T> implements Solver {
                 nullDecisions);
     }
 
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
+
+
+    // return if a feasible solution was found by expanding children, false otherwise
+    private boolean addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
+        boolean sat = false;
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
-
         final Iterator<Integer> domain = problem.domain(state, var);
         while (domain.hasNext()) {
             final int val = domain.next();
@@ -279,9 +283,11 @@ public final class AStarSolver<T> implements Solver {
                 bestUB = newSub.getValue();
                 SearchStatistics stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
                 onSolution.accept(constructSolution(path), stats);
+                sat = true;
                 verboseMode.newBest(bestUB);
             }
         }
+        return sat;
     }
 
     /**

@@ -2,6 +2,7 @@ package org.ddolib.examples.boundedknapsack;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -46,7 +47,7 @@ public class BKSDdoMain {
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        final BKSProblem problem = new BKSProblem(100, 1000, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
+        final BKSProblem problem = new BKSProblem(35, 100, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
         DdoModel<Integer> model = new DdoModel<>() {
             @Override
             public BKSProblem problem() {
