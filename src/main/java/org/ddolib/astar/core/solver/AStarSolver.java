@@ -175,7 +175,7 @@ public final class AStarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
+        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
         return new Solution(bestSolution(), statistics);
@@ -195,8 +195,7 @@ public final class AStarSolver<T> implements Solver {
         return bestSol;
     }
 
-    @Override
-    public double gap() {
+    private double gap() {
         if (bestUB == Double.POSITIVE_INFINITY) {
             return 100.0;
         } else if (open.isEmpty()) {
@@ -231,7 +230,6 @@ public final class AStarSolver<T> implements Solver {
                 lb.fastLowerBound(state, vars),
                 nullDecisions);
     }
-
 
 
     // return if a feasible solution was found by expanding children, false otherwise

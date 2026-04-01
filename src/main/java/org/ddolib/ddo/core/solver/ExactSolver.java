@@ -173,12 +173,7 @@ public final class ExactSolver<T> implements Solver {
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
-
-    @Override
-    public double gap() {
-        return 0;
-    }
-
+    
     /**
      * Extracts the best solution and value from a compiled decision diagram.
      *

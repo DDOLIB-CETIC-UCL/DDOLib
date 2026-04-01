@@ -88,7 +88,7 @@ public final class ACSSolver<T> implements Solver {
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
     private final DebugLevel debugLevel;
-    private final boolean defaultLowerBoundValue;
+    private boolean defaultLowerBoundValue;
     /**
      * Value of the best known upper bound (incumbent solution).
      */
@@ -214,7 +214,7 @@ public final class ACSSolver<T> implements Solver {
                     gap());
 
 
-            SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.SAT: SearchStatus.UNKNOWN, nbIter, queueMaxSize,
+            SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.SAT : SearchStatus.UNKNOWN, nbIter, queueMaxSize,
                     System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
 
             if (limit.test(stats)) {
@@ -269,7 +269,7 @@ public final class ACSSolver<T> implements Solver {
             checkAdmissibility();
         }
 
-        SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
+        SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
         return new Solution(bestSolution(), stats);
     }
@@ -304,8 +304,7 @@ public final class ACSSolver<T> implements Solver {
      *
      * @return gap as a percentage
      */
-    @Override
-    public double gap() {
+    private double gap() {
         if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
 
         double globalLB = open.stream()

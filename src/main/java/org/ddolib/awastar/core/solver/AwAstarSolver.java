@@ -230,8 +230,7 @@ public final class AwAstarSolver<T> implements Solver {
         return bestSol;
     }
 
-    @Override
-    public double gap() {
+    private double gap() {
         if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
 
         if (open.isEmpty()) return 0.0;

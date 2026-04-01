@@ -297,8 +297,7 @@ public final class SequentialSolver<T> implements Solver {
         return bestSol;
     }
 
-    @Override
-    public double gap() {
+    private double gap() {
         if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
             return 100.0;
         } else {
