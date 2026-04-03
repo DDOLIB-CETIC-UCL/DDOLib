@@ -1,4 +1,4 @@
-package org.ddolib.astar.core.solver;
+package org.ddolib.awastar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
@@ -10,39 +10,30 @@ import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;
 import org.ddolib.examples.knapsack.KSFastLowerBound;
 import org.ddolib.examples.knapsack.KSProblem;
-import org.ddolib.examples.misp.MispProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
-import org.ddolib.examples.tsptw.TSPTWDominance;
-import org.ddolib.examples.tsptw.TSPTWFastLowerBound;
-import org.ddolib.examples.tsptw.TSPTWProblem;
-import org.ddolib.examples.tsptw.TSPTWState;
-import org.ddolib.modeling.*;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.modeling.AwAstarModel;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.BitSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class AStarSolverTest {
+public class AwAStarSolverTest {
+
 
     @Test
-    void testKPGapNonConsistentHeuristic() throws IOException {
-        // The knapsack problem is a maximization problem.
-        // To turn it into a minimization problem, we model it by minimizing the negative of the profit.
-        // Therefore, A-star with an admissible but non-consistent lower-bound (objective value used here) has to continue
-        // searching until it can prove that no better solution exists.
-        // It can thus not stop at the first found solution.
-
+    void testKP() throws IOException {
         final String instance = Path.of("data", "Knapsack", "instance_n100_c500_10_5_10_5_2").toString();
         final KSProblem problem = new KSProblem(instance);
-        final Model<Integer> model = new Model<>() {
+        final AwAstarModel<Integer> model = new AwAstarModel<>() {
             @Override
             public Problem<Integer> problem() {
                 return problem;
@@ -59,8 +50,9 @@ class AStarSolverTest {
             }
         };
 
+
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeAstar(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             int computedProfit = 0;
             int computedWeight = 0;
@@ -88,21 +80,15 @@ class AStarSolverTest {
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
     }
 
+
     @Test
-    void testGRGapNonConsistentHeuristic() throws IOException {
-        // The golomb ruler problem is a minimization problem.
-        // Ddo is used to improved solution over time
-        // and prove that no better solution exists.
+    void testGR() {
         final int n = 6;
-        final GRProblem problem = new GRProblem(n, 17);
-        /* @Override
-            public FastLowerBound<GRState> lowerBound() {
-                return (state, variables) -> 0;
-            }*/
-        final Model<GRState> model = () -> problem;
+        final GRProblem problem = new GRProblem(n);
+        final AwAstarModel<GRState> model = () -> problem;
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeAstar(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
             // verify that each found solution is valid
             assertEquals(n - 1, sol.length);
             assertEquals(sol[n - 2], s.incumbent());
@@ -123,13 +109,10 @@ class AStarSolverTest {
     }
 
     @Test
-    void testTSPGapNonConsistentHeuristic() throws IOException {
-        // The TSP problem is a minimization problem.
-        // The A-star with an admissible lower-bound can prove that no better solution exists.
-        // It can thus stop at the first found solution.
+    void testTSP() throws IOException {
         final String instance = Path.of("data", "TSP", "instance_18_0.xml").toString();
         final TSPProblem problem = new TSPProblem(instance);
-        Model<TSPState> model = new Model<>() {
+        AwAstarModel<TSPState> model = new AwAstarModel<>() {
             @Override
             public Problem<TSPState> problem() {
                 return problem;
@@ -142,7 +125,7 @@ class AStarSolverTest {
         };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeAstar(model, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeAwAStar(model, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
             assertEquals(problem.nbVars(), sol.length);
@@ -161,56 +144,6 @@ class AStarSolverTest {
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
-    }
-
-
-    @Test
-    void testMaxProblemWithDefaultLFlb() throws IOException {
-        String instance = Path.of("data", "MISP", "weighted.dot").toString();
-        final MispProblem problem = new MispProblem(instance);
-        Model<BitSet> model = new Model<>() {
-            @Override
-            public Problem<BitSet> problem() {
-                return problem;
-            }
-
-            @Override
-            public FastLowerBound<BitSet> lowerBound() {
-                return new DefaultFastLowerBound<>();
-            }
-        };
-
-        Solution bestSolution = Solvers.minimizeAstar(model);
-        assertEquals(SearchStatus.OPTIMAL, bestSolution.statistics().status());
-        assertEquals(-11.0, bestSolution.value(), 1e-10);
-    }
-
-
-    @Test
-    void testUnsat() throws IOException {
-        String instance = Path.of("data", "TSPTW", "impossible_to_finish.txt").toString();
-        final TSPTWProblem problem = new TSPTWProblem(instance);
-        Model<TSPTWState> model = new Model<>() {
-            @Override
-            public Problem<TSPTWState> problem() {
-                return problem;
-            }
-
-            @Override
-            public TSPTWFastLowerBound lowerBound() {
-                return new TSPTWFastLowerBound(problem);
-            }
-
-            @Override
-            public DominanceChecker<TSPTWState> dominance() {
-                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-            }
-        };
-
-        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
-        assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 
 

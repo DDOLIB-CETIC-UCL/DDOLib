@@ -8,9 +8,11 @@ import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.DefaultFastLowerBound;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
+import org.ddolib.util.SolverUtil;
 import org.ddolib.util.StateAndDepth;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.debug.DebugUtil;
@@ -61,6 +63,7 @@ public final class AStarSolver<T> implements Solver {
      * {@link DebugLevel for details}
      */
     private final DebugLevel debugLevel;
+    private final boolean defaultLowerBoundValue;
     // Statistics
     long t0; // time at the beginning of the search
     int nbIter; // number of iterations
@@ -69,7 +72,6 @@ public final class AStarSolver<T> implements Solver {
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
     private Optional<Set<Decision>> bestSol;
-
 
     public AStarSolver(Model<T> model) {
         this.problem = model.problem();
@@ -84,7 +86,7 @@ public final class AStarSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);
         this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
-
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     /**
@@ -111,6 +113,7 @@ public final class AStarSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     @Override
@@ -172,7 +175,7 @@ public final class AStarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL: SearchStatus.UNSAT, nbIter, queueMaxSize,
+        SearchStatistics statistics = new SearchStatistics(sat ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
 
         return new Solution(bestSolution(), statistics);
@@ -190,6 +193,17 @@ public final class AStarSolver<T> implements Solver {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
+    }
+
+    private double gap() {
+        if (bestUB == Double.POSITIVE_INFINITY) {
+            return 100.0;
+        } else if (open.isEmpty()) {
+            return 0.0;
+        } else {
+            double globalLB = defaultLowerBoundValue ? open.peek().getValue() : open.peek().f();
+            return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);
+        }
     }
 
     /**
@@ -218,7 +232,6 @@ public final class AStarSolver<T> implements Solver {
     }
 
 
-
     // return if a feasible solution was found by expanding children, false otherwise
     private boolean addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
         boolean sat = false;
@@ -236,7 +249,8 @@ public final class AStarSolver<T> implements Solver {
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, varSet(path)); // h-cost from this state to the target
+            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
+            // h-cost from this state to the target
 
 
             SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
@@ -274,17 +288,6 @@ public final class AStarSolver<T> implements Solver {
         return sat;
     }
 
-    private Set<Integer> varSet(Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.variable());
-        }
-        return set;
-    }
-
     /**
      * Checks if the lower bound of explored nodes of the search is admissible.
      */
@@ -310,16 +313,6 @@ public final class AStarSolver<T> implements Solver {
         };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AStarSolver<>(model, key));
-    }
-
-
-    private double gap() {
-        if (open.isEmpty() | bestUB == Double.POSITIVE_INFINITY) {
-            return 100.0;
-        } else {
-            double bestInFrontier = open.peek().f();
-            return 100 * Math.abs(bestUB - bestInFrontier) / Math.abs(bestUB);
-        }
     }
 
 

@@ -1,5 +1,6 @@
 package org.ddolib.ddo.core;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -127,6 +128,7 @@ public final class SubProblem<T> {
     public Set<Decision> getPath() {
         return this.path;
     }
+
     /**
      * Returns a string summarizing key statistics about this subproblem,
      * including its objective value, lower bound, and depth in the decision diagram.
@@ -136,17 +138,17 @@ public final class SubProblem<T> {
     public String statistics() {
         return String.format("SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)", value, lb, (value - lb), this.getPath().size());
     }
+
     /**
-     * Returns a human-readable representation of this subproblem,
-     * including its value, lower bound, f-value, depth, and state.
+     * Returns the hash code of this subproblem, derived from its root state.
      *
-     * @return a formatted string describing this subproblem
+     * @return the hash code
      */
     @Override
-    public String toString() {
-        return String.format("SubProblem(val: %.0f - lb: %.0f - f: %.0f - depth: %d - state: %s",
-                value, lb, f(), this.getPath().size(), state);
+    public int hashCode() {
+        return Objects.hash(state, getDepth());
     }
+
     /**
      * Compares this subproblem to another for equality.
      * Two subproblems are considered equal if they share the same root state.
@@ -157,18 +159,21 @@ public final class SubProblem<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof SubProblem<?> other) {
-            return this.state.equals(other.state);
+            return this.state.equals(other.state) && this.getDepth() == other.getDepth();
         }
         return false;
     }
+
     /**
-     * Returns the hash code of this subproblem, derived from its root state.
+     * Returns a human-readable representation of this subproblem,
+     * including its value, lower bound, f-value, depth, and state.
      *
-     * @return the hash code
+     * @return a formatted string describing this subproblem
      */
     @Override
-    public int hashCode() {
-        return this.state.hashCode();
+    public String toString() {
+        return String.format("SubProblem(val: %.0f - lb: %.0f - f: %.0f - depth: %d - state: %s",
+                value, lb, f(), this.getPath().size(), state);
     }
 
 }

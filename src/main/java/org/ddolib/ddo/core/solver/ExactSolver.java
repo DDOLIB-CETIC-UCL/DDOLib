@@ -173,7 +173,7 @@ public final class ExactSolver<T> implements Solver {
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
-
+    
     /**
      * Extracts the best solution and value from a compiled decision diagram.
      *
