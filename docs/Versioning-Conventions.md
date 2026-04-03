@@ -21,28 +21,9 @@ Before releasing a new version, you must complete the following steps:
 1. Update the changelog (e.g., `CHANGELOG.md`).
 2. Update the version number in the `pom.xml` file.
 3. Update the `README.md` with the latest version number.
-4. Merge the `main` branch into the `release` branch.
-5. Create a tag on the `release` branch to trigger the automated deployment to Maven Central.
+4. Deploy on the maven central.
+5. Create a tag on the `main` branch.
 
 > [!WARNING]
 >
-> The tag name MUST start with the letter `v` (e.g., `v0.0.6` or `v1.0.0`) for the automation script
-> to detect it.
-
-## Releasing a Hotfix
-
-When a critical bug occurs, we release **only** the bug fix (a PATCH version) without including unfinished features from
-`main`.
-
-To apply a hotfix cleanly, we use the **Hotfix Branch** workflow:
-
-1. **Branch from release:** Create a new temporary hotfix branch starting from the `release` branch (e.g.,
-   `git switch -c hotfix-bug-name release`).
-2. **Fix the bug:** Commit your specific correction to this new hotfix branch.
-3. **Update release:** Merge your hotfix branch back into the `release` branch to publish the patch.
-4. **Update main (Crucial):** Merge the `release` branch (or the hotfix branch) back into the `main` branch. This
-   ensures the bug fix is integrated into ongoing development and prevents the bug from reappearing in the next monthly
-   minor release.
-
-*(Alternatively, if the fix is already isolated in a single commit on `main`, you can
-use `git cherry-pick <commit-hash>` while on the `release` branch to apply it directly.)*
+> The tag name MUST start with the letter `v` (e.g., `v0.0.6` or `v1.0.0`).
