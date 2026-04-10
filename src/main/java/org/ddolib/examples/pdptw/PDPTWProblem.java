@@ -349,13 +349,13 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 vehicleContent -= 1;
             }
             if(vehicleContent > maxCapa) {
-                return -1;
+                throw new InvalidSolutionException("vehicleContent > maxCapa");
             }
             TimeWindow window = timeWindows[solution[i]];
             currentTime += timeMatrix[solution[i - 1]][solution[i]];
             if(currentTime > window.end()){
                 System.out.println("currentTime:" + currentTime + " node:" + solution[i] + " trw:" + window);
-                return -2;
+                throw new InvalidSolutionException("after deadline");
             }
             if(currentTime <= window.start()) {
                 currentTime = window.start();
@@ -364,10 +364,10 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         currentTime += timeMatrix[solution[solution.length - 2]][0]; //final come back
         if(currentTime > timeWindows[0].end()) {
             System.out.println("currentTime:" + currentTime + " come back ToZero trw:" + timeWindows[0]);
-            return -3;
+            throw new InvalidSolutionException("comes back after deadline");
         }
         if(vehicleContent !=0){
-            return -4;
+            throw new InvalidSolutionException("non empty at the end");
         }
         return currentTime;
     }

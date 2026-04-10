@@ -24,7 +24,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
             double min = Double.POSITIVE_INFINITY;
             for (int j = 0; j < problem.n; j++) {
                 if (i != j) {
-                    min = Math.min(min, problem.instance.timeMatrix[i][j]);
+                    min = Math.min(min, problem.timeMatrix[i][j]);
                 }
             }
             leastIncidentEdge[i] = min;
@@ -46,14 +46,14 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         ArrayList<Double> toVisitEarlyLines = new ArrayList<>(variables.size());
         toVisitEarlyLines.add(0.0); //one more earlyLine because there is the final hop
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
-            toVisitEarlyLines.add(valueOf(problem.instance.timeWindows[i].start()));
+            toVisitEarlyLines.add(valueOf(problem.timeWindows[i].start()));
         }
         Collections.sort(toVisitEarlyLines);
 
         ArrayList<Double> toVisitDeadlines = new ArrayList<>(variables.size());
-        toVisitDeadlines.add(valueOf(problem.instance.timeWindows[0].end())); //one more deadline because there is the final hop
+        toVisitDeadlines.add(valueOf(problem.timeWindows[0].end())); //one more deadline because there is the final hop
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
-            toVisitDeadlines.add(valueOf(problem.instance.timeWindows[i].end()));
+            toVisitDeadlines.add(valueOf(problem.timeWindows[i].end()));
         }
         Collections.sort(toVisitDeadlines);
 
