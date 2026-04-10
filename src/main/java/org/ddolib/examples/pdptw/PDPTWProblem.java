@@ -131,11 +131,11 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      * @throws IOException if the file cannot be read
      */
     public PDPTWProblem(String fname) throws IOException {
-        int numNodes;
-        double[][] matrix = new double[0][0];
+        int numNodes = -1;
+        double[][] matrix = null;
         Optional<Double> opti = Optional.empty();
         HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
-
+        TimeWindow[] tw = null;
         try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
             int linesCount = 0;
             int skip = 0;
@@ -143,21 +143,25 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.isEmpty()) {
-                    skip++;
+                    linesCount--;
                 } else if (linesCount == 0) { // read num nodes and optimal value
                     String[] tokens = line.split("\\s+");
                     numNodes = Integer.parseInt(tokens[1]);
                     matrix = new double[numNodes][numNodes];
+                    tw = new TimeWindow[numNodes];
                     if (tokens.length >= 4) {
                         opti = Optional.of(Double.parseDouble(tokens[3]));
                     }
-                } else if (skip == 1) { // read distance matrix
+                } else if (linesCount <= numNodes) { // read distance matrix
                     int node = linesCount - skip - 1;
                     String[] tokens = line.split("\\s+");
                     double[] row =
                             Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();
                     matrix[node] = row;
-                } else { // read pick-up and delivery pairs
+                }else if (linesCount <= numNodes*2) { //read timeWindow
+                    String[] twStr = line.split("\\s+");
+                    tw[linesCount-numNodes] = new TimeWindow(Integer.parseInt(twStr[0]), Integer.parseInt(twStr[1]));
+                }else { // read pick-up and delivery pairs
                     String[] tokens = line.split(" -> ");
                     pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
                 }
@@ -168,7 +172,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
         this.timeMatrix = matrix;
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
-
+        this.timeWindows = tw;
         this.n = timeMatrix.length;
         this.aKnownSolutionValue = opti;
 
@@ -186,6 +190,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
         this.name = Optional.of(fname);
     }
+
      /**
      * Returns the number of variables (decisions) in the problem.
      * <p>
