@@ -1,13 +1,15 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.common.solver.Solution;
+
 public class PDPTWSolution {
     PDPTWProblem problem;
     public int[] solution;
     public double value;
 
-    public PDPTWSolution(PDPTWProblem problem, int[] solution, double value) {
+    public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {
         this.problem = problem;
-        this.solution = solution;
+        this.solution = solution.solution();
         this.value = value;
     }
 

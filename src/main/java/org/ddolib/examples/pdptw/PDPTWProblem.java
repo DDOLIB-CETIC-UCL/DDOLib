@@ -274,7 +274,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public PDPTWState transition(PDPTWState state, Decision decision) {
-        int node = decision.val();
+        int node = decision.value();
         BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();
         newOpenToVisit.clear(node);
 
@@ -305,7 +305,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         if(newMaxContent < 0) throw new Error("error");
 
         double arrivalTime = state.currentTime + state.current.stream()
-                .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.val()])
+                .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
                 .min().getAsDouble();
 
         if(arrivalTime < timeWindows[node].start()){
@@ -324,9 +324,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     @Override
     public double transitionCost(PDPTWState state, Decision decision) {
         double travelTime= state.current.stream()
-                .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
+                .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
                 .mapToDouble(
-                        possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.val()])
+                        possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
                 .min()
                 .getAsDouble();
 
@@ -334,7 +334,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         // The earlyLine has a different semantics for that node.
         // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
 
-        double waitTime = timeWindows[decision.val()].waitTime(state.currentTime + travelTime);
+        double waitTime = timeWindows[decision.value()].waitTime(state.currentTime + travelTime);
         return travelTime + waitTime;
     }
 

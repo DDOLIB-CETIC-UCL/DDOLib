@@ -93,7 +93,7 @@ public final class PDPTWDdoMain {
 
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = genInstance(22, 2, 3, new Random(1));
+        final PDPTWProblem problem = genInstance(16, 3, 4, new Random(1));
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -136,6 +136,6 @@ public final class PDPTWDdoMain {
         });
 
         System.out.println(bestSolution.statistics());
-        System.out.println(bestSolution);
+        System.out.println(new PDPTWSolution(problem, bestSolution, -1));
     }
 }
