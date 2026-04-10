@@ -20,7 +20,7 @@ import static org.ddolib.examples.pdptw.PDPTWMain.genInstance;
 
 public class PDPTWTests {
 
-    private static class PDPTWBench extends ProblemTestBench<PDPTWState, NullType, PDPTWProblem> {
+    private static class PDPTWBench extends ProblemTestBench<PDPTWState, PDPTWProblem> {
 
         public PDPTWBench() {
             super();
@@ -32,7 +32,7 @@ public class PDPTWTests {
             int nbTests = 10;
 
             return IntStream.range(0, nbTests).boxed().map(
-                     i -> new PDPTWProblem(genInstance(8, 1, 2, random))
+                     i -> new PDPTWProblem(PDPTWGenerator.genInstance(8, 1, 2, random))
             ).toList();
         }
 
