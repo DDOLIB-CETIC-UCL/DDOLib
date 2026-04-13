@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -91,9 +92,9 @@ public final class PDPTWDdoMain {
      * @throws IOException if an error occurs during instance generation
      */
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException, InvalidSolutionException {
 
-        final PDPTWProblem problem = genInstance(20, 3, 5, new Random(1));
+        final PDPTWProblem problem = genInstance(18, 3, 10, new Random(1));
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -136,6 +137,7 @@ public final class PDPTWDdoMain {
         });
 
         System.out.println(bestSolution.statistics());
+        problem.evaluate(bestSolution.solution());
         System.out.println(new PDPTWSolution(problem, bestSolution, -1));
     }
 }

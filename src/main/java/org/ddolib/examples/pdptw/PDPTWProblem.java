@@ -249,8 +249,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         BitSet openToVisit = new BitSet(n);
         openToVisit.set(1, n);
 
-        for (int p : pickupToAssociatedDelivery.keySet()) {
-            openToVisit.clear(pickupToAssociatedDelivery.get(p));
+        for (int d : deliveryToAssociatedPickup.keySet()) {
+            openToVisit.clear(d);
         }
 
         BitSet allToVisit = new BitSet(n);
@@ -302,15 +302,14 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             if(nbStillReachablePoints < howManyToVisit) return Collections.emptyIterator();
 
-            IntStream choices= state
-                    .openToVisit
-                    .stream()
+            IntStream choices = state.openToVisit.stream()
                     .filter(point ->
                             ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))
-                                    && (canIncludeDeliveries | ! deliveryToAssociatedPickup.containsKey(point))));
+                            && (canIncludeDeliveries | ! deliveryToAssociatedPickup.containsKey(point))));
 
             //TODO: can we re-use this instead of throwing it away?
             IntStream choices2 = choices.filter(choice ->{
+                if(!state.openToVisit.get(choice)) throw new Error("error");
                 if(var >= n-1) return true;
                 PDPTWState potentialNext = transition(state,new Decision(var,choice));
                 return (myBoundCalculator.fastLowerBound(potentialNext, n - var-2) < Double.MAX_VALUE);
@@ -391,7 +390,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     public double evaluate(int[] solution) throws InvalidSolutionException {
         int vehicleContent = 0;
         double currentTime = timeWindows[0].start();
-        for (int i = 1; i < solution.length-1; i++) { //zero is in the solution as well
+        int prevNode = 0;
+        for (int i = 0; i < solution.length-1; i++) { //zero is in the solution as well
             if(pickupToAssociatedDelivery.containsKey(solution[i])) {
                 vehicleContent += 1;
             }else if (deliveryToAssociatedPickup.containsKey(solution[i])){
@@ -401,7 +401,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 throw new InvalidSolutionException("vehicleContent > maxCapa");
             }
             TimeWindow window = timeWindows[solution[i]];
-            currentTime += timeMatrix[solution[i - 1]][solution[i]];
+            currentTime += timeMatrix[prevNode][solution[i]];
             if(currentTime > window.end()){
                 System.out.println("currentTime:" + currentTime + " node:" + solution[i] + " trw:" + window);
                 throw new InvalidSolutionException("after deadline");
@@ -409,6 +409,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             if(currentTime <= window.start()) {
                 currentTime = window.start();
             }
+            prevNode = solution[i];
         }
         currentTime += timeMatrix[solution[solution.length - 2]][0]; //final come back
         if(currentTime > timeWindows[0].end()) {

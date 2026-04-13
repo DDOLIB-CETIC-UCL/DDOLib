@@ -38,7 +38,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
 
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
-        BitSet toVisit = state.allToVisit;
+        BitSet toVisit = (BitSet) state.allToVisit.clone();
 
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(nbUnassignedVariables);

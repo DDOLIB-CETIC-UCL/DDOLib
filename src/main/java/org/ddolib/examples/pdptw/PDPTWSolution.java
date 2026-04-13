@@ -27,7 +27,7 @@ public class PDPTWSolution {
         int currentContent = 0;
         double currentTime = problem.timeWindows[0].start();
 
-        for (int i = 1; i < solution.length; i++) {
+        for (int i = 0; i < solution.length; i++) {
             int prevNode = currentNode;
             currentNode = solution[i];
             currentTime = currentTime + problem.timeMatrix[prevNode][currentNode];
