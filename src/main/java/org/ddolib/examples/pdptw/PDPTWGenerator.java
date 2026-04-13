@@ -48,11 +48,12 @@ public class PDPTWGenerator {
      */
     public static PDPTWProblem genInstance(int n, int unrelated, int maxCapa, Random random) {
 
+        int squareSide = 1000;
         int[] x = new int[n];
         int[] y = new int[n];
         for (int i = 0; i < n; i++) {
-            x[i] = random.nextInt(100);
-            y[i] = random.nextInt(100);
+            x[i] = random.nextInt(squareSide);
+            y[i] = random.nextInt(squareSide);
         }
 
         double[][] timeMatrix = new double[n][];
@@ -91,9 +92,12 @@ public class PDPTWGenerator {
         for(int nextNode : solution){
             numberOfNodesToAssign -= 1;
             double arrivalTime = currentTime + timeMatrix[currentNode][nextNode];
-            double earlyLine = arrivalTime - 100 + random.nextDouble(200);
+            double earlyLine = arrivalTime - (squareSide/2) + random.nextDouble(squareSide);
+            if(earlyLine < 0) {
+                earlyLine = 0;
+            }
             currentTime  = new TimeWindow(earlyLine, 0).entryTime(arrivalTime);
-            double deadline = currentTime + random.nextInt(200);
+            double deadline = currentTime + random.nextInt(squareSide/2);
             timeWindows[nextNode] = new TimeWindow(earlyLine, deadline);
             currentNode = nextNode;
 

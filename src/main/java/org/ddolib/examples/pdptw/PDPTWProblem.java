@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
@@ -84,6 +85,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      */
     private Optional<String> name = Optional.empty();
 
+
+    PDPTWFastLowerBound myBoundCalculator = null;
+
     public void strengthenTimeWindows(){
 
         int deadlineStrengthen = 0;
@@ -102,6 +106,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 toReturn += "\n\tearlyLineStrengthening " + pickup + "->*" + delivery + "*\n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
                  timeWindows[delivery] = newTW;
             }
+
             // pickup.deadline = min(pickup.deadline,delivery.deadline - travelTime(pickup,delivery)
             double newDeadline = timeWindows[delivery].end() - timeMatrix[pickup][delivery];
             if(newDeadline < timeWindows[pickup].end()){
@@ -112,7 +117,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 timeWindows[pickup] = newTW;
             }
         }
-        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
+        //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
@@ -145,6 +150,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             deliveryToAssociatedPickup.put(d, p);
         }
         strengthenTimeWindows();
+        myBoundCalculator = new PDPTWFastLowerBound(this);
     }
 
     /**
@@ -222,6 +228,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         this.name = Optional.of(fname);
 
         strengthenTimeWindows();
+        myBoundCalculator = new PDPTWFastLowerBound(this);
     }
 
      /**
@@ -264,6 +271,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         return 0;
     }
 
+
+
     @Override
     public Iterator<Integer> domain(PDPTWState state, int var) {
         if (var == n - 1) {
@@ -277,8 +286,6 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 return singleton(0).stream().iterator();
             }
         } else {
-            //TODO can we prune better? we do pruning in the fastDualBound method
-
             boolean canIncludePickups = state.minContent < maxCapa;
             boolean canIncludeDeliveries = state.maxContent !=0;
 
@@ -295,14 +302,22 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             if(nbStillReachablePoints < howManyToVisit) return Collections.emptyIterator();
 
-            return state
+            IntStream choices= state
                     .openToVisit
                     .stream()
                     .filter(point ->
                             ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))
-                                    && (canIncludeDeliveries | ! deliveryToAssociatedPickup.containsKey(point))))
-                    .boxed()
-                    .iterator();
+                                    && (canIncludeDeliveries | ! deliveryToAssociatedPickup.containsKey(point))));
+
+            //TODO: can we re-use this instead of throwing it away?
+            IntStream choices2 = choices.filter(choice ->{
+                if(var >= n-1) return true;
+                PDPTWState potentialNext = transition(state,new Decision(var,choice));
+                return (myBoundCalculator.fastLowerBound(potentialNext, n - var-2) < Double.MAX_VALUE);
+            });
+
+            //IntStream choices2 = choices;
+            return choices2.boxed().iterator();
         }
     }
 
