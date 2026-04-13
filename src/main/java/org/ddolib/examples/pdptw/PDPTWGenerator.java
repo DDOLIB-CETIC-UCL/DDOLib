@@ -92,12 +92,12 @@ public class PDPTWGenerator {
         for(int nextNode : solution){
             numberOfNodesToAssign -= 1;
             double arrivalTime = currentTime + timeMatrix[currentNode][nextNode];
-            double earlyLine = arrivalTime - (squareSide/2) + random.nextDouble(squareSide);
+            double earlyLine = arrivalTime - (squareSide/4) + random.nextDouble(squareSide/2);
             if(earlyLine < 0) {
                 earlyLine = 0;
             }
             currentTime  = new TimeWindow(earlyLine, 0).entryTime(arrivalTime);
-            double deadline = currentTime + random.nextInt(squareSide/2);
+            double deadline = currentTime + random.nextInt(squareSide);
             timeWindows[nextNode] = new TimeWindow(earlyLine, deadline);
             currentNode = nextNode;
 
@@ -139,10 +139,17 @@ public class PDPTWGenerator {
                     openPickups.remove(pickup);
 
                     //we delete one of the two timeWindows, to make the problem more challenging
-                    if(random.nextBoolean()){
-                        timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
-                    }else{
-                        timeWindows[currentNode] = new TimeWindow(0, Integer.MAX_VALUE);
+                    switch(random.nextInt(2)){
+                        case 0:
+                            timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
+                            break;
+                        case 1:
+                            timeWindows[currentNode] = new TimeWindow(0, Integer.MAX_VALUE);
+                            break;
+                        case 2:
+                            timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
+                            timeWindows[currentNode] = new TimeWindow(0, Integer.MAX_VALUE);
+                            break;
                     }
             }
         }

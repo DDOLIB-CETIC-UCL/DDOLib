@@ -79,7 +79,7 @@ public final class PDPTWAcsMain {
      */
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(25, 3, 5, new Random(2));
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(18, 3, 5, new Random(2));
         AcsModel<PDPTWState> model = new AcsModel<>() {
 
             public Problem<PDPTWState> problem() {
