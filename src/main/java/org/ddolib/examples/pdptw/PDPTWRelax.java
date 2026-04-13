@@ -33,7 +33,7 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
             minTime = Math.min(minTime, state.currentTime);
         }
 
-        return new PDPTWState(current, openToVisit, allToVisit,minContent,maxContent,minTime);
+        return new PDPTWState(current, openToVisit, allToVisit, minContent, maxContent, minTime);
     }
 
     @Override

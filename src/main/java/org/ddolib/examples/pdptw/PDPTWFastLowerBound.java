@@ -39,33 +39,38 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
         BitSet toVisit = (BitSet) state.allToVisit.clone();
-
+        System.out.println("fastLowerBound");
+        System.out.println(toVisit);
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(nbUnassignedVariables);
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
         //TODO prune based on the actual remaining nodes to reach
-        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+        for (int i : toVisit.stream().toArray()) {
             toVisitLB.add(leastIncidentEdge[i]);
         }
         Collections.sort(toVisitLB);
+        System.out.println("toVisitLB:" + toVisitLB);
 
         ArrayList<Double> toVisitEarlyLines = new ArrayList<>(nbUnassignedVariables);
-        toVisitEarlyLines.add(0.0); //one more earlyLine because there is the final hop
-        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+        toVisitEarlyLines.add(problem.timeWindows[0].start()); //one more earlyLine because there is the final hop
+        for (int i : toVisit.stream().toArray()) {
             toVisitEarlyLines.add(problem.timeWindows[i].start());
         }
         Collections.sort(toVisitEarlyLines);
+        System.out.println("toVisitEarlyLines:" + toVisitEarlyLines);
 
         ArrayList<Double> toVisitDeadlines = new ArrayList<>(nbUnassignedVariables);
         toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop
-        for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+        for (int i :toVisit.stream().toArray()) {
             toVisitDeadlines.add(problem.timeWindows[i].end());
         }
+
         Collections.sort(toVisitDeadlines);
+        System.out.println("toVisitDeadlines:" + toVisitDeadlines);
 
         int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;
         double currentSimulationTime = state.currentTime;
-         for (int i = 0; i < nbUnassignedVariables; i++) { //variable.size already includes the final come back
+         for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
              double incomingHop = toVisitLB.get(i);
              double earlyLine = toVisitEarlyLines.get(i);
              currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
