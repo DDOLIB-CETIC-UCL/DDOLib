@@ -151,7 +151,7 @@ public class PDPTWGenerator {
         double deadline = arrivalTime + random.nextInt(100);
         timeWindows[0] = new TimeWindow(0, deadline);
 
-        PDPTWProblem instance = new PDPTWProblem(timeMatrix, pickupToAssociatedDelivery, maxCapa, timeWindows, Optional.of(arrivalTime));
+        PDPTWProblem instance = new PDPTWProblem(timeMatrix, pickupToAssociatedDelivery, maxCapa, timeWindows, Optional.empty());
 
         //construct the PDPTW solution object
 //        int[]fullSolutionArray = new int[n+1];
