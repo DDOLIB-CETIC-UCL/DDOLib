@@ -99,7 +99,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 TimeWindow oldTW = timeWindows[delivery];
                 TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
 
-                toReturn += "\n\tearlyLineStrengthening \n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
+                toReturn += "\n\tearlyLineStrengthening " + pickup + "->*" + delivery + "*\n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
                  timeWindows[delivery] = newTW;
             }
             // pickup.deadline = min(pickup.deadline,delivery.deadline - travelTime(pickup,delivery)
@@ -108,10 +108,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 earlyLineStrengthen ++;
                 TimeWindow oldTW = timeWindows[pickup];
                 TimeWindow newTW = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
-                toReturn += "\n\tdeadlineStrengthen \n\t\tOLD:" + oldTW + " \n\t\tNEW:" + newTW;
+                toReturn += "\n\tdeadlineStrengthen *" + pickup + "*->" + delivery + "\n\t\tOLD:" + oldTW + " \n\t\tNEW:" + newTW;
                 timeWindows[pickup] = newTW;
             }
-
         }
         System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
