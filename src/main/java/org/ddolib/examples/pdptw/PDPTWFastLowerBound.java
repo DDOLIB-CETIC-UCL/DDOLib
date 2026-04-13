@@ -39,8 +39,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
         BitSet toVisit = (BitSet) state.allToVisit.clone();
-        System.out.println("fastLowerBound");
-        System.out.println(toVisit);
+
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(nbUnassignedVariables);
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
@@ -49,7 +48,6 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
             toVisitLB.add(leastIncidentEdge[i]);
         }
         Collections.sort(toVisitLB);
-        System.out.println("toVisitLB:" + toVisitLB);
 
         ArrayList<Double> toVisitEarlyLines = new ArrayList<>(nbUnassignedVariables);
         toVisitEarlyLines.add(problem.timeWindows[0].start()); //one more earlyLine because there is the final hop
@@ -57,7 +55,6 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
             toVisitEarlyLines.add(problem.timeWindows[i].start());
         }
         Collections.sort(toVisitEarlyLines);
-        System.out.println("toVisitEarlyLines:" + toVisitEarlyLines);
 
         ArrayList<Double> toVisitDeadlines = new ArrayList<>(nbUnassignedVariables);
         toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop
@@ -66,7 +63,6 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         }
 
         Collections.sort(toVisitDeadlines);
-        System.out.println("toVisitDeadlines:" + toVisitDeadlines);
 
         int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;
         double currentSimulationTime = state.currentTime;
