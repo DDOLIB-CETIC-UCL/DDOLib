@@ -38,6 +38,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(variables.size());
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
+        //TODO prune based on the actual remaining nodes to reach
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }

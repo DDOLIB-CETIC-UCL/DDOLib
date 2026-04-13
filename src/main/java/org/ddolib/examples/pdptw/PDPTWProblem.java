@@ -84,6 +84,29 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      */
     private Optional<String> name = Optional.empty();
 
+    public void strengthenTimeWindows(){
+
+        int deadlineStrengthen = 0;
+        int earlyLineStrengthen = 0;
+        for (int pickup : pickupToAssociatedDelivery.keySet()) {
+            int delivery = pickupToAssociatedDelivery.get(pickup);
+
+            //delivery.earlyLine = max(delivry.earlyLine,pickUp.ealyLine + travelTime(pickup,delivery)
+            double newEarlyLine = timeWindows[pickup].start() + timeMatrix[pickup][delivery];
+            if(newEarlyLine > timeWindows[delivery].start()){
+                deadlineStrengthen ++;
+                timeWindows[delivery] = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
+            }
+            // pickup.deadline = min(pickup.deadline,delivery.deadline - travelTime(pickup,delivery)
+            double newDeadline = timeWindows[delivery].end() - timeMatrix[pickup][delivery];
+            if(newDeadline < timeWindows[pickup].end()){
+                earlyLineStrengthen ++;
+                timeWindows[pickup] = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
+            }
+
+        }
+        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen);
+    }
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
      *
@@ -93,8 +116,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      * @param timeWindows            the time window associated to each node
      */
     public PDPTWProblem(final double[][] timeMatrix,
-                         HashMap<Integer, Integer> pickupToAssociatedDelivery,
-                         int maxCapa,
+                        HashMap<Integer, Integer> pickupToAssociatedDelivery,
+                        int maxCapa,
                         TimeWindow[] timeWindows,
                         Optional<Double> aKnownSolutionValue) {
 
@@ -114,6 +137,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             unrelatedNodes.remove(d);
             deliveryToAssociatedPickup.put(d, p);
         }
+        strengthenTimeWindows();
     }
 
     /**
@@ -189,9 +213,11 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         this.maxCapa = Integer.MAX_VALUE;
 
         this.name = Optional.of(fname);
+
+        strengthenTimeWindows();
     }
 
-     /**
+    /**
      * Returns the number of variables (decisions) in the problem.
      * <p>
      * Note: the last decision corresponds to returning to the depot (node 0).
@@ -199,8 +225,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      *
      * @return number of variables
      */
-     @Override
-     public int nbVars() {
+    @Override
+    public int nbVars() {
         return n; //the last decision will be to come back to point zero
     }
 
@@ -244,6 +270,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 return singleton(0).stream().iterator();
             }
         } else {
+            //TODO can we prune better? we do pruning in the fastDualBound method
 
             boolean canIncludePickups = state.minContent < maxCapa;
             boolean canIncludeDeliveries = state.maxContent !=0;
