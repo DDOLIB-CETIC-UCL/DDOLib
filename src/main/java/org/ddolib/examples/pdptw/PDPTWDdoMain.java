@@ -94,7 +94,7 @@ public final class PDPTWDdoMain {
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {
 
-        final PDPTWProblem problem = genInstance(18, 3, 10, new Random(1));
+        final PDPTWProblem problem = genInstance(23, 3, 10, new Random(1));
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
