@@ -217,7 +217,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         strengthenTimeWindows();
     }
 
-    /**
+     /**
      * Returns the number of variables (decisions) in the problem.
      * <p>
      * Note: the last decision corresponds to returning to the depot (node 0).
@@ -225,8 +225,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      *
      * @return number of variables
      */
-    @Override
-    public int nbVars() {
+     @Override
+     public int nbVars() {
         return n; //the last decision will be to come back to point zero
     }
 
