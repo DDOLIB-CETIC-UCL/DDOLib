@@ -88,6 +88,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
         int deadlineStrengthen = 0;
         int earlyLineStrengthen = 0;
+        String toReturn = "";
         for (int pickup : pickupToAssociatedDelivery.keySet()) {
             int delivery = pickupToAssociatedDelivery.get(pickup);
 
@@ -95,17 +96,24 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             double newEarlyLine = timeWindows[pickup].start() + timeMatrix[pickup][delivery];
             if(newEarlyLine > timeWindows[delivery].start()){
                 deadlineStrengthen ++;
-                timeWindows[delivery] = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
+                TimeWindow oldTW = timeWindows[delivery];
+                TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
+
+                toReturn += "\n\tearlyLineStrengthening \n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
+                 timeWindows[delivery] = newTW;
             }
             // pickup.deadline = min(pickup.deadline,delivery.deadline - travelTime(pickup,delivery)
             double newDeadline = timeWindows[delivery].end() - timeMatrix[pickup][delivery];
             if(newDeadline < timeWindows[pickup].end()){
                 earlyLineStrengthen ++;
-                timeWindows[pickup] = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
+                TimeWindow oldTW = timeWindows[pickup];
+                TimeWindow newTW = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
+                toReturn += "\n\tdeadlineStrengthen \n\t\tOLD:" + oldTW + " \n\t\tNEW:" + newTW;
+                timeWindows[pickup] = newTW;
             }
 
         }
-        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen);
+        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
