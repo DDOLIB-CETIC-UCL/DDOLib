@@ -38,12 +38,12 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
 
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
-        BitSet toVisit = (BitSet) state.allToVisit.clone();
+        BitSet toVisit = state.allToVisit;
 
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(nbUnassignedVariables);
         toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
-        //TODO prune based on the actual remaining nodes to reach
+        //TODO use something better based on the actual remaining nodes to reach
         for (int i : toVisit.stream().toArray()) {
             toVisitLB.add(leastIncidentEdge[i]);
         }
@@ -64,6 +64,8 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
         Collections.sort(toVisitDeadlines);
 
+        //first iteration, to check for deadline enforcement
+        //We take the min because it will not overprune
         int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;
         double currentSimulationTime = state.minCurrentTime;
          for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
@@ -76,12 +78,13 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
              }
          }
 
+        //second iteration, to compute actual bound,
+        // we take the max because it under-estimate the remaining cost
         currentSimulationTime = state.maxCurrentTime;
         for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
             double incomingHop = toVisitLB.get(i);
             double earlyLine = toVisitEarlyLines.get(i);
             currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
-            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
         }
 
         return currentSimulationTime - state.minCurrentTime;

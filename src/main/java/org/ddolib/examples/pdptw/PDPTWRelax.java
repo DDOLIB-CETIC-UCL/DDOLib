@@ -40,7 +40,6 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
 
     @Override
     public double relaxEdge(PDPTWState from, PDPTWState to, PDPTWState merged, Decision d, double cost) {
-
         return cost;
     }
 
