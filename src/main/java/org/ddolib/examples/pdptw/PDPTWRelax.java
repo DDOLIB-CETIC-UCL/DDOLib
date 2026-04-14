@@ -21,7 +21,8 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
         BitSet allToVisit = new BitSet(problem.n);
         int minContent = Integer.MAX_VALUE;
         int maxContent = Integer.MIN_VALUE;
-        double minTime = Double.MAX_VALUE;
+        double minCurrentTime = Double.MAX_VALUE;
+        double maxCurrentTime = Double.MIN_VALUE;
         while (states.hasNext()) {
             PDPTWState state = states.next();
             //take the union; loose precision here
@@ -30,10 +31,11 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
             current.or(state.current);
             minContent = Math.min(minContent, state.minContent);
             maxContent = Math.max(maxContent, state.maxContent);
-            minTime = Math.min(minTime, state.currentTime);
+            minCurrentTime = Math.min(minCurrentTime, state.minCurrentTime);
+            maxCurrentTime = Math.max(maxCurrentTime, state.maxCurrentTime);
         }
 
-        return new PDPTWState(current, openToVisit, allToVisit, minContent, maxContent, minTime);
+        return new PDPTWState(current, openToVisit, allToVisit, minContent, maxContent, minCurrentTime, maxCurrentTime);
     }
 
     @Override

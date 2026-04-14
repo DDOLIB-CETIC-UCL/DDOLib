@@ -65,7 +65,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         Collections.sort(toVisitDeadlines);
 
         int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;
-        double currentSimulationTime = state.currentTime;
+        double currentSimulationTime = state.minCurrentTime;
          for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
              double incomingHop = toVisitLB.get(i);
              double earlyLine = toVisitEarlyLines.get(i);
@@ -76,6 +76,14 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
              }
          }
 
-        return currentSimulationTime - state.currentTime;
+        currentSimulationTime = state.maxCurrentTime;
+        for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
+            double incomingHop = toVisitLB.get(i);
+            double earlyLine = toVisitEarlyLines.get(i);
+            currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
+            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
+        }
+
+        return currentSimulationTime - state.minCurrentTime;
     }
 }

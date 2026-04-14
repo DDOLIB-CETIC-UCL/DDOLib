@@ -257,7 +257,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         allToVisit.set(1, n);
 
         return new PDPTWState(singleton(0), openToVisit, allToVisit,0,0,
-                timeWindows[0].start());
+                timeWindows[0].start(),timeWindows[0].start());
     }
 
     public BitSet singleton(int singletonValue) {
@@ -278,7 +278,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         if (var == n - 1) {
             //the final decision is to come back to node zero
             //it is only possible  if we are before the deadline of node0
-            if(state.currentTime
+            if(state.minCurrentTime
                     + state.current.stream().mapToDouble(from -> timeMatrix[from][0]).max().getAsDouble()
                     > timeWindows[0].end()) {
                 return Collections.emptyIterator();
@@ -296,7 +296,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             // otherwise, there is no successor at all.
             //this assumes that we have triangular inequality
             long nbStillReachablePoints = state.allToVisit.stream().filter(point ->
-                    (state.currentTime + (state.current.stream().mapToDouble(
+                    (state.minCurrentTime + (state.current.stream().mapToDouble(
                             from -> timeMatrix[from][point])).min().getAsDouble()) <= timeWindows[point].end()
             ).count();
 
@@ -352,12 +352,20 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         if(newMinContent > maxCapa) throw new Error("error");
         if(newMaxContent < 0) throw new Error("error");
 
-        double arrivalTime = state.currentTime + state.current.stream()
+        double minArrivalTime = state.minCurrentTime + state.current.stream()
                 .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
                 .min().getAsDouble();
 
-        if(arrivalTime < timeWindows[node].start()){
-            arrivalTime = timeWindows[node].start();
+    if(minArrivalTime < timeWindows[node].start()){
+        minArrivalTime = timeWindows[node].start();
+        }
+
+        double maxArrivalTime = state.minCurrentTime + state.current.stream()
+                .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
+                .min().getAsDouble();
+
+        if(maxArrivalTime < timeWindows[node].start()){
+            maxArrivalTime = timeWindows[node].start();
         }
 
         return new PDPTWState(
@@ -366,7 +374,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 newAllToVisit,
                 newMinContent,
                 newMaxContent,
-                arrivalTime);
+                minArrivalTime,
+                maxArrivalTime);
     }
 
     @Override
@@ -382,7 +391,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         // The earlyLine has a different semantics for that node.
         // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
 
-        double waitTime = timeWindows[decision.value()].waitTime(state.currentTime + travelTime);
+        double waitTime = timeWindows[decision.value()].waitTime(state.maxCurrentTime + travelTime);
         return travelTime + waitTime;
     }
 

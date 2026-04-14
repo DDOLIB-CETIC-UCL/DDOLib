@@ -17,7 +17,7 @@ public class PDPTWDominance implements Dominance<PDPTWState> {
 
     @Override
     public boolean isDominatedOrEqual(PDPTWState state1, PDPTWState state2) {
-        return state1.currentTime >= state2.currentTime;
+        return state1.minCurrentTime >= state2.maxCurrentTime;
     }
 }
 
