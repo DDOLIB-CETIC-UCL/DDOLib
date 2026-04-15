@@ -1,5 +1,7 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
@@ -7,10 +9,8 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.examples.boundedknapsack.BKSDominance;
+import org.ddolib.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -94,7 +94,7 @@ public final class PDPTWDdoMain {
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {
 
-        final PDPTWProblem problem = genInstance(18, 3, 10, new Random(1));
+        final PDPTWProblem problem = genInstance(20, 3, 10, new Random(1));
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -124,6 +124,11 @@ public final class PDPTWDdoMain {
             @Override
             public Frontier<PDPTWState> frontier() {
                 return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+            }
+
+            @Override
+            public DominanceChecker<PDPTWState> dominance() {
+                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
             }
 
             @Override

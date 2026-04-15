@@ -1,5 +1,7 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.examples.pdp.PDPFastLowerBound;
 import org.ddolib.examples.pdp.PDPGenerator;
@@ -79,7 +81,7 @@ public final class PDPTWAcsMain {
      */
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(18, 3, 5, new Random(2));
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2));
         AcsModel<PDPTWState> model = new AcsModel<>() {
 
             public Problem<PDPTWState> problem() {
@@ -94,6 +96,11 @@ public final class PDPTWAcsMain {
             @Override
             public int columnWidth() {
                 return 100;
+            }
+
+            @Override
+            public DominanceChecker<PDPTWState> dominance() {
+                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
             }
         };
 

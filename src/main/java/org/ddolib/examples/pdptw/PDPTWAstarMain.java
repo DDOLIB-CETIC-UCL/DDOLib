@@ -1,5 +1,7 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.examples.pdp.PDPFastLowerBound;
@@ -80,7 +82,7 @@ public final class PDPTWAstarMain {
      * @throws IOException if an error occurs while reading or generating the instance
      */
     public static void main(final String[] args) throws IOException {
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(18, 3, 5, new Random(2));
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2));
         Model<PDPTWState> model = new Model<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -90,6 +92,11 @@ public final class PDPTWAstarMain {
             @Override
             public PDPTWFastLowerBound lowerBound() {
                 return new PDPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<PDPTWState> dominance() {
+                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
             }
         };
 
