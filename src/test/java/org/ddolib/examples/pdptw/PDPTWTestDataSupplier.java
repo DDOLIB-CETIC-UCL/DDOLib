@@ -1,5 +1,7 @@
 package org.ddolib.examples.pdptw;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -63,6 +65,11 @@ public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWPro
             @Override
             public boolean useCache() {
                 return true;
+            }
+
+            @Override
+            public DominanceChecker<PDPTWState> dominance() {
+                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
             }
         };
     }
