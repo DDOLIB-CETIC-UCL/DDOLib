@@ -119,7 +119,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 timeWindows[pickup] = newTW;
             }
         }
-        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
+        //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
