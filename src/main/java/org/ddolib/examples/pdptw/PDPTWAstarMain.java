@@ -4,10 +4,6 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.examples.pdp.PDPFastLowerBound;
-import org.ddolib.examples.pdp.PDPGenerator;
-import org.ddolib.examples.pdp.PDPProblem;
-import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -15,8 +11,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.util.Random;
-
-import static org.ddolib.examples.pdp.PDPGenerator.genInstance;
 
 /**
  * Single Vehicle Pick-up and Delivery Problem with Time Window (PDPTW) with Ddo.
@@ -32,7 +26,7 @@ import static org.ddolib.examples.pdp.PDPGenerator.genInstance;
  * <p><b>Execution details:</b></p>
  * <ul>
  *   <li>A random PDPTW instance is generated using
- *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random)}.</li>
+ *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random, Boolean)}.</li>
  *   <li>The problem is wrapped into a {@link Model} that specifies:
  *     <ul>
  *       <li>the {@link PDPTWProblem} definition,</li>
@@ -82,7 +76,7 @@ public final class PDPTWAstarMain {
      * @throws IOException if an error occurs while reading or generating the instance
      */
     public static void main(final String[] args) throws IOException {
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(30, 3, 5, new Random(2),true);
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2),true);
         Model<PDPTWState> model = new Model<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -100,9 +94,8 @@ public final class PDPTWAstarMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) ->
+                SolutionPrinter.printSolution(s, sol));
 
         System.out.println(bestSolution.statistics());
         System.out.println(new PDPTWSolution(problem, bestSolution, -1));

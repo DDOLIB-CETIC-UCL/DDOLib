@@ -1,14 +1,12 @@
 package org.ddolib.examples.pdptw;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
@@ -76,7 +74,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     /**
      * Optional: a known solution of the problem.
      */
-    private Optional<Double> aKnownSolutionValue;
+    private final Optional<Double> aKnownSolutionValue;
 
     /**
      * Optional name of the instance to ease readability in tests.
@@ -121,6 +119,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         }
         //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
+
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
      *

@@ -7,7 +7,6 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
 
-import static java.lang.Double.valueOf;
 import static java.lang.Math.max;
 
 /**

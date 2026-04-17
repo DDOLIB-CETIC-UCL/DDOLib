@@ -3,10 +3,6 @@ package org.ddolib.examples.pdptw;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.examples.pdp.PDPFastLowerBound;
-import org.ddolib.examples.pdp.PDPGenerator;
-import org.ddolib.examples.pdp.PDPProblem;
-import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
@@ -30,7 +26,7 @@ import java.util.Random;
  * <p><b>Execution details:</b></p>
  * <ul>
  *   <li>A random PDPTW instance is generated using
- *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random)}.</li>
+ *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random, Boolean)}.</li>
  *   <li>The problem is wrapped into a {@link Model} that specifies:
  *     <ul>
  *       <li>the {@link PDPTWProblem} definition,</li>
@@ -81,7 +77,7 @@ public final class PDPTWAcsMain {
      */
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2),true);
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(40, 3, 5, new Random(2),true);
         AcsModel<PDPTWState> model = new AcsModel<>() {
 
             public Problem<PDPTWState> problem() {
@@ -104,9 +100,8 @@ public final class PDPTWAcsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) ->
+                SolutionPrinter.printSolution(s, sol));
 
         System.out.println(bestSolution.statistics());
         System.out.println(new PDPTWSolution(problem, bestSolution, -1));

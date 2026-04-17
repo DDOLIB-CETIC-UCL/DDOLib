@@ -7,9 +7,6 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.misp.MispProblem;
-import org.ddolib.examples.pdp.PDPProblem;
-import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.testbench.TestDataSupplier;
@@ -96,7 +93,7 @@ public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWPro
 
             @Override
             public DominanceChecker<PDPTWState> dominance() {
-                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
+                return new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
             }
         };
     }

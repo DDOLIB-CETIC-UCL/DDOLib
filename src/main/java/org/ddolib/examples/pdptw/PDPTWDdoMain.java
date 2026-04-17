@@ -17,9 +17,6 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Random;
-
-import static org.ddolib.examples.pdptw.PDPTWGenerator.genInstance;
 
 /**
  * Single Vehicle Pick-up and Delivery Problem with Time Window (PDPTW) with Ddo.
@@ -35,7 +32,7 @@ import static org.ddolib.examples.pdptw.PDPTWGenerator.genInstance;
  * <p><b>Execution workflow:</b></p>
  * <ul>
  *   <li>A random PDPTW instance is generated using
- *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random)}.</li>
+ *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random,Boolean)}.</li>
  *   <li>The instance is encapsulated in a {@link DdoModel}, which specifies:
  *     <ul>
  *       <li>the {@link PDPTWProblem} definition,</li>
@@ -97,6 +94,7 @@ public final class PDPTWDdoMain {
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {
         String instanceFile = args.length == 0 ? Paths.get("data", "PDPTW", "instance_10_0").toString() : args[0];
+        //final PDPTWProblem problem = PDPTWGenerator.genInstance(30, 3, 5, new Random(2),true);
         final PDPTWProblem problem = new PDPTWProblem(instanceFile);
         //final PDPTWProblem problem = genInstance(24, 3, 5, new Random(6));
         DdoModel<PDPTWState> model = new DdoModel<>() {
@@ -141,9 +139,8 @@ public final class PDPTWDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) ->
+                SolutionPrinter.printSolution(s, sol));
 
         System.out.println(bestSolution.statistics());
         problem.evaluate(bestSolution.solution());

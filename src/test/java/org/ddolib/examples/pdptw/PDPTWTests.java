@@ -1,6 +1,5 @@
 package org.ddolib.examples.pdptw;
 
-import org.ddolib.examples.mks.MKSTestDataSupplier;
 import org.ddolib.util.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
