@@ -7,26 +7,53 @@ import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.misp.MispProblem;
 import org.ddolib.examples.pdp.PDPProblem;
 import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.testbench.TestDataSupplier;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWProblem> {
 
+    private final Path dir;
+
+    public PDPTWTestDataSupplier(Path dir) {
+        this.dir = dir;
+    }
+
     @Override
     protected List<PDPTWProblem> generateProblems() {
-        Random random = new Random(1);
-        int nbTests = 10;
+        if(dir == null){
+            Random random = new Random(1);
+            int nbTests = 10;
 
-        return IntStream.range(0, nbTests).boxed().map(
-                i -> PDPTWGenerator.genInstance(10, 2, 3, random)
-        ).toList();
+            return IntStream.range(0, nbTests).boxed().map(
+                    i -> PDPTWGenerator.genInstance(10, 2, 3, random,true)
+            ).toList();
+        }else{
+            try (Stream<Path> stream = Files.walk(dir)) {
+                return stream.filter(Files::isRegularFile) // get only files
+                        .map(filePath -> {
+                            try {
+                                return new PDPTWProblem(filePath.toString());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override

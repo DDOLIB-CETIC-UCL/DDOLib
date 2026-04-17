@@ -75,10 +75,20 @@ public class PDPTWState {
         return toReturn;
     }
 
+    public String printInterval(double min,double max){
+        if(min == max) return "" + min;
+        else return "[" + min + ";" + max + "]";
+    }
+    public String printInterval(int min,int max){
+        if(min == max) return "" + min;
+        else return "[" + min + ";" + max + "]";
+    }
     @Override
     public String toString() {
         BitSet closedToVisit = (BitSet) allToVisit.clone();
         closedToVisit.xor(openToVisit);
-        return "PDState(current:" + current + " currentTime:[" + minCurrentTime + ";" + maxCurrentTime + "] openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + ")";
+        return "PDState(current:" + current + " currentTime:" + printInterval(minCurrentTime,maxCurrentTime)
+                + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + " allToVisit:" + allToVisit
+                + " content:" + printInterval(minContent,maxContent) + ")";
     }
 }

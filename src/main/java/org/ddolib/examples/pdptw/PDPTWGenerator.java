@@ -46,7 +46,7 @@ public class PDPTWGenerator {
      * @param random    a {@link Random} object used for generating coordinates
      * @return a {@link PDPProblem} instance representing the generated PDP
      */
-    public static PDPTWProblem genInstance(int n, int unrelated, int maxCapa, Random random) {
+    public static PDPTWProblem genInstance(int n, int unrelated, int maxCapa, Random random, Boolean strengthenTimeWindows) {
 
         int squareSide = 1000;
         int[] x = new int[n];
@@ -158,7 +158,7 @@ public class PDPTWGenerator {
         double deadline = arrivalTime + random.nextInt(100);
         timeWindows[0] = new TimeWindow(0, deadline);
 
-        PDPTWProblem instance = new PDPTWProblem(timeMatrix, pickupToAssociatedDelivery, maxCapa, timeWindows, Optional.empty());
+        PDPTWProblem instance = new PDPTWProblem(timeMatrix, pickupToAssociatedDelivery, maxCapa, timeWindows, Optional.empty(), strengthenTimeWindows);
 
         //construct the PDPTW solution object
 //        int[]fullSolutionArray = new int[n+1];
@@ -212,7 +212,7 @@ public class PDPTWGenerator {
      */
     public void writeInstance(String fileName, int n, int unrelated, int maxCapa, Random random) throws IOException {
 
-        PDPTWProblem problem = genInstance(n, unrelated, maxCapa, random);
+        PDPTWProblem problem = genInstance(n, unrelated, maxCapa, random,false);
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(String.format("Nodes: %d%n%n", n));

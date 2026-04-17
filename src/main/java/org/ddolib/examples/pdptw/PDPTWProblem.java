@@ -133,7 +133,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                         HashMap<Integer, Integer> pickupToAssociatedDelivery,
                         int maxCapa,
                         TimeWindow[] timeWindows,
-                        Optional<Double> aKnownSolutionValue) {
+                        Optional<Double> aKnownSolutionValue,
+                        Boolean strengthenTimeWindows) {
 
         this.timeMatrix = timeMatrix;
         this.n = timeMatrix.length;
@@ -151,7 +152,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             unrelatedNodes.remove(d);
             deliveryToAssociatedPickup.put(d, p);
         }
-        strengthenTimeWindows();
+        if(strengthenTimeWindows){
+            strengthenTimeWindows();
+        }
         myBoundCalculator = new PDPTWFastLowerBound(this);
     }
 
@@ -185,8 +188,6 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                     linesCount--;
                 } else if (linesCount == 0) { // read num nodes and optimal value
                     String[] tokens = line.split("\\s+");
-                    System.out.println(tokens);
-                    System.out.println(tokens[0]);
                     numNodes = Integer.parseInt(tokens[0]);
                     matrix = new double[numNodes][numNodes];
                     tw = new TimeWindow[numNodes];
@@ -321,7 +322,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             //the final decision is to come back to node zero
             //it is only possible  if we are before the deadline of node0
             if(state.minCurrentTime
-                    + state.current.stream().mapToDouble(from -> timeMatrix[from][0]).max().getAsDouble()
+                    + state.current.stream().mapToDouble(from -> timeMatrix[from][0]).min().getAsDouble()
                     > timeWindows[0].end()) {
                 return Collections.emptyIterator();
             }else{
