@@ -96,7 +96,7 @@ public final class PDPTWAstarMain {
 
             @Override
             public DominanceChecker<PDPTWState> dominance() {
-                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
+                return new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
             }
         };
 
@@ -107,5 +107,4 @@ public final class PDPTWAstarMain {
         System.out.println(bestSolution.statistics());
         System.out.println(new PDPTWSolution(problem, bestSolution, -1));
     }
-
 }

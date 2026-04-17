@@ -15,7 +15,6 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
 
     @Override
     public PDPTWState mergeStates(final Iterator<PDPTWState> states) {
-        //NB: the current node is normally the same in all states
         BitSet openToVisit = new BitSet(problem.n);
         BitSet current = new BitSet(problem.n);
         BitSet allToVisit = new BitSet(problem.n);

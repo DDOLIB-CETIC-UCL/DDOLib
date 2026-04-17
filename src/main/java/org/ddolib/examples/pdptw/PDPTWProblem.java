@@ -5,9 +5,7 @@ import org.ddolib.examples.pdp.PDPState;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -102,7 +100,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 deadlineStrengthen ++;
                 TimeWindow oldTW = timeWindows[delivery];
                 TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
-
+                //Strengthening the earlyLine is not about this one delivery node.
+                //it is about exposing other earlylines in the FLB heuristics
+                //and to do that we must shift as many early lines as possible to the latest time they are actually relevant
                 toReturn += "\n\tearlyLineStrengthening " + pickup + "->*" + delivery + "*\n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
                  timeWindows[delivery] = newTW;
             }
@@ -113,11 +113,13 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 earlyLineStrengthen ++;
                 TimeWindow oldTW = timeWindows[pickup];
                 TimeWindow newTW = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
+                //strengthening the deadline of pickup sill enable the solver to quicker identify
+                // that a prefix does not lead to a feasible solution
                 toReturn += "\n\tdeadlineStrengthen *" + pickup + "*->" + delivery + "\n\t\tOLD:" + oldTW + " \n\t\tNEW:" + newTW;
                 timeWindows[pickup] = newTW;
             }
         }
-        //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
+        System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
     /**
      * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
@@ -173,9 +175,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         Optional<Double> opti = Optional.empty();
         HashMap<Integer, Integer> pickupToAssociatedDelivery = new HashMap<>();
         TimeWindow[] tw = null;
+        int maxCapa = -1;
         try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
             int linesCount = 0;
-            int skip = 0;
 
             String line;
             while ((line = br.readLine()) != null) {
@@ -183,21 +185,28 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                     linesCount--;
                 } else if (linesCount == 0) { // read num nodes and optimal value
                     String[] tokens = line.split("\\s+");
-                    numNodes = Integer.parseInt(tokens[1]);
+                    System.out.println(tokens);
+                    System.out.println(tokens[0]);
+                    numNodes = Integer.parseInt(tokens[0]);
                     matrix = new double[numNodes][numNodes];
                     tw = new TimeWindow[numNodes];
                     if (tokens.length >= 4) {
-                        opti = Optional.of(Double.parseDouble(tokens[3]));
+                        opti = Optional.of(Double.parseDouble(tokens[1]));
                     }
-                } else if (linesCount <= numNodes) { // read distance matrix
-                    int node = linesCount - skip - 1;
+                } else if (linesCount == 1) { // read max capa
+                    String[] tokens = line.split("\\s+");
+                    maxCapa = Integer.parseInt(tokens[0]);
+
+                } else if (linesCount <= numNodes+1) { // read distance matrix
+                    int node = linesCount - 2;
                     String[] tokens = line.split("\\s+");
                     double[] row =
                             Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();
                     matrix[node] = row;
-                }else if (linesCount <= numNodes*2) { //read timeWindow
-                    String[] twStr = line.split("\\s+");
-                    tw[linesCount-numNodes] = new TimeWindow(Integer.parseInt(twStr[0]), Integer.parseInt(twStr[1]));
+                }else if (linesCount <= numNodes*2 +1) { //read timeWindow
+                    int node = linesCount - numNodes - 2;
+                    String[] tokens = line.split("\\s+");
+                    tw[node] = new TimeWindow(Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]));
                 }else { // read pick-up and delivery pairs
                     String[] tokens = line.split(" -> ");
                     pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
@@ -212,6 +221,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         this.timeWindows = tw;
         this.n = timeMatrix.length;
         this.aKnownSolutionValue = opti;
+        this.maxCapa = maxCapa;
 
         this.unrelatedNodes = new HashSet<>(IntStream.range(0, n).boxed().toList());
         deliveryToAssociatedPickup = new HashMap<>();
@@ -223,12 +233,44 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             deliveryToAssociatedPickup.put(d, p);
         }
 
-        this.maxCapa = Integer.MAX_VALUE;
-
         this.name = Optional.of(fname);
 
         strengthenTimeWindows();
         myBoundCalculator = new PDPTWFastLowerBound(this);
+    }
+
+    public void saveToFile(String fname) throws IOException {
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {
+
+            //the number of nodes
+            bw.write("" + this.n);
+            bw.write("\n\n");
+
+            //the max capa
+            bw.write("" + this.maxCapa);
+            bw.write("\n\n");
+
+            //the time matrix
+            for(double[] line : timeMatrix) {
+                for(double value : line) {
+                    bw.write(value + " ");
+                }
+                bw.write("\n");
+            }
+            bw.write("\n");
+
+            //time window
+            for(TimeWindow tw : timeWindows) {
+                bw.write(tw.start() + "  " + tw.end() + "\n");
+            }
+            bw.write("\n");
+
+            // read pick-up and delivery pairs
+            for(int pickup :pickupToAssociatedDelivery.keySet()) {
+                bw.write(pickup + " -> " + pickupToAssociatedDelivery.get(pickup) + "\n");
+            }
+        }
     }
 
      /**

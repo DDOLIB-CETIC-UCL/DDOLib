@@ -92,12 +92,12 @@ public class PDPTWGenerator {
         for(int nextNode : solution){
             numberOfNodesToAssign -= 1;
             double arrivalTime = currentTime + timeMatrix[currentNode][nextNode];
-            double earlyLine = arrivalTime - (squareSide/4) + random.nextDouble(squareSide/2);
+            double earlyLine = arrivalTime - (squareSide/2) + random.nextDouble(squareSide);
             if(earlyLine < 0) {
                 earlyLine = 0;
             }
             currentTime  = new TimeWindow(earlyLine, 0).entryTime(arrivalTime);
-            double deadline = currentTime + random.nextInt(squareSide);
+            double deadline = currentTime + random.nextInt(squareSide*2);
             timeWindows[nextNode] = new TimeWindow(earlyLine, deadline);
             currentNode = nextNode;
 

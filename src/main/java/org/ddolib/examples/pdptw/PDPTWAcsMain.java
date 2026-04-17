@@ -81,7 +81,7 @@ public final class PDPTWAcsMain {
      */
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(30, 3, 5, new Random(2));
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2));
         AcsModel<PDPTWState> model = new AcsModel<>() {
 
             public Problem<PDPTWState> problem() {
@@ -100,7 +100,7 @@ public final class PDPTWAcsMain {
 
             @Override
             public DominanceChecker<PDPTWState> dominance() {
-                return new SimpleDominanceChecker<PDPTWState>(new PDPTWDominance(), problem.nbVars());
+                return new SimpleDominanceChecker<>(new PDPTWDominance(), problem.nbVars());
             }
         };
 
@@ -111,5 +111,4 @@ public final class PDPTWAcsMain {
         System.out.println(bestSolution.statistics());
         System.out.println(new PDPTWSolution(problem, bestSolution, -1));
     }
-
 }
