@@ -174,19 +174,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             updatePrevLayer();
             updateCurrentLayer(variables, depthGlobalDD);
 
-            if (cache.isPresent()) {
-                pruned.clear();
-                if (depthGlobalDD > initialDepth) {
-                    for (NodeSubProblem<T> n : this.currentLayer) {
-                        if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
-                                && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
-                                && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
-                            pruned.add(n);
-                        }
-                    }
-                }
-                this.currentLayer.removeAll(pruned);
-            }
+            if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);
             this.nextLayer.clear();
 
             if (currentLayer.isEmpty()) {
@@ -277,15 +265,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
 
-            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
-                listDepths.add(depthGlobalDD);
-                nodeSubProblemPerLayer.add(new ArrayList<>());
-                layersThresholds.add(new ArrayList<>());
-                for (NodeSubProblem<T> n : this.currentLayer) {
-                    nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
-                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));
-                }
-            }
+            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed)
+                updateCacheLists(depthGlobalDD, depthCurrentDD);
 
             depthGlobalDD += 1;
             depthCurrentDD += 1;
@@ -313,20 +294,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
 
         if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
-            if (!cutset.isEmpty()) {
-                computeLocalBounds();
-
-                for (NodeSubProblem<T> n : cutset) {
-                    if (n.node.isMarked) {
-                        n.node.isInExactCutSet = true;
-                    }
-                }
-
-                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
-                // update the cache to improve the next computation of the BB
-                computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                        layersThresholds, config.bestUB, config.cutSetType);
-            }
+            finishCacheUpdates();
         } else if (config.compilationType == CompilationType.Relaxed) {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
             computeLocalBounds();
@@ -448,7 +416,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * previous layer.
      */
     private void updatePrevLayer() {
-        this.prevLayer.clear();
+        prevLayer.clear();
         for (NodeSubProblem<T> n : this.currentLayer) {
             this.prevLayer.put(n.node, n);
         }
@@ -462,7 +430,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param depthGlobalDD the current depth in the global mdd
      */
     private void updateCurrentLayer(Set<Integer> variables, int depthGlobalDD) {
-        this.currentLayer.clear();
+        currentLayer.clear();
         for (Entry<T, Node> e : this.nextLayer.entrySet()) {
             T state = e.getKey();
             Node node = e.getValue();
@@ -473,6 +441,62 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 node.flb = flb;
                 this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
             }
+        }
+    }
+
+    /**
+     * Prunes items from the current layer using the cache
+     *
+     * @param depthGlobalDD the current depth in the global mdd
+     * @param initialDepth  the depth when starting the compilation
+     */
+    private void pruneFromCache(int depthGlobalDD, int initialDepth) {
+        pruned.clear();
+        if (depthGlobalDD > initialDepth) {
+            for (NodeSubProblem<T> n : this.currentLayer) {
+                if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
+                        && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
+                        && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                    pruned.add(n);
+                }
+            }
+            currentLayer.removeAll(pruned);
+        }
+    }
+
+    /**
+     * Updates the lists used the update the cache at the end of the compilation.
+     *
+     * @param depthGlobalDD  the current depth in the global mdd.
+     * @param depthCurrentDD the current depth in the current sub-mdd
+     */
+    private void updateCacheLists(int depthGlobalDD, int depthCurrentDD) {
+        listDepths.add(depthGlobalDD);
+        nodeSubProblemPerLayer.add(new ArrayList<>());
+        layersThresholds.add(new ArrayList<>());
+        for (NodeSubProblem<T> n : this.currentLayer) {
+            nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
+            layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));
+        }
+    }
+
+    /**
+     * Updates the cache according to the last compilation
+     */
+    private void finishCacheUpdates() {
+        if (!cutset.isEmpty()) {
+            computeLocalBounds();
+
+            for (NodeSubProblem<T> n : cutset) {
+                if (n.node.isMarked) {
+                    n.node.isInExactCutSet = true;
+                }
+            }
+
+            markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
+            // update the cache to improve the next computation of the BB
+            computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
+                    layersThresholds, config.bestUB, config.cutSetType);
         }
     }
 
