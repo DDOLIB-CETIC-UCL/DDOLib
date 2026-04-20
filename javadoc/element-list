@@ -33,6 +33,7 @@ org.ddolib.examples.misp
 org.ddolib.examples.mks
 org.ddolib.examples.msct
 org.ddolib.examples.pdp
+org.ddolib.examples.pdptw
 org.ddolib.examples.pigmentscheduling
 org.ddolib.examples.smic
 org.ddolib.examples.srflp
