@@ -163,9 +163,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int depthCurrentDD = 0;
         int initialDepth = depthGlobalDD;
 
-
-        Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
-
         while (!variables.isEmpty()) {
             Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
 
@@ -197,30 +194,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (!config.useLNS) {
-                if (depthCurrentDD >= 2 && currentLayer.size() > config.maxWidth) {
-                    switch (config.compilationType) {
-                        case Restricted:
-                            exact = false;
-                            restrict(config.maxWidth, ranking, config.reductionStrategy, 0);
-                            break;
-                        case Relaxed:
-                            if (exact) {
-                                exact = false;
-                                if (config.cutSetType == CutSetType.LastExactLayer) {
-                                    cutset.addAll(prevLayer.values());
-                                    depthLEL = depthCurrentDD - 1;
-                                }
-                            }
-                            relax(config.maxWidth, config.relaxation, config.reductionStrategy,
-                                    variables);
-                            break;
-                        case Exact:
-                            /* nothing to do */
-                            break;
-                    }
-                }
-            }
+            if (!config.useLNS && depthCurrentDD >= 2 && currentLayer.size() > config.maxWidth)
+                limitCurrentLayerWidth(variables, depthCurrentDD);
+
             variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
@@ -233,9 +209,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
                 if (config.cutSetType == CutSetType.Frontier
                         && config.compilationType == CompilationType.Relaxed
-                        && !exact && depthCurrentDD >= 2) updateCutSet(variables, n);
+                        && !exact && depthCurrentDD >= 2) updateFrontierCutset(variables, n);
             }
-            
+
             if (config.useLNS) {
                 if (currentLayer.size() > config.maxWidth) {
                     exact = false;
@@ -492,7 +468,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
-    private void updateCutSet(Set<Integer> variables, NodeSubProblem<T> n) {
+    private void updateFrontierCutset(Set<Integer> variables, NodeSubProblem<T> n) {
         if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
             cutset.add(n);
         }
@@ -503,6 +479,29 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     cutset.add(prevLayer.get(origin));
                 }
             }
+        }
+    }
+
+    private void limitCurrentLayerWidth(Set<Integer> variables, int depthCurrentDD) {
+        switch (config.compilationType) {
+            case Restricted:
+                exact = false;
+                restrict(config.maxWidth, ranking, config.reductionStrategy, 0);
+                break;
+            case Relaxed:
+                if (exact) {
+                    exact = false;
+                    if (config.cutSetType == CutSetType.LastExactLayer) {
+                        cutset.addAll(prevLayer.values());
+                        depthLEL = depthCurrentDD - 1;
+                    }
+                }
+                relax(config.maxWidth, config.relaxation, config.reductionStrategy,
+                        variables);
+                break;
+            case Exact:
+                /* nothing to do */
+                break;
         }
     }
 
