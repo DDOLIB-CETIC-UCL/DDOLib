@@ -157,8 +157,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     @Override
     public void compile() {
-
-
         final Set<Integer> variables = varSet(config);
 
         int depthGlobalDD = config.residual.getPath().size();
@@ -226,29 +224,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
+                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED)
                     dotStr.append(generateDotStr(n, false));
-                }
+
                 if (n.lb >= config.bestUB) continue;
 
                 genChildren(n, nextVar);
 
                 if (config.cutSetType == CutSetType.Frontier
                         && config.compilationType == CompilationType.Relaxed
-                        && !exact && depthCurrentDD >= 2) {
-                    if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
-                        currentCutSet.add(n);
-                    }
-                    if (n.node.type == NodeType.RELAXED) {
-                        for (Edge e : n.node.edges) {
-                            Node origin = e.origin;
-                            if (origin.type == NodeType.EXACT) {
-                                currentCutSet.add(prevLayer.get(origin));
-                            }
-                        }
-                    }
-                }
+                        && !exact && depthCurrentDD >= 2) updateCutSet(variables, n);
             }
+            
             if (config.useLNS) {
                 if (currentLayer.size() > config.maxWidth) {
                     exact = false;
@@ -263,10 +250,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
-        if (config.compilationType == CompilationType.Relaxed && config.cutSetType == CutSetType.Frontier) {
-            cutset.addAll(currentCutSet);
-        }
-
 
         // finalize: find best
         for (Node n : nextLayer.values()) {
@@ -509,6 +492,19 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    private void updateCutSet(Set<Integer> variables, NodeSubProblem<T> n) {
+        if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
+            cutset.add(n);
+        }
+        if (n.node.type == NodeType.RELAXED) {
+            for (Edge e : n.node.edges) {
+                Node origin = e.origin;
+                if (origin.type == NodeType.EXACT) {
+                    cutset.add(prevLayer.get(origin));
+                }
+            }
+        }
+    }
 
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T> input) {
