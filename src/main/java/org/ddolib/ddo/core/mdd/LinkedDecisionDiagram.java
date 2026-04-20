@@ -172,18 +172,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);
             this.nextLayer.clear();
 
-            if (currentLayer.isEmpty()) {
-                // there is no feasible solution to this subproblem, we can stop the compilation here
-                return;
-            }
-
-            if (nextVar == null) {
-                // Some variables simply can't be assigned
-                return;
-            }
+            if (currentLayer.isEmpty()) return;
+            // there is no feasible solution to this subproblem, we can stop the compilation here
 
 
-            // If the current layer is too large, we need to shrink it down. 
+            if (nextVar == null) return;
+            // Some variables simply can't be assigned
+
+
+            // If the current layer is too large, we need to shrink it down.
             // Whether this shrinking down means that we want to perform a restriction
             // or a relaxation depends on the type of compilation which has been 
             // requested from this decision diagram  
