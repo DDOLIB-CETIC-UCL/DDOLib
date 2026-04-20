@@ -229,18 +229,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
                     dotStr.append(generateDotStr(n, false));
                 }
-                if (n.lb >= config.bestUB) {
-                    continue;
-                } else {
-                    lowerBound = Math.min(lowerBound, n.lb);
-                    final Iterator<Integer> domain = config.problem.domain(n.state, nextVar);
-                    while (domain.hasNext()) {
-                        final int val = domain.next();
-                        final Decision decision = new Decision(nextVar, val);
+                if (n.lb >= config.bestUB) continue;
 
-                        branchOn(n, decision, config.problem);
-                    }
-                }
+                genChildren(n, nextVar);
+
                 if (config.cutSetType == CutSetType.Frontier
                         && config.compilationType == CompilationType.Relaxed
                         && !exact && depthCurrentDD >= 2) {
@@ -497,6 +489,23 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // update the cache to improve the next computation of the BB
             computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
                     layersThresholds, config.bestUB, config.cutSetType);
+        }
+    }
+
+    /**
+     * Given a node and the associated decision variable generate the children nodes.
+     *
+     * @param n       the parent node
+     * @param nextVar the associated decision variable
+     */
+    private void genChildren(NodeSubProblem<T> n, int nextVar) {
+        lowerBound = Math.min(lowerBound, n.lb);
+        final Iterator<Integer> domain = config.problem.domain(n.state, nextVar);
+        while (domain.hasNext()) {
+            final int val = domain.next();
+            final Decision decision = new Decision(nextVar, val);
+
+            branchOn(n, decision, config.problem);
         }
     }
 
