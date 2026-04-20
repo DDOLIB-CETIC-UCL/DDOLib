@@ -170,25 +170,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
         while (!variables.isEmpty()) {
             Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
-            // change the layer focus: what was previously the next layer is now
-            // becoming the current layer
-            this.prevLayer.clear();
-            for (NodeSubProblem<T> n : this.currentLayer) {
-                this.prevLayer.put(n.node, n);
-            }
-            this.currentLayer.clear();
 
-            for (Entry<T, Node> e : this.nextLayer.entrySet()) {
-                T state = e.getKey();
-                Node node = e.getValue();
-                if (node.type != NodeType.EXACT || !config.dominance.updateDominance(state,
-                        depthGlobalDD, node.value)) {
-                    double flb = config.flb.fastLowerBound(state, variables);
-                    double rlb = saturatedAdd(node.value, flb);
-                    node.flb = flb;
-                    this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
-                }
-            }
+            updatePrevLayer();
+            updateCurrentLayer(variables, depthGlobalDD);
 
             if (cache.isPresent()) {
                 pruned.clear();
@@ -455,6 +439,43 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     public double minLowerBound() {
         return lowerBound;
     }
+
+
+    //METHODS USED DURING THE COMPILATION
+
+    /**
+     * Changes the layer focus: what was previously the current layer is now becoming the
+     * previous layer.
+     */
+    private void updatePrevLayer() {
+        this.prevLayer.clear();
+        for (NodeSubProblem<T> n : this.currentLayer) {
+            this.prevLayer.put(n.node, n);
+        }
+    }
+
+    /**
+     * Changes the layer focus: what was previously the next layer is now becoming the current
+     * layer
+     *
+     * @param variables     the remaining variables in the decision-making process
+     * @param depthGlobalDD the current depth in the global mdd
+     */
+    private void updateCurrentLayer(Set<Integer> variables, int depthGlobalDD) {
+        this.currentLayer.clear();
+        for (Entry<T, Node> e : this.nextLayer.entrySet()) {
+            T state = e.getKey();
+            Node node = e.getValue();
+            if (node.type != NodeType.EXACT || !config.dominance.updateDominance(state,
+                    depthGlobalDD, node.value)) {
+                double flb = config.flb.fastLowerBound(state, variables);
+                double rlb = saturatedAdd(node.value, flb);
+                node.flb = flb;
+                this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
+            }
+        }
+    }
+
 
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T> input) {
