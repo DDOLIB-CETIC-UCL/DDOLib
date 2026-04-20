@@ -92,6 +92,20 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Configuration and parameters for compiling the decision diagram.
      */
     private final CompilationConfig<T> config;
+
+    //Cache variables
+
+    private final Optional<SimpleCache<T>> cache;
+    // list of depth for the current relax compilation of the DD
+    private ArrayList<Integer> listDepths = null;
+    // the list of NodeSubProblem of the corresponding depth
+    private ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = null;
+    // the list of Threshold of the corresponding depth
+    private ArrayList<ArrayList<Threshold>> layersThresholds = null;
+    // list of nodes pruned
+    private ArrayList<NodeSubProblem<T>> pruned = null;
+
+
     /**
      * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
      */
@@ -104,8 +118,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
-
     private double lowerBound;
+
 
     /**
      * Creates a new linked decision diagram.
@@ -121,6 +135,15 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.debugLevel = config.debugLevel;
         this.config = config;
         this.lowerBound = Double.MAX_VALUE;
+
+        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
+        cache = config.cache;
+        if (cache.isPresent()) {
+            listDepths = new ArrayList<>();
+            nodeSubProblemPerLayer = new ArrayList<>();
+            layersThresholds = new ArrayList<>();
+            pruned = new ArrayList<>();
+        }
 
     }
 
@@ -141,15 +164,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         final int maxWidth = config.maxWidth;
         final SubProblem<T> residual = config.residual;
 
-        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
 
         // proceed to compilation
         final Problem<T> problem = config.problem;
-        final Relaxation<T> relax = config.relaxation;
+        final Relaxation<T> relaxation = config.relaxation;
         final VariableHeuristic<T> var = config.variableHeuristic;
         final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
         final DominanceChecker<T> dominance = config.dominance;
-        final Optional<SimpleCache<T>> cache = config.cache;
         double bestUb = config.bestUB;
 
         final Set<Integer> variables = varSet(config);
@@ -160,15 +181,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
-
-        // list of depth for the current relax compilation of the DD
-        ArrayList<Integer> listDepths = cache.isPresent() ? new ArrayList<>() : null;
-        // the list of NodeSubProblem of the corresponding depth
-        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = cache.isPresent() ? new ArrayList<>() : null;
-        // the list of Threshold of the corresponding depth
-        ArrayList<ArrayList<Threshold>> layersThresholds = cache.isPresent() ? new ArrayList<>() : null;
-        // list of nodes pruned
-        ArrayList<NodeSubProblem<T>> pruned = cache.isPresent() ? new ArrayList<>() : null;
 
         while (!variables.isEmpty()) {
             Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
@@ -244,7 +256,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                     depthLEL = depthCurrentDD - 1;
                                 }
                             }
-                            relax(maxWidth, relax, config.reductionStrategy,variables);
+                            relax(maxWidth, relaxation, config.reductionStrategy, variables);
                             break;
                         case Exact:
                             /* nothing to do */
@@ -355,15 +367,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
-     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
-     */
-
-    @Override
-    public double minLowerBound() { return lowerBound;}
-
-
-    /**
      * Returns whether the decision diagram is exact.
      *
      * @return {@code true} if the MDD is exact, {@code false} if relaxed/restricted nodes exist
@@ -455,6 +458,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return dotStr.toString();
     }
 
+    /**
+     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
+     *
+     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
+     */
+
+    @Override
+    public double minLowerBound() {
+        return lowerBound;
+    }
+
     // UTILITY METHODS -----------------------------------------------
     private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
@@ -493,7 +507,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 int frontier = 0;
                 Random random = new Random();
                 for (int k = 0; k < layer.size(); k++) {
-                    if (layer.get(k).getValue()  == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
+                    if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
                         swap(layer, frontier, k);
                         frontier++;
                     }
