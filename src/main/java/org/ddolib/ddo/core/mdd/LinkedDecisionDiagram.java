@@ -1,6 +1,5 @@
 package org.ddolib.ddo.core.mdd;
 
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -9,7 +8,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -96,6 +94,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     //Cache variables
 
     private final Optional<SimpleCache<T>> cache;
+    private final NodeSubProblemComparator<T> ranking;
     // list of depth for the current relax compilation of the DD
     private ArrayList<Integer> listDepths = null;
     // the list of NodeSubProblem of the corresponding depth
@@ -104,8 +103,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     private ArrayList<ArrayList<Threshold>> layersThresholds = null;
     // list of nodes pruned
     private ArrayList<NodeSubProblem<T>> pruned = null;
-
-
     /**
      * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
      */
@@ -135,6 +132,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.debugLevel = config.debugLevel;
         this.config = config;
         this.lowerBound = Double.MAX_VALUE;
+        ranking = new NodeSubProblemComparator<>(config.stateRanking);
 
         dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
         cache = config.cache;
@@ -160,30 +158,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public void compile() {
 
-        // initialize the compilation
-        final int maxWidth = config.maxWidth;
-        final SubProblem<T> residual = config.residual;
-
-
-        // proceed to compilation
-        final Problem<T> problem = config.problem;
-        final Relaxation<T> relaxation = config.relaxation;
-        final VariableHeuristic<T> var = config.variableHeuristic;
-        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
-        final DominanceChecker<T> dominance = config.dominance;
-        double bestUb = config.bestUB;
 
         final Set<Integer> variables = varSet(config);
 
-        int depthGlobalDD = residual.getPath().size();
+        int depthGlobalDD = config.residual.getPath().size();
         int depthCurrentDD = 0;
-        int initialDepth = residual.getPath().size();
+        int initialDepth = depthGlobalDD;
 
 
         Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
 
         while (!variables.isEmpty()) {
-            Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
+            Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
             // change the layer focus: what was previously the next layer is now
             // becoming the current layer
             this.prevLayer.clear();
@@ -195,7 +181,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             for (Entry<T, Node> e : this.nextLayer.entrySet()) {
                 T state = e.getKey();
                 Node node = e.getValue();
-                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
+                if (node.type != NodeType.EXACT || !config.dominance.updateDominance(state,
                         depthGlobalDD, node.value)) {
                     double flb = config.flb.fastLowerBound(state, variables);
                     double rlb = saturatedAdd(node.value, flb);
@@ -242,11 +228,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
             if (!config.useLNS) {
-                if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
+                if (depthCurrentDD >= 2 && currentLayer.size() > config.maxWidth) {
                     switch (config.compilationType) {
                         case Restricted:
                             exact = false;
-                            restrict(maxWidth, ranking, config.reductionStrategy, 0);
+                            restrict(config.maxWidth, ranking, config.reductionStrategy, 0);
                             break;
                         case Relaxed:
                             if (exact) {
@@ -256,7 +242,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                                     depthLEL = depthCurrentDD - 1;
                                 }
                             }
-                            relax(maxWidth, relaxation, config.reductionStrategy, variables);
+                            relax(config.maxWidth, config.relaxation, config.reductionStrategy,
+                                    variables);
                             break;
                         case Exact:
                             /* nothing to do */
@@ -274,12 +261,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                     continue;
                 } else {
                     lowerBound = Math.min(lowerBound, n.lb);
-                    final Iterator<Integer> domain = problem.domain(n.state, nextVar);
+                    final Iterator<Integer> domain = config.problem.domain(n.state, nextVar);
                     while (domain.hasNext()) {
                         final int val = domain.next();
                         final Decision decision = new Decision(nextVar, val);
 
-                        branchOn(n, decision, problem);
+                        branchOn(n, decision, config.problem);
                     }
                 }
                 if (config.cutSetType == CutSetType.Frontier
@@ -299,9 +286,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
             if (config.useLNS) {
-                if (currentLayer.size() > maxWidth) {
+                if (currentLayer.size() > config.maxWidth) {
                     exact = false;
-                    restrict(maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
+                    restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
                 }
             }
 
@@ -354,7 +341,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
                 // update the cache to improve the next computation of the BB
                 computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                        layersThresholds, bestUb, config.cutSetType);
+                        layersThresholds, config.bestUB, config.cutSetType);
             }
         } else if (config.compilationType == CompilationType.Relaxed) {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
