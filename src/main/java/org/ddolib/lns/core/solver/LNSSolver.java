@@ -1,6 +1,5 @@
 package org.ddolib.lns.core.solver;
 
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
@@ -27,7 +26,15 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
+/**
+ * Large Neighborhood Search (LNS) solver based on restricted decision diagrams.
+ *
+ * <p>The solver iteratively destroys part of the incumbent solution, recompiles a restricted
+ * decision diagram on the residual subproblem, and accepts strict improvements on the objective
+ * value.</p>
+ *
+ * @param <T> type of states manipulated by the underlying problem
+ */
 public final class LNSSolver<T> implements Solver {
     private final Problem<T> problem;
     private final WidthHeuristic<T> width;
@@ -38,12 +45,15 @@ public final class LNSSolver<T> implements Solver {
     private double bestUB;
     private Optional<Set<Decision>> bestSol;
     private boolean firstRestricted = true;
-    private DominanceChecker<T> dominance;
-
     private int maxDepth;
     private int d;
     private int[] solution;
 
+    /**
+     * Creates a new LNS solver for the provided model.
+     *
+     * @param model model containing the problem definition and LNS/DD configuration
+     */
     public LNSSolver(LnsModel<T> model) {
         this.problem = model.problem();
         this.width = model.widthHeuristic();
@@ -52,9 +62,8 @@ public final class LNSSolver<T> implements Solver {
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
-        this.dominance = model.dominance();
         this.model = model;
-        this.maxDepth = problem.nbVars() - 2;
+        this.maxDepth = Math.max(0, problem.nbVars() - 2);
         this.d = maxDepth;
         this.solution = new int[problem.nbVars()];
     }
@@ -91,10 +100,10 @@ public final class LNSSolver<T> implements Solver {
                 }
             }
 
-            if (solution == null) {
+            if (solution == null || !model.useLNS()) {
                 rootPrime = root();
             } else {
-                rootPrime = buildInitialSubProblem(solution, d-1);
+                rootPrime = buildInitialSubProblem(solution, d);
             }
             // 1. RESTRICTION
             SubProblem<T> sub = rootPrime;
@@ -109,13 +118,13 @@ public final class LNSSolver<T> implements Solver {
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
             restrictedMdd.compile();
 
-            gap = 100.0 * Math.abs(bestUB - restrictedMdd.minLowerBound()) / Math.abs(bestUB);
+            gap = computeGap(bestUB, restrictedMdd.minLowerBound());
 
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
                 status = SearchStatus.SAT;
-                gap = 100.0 * Math.abs(bestUB - restrictedMdd.minLowerBound()) / Math.abs(bestUB);
+                gap = computeGap(bestUB, restrictedMdd.minLowerBound());
                 stats = new SearchStatistics(status, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap);
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
@@ -151,6 +160,13 @@ public final class LNSSolver<T> implements Solver {
         return bestSol;
     }
 
+    /**
+     * Updates the incumbent solution if the current restricted DD found a strict improvement.
+     *
+     * @param currentMdd restricted decision diagram compiled at the current iteration
+     * @param exportDot whether to force DOT materialization to reflect incumbent edge coloring
+     * @return {@code true} if the incumbent was improved, {@code false} otherwise
+     */
     private boolean maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
         if (ddval.isPresent() && ddval.get() < bestUB) {
@@ -174,6 +190,12 @@ public final class LNSSolver<T> implements Solver {
         return false;
     }
 
+    /**
+     * Writes a DOT representation to disk.
+     *
+     * @param dot DOT graph content
+     * @param fileName output file path
+     */
     private void exportDot(String dot, String fileName) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(dot);
@@ -183,6 +205,11 @@ public final class LNSSolver<T> implements Solver {
     }
 
 
+    /**
+     * Builds the root subproblem covering all decision variables.
+     *
+     * @return root residual subproblem
+     */
     private SubProblem<T> root() {
         Set<Integer> vars =
                 IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());
@@ -194,6 +221,13 @@ public final class LNSSolver<T> implements Solver {
     }
 
 
+    /**
+     * Builds a residual subproblem by fixing a prefix of the current solution.
+     *
+     * @param solution incumbent solution used as reference for neighborhood destruction
+     * @param depth number of fixed variables in the prefix
+     * @return residual subproblem rooted at the state reached after the fixed prefix
+     */
     private SubProblem<T> buildInitialSubProblem(int[] solution,  int depth) {
         final HashSet<Integer> vars = new HashSet<>();
         Set<Decision> decisionSet = new HashSet<>();
@@ -212,14 +246,21 @@ public final class LNSSolver<T> implements Solver {
             k++;
         }
         return new SubProblem<>(
-                stateInSolutionAtDepth(solution, depth),
-                costInSolutionAtDepth(solution, depth),
-                model.lowerBound().fastLowerBound(stateInSolutionAtDepth(solution, depth), vars),
+                state,
+                sum,
+                model.lowerBound().fastLowerBound(state, vars),
                 decisionSet
         );
     }
 
 
+    /**
+     * Computes the objective value accumulated by a solution prefix.
+     *
+     * @param solution full variable assignment
+     * @param depth prefix length to evaluate
+     * @return cumulative objective value up to {@code depth}
+     */
     private double costInSolutionAtDepth(int[] solution, int depth) {
         double sum = problem.initialValue();
         T state = problem.initialState();
@@ -234,6 +275,13 @@ public final class LNSSolver<T> implements Solver {
     }
 
 
+    /**
+     * Computes the state reached after applying a solution prefix.
+     *
+     * @param solution full variable assignment
+     * @param depth prefix length to apply
+     * @return state reached at the requested depth
+     */
     private T stateInSolutionAtDepth(int[] solution, int depth) {
         T state = problem.initialState();
         int k = 0;
@@ -245,6 +293,15 @@ public final class LNSSolver<T> implements Solver {
         return state;
     }
 
+    /**
+     * Creates the compilation configuration for a restricted DD iteration.
+     *
+     * @param type compilation type to use
+     * @param sub residual subproblem to compile
+     * @param maxWidth maximal width allowed during restriction
+     * @param exportAsDot whether DOT export is enabled for this compilation
+     * @return fully initialized compilation configuration
+     */
     private CompilationConfig<T> configureCompilation(CompilationType type, SubProblem<T> sub,
                                                       int maxWidth, boolean exportAsDot) {
         CompilationConfig<T> compilation = new CompilationConfig<>(model);
@@ -261,13 +318,37 @@ public final class LNSSolver<T> implements Solver {
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.restrictStrategy();
         compilation.initialSolution = model.initialSolution();
-        compilation.useLNS = true;
+        compilation.probability = model.probability();
+        compilation.useLNS = model.useLNS();
         if (bestSol.isPresent()) {
             compilation.solution = constructSolution(bestSol.get());
         } else {
-            solution = model.initialSolution();
+            compilation.solution = model.initialSolution();
         }
         return compilation;
+    }
+
+    /**
+     * Computes the relative optimality gap in percent.
+     *
+     * <p>Special cases are handled explicitly to avoid {@code NaN}: infinite upper bound returns
+     * an infinite gap; zero upper bound returns 0 when lower bound is also zero, otherwise an
+     * infinite gap.</p>
+     *
+     * @param upperBound incumbent objective value
+     * @param lowerBound lower bound of the explored neighborhood
+     * @return relative gap percentage
+     */
+    private double computeGap(double upperBound, double lowerBound) {
+        if (Double.isInfinite(upperBound)) {
+            return Double.POSITIVE_INFINITY;
+        }
+        double numerator = Math.abs(upperBound - lowerBound);
+        double denominator = Math.abs(upperBound);
+        if (denominator == 0.0) {
+            return numerator == 0.0 ? 0.0 : Double.POSITIVE_INFINITY;
+        }
+        return 100.0 * numerator / denominator;
     }
 
 

@@ -136,6 +136,50 @@ public class LNSSolverTest {
         }
     }
 
+    @Test
+    void testGapIsWellComputedWhenIncumbentIsZero() {
+        final KSProblem problem = new KSProblem(10, new int[]{0, 0, 0}, new int[]{2, 3, 4});
+        final LnsModel<Integer> model = new LnsModel<>() {
+            @Override
+            public Problem<Integer> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<Integer> lowerBound() {
+                return new KSFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<Integer> dominance() {
+                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+            }
+
+            @Override
+            public KSRanking ranking() {
+                return new KSRanking();
+            }
+
+            @Override
+            public WidthHeuristic<Integer> widthHeuristic() {
+                return new FixedWidth<>(2);
+            }
+
+            @Override
+            public int[] initialSolution() {
+                return new int[problem.nbVars()];
+            }
+        };
+
+        Solution finalSol = Solvers.minimizeLns(model, s -> s.nbIterations() <= 1, (sol, s) -> {
+        });
+
+        assertEquals(0.0, finalSol.statistics().incumbent());
+        assertFalse(Double.isNaN(finalSol.statistics().gap()));
+        assertFalse(Double.isInfinite(finalSol.statistics().gap()));
+        assertEquals(0.0, finalSol.statistics().gap(), 1e-12);
+    }
+
 
 
 }

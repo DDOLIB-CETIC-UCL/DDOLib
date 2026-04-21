@@ -3,6 +3,9 @@ package org.ddolib.examples.pdptw;
 import java.util.BitSet;
 import java.util.Objects;
 
+/**
+ * State representation for the Pickup and Delivery Problem with Time Windows (PDPTW).
+ */
 public class PDPTWState {
 
     /**
@@ -42,6 +45,17 @@ public class PDPTWState {
     double minCurrentTime;
     double maxCurrentTime;
 
+    /**
+     * Builds a PDPTW state with interval-valued content/time information.
+     *
+     * @param current current node(s)
+     * @param openToVisit currently reachable unvisited nodes
+     * @param allToVisit all remaining unvisited nodes
+     * @param minContent lower bound on vehicle load
+     * @param maxContent upper bound on vehicle load
+     * @param minCurrentTime lower bound on current time
+     * @param maxCurrentTime upper bound on current time
+     */
     public PDPTWState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent, double minCurrentTime, double maxCurrentTime) {
         this.openToVisit = openToVisit;
         this.allToVisit = allToVisit;
