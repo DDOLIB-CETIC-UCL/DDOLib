@@ -263,8 +263,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
 
-
-        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
+        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed && !cutset.isEmpty()) {
             // Apply updates to the cache
             finishCacheUpdates();
         } else if (config.compilationType == CompilationType.Relaxed) {
@@ -457,20 +456,18 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Updates the cache according to the last compilation
      */
     private void finishCacheUpdates() {
-        if (!cutset.isEmpty()) {
-            computeLocalBounds();
+        computeLocalBounds();
 
-            for (NodeSubProblem<T> n : cutset) {
-                if (n.node.isMarked) {
-                    n.node.isInExactCutSet = true;
-                }
+        for (NodeSubProblem<T> n : cutset) {
+            if (n.node.isMarked) {
+                n.node.isInExactCutSet = true;
             }
-
-            markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
-            // update the cache to improve the next computation of the BB
-            computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                    layersThresholds, config.bestUB, config.cutSetType);
         }
+
+        markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
+        // update the cache to improve the next computation of the BB
+        computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
+                layersThresholds, config.bestUB, config.cutSetType);
     }
 
     /**
