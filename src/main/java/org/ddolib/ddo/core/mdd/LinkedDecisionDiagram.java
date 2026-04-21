@@ -508,11 +508,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void limitCurrentLayerWidth(Set<Integer> variables, int depthCurrentDD) {
         switch (config.compilationType) {
-            case Restricted:
+            case Restricted -> {
                 exact = false;
                 restrict(config.maxWidth, ranking, config.reductionStrategy, 0);
-                break;
-            case Relaxed:
+            }
+            case Relaxed -> {
                 if (exact) {
                     exact = false;
                     if (config.cutSetType == CutSetType.LastExactLayer) {
@@ -522,10 +522,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
                 relax(config.maxWidth, config.relaxation, config.reductionStrategy,
                         variables);
-                break;
-            case Exact:
+            }
+            case Exact -> {
                 /* nothing to do */
-                break;
+            }
         }
     }
 
