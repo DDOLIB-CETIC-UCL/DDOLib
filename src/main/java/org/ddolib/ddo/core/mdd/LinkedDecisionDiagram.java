@@ -172,6 +172,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     @Override
     public void compile() {
+        // Identify the set of variables to be assigned
         final Set<Integer> variables = varSet(config);
 
         int depthGlobalDD = config.residual.getPath().size();
@@ -181,19 +182,21 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         while (!variables.isEmpty()) {
             Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
 
+            // Prepare for the next layer by moving the current layer to previous
             updatePrevLayer();
+            // Build the current layer from the nodes in the next layer
             updateCurrentLayer(variables, depthGlobalDD);
 
+            // Prune nodes using cached thresholds
             if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);
             this.nextLayer.clear();
 
+            // There is no feasible solution to this subproblem, we can stop the compilation here
             if (currentLayer.isEmpty()) return;
-            // there is no feasible solution to this subproblem, we can stop the compilation here
 
 
-            if (nextVar == null) return;
             // Some variables simply can't be assigned
-
+            if (nextVar == null) return;
 
             // If the current layer is too large, we need to shrink it down.
             // Whether this shrinking down means that we want to perform a restriction
@@ -217,21 +220,26 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
                 if (n.lb >= config.bestUB) continue;
 
+                // Create children nodes from the current node
                 genChildren(n, nextVar);
 
+                // Update the frontier cutset for relaxed MDDs
                 if (config.cutSetType == CutSetType.Frontier
                         && config.compilationType == CompilationType.Relaxed
-                        && !exact && depthCurrentDD >= 2) updateFrontierCutset(variables, n);
+                        && !exact && depthCurrentDD >= 2)
+                    updateFrontierCutset(variables, n);
             }
 
             if (config.useLNS) {
                 if (currentLayer.size() > config.maxWidth) {
                     exact = false;
+                    // Apply restriction for LNS
                     restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
                 }
             }
 
 
+            // Prepare information for cache updates
             if (cache.isPresent() && config.compilationType == CompilationType.Relaxed)
                 updateCacheLists(depthGlobalDD, depthCurrentDD);
 
@@ -257,15 +265,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
 
         if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
+            // Apply updates to the cache
             finishCacheUpdates();
         } else if (config.compilationType == CompilationType.Relaxed) {
             // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
+            // Compute local bounds for all nodes in the diagram
             computeLocalBounds();
         }
 
-        if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed) {
+        if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed)
             checkFlb(config.problem);
-        }
+
     }
 
     /**
