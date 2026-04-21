@@ -150,8 +150,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         ranking = new NodeSubProblemComparator<>(config.stateRanking);
 
         dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
-        cache = config.cache;
-        if (cache.isPresent()) {
+        this.cache = config.cache;
+        if (this.cache.isPresent()) {
             listDepths = new ArrayList<>();
             nodeSubProblemPerLayer = new ArrayList<>();
             layersThresholds = new ArrayList<>();
@@ -189,6 +189,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
             // Prune nodes using cached thresholds
             if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);
+
             this.nextLayer.clear();
 
             // There is no feasible solution to this subproblem, we can stop the compilation here
@@ -969,13 +970,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             Node u = current.node();
             double d = current.dist();
 
-            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) {
-                continue;
-            }
+            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) continue;
 
-            if (u.equals(source)) {
-                break;
-            }
+
+            if (u.equals(source)) break;
+            
 
             for (Edge e : u.edges) {
                 Node v = e.origin;
