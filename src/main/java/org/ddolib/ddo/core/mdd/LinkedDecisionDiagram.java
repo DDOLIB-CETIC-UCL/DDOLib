@@ -147,9 +147,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.debugLevel = config.debugLevel;
         this.config = config;
         this.lowerBound = Double.MAX_VALUE;
-        ranking = new NodeSubProblemComparator<>(config.stateRanking);
+        this.ranking = new NodeSubProblemComparator<>(config.stateRanking);
 
-        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
+        dotStr.append("digraph %s%n".formatted(config.compilationType.toString().toLowerCase()));
         this.cache = config.cache;
         if (this.cache.isPresent()) {
             listDepths = new ArrayList<>();
@@ -974,7 +974,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
 
             if (u.equals(source)) break;
-            
+
 
             for (Edge e : u.edges) {
                 Node v = e.origin;
