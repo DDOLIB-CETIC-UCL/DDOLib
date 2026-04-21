@@ -554,39 +554,25 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param maxWidth the maximum tolerated layer width
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy, int depth) {
-        if (config.useLNS) {
-            if (config.solution == null) {
-                List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
-                currentLayer.clear();
-
-                // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
-                for (List<NodeSubProblem<T>> cluster : clusters) {
-                    if (cluster.isEmpty()) continue;
-
-                    cluster.sort(ranking);
-                    currentLayer.add(cluster.getFirst());
-                    cluster.clear();
+        if (config.useLNS && config.solution != null) {
+            List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
+            currentLayer.clear();
+            int frontier = 0;
+            Random random = new Random();
+            for (int k = 0; k < layer.size(); k++) {
+                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
+                    swap(layer, frontier, k);
+                    frontier++;
                 }
-            } else {
-                List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
-                currentLayer.clear();
-                int frontier = 0;
-                Random random = new Random();
-                for (int k = 0; k < layer.size(); k++) {
-                    if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
-                        swap(layer, frontier, k);
-                        frontier++;
-                    }
-                }
-                List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
-                List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
-                if (keep.size() + candidates.size() > maxWidth) {
-                    candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
-                    candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
-                }
-                keep.addAll(candidates);
-                currentLayer.addAll(keep);
             }
+            List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
+            List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
+            if (keep.size() + candidates.size() > maxWidth) {
+                candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
+                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
+            }
+            keep.addAll(candidates);
+            currentLayer.addAll(keep);
         } else {
             List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
             currentLayer.clear();
@@ -646,7 +632,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                        final Relaxation<T> relax,
                        final ReductionStrategy<T> relaxStrategy,
                        Set<Integer> variables) {
-        // generates clusters
+        // Generates clusters
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
 
