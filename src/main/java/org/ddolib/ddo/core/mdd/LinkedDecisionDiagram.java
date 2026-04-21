@@ -247,11 +247,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             depthCurrentDD += 1;
         }
 
-        // finalize: find best
+        // Finalize: find best
         for (Node n : nextLayer.values()) {
-            if (best == null || n.value < best.value) {
-                best = n;
-            }
+            if (best == null || n.value < best.value) best = n;
         }
 
         if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
@@ -263,18 +261,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
 
-        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed && !cutset.isEmpty()) {
-            // Apply updates to the cache
-            finishCacheUpdates();
-        } else if (config.compilationType == CompilationType.Relaxed) {
-            // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
+        if (config.compilationType == CompilationType.Relaxed) {
             // Compute local bounds for all nodes in the diagram
             computeLocalBounds();
+
+            // Apply updates to the cache
+            if (cache.isPresent() && !cutset.isEmpty()) finishCacheUpdates();
         }
 
         if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed)
             checkFlb(config.problem);
-
     }
 
     /**
@@ -456,16 +452,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Updates the cache according to the last compilation
      */
     private void finishCacheUpdates() {
-        computeLocalBounds();
-
         for (NodeSubProblem<T> n : cutset) {
-            if (n.node.isMarked) {
-                n.node.isInExactCutSet = true;
-            }
+            if (n.node.isMarked) n.node.isInExactCutSet = true;
         }
 
         markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
-        // update the cache to improve the next computation of the BB
+        // Update the cache to improve the next computation of the BB
         computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
                 layersThresholds, config.bestUB, config.cutSetType);
     }
