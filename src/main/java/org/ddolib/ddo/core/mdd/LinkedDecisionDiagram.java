@@ -91,17 +91,29 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private final CompilationConfig<T> config;
 
-    //Cache variables
-
+    /**
+     * Optional cache used to store thresholds and avoid redundant computations.
+     */
     private final Optional<SimpleCache<T>> cache;
+    /**
+     * Comparator used to rank nodes within a layer based on their associated subproblems.
+     */
     private final NodeSubProblemComparator<T> ranking;
-    // list of depth for the current relax compilation of the DD
+    /**
+     * List of depths for the current relaxed compilation of the decision diagram.
+     */
     private ArrayList<Integer> listDepths = null;
-    // the list of NodeSubProblem of the corresponding depth
+    /**
+     * The list of {@link NodeSubProblem}s of the corresponding depth.
+     */
     private ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = null;
-    // the list of Threshold of the corresponding depth
+    /**
+     * The list of {@link Threshold}s of the corresponding depth.
+     */
     private ArrayList<ArrayList<Threshold>> layersThresholds = null;
-    // list of nodes pruned
+    /**
+     * List of nodes pruned during the compilation process.
+     */
     private ArrayList<NodeSubProblem<T>> pruned = null;
     /**
      * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
@@ -115,14 +127,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
+    /**
+     * The minimum lower bound among all expanded nodes in the decision diagram.
+     */
     private double lowerBound;
 
 
     /**
      * Creates a new linked decision diagram.
      *
-     * @param config The configuration object containing problem parameters, heuristics,
-     *               relaxation operators, dominance checkers, and compilation settings.
+     * @param config the configuration object containing problem parameters, heuristics,
+     *               relaxation operators, dominance checkers, and compilation settings
      */
     public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
@@ -465,6 +480,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Updates the frontier cutset with the given node if it meets the criteria.
+     *
+     * @param variables the remaining variables
+     * @param n         the node to potentially add to the cutset
+     */
     private void updateFrontierCutset(Set<Integer> variables, NodeSubProblem<T> n) {
         if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
             cutset.add(n);
@@ -479,6 +500,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Limits the width of the current layer according to the compilation configuration.
+     *
+     * @param variables      the remaining variables
+     * @param depthCurrentDD the current depth in the decision diagram
+     */
     private void limitCurrentLayerWidth(Set<Integer> variables, int depthCurrentDD) {
         switch (config.compilationType) {
             case Restricted:
@@ -503,6 +530,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     // UTILITY METHODS -----------------------------------------------
+
+    /**
+     * Returns the set of variable indices that have not yet been assigned a value.
+     *
+     * @param input the compilation configuration
+     * @return a set of unassigned variable indices
+     */
     private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < config.problem.nbVars(); i++) {
@@ -569,12 +603,26 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Swaps two elements in the given list.
+     *
+     * @param layer the list of nodes
+     * @param f     the index of the first element
+     * @param k     the index of the second element
+     */
     private void swap(List<NodeSubProblem<T>> layer, int f, int k) {
         NodeSubProblem<T> temp = layer.get(f);
         layer.set(f, layer.get(k));
         layer.set(k, temp);
     }
 
+    /**
+     * Computes the cumulative cost of a solution up to a given depth.
+     *
+     * @param solution the array of decision values
+     * @param depth    the depth up to which the cost should be computed
+     * @return the cumulative cost
+     */
     private double costInSolutionAtDepth(int[] solution, int depth) {
         double sum = config.problem.initialValue();
         T state = config.problem.initialState();
@@ -737,6 +785,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Marks nodes that are above the exact cutset in the decision diagram.
+     *
+     * @param nodePerLayer the nodes organized by layer
+     * @param cutSetType   the type of cutset being used
+     */
     private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
         HashSet<Node> current = new HashSet<>();
         HashSet<Node> parent = new HashSet<>();
@@ -1232,6 +1286,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
+    /**
+     * A helper record to store information about a path segment.
+     *
+     * @param decision    the decision made at this step
+     * @param flbOfOrigin the fast lower bound of the origin node
+     * @param lengthToEnd the length of the path from this point to the end
+     */
     private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
     }
 
