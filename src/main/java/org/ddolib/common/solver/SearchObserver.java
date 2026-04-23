@@ -113,6 +113,11 @@ public final class SearchObserver {
         return toReturn;
     }
 
+    public SearchStatistics toStats() {
+        return new SearchStatistics(status(), nbIteration(), frontierMaxSize(), runTime(),
+                incumbent(), gap());
+    }
+
 
     @Override
     public String toString() {
