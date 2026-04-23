@@ -1,7 +1,10 @@
 package org.ddolib.awastar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.*;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.modeling.AwAstarModel;
@@ -83,7 +86,7 @@ public final class AwAstarSolver<T> implements Solver {
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
 
-    private SearchObserver statistics;
+    private SearchStatistics statistics;
     // Value of the best known upper bound.
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
@@ -144,7 +147,7 @@ public final class AwAstarSolver<T> implements Solver {
 
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        statistics = new SearchObserver(System.currentTimeMillis(), bestUB);
+        statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
@@ -157,12 +160,13 @@ public final class AwAstarSolver<T> implements Solver {
             verboseMode.detailedSearchState(statistics.nbIteration(), open.size(), bestUB,
                     open.peek().getLowerBound(), statistics.gap());
 
-            statistics = statistics.incrementNbIter().updateFrontierMaxSize(open.size());
+            statistics =
+                    statistics.incrementNbIter().updateFrontierMaxSize(open.size()).updateTime(System.currentTimeMillis());
 
 
-            if (limit.test(statistics.toStats())) { // user-defined stopping criterion
+            if (limit.test(statistics)) { // user-defined stopping criterion
                 return new Solution(bestSolution(),
-                        statistics.updateTime(System.currentTimeMillis()).toStats());
+                        statistics.updateTime(System.currentTimeMillis()));
             }
             // -- end debug, stats, verbosity, stopping  ---
 
@@ -189,7 +193,7 @@ public final class AwAstarSolver<T> implements Solver {
         statistics =
                 statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL);
 
-        return new Solution(bestSolution(), statistics.toStats());
+        return new Solution(bestSolution(), statistics);
     }
 
     @Override
@@ -268,7 +272,7 @@ public final class AwAstarSolver<T> implements Solver {
                 bestUB = newSub.getValue();
                 statistics =
                         statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
-                onSolution.accept(constructSolution(path), statistics.toStats());
+                onSolution.accept(constructSolution(path), statistics);
                 verboseMode.newBest(bestUB);
             }
         }
