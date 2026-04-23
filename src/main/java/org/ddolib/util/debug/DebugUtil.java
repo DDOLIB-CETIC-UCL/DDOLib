@@ -90,6 +90,8 @@ public class DebugUtil {
                 List<Decision> sortedDecisions = new ArrayList<>(shortestPath.get());
                 sortedDecisions.sort(Comparator.comparingInt(Decision::variable));
 
+                List<Decision> subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());
+
                 DecimalFormat df = new DecimalFormat("#.#########");
                 String failureMsg = "Your lower bound is not admissible.\n" +
                         "State: " + current.state().toString() + "\n" +
@@ -97,7 +99,7 @@ public class DebugUtil {
                         "Path estimation: " + df.format(currentFLB) + "\n" +
                         "Shortest path length to end: " + df.format(shortestFromCurrent.get())
                         + "\n\nFull Path to end:\n" +
-                        sortedDecisions.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
+                        subPath.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
                         + "\n";
 
                 throw new RuntimeException(failureMsg);
