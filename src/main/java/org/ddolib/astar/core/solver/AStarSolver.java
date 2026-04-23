@@ -64,6 +64,9 @@ public final class AStarSolver<T> implements Solver {
      */
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
+
+    // Checks if the given state is terminal. Used in the debug mode
+    private final Predicate<SubProblem<T>> isTerminalState;
     // Statistics
     long t0; // time at the beginning of the search
     int nbIter; // number of iterations
@@ -87,6 +90,7 @@ public final class AStarSolver<T> implements Solver {
         this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
+        this.isTerminalState = sub -> sub.getPath().size() == problem.nbVars();
     }
 
     /**
@@ -114,6 +118,8 @@ public final class AStarSolver<T> implements Solver {
         this.debugLevel = DebugLevel.OFF;
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
+        // Allows to start the search from a node at any depth and to find a correct terminal node
+        this.isTerminalState = sub -> sub.getPath().size() + rootKey.depth() == problem.nbVars();
     }
 
     @Override
@@ -158,7 +164,7 @@ public final class AStarSolver<T> implements Solver {
                 continue;
             }
 
-            if (sub.getPath().size() == problem.nbVars()) {// target node reached
+            if (isTerminalState.test(sub)) {// target node reached
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
@@ -217,18 +223,12 @@ public final class AStarSolver<T> implements Solver {
      */
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
-                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
-        Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
-        if (depth != 0) {
-            for (int i = 0; i < depth; i++) {
-                nullDecisions.add(new Decision(i, 0));
-            }
-        }
+                IntStream.range(0, problem.nbVars() - depth).boxed().collect(Collectors.toSet());
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                nullDecisions);
+                new HashSet<>());
     }
 
 
@@ -275,7 +275,7 @@ public final class AStarSolver<T> implements Solver {
             }
 
             // is the new state a solution?
-            if (newSub.getPath().size() == problem.nbVars() && (newSub.getValue() < bestUB)) {
+            if (isTerminalState.test(newSub) && (newSub.getValue() < bestUB)) {
                 assert (h == 0.0);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();

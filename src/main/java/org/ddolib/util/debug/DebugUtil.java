@@ -90,19 +90,24 @@ public class DebugUtil {
                 List<Decision> sortedDecisions = new ArrayList<>(shortestPath.get());
                 sortedDecisions.sort(Comparator.comparingInt(Decision::variable));
 
-                List<Decision> subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());
-
                 DecimalFormat df = new DecimalFormat("#.#########");
-                String failureMsg = "Your lower bound is not admissible.\n" +
-                        "State: " + current.state().toString() + "\n" +
-                        "Depth: " + current.depth() + "\n" +
-                        "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Shortest path length to end: " + df.format(shortestFromCurrent.get())
-                        + "\n\nFull Path to end:\n" +
-                        subPath.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
-                        + "\n";
+                StringBuilder failureMsg = new StringBuilder("Your lower bound is not admissible.\n");
+                failureMsg.append("State: %s%n".formatted(current.state().toString()));
+                failureMsg.append("Depth: %d%n".formatted(current.depth()));
+                failureMsg.append("Path estimation: %s%n".formatted(df.format(shortestFromCurrent.get())));
+                failureMsg.append("Shortest path length to end: %s%n".formatted(df.format(shortestFromCurrent.get())));
+                failureMsg.append("\n\nPath to end:\n");
+                String pathStr =
+                        sortedDecisions.stream()
+                                .map(d -> {
+                                    Decision shifted =
+                                            new Decision(d.variable() + current.depth(), d.value());
+                                    return "\t" + shifted;
+                                })
+                                .collect(Collectors.joining("\n"));
+                failureMsg.append(pathStr).append("\n");
 
-                throw new RuntimeException(failureMsg);
+                throw new RuntimeException(failureMsg.toString());
             }
         }
     }
