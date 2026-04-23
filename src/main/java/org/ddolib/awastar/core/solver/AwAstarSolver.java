@@ -64,9 +64,6 @@ public final class AwAstarSolver<T> implements Solver {
 
     private final SubProblem<T> root;
 
-    // Checks if the given state is terminal. Used in the debug mode
-    private final Predicate<SubProblem<T>> isTerminalState;
-
 
     /**
      * <ul>g
@@ -129,7 +126,6 @@ public final class AwAstarSolver<T> implements Solver {
         this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
-        this.isTerminalState = sub -> sub.getPath().size() == problem.nbVars();
     }
 
 
@@ -150,7 +146,6 @@ public final class AwAstarSolver<T> implements Solver {
         this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
-        this.isTerminalState = sub -> sub.getPath().size() + rootKey.depth() == problem.nbVars();
     }
 
     @Override
@@ -295,7 +290,7 @@ public final class AwAstarSolver<T> implements Solver {
             }
 
             // is the new state a solution?
-            if (isTerminalState.test(newSub) && (newSub.getValue() < bestUB)) {
+            if (newSub.getDepth() == problem.nbVars() && (newSub.getValue() < bestUB)) {
                 assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
@@ -318,12 +313,18 @@ public final class AwAstarSolver<T> implements Solver {
      */
     private SubProblem<T> constructRoot(T state, double value, int depth) {
         Set<Integer> vars =
-                IntStream.range(0, problem.nbVars() - depth).boxed().collect(Collectors.toSet());
+                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());
+        Set<Decision> nullDecisions = new HashSet<>(); // needed for debug mode
+        if (depth != 0) {
+            for (int i = 0; i < depth; i++) {
+                nullDecisions.add(new Decision(i, 0));
+            }
+        }
         return new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
-                new HashSet<>());
+                nullDecisions);
     }
 
     /**
