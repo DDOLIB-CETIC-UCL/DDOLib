@@ -265,17 +265,22 @@ public final class SearchStatistics {
 
     @Override
     public String toString() {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        symbols.setGroupingSeparator(' ');
+        DecimalFormat df = new DecimalFormat("#,##0.##########", symbols);
+        DecimalFormat gapFormat = new DecimalFormat("#,##0.####", symbols);
+
         List<String> labels = List.of(
                 "Status", "Iterations", "Frontier Max Size", "Runtime", "Incumbent", "Gap"
         );
 
         List<String> values = List.of(
                 _status.toString(),
-                String.valueOf(_nbIterations),
-                String.valueOf(_frontierMaxSize),
+                df.format(_nbIterations),
+                df.format(_frontierMaxSize),
                 PrettyPrint.formatMs(runtime()),
-                Double.isInfinite(_incumbent) ? "∞" : String.valueOf(_incumbent),
-                Double.isInfinite(_gap) ? "∞" : String.format("%.4f", _gap)
+                Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
+                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %"
         );
 
         return PrettyPrint.buildTable(labels, Collections.singletonList(values));
