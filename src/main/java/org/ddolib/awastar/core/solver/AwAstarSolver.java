@@ -161,7 +161,8 @@ public final class AwAstarSolver<T> implements Solver {
 
             statistics = statistics.incrementNbIter()
                     .updateFrontierMaxSize(open.size())
-                    .updateTime(System.currentTimeMillis());
+                    .updateTime(System.currentTimeMillis())
+                    .updateGap(gap());
 
 
             if (limit.test(statistics)) { // user-defined stopping criterion
@@ -191,7 +192,7 @@ public final class AwAstarSolver<T> implements Solver {
         }
 
         statistics =
-                statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL);
+                statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL).updateGap(0);
 
         return new Solution(bestSolution(), statistics);
     }

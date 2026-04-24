@@ -183,8 +183,6 @@ public final class SequentialSolver<T> implements Solver {
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
-        SearchStatus status = SearchStatus.UNKNOWN;
-
         while (!frontier.isEmpty()) {
             verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
@@ -194,7 +192,7 @@ public final class SequentialSolver<T> implements Solver {
             SubProblem<T> sub = frontier.pop();
             double nodeLB = sub.getLowerBound();
 
-            statistics = statistics.updateTime(System.currentTimeMillis());
+            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -202,10 +200,10 @@ public final class SequentialSolver<T> implements Solver {
 
 
             verboseMode.currentSubProblem(statistics.nbIterations(), sub);
-
             if (nodeLB >= bestUB) {
                 frontier.clear();
-                statistics = statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL);
+                statistics =
+                        statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL).updateGap(0);
                 return new Solution(bestSolution(), statistics);
             }
 
@@ -219,7 +217,9 @@ public final class SequentialSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                statistics = statistics.updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, gap())
+                        .updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(bestSol.get()), statistics);
             }
             if (exportAsDot && firstRestricted) {
@@ -243,7 +243,9 @@ public final class SequentialSolver<T> implements Solver {
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
-                    statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                    statistics = statistics.updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
                     onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
             }
@@ -257,19 +259,21 @@ public final class SequentialSolver<T> implements Solver {
             if (relaxedMdd.isExact()) {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
-                    statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                    statistics = statistics.updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
                     onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
-            } else {
-                if (relaxedMdd.bestValue().isPresent() && relaxedMdd.bestValue().get() >= bestUB) {
-                    continue;
-                } else {
-                    enqueueCutset(relaxedMdd);
-                }
+            } else if (relaxedMdd.bestValue().isEmpty() || relaxedMdd.bestValue().get() < bestUB) {
+                enqueueCutset(relaxedMdd);
             }
         }
-        long end = System.currentTimeMillis();
-        statistics = statistics.updateTime(end).updateStatus(SearchStatus.OPTIMAL);
+
+
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        
         return new Solution(bestSolution(), statistics);
     }
 

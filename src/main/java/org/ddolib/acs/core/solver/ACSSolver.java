@@ -210,7 +210,7 @@ public final class ACSSolver<T> implements Solver {
                             orElse(Double.POSITIVE_INFINITY),
                     gap());
 
-            statistics = statistics.updateTime(System.currentTimeMillis());
+            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -265,7 +265,9 @@ public final class ACSSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        statistics = sat ? statistics.updateStatus(SearchStatus.OPTIMAL) : statistics.updateStatus(SearchStatus.UNSAT);
+
+        if (sat) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);
     }
