@@ -1,31 +1,23 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.*;
+import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.SearchStatus;
+import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -96,6 +88,7 @@ public final class RestrictionSolver<T> {
      * Whether we want to export the first explored restricted and relaxed mdd.
      */
     private final boolean exportAsDot;
+    private final DdoModel<T> model;
     /**
      * Value of the best known upper bound.
      */
@@ -104,8 +97,6 @@ public final class RestrictionSolver<T> {
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-
-    private final DdoModel<T> model;
 
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a
@@ -127,8 +118,8 @@ public final class RestrictionSolver<T> {
     }
 
     public Solution minimize(Predicate<SearchStatistics> limit,
-                                             BiConsumer<int[], SearchStatistics> onSolution) {
-        long start = System.currentTimeMillis();
+                             BiConsumer<int[], SearchStatistics> onSolution) {
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
@@ -143,11 +134,9 @@ public final class RestrictionSolver<T> {
             System.exit(0);
         }
 
-        long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0);
-        return new Solution(bestSolution(), stats);
-        // return new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
+        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);
+        statistics = statistics.updateStatus(SearchStatus.SAT);
+        return new Solution(bestSolution(), statistics);
     }
 
     public Optional<Double> bestValue() {
