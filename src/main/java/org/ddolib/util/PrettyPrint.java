@@ -2,8 +2,6 @@ package org.ddolib.util;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Collection of utility functions for formatting data for display.
@@ -34,10 +32,22 @@ public final class PrettyPrint {
         return sb.toString();
     }
 
+    /**
+     * Builds a formatted ASCII table string from labels and rows.
+     * <p>
+     * The table adjusts column widths automatically based on the longest element in each column.
+     * </p>
+     *
+     * @param labels the headers for the table columns
+     * @param rows   the data rows to populate the table
+     * @return a formatted string representing the ASCII table
+     */
     public static String buildTable(List<String> labels, List<List<String>> rows) {
         if (labels.isEmpty()) return "";
-        int[] colWidths = new int[labels.size()];
-        for (int i = 0; i < labels.size(); i++) {
+
+        int nbCols = labels.size();
+        int[] colWidths = new int[nbCols];
+        for (int i = 0; i < nbCols; i++) {
             int max = labels.get(i).length();
             for (List<String> row : rows) {
                 if (i < row.size()) {
@@ -48,33 +58,38 @@ public final class PrettyPrint {
         }
 
         StringBuilder sb = new StringBuilder();
-        String rowSeparator = "+" + IntStream.of(colWidths)
-                .mapToObj("-"::repeat)
-                .collect(Collectors.joining("+")) + "+\n";
-
-        String headerSeparator = "+" + IntStream.of(colWidths)
-                .mapToObj("="::repeat)
-                .collect(Collectors.joining("+")) + "+\n";
+        String rowSeparator = buildSeparator(colWidths, "-");
+        String headerSeparator = buildSeparator(colWidths, "=");
 
         sb.append(rowSeparator);
-
-        sb.append("|");
-        for (int i = 0; i < labels.size(); i++) {
-            sb.append(String.format(" %-" + (colWidths[i] - 1) + "s|", labels.get(i)));
-        }
-        sb.append("\n").append(headerSeparator);
+        appendRow(sb, labels, colWidths);
+        sb.append(headerSeparator);
 
         for (List<String> row : rows) {
-            sb.append("|");
-            for (int i = 0; i < labels.size(); i++) {
-                String value = i < row.size() ? row.get(i) : "";
-                sb.append(String.format(" %-" + (colWidths[i] - 1) + "s|", value));
-            }
-            sb.append("\n");
+            appendRow(sb, row, colWidths);
         }
 
         sb.append(rowSeparator);
         return sb.toString();
+    }
+
+    private static String buildSeparator(int[] colWidths, String character) {
+        StringBuilder sb = new StringBuilder("+");
+        for (int width : colWidths) {
+            sb.repeat(character, width).append("+");
+        }
+        return sb.append("\n").toString();
+    }
+
+    private static void appendRow(StringBuilder sb, List<String> values, int[] colWidths) {
+        sb.append("|");
+        for (int i = 0; i < colWidths.length; i++) {
+            String value = i < values.size() ? values.get(i) : "";
+            sb.append(" ").append(value);
+            int padding = colWidths[i] - value.length() - 1;
+            sb.repeat(" ", padding).append("|");
+        }
+        sb.append("\n");
     }
 
 }
