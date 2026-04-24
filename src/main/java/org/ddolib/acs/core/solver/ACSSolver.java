@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 /**
@@ -191,9 +190,7 @@ public final class ACSSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        long t0 = System.currentTimeMillis();
-        int nbIter = 0;
-        int queueMaxSize = 0;
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
@@ -203,7 +200,7 @@ public final class ACSSolver<T> implements Solver {
         boolean sat = false;
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            verboseMode.detailedSearchState(nbIter,
+            verboseMode.detailedSearchState(statistics.nbIteration(),
                     open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
                     bestUB,
                     open.stream()
@@ -213,12 +210,10 @@ public final class ACSSolver<T> implements Solver {
                             orElse(Double.POSITIVE_INFINITY),
                     gap());
 
+            statistics = statistics.updateTime(System.currentTimeMillis());
 
-            SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.SAT : SearchStatus.UNKNOWN, nbIter, queueMaxSize,
-                    System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 100);
-
-            if (limit.test(stats)) {
-                return new Solution(bestSolution(), stats);
+            if (limit.test(statistics)) {
+                return new Solution(bestSolution(), statistics);
             }
 
             for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
@@ -241,7 +236,7 @@ public final class ACSSolver<T> implements Solver {
                     }
                 }
                 for (SubProblem<T> sub : candidates) {
-                    nbIter++;
+                    statistics = statistics.incrementNbIter();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     this.closed.put(subKey, sub.f());
                     if (sub.getPath().size() == problem.nbVars()) {
@@ -250,28 +245,29 @@ public final class ACSSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                             sat = true;
-                            stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize,
-                                    System.currentTimeMillis() - t0, bestUB, gap());
-                            onSolution.accept(constructSolution(bestSol.get()), stats);
+                            statistics = statistics.updateIncumbent(bestUB, gap())
+                                    .updateStatus(SearchStatus.SAT);
+                            onSolution.accept(constructSolution(bestSol.get()), statistics);
                         }
                         verboseMode.newBest(bestUB);
                     } else {
-                        verboseMode.currentSubProblem(nbIter, sub);
+                        verboseMode.currentSubProblem(statistics.nbIteration(), sub);
                         addChildren(sub);
                     }
                 }
 
             }
-            queueMaxSize = max(queueMaxSize, open.stream().mapToInt(PriorityQueue::size).sum());
+            statistics = statistics.updateFrontierMaxSize(open.stream().mapToInt(PriorityQueue::size).sum());
         }
 
         if (debugLevel != DebugLevel.OFF) {
             checkAdmissibility();
         }
 
-        SearchStatistics stats = new SearchStatistics(sat ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
-                System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0);
-        return new Solution(bestSolution(), stats);
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        statistics = sat ? statistics.updateStatus(SearchStatus.OPTIMAL) : statistics.updateStatus(SearchStatus.UNSAT);
+        
+        return new Solution(bestSolution(), statistics);
     }
 
     /**
