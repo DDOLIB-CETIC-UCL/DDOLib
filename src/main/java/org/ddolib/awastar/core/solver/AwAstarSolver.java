@@ -191,8 +191,9 @@ public final class AwAstarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        statistics =
-                statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);
     }

@@ -13,6 +13,10 @@ import org.ddolib.examples.knapsack.KSProblem;
 import org.ddolib.examples.tsp.TSPFastLowerBound;
 import org.ddolib.examples.tsp.TSPProblem;
 import org.ddolib.examples.tsp.TSPState;
+import org.ddolib.examples.tsptw.TSPTWDominance;
+import org.ddolib.examples.tsptw.TSPTWFastLowerBound;
+import org.ddolib.examples.tsptw.TSPTWProblem;
+import org.ddolib.examples.tsptw.TSPTWState;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -144,6 +148,37 @@ public class AwAStarSolverTest {
         // final solution, gap should be zero
         assertEquals(0.0, finalSol.statistics().gap());
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
+    }
+
+    @Test
+    void testUnsat() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "TSPTW", "impossible_to_finish.txt").toString();
+        final TSPTWProblem problem = new TSPTWProblem(instance);
+
+        AwAstarModel<TSPTWState> model = new AwAstarModel<>() {
+            @Override
+            public Problem<TSPTWState> problem() {
+                return problem;
+            }
+
+            @Override
+            public TSPTWFastLowerBound lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+            }
+
+            @Override
+            public double weight() {
+                return 5.0;
+            }
+        };
+
+        Solution bestSolution = Solvers.minimizeAwAStar(model);
+        assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 
 
