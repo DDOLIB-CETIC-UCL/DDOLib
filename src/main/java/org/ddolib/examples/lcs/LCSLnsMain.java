@@ -71,7 +71,6 @@ import java.nio.file.Path;
  *     <li>The best subsequence found</li>
  * </ul>
  *
- *
  * @see LCSProblem
  * @see LCSState
  * @see LCSFastLowerBound
@@ -123,7 +122,7 @@ public class LCSLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 100,
+                s -> s.runtime() < 100,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

@@ -81,7 +81,6 @@ import java.io.IOException;
  *     <li>The final best solution found</li>
  * </ul>
  *
- *
  * @see MaxCoverProblem
  * @see MaxCoverState
  * @see MaxCoverRanking
@@ -118,6 +117,11 @@ public class MaxCoverLnsMain {
             }
 
             @Override
+            public MaxCoverFastLowerBound lowerBound() {
+                return new MaxCoverFastLowerBound(problem);
+            }
+
+            @Override
             public MaxCoverRanking ranking() {
                 return new MaxCoverRanking();
             }
@@ -128,11 +132,6 @@ public class MaxCoverLnsMain {
             }
 
             @Override
-            public MaxCoverFastLowerBound lowerBound() {
-                return new MaxCoverFastLowerBound(problem);
-            }
-
-            @Override
             public boolean exportDot() {
                 return false;
             }
@@ -140,7 +139,7 @@ public class MaxCoverLnsMain {
 
         Solution solution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 1000,
+                s -> s.runtime() < 1000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

@@ -3,7 +3,9 @@ package org.ddolib.examples.tsp;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.LnsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -77,7 +79,7 @@ public class TSPLnsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runTimeMs() < 10000, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runtime() < 10000, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(bestSolution);

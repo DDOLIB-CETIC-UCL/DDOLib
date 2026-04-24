@@ -67,7 +67,6 @@ import org.ddolib.util.io.SolutionPrinter;
  *     <li>The best solution found</li>
  * </ul>
  *
- *
  * @see BKSProblem
  * @see BKSFastLowerBound
  * @see BKSDominance
@@ -130,7 +129,7 @@ public class BKSLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 10000,
+                s -> s.runtime() < 10000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

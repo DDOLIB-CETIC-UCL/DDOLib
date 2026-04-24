@@ -24,7 +24,7 @@ public final class SearchStatistics {
         return _lastTimeOfImprovement;
     }
 
-    public long runTime() {
+    public long runtime() {
         return _currentTime - _t0;
     }
 
@@ -125,7 +125,7 @@ public final class SearchStatistics {
         String str = "\n\tstatus: " + status();
         str += "\n\tnbIterations: " + nbIteration();
         str += "\n\tfrontierMaxSize: " + frontierMaxSize();
-        str += "\n\truntime: " + runTime();
+        str += "\n\truntime: " + runtime();
         str += "\n\tincumbent: " + (Double.isInfinite(incumbent()) ? "+-∞" : incumbent());
         str += "\n\tgap: " + (Double.isInfinite(gap()) ? "∞" : incumbent());
         str += "\n";

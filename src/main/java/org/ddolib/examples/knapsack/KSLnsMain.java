@@ -5,7 +5,10 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.LnsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -73,7 +76,6 @@ import java.nio.file.Path;
  *     <li>The best solution found</li>
  * </ul>
  *
- *
  * @see KSProblem
  * @see KSFastLowerBound
  * @see KSDominance
@@ -139,7 +141,7 @@ public class KSLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 30000,
+                s -> s.runtime() < 30000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

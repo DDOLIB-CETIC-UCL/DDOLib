@@ -55,7 +55,7 @@ public class SMICLnsMain {
      * @throws IOException if there is an error reading the instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","SMIC","data10_1.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         LnsModel<SMICState> model = new LnsModel<>() {
             @Override
@@ -77,15 +77,18 @@ public class SMICLnsMain {
             public SMICRanking ranking() {
                 return new SMICRanking();
             }
-            @Override
-            public boolean exportDot() {return true;}
 
             @Override
             public WidthHeuristic<SMICState> widthHeuristic() {
                 return new FixedWidth<>(2);
             }
+
+            @Override
+            public boolean exportDot() {
+                return true;
+            }
         };
-        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runTimeMs() < 1000, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 

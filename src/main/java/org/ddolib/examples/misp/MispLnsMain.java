@@ -77,7 +77,6 @@ import java.util.BitSet;
  *     <li>The best independent set found</li>
  * </ul>
  *
- *
  * @see MispProblem
  * @see MispFastLowerBound
  * @see MispDominance
@@ -138,7 +137,7 @@ public class MispLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 100,
+                s -> s.runtime() < 100,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }
