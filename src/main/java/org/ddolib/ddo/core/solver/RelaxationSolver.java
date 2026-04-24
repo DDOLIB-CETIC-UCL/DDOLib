@@ -2,7 +2,6 @@ package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
@@ -118,8 +117,8 @@ public final class RelaxationSolver<T> {
     }
 
     public Solution minimize(Predicate<SearchStatistics> limit,
-                                          BiConsumer<int[], SearchStatistics> onSolution) {
-        long start = System.currentTimeMillis();
+                             BiConsumer<int[], SearchStatistics> onSolution) {
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());
@@ -129,10 +128,8 @@ public final class RelaxationSolver<T> {
         relaxedMdd.compile();
         maybeUpdateBest(relaxedMdd, exportAsDot);
 
-        long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, 0, 0,
-                end - start, bestUB, 0);
-        return new Solution(bestSolution(), stats);
+        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);
+        return new Solution(bestSolution(), statistics);
     }
 
     public Optional<Double> bestValue() {

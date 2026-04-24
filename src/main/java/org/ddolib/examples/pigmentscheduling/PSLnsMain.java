@@ -72,7 +72,6 @@ import java.nio.file.Path;
  *     <li>The best pigment sequence found</li>
  * </ul>
  *
- *
  * @see PSProblem
  * @see PSState
  * @see PSFastLowerBound
@@ -129,7 +128,7 @@ public class PSLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 10000,
+                s -> s.runtime() < 10000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

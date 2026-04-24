@@ -1,7 +1,9 @@
 package org.ddolib.examples.talentscheduling;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.LnsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -70,7 +72,7 @@ public class TSLnsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runTimeMs() < 1000, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(bestSolution.statistics());

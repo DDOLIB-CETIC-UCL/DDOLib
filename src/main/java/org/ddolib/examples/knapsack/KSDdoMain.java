@@ -100,7 +100,7 @@ public class KSDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, s -> s.runTimeMs() < 100, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, s -> s.runtime() < 100, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 
