@@ -20,7 +20,7 @@ public final class SearchStatistics {
     /**
      * Start time of the search (in milliseconds)
      */
-    private final long _t0;
+    private final long _startTime;
     /**
      * Time at which the last improvement was found (in milliseconds)
      */
@@ -66,7 +66,7 @@ public final class SearchStatistics {
      * @param initValue the initial value for the incumbent
      */
     public SearchStatistics(long startTime, double initValue) {
-        _t0 = startTime;
+        _startTime = startTime;
         _lastTimeOfImprovement = startTime;
         _currentTime = startTime;
         _incumbent = initValue;
@@ -87,7 +87,7 @@ public final class SearchStatistics {
      * @return the runtime (in milliseconds)
      */
     public long runtime() {
-        return _currentTime - _t0;
+        return _currentTime - _startTime;
     }
 
     /**
@@ -159,7 +159,7 @@ public final class SearchStatistics {
      * @return a copy of the current statistics
      */
     public SearchStatistics copy() {
-        SearchStatistics clone = new SearchStatistics(this._t0, this._incumbent);
+        SearchStatistics clone = new SearchStatistics(this._startTime, this._incumbent);
 
         clone._currentTime = this._currentTime;
         clone._lastTimeOfImprovement = this._lastTimeOfImprovement;
@@ -168,7 +168,7 @@ public final class SearchStatistics {
         clone._lastIterationOfImprovement = this._lastIterationOfImprovement;
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
-        clone._frontierMaxSize = this.frontierMaxSize();
+        clone._frontierMaxSize = this._frontierMaxSize;
 
         return clone;
     }
