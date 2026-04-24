@@ -91,6 +91,15 @@ public final class SearchStatistics {
     }
 
     /**
+     * Returns the current time recorded in these statistics.
+     *
+     * @return the current time (in milliseconds)
+     */
+    public long currentTime() {
+        return _currentTime;
+    }
+
+    /**
      * Returns the total number of iterations performed by the search.
      *
      * @return the number of iterations
