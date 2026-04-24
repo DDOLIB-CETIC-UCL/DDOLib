@@ -156,12 +156,12 @@ public final class AwAstarSolver<T> implements Solver {
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
 
-
             verboseMode.detailedSearchState(statistics.nbIteration(), open.size(), bestUB,
                     open.peek().getLowerBound(), statistics.gap());
 
-            statistics =
-                    statistics.incrementNbIter().updateFrontierMaxSize(open.size()).updateTime(System.currentTimeMillis());
+            statistics = statistics.incrementNbIter()
+                    .updateFrontierMaxSize(open.size())
+                    .updateTime(System.currentTimeMillis());
 
 
             if (limit.test(statistics)) { // user-defined stopping criterion
@@ -270,8 +270,8 @@ public final class AwAstarSolver<T> implements Solver {
                 assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                statistics =
-                        statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                statistics = statistics.updateIncumbent(bestUB, gap())
+                        .updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(path), statistics);
                 verboseMode.newBest(bestUB);
             }
