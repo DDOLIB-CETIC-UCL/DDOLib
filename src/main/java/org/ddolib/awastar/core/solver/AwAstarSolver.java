@@ -156,7 +156,7 @@ public final class AwAstarSolver<T> implements Solver {
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
 
-            verboseMode.detailedSearchState(statistics.nbIteration(), open.size(), bestUB,
+            verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
                     open.peek().getLowerBound(), statistics.gap());
 
             statistics = statistics.incrementNbIter()

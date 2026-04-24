@@ -186,7 +186,7 @@ public final class SequentialSolver<T> implements Solver {
         SearchStatus status = SearchStatus.UNKNOWN;
 
         while (!frontier.isEmpty()) {
-            verboseMode.detailedSearchState(statistics.nbIteration(), frontier.size(), bestUB,
+            verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
             statistics = statistics.incrementNbIter().updateFrontierMaxSize(frontier.size());
@@ -201,7 +201,7 @@ public final class SequentialSolver<T> implements Solver {
             }
 
 
-            verboseMode.currentSubProblem(statistics.nbIteration(), sub);
+            verboseMode.currentSubProblem(statistics.nbIterations(), sub);
 
             if (nodeLB >= bestUB) {
                 frontier.clear();

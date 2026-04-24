@@ -200,7 +200,7 @@ public final class ACSSolver<T> implements Solver {
         boolean sat = false;
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            verboseMode.detailedSearchState(statistics.nbIteration(),
+            verboseMode.detailedSearchState(statistics.nbIterations(),
                     open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
                     bestUB,
                     open.stream()
@@ -251,7 +251,7 @@ public final class ACSSolver<T> implements Solver {
                         }
                         verboseMode.newBest(bestUB);
                     } else {
-                        verboseMode.currentSubProblem(statistics.nbIteration(), sub);
+                        verboseMode.currentSubProblem(statistics.nbIterations(), sub);
                         addChildren(sub);
                     }
                 }
@@ -266,7 +266,7 @@ public final class ACSSolver<T> implements Solver {
 
         statistics = statistics.updateTime(System.currentTimeMillis());
         statistics = sat ? statistics.updateStatus(SearchStatus.OPTIMAL) : statistics.updateStatus(SearchStatus.UNSAT);
-        
+
         return new Solution(bestSolution(), statistics);
     }
 

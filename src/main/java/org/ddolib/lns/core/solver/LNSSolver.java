@@ -73,7 +73,7 @@ public final class LNSSolver<T> implements Solver {
             if (!limit.test(statistics)) {
                 break;
             }
-            verboseMode.detailedSearchState(statistics.nbIteration(), statistics.frontierMaxSize(), bestUB,
+            verboseMode.detailedSearchState(statistics.nbIterations(), statistics.frontierMaxSize(), bestUB,
                     Double.POSITIVE_INFINITY, gap);
 
             if (bestSol.isPresent()) {
@@ -95,7 +95,7 @@ public final class LNSSolver<T> implements Solver {
             // 1. RESTRICTION
             SubProblem<T> sub = rootPrime;
 
-            verboseMode.currentSubProblem(statistics.nbIteration(), sub);
+            verboseMode.currentSubProblem(statistics.nbIterations(), sub);
 
             int maxWidth = width.maximumWidth(sub.getState());
 

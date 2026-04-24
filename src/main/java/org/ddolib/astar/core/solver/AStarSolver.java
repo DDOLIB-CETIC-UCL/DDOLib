@@ -123,7 +123,7 @@ public final class AStarSolver<T> implements Solver {
         boolean sat = false; // problem satisfiable
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
-            verboseMode.detailedSearchState(statistics.nbIteration(), open.size(), bestUB,
+            verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
                     open.peek().getLowerBound(), 100 * gap());
 
             statistics = statistics.incrementNbIter()
@@ -154,7 +154,7 @@ public final class AStarSolver<T> implements Solver {
                 break;
 
             } else if (sub.getPath().size() < problem.nbVars()) {
-                verboseMode.currentSubProblem(statistics.nbIteration(), sub);
+                verboseMode.currentSubProblem(statistics.nbIterations(), sub);
                 sat = sat | addChildren(sub, onSolution);
                 closed.put(subKey, sub.f());
             }

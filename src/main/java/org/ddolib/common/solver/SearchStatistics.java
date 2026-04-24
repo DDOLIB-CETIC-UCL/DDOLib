@@ -5,7 +5,7 @@ public final class SearchStatistics {
     private long _lastTimeOfImprovement;
     private long _currentTime;
     private SearchStatus _status = SearchStatus.UNKNOWN;
-    private int _nbIteration = 0;
+    private int _nbIterations = 0;
     private int _lastIterationOfImprovement = 0;
     private double _incumbent;
     private double _prevIncumbent = Double.POSITIVE_INFINITY;
@@ -28,8 +28,8 @@ public final class SearchStatistics {
         return _currentTime - _t0;
     }
 
-    public int nbIteration() {
-        return _nbIteration;
+    public int nbIterations() {
+        return _nbIterations;
     }
 
     public int lastIterationOfImprovement() {
@@ -62,7 +62,7 @@ public final class SearchStatistics {
         clone._currentTime = this._currentTime;
         clone._lastTimeOfImprovement = this._lastTimeOfImprovement;
         clone._status = this._status;
-        clone._nbIteration = this._nbIteration;
+        clone._nbIterations = this._nbIterations;
         clone._lastIterationOfImprovement = this._lastIterationOfImprovement;
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
@@ -77,7 +77,7 @@ public final class SearchStatistics {
         toReturn._prevIncumbent = this._incumbent;
         toReturn._currentTime = System.currentTimeMillis();
         toReturn._lastTimeOfImprovement = toReturn._currentTime;
-        toReturn._lastIterationOfImprovement = this._nbIteration;
+        toReturn._lastIterationOfImprovement = this._nbIterations;
         toReturn._gap = gap;
 
         return toReturn;
@@ -91,7 +91,7 @@ public final class SearchStatistics {
 
     public SearchStatistics incrementNbIter() {
         SearchStatistics toReturn = this.copy();
-        toReturn._nbIteration++;
+        toReturn._nbIterations++;
         return toReturn;
     }
 
@@ -123,7 +123,7 @@ public final class SearchStatistics {
     @Override
     public String toString() {
         String str = "\n\tstatus: " + status();
-        str += "\n\tnbIterations: " + nbIteration();
+        str += "\n\tnbIterations: " + nbIterations();
         str += "\n\tfrontierMaxSize: " + frontierMaxSize();
         str += "\n\truntime: " + runtime();
         str += "\n\tincumbent: " + (Double.isInfinite(incumbent()) ? "+-∞" : incumbent());
