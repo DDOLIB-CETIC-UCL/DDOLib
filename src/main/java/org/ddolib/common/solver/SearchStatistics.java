@@ -1,5 +1,10 @@
 package org.ddolib.common.solver;
 
+import org.ddolib.util.PrettyPrint;
+
+import java.util.Collections;
+import java.util.List;
+
 public final class SearchStatistics {
     private final long _t0;
     private long _lastTimeOfImprovement;
@@ -122,13 +127,19 @@ public final class SearchStatistics {
 
     @Override
     public String toString() {
-        String str = "\n\tstatus: " + status();
-        str += "\n\tnbIterations: " + nbIterations();
-        str += "\n\tfrontierMaxSize: " + frontierMaxSize();
-        str += "\n\truntime: " + runtime();
-        str += "\n\tincumbent: " + (Double.isInfinite(incumbent()) ? "+-∞" : incumbent());
-        str += "\n\tgap: " + (Double.isInfinite(gap()) ? "∞" : incumbent());
-        str += "\n";
-        return str;
+        List<String> labels = List.of(
+                "Status", "Iterations", "Frontier Max Size", "Runtime", "Incumbent", "Gap"
+        );
+
+        List<String> values = List.of(
+                _status.toString(),
+                String.valueOf(_nbIterations),
+                String.valueOf(_frontierMaxSize),
+                PrettyPrint.formatMs(runtime()),
+                Double.isInfinite(_incumbent) ? "∞" : String.valueOf(_incumbent),
+                Double.isInfinite(_gap) ? "∞" : String.format("%.4f", _gap)
+        );
+
+        return PrettyPrint.buildTable(labels, Collections.singletonList(values));
     }
 }

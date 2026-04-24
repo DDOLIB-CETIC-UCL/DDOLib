@@ -88,7 +88,7 @@ public class TSPTWAwAstarMain {
 
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                stats -> stats.runtime() > 2_000,
+                stats -> stats.runtime() > 60_000,
                 (sol, s) -> SolutionPrinter.printSolution(s, sol)
         );
 
