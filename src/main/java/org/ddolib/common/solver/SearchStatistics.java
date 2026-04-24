@@ -9,7 +9,7 @@ public final class SearchStatistics {
     private int _lastIterationOfImprovement = 0;
     private double _incumbent;
     private double _prevIncumbent = Double.POSITIVE_INFINITY;
-    private double _gap = 1.0;
+    private double _gap = 100.0;
     private int _frontierMaxSize = 0;
 
 
@@ -101,6 +101,12 @@ public final class SearchStatistics {
         return toReturn;
     }
 
+    public SearchStatistics incrementFrontierSize() {
+        SearchStatistics toReturn = this.copy();
+        toReturn._frontierMaxSize++;
+        return toReturn;
+    }
+
     public SearchStatistics updateGap(double gap) {
         SearchStatistics toReturn = this.copy();
         toReturn._gap = gap;
@@ -112,8 +118,6 @@ public final class SearchStatistics {
         toReturn._currentTime = time;
         return toReturn;
     }
-
-
 
 
     @Override

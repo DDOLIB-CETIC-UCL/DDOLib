@@ -7,11 +7,11 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
+import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.LnsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.verbosity.VerboseMode;
@@ -21,7 +21,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -62,22 +65,15 @@ public final class LNSSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        long start = System.currentTimeMillis();
-        int nbIter = 0;
-        int queueMaxSize = 0;
-        SearchStatistics stats;
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         SubProblem<T> rootPrime;
         double gap = 100;
-        SearchStatus status = SearchStatus.UNKNOWN;
         while (true) {
-            nbIter++;
-            queueMaxSize++;
-            stats = new SearchStatistics(status, nbIter,
-                    queueMaxSize, System.currentTimeMillis() - start, bestUB, gap);
-            if (!limit.test(stats)) {
+            statistics = statistics.incrementNbIter().incrementFrontierSize();
+            if (!limit.test(statistics)) {
                 break;
             }
-            verboseMode.detailedSearchState(nbIter, queueMaxSize, bestUB,
+            verboseMode.detailedSearchState(statistics.nbIteration(), statistics.frontierMaxSize(), bestUB,
                     Double.POSITIVE_INFINITY, gap);
 
             if (bestSol.isPresent()) {
@@ -94,12 +90,12 @@ public final class LNSSolver<T> implements Solver {
             if (solution == null) {
                 rootPrime = root();
             } else {
-                rootPrime = buildInitialSubProblem(solution, d-1);
+                rootPrime = buildInitialSubProblem(solution, d - 1);
             }
             // 1. RESTRICTION
             SubProblem<T> sub = rootPrime;
 
-            verboseMode.currentSubProblem(nbIter, sub);
+            verboseMode.currentSubProblem(statistics.nbIteration(), sub);
 
             int maxWidth = width.maximumWidth(sub.getState());
 
@@ -114,10 +110,10 @@ public final class LNSSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                status = SearchStatus.SAT;
                 gap = 100.0 * Math.abs(bestUB - restrictedMdd.minLowerBound()) / Math.abs(bestUB);
-                stats = new SearchStatistics(status, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap);
-                onSolution.accept(constructSolution(bestSol.get()), stats);
+                statistics = statistics.updateIncumbent(bestUB, gap)
+                        .updateStatus(SearchStatus.SAT);
+                onSolution.accept(constructSolution(bestSol.get()), statistics);
             }
             if (exportAsDot && firstRestricted) {
                 exportDot(restrictedMdd.exportAsDot(),
@@ -126,12 +122,12 @@ public final class LNSSolver<T> implements Solver {
             firstRestricted = false;
 
             if (d == 0 && restrictedMdd.isExact()) {
-                stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, 0.0);
-                return new Solution(bestSolution(), stats);
+                statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL);
+                return new Solution(bestSolution(), statistics);
             }
         }
 
-        return new Solution(bestSolution(), stats);
+        return new Solution(bestSolution(), statistics);
     }
 
     @Override
@@ -189,19 +185,19 @@ public final class LNSSolver<T> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                model.lowerBound().fastLowerBound(problem.initialState(),  vars),
+                model.lowerBound().fastLowerBound(problem.initialState(), vars),
                 Collections.emptySet());
     }
 
 
-    private SubProblem<T> buildInitialSubProblem(int[] solution,  int depth) {
+    private SubProblem<T> buildInitialSubProblem(int[] solution, int depth) {
         final HashSet<Integer> vars = new HashSet<>();
         Set<Decision> decisionSet = new HashSet<>();
         T state = problem.initialState();
         double sum = problem.initialValue();
         int k = 0;
         while (k < problem.nbVars()) {
-            Decision dec =  new Decision(k, solution[k]);
+            Decision dec = new Decision(k, solution[k]);
             if (k < depth) {
                 decisionSet.add(dec);
                 sum += problem.transitionCost(state, dec);
