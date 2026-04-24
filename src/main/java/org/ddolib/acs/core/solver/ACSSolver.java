@@ -197,7 +197,6 @@ public final class ACSSolver<T> implements Solver {
         if (root.f() == Integer.MIN_VALUE) {
             defaultLowerBoundValue = true;
         }
-        boolean sat = false;
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
             verboseMode.detailedSearchState(statistics.nbIterations(),
@@ -244,7 +243,6 @@ public final class ACSSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
-                            sat = true;
                             statistics = statistics.updateIncumbent(bestUB, gap())
                                     .updateStatus(SearchStatus.SAT);
                             onSolution.accept(constructSolution(bestSol.get()), statistics);
@@ -266,7 +264,7 @@ public final class ACSSolver<T> implements Solver {
 
         statistics = statistics.updateTime(System.currentTimeMillis());
 
-        if (sat) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);

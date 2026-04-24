@@ -120,7 +120,6 @@ public final class AStarSolver<T> implements Solver {
         statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
-        boolean sat = false; // problem satisfiable
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
             verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
@@ -156,7 +155,7 @@ public final class AStarSolver<T> implements Solver {
 
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(statistics.nbIterations(), sub);
-                sat = sat | addChildren(sub, onSolution);
+                addChildren(sub, onSolution);
                 closed.put(subKey, sub.f());
             }
         }
@@ -166,7 +165,7 @@ public final class AStarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (sat) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);
@@ -224,8 +223,7 @@ public final class AStarSolver<T> implements Solver {
 
 
     // return if a feasible solution was found by expanding children, false otherwise
-    private boolean addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
-        boolean sat = false;
+    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
@@ -273,11 +271,9 @@ public final class AStarSolver<T> implements Solver {
                 statistics = statistics.updateIncumbent(bestUB, gap())
                         .updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(path), statistics);
-                sat = true;
                 verboseMode.newBest(bestUB);
             }
         }
-        return sat;
     }
 
     /**
