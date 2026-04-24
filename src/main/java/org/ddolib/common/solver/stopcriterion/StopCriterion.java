@@ -4,8 +4,6 @@ import org.ddolib.common.solver.SearchStatistics;
 
 import java.util.function.Predicate;
 
-import static java.lang.Math.abs;
-
 /**
  * Interface representing a criterion to stop the search process in a solver.
  * <p>
@@ -64,11 +62,11 @@ public interface StopCriterion extends Predicate<SearchStatistics> {
      * Creates a stop criterion that terminates the search when the relative improvement
      * between the current incumbent and the previous incumbent is less than or equal to a threshold.
      *
-     * @param threshold the minimum relative improvement required to continue the search
+     * @param threshold the minimum relative improvement required to continue the search in percent
      * @return a StopCriterion based on the relative improvement
      */
     static StopCriterion minRelativeImprovement(double threshold) {
-        return stats -> abs(stats.incumbent() - stats.prevIncumbent()) / abs(stats.prevIncumbent()) <= threshold;
+        return stats -> stats.relativeImprovement() <= threshold;
     }
 
 

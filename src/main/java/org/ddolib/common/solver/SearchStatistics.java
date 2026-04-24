@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import static java.lang.Math.abs;
+
 /**
  * Class representing the statistics of a search process in a solver.
  * <p>
@@ -57,6 +59,10 @@ public final class SearchStatistics {
      * Maximum size reached by the search frontier
      */
     private int _frontierMaxSize = 0;
+    /**
+     * Relative improvement of the incumbent value
+     */
+    private double _relativeImprovement = 1.0;
 
 
     /**
@@ -163,6 +169,15 @@ public final class SearchStatistics {
     }
 
     /**
+     * Returns the relative improvement of the last incumbent update in percent.
+     *
+     * @return the relative improvement in percent
+     */
+    public double relativeImprovement() {
+        return 100 * _relativeImprovement;
+    }
+
+    /**
      * Creates and returns a copy of this statistics instance.
      *
      * @return a copy of the current statistics
@@ -178,6 +193,7 @@ public final class SearchStatistics {
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
         clone._frontierMaxSize = this._frontierMaxSize;
+        clone._relativeImprovement = this._relativeImprovement;
 
         return clone;
     }
@@ -197,6 +213,11 @@ public final class SearchStatistics {
         toReturn._lastTimeOfImprovement = toReturn._currentTime;
         toReturn._lastIterationOfImprovement = this._nbIterations;
         toReturn._gap = gap;
+        if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {
+            toReturn._relativeImprovement = 1.0;
+        } else {
+            toReturn._relativeImprovement = abs(incumbent - this._incumbent) / abs(this._incumbent);
+        }
 
         return toReturn;
     }
@@ -280,7 +301,13 @@ public final class SearchStatistics {
         DecimalFormat gapFormat = new DecimalFormat("#,##0.####", symbols);
 
         List<String> labels = List.of(
-                "Status", "Iterations", "Frontier Max Size", "Runtime", "Incumbent", "Gap"
+                "Status",
+                "Iterations",
+                "Frontier Max Size",
+                "Runtime",
+                "Incumbent",
+                "Gap",
+                "Relative improvement"
         );
 
         List<String> values = List.of(
@@ -289,7 +316,8 @@ public final class SearchStatistics {
                 df.format(_frontierMaxSize),
                 PrettyPrint.formatMs(runtime()),
                 Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
-                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %"
+                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
+                df.format(relativeImprovement()) + " %"
         );
 
         return PrettyPrint.buildTable(labels, Collections.singletonList(values));
