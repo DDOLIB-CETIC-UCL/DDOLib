@@ -87,13 +87,13 @@ If you want to create a specific suite of unit tests, you must exclude it from o
    the expected tag criteria.
 
 **Recommended Method:**
-The most robust way to handle this in JUnit 5 is to use the `@ExcludeClassNamePatterns` annotation combined with a *
-*naming convention**:
+The most robust way to handle this in JUnit 5 is to use the `@ExcludeClassNamePatterns` annotation combined with a
+strict **naming convention**:
 
-* Name your **Suites** with the plural suffix `Tests` (e.g., `AllSolversTests.java`).
-* Name your **Unit Tests** with the singular suffix `Test` (e.g., `MySolverTest.java`).
+* Name your **Suites** with the suffix `TestSuite` (e.g., `AllSolversTestSuite.java`).
+* Name your **Unit Tests** with the suffix `Test` (e.g., `MySolverTest.java`).
 
-In your `AllTests.java` class, add the following exclusion pattern to automatically ignore all other suites:
+In your main suite class, add the following exclusion pattern to automatically ignore all other suites:
 
 ```java
-@ExcludeClassNamePatterns({".*Tests"})
+@ExcludeClassNamePatterns({".*TestSuite"})

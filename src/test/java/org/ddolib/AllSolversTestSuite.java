@@ -13,5 +13,5 @@ import org.junit.platform.suite.api.SuiteDisplayName;
         "org.ddolib.ddo.core.solver",
         "org.ddolib.lns.core.solver"
 })
-public class AllSolversTests {
+public class AllSolversTestSuite {
 }

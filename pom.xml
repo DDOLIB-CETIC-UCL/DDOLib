@@ -263,7 +263,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <includes>
-                                <include>**/NonRegressionTests.java</include>
+                                <include>**/NonRegressionTestSuite.java</include>
                             </includes>
                             <argLine>-Xmx5g -Xms1g</argLine>
 
