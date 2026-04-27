@@ -75,3 +75,25 @@ You can now run this configuration anytime to execute all tests except the non-r
 If you specifically need to run the heavy validation tests :
 
 * Run the `src/test/java/org/ddolib/NonRegressionTests.java` suite.
+
+---
+
+## Adding a test suite
+
+If you want to create a specific suite of unit tests, you must exclude it from other suites for two main reasons:
+
+1. **Avoid duplicated tests**: Prevent the `AllTests` suite from running the same tests twice.
+2. **Avoid filtering errors**: Prevent the `NonRegressionTests` suite from scanning your suite class if it doesn't meet
+   the expected tag criteria.
+
+**Recommended Method:**
+The most robust way to handle this in JUnit 5 is to use the `@ExcludeClassNamePatterns` annotation combined with a
+strict **naming convention**:
+
+* Name your **Suites** with the suffix `TestSuite` (e.g., `AllSolversTestSuite.java`).
+* Name your **Unit Tests** with the suffix `Test` (e.g., `MySolverTest.java`).
+
+In your main suite class, add the following exclusion pattern to automatically ignore all other suites:
+
+```java
+@ExcludeClassNamePatterns({".*TestSuite"})
