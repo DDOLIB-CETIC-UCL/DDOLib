@@ -155,7 +155,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <includes>
-                        <include>**/AllTests.java</include>
+                        <include>**/AllTestSuite.java</include>
                     </includes>
                 </configuration>
             </plugin>
