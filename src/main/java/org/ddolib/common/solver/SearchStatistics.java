@@ -4,7 +4,6 @@ import org.ddolib.util.PrettyPrint;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -283,6 +282,17 @@ public final class SearchStatistics {
                 Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %"
         );
 
-        return PrettyPrint.buildTable(labels, Collections.singletonList(values));
+        int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;
+        int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < labels.size(); i++) {
+            sb.append("\t");
+            sb.append(("%-" + labelSize + "s ").formatted(labels.get(i) + ":"));
+            sb.append(("%" + valueSize + "s").formatted(values.get(i)));
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }
