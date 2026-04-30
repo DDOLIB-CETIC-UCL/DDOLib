@@ -109,7 +109,7 @@ public final class AwAstarSolver<T> implements Solver {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = Double.POSITIVE_INFINITY;
+        this.bestUB = model.upperBound();
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
