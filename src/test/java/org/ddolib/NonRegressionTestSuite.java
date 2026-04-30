@@ -8,6 +8,6 @@ import org.junit.platform.suite.api.*;
 @Tag("non-regression")
 @SelectPackages("org.ddolib")
 @IncludeTags("non-regression")
-@ExcludeClassNamePatterns(".*AllTests")
-public class NonRegressionTests {
+@ExcludeClassNamePatterns(".*TestSuite")
+public class NonRegressionTestSuite {
 }
