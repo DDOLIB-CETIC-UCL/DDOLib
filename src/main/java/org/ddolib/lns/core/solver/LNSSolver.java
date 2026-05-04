@@ -74,15 +74,17 @@ public final class LNSSolver<T> implements Solver {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        SearchStatistics stats;
+        SearchStatistics stats = new SearchStatistics(start, bestUB);
         SubProblem<T> rootPrime;
         double gap = 100;
-        SearchStatus status = SearchStatus.UNKNOWN;
         while (true) {
             nbIter++;
             queueMaxSize++;
-            stats = new SearchStatistics(status, nbIter,
-                    queueMaxSize, System.currentTimeMillis() - start, bestUB, gap);
+            stats = stats
+                    .updateTime(System.currentTimeMillis())
+                    .incrementNbIter()
+                    .updateFrontierMaxSize(queueMaxSize)
+                    .updateGap(gap);
             if (!limit.test(stats)) {
                 break;
             }
@@ -95,6 +97,9 @@ public final class LNSSolver<T> implements Solver {
                 if (model.initialSolution() != null) {
                     solution = model.initialSolution();
                     bestUB = costInSolutionAtDepth(model.initialSolution(), problem.nbVars());
+                    if (Double.isInfinite(stats.incumbent())) {
+                        stats = stats.updateIncumbent(bestUB, gap).updateStatus(SearchStatus.SAT);
+                    }
                 } else {
                     solution = null;
                 }
@@ -123,9 +128,12 @@ public final class LNSSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                status = SearchStatus.SAT;
                 gap = computeGap(bestUB, restrictedMdd.minLowerBound());
-                stats = new SearchStatistics(status, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap);
+                stats = stats
+                        .updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, gap)
+                        .updateStatus(SearchStatus.SAT)
+                        .updateGap(gap);
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
@@ -135,9 +143,21 @@ public final class LNSSolver<T> implements Solver {
             firstRestricted = false;
 
             if (d == 0 && restrictedMdd.isExact()) {
-                stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, 0.0);
+                stats = stats
+                        .updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, 0.0)
+                        .updateStatus(SearchStatus.OPTIMAL)
+                        .updateGap(0.0);
                 return new Solution(bestSolution(), stats);
             }
+        }
+
+        stats = stats.updateTime(System.currentTimeMillis()).updateGap(gap);
+        if (stats.incumbent() != bestUB) {
+            stats = stats.updateIncumbent(bestUB, gap);
+        }
+        if (!Double.isInfinite(bestUB) && stats.status() == SearchStatus.UNKNOWN) {
+            stats = stats.updateStatus(SearchStatus.SAT);
         }
 
         return new Solution(bestSolution(), stats);

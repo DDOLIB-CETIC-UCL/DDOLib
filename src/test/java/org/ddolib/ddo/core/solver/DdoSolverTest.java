@@ -15,7 +15,6 @@ import org.ddolib.examples.knapsack.*;
 import org.ddolib.examples.tsp.*;
 import org.ddolib.examples.tsptw.*;
 import org.ddolib.modeling.*;
-import org.ddolib.util.io.SolutionPrinter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -228,9 +227,7 @@ class DdoSolverTest {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeDdo(model);
         assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 }

@@ -108,7 +108,8 @@ public final class ExactSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        long start = System.currentTimeMillis();
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
+
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
@@ -141,17 +142,11 @@ public final class ExactSolver<T> implements Solver {
                     Paths.get("output", problemName + "_exact.dot").toString());
         }
 
-        long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL,
-                1,
-                1,
-                end - start,
-                bestValue.orElse(Double.POSITIVE_INFINITY),
-                0);
+        statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();
+        final SearchStatistics finalStats = statistics.updateStatus(SearchStatus.OPTIMAL);
 
-
-        bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), stats));
-        return new Solution(bestSolution(), stats);
+        bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), finalStats));
+        return new Solution(bestSolution(), finalStats);
     }
 
     /**
@@ -173,7 +168,7 @@ public final class ExactSolver<T> implements Solver {
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
-    
+
     /**
      * Extracts the best solution and value from a compiled decision diagram.
      *

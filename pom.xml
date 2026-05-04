@@ -155,7 +155,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <includes>
-                        <include>**/AllTests.java</include>
+                        <include>**/AllTestSuite.java</include>
                     </includes>
                 </configuration>
             </plugin>
@@ -263,7 +263,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <includes>
-                                <include>**/NonRegressionTests.java</include>
+                                <include>**/NonRegressionTestSuite.java</include>
                             </includes>
                             <argLine>-Xmx5g -Xms1g</argLine>
 

@@ -83,7 +83,7 @@ public class SRFLPLnsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runTimeMs() < 100, (sol, stat) -> {
+        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runtime() < 100, (sol, stat) -> {
             SolutionPrinter.printSolution(stat, sol);
         });
 

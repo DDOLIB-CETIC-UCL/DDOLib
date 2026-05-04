@@ -178,41 +178,33 @@ public final class SequentialSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        long start = System.currentTimeMillis();
-        int nbIter = 0;
-        int queueMaxSize = 0;
+
+        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
-        SearchStatus status = SearchStatus.UNKNOWN;
-
         while (!frontier.isEmpty()) {
-            nbIter++;
-            verboseMode.detailedSearchState(nbIter, frontier.size(), bestUB,
+            verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
-            queueMaxSize = Math.max(queueMaxSize, frontier.size());
+            statistics = statistics.incrementNbIter().updateFrontierMaxSize(frontier.size());
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             double nodeLB = sub.getLowerBound();
 
-            long end = System.currentTimeMillis();
-            SearchStatistics stats = new SearchStatistics(status, nbIter,
-                    queueMaxSize, end - start, bestUB, gap());
+            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
 
-            if (limit.test(stats)) {
-                return new Solution(bestSolution(), stats);
+            if (limit.test(statistics)) {
+                return new Solution(bestSolution(), statistics);
             }
 
 
-            verboseMode.currentSubProblem(nbIter, sub);
-
+            verboseMode.currentSubProblem(statistics.nbIterations(), sub);
             if (nodeLB >= bestUB) {
                 frontier.clear();
-                end = System.currentTimeMillis();
-                SearchStatistics s = new SearchStatistics(SearchStatus.OPTIMAL, nbIter,
-                        queueMaxSize, end - start, bestUB, 0);
-                return new Solution(bestSolution(), s);
+                statistics =
+                        statistics.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+                return new Solution(bestSolution(), statistics);
             }
 
             int maxWidth = width.maximumWidth(sub.getState());
@@ -225,9 +217,10 @@ public final class SequentialSolver<T> implements Solver {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                status = SearchStatus.SAT;
-                stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
-                onSolution.accept(constructSolution(bestSol.get()), stats);
+                statistics = statistics.updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, gap())
+                        .updateStatus(SearchStatus.SAT);
+                onSolution.accept(constructSolution(bestSol.get()), statistics);
             }
             if (exportAsDot && firstRestricted) {
                 exportDot(restrictedMdd.exportAsDot(),
@@ -250,9 +243,10 @@ public final class SequentialSolver<T> implements Solver {
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
-                    status = SearchStatus.SAT;
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
-                    onSolution.accept(constructSolution(bestSol.get()), stats);
+                    statistics = statistics.updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
+                    onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
             }
             if (exportAsDot && firstRelaxed) {
@@ -265,22 +259,22 @@ public final class SequentialSolver<T> implements Solver {
             if (relaxedMdd.isExact()) {
                 newbest = maybeUpdateBest(relaxedMdd, false);
                 if (newbest) {
-                    status = SearchStatus.SAT;
-                    stats = new SearchStatistics(SearchStatus.SAT, nbIter, queueMaxSize, System.currentTimeMillis() - start, bestUB, gap());
-                    onSolution.accept(constructSolution(bestSol.get()), stats);
+                    statistics = statistics.updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
+                    onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
-            } else {
-                if (relaxedMdd.bestValue().isPresent() && relaxedMdd.bestValue().get() >= bestUB) {
-                    continue;
-                } else {
-                    enqueueCutset(relaxedMdd);
-                }
+            } else if (relaxedMdd.bestValue().isEmpty() || relaxedMdd.bestValue().get() < bestUB) {
+                enqueueCutset(relaxedMdd);
             }
         }
-        long end = System.currentTimeMillis();
-        SearchStatistics stats = new SearchStatistics(status == SearchStatus.SAT ? SearchStatus.OPTIMAL : SearchStatus.UNSAT, nbIter, queueMaxSize,
-                end - start, bestUB, 0);
-        return new Solution(bestSolution(), stats);
+
+
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        
+        return new Solution(bestSolution(), statistics);
     }
 
     @Override

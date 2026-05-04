@@ -65,11 +65,6 @@ public class TSPTWLnsMain {
             }
 
             @Override
-            public TSPTWRanking ranking() {
-                return new TSPTWRanking();
-            }
-
-            @Override
             public TSPTWFastLowerBound lowerBound() {
                 return new TSPTWFastLowerBound(problem);
             }
@@ -80,13 +75,18 @@ public class TSPTWLnsMain {
             }
 
             @Override
+            public TSPTWRanking ranking() {
+                return new TSPTWRanking();
+            }
+
+            @Override
             public WidthHeuristic<TSPTWState> widthHeuristic() {
                 return new FixedWidth<>(10);
             }
 
         };
 
-        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runTimeMs() < 1000, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 

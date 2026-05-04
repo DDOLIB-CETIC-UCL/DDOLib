@@ -5,7 +5,7 @@ import java.time.Duration;
 /**
  * Collection of utility functions for formatting data for display.
  */
-public class PrettyPrint {
+public final class PrettyPrint {
 
     /**
      * Formats a duration in milliseconds into a human-readable string.
