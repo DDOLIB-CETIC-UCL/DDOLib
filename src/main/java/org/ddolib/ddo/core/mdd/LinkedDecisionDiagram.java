@@ -175,7 +175,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         // Identify the set of variables to be assigned
         final Set<Integer> variables = varSet(config);
 
-        int depthGlobalDD = config.residual.getPath().size();
+        int depthGlobalDD = config.residual.getDepth();
         int depthCurrentDD = 0;
         int initialDepth = depthGlobalDD;
 
@@ -414,7 +414,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Prunes items from the current layer using the cache
+     * Prunes items from the current layer using the cache.
      *
      * @param depthGlobalDD the current depth in the global mdd
      * @param initialDepth  the depth when starting the compilation
@@ -450,7 +450,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Updates the cache according to the last compilation
+     * Updates the cache according to the last compilation.
      */
     private void finishCacheUpdates() {
         for (NodeSubProblem<T> n : cutset) {
