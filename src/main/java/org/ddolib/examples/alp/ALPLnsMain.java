@@ -3,7 +3,6 @@ package org.ddolib.examples.alp;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.LnsModel;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
@@ -75,7 +74,6 @@ import java.nio.file.Path;
  *     <li>The best solution found</li>
  * </ul>
  *
- *
  * @see ALPProblem
  * @see ALPState
  * @see ALPFastLowerBound
@@ -130,7 +128,7 @@ public class ALPLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 1000,
+                s -> s.runtime() < 1000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

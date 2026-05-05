@@ -19,7 +19,6 @@ import org.ddolib.examples.tsptw.TSPTWFastLowerBound;
 import org.ddolib.examples.tsptw.TSPTWProblem;
 import org.ddolib.examples.tsptw.TSPTWState;
 import org.ddolib.modeling.*;
-import org.ddolib.util.io.SolutionPrinter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -207,9 +206,7 @@ class AStarSolverTest {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution = Solvers.minimizeAstar(model);
         assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());
     }
 

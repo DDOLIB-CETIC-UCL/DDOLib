@@ -66,7 +66,7 @@ public class Solution {
     }
 
     public String searchTime() {
-        return PrettyPrint.formatMs(statistics.runTimeMs());
+        return PrettyPrint.formatMs(statistics.runtime());
     }
 
     @Override

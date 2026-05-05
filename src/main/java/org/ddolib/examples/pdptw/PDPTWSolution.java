@@ -2,6 +2,9 @@ package org.ddolib.examples.pdptw;
 
 import org.ddolib.common.solver.Solution;
 
+/**
+ * Pretty-printer wrapper for PDPTW solutions.
+ */
 public class PDPTWSolution {
     PDPTWProblem problem;
     public int[] solution;

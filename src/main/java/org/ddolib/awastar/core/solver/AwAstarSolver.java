@@ -86,10 +86,7 @@ public final class AwAstarSolver<T> implements Solver {
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
 
-    // Statistics
-    long t0; // time at the beginning of the search
-    int nbIter; // number of iterations
-    int queueMaxSize; // maximum size reached by the queue
+    private SearchStatistics statistics;
     // Value of the best known upper bound.
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
@@ -150,9 +147,7 @@ public final class AwAstarSolver<T> implements Solver {
 
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        t0 = System.currentTimeMillis();
-        nbIter = 0;
-        queueMaxSize = 0;
+        statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
@@ -161,30 +156,18 @@ public final class AwAstarSolver<T> implements Solver {
         while (!open.isEmpty()) {
             // -- debug, stats, verbosity, stopping  ---
 
-            SearchStatistics stats = new SearchStatistics(
-                    SearchStatus.UNKNOWN,
-                    nbIter,
-                    queueMaxSize,
-                    System.currentTimeMillis() - t0,
-                    bestValue().orElse(Double.POSITIVE_INFINITY),
-                    gap());
+            verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
+                    open.peek().getLowerBound(), statistics.gap());
 
-            verboseMode.detailedSearchState(nbIter, open.size(), bestUB,
-                    open.peek().getLowerBound(), stats.gap());
-
-            nbIter++;
-            queueMaxSize = Math.max(queueMaxSize, open.size());
+            statistics = statistics.incrementNbIter()
+                    .updateFrontierMaxSize(open.size())
+                    .updateTime(System.currentTimeMillis())
+                    .updateGap(gap());
 
 
-            if (limit.test(stats)) { // user-defined stopping criterion
-                stats = new SearchStatistics(
-                        bestSolution().map(sol -> SearchStatus.SAT).orElse(SearchStatus.UNKNOWN),
-                        nbIter,
-                        queueMaxSize,
-                        System.currentTimeMillis() - t0,
-                        bestValue().orElse(Double.POSITIVE_INFINITY),
-                        stats.gap());
-                return new Solution(bestSolution(), stats);
+            if (limit.test(statistics)) { // user-defined stopping criterion
+                return new Solution(bestSolution(),
+                        statistics.updateTime(System.currentTimeMillis()));
             }
             // -- end debug, stats, verbosity, stopping  ---
 
@@ -208,14 +191,9 @@ public final class AwAstarSolver<T> implements Solver {
             checkFLBAdmissibility();
         }
 
-        SearchStatistics statistics = new SearchStatistics(
-                SearchStatus.OPTIMAL,
-                nbIter,
-                queueMaxSize,
-                System.currentTimeMillis() - t0,
-                problem.nbVars() == 0 ? problem.initialValue() : bestValue().orElse(Double.POSITIVE_INFINITY),
-                gap()
-        );
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);
     }
@@ -294,9 +272,9 @@ public final class AwAstarSolver<T> implements Solver {
                 assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                SearchStatistics stats = new SearchStatistics(SearchStatus.SAT, nbIter,
-                        queueMaxSize, System.currentTimeMillis() - t0, bestUB, gap());
-                onSolution.accept(constructSolution(path), stats);
+                statistics = statistics.updateIncumbent(bestUB, gap())
+                        .updateStatus(SearchStatus.SAT);
+                onSolution.accept(constructSolution(path), statistics);
                 verboseMode.newBest(bestUB);
             }
         }

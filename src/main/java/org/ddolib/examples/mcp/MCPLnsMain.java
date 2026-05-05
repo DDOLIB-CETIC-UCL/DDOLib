@@ -1,7 +1,9 @@
 package org.ddolib.examples.mcp;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.LnsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -69,7 +71,6 @@ import java.nio.file.Path;
  *     <li>The best partition (cut) found</li>
  * </ul>
  *
- *
  * @see MCPProblem
  * @see MCPState
  * @see MCPFastLowerBound
@@ -121,7 +122,7 @@ public class MCPLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 1000,
+                s -> s.runtime() < 1000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

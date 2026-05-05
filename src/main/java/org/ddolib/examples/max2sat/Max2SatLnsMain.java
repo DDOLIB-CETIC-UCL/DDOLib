@@ -1,7 +1,9 @@
 package org.ddolib.examples.max2sat;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.LnsModel;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -69,7 +71,6 @@ import java.nio.file.Path;
  *     <li>The best assignment found</li>
  * </ul>
  *
- *
  * @see Max2SatProblem
  * @see Max2SatState
  * @see Max2SatFastLowerBound
@@ -125,7 +126,7 @@ public class Max2SatLnsMain {
         // Execute DDO search and print intermediate solutions
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runTimeMs() < 100,
+                s -> s.runtime() < 100,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }
