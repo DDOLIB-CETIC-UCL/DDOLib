@@ -434,9 +434,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     /**
-     * Updates the lists used the update the cache at the end of the compilation.
+     * Updates the lists used to update the cache at the end of the compilation.
      *
-     * @param depthGlobalDD  the current depth in the global mdd.
+     * @param depthGlobalDD  the current depth in the global mdd
      * @param depthCurrentDD the current depth in the current sub-mdd
      */
     private void updateCacheLists(int depthGlobalDD, int depthCurrentDD) {
