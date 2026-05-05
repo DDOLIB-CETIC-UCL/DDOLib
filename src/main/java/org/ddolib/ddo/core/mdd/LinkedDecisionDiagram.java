@@ -1,6 +1,5 @@
 package org.ddolib.ddo.core.mdd;
 
-import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -9,7 +8,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Relaxation;
@@ -92,6 +90,31 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Configuration and parameters for compiling the decision diagram.
      */
     private final CompilationConfig<T> config;
+
+    /**
+     * Optional cache used to store thresholds and avoid redundant computations.
+     */
+    private final Optional<SimpleCache<T>> cache;
+    /**
+     * Comparator used to rank nodes within a layer based on their associated subproblems.
+     */
+    private final NodeSubProblemComparator<T> ranking;
+    /**
+     * List of depths for the current relaxed compilation of the decision diagram.
+     */
+    private ArrayList<Integer> listDepths = null;
+    /**
+     * The list of {@link NodeSubProblem}s of the corresponding depth.
+     */
+    private ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = null;
+    /**
+     * The list of {@link Threshold}s of the corresponding depth.
+     */
+    private ArrayList<ArrayList<Threshold>> layersThresholds = null;
+    /**
+     * List of nodes pruned during the compilation process.
+     */
+    private ArrayList<NodeSubProblem<T>> pruned = null;
     /**
      * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
      */
@@ -104,14 +127,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Depth of the last exact layer.
      */
     private int depthLEL = -1;
-
+    /**
+     * The minimum lower bound among all expanded nodes in the decision diagram.
+     */
     private double lowerBound;
+
 
     /**
      * Creates a new linked decision diagram.
      *
-     * @param config The configuration object containing problem parameters, heuristics,
-     *               relaxation operators, dominance checkers, and compilation settings.
+     * @param config the configuration object containing problem parameters, heuristics,
+     *               relaxation operators, dominance checkers, and compilation settings
      */
     public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
@@ -121,6 +147,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.debugLevel = config.debugLevel;
         this.config = config;
         this.lowerBound = Double.MAX_VALUE;
+        this.ranking = new NodeSubProblemComparator<>(config.stateRanking);
+
+        dotStr.append("digraph %s%n".formatted(config.compilationType.toString().toLowerCase()));
+        this.cache = config.cache;
+        if (this.cache.isPresent()) {
+            listDepths = new ArrayList<>();
+            nodeSubProblemPerLayer = new ArrayList<>();
+            layersThresholds = new ArrayList<>();
+            pruned = new ArrayList<>();
+        }
 
     }
 
@@ -136,89 +172,34 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     @Override
     public void compile() {
-
-        // initialize the compilation
-        final int maxWidth = config.maxWidth;
-        final SubProblem<T> residual = config.residual;
-
-        dotStr.append("digraph ").append(config.compilationType.toString().toLowerCase()).append("{\n");
-
-        // proceed to compilation
-        final Problem<T> problem = config.problem;
-        final Relaxation<T> relax = config.relaxation;
-        final VariableHeuristic<T> var = config.variableHeuristic;
-        final NodeSubProblemComparator<T> ranking = new NodeSubProblemComparator<>(config.stateRanking);
-        final DominanceChecker<T> dominance = config.dominance;
-        final Optional<SimpleCache<T>> cache = config.cache;
-        double bestUb = config.bestUB;
-
+        // Identify the set of variables to be assigned
         final Set<Integer> variables = varSet(config);
 
-        int depthGlobalDD = residual.getPath().size();
+        int depthGlobalDD = config.residual.getDepth();
         int depthCurrentDD = 0;
-        int initialDepth = residual.getPath().size();
-
-
-        Set<NodeSubProblem<T>> currentCutSet = new HashSet<>();
-
-        // list of depth for the current relax compilation of the DD
-        ArrayList<Integer> listDepths = cache.isPresent() ? new ArrayList<>() : null;
-        // the list of NodeSubProblem of the corresponding depth
-        ArrayList<ArrayList<NodeSubProblem<T>>> nodeSubProblemPerLayer = cache.isPresent() ? new ArrayList<>() : null;
-        // the list of Threshold of the corresponding depth
-        ArrayList<ArrayList<Threshold>> layersThresholds = cache.isPresent() ? new ArrayList<>() : null;
-        // list of nodes pruned
-        ArrayList<NodeSubProblem<T>> pruned = cache.isPresent() ? new ArrayList<>() : null;
+        int initialDepth = depthGlobalDD;
 
         while (!variables.isEmpty()) {
-            Integer nextVar = var.nextVariable(variables, nextLayer.keySet().iterator());
-            // change the layer focus: what was previously the next layer is now
-            // becoming the current layer
-            this.prevLayer.clear();
-            for (NodeSubProblem<T> n : this.currentLayer) {
-                this.prevLayer.put(n.node, n);
-            }
-            this.currentLayer.clear();
+            Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
 
-            for (Entry<T, Node> e : this.nextLayer.entrySet()) {
-                T state = e.getKey();
-                Node node = e.getValue();
-                if (node.type != NodeType.EXACT || !dominance.updateDominance(state,
-                        depthGlobalDD, node.value)) {
-                    double flb = config.flb.fastLowerBound(state, variables);
-                    double rlb = saturatedAdd(node.value, flb);
-                    node.flb = flb;
-                    this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
-                }
-            }
+            // Prepare for the next layer by moving the current layer to previous
+            updatePrevLayer();
+            // Build the current layer from the nodes in the next layer
+            updateCurrentLayer(variables, depthGlobalDD);
 
-            if (cache.isPresent()) {
-                pruned.clear();
-                if (depthGlobalDD > initialDepth) {
-                    for (NodeSubProblem<T> n : this.currentLayer) {
-                        if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
-                                && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
-                                && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
-                            pruned.add(n);
-                        }
-                    }
-                }
-                this.currentLayer.removeAll(pruned);
-            }
+            // Prune nodes using cached thresholds
+            if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);
+
             this.nextLayer.clear();
 
-            if (currentLayer.isEmpty()) {
-                // there is no feasible solution to this subproblem, we can stop the compilation here
-                return;
-            }
-
-            if (nextVar == null) {
-                // Some variables simply can't be assigned
-                return;
-            }
+            // There is no feasible solution to this subproblem, we can stop the compilation here
+            if (currentLayer.isEmpty()) return;
 
 
-            // If the current layer is too large, we need to shrink it down. 
+            // Some variables simply can't be assigned
+            if (nextVar == null) return;
+
+            // If the current layer is too large, we need to shrink it down.
             // Whether this shrinking down means that we want to perform a restriction
             // or a relaxation depends on the type of compilation which has been 
             // requested from this decision diagram  
@@ -229,94 +210,47 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             // to make progress, we must be certain to develop AT LEAST one layer per 
             // mdd compiled otherwise the LEL is going to be the root of this MDD (and
             // we would be stuck in an infinite loop)
-            if (!config.useLNS) {
-                if (depthCurrentDD >= 2 && currentLayer.size() > maxWidth) {
-                    switch (config.compilationType) {
-                        case Restricted:
-                            exact = false;
-                            restrict(maxWidth, ranking, config.reductionStrategy, 0);
-                            break;
-                        case Relaxed:
-                            if (exact) {
-                                exact = false;
-                                if (config.cutSetType == CutSetType.LastExactLayer) {
-                                    cutset.addAll(prevLayer.values());
-                                    depthLEL = depthCurrentDD - 1;
-                                }
-                            }
-                            relax(maxWidth, relax, config.reductionStrategy,variables);
-                            break;
-                        case Exact:
-                            /* nothing to do */
-                            break;
-                    }
-                }
-            }
+            if (!config.useLNS && depthCurrentDD >= 2 && currentLayer.size() > config.maxWidth)
+                limitCurrentLayerWidth(variables, depthCurrentDD);
+
             variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
-                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
+                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED)
                     dotStr.append(generateDotStr(n, false));
-                }
-                if (n.lb >= config.bestUB) {
-                    continue;
-                } else {
-                    lowerBound = Math.min(lowerBound, n.lb);
-                    final Iterator<Integer> domain = problem.domain(n.state, nextVar);
-                    while (domain.hasNext()) {
-                        final int val = domain.next();
-                        final Decision decision = new Decision(nextVar, val);
 
-                        branchOn(n, decision, problem);
-                    }
-                }
+                if (n.lb >= config.bestUB) continue;
+
+                // Create children nodes from the current node
+                genChildren(n, nextVar);
+
+                // Update the frontier cutset for relaxed MDDs
                 if (config.cutSetType == CutSetType.Frontier
                         && config.compilationType == CompilationType.Relaxed
-                        && !exact && depthCurrentDD >= 2) {
-                    if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
-                        currentCutSet.add(n);
-                    }
-                    if (n.node.type == NodeType.RELAXED) {
-                        for (Edge e : n.node.edges) {
-                            Node origin = e.origin;
-                            if (origin.type == NodeType.EXACT) {
-                                currentCutSet.add(prevLayer.get(origin));
-                            }
-                        }
-                    }
-                }
+                        && !exact && depthCurrentDD >= 2)
+                    updateFrontierCutset(variables, n);
             }
+
             if (config.useLNS) {
-                if (currentLayer.size() > maxWidth) {
+                if (currentLayer.size() > config.maxWidth) {
                     exact = false;
-                    restrict(maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
+                    // Apply restriction for LNS
+                    restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
                 }
             }
 
 
-            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
-                listDepths.add(depthGlobalDD);
-                nodeSubProblemPerLayer.add(new ArrayList<>());
-                layersThresholds.add(new ArrayList<>());
-                for (NodeSubProblem<T> n : this.currentLayer) {
-                    nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
-                    layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));
-                }
-            }
+            // Prepare information for cache updates
+            if (cache.isPresent() && config.compilationType == CompilationType.Relaxed)
+                updateCacheLists(depthGlobalDD, depthCurrentDD);
 
             depthGlobalDD += 1;
             depthCurrentDD += 1;
         }
-        if (config.compilationType == CompilationType.Relaxed && config.cutSetType == CutSetType.Frontier) {
-            cutset.addAll(currentCutSet);
-        }
 
-
-        // finalize: find best
+        // Finalize: find best
         for (Node n : nextLayer.values()) {
-            if (best == null || n.value < best.value) {
-                best = n;
-            }
+            if (best == null || n.value < best.value) best = n;
         }
 
         if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {
@@ -328,40 +262,17 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
         }
 
-
-        if (cache.isPresent() && config.compilationType == CompilationType.Relaxed) {
-            if (!cutset.isEmpty()) {
-                computeLocalBounds();
-
-                for (NodeSubProblem<T> n : cutset) {
-                    if (n.node.isMarked) {
-                        n.node.isInExactCutSet = true;
-                    }
-                }
-
-                markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
-                // update the cache to improve the next computation of the BB
-                computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
-                        layersThresholds, bestUb, config.cutSetType);
-            }
-        } else if (config.compilationType == CompilationType.Relaxed) {
-            // Compute the local bounds of the nodes in the mdd *iff* this is a relaxed mdd
+        if (config.compilationType == CompilationType.Relaxed) {
+            // Compute local bounds for all nodes in the diagram
             computeLocalBounds();
+
+            // Apply updates to the cache
+            if (cache.isPresent() && !cutset.isEmpty()) finishCacheUpdates();
         }
 
-        if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed) {
+        if (debugLevel != DebugLevel.OFF && config.compilationType != CompilationType.Relaxed)
             checkFlb(config.problem);
-        }
     }
-
-    /**
-     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
-     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
-     */
-
-    @Override
-    public double minLowerBound() { return lowerBound;}
-
 
     /**
      * Returns whether the decision diagram is exact.
@@ -455,7 +366,177 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return dotStr.toString();
     }
 
+    /**
+     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
+     *
+     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
+     */
+
+    @Override
+    public double minLowerBound() {
+        return lowerBound;
+    }
+
+
+    //METHODS USED DURING THE COMPILATION
+
+    /**
+     * Changes the layer focus: what was previously the current layer is now becoming the
+     * previous layer.
+     */
+    private void updatePrevLayer() {
+        prevLayer.clear();
+        for (NodeSubProblem<T> n : this.currentLayer) {
+            this.prevLayer.put(n.node, n);
+        }
+    }
+
+    /**
+     * Changes the layer focus: what was previously the next layer is now becoming the current
+     * layer
+     *
+     * @param variables     the remaining variables in the decision-making process
+     * @param depthGlobalDD the current depth in the global mdd
+     */
+    private void updateCurrentLayer(Set<Integer> variables, int depthGlobalDD) {
+        currentLayer.clear();
+        for (Entry<T, Node> e : this.nextLayer.entrySet()) {
+            T state = e.getKey();
+            Node node = e.getValue();
+            if (node.type != NodeType.EXACT || !config.dominance.updateDominance(state,
+                    depthGlobalDD, node.value)) {
+                double flb = config.flb.fastLowerBound(state, variables);
+                double rlb = saturatedAdd(node.value, flb);
+                node.flb = flb;
+                this.currentLayer.add(new NodeSubProblem<>(state, rlb, node));
+            }
+        }
+    }
+
+    /**
+     * Prunes items from the current layer using the cache.
+     *
+     * @param depthGlobalDD the current depth in the global mdd
+     * @param initialDepth  the depth when starting the compilation
+     */
+    private void pruneFromCache(int depthGlobalDD, int initialDepth) {
+        pruned.clear();
+        if (depthGlobalDD > initialDepth) {
+            for (NodeSubProblem<T> n : this.currentLayer) {
+                if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)
+                        && cache.get().getThreshold(n.state, depthGlobalDD).isPresent()
+                        && n.node.value >= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {
+                    pruned.add(n);
+                }
+            }
+            currentLayer.removeAll(pruned);
+        }
+    }
+
+    /**
+     * Updates the lists used to update the cache at the end of the compilation.
+     *
+     * @param depthGlobalDD  the current depth in the global mdd
+     * @param depthCurrentDD the current depth in the current sub-mdd
+     */
+    private void updateCacheLists(int depthGlobalDD, int depthCurrentDD) {
+        listDepths.add(depthGlobalDD);
+        nodeSubProblemPerLayer.add(new ArrayList<>());
+        layersThresholds.add(new ArrayList<>());
+        for (NodeSubProblem<T> n : this.currentLayer) {
+            nodeSubProblemPerLayer.get(depthCurrentDD).add(n);
+            layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));
+        }
+    }
+
+    /**
+     * Updates the cache according to the last compilation.
+     */
+    private void finishCacheUpdates() {
+        for (NodeSubProblem<T> n : cutset) {
+            if (n.node.isMarked) n.node.isInExactCutSet = true;
+        }
+
+        markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);
+        // Update the cache to improve the next computation of the BB
+        computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,
+                layersThresholds, config.bestUB, config.cutSetType);
+    }
+
+    /**
+     * Given a node and the associated decision variable generate the children nodes.
+     *
+     * @param n       the parent node
+     * @param nextVar the associated decision variable
+     */
+    private void genChildren(NodeSubProblem<T> n, int nextVar) {
+        lowerBound = Math.min(lowerBound, n.lb);
+        final Iterator<Integer> domain = config.problem.domain(n.state, nextVar);
+        while (domain.hasNext()) {
+            final int val = domain.next();
+            final Decision decision = new Decision(nextVar, val);
+
+            branchOn(n, decision, config.problem);
+        }
+    }
+
+    /**
+     * Updates the frontier cutset with the given node if it meets the criteria.
+     *
+     * @param variables the remaining variables
+     * @param n         the node to potentially add to the cutset
+     */
+    private void updateFrontierCutset(Set<Integer> variables, NodeSubProblem<T> n) {
+        if (variables.isEmpty() && n.node.type == NodeType.EXACT) {
+            cutset.add(n);
+        }
+        if (n.node.type == NodeType.RELAXED) {
+            for (Edge e : n.node.edges) {
+                Node origin = e.origin;
+                if (origin.type == NodeType.EXACT) {
+                    cutset.add(prevLayer.get(origin));
+                }
+            }
+        }
+    }
+
+    /**
+     * Limits the width of the current layer according to the compilation configuration.
+     *
+     * @param variables      the remaining variables
+     * @param depthCurrentDD the current depth in the decision diagram
+     */
+    private void limitCurrentLayerWidth(Set<Integer> variables, int depthCurrentDD) {
+        switch (config.compilationType) {
+            case Restricted -> {
+                exact = false;
+                restrict(config.maxWidth, ranking, config.reductionStrategy, 0);
+            }
+            case Relaxed -> {
+                if (exact) {
+                    exact = false;
+                    if (config.cutSetType == CutSetType.LastExactLayer) {
+                        cutset.addAll(prevLayer.values());
+                        depthLEL = depthCurrentDD - 1;
+                    }
+                }
+                relax(config.maxWidth, config.relaxation, config.reductionStrategy,
+                        variables);
+            }
+            case Exact -> {
+                /* nothing to do */
+            }
+        }
+    }
+
     // UTILITY METHODS -----------------------------------------------
+
+    /**
+     * Returns the set of variable indices that have not yet been assigned a value.
+     *
+     * @param input the compilation configuration
+     * @return a set of unassigned variable indices
+     */
     private Set<Integer> varSet(final CompilationConfig<T> input) {
         final HashSet<Integer> set = new HashSet<>();
         for (int i = 0; i < config.problem.nbVars(); i++) {
@@ -474,39 +555,25 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param maxWidth the maximum tolerated layer width
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy, int depth) {
-        if (config.useLNS) {
-            if (config.solution == null) {
-                List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
-                currentLayer.clear();
-
-                // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
-                for (List<NodeSubProblem<T>> cluster : clusters) {
-                    if (cluster.isEmpty()) continue;
-
-                    cluster.sort(ranking);
-                    currentLayer.add(cluster.getFirst());
-                    cluster.clear();
+        if (config.useLNS && config.solution != null) {
+            List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
+            currentLayer.clear();
+            int frontier = 0;
+            Random random = new Random();
+            for (int k = 0; k < layer.size(); k++) {
+                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
+                    swap(layer, frontier, k);
+                    frontier++;
                 }
-            } else {
-                List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
-                currentLayer.clear();
-                int frontier = 0;
-                Random random = new Random();
-                for (int k = 0; k < layer.size(); k++) {
-                    if (layer.get(k).getValue()  == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
-                        swap(layer, frontier, k);
-                        frontier++;
-                    }
-                }
-                List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
-                List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
-                if (keep.size() + candidates.size() > maxWidth) {
-                    candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
-                    candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
-                }
-                keep.addAll(candidates);
-                currentLayer.addAll(keep);
             }
+            List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
+            List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
+            if (keep.size() + candidates.size() > maxWidth) {
+                candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
+                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
+            }
+            keep.addAll(candidates);
+            currentLayer.addAll(keep);
         } else {
             List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
             currentLayer.clear();
@@ -522,12 +589,26 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Swaps two elements in the given list.
+     *
+     * @param layer the list of nodes
+     * @param f     the index of the first element
+     * @param k     the index of the second element
+     */
     private void swap(List<NodeSubProblem<T>> layer, int f, int k) {
         NodeSubProblem<T> temp = layer.get(f);
         layer.set(f, layer.get(k));
         layer.set(k, temp);
     }
 
+    /**
+     * Computes the cumulative cost of a solution up to a given depth.
+     *
+     * @param solution the array of decision values
+     * @param depth    the depth up to which the cost should be computed
+     * @return the cumulative cost
+     */
     private double costInSolutionAtDepth(int[] solution, int depth) {
         double sum = config.problem.initialValue();
         T state = config.problem.initialState();
@@ -552,7 +633,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                        final Relaxation<T> relax,
                        final ReductionStrategy<T> relaxStrategy,
                        Set<Integer> variables) {
-        // generates clusters
+        // Generates clusters
         List<NodeSubProblem<T>>[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);
         currentLayer.clear();
 
@@ -690,6 +771,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
+    /**
+     * Marks nodes that are above the exact cutset in the decision diagram.
+     *
+     * @param nodePerLayer the nodes organized by layer
+     * @param cutSetType   the type of cutset being used
+     */
     private void markNodesAboveExactCutSet(ArrayList<ArrayList<NodeSubProblem<T>>> nodePerLayer, CutSetType cutSetType) {
         HashSet<Node> current = new HashSet<>();
         HashSet<Node> parent = new HashSet<>();
@@ -883,13 +970,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             Node u = current.node();
             double d = current.dist();
 
-            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) {
-                continue;
-            }
+            if (d > distances.getOrDefault(u, Double.POSITIVE_INFINITY)) continue;
 
-            if (u.equals(source)) {
-                break;
-            }
+
+            if (u.equals(source)) break;
+
 
             for (Edge e : u.edges) {
                 Node v = e.origin;
@@ -1185,6 +1270,13 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
 
+    /**
+     * A helper record to store information about a path segment.
+     *
+     * @param decision    the decision made at this step
+     * @param flbOfOrigin the fast lower bound of the origin node
+     * @param lengthToEnd the length of the path from this point to the end
+     */
     private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {
     }
 
