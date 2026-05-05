@@ -13,8 +13,6 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.ddolib.common.solver.stopcriterion.StopCriterion.minRelativeImprovement;
-
 /**
  * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Anytime Weighted
  * A* (AWA*).
@@ -93,7 +91,6 @@ public class TSPTWAwAstarMain {
 
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                minRelativeImprovement(0.01),
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                     stop.addStat(s);
@@ -102,6 +99,7 @@ public class TSPTWAwAstarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
+        //stop.addStat(bestSolution.statistics().updateTime(System.currentTimeMillis()));
         stop.showChart();
     }
 }
