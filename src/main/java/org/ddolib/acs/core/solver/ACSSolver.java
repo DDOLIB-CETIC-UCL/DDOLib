@@ -198,6 +198,7 @@ public final class ACSSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         int nbSols =0;
+        int nDomWithRest = 0;
         open.getFirst().add(root);
         ArrayList<int[]> ubs = new ArrayList<>();
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
@@ -231,7 +232,11 @@ public final class ACSSolver<T> implements Solver {
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
-                    if (dominance.updateDominance(sub.getState(), subKey.depth(), sub.getValue()) || problem.stateSpaceReduction(sub.getState())){
+                    if (problem.stateSpaceReduction(sub.getState())){
+                        nDomWithRest+=1;
+                        continue;
+                    }
+                    if (dominance.dominated(sub.getState(), sub.getValue(), sub.getDepth())){
                         dominatedNodes+=1;
                         continue;
                     }
@@ -272,6 +277,7 @@ public final class ACSSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkAdmissibility();
         }
+        System.out.println("NdomRes : "+nDomWithRest);
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols, nbSameNodes, dominatedNodes, ubs);
         return new Solution(bestSolution(), stats);
@@ -319,12 +325,14 @@ public final class ACSSolver<T> implements Solver {
                 nullDecisions.add(new Decision(i, 0));
             }
         }
-
-        return new SubProblem<>(
+        SubProblem<T> newSub = new SubProblem<>(
                 state,
                 value,
                 lb.fastLowerBound(state, vars),
                 nullDecisions);
+
+        dominance.updateDominance(newSub.getState(), newSub.getDepth(), newSub.getValue());
+        return newSub;
     }
 
     /**
@@ -354,8 +362,6 @@ public final class ACSSolver<T> implements Solver {
             path.add(decision);
             double fastLowerBound = lb.fastLowerBound(newState, varSet(path));
 
-
-
             SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
@@ -365,6 +371,7 @@ public final class ACSSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.get(newSub.getDepth()).add(newSub);
                 present.put(newKey, newSub.f());
+                dominance.updateDominance(newSub.getState(), newSub.getDepth(), newSub.getValue());
             } else if (presentValue != null && presentValue <= newSub.f()) {
                 nbSameNodes+=1;
             } else {
@@ -373,11 +380,13 @@ public final class ACSSolver<T> implements Solver {
                     open.get(newSub.getDepth()).add(newSub);
                     closed.remove(newKey);
                     present.put(newKey, newSub.f());
+                    dominance.updateDominance(newSub.getState(), newSub.getDepth(), newSub.getValue());
                 }else if(closedValue != null && closedValue <= newSub.f()){
                     nbSameNodes+=1;
                 }else {
                     open.get(newSub.getDepth()).add(newSub);
                     present.put(newKey, newSub.f());
+                    dominance.updateDominance(newSub.getState(), newSub.getDepth(), newSub.getValue());
                 }
             }
         }

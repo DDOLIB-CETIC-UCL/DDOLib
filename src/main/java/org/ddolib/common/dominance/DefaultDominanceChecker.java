@@ -60,4 +60,9 @@ public class DefaultDominanceChecker<T> extends DominanceChecker<T> {
         return false;
     }
 
+    @Override
+    public boolean dominated(T state, double objValue, int depth) {
+        return false;
+    }
+
 }
