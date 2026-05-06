@@ -111,4 +111,8 @@ public interface Model<T> {
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
     }
+
+    default  Aggregate<T> aggregate(){
+        return null;
+    }
 }
