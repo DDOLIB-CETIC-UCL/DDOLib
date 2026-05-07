@@ -96,8 +96,6 @@ public final class ACSSolver<T> implements Solver {
      * If set, this keeps the info about the best solution so far.
      */
     private Optional<Set<Decision>> bestSol;
-    private boolean negativeTransitionCosts = false;
-
 
     /**
      * Constructs an ACS solver with all required and optional components provided via an {@link AcsModel}.
@@ -355,13 +353,16 @@ public final class ACSSolver<T> implements Solver {
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
 
-            double value = subProblem.getValue() + cost;
+            double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double fastLowerBound = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
+            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
+            double f = g + h;
 
+            // this child can only lead to less good solution
+            if (f + 1e-10 > bestUB) continue;
 
-            SubProblem<T> newSub = new SubProblem<>(newState, value, fastLowerBound, path);
+            SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
             }
