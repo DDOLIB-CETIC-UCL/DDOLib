@@ -3,6 +3,7 @@ package org.ddolib.awastar.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -86,7 +87,7 @@ public final class AwAstarSolver<T> implements Solver {
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
 
-    private SearchStatistics statistics;
+    private DdoStats statistics;
     // Value of the best known upper bound.
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
@@ -146,8 +147,8 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+    public Solution minimize(Predicate<SearchStatistics<?>> limit, BiConsumer<int[], SearchStatistics<?>> onSolution) {
+        statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
@@ -222,7 +223,7 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     private void addChildren(SubProblem<T> subProblem,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getDepth();
 

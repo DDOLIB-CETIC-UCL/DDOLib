@@ -12,8 +12,6 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.ddolib.common.solver.stopcriterion.StopCriterion.minRelativeImprovement;
-
 /**
  * Knapsack Problem (KS) with Anytime Weighted A* (AWA*).
  * <p>
@@ -69,7 +67,6 @@ public class KSAwAstarMain {
 
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                minRelativeImprovement(0.01),
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                     stop.addStat(s);

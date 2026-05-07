@@ -3,6 +3,7 @@ package org.ddolib.acs.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -186,9 +187,9 @@ public final class ACSSolver<T> implements Solver {
      * @return final {@link SearchStatistics} of the search
      */
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+    public Solution minimize(Predicate<SearchStatistics<?>> limit,
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 

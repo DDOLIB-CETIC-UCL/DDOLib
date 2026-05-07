@@ -3,7 +3,7 @@ package org.ddolib.common.solver.stat;
 /**
  * Class tracking statistics specifics to A* variants
  */
-public class AstarSearchStatistics extends SearchStatistics {
+public class AstarSearchStatistics extends SearchStatistics<AstarSearchStatistics> {
 
     /**
      * The Exponential Moving Average (EMA) of the ratio of children added to the priority queue (open)
@@ -23,8 +23,15 @@ public class AstarSearchStatistics extends SearchStatistics {
     }
 
     @Override
+    protected AstarSearchStatistics createSpecificInstance() {
+        AstarSearchStatistics clone = new AstarSearchStatistics(this._startTime, this._incumbent);
+        clone._validChildrenRatio = this._validChildrenRatio;
+        return clone;
+    }
+
+    @Override
     public AstarSearchStatistics copy() {
-        AstarSearchStatistics clone = (AstarSearchStatistics) super.copy();
+        AstarSearchStatistics clone = super.copy();
         clone._validChildrenRatio = this._validChildrenRatio;
         return clone;
     }

@@ -17,7 +17,7 @@ import static java.lang.Math.abs;
  * where update methods return a new instance with the updated value.
  * </p>
  */
-public class SearchStatistics {
+public abstract class SearchStatistics<T extends SearchStatistics<T>> {
     /**
      * Start time of the search (in milliseconds)
      */
@@ -76,6 +76,8 @@ public class SearchStatistics {
         _currentTime = startTime;
         _incumbent = initValue;
     }
+
+    protected abstract T createSpecificInstance();
 
     /**
      * Returns the time at which the last improvement was found.
@@ -181,8 +183,8 @@ public class SearchStatistics {
      *
      * @return a copy of the current statistics
      */
-    public SearchStatistics copy() {
-        SearchStatistics clone = new SearchStatistics(this._startTime, this._incumbent);
+    public T copy() {
+        T clone = createSpecificInstance();
 
         clone._currentTime = this._currentTime;
         clone._lastTimeOfImprovement = this._lastTimeOfImprovement;
@@ -204,8 +206,8 @@ public class SearchStatistics {
      * @param gap       the new optimality gap
      * @return a new instance with updated incumbent and gap
      */
-    public SearchStatistics updateIncumbent(double incumbent, double gap) {
-        SearchStatistics toReturn = this.copy();
+    public T updateIncumbent(double incumbent, double gap) {
+        T toReturn = this.copy();
         toReturn._incumbent = incumbent;
         toReturn._prevIncumbent = this._incumbent;
         toReturn._currentTime = System.currentTimeMillis();
@@ -227,8 +229,8 @@ public class SearchStatistics {
      * @param status the new {@link SearchStatus}
      * @return a new instance with the updated status
      */
-    public SearchStatistics updateStatus(SearchStatus status) {
-        SearchStatistics toReturn = this.copy();
+    public T updateStatus(SearchStatus status) {
+        T toReturn = this.copy();
         toReturn._status = status;
         return toReturn;
     }
@@ -238,8 +240,8 @@ public class SearchStatistics {
      *
      * @return a new instance with incremented iterations
      */
-    public SearchStatistics incrementNbIter() {
-        SearchStatistics toReturn = this.copy();
+    public T incrementNbIter() {
+        T toReturn = this.copy();
         toReturn._nbIterations++;
         return toReturn;
     }
@@ -250,8 +252,8 @@ public class SearchStatistics {
      * @param frontierSize the current frontier size to potentially update the maximum
      * @return a new instance with the updated maximum frontier size
      */
-    public SearchStatistics updateFrontierMaxSize(int frontierSize) {
-        SearchStatistics toReturn = this.copy();
+    public T updateFrontierMaxSize(int frontierSize) {
+        T toReturn = this.copy();
         toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);
         return toReturn;
     }
@@ -261,8 +263,8 @@ public class SearchStatistics {
      *
      * @return a new instance with incremented maximum frontier size
      */
-    public SearchStatistics incrementFrontierSize() {
-        SearchStatistics toReturn = this.copy();
+    public T incrementFrontierSize() {
+        T toReturn = this.copy();
         toReturn._frontierMaxSize++;
         return toReturn;
     }
@@ -273,8 +275,8 @@ public class SearchStatistics {
      * @param gap the new gap value
      * @return a new instance with the updated gap
      */
-    public SearchStatistics updateGap(double gap) {
-        SearchStatistics toReturn = this.copy();
+    public T updateGap(double gap) {
+        T toReturn = this.copy();
         toReturn._gap = gap;
         return toReturn;
     }
@@ -285,8 +287,8 @@ public class SearchStatistics {
      * @param time the current time (in milliseconds)
      * @return a new instance with the updated time
      */
-    public SearchStatistics updateTime(long time) {
-        SearchStatistics toReturn = this.copy();
+    public T updateTime(long time) {
+        T toReturn = this.copy();
         toReturn._currentTime = time;
         return toReturn;
     }

@@ -36,8 +36,8 @@ public interface Solver {
      *                   current statistics
      * @return the statistics of the search after completion
      */
-    Solution minimize(Predicate<SearchStatistics> limit,
-                      BiConsumer<int[], SearchStatistics> onSolution);
+    Solution minimize(Predicate<SearchStatistics<?>> limit,
+                      BiConsumer<int[], SearchStatistics<?>> onSolution);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one

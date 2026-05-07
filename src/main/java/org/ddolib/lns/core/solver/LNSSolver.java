@@ -2,6 +2,7 @@ package org.ddolib.lns.core.solver;
 
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -72,12 +73,12 @@ public final class LNSSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics<?>> limit,
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        SearchStatistics stats = new SearchStatistics(start, bestUB);
+        DdoStats stats = new DdoStats(start, bestUB);
         SubProblem<T> rootPrime;
         double gap = 100;
         while (true) {

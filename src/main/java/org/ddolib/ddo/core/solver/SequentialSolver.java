@@ -3,6 +3,7 @@ package org.ddolib.ddo.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -176,10 +177,10 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics<?>> limit,
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
 
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
