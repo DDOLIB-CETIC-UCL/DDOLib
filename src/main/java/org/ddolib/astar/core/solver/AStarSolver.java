@@ -153,20 +153,23 @@ public final class AStarSolver<T> implements Solver {
             }
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             present.remove(subKey);
-            if (closed.containsKey(subKey)) {
-                continue;
-            }
+
+            // The current node has been explored. We can skip it.
+            if (closed.containsKey(subKey)) continue;
+
+            closed.put(subKey, sub.f());
+
+            // sub can only lead to less good solution
+            if (sub.f() + 1e-10 > bestUB) continue;
 
             if (sub.getPath().size() == problem.nbVars()) {// target node reached
                 assert (sub.getValue() == sub.f());
                 bestSol = Optional.of(sub.getPath());
                 bestUB = sub.getValue();
                 break;
-
             } else if (sub.getPath().size() < problem.nbVars()) {
                 verboseMode.currentSubProblem(statistics.nbIterations(), sub);
                 addChildren(sub, onSolution);
-                closed.put(subKey, sub.f());
             }
         }
 
@@ -245,14 +248,17 @@ public final class AStarSolver<T> implements Solver {
             }
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
-            double value = subProblem.getValue() + cost;
+            double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
             // h-cost from this state to the target
+            double f = g + h;
 
+            // this child can only lead to less good solution
+            if (f + 1e-10 > bestUB) continue;
 
-            SubProblem<T> newSub = new SubProblem<>(newState, value, h, path);
+            SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
                 DebugUtil.checkFlbConsistency(subProblem, newSub, cost);
             }
