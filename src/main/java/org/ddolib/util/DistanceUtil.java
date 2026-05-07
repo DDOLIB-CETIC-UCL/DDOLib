@@ -4,6 +4,9 @@ import java.util.BitSet;
 
 import static java.lang.Math.*;
 
+/**
+ * Utility methods for common distance metrics used by clustering and heuristics.
+ */
 public class DistanceUtil {
 
     /**

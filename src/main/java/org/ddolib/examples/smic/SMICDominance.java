@@ -47,8 +47,8 @@ public class SMICDominance implements Dominance<SMICState> {
      * @return always {@code 0}, as no grouping distinction is applied
      */
     @Override
-    public Integer getKey(SMICState state) {
-        return 0;
+    public SMICDominanceKey getKey(SMICState state) {
+        return new SMICDominanceKey(state.remainingJobs());
     }
     /**
      * Determines whether one state is dominated by or equal to another.
@@ -69,9 +69,6 @@ public class SMICDominance implements Dominance<SMICState> {
 
     @Override
     public boolean isDominatedOrEqual(SMICState state1, SMICState state2) {
-        if (state1.remainingJobs().equals(state2.remainingJobs()) && state2.currentTime() <= state1.currentTime()) {
-            return true;
-        }
-        return false;
+        return state2.currentTime() <= state1.currentTime();
     }
 }

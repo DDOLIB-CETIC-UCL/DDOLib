@@ -25,6 +25,16 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * A* solver implementation for decision-diagram based optimization models.
+ *
+ * <p>The solver explores subproblems ordered by their {@code f = g + h} value, where
+ * {@code g} is the accumulated cost and {@code h} is a fast lower bound on the residual
+ * problem. It maintains open/closed sets and updates incumbents whenever a better complete
+ * assignment is discovered.</p>
+ *
+ * @param <T> type of states handled by the model
+ */
 public final class AStarSolver<T> implements Solver {
 
     // The problem we want to minimize
