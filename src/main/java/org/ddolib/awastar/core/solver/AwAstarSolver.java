@@ -3,7 +3,7 @@ package org.ddolib.awastar.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -87,7 +87,7 @@ public final class AwAstarSolver<T> implements Solver {
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
 
-    private DdoStats statistics;
+    private AstarStats statistics;
     // Value of the best known upper bound.
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
@@ -148,7 +148,7 @@ public final class AwAstarSolver<T> implements Solver {
 
     @Override
     public Solution minimize(Predicate<SearchStatistics<?>> limit, BiConsumer<int[], SearchStatistics<?>> onSolution) {
-        statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
@@ -228,6 +228,8 @@ public final class AwAstarSolver<T> implements Solver {
         int var = subProblem.getDepth();
 
         final Iterator<Integer> domain = problem.domain(state, var);
+        int nbGeneratedChildren = 0;
+        int nbSelectedChildren = 0;
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -238,6 +240,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
+            nbGeneratedChildren++;
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
@@ -260,10 +263,12 @@ public final class AwAstarSolver<T> implements Solver {
                 openByF.remove(newSub);
                 openByF.add(newSub);
                 present.put(newKey, fprime);
+                nbSelectedChildren++;
             } else if (previousFprime == null) {
                 open.add(newSub);
                 openByF.add(newSub);
                 present.put(newKey, fprime);
+                nbSelectedChildren++;
 
                 Double closedFprime = closed.get(newKey);
                 if (closedFprime != null && fprime < closedFprime) closed.remove(newKey);
@@ -280,6 +285,7 @@ public final class AwAstarSolver<T> implements Solver {
                 verboseMode.newBest(bestUB);
             }
         }
+        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 
     /**

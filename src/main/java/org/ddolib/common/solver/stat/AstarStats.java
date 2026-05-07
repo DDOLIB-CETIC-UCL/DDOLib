@@ -3,7 +3,7 @@ package org.ddolib.common.solver.stat;
 /**
  * Class tracking statistics specifics to A* variants
  */
-public class AstarSearchStatistics extends SearchStatistics<AstarSearchStatistics> {
+public class AstarStats extends SearchStatistics<AstarStats> {
 
     /**
      * The Exponential Moving Average (EMA) of the ratio of children added to the priority queue (open)
@@ -18,20 +18,20 @@ public class AstarSearchStatistics extends SearchStatistics<AstarSearchStatistic
      * @param startTime the start time of the search (in milliseconds)
      * @param initValue the initial value for the incumbent
      */
-    public AstarSearchStatistics(long startTime, double initValue) {
+    public AstarStats(long startTime, double initValue) {
         super(startTime, initValue);
     }
 
     @Override
-    protected AstarSearchStatistics createSpecificInstance() {
-        AstarSearchStatistics clone = new AstarSearchStatistics(this._startTime, this._incumbent);
+    protected AstarStats createSpecificInstance() {
+        AstarStats clone = new AstarStats(this._startTime, this._incumbent);
         clone._validChildrenRatio = this._validChildrenRatio;
         return clone;
     }
 
     @Override
-    public AstarSearchStatistics copy() {
-        AstarSearchStatistics clone = super.copy();
+    public AstarStats copy() {
+        AstarStats clone = super.copy();
         clone._validChildrenRatio = this._validChildrenRatio;
         return clone;
     }
@@ -43,8 +43,8 @@ public class AstarSearchStatistics extends SearchStatistics<AstarSearchStatistic
      *
      * @return the smoothed ratio value (theoretically between 0.0 and 1.0)
      */
-    public double validChildrenRatio() {
-        return _validChildrenRatio;
+    public double validChildrenPercent() {
+        return 100 * _validChildrenRatio;
     }
 
     /**
@@ -59,10 +59,10 @@ public class AstarSearchStatistics extends SearchStatistics<AstarSearchStatistic
      * @param nbSelectedChildren  the number of relevant children (not pruned by upper bound and not in closed list)
      * @return a new instance with updated validChildrenRation
      */
-    public AstarSearchStatistics updateValidChildrenRatio(int nbGeneratedChildren, int nbSelectedChildren) {
+    public AstarStats updateValidChildrenPercent(int nbGeneratedChildren, int nbSelectedChildren) {
         if (nbSelectedChildren == 0) return this;
 
-        AstarSearchStatistics toReturn = this.copy();
+        AstarStats toReturn = this.copy();
         double r = (double) nbSelectedChildren / nbGeneratedChildren;
         double alpha = 0.05;
         toReturn._validChildrenRatio = alpha * r + (1 - alpha) * this._validChildrenRatio;

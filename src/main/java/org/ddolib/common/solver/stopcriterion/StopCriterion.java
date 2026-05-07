@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  * </p>
  */
 @FunctionalInterface
-public interface StopCriterion extends Predicate<SearchStatistics> {
+public interface StopCriterion extends Predicate<SearchStatistics<?>> {
 
     /**
      * Creates a stop criterion that terminates the search when the total runtime
