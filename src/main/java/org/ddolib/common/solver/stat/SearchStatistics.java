@@ -17,51 +17,51 @@ import static java.lang.Math.abs;
  * where update methods return a new instance with the updated value.
  * </p>
  */
-public final class SearchStatistics {
+public class SearchStatistics {
     /**
      * Start time of the search (in milliseconds)
      */
-    private final long _startTime;
+    protected final long _startTime;
     /**
      * Time at which the last improvement was found (in milliseconds)
      */
-    private long _lastTimeOfImprovement;
+    protected long _lastTimeOfImprovement;
     /**
      * Current time of the search (in milliseconds)
      */
-    private long _currentTime;
+    protected long _currentTime;
     /**
      * Current status of the search
      */
-    private SearchStatus _status = SearchStatus.UNKNOWN;
+    protected SearchStatus _status = SearchStatus.UNKNOWN;
     /**
      * Total number of iterations performed
      */
-    private int _nbIterations = 0;
+    protected int _nbIterations = 0;
     /**
      * Iteration during which the last improvement was found
      */
-    private int _lastIterationOfImprovement = 0;
+    protected int _lastIterationOfImprovement = 0;
     /**
      * Value of the best solution found so far (incumbent)
      */
-    private double _incumbent;
+    protected double _incumbent;
     /**
      * Value of the previous incumbent found
      */
-    private double _prevIncumbent = Double.POSITIVE_INFINITY;
+    protected double _prevIncumbent = Double.POSITIVE_INFINITY;
     /**
      * Current optimality gap
      */
-    private double _gap = 100.0;
+    protected double _gap = 100.0;
     /**
      * Maximum size reached by the search frontier
      */
-    private int _frontierMaxSize = 0;
+    protected int _frontierMaxSize = 0;
     /**
      * Relative improvement of the incumbent value
      */
-    private double _relativeImprovement = 1.0;
+    protected double _relativeImprovement = 1.0;
 
 
     /**
