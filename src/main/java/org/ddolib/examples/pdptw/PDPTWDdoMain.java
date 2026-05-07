@@ -2,8 +2,8 @@ package org.ddolib.examples.pdptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
@@ -32,7 +32,7 @@ import java.nio.file.Paths;
  * <p><b>Execution workflow:</b></p>
  * <ul>
  *   <li>A random PDPTW instance is generated using
- *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random,Boolean)}.</li>
+ *       {@link PDPTWGenerator#genInstance(int, int, int, java.util.Random, Boolean)}.</li>
  *   <li>The instance is encapsulated in a {@link DdoModel}, which specifies:
  *     <ul>
  *       <li>the {@link PDPTWProblem} definition,</li>

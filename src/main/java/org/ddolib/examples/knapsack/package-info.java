@@ -1,5 +1,5 @@
 /**
- * This package implements the acs, astar and ddo models for the Knapsack Problem (KS).
+ * This package implements the acs, astar, awastar and ddo models for the Knapsack Problem (KS).
  * The Knapsack problem is a classic optimization problem
  * where the goal is to maximize the total value of items
  * while staying within a given weight limit.

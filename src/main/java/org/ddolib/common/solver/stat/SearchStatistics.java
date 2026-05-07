@@ -1,4 +1,4 @@
-package org.ddolib.common.solver;
+package org.ddolib.common.solver.stat;
 
 import org.ddolib.util.PrettyPrint;
 
@@ -6,6 +6,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
+
+import static java.lang.Math.abs;
 
 /**
  * Class representing the statistics of a search process in a solver.
@@ -15,47 +17,51 @@ import java.util.Locale;
  * where update methods return a new instance with the updated value.
  * </p>
  */
-public final class SearchStatistics {
+public abstract class SearchStatistics<T extends SearchStatistics<T>> {
     /**
      * Start time of the search (in milliseconds)
      */
-    private final long _startTime;
+    protected final long _startTime;
     /**
      * Time at which the last improvement was found (in milliseconds)
      */
-    private long _lastTimeOfImprovement;
+    protected long _lastTimeOfImprovement;
     /**
      * Current time of the search (in milliseconds)
      */
-    private long _currentTime;
+    protected long _currentTime;
     /**
      * Current status of the search
      */
-    private SearchStatus _status = SearchStatus.UNKNOWN;
+    protected SearchStatus _status = SearchStatus.UNKNOWN;
     /**
      * Total number of iterations performed
      */
-    private int _nbIterations = 0;
+    protected int _nbIterations = 0;
     /**
      * Iteration during which the last improvement was found
      */
-    private int _lastIterationOfImprovement = 0;
+    protected int _lastIterationOfImprovement = 0;
     /**
      * Value of the best solution found so far (incumbent)
      */
-    private double _incumbent;
+    protected double _incumbent;
     /**
      * Value of the previous incumbent found
      */
-    private double _prevIncumbent = Double.POSITIVE_INFINITY;
+    protected double _prevIncumbent = Double.POSITIVE_INFINITY;
     /**
      * Current optimality gap
      */
-    private double _gap = 100.0;
+    protected double _gap = 100.0;
     /**
      * Maximum size reached by the search frontier
      */
-    private int _frontierMaxSize = 0;
+    protected int _frontierMaxSize = 0;
+    /**
+     * Relative improvement of the incumbent value
+     */
+    protected double _relativeImprovement = 1.0;
 
 
     /**
@@ -70,6 +76,14 @@ public final class SearchStatistics {
         _currentTime = startTime;
         _incumbent = initValue;
     }
+
+    /**
+     * Creates a new instance of the specific subclass with initial values.
+     * This is used by the copy method to maintain the correct type.
+     *
+     * @return a new instance of the specific subclass
+     */
+    protected abstract T createSpecificInstance();
 
     /**
      * Returns the time at which the last improvement was found.
@@ -87,6 +101,15 @@ public final class SearchStatistics {
      */
     public long runtime() {
         return _currentTime - _startTime;
+    }
+
+    /**
+     * Returns the current time recorded in these statistics.
+     *
+     * @return the current time (in milliseconds)
+     */
+    public long currentTime() {
+        return _currentTime;
     }
 
     /**
@@ -153,12 +176,21 @@ public final class SearchStatistics {
     }
 
     /**
+     * Returns the relative improvement of the last incumbent update in percent.
+     *
+     * @return the relative improvement in percent
+     */
+    public double relativeImprovement() {
+        return 100 * _relativeImprovement;
+    }
+
+    /**
      * Creates and returns a copy of this statistics instance.
      *
      * @return a copy of the current statistics
      */
-    public SearchStatistics copy() {
-        SearchStatistics clone = new SearchStatistics(this._startTime, this._incumbent);
+    public T copy() {
+        T clone = createSpecificInstance();
 
         clone._currentTime = this._currentTime;
         clone._lastTimeOfImprovement = this._lastTimeOfImprovement;
@@ -168,6 +200,7 @@ public final class SearchStatistics {
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
         clone._frontierMaxSize = this._frontierMaxSize;
+        clone._relativeImprovement = this._relativeImprovement;
 
         return clone;
     }
@@ -179,14 +212,19 @@ public final class SearchStatistics {
      * @param gap       the new optimality gap
      * @return a new instance with updated incumbent and gap
      */
-    public SearchStatistics updateIncumbent(double incumbent, double gap) {
-        SearchStatistics toReturn = this.copy();
+    public T updateIncumbent(double incumbent, double gap) {
+        T toReturn = this.copy();
         toReturn._incumbent = incumbent;
         toReturn._prevIncumbent = this._incumbent;
         toReturn._currentTime = System.currentTimeMillis();
         toReturn._lastTimeOfImprovement = toReturn._currentTime;
         toReturn._lastIterationOfImprovement = this._nbIterations;
         toReturn._gap = gap;
+        if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {
+            toReturn._relativeImprovement = 1.0;
+        } else {
+            toReturn._relativeImprovement = abs(incumbent - this._incumbent) / abs(this._incumbent);
+        }
 
         return toReturn;
     }
@@ -197,8 +235,8 @@ public final class SearchStatistics {
      * @param status the new {@link SearchStatus}
      * @return a new instance with the updated status
      */
-    public SearchStatistics updateStatus(SearchStatus status) {
-        SearchStatistics toReturn = this.copy();
+    public T updateStatus(SearchStatus status) {
+        T toReturn = this.copy();
         toReturn._status = status;
         return toReturn;
     }
@@ -208,8 +246,8 @@ public final class SearchStatistics {
      *
      * @return a new instance with incremented iterations
      */
-    public SearchStatistics incrementNbIter() {
-        SearchStatistics toReturn = this.copy();
+    public T incrementNbIter() {
+        T toReturn = this.copy();
         toReturn._nbIterations++;
         return toReturn;
     }
@@ -220,8 +258,8 @@ public final class SearchStatistics {
      * @param frontierSize the current frontier size to potentially update the maximum
      * @return a new instance with the updated maximum frontier size
      */
-    public SearchStatistics updateFrontierMaxSize(int frontierSize) {
-        SearchStatistics toReturn = this.copy();
+    public T updateFrontierMaxSize(int frontierSize) {
+        T toReturn = this.copy();
         toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);
         return toReturn;
     }
@@ -231,8 +269,8 @@ public final class SearchStatistics {
      *
      * @return a new instance with incremented maximum frontier size
      */
-    public SearchStatistics incrementFrontierSize() {
-        SearchStatistics toReturn = this.copy();
+    public T incrementFrontierSize() {
+        T toReturn = this.copy();
         toReturn._frontierMaxSize++;
         return toReturn;
     }
@@ -243,8 +281,8 @@ public final class SearchStatistics {
      * @param gap the new gap value
      * @return a new instance with the updated gap
      */
-    public SearchStatistics updateGap(double gap) {
-        SearchStatistics toReturn = this.copy();
+    public T updateGap(double gap) {
+        T toReturn = this.copy();
         toReturn._gap = gap;
         return toReturn;
     }
@@ -255,8 +293,8 @@ public final class SearchStatistics {
      * @param time the current time (in milliseconds)
      * @return a new instance with the updated time
      */
-    public SearchStatistics updateTime(long time) {
-        SearchStatistics toReturn = this.copy();
+    public T updateTime(long time) {
+        T toReturn = this.copy();
         toReturn._currentTime = time;
         return toReturn;
     }
@@ -270,7 +308,13 @@ public final class SearchStatistics {
         DecimalFormat gapFormat = new DecimalFormat("#,##0.####", symbols);
 
         List<String> labels = List.of(
-                "Status", "Iterations", "Frontier Max Size", "Runtime", "Incumbent", "Gap"
+                "Status",
+                "Iterations",
+                "Frontier Max Size",
+                "Runtime",
+                "Incumbent",
+                "Gap",
+                "Relative improvement"
         );
 
         List<String> values = List.of(
@@ -279,7 +323,8 @@ public final class SearchStatistics {
                 df.format(_frontierMaxSize),
                 PrettyPrint.formatMs(runtime()),
                 Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
-                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %"
+                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
+                df.format(relativeImprovement()) + " %"
         );
 
         int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;

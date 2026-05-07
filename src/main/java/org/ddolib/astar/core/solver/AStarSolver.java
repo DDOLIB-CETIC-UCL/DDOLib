@@ -1,10 +1,11 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -75,7 +76,7 @@ public final class AStarSolver<T> implements Solver {
     private final DebugLevel debugLevel;
     private final boolean defaultLowerBoundValue;
     // Statistics
-    private SearchStatistics statistics;
+    private DdoStats statistics;
     // Value of the best known upper bound.
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
@@ -125,13 +126,13 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
-        statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+    public Solution minimize(Predicate<SearchStatistics<?>> limit,
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+        statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            // -- debug, stats, verbosity, stopping  ---
+            // -- debug, stat, verbosity, stopping  ---
             verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
                     open.peek().getLowerBound(), 100 * gap());
 
@@ -144,7 +145,7 @@ public final class AStarSolver<T> implements Solver {
             if (limit.test(statistics)) { // user-defined stopping criterion
                 return new Solution(bestSolution(), statistics);
             }
-            // -- end debug, stats, verbosity, stopping  ---
+            // -- end debug, stat, verbosity, stopping  ---
 
             SubProblem<T> sub = open.poll();
             // if the new state is dominated, we skip it
@@ -236,7 +237,7 @@ public final class AStarSolver<T> implements Solver {
 
 
     // return if a feasible solution was found by expanding children, false otherwise
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
+    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics<?>> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);

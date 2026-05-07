@@ -1,10 +1,11 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -176,10 +177,10 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics<?>> limit,
+                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
 
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
@@ -273,7 +274,7 @@ public final class SequentialSolver<T> implements Solver {
         statistics = statistics.updateTime(System.currentTimeMillis());
         if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
-        
+
         return new Solution(bestSolution(), statistics);
     }
 

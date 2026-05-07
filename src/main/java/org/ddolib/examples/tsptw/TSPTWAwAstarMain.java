@@ -3,6 +3,7 @@ package org.ddolib.examples.tsptw;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stopcriterion.InferenceCriterion;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
@@ -11,6 +12,9 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static org.ddolib.common.solver.stopcriterion.AstarStopCriterion.minValidChildrenPercent;
+import static org.ddolib.common.solver.stopcriterion.StopCriterion.maxIterSinceLastImprovement;
 
 /**
  * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Anytime Weighted
@@ -86,13 +90,21 @@ public class TSPTWAwAstarMain {
             }
         };
 
+        InferenceCriterion visu = new InferenceCriterion();
+
+
+        var stop = maxIterSinceLastImprovement(200).and(minValidChildrenPercent(0.1));
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                stats -> stats.runtime() > 60_000,
-                (sol, s) -> SolutionPrinter.printSolution(s, sol)
+                stop,
+                (sol, s) -> {
+                    SolutionPrinter.printSolution(s, sol);
+                    visu.addStat(s);
+                }
         );
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
+        visu.showChart();
     }
 }

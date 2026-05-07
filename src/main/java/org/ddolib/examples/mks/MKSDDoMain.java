@@ -1,11 +1,12 @@
 package org.ddolib.examples.mks;
 
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.heuristics.cluster.*;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Hybrid;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.mks.*;
 import org.ddolib.modeling.DdoModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -13,6 +14,7 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
 /**
  * Main class to demonstrate the application of Decision Diagram Optimization (DDO)
  * on a Multi-dimensional Knapsack (MKS) problem instance.
@@ -82,7 +84,7 @@ public class MKSDDoMain {
         };
         // Solve the problem and print the solution
         Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
         System.out.println();
         System.out.println(solution);

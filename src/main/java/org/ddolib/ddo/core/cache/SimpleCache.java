@@ -123,7 +123,7 @@ public class SimpleCache<T> implements Cache<T> {
             nbTests += l.nbTests;
             size += l.map.size();
         }
-        return "stats(nbHits: " + nbHits + ", nbTests: " + nbTests + ", size:" + size + ")";
+        return "stat(nbHits: " + nbHits + ", nbTests: " + nbTests + ", size:" + size + ")";
     }
 
     /**
