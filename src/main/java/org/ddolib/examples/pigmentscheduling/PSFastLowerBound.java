@@ -119,7 +119,7 @@ public class PSFastLowerBound implements FastLowerBound<PSState> {
             }
             if (!itemDemands.isEmpty()) {
                 ItemDemand item = itemDemands.poll();
-                stockingCostLb += item.cost() * (time - item.deadLine());
+                stockingCostLb += item.cost() * (item.deadLine() - time);
             }
         }
         return changeOverLb + stockingCostLb;
