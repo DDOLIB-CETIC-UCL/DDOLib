@@ -173,6 +173,10 @@ public final class AwAstarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             openByF.remove(sub);
+
+            // if current state is dominated, we skip it
+            if (dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) continue;
+
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             double subFprime = present.remove(subKey);
 
@@ -244,9 +248,6 @@ public final class AwAstarSolver<T> implements Solver {
 
             // this child can only lead to less good solution
             if (f + 1e-10 >= bestUB) continue;
-
-            // if the new state is dominated, we skip it
-            if (dominance.updateDominance(newState, path.size(), g)) continue;
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
