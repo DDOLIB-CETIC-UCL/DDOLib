@@ -77,6 +77,12 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
         _incumbent = initValue;
     }
 
+    /**
+     * Creates a new instance of the specific subclass with initial values.
+     * This is used by the copy method to maintain the correct type.
+     *
+     * @return a new instance of the specific subclass
+     */
     protected abstract T createSpecificInstance();
 
     /**

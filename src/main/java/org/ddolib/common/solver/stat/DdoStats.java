@@ -1,5 +1,8 @@
 package org.ddolib.common.solver.stat;
 
+/**
+ * Class tracking statistics specific to Decision Diagram Optimization (DDO) solver.
+ */
 public class DdoStats extends SearchStatistics<DdoStats> {
     /**
      * Constructs a new SearchStatistics instance.
@@ -11,6 +14,9 @@ public class DdoStats extends SearchStatistics<DdoStats> {
         super(startTime, initValue);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected DdoStats createSpecificInstance() {
         return new DdoStats(this._startTime, this._incumbent);
