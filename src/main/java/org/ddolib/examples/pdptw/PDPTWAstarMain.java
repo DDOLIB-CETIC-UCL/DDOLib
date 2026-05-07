@@ -2,8 +2,8 @@ package org.ddolib.examples.pdptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -76,7 +76,7 @@ public final class PDPTWAstarMain {
      * @throws IOException if an error occurs while reading or generating the instance
      */
     public static void main(final String[] args) throws IOException {
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2),true);
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2), true);
         Model<PDPTWState> model = new Model<>() {
             @Override
             public Problem<PDPTWState> problem() {

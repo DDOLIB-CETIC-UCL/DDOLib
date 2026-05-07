@@ -1,4 +1,4 @@
-package org.ddolib.common.solver;
+package org.ddolib.common.solver.stat;
 
 import org.ddolib.util.PrettyPrint;
 

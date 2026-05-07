@@ -1,10 +1,10 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
@@ -131,7 +131,7 @@ public final class AStarSolver<T> implements Solver {
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
         while (!open.isEmpty()) {
-            // -- debug, stats, verbosity, stopping  ---
+            // -- debug, stat, verbosity, stopping  ---
             verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
                     open.peek().getLowerBound(), 100 * gap());
 
@@ -144,7 +144,7 @@ public final class AStarSolver<T> implements Solver {
             if (limit.test(statistics)) { // user-defined stopping criterion
                 return new Solution(bestSolution(), statistics);
             }
-            // -- end debug, stats, verbosity, stopping  ---
+            // -- end debug, stat, verbosity, stopping  ---
 
             SubProblem<T> sub = open.poll();
             // if the new state is dominated, we skip it

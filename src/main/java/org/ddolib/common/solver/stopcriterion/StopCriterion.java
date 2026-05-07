@@ -1,6 +1,6 @@
 package org.ddolib.common.solver.stopcriterion;
 
-import org.ddolib.common.solver.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatistics;
 
 import java.util.function.Predicate;
 

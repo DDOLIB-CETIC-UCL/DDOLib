@@ -1,16 +1,16 @@
 package org.ddolib.lns.core.solver;
 
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.ddo.core.compilation.CompilationType;
-import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
+import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.ddo.core.mdd.LinkedDecisionDiagram;
 import org.ddolib.modeling.LnsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.util.verbosity.VerboseMode;
@@ -20,7 +20,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -184,7 +187,7 @@ public final class LNSSolver<T> implements Solver {
      * Updates the incumbent solution if the current restricted DD found a strict improvement.
      *
      * @param currentMdd restricted decision diagram compiled at the current iteration
-     * @param exportDot whether to force DOT materialization to reflect incumbent edge coloring
+     * @param exportDot  whether to force DOT materialization to reflect incumbent edge coloring
      * @return {@code true} if the incumbent was improved, {@code false} otherwise
      */
     private boolean maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
@@ -213,7 +216,7 @@ public final class LNSSolver<T> implements Solver {
     /**
      * Writes a DOT representation to disk.
      *
-     * @param dot DOT graph content
+     * @param dot      DOT graph content
      * @param fileName output file path
      */
     private void exportDot(String dot, String fileName) {
@@ -236,7 +239,7 @@ public final class LNSSolver<T> implements Solver {
         return new SubProblem<>(
                 problem.initialState(),
                 problem.initialValue(),
-                model.lowerBound().fastLowerBound(problem.initialState(),  vars),
+                model.lowerBound().fastLowerBound(problem.initialState(), vars),
                 Collections.emptySet());
     }
 
@@ -245,17 +248,17 @@ public final class LNSSolver<T> implements Solver {
      * Builds a residual subproblem by fixing a prefix of the current solution.
      *
      * @param solution incumbent solution used as reference for neighborhood destruction
-     * @param depth number of fixed variables in the prefix
+     * @param depth    number of fixed variables in the prefix
      * @return residual subproblem rooted at the state reached after the fixed prefix
      */
-    private SubProblem<T> buildInitialSubProblem(int[] solution,  int depth) {
+    private SubProblem<T> buildInitialSubProblem(int[] solution, int depth) {
         final HashSet<Integer> vars = new HashSet<>();
         Set<Decision> decisionSet = new HashSet<>();
         T state = problem.initialState();
         double sum = problem.initialValue();
         int k = 0;
         while (k < problem.nbVars()) {
-            Decision dec =  new Decision(k, solution[k]);
+            Decision dec = new Decision(k, solution[k]);
             if (k < depth) {
                 decisionSet.add(dec);
                 sum += problem.transitionCost(state, dec);
@@ -278,7 +281,7 @@ public final class LNSSolver<T> implements Solver {
      * Computes the objective value accumulated by a solution prefix.
      *
      * @param solution full variable assignment
-     * @param depth prefix length to evaluate
+     * @param depth    prefix length to evaluate
      * @return cumulative objective value up to {@code depth}
      */
     private double costInSolutionAtDepth(int[] solution, int depth) {
@@ -299,7 +302,7 @@ public final class LNSSolver<T> implements Solver {
      * Computes the state reached after applying a solution prefix.
      *
      * @param solution full variable assignment
-     * @param depth prefix length to apply
+     * @param depth    prefix length to apply
      * @return state reached at the requested depth
      */
     private T stateInSolutionAtDepth(int[] solution, int depth) {
@@ -316,9 +319,9 @@ public final class LNSSolver<T> implements Solver {
     /**
      * Creates the compilation configuration for a restricted DD iteration.
      *
-     * @param type compilation type to use
-     * @param sub residual subproblem to compile
-     * @param maxWidth maximal width allowed during restriction
+     * @param type        compilation type to use
+     * @param sub         residual subproblem to compile
+     * @param maxWidth    maximal width allowed during restriction
      * @param exportAsDot whether DOT export is enabled for this compilation
      * @return fully initialized compilation configuration
      */
