@@ -53,4 +53,9 @@ public class BPPDdoModel implements DdoModel<BPPState> {
     public VerbosityLevel verbosityLevel() {
         return VerbosityLevel.NORMAL;
     }
+
+    @Override
+    public boolean useCache() {
+        return true;
+    }
 }

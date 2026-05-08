@@ -16,7 +16,7 @@ public class BPPMain {
 
     public static void main(String[] args) throws IOException, InvalidSolutionException {
 
-        BPPProblem problem = readInstance("data/BPP/Falkenauer_t60_01.txt");
+        BPPProblem problem = readInstance("data/BPP/test/bp_20_15_9.txt");
 
         BPPDdoModel model = new BPPDdoModel(problem, 20);
         BPPAcsModel model2 = new BPPAcsModel(problem);

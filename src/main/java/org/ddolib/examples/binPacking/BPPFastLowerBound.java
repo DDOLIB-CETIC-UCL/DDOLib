@@ -36,7 +36,6 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
             fullItems[fullItemId - 1] = temp;
             fullItemId++;
         }
-        //System.out.println(state.usedBins + Math.max(0,BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1));
         return Math.max(0,BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1);
     }
 }

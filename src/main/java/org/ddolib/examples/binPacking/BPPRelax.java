@@ -29,7 +29,6 @@ public class BPPRelax implements Relaxation<BPPState> {
 
         while (states.hasNext()) {
             BPPState state = states.next();
-            assert(nbRemainingItems == state.remainingItems().cardinality()); // assume to merge states of a same layer
             currentBinSpace = Math.max(state.currentBinSpace(), currentBinSpace);
             remainingItems.or(state.remainingItems());
             lastRemainingSpace = Math.min(state.lastRemainingSpace(), lastRemainingSpace);

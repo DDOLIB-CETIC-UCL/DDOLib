@@ -27,7 +27,7 @@ public class BPPTestDataSupplier extends TestDataSupplier<BPPState, BPPProblem> 
             return stream.filter(Files::isRegularFile) // get only files
                     .map(filePath -> {
                         try {
-                            return BPP.extractFile(filePath.toString());
+                            return BPPMain.readInstance(filePath.toString());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

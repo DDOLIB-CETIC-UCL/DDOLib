@@ -15,10 +15,6 @@ public class BPPAcsModel implements AcsModel<BPPState> {
         this.problem = problem;
     }
 
-//    public DominanceChecker<BPPState> dominance() {
-//        return new SimpleDominanceChecker<>(new BPPDominance(), problem.nbVars());
-//    }
-
     @Override
     public Problem<BPPState> problem() {
         return problem;
