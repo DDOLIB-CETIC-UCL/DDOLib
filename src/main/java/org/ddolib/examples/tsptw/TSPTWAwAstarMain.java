@@ -93,7 +93,7 @@ public class TSPTWAwAstarMain {
         InferenceCriterion visu = new InferenceCriterion();
 
 
-        var stop = maxIterSinceLastImprovement(200).and(minValidChildrenPercent(0.1));
+        var stop = maxIterSinceLastImprovement(200).and(minValidChildrenPercent(11));
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
                 stop,
