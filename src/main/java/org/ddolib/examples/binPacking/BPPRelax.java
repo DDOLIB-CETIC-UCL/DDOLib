@@ -17,9 +17,9 @@ public class BPPRelax implements Relaxation<BPPState> {
     @Override
     public BPPState mergeStates(Iterator<BPPState> states) {
 
-        // take the min number of used bins in all the states
-        // take the max current bin space in all the states
-        // take the union of remaining items in all the states then remove the heaviest ones
+        // Take the biggest current bin space.
+        // Take the smallest last remaining space (ordering bin from fullest to emptiest).
+        // Take the union of remaining items in all the states then remove the heaviest ones.
 
         BPPState first = states.next();
         int currentBinSpace = first.currentBinSpace();
@@ -33,7 +33,7 @@ public class BPPRelax implements Relaxation<BPPState> {
             remainingItems.or(state.remainingItems());
             lastRemainingSpace = Math.min(state.lastRemainingSpace(), lastRemainingSpace);
         }
-        // delete the heaviest items until we have nbRemainingItems items in the merged state
+        // Delete the heaviest items until we have nbRemainingItems items in the merged state.
         int nbItemsToIgnore = remainingItems.cardinality() - nbRemainingItems;
         for (int i = 0; i < nbItemsToIgnore; i++) {
             remainingItems.clear(remainingItems.nextSetBit(0));
