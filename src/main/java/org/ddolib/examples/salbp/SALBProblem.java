@@ -8,20 +8,22 @@ import java.util.*;
 
 public class SALBProblem implements Problem<SALBPState> {
 
-    int nbItems;
-    int binMaxSpace;
-    int[] itemWeights;
+    int nbTasks;
+    int cycleTime;
+    int[] tasksTime;
     BitSet[] allPrecedences;
     // Optimal solution
     Optional<Double> optimal;
     Optional<String> name;
 
-    SALBProblem(int nbItems, int binMaxSpace, int[] itemWeights, BitSet[] precedences, Optional<Double> optimal) {
-        this.nbItems = nbItems;
-        this.binMaxSpace = binMaxSpace;
-        this.itemWeights = itemWeights;
+    SALBProblem(int nbTasks, int cycleTime, int[] tasksTime, BitSet[] precedences, Optional<Double> optimal) {
+        this.nbTasks = nbTasks;
+        this.cycleTime = cycleTime;
+        this.tasksTime = tasksTime;
         this.allPrecedences = precedences;
         this.optimal = optimal;
+        System.out.println("xxxxxxxxxxxx");
+        System.out.println(allPrecedences[19]);
     }
 
     @Override
@@ -31,26 +33,26 @@ public class SALBProblem implements Problem<SALBPState> {
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-        BitSet remainingItems = new BitSet(nbItems);
-        remainingItems.set(0, nbItems);
-        int currentBinSpace = binMaxSpace;
-        int bins = 1;
-        for (int item : solution) {
-            BitSet precedence = (BitSet) allPrecedences[item].clone();
-            precedence.and(remainingItems);
+        BitSet remainingTasks = new BitSet(nbTasks);
+        remainingTasks.set(0, nbTasks);
+        int currentStationRemainingTime = cycleTime;
+        int stations = 1;
+        for (int task : solution) {
+            BitSet precedence = (BitSet) allPrecedences[task].clone();
+            precedence.and(remainingTasks);
             if (!precedence.isEmpty())
                 throw new InvalidSolutionException(String.format(
-                        "Trying to insert %d but precedences %s are not inserted yet", item, precedence));
-            int weight = itemWeights[item];
-            if (currentBinSpace < weight) {
-                currentBinSpace = binMaxSpace - weight;
-                bins++;
+                        "Trying to insert %d but precedences %s are not inserted yet", task, precedence));
+            int weight = tasksTime[task];
+            if (currentStationRemainingTime < weight) {
+                currentStationRemainingTime = cycleTime - weight;
+                stations++;
             } else {
-                currentBinSpace -= weight;
+                currentStationRemainingTime -= weight;
             }
-            remainingItems.clear(item);
+            remainingTasks.clear(task);
         }
-        return bins;
+        return stations;
     }
 
     public void setName(String name) {
@@ -59,14 +61,14 @@ public class SALBProblem implements Problem<SALBPState> {
 
     @Override
     public int nbVars() {
-        return nbItems;
+        return nbTasks;
     }
 
     @Override
     public SALBPState initialState() {
-        BitSet remainingItems = new BitSet(nbItems);
-        remainingItems.set(0, nbItems);
-        return new SALBPState(binMaxSpace, remainingItems);
+        BitSet remainingItems = new BitSet(nbTasks);
+        remainingItems.set(0, nbTasks);
+        return new SALBPState(cycleTime, remainingItems);
     }
 
     @Override
@@ -79,53 +81,70 @@ public class SALBProblem implements Problem<SALBPState> {
     public Iterator<Integer> domain(SALBPState state, int var) {
         if (var >= nbVars()) return Collections.emptyIterator();
 
-        int nextItem = state.remainingItems().nextSetBit(0);
+        int nextItem = state.remainingTasks().nextSetBit(0);
         HashSet<Integer> allItems = new HashSet<>();
         HashSet<Integer> fittingItems = new HashSet<>();
 
         while (nextItem != -1) {
-            BitSet precedence = (BitSet) allPrecedences[nextItem];
-            precedence.and(state.remainingItems());
-            if (precedence.isEmpty()){
-                if (itemWeights[nextItem] == state.currentBinSpace()) {
-                    return List.of(nextItem).iterator();
-                } else if (itemWeights[nextItem] < state.currentBinSpace()) {
+            BitSet precedence = (BitSet) allPrecedences[nextItem].clone();
+            precedence.and(state.remainingTasks());
+            if (precedence.isEmpty()) {
+                if (tasksTime[nextItem] <= state.currentStationRemainingTime())
                     fittingItems.add(nextItem);
-                }
                 allItems.add(nextItem);
             }
-            nextItem = state.remainingItems().nextSetBit(nextItem + 1);
+            nextItem = state.remainingTasks().nextSetBit(nextItem + 1);
         }
 
-        if (!fittingItems.isEmpty()) {
-            return fittingItems.iterator();
-        }
+        if (!fittingItems.isEmpty()) return fittingItems.iterator();
         return allItems.iterator();
     }
 
     @Override
     public SALBPState transition(SALBPState state, Decision decision) {
-        int item = decision.value();
-        int itemWeight = itemWeights[item];
-        boolean binFull = state.currentBinSpace() - itemWeight < 0;
+        int task = decision.value();
+        int taskTime = tasksTime[task];
+        boolean stationFull = state.currentStationRemainingTime() - taskTime < 0;
 
-        int currentBinSpace = binFull ? binMaxSpace - itemWeight : state.currentBinSpace() - itemWeight;
-        BitSet remainingItems = (BitSet) state.remainingItems().clone();
-        remainingItems.set(item, false);
+        int currentStationRemainingTime = stationFull ? cycleTime - taskTime : state.currentStationRemainingTime() - taskTime;
+        BitSet remainingTasks = (BitSet) state.remainingTasks().clone();
+        remainingTasks.set(task, false);
 
-        return new SALBPState(currentBinSpace, remainingItems);
+        return new SALBPState(currentStationRemainingTime, remainingTasks);
     }
 
     @Override
     public double transitionCost(SALBPState state, Decision decision) {
         int item = decision.value();
-        if (state.currentBinSpace() < itemWeights[item]) return 1;
+        if (state.currentStationRemainingTime() < tasksTime[item]) return 1;
         else return 0;
     }
 
     @Override
     public String toString() {
         return name.orElse("No name");
+    }
+
+    public String solutionToString(int[] solution) {
+        int currentStationRemainingTime = cycleTime;
+        StringBuilder gsb = new StringBuilder();
+        StringBuilder tsb = new StringBuilder();
+        int currentStation = 1;
+        gsb.append("Station #").append(currentStation);
+        for (int item : solution) {
+            int weight = tasksTime[item];
+            if (currentStationRemainingTime < weight) {
+                gsb.append(" - Total duration ").append(cycleTime - currentStationRemainingTime).append(" -> ").append(tsb).append("\nStation #").append(currentStation+1);
+                tsb = new StringBuilder();
+                currentStationRemainingTime = cycleTime - weight;
+                currentStation++;
+            } else {
+                currentStationRemainingTime -= weight;
+            }
+            tsb.append("\n\tTask_").append(item).append(" (duration:").append(weight).append(") ");
+        }
+        gsb.append(" - Total duration ").append(cycleTime - currentStationRemainingTime).append(" -> ").append(tsb);
+        return gsb.toString();
     }
 }
 

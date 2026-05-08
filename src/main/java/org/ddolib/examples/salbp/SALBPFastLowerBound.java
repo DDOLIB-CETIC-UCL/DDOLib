@@ -20,23 +20,23 @@ public class SALBPFastLowerBound implements FastLowerBound<SALBPState> {
         // To use labbeLB algorithm, we cannot consider bin that are partially full.
         // Therefore, we remove the content of each used bin AS ONE ITEM and add it to the list (sorted biggest to lowest).
         // And we run the algorithm. We need to remove all used bins from the result (otherwise counted twice).
-        int[] fullItems = new int[1 + variables.size()];
-        fullItems[0] = problem.binMaxSpace - state.currentBinSpace();
+        int[] fullTasks = new int[1 + variables.size()];
+        fullTasks[0] = problem.cycleTime - state.currentStationRemainingTime();
 
-        int fullItemId = 1;
-        for (int i = state.remainingItems().nextSetBit(0); i >= 0; i = state.remainingItems().nextSetBit(i + 1)) {
-            fullItems[fullItemId] = problem.itemWeights[i];
-            fullItemId++;
+        int fullTasksId = 1;
+        for (int i = state.remainingTasks().nextSetBit(0); i >= 0; i = state.remainingTasks().nextSetBit(i + 1)) {
+            fullTasks[fullTasksId] = problem.tasksTime[i];
+            fullTasksId++;
         }
         // Sort only first element
-        fullItemId = 1;
-        while(fullItemId < fullItems.length && fullItems[fullItemId] > fullItems[fullItemId - 1]) {
-            int temp = fullItems[fullItemId];
-            fullItems[fullItemId] = fullItems[fullItemId - 1];
-            fullItems[fullItemId - 1] = temp;
-            fullItemId++;
+        fullTasksId = 1;
+        while(fullTasksId < fullTasks.length && fullTasks[fullTasksId] > fullTasks[fullTasksId - 1]) {
+            int temp = fullTasks[fullTasksId];
+            fullTasks[fullTasksId] = fullTasks[fullTasksId - 1];
+            fullTasks[fullTasksId - 1] = temp;
+            fullTasksId++;
         }
-        //System.out.println(state.usedBins + Math.max(0,BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1));
-        return Math.max(0, BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1);
+        //System.out.println(state.usedBins + Math.max(0,BinPacking.labbeLB(fullTasks, this.problem.binMaxSpace) - 1));
+        return Math.max(0, BinPacking.labbeLB(fullTasks, this.problem.cycleTime) - 1);
     }
 }

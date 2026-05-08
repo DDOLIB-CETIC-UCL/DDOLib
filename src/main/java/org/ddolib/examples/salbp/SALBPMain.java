@@ -23,6 +23,7 @@ public class SALBPMain {
         Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
+        System.out.println(problem.solutionToString(bestSolution.solution()));
         System.out.println(bestSolution);
         if (problem.optimal.isPresent()) {
             System.out.printf("Found : %f \t Optimal : %f\n", bestSolution.value(), problem.optimal.get());
@@ -73,7 +74,6 @@ public class SALBPMain {
             }
         }
 
-        Arrays.sort(taskTime, Comparator.reverseOrder());
         SALBProblem problem = new SALBProblem(nbItems, cycleTime, Arrays.stream(taskTime).mapToInt(i -> i).toArray(), allPrecedences, optimal);
         problem.setName(fileName);
 

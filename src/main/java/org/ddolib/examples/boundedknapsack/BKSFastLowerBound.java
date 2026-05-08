@@ -26,7 +26,7 @@ import java.util.Set;
  * <pre>{@code
  * BKSProblem problem = new BKSProblem(values, weights, quantities, capacity);
  * FastLowerBound<Integer> flb = new BKSFastLowerBound(problem);
- * double bound = flb.fastLowerBound(currentCapacity, remainingItems);
+ * double bound = flb.fastLowerBound(currentCapacity, remainingTasks);
  * }</pre>
  *
  * @see BKSProblem
