@@ -134,14 +134,14 @@ public class SALBProblem implements Problem<SALBPState> {
         for (int item : solution) {
             int weight = tasksTime[item];
             if (currentStationRemainingTime < weight) {
-                gsb.append(" - Total duration ").append(cycleTime - currentStationRemainingTime).append(" -> ").append(tsb).append("\nStation #").append(currentStation+1);
+                gsb.append(" - Total duration ").append(cycleTime - currentStationRemainingTime).append(" -> \n").append(tsb).append("\nStation #").append(currentStation+1);
                 tsb = new StringBuilder();
                 currentStationRemainingTime = cycleTime - weight;
                 currentStation++;
             } else {
                 currentStationRemainingTime -= weight;
             }
-            tsb.append("\n\tTask_").append(item).append(" (duration:").append(weight).append(") ");
+            tsb.append("\t|\tTask_").append(item).append(" (duration:").append(weight).append(") ");
         }
         gsb.append(" - Total duration ").append(cycleTime - currentStationRemainingTime).append(" -> ").append(tsb);
         return gsb.toString();
