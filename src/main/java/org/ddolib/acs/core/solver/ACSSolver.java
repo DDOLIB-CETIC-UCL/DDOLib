@@ -198,7 +198,6 @@ public final class ACSSolver<T> implements Solver {
         int nbIter = 0;
         int queueMaxSize = 0;
         int nbSols =0;
-        int nDomWithRest = 0;
         open.getFirst().add(root);
         ArrayList<int[]> ubs = new ArrayList<>();
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
@@ -232,11 +231,7 @@ public final class ACSSolver<T> implements Solver {
                     SubProblem<T> sub = open.get(i).poll();
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
                     present.remove(subKey);
-                    if (problem.stateSpaceReduction(sub.getState())){
-                        nDomWithRest+=1;
-                        continue;
-                    }
-                    if (dominance.dominated(sub.getState(), sub.getValue(), sub.getDepth())){
+                    if (problem.stateSpaceReduction(sub.getState())||dominance.dominated(sub.getState(), sub.getValue(), sub.getDepth())){
                         dominatedNodes+=1;
                         continue;
                     }
@@ -277,7 +272,6 @@ public final class ACSSolver<T> implements Solver {
         if (debugLevel != DebugLevel.OFF) {
             checkAdmissibility();
         }
-        System.out.println("NdomRes : "+nDomWithRest);
         SearchStatistics stats = new SearchStatistics(SearchStatus.OPTIMAL, nbIter, queueMaxSize,
                 System.currentTimeMillis() - t0, bestValue().orElse(Double.POSITIVE_INFINITY), 0, nbSols, nbSameNodes, dominatedNodes, ubs);
         return new Solution(bestSolution(), stats);
