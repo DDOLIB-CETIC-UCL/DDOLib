@@ -81,8 +81,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         if (expected.isPresent() && actual.isPresent()) {
             assertEquals(expected.get(), actual.get(), delta, failureMsg);
         } else {
-            //TODO we do not know the expected, so how can be compare with the actual?
-            //assertEquals(expected, actual, failureMsg);
+            assertEquals(expected, actual, failureMsg);
         }
     }
 

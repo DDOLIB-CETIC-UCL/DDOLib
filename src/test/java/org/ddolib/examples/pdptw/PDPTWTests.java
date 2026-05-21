@@ -1,15 +1,8 @@
 package org.ddolib.examples.pdptw;
 
-import org.ddolib.util.testbench.ProblemTestBench;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
-
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
 public class PDPTWTests {
-    @DisplayName("PDPTW")
+    //TODO: move the instances to non-regression. The solutions are unknown
+   /* @DisplayName("PDPTW")
     @TestFactory
     public Stream<DynamicTest> testPDPTW() {
         var dataSupplier =
@@ -21,5 +14,5 @@ public class PDPTWTests {
         bench.minWidth = 45;
         bench.maxWidth = 50;
         return bench.generateTests();
-    }
+    }*/
 }
