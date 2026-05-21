@@ -181,7 +181,7 @@ public class PDPTWGenerator {
     }
 
     /**
-     * Generates a PDPTW instance (Version 2).
+     * Generates a PDPTW instance.
      * This method explicitly builds a valid optimal route (respecting capacity and precedence)
      * before computing time windows, ensuring the optimal solution is exact and known.
      *
@@ -192,7 +192,7 @@ public class PDPTWGenerator {
      * @param strengthenTimeWindows Option to strengthen time windows
      * @return The PDPTW problem instance
      */
-    public static PDPTWProblem genInstanceV2(int n, int unrelated, int maxCapa, Random random, Boolean strengthenTimeWindows) {
+    public static PDPTWProblem constructInstanceWithSolution(int n, int unrelated, int maxCapa, Random random, Boolean strengthenTimeWindows) {
 
         // 1. Initialize coordinates and time matrix
         int squareSide = 1000;
