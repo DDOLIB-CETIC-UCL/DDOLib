@@ -151,7 +151,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                     numNodes = Integer.parseInt(tokens[0]);
                     matrix = new double[numNodes][numNodes];
                     tw = new TimeWindow[numNodes];
-                    if (tokens.length >= 4) {
+                    if (tokens.length >= 2) {
                         opti = Optional.of(Double.parseDouble(tokens[1]));
                     }
                 } else if (linesCount == 1) { // read max capa
@@ -242,6 +242,13 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
             //the number of nodes
             bw.write("" + this.n);
+            aKnownSolutionValue.ifPresent(val -> {
+                try {
+                    bw.write(" " + val);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             bw.write("\n\n");
 
             //the max capa
@@ -310,6 +317,10 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         return 0;
     }
 
+    @Override
+    public Optional<Double> optimalValue() {
+        return aKnownSolutionValue;
+    }
 
     @Override
     public Iterator<Integer> domain(PDPTWState state, int var) {
@@ -478,7 +489,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
                 "\ttimeWindows" + Arrays.stream(timeWindows).map(l -> "\n\t " + l).toList() + "\n" +
                 "\t" + Arrays.stream(timeMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
-        
+
         return name.orElse(str);
     }
 }
