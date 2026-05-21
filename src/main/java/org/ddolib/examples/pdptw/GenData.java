@@ -17,9 +17,9 @@ public class GenData {
      */
     public static void main(final String[] args) throws IOException {
         Random r = new Random(2);
-        for (int n = 10; n <= 20; n += 5) {
+        for (int n = 30; n <= 30; n += 5) {
             for (int i = 0; i < 10; i++) {
-                final PDPTWProblem problem = PDPTWGenerator.genInstanceV2(n, 3, 5, r, false);
+                final PDPTWProblem problem = PDPTWGenerator.genInstanceV2(n, 3, 7, r, false);
                 String path = Paths.get("data", "PDPTW", "instance_" + n + "_" + i).toAbsolutePath().toString();
                 problem.saveToFile(path);
             }
