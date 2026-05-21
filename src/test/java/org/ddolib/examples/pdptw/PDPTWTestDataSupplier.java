@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Random;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWProblem> {
@@ -29,27 +27,18 @@ public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWPro
 
     @Override
     protected List<PDPTWProblem> generateProblems() {
-        if(dir == null){
-            Random random = new Random(1);
-            int nbTests = 10;
-
-            return IntStream.range(0, nbTests).boxed().map(
-                    i -> PDPTWGenerator.genInstance(10, 2, 3, random,true)
-            ).toList();
-        }else{
-            try (Stream<Path> stream = Files.walk(dir)) {
-                return stream.filter(Files::isRegularFile) // get only files
-                        .map(filePath -> {
-                            try {
-                                return new PDPTWProblem(filePath.toString());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return new PDPTWProblem(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
