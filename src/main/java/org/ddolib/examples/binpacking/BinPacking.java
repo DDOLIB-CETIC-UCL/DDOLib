@@ -1,4 +1,4 @@
-package org.ddolib.util.algo;
+package org.ddolib.examples.binpacking;
 
 import java.util.Arrays;
 import java.util.Comparator;

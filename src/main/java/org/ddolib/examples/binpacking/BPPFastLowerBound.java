@@ -1,9 +1,7 @@
 package org.ddolib.examples.binpacking;
 
 import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.util.algo.BinPacking;
 
-import java.util.Arrays;
 import java.util.Set;
 
 public class BPPFastLowerBound implements FastLowerBound<BPPState> {
@@ -27,18 +25,18 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
         // We may have way more items than necessary (due to relaxation)
         // We keep the smallest items ordered in decreasing order.
         int setBit = state.remainingItems().previousSetBit(state.remainingItems().size());
-        for (int i = fullItems.length-1; i > 0; i--) {
+        for (int i = fullItems.length - 1; i > 0; i--) {
             fullItems[i] = problem.itemWeights[setBit];
-            setBit = state.remainingItems().previousSetBit(setBit-1);
+            setBit = state.remainingItems().previousSetBit(setBit - 1);
         }
         // Sort only first element to place it at the right spot.
         int fullItemId = 1;
-        while(fullItemId < fullItems.length && fullItems[fullItemId] > fullItems[fullItemId - 1]) {
+        while (fullItemId < fullItems.length && fullItems[fullItemId] > fullItems[fullItemId - 1]) {
             int temp = fullItems[fullItemId];
             fullItems[fullItemId] = fullItems[fullItemId - 1];
             fullItems[fullItemId - 1] = temp;
             fullItemId++;
         }
-        return Math.max(0,BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1);
+        return Math.max(0, BinPacking.labbeLB(fullItems, this.problem.binMaxSpace) - 1);
     }
 }
