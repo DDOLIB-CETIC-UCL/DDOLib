@@ -142,8 +142,16 @@ public final class ExactSolver<T> implements Solver {
                     Paths.get("output", problemName + "_exact.dot").toString());
         }
 
+
         statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();
-        final SearchStatistics finalStats = statistics.updateStatus(SearchStatus.OPTIMAL);
+
+        if (bestValue.isPresent()) {
+            statistics = statistics.updateIncumbent(bestValue.get(), 0.0).updateStatus(SearchStatus.OPTIMAL);
+        } else {
+            statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        }
+
+        final SearchStatistics finalStats = statistics;
 
         bestSol.ifPresent(sol -> onSolution.accept(constructSolution(bestSol.get()), finalStats));
         return new Solution(bestSolution(), finalStats);
