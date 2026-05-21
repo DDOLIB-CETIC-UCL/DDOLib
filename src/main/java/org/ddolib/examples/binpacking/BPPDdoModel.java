@@ -3,8 +3,13 @@ package org.ddolib.examples.binpacking;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.ddo.core.heuristics.cluster.Hybrid;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.knapsack.KSDistance;
 import org.ddolib.modeling.*;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
@@ -21,7 +26,8 @@ public class BPPDdoModel implements DdoModel<BPPState> {
 
     @Override
     public Relaxation<BPPState> relaxation() {
-        return new BPPRelax(problem) {};
+        return new BPPRelax(problem) {
+        };
     }
 
     @Override
@@ -57,5 +63,15 @@ public class BPPDdoModel implements DdoModel<BPPState> {
     @Override
     public boolean useCache() {
         return true;
+    }
+
+    @Override
+    public ReductionStrategy<BPPState> relaxStrategy() {
+        return new GHP<>(new BPPDistance());
+    }
+
+    @Override
+    public ReductionStrategy<BPPState> restrictStrategy() {
+        return new CostBased<>(new BPPRanking());
     }
 }

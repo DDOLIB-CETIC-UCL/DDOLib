@@ -14,13 +14,15 @@ public class BPPMain {
 
         BPPProblem problem = new BPPProblem("data/BPP/Falkenauer_t60_01.txt");
 
-        BPPDdoModel model = new BPPDdoModel(problem, 50);
+        BPPDdoModel model = new BPPDdoModel(problem, 10);
         BPPAcsModel model2 = new BPPAcsModel(problem);
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, s -> s.runtime() > 60000,(sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
         System.out.println(bestSolution);
+        System.out.println(bestSolution.statistics());
+
         if (problem.optimal.isPresent()) {
             System.out.printf("Found : %f \t Optimal : %f\n", bestSolution.value(), problem.optimal.get());
         } else {

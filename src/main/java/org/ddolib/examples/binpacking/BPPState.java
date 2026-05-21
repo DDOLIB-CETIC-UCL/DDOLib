@@ -23,4 +23,14 @@ public record BPPState(
         return String.format("\nCurrent bin space : %d\tLast remaining space : %d\nRemaining items : %s",
                 currentBinSpace, lastRemainingSpace, remainingItems.toString());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BPPState(int binSpace, BitSet items, int remainingSpace)) {
+            return currentBinSpace == binSpace
+                    && lastRemainingSpace == remainingSpace
+                    && remainingItems.equals(items);
+        }
+        return false;
+    }
 }
