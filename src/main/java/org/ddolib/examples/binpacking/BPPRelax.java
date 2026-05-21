@@ -24,7 +24,6 @@ public class BPPRelax implements Relaxation<BPPState> {
         BPPState first = states.next();
         int currentBinSpace = first.currentBinSpace();
         BitSet remainingItems = (BitSet) first.remainingItems().clone();
-        int nbRemainingItems = remainingItems.cardinality();
         int lastRemainingSpace = first.lastRemainingSpace();
 
         while (states.hasNext()) {
@@ -32,11 +31,6 @@ public class BPPRelax implements Relaxation<BPPState> {
             currentBinSpace = Math.max(state.currentBinSpace(), currentBinSpace);
             remainingItems.or(state.remainingItems());
             lastRemainingSpace = Math.min(state.lastRemainingSpace(), lastRemainingSpace);
-        }
-        // Delete the heaviest items until we have nbRemainingItems items in the merged state.
-        int nbItemsToIgnore = remainingItems.cardinality() - nbRemainingItems;
-        for (int i = 0; i < nbItemsToIgnore; i++) {
-            remainingItems.clear(remainingItems.nextSetBit(0));
         }
 
         return new BPPState(currentBinSpace, remainingItems, lastRemainingSpace);
