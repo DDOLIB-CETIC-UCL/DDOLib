@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
 import java.util.*;
 

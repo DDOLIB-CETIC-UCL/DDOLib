@@ -1,7 +1,5 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.modeling.AcsModel;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;

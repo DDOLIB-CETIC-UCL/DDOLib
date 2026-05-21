@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
@@ -6,6 +6,24 @@ import org.ddolib.modeling.Problem;
 
 import java.util.*;
 
+/**
+ * Represents an instance of the Bin Packing Problem.
+ *
+ * <p>
+ * The Bin Packing problem consists in filling items of different sizes in bins of same fixed size.
+ * The goal is to minimize the number of used bins.
+ * </p>
+ *
+ * <p>
+ * Each iteration we select the next item to add in the current/new bin.
+ * The state of the problem is :
+ * </p>
+ * <ul>
+ *     <li>The current bin space</li>
+ *     <li>The remaining items</li>
+ *     <li>The last remaining space. Mainly used to order the bin from fullest to emptiest and break symmetries.</li>
+ * </ul>
+ */
 public class BPPProblem implements Problem<BPPState> {
 
     int nbItems;

@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.InvalidSolutionException;
@@ -16,9 +16,9 @@ public class BPPMain {
 
     public static void main(String[] args) throws IOException, InvalidSolutionException {
 
-        BPPProblem problem = readInstance("data/BPP/test/bp_20_15_9.txt");
+        BPPProblem problem = readInstance("data/BPP/Falkenauer_t60_01.txt");
 
-        BPPDdoModel model = new BPPDdoModel(problem, 20);
+        BPPDdoModel model = new BPPDdoModel(problem, 50);
         BPPAcsModel model2 = new BPPAcsModel(problem);
 
         Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {

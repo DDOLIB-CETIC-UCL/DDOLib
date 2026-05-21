@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
 import org.ddolib.util.testbench.NonRegressionTestBench;
 import org.junit.jupiter.api.DisplayName;

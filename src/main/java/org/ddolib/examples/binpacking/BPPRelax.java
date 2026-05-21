@@ -1,4 +1,4 @@
-package org.ddolib.examples.binPacking;
+package org.ddolib.examples.binpacking;
 
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.modeling.Relaxation;
