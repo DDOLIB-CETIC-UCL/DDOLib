@@ -22,14 +22,13 @@ public class BPPFastLowerBound implements FastLowerBound<BPPState> {
         int[] fullItems = new int[1 + variables.size()];
         fullItems[0] = problem.binMaxSpace - state.currentBinSpace();
 
-        // We may have way more items than necessary (due to relaxation)
-        // We keep the smallest items ordered in decreasing order.
-        int setBit = state.remainingItems().previousSetBit(state.remainingItems().size());
-        for (int i = fullItems.length - 1; i > 0; i--) {
+        int setBit = state.remainingItems().nextSetBit(0);
+        for (int i = 1; i < fullItems.length; i++) {
             fullItems[i] = problem.itemWeights[setBit];
-            setBit = state.remainingItems().previousSetBit(setBit - 1);
+            setBit = state.remainingItems().nextSetBit(setBit + 1);
         }
         // Sort only first element to place it at the right spot.
+        // (since all others are already sorted)
         int fullItemId = 1;
         while (fullItemId < fullItems.length && fullItems[fullItemId] > fullItems[fullItemId - 1]) {
             int temp = fullItems[fullItemId];
