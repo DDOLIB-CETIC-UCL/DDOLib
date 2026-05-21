@@ -6,9 +6,9 @@ import org.ddolib.common.solver.Solution;
  * Pretty-printer wrapper for PDPTW solutions.
  */
 public class PDPTWSolution {
-    PDPTWProblem problem;
     public int[] solution;
     public double value;
+    PDPTWProblem problem;
 
     public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {
         this.problem = problem;
@@ -20,9 +20,9 @@ public class PDPTWSolution {
     public String toString() {
         StringBuilder toReturn = new StringBuilder();
         try {
-            toReturn.append("eval from scratch: " + problem.evaluate(solution) + "\n");
-        }catch(Exception e) {
-            toReturn.append(e.getMessage() + "\n");
+            toReturn.append("eval from scratch: ").append(problem.evaluate(solution)).append("\n");
+        } catch (Exception e) {
+            toReturn.append(e.getMessage()).append("\n");
         }
         toReturn.append("0\tcontent:" + 0);
 
@@ -30,14 +30,14 @@ public class PDPTWSolution {
         int currentContent = 0;
         double currentTime = problem.timeWindows[0].start();
 
-        for (int i = 0; i < solution.length; i++) {
+        for (int j : solution) {
             int prevNode = currentNode;
-            currentNode = solution[i];
+            currentNode = j;
             currentTime = currentTime + problem.timeMatrix[prevNode][currentNode];
-            toReturn.append("\ntravelTime:" + problem.timeMatrix[prevNode][currentNode]);
+            toReturn.append("\ntravelTime:").append(problem.timeMatrix[prevNode][currentNode]);
             double earlyLine = problem.timeWindows[currentNode].start();
             double waitTime = 0;
-            if(currentTime < earlyLine) {
+            if (currentTime < earlyLine) {
                 waitTime = earlyLine - currentTime;
                 currentTime = earlyLine;
             }
@@ -48,7 +48,7 @@ public class PDPTWSolution {
             } else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)) {
                 // it is a pickup
                 currentContent = currentContent + 1;
-                toReturn.append("\n" + currentNode + "\tcontentOut:" + currentContent + "\ttime:" + currentTime  + "\twaitTime:" + waitTime+ "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + " +" + 1 + ")");
+                toReturn.append("\n" + currentNode + "\tcontentOut:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime + "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + " +" + 1 + ")");
             } else {
                 //an unrelated node
                 toReturn.append("\n" + currentNode + "\tcontent:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime);

@@ -4,13 +4,14 @@ import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Model;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
-import java.util.Random;
+import java.nio.file.Path;
 
 /**
  * Single Vehicle Pick-up and Delivery Problem with Time Window (PDPTW) with Ddo.
@@ -76,7 +77,9 @@ public final class PDPTWAstarMain {
      * @throws IOException if an error occurs while reading or generating the instance
      */
     public static void main(final String[] args) throws IOException {
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(20, 3, 5, new Random(2),true);
+        final String file = Path.of("data", "PDPTW", "instance_10_0").toString();
+        final PDPTWProblem problem = new PDPTWProblem(file);
+        System.out.println(problem.optimalValue());
         Model<PDPTWState> model = new Model<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -98,6 +101,11 @@ public final class PDPTWAstarMain {
                 SolutionPrinter.printSolution(s, sol));
 
         System.out.println(bestSolution.statistics());
-        System.out.println(new PDPTWSolution(problem, bestSolution, -1));
+        System.out.println(problem.optimalValue());
+        try {
+            System.out.println(problem.evaluate(bestSolution.solution()));
+        } catch (InvalidSolutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
