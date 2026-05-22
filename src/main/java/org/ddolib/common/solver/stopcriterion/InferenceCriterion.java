@@ -6,6 +6,7 @@ import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -48,6 +49,12 @@ public class InferenceCriterion implements StopCriterion {
         objective.add(stats.incumbent());
     }
 
+    public void addValue(long t, double value) {
+        time.add(t);
+        objective.add(value);
+    }
+
+
     /**
      * Displays a chart showing the evolution of the objective value over time.
      * Uses a step-style line chart to represent the improvements.
@@ -67,6 +74,13 @@ public class InferenceCriterion implements StopCriterion {
 
         XYSeries series = chart.getSeriesMap().get("Evolution Trace");
         series.setXYSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Step);
+
+        Color c = Color.decode("#ff4818");
+
+        series.setLineColor(c);
+
+        chart.getStyler().setLegendVisible(false);
+        chart.getStyler().setChartBackgroundColor(Color.WHITE);
 
         chart.getStyler().setMarkerSize(8);
 

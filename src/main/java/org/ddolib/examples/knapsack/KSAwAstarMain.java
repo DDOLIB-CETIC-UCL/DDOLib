@@ -7,6 +7,7 @@ import org.ddolib.common.solver.stopcriterion.InferenceCriterion;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
+import org.ddolib.util.PrettyPrint;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -41,6 +42,11 @@ public class KSAwAstarMain {
                 "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = new KSProblem(instance);
 
+        long t0 = System.currentTimeMillis();
+        final double ub = KSAlgo.greedyKS(problem);
+        final long greedyDuration = System.currentTimeMillis() - t0;
+
+
         final AwAstarModel<Integer> model = new AwAstarModel<>() {
             @Override
             public Problem<Integer> problem() {
@@ -61,20 +67,28 @@ public class KSAwAstarMain {
             public double weight() {
                 return 15;
             }
+
+            @Override
+            public double upperBound() {
+                return 0;
+            }
         };
 
-        InferenceCriterion stop = new InferenceCriterion();
-
+        InferenceCriterion visu = new InferenceCriterion();
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
-                    stop.addStat(s);
+                    visu.addStat(s);
                 }
         );
 
+        visu.addStat(bestSolution.statistics());
+
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        stop.showChart();
+        System.out.printf("Greedy Upper Bound: %f%n", model.upperBound());
+        System.out.printf("Total duration: %s%n", PrettyPrint.formatMs(greedyDuration + bestSolution.statistics().runtime()));
+        visu.showChart();
     }
 }

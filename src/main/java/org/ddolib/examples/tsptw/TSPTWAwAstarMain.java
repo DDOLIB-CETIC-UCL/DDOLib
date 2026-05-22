@@ -96,12 +96,13 @@ public class TSPTWAwAstarMain {
         var stop = maxIterSinceLastImprovement(200).and(minValidChildrenPercent(11));
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                stop,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                     visu.addStat(s);
                 }
         );
+
+        visu.addStat(bestSolution.statistics());
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
