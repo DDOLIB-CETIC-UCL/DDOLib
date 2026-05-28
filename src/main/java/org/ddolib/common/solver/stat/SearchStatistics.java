@@ -51,9 +51,9 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      */
     protected double _prevIncumbent = Double.POSITIVE_INFINITY;
     /**
-     * Current optimality gap
+     * Best optimality gap reached so far
      */
-    protected double _gap = 100.0;
+    protected double _gap = Double.POSITIVE_INFINITY;
     /**
      * Maximum size reached by the search frontier
      */
@@ -62,6 +62,10 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * Relative improvement of the incumbent value
      */
     protected double _relativeImprovement = 1.0;
+    /**
+     * Iteration during which the last gap improvement was found
+     */
+    protected int _lastIterationOfGapImprovement = 0;
 
 
     /**
@@ -131,6 +135,15 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
     }
 
     /**
+     * Returns the iteration number during which the last gap improvement was found.
+     *
+     * @return the last iteration of gap improvement
+     */
+    public int lastIterationOfGapImprovement() {
+        return _lastIterationOfGapImprovement;
+    }
+
+    /**
      * Returns the current optimality gap.
      *
      * @return the gap (percentage)
@@ -197,6 +210,7 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
         clone._status = this._status;
         clone._nbIterations = this._nbIterations;
         clone._lastIterationOfImprovement = this._lastIterationOfImprovement;
+        clone._lastIterationOfGapImprovement = this._lastIterationOfGapImprovement;
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
         clone._frontierMaxSize = this._frontierMaxSize;
@@ -219,7 +233,10 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
         toReturn._currentTime = System.currentTimeMillis();
         toReturn._lastTimeOfImprovement = toReturn._currentTime;
         toReturn._lastIterationOfImprovement = this._nbIterations;
-        toReturn._gap = gap;
+        if (gap < this._gap) {
+            toReturn._lastIterationOfGapImprovement = this._nbIterations;
+            toReturn._gap = gap;
+        }
         if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {
             toReturn._relativeImprovement = 1.0;
         } else {
@@ -283,7 +300,10 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      */
     public T updateGap(double gap) {
         T toReturn = this.copy();
-        toReturn._gap = gap;
+        if (gap < this._gap) {
+            toReturn._lastIterationOfGapImprovement = this._nbIterations;
+            toReturn._gap = gap;
+        }
         return toReturn;
     }
 

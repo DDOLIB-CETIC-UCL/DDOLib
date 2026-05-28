@@ -69,5 +69,38 @@ public interface StopCriterion extends Predicate<SearchStatistics<?>> {
         return stats -> stats.relativeImprovement() <= threshold;
     }
 
+    /**
+     * Creates a stop criterion that terminates the search when the optimality gap
+     * is less than or equal to a specified threshold.
+     *
+     * @param gapPercent the maximum allowed optimality gap in percent
+     * @return a StopCriterion for minimum optimality gap
+     */
+    static StopCriterion minGap(double gapPercent) {
+        return stats -> stats.gap() <= gapPercent;
+    }
+
+    /**
+     * Creates a stop criterion that terminates the search when the frontier size
+     * exceeds a specified limit.
+     *
+     * @param maxNodes the maximum allowed size of the frontier
+     * @return a StopCriterion for maximum frontier size
+     */
+    static StopCriterion maxFrontierSize(int maxNodes) {
+        return stats -> stats.frontierMaxSize() >= maxNodes;
+    }
+
+    /**
+     * Creates a stop criterion that terminates the search when the number of iterations
+     * without any gap improvement exceeds a specified limit.
+     *
+     * @param maxIter the maximum allowed number of iterations since the last gap improvement
+     * @return a StopCriterion based on iterations since last gap improvement
+     */
+    static StopCriterion maxIterWithoutGapImprovement(int maxIter) {
+        return stats -> (stats.nbIterations() - stats.lastIterationOfGapImprovement()) >= maxIter;
+    }
+
 
 }
