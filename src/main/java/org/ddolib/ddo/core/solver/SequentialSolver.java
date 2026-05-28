@@ -188,12 +188,17 @@ public final class SequentialSolver<T> implements Solver {
             verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
-            statistics = statistics.incrementNbIter().updateFrontierMaxSize(frontier.size());
+            statistics = statistics.incrementNbIter()
+                    .updateFrontierMaxSize(frontier.size())
+                    .updateLowerBound(frontier.bestInFrontier());
+
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             double nodeLB = sub.getLowerBound();
 
-            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
+            statistics = statistics.updateTime(System.currentTimeMillis())
+                    .updateGap(gap())
+                    .updateMaxDepth(sub.getDepth());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -215,6 +220,8 @@ public final class SequentialSolver<T> implements Solver {
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
+            statistics = statistics.addNodes(restrictedMdd.nbNodes());
+
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
@@ -240,6 +247,8 @@ public final class SequentialSolver<T> implements Solver {
 
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
+            statistics = statistics.addNodes(relaxedMdd.nbNodes());
+
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);

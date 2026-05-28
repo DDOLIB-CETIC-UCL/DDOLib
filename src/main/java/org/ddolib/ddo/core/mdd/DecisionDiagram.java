@@ -111,5 +111,12 @@ public interface DecisionDiagram<T> {
      */
     String exportAsDot();
 
+    /**
+     * Returns the total number of nodes created during the compilation of this decision diagram.
+     *
+     * @return the number of nodes
+     */
+    int nbNodes();
+
     double minLowerBound();
 }

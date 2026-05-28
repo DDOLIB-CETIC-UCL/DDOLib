@@ -132,6 +132,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private double lowerBound;
 
+    /**
+     * Total number of nodes created in this diagram.
+     */
+    private int nodesCount = 0;
+
 
     /**
      * Creates a new linked decision diagram.
@@ -141,7 +146,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     public LinkedDecisionDiagram(CompilationConfig<T> config) {
         final SubProblem<T> residual = config.residual;
-        final Node root = new Node(residual.getValue());
+        final Node root = createNode(residual.getValue());
         this.pathToRoot = residual.getPath();
         this.nextLayer.put(residual.getState(), root);
         this.debugLevel = config.debugLevel;
@@ -158,6 +163,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             pruned = new ArrayList<>();
         }
 
+    }
+
+    /**
+     * Helper method to create a new node and increment the counter.
+     * @param value the initial value of the node
+     * @return the newly created node
+     */
+    private Node createNode(double value) {
+        nodesCount++;
+        return new Node(value);
     }
 
     /**
@@ -364,6 +379,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
         dotStr.append("}");
         return dotStr.toString();
+    }
+
+    @Override
+    public int nbNodes() {
+        return nodesCount;
     }
 
     /**
@@ -659,7 +679,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             }
 
             if (mergedNode == null) {
-                Node newNode = new Node(Double.POSITIVE_INFINITY);
+                Node newNode = createNode(Double.POSITIVE_INFINITY);
                 newNode.type = NodeType.RELAXED;
                 mergedNode = new NodeSubProblem<>(merged, Double.POSITIVE_INFINITY, newNode);
                 currentLayer.add(mergedNode);
@@ -715,7 +735,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         // when the origin is relaxed, the destination must be relaxed
         Node n = nextLayer.get(state);
         if (n == null) {
-            n = new Node(value);
+            n = createNode(value);
             if (node.node.type == NodeType.RELAXED) {
                 n.type = NodeType.RELAXED;
             }
