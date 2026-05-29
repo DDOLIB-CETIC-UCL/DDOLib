@@ -16,6 +16,13 @@ import static java.lang.Math.abs;
  * incumbent value, and optimality gap. It is designed to be immutable-like,
  * where update methods return a new instance with the updated value.
  * </p>
+ * <p>
+ * It uses the Curiously Recurring Template Pattern (CRTP) via the type parameter {@code T}
+ * to ensure that update methods return the specific subclass type, allowing for
+ * fluent API usage without explicit casting.
+ * </p>
+ *
+ * @param <T> the specific type of search statistics, following the CRTP
  */
 public abstract class SearchStatistics<T extends SearchStatistics<T>> {
     /**
