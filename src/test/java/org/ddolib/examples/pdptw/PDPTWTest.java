@@ -8,7 +8,8 @@ import org.junit.jupiter.api.TestFactory;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class PDPTWTests {
+public class PDPTWTest {
+    //TODO: use instances with known solution
     @DisplayName("PDPTW")
     @TestFactory
     public Stream<DynamicTest> testPDPTW() {

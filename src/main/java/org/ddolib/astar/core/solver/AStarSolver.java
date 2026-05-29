@@ -179,7 +179,7 @@ public final class AStarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);

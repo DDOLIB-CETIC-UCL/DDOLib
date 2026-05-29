@@ -154,6 +154,14 @@ public final class AwAstarSolver<T> implements Solver {
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
                 root.getValue() + weight * root.getLowerBound());
 
+        if (root.getDepth() == problem.nbVars()) { //The root is the solution
+            bestSol = Optional.of(root.getPath());
+            bestUB = root.getValue();
+            statistics = statistics.updateIncumbent(bestUB, gap())
+                    .updateStatus(SearchStatus.OPTIMAL);
+            return new Solution(bestSolution(), statistics);
+        }
+
         while (!open.isEmpty()) {
             // -- debug, stat, verbosity, stopping  ---
 
@@ -197,7 +205,7 @@ public final class AwAstarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
         return new Solution(bestSolution(), statistics);
