@@ -3,7 +3,6 @@ package org.ddolib.examples.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.stopcriterion.InferenceCriterion;
 import org.ddolib.modeling.AwAstarModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
@@ -73,22 +72,17 @@ public class KSAwAstarMain {
                 return 0;
             }
         };
-
-        InferenceCriterion visu = new InferenceCriterion();
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
-                    visu.addStat(s);
                 }
         );
 
-        visu.addStat(bestSolution.statistics());
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
         System.out.printf("Greedy Upper Bound: %f%n", model.upperBound());
         System.out.printf("Total duration: %s%n", PrettyPrint.formatMs(greedyDuration + bestSolution.statistics().runtime()));
-        visu.showChart();
     }
 }
