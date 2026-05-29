@@ -302,8 +302,8 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
-            return 100.0;
+        if (frontier.isEmpty() || Double.isInfinite(bestUB)) {
+            return Double.POSITIVE_INFINITY;
         } else {
             double globalLB = frontier.bestInFrontier();
             return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);

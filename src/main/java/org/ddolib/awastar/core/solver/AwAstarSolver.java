@@ -214,7 +214,7 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
+        if (Double.isInfinite(bestUB)) return Double.POSITIVE_INFINITY;
 
         if (open.isEmpty()) return 0.0;
 

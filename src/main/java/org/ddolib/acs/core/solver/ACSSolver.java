@@ -3,7 +3,7 @@ package org.ddolib.acs.core.solver;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
-import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
@@ -189,7 +189,7 @@ public final class ACSSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics<?>> limit,
                              BiConsumer<int[], SearchStatistics<?>> onSolution) {
-        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
@@ -300,7 +300,7 @@ public final class ACSSolver<T> implements Solver {
      * @return gap as a percentage
      */
     private double gap() {
-        if (bestUB == Double.POSITIVE_INFINITY) return 100.0;
+        if (Double.isInfinite(bestUB)) return Double.POSITIVE_INFINITY;
 
         double globalLB = open.stream()
                 .filter(pq -> !pq.isEmpty())
