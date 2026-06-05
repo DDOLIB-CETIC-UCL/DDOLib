@@ -147,7 +147,7 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit, BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
@@ -231,7 +231,7 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     private void addChildren(SubProblem<T> subProblem,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getDepth();
 

@@ -61,7 +61,7 @@ public interface DdoStopCriterion extends StopCriterion {
      * @throws IllegalArgumentException if the provided statistics are not an instance of {@link DdoStats}
      */
     @Override
-    default boolean test(SearchStatistics<?> stats) {
+    default boolean test(SearchStatistics stats) {
         if (stats instanceof DdoStats ddoStats) {
             return testDdoStats(ddoStats);
         }

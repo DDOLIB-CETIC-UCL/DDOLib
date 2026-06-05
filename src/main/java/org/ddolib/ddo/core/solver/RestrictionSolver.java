@@ -118,8 +118,8 @@ public final class RestrictionSolver<T> {
         this.model = model;
     }
 
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();

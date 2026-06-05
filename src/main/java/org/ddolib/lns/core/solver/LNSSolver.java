@@ -73,8 +73,8 @@ public final class LNSSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;

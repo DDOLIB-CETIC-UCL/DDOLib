@@ -126,8 +126,8 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
@@ -237,7 +237,7 @@ public final class AStarSolver<T> implements Solver {
 
 
     // return if a feasible solution was found by expanding children, false otherwise
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);

@@ -65,7 +65,7 @@ class DdoStopCriterionTest {
         assertThrows(IllegalArgumentException.class, () -> criterion.test(new DummyStats(0, 0)));
     }
 
-    private static class DummyStats extends SearchStatistics<DummyStats> {
+    private static class DummyStats extends SearchStatistics {
         public DummyStats(long startTime, double initValue) { super(startTime, initValue); }
         @Override protected DummyStats createSpecificInstance() { return new DummyStats(0, 0); }
     }

@@ -177,8 +177,8 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
 
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.push(root());

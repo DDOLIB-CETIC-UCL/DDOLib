@@ -107,8 +107,8 @@ public final class ExactSolver<T> implements Solver {
      * @return statistics about the search process, including the best value found
      */
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
 
         SubProblem<T> root = new SubProblem<>(

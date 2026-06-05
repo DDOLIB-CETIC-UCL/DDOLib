@@ -3,7 +3,7 @@ package org.ddolib.common.solver.stat;
 /**
  * Class tracking statistics specific to Decision Diagram Optimization (DDO) solver.
  */
-public class DdoStats extends SearchStatistics<DdoStats> {
+public class DdoStats extends SearchStatistics {
 
     /**
      * Total number of nodes created in all compiled MDDs.
@@ -53,12 +53,68 @@ public class DdoStats extends SearchStatistics<DdoStats> {
      */
     @Override
     public DdoStats copy() {
-        DdoStats clone = super.copy();
+        DdoStats clone = (DdoStats) super.copy();
         clone._totalNodes = this._totalNodes;
         clone._maxExploredDepth = this._maxExploredDepth;
         clone._bestLowerBound = this._bestLowerBound;
         clone._lastIterationOfLowerBoundImprovement = this._lastIterationOfLowerBoundImprovement;
         return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateIncumbent(double incumbent, double gap) {
+        return (DdoStats) super.updateIncumbent(incumbent, gap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateStatus(SearchStatus status) {
+        return (DdoStats) super.updateStatus(status);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats incrementNbIter() {
+        return (DdoStats) super.incrementNbIter();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateFrontierMaxSize(int frontierSize) {
+        return (DdoStats) super.updateFrontierMaxSize(frontierSize);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats incrementFrontierSize() {
+        return (DdoStats) super.incrementFrontierSize();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateGap(double gap) {
+        return (DdoStats) super.updateGap(gap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateTime(long time) {
+        return (DdoStats) super.updateTime(time);
     }
 
     /**

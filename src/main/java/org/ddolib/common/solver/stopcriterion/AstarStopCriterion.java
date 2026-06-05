@@ -38,7 +38,7 @@ public interface AstarStopCriterion extends StopCriterion {
      * @throws IllegalArgumentException if the provided statistics are not an instance of {@link AstarStats}
      */
     @Override
-    default boolean test(SearchStatistics<?> stats) {
+    default boolean test(SearchStatistics stats) {
         if (stats instanceof AstarStats aStarStats) {
             return testAstarStats(aStarStats);
         }

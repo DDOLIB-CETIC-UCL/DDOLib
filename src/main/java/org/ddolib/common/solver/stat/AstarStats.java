@@ -3,7 +3,7 @@ package org.ddolib.common.solver.stat;
 /**
  * Class tracking statistics specific to A* variants
  */
-public class AstarStats extends SearchStatistics<AstarStats> {
+public class AstarStats extends SearchStatistics {
 
     /**
      * The Exponential Moving Average (EMA) of the ratio of children added to the priority queue (open)
@@ -37,9 +37,65 @@ public class AstarStats extends SearchStatistics<AstarStats> {
      */
     @Override
     public AstarStats copy() {
-        AstarStats clone = super.copy();
+        AstarStats clone = (AstarStats) super.copy();
         clone._validChildrenRatio = this._validChildrenRatio;
         return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateIncumbent(double incumbent, double gap) {
+        return (AstarStats) super.updateIncumbent(incumbent, gap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateStatus(SearchStatus status) {
+        return (AstarStats) super.updateStatus(status);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats incrementNbIter() {
+        return (AstarStats) super.incrementNbIter();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateFrontierMaxSize(int frontierSize) {
+        return (AstarStats) super.updateFrontierMaxSize(frontierSize);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats incrementFrontierSize() {
+        return (AstarStats) super.incrementFrontierSize();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateGap(double gap) {
+        return (AstarStats) super.updateGap(gap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateTime(long time) {
+        return (AstarStats) super.updateTime(time);
     }
 
     /**

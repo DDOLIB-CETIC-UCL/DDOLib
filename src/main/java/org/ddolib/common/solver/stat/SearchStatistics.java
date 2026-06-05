@@ -17,14 +17,11 @@ import static java.lang.Math.abs;
  * where update methods return a new instance with the updated value.
  * </p>
  * <p>
- * It uses the Curiously Recurring Template Pattern (CRTP) via the type parameter {@code T}
- * to ensure that update methods return the specific subclass type, allowing for
- * fluent API usage without explicit casting.
+ * It represents the search statistics of a solver. Subclasses override the update
+ * methods to return their specific type via covariant return types.
  * </p>
- *
- * @param <T> the specific type of search statistics, following the CRTP
  */
-public abstract class SearchStatistics<T extends SearchStatistics<T>> {
+public abstract class SearchStatistics {
     /**
      * Start time of the search (in milliseconds)
      */
@@ -94,7 +91,7 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      *
      * @return a new instance of the specific subclass
      */
-    protected abstract T createSpecificInstance();
+    protected abstract SearchStatistics createSpecificInstance();
 
     /**
      * Returns the time at which the last improvement was found.
@@ -209,8 +206,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      *
      * @return a copy of the current statistics
      */
-    public T copy() {
-        T clone = createSpecificInstance();
+    public SearchStatistics copy() {
+        SearchStatistics clone = createSpecificInstance();
 
         clone._currentTime = this._currentTime;
         clone._lastTimeOfImprovement = this._lastTimeOfImprovement;
@@ -233,8 +230,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * @param gap       the new optimality gap
      * @return a new instance with updated incumbent and gap
      */
-    public T updateIncumbent(double incumbent, double gap) {
-        T toReturn = this.copy();
+    public SearchStatistics updateIncumbent(double incumbent, double gap) {
+        SearchStatistics toReturn = this.copy();
         toReturn._incumbent = incumbent;
         toReturn._prevIncumbent = this._incumbent;
         toReturn._currentTime = System.currentTimeMillis();
@@ -259,8 +256,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * @param status the new {@link SearchStatus}
      * @return a new instance with the updated status
      */
-    public T updateStatus(SearchStatus status) {
-        T toReturn = this.copy();
+    public SearchStatistics updateStatus(SearchStatus status) {
+        SearchStatistics toReturn = this.copy();
         toReturn._status = status;
         return toReturn;
     }
@@ -270,8 +267,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      *
      * @return a new instance with incremented iterations
      */
-    public T incrementNbIter() {
-        T toReturn = this.copy();
+    public SearchStatistics incrementNbIter() {
+        SearchStatistics toReturn = this.copy();
         toReturn._nbIterations++;
         return toReturn;
     }
@@ -282,8 +279,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * @param frontierSize the current frontier size to potentially update the maximum
      * @return a new instance with the updated maximum frontier size
      */
-    public T updateFrontierMaxSize(int frontierSize) {
-        T toReturn = this.copy();
+    public SearchStatistics updateFrontierMaxSize(int frontierSize) {
+        SearchStatistics toReturn = this.copy();
         toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);
         return toReturn;
     }
@@ -293,8 +290,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      *
      * @return a new instance with incremented maximum frontier size
      */
-    public T incrementFrontierSize() {
-        T toReturn = this.copy();
+    public SearchStatistics incrementFrontierSize() {
+        SearchStatistics toReturn = this.copy();
         toReturn._frontierMaxSize++;
         return toReturn;
     }
@@ -305,8 +302,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * @param gap the new gap value
      * @return a new instance with the updated gap
      */
-    public T updateGap(double gap) {
-        T toReturn = this.copy();
+    public SearchStatistics updateGap(double gap) {
+        SearchStatistics toReturn = this.copy();
         if (gap < this._gap) {
             toReturn._lastIterationOfGapImprovement = this._nbIterations;
             toReturn._gap = gap;
@@ -320,8 +317,8 @@ public abstract class SearchStatistics<T extends SearchStatistics<T>> {
      * @param time the current time (in milliseconds)
      * @return a new instance with the updated time
      */
-    public T updateTime(long time) {
-        T toReturn = this.copy();
+    public SearchStatistics updateTime(long time) {
+        SearchStatistics toReturn = this.copy();
         toReturn._currentTime = time;
         return toReturn;
     }

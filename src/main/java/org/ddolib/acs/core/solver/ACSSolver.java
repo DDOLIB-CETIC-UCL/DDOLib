@@ -187,8 +187,8 @@ public final class ACSSolver<T> implements Solver {
      * @return final {@link SearchStatistics} of the search
      */
     @Override
-    public Solution minimize(Predicate<SearchStatistics<?>> limit,
-                             BiConsumer<int[], SearchStatistics<?>> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit,
+                             BiConsumer<int[], SearchStatistics> onSolution) {
         AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
