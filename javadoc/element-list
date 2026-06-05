@@ -8,6 +8,8 @@ org.ddolib.awastar.core.solver
 org.ddolib.common
 org.ddolib.common.dominance
 org.ddolib.common.solver
+org.ddolib.common.solver.stat
+org.ddolib.common.solver.stopcriterion
 org.ddolib.ddo
 org.ddolib.ddo.core
 org.ddolib.ddo.core.cache
