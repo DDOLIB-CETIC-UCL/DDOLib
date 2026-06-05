@@ -1,7 +1,7 @@
 package org.ddolib.examples.pigmentscheduling;
 
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;

@@ -1,5 +1,6 @@
 package org.ddolib.common.solver;
 
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.Decision;
 
 import java.util.Optional;

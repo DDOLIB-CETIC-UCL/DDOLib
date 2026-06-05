@@ -1,9 +1,10 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
@@ -119,7 +120,7 @@ public final class RestrictionSolver<T> {
 
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());

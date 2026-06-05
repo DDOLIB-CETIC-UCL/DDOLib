@@ -2,9 +2,9 @@ package org.ddolib.acs.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.examples.boundedknapsack.BKSDominance;
 import org.ddolib.examples.boundedknapsack.BKSFastLowerBound;
 import org.ddolib.examples.boundedknapsack.BKSProblem;

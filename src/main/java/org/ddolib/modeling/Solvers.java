@@ -3,8 +3,8 @@ package org.ddolib.modeling;
 import org.ddolib.acs.core.solver.ACSSolver;
 import org.ddolib.astar.core.solver.AStarSolver;
 import org.ddolib.awastar.core.solver.AwAstarSolver;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.solver.ExactSolver;
 import org.ddolib.ddo.core.solver.RelaxationSolver;
 import org.ddolib.ddo.core.solver.RestrictionSolver;
@@ -337,23 +337,25 @@ public class Solvers {
                                              BiConsumer<int[], SearchStatistics> onSolution) {
         return new ExactSolver<>(model).minimize(s -> false, onSolution);
     }
+
     /**
      * Runs a Large Neighborhood Search (LNS) on the specified model with a given
      * termination condition and a callback for each solution found.
      *
-     * @param <T>       the type of state used in the problem
-     * @param model     the {@link LnsModel} describing the problem and search heuristics
-     * @param limit     a {@link Predicate} on {@link SearchStatistics} defining when to stop the search.
-     *                  The search stops when {@code limit.test(stats)} returns {@code true}.
+     * @param <T>        the type of state used in the problem
+     * @param model      the {@link LnsModel} describing the problem and search heuristics
+     * @param limit      a {@link Predicate} on {@link SearchStatistics} defining when to stop the search.
+     *                   The search stops when {@code limit.test(stat)} returns {@code true}.
      * @param onSolution a {@link BiConsumer} called each time a new solution is found.
-     *                  The first argument is the solution (array of variable assignments),
-     *                  and the second argument is the current search statistics.
+     *                   The first argument is the solution (array of variable assignments),
+     *                   and the second argument is the current search statistics.
      * @return the best {@link Solution} found during the search
      */
 
     public static final <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new LNSSolver<>(model).minimize(limit, onSolution);
     }
+
     /**
      * Runs a Large Neighborhood Search (LNS) on the specified model without any
      * termination condition and without processing intermediate solutions.
@@ -361,8 +363,8 @@ public class Solvers {
      * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
      * with {@code limit} always false and an empty callback.
      *
-     * @param <T>       the type of state used in the problem
-     * @param model     the {@link LnsModel} describing the problem and search heuristics
+     * @param <T>        the type of state used in the problem
+     * @param model      the {@link LnsModel} describing the problem and search heuristics
      * @param onSolution a {@link BiConsumer} called for each solution found (can be ignored)
      * @return the best {@link Solution} found during the search
      */
@@ -371,6 +373,7 @@ public class Solvers {
         return minimizeLns(model, stats -> false, (sol, s) -> {
         });
     }
+
     /**
      * Runs a Large Neighborhood Search (LNS) on the specified model with a
      * termination condition but without processing intermediate solutions.
@@ -378,13 +381,13 @@ public class Solvers {
      * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
      * with the given {@code limit} and an empty callback.
      *
-     * @param <T>       the type of state used in the problem
-     * @param model     the {@link LnsModel} describing the problem and search heuristics
-     * @param limit     a {@link Predicate} on {@link SearchStatistics} defining when to stop the search
+     * @param <T>   the type of state used in the problem
+     * @param model the {@link LnsModel} describing the problem and search heuristics
+     * @param limit a {@link Predicate} on {@link SearchStatistics} defining when to stop the search
      * @return the best {@link Solution} found during the search
      */
 
-    public static<T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit) {
         return minimizeLns(model, limit, (sol, s) -> {
         });
     }

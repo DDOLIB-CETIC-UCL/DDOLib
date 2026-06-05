@@ -69,7 +69,7 @@ public class TSPTWDdoMain {
      * @throws IOException if an I/O error occurs while reading the instance file or printing the solution
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg031a.tw").toString() : args[0];
         final TSPTWProblem problem = new TSPTWProblem(instance);
         DdoModel<TSPTWState> model = new DdoModel<>() {
             @Override
@@ -99,7 +99,7 @@ public class TSPTWDdoMain {
 
             @Override
             public WidthHeuristic<TSPTWState> widthHeuristic() {
-                return new FixedWidth<>(10);
+                return new FixedWidth<>(2);
             }
 
             @Override

@@ -86,7 +86,7 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(50);
+                return new FixedWidth<>(2);
             }
 
             @Override
@@ -100,7 +100,7 @@ public class KSDdoMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, s -> s.runtime() < 100, (sol, s) -> {
+        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
             SolutionPrinter.printSolution(s, sol);
         });
 

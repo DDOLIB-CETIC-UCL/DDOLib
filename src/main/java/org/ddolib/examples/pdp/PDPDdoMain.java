@@ -1,7 +1,7 @@
 package org.ddolib.examples.pdp;
 
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;

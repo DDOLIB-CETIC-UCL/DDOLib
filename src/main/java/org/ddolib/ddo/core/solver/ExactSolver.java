@@ -1,9 +1,10 @@
 package org.ddolib.ddo.core.solver;
 
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.compilation.CompilationConfig;
@@ -108,7 +109,7 @@ public final class ExactSolver<T> implements Solver {
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
 
         SubProblem<T> root = new SubProblem<>(
                 problem.initialState(),
@@ -141,7 +142,6 @@ public final class ExactSolver<T> implements Solver {
             exportDot(mdd.exportAsDot(),
                     Paths.get("output", problemName + "_exact.dot").toString());
         }
-
 
         statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();
 

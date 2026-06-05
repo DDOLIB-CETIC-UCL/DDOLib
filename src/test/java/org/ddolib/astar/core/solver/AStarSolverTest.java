@@ -2,9 +2,9 @@ package org.ddolib.astar.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.examples.gruler.GRProblem;
 import org.ddolib.examples.gruler.GRState;
 import org.ddolib.examples.knapsack.KSDominance;

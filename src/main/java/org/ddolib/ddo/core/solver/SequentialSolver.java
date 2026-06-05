@@ -1,10 +1,11 @@
 package org.ddolib.ddo.core.solver;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
-import org.ddolib.common.solver.SearchStatus;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.SubProblem;
 import org.ddolib.ddo.core.cache.SimpleCache;
@@ -179,7 +180,7 @@ public final class SequentialSolver<T> implements Solver {
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
 
-        SearchStatistics statistics = new SearchStatistics(System.currentTimeMillis(), bestUB);
+        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.push(root());
         cache.ifPresent(c -> c.initialize(problem));
 
@@ -187,12 +188,17 @@ public final class SequentialSolver<T> implements Solver {
             verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,
                     frontier.bestInFrontier(), gap());
 
-            statistics = statistics.incrementNbIter().updateFrontierMaxSize(frontier.size());
+            statistics = statistics.incrementNbIter()
+                    .updateFrontierMaxSize(frontier.size())
+                    .updateLowerBound(frontier.bestInFrontier());
+
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             double nodeLB = sub.getLowerBound();
 
-            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
+            statistics = statistics.updateTime(System.currentTimeMillis())
+                    .updateGap(gap())
+                    .updateMaxDepth(sub.getDepth());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -214,6 +220,8 @@ public final class SequentialSolver<T> implements Solver {
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
+            statistics = statistics.addNodes(restrictedMdd.nbNodes());
+
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
@@ -239,6 +247,8 @@ public final class SequentialSolver<T> implements Solver {
 
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
+            statistics = statistics.addNodes(relaxedMdd.nbNodes());
+
             if (compilation.compilationType == CompilationType.Relaxed && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
@@ -273,7 +283,7 @@ public final class SequentialSolver<T> implements Solver {
         statistics = statistics.updateTime(System.currentTimeMillis());
         if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
-        
+
         return new Solution(bestSolution(), statistics);
     }
 
@@ -292,8 +302,8 @@ public final class SequentialSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (frontier.isEmpty() || bestUB == Double.POSITIVE_INFINITY) {
-            return 100.0;
+        if (frontier.isEmpty() || Double.isInfinite(bestUB)) {
+            return Double.POSITIVE_INFINITY;
         } else {
             double globalLB = frontier.bestInFrontier();
             return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);

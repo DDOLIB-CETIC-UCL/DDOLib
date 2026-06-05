@@ -12,6 +12,9 @@ import org.ddolib.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static org.ddolib.common.solver.stopcriterion.AstarStopCriterion.minValidChildrenPercent;
+import static org.ddolib.common.solver.stopcriterion.StopCriterion.maxIterSinceLastImprovement;
+
 /**
  * The Traveling Salesman Problem with Time Windows (TSP with Time Windows) with Anytime Weighted
  * A* (AWA*).
@@ -86,10 +89,14 @@ public class TSPTWAwAstarMain {
             }
         };
 
+
+        var stop = maxIterSinceLastImprovement(200).and(minValidChildrenPercent(11));
         Solution bestSolution = Solvers.minimizeAwAStar(
                 model,
-                stats -> stats.runtime() > 60_000,
-                (sol, s) -> SolutionPrinter.printSolution(s, sol)
+                stop,
+                (sol, s) -> {
+                    SolutionPrinter.printSolution(s, sol);
+                }
         );
 
         System.out.println(bestSolution.statistics());

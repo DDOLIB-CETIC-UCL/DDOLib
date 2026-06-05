@@ -2,17 +2,12 @@ package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.SearchStatistics;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.cache.SimpleCache;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.ddo.core.solver.SequentialSolver;
 import org.ddolib.examples.knapsack.*;
 import org.ddolib.modeling.*;
 import org.ddolib.util.verbosity.VerbosityLevel;
@@ -25,6 +20,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Unit tests for evaluating Generalized Hyperplane Partitioning (GHP) clustering
  * on Knapsack problems (KSProblem) using Decision Diagram Optimization (DDO).
@@ -75,6 +71,7 @@ public class KSGHPTest {
             return Stream.of(pb);
         });
     }
+
     /**
      * Computes the optimal solution using cost-based clustering strategy.
      *
@@ -144,8 +141,8 @@ public class KSGHPTest {
     /**
      * Computes the optimal solution using GHP clustering strategy.
      *
-     * @param problem the knapsack problem instance
-     * @param w the maximum width of the decision diagram
+     * @param problem    the knapsack problem instance
+     * @param w          the maximum width of the decision diagram
      * @param cutSetType the type of cut set used in frontier-based DDO
      * @return the optimal objective value
      */
@@ -213,6 +210,7 @@ public class KSGHPTest {
 
         return solution.value();
     }
+
     /**
      * Parameterized test that compares the solutions obtained with GHP clustering
      * against cost-based clustering for each test problem instance.
