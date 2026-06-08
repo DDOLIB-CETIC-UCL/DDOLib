@@ -7,6 +7,8 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.DdoModel;
@@ -17,6 +19,9 @@ import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Random;
+
+import static org.ddolib.examples.pdptw.PDPTWGenerator.genInstance;
 
 /**
  * Single Vehicle Pick-up and Delivery Problem with Time Window (PDPTW) with Ddo.
@@ -93,10 +98,10 @@ public final class PDPTWDdoMain {
      */
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {
-        String instanceFile = args.length == 0 ? Paths.get("data", "PDPTW", "instance_10_0").toString() : args[0];
+        //String instanceFile = args.length == 0 ? Paths.get("data", "PDPTW", "instance_10_0").toString() : args[0];
         //final PDPTWProblem problem = PDPTWGenerator.genInstance(30, 3, 5, new Random(2),true);
-        final PDPTWProblem problem = new PDPTWProblem(instanceFile);
-        //final PDPTWProblem problem = genInstance(24, 3, 5, new Random(6));
+        //final PDPTWProblem problem = new PDPTWProblem(instanceFile);
+        final PDPTWProblem problem = genInstance(30, 3, 5, new Random(6), true);
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -106,6 +111,12 @@ public final class PDPTWDdoMain {
             @Override
             public PDPTWFastLowerBound lowerBound() {
                 return new PDPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public ReductionStrategy<PDPTWState> relaxStrategy() {
+                //return new PDPTWReductionStrategy(problem);
+                return new CostBased<>((o1, o2) -> 0);
             }
 
             @Override
