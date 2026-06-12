@@ -101,7 +101,7 @@ public final class PDPTWDdoMain {
         //String instanceFile = args.length == 0 ? Paths.get("data", "PDPTW", "instance_10_0").toString() : args[0];
         //final PDPTWProblem problem = PDPTWGenerator.genInstance(30, 3, 5, new Random(2),true);
         //final PDPTWProblem problem = new PDPTWProblem(instanceFile);
-        final PDPTWProblem problem = genInstance(30, 3, 5, new Random(6), true);
+        final PDPTWProblem problem = genInstance(30, 6, 8, new Random(1), true);
         DdoModel<PDPTWState> model = new DdoModel<>() {
             @Override
             public Problem<PDPTWState> problem() {
@@ -115,7 +115,8 @@ public final class PDPTWDdoMain {
 
             @Override
             public ReductionStrategy<PDPTWState> relaxStrategy() {
-                return new PDPTWReductionStrategy(problem);
+                return new PDPTWReductionStrategy2b(problem);
+                //return new PDPTWReductionStrategy2(problem);
                 //return new CostBased<>((o1, o2) -> 0);
             }
 

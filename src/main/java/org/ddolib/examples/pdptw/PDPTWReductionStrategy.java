@@ -43,7 +43,7 @@ public class PDPTWReductionStrategy implements ReductionStrategy<PDPTWState> {
         for (int i = nbNonMergedStates; i < maxWidth; i++) {
             NodeSubProblem<PDPTWState> subProblem =   layer.get(i);
             int currentNode = subProblem.state.current.nextSetBit(0);
-            cluster[currentNode].add(subProblem);
+            cluster[currentNode + nbNonMergedStates].add(subProblem);
         }
 
         return cluster;
@@ -73,7 +73,7 @@ public class PDPTWReductionStrategy implements ReductionStrategy<PDPTWState> {
             if (cmp == 0 && delegate != null) {
                 return delegate.compare(o1.state, o2.state);
             } else {
-                return Double.compare(o1.getValue(), o2.getValue());
+                return -Double.compare(o1.getValue(), o2.getValue());
             }
         }
     }
