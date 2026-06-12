@@ -115,7 +115,7 @@ public final class PDPTWDdoMain {
 
             @Override
             public ReductionStrategy<PDPTWState> relaxStrategy() {
-                return new PDPTWReductionStrategy2b(problem);
+                return new PDPTWReductionStrategy2();
                 //return new PDPTWReductionStrategy2(problem);
                 //return new CostBased<>((o1, o2) -> 0);
             }
