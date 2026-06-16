@@ -1,0 +1,156 @@
+package org.ddolib.ddo.core.mdd;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.misp.MispProblem;
+import org.ddolib.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.BitSet;
+import java.util.Iterator;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class DebugModeTest {
+
+    @Test
+    public void debugModeDetectFlbError() throws IOException {
+
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final MispProblem problem = new MispProblem(instance);
+        ExactModel<BitSet> model = new ExactModel<>() {
+            @Override
+            public Problem<BitSet> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<BitSet> lowerBound() {
+                return (state, variables) -> 1000;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+        };
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeExact(model);
+        });
+        assertTrue(exception.getMessage().contains("lower bound"));
+
+    }
+
+    @Test
+    public void debugModeDetectRelaxationError() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final MispProblem problem = new MispProblem(instance);
+        DdoModel<BitSet> model = new DdoModel<>() {
+
+            @Override
+            public WidthHeuristic<BitSet> widthHeuristic() {
+                return new FixedWidth<>(2);
+            }
+
+            @Override
+            public Relaxation<BitSet> relaxation() {
+                return new Relaxation<>() {
+                    @Override
+                    public BitSet mergeStates(Iterator<BitSet> states) {
+                        var merged = new BitSet(problem.nbVars());
+                        while (states.hasNext()) {
+                            final BitSet state = states.next();
+                            // the merged state is the union of all the state
+                            merged.and(state);
+                        }
+                        return merged;
+                    }
+
+                    @Override
+                    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
+                        return cost;
+                    }
+
+
+                };
+            }
+
+            @Override
+            public Problem<BitSet> problem() {
+                return problem;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+        };
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeDdo(model);
+        });
+        assertTrue(exception.getMessage().contains("Found relaxed node that lead to worst solution"));
+    }
+
+    @Test
+    public void debugModeDetectRelaxedCostError() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final MispProblem problem = new MispProblem(instance);
+        DdoModel<BitSet> model = new DdoModel<>() {
+
+            @Override
+            public WidthHeuristic<BitSet> widthHeuristic() {
+                return new FixedWidth<>(2);
+            }
+
+            @Override
+            public Relaxation<BitSet> relaxation() {
+                return new Relaxation<>() {
+                    @Override
+                    public BitSet mergeStates(Iterator<BitSet> states) {
+                        var merged = new BitSet(problem.nbVars());
+                        while (states.hasNext()) {
+                            final BitSet state = states.next();
+                            // the merged state is the union of all the state
+                            merged.or(state);
+                        }
+                        return merged;
+                    }
+
+                    @Override
+                    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
+                        return cost + 1000;
+                    }
+
+
+                };
+            }
+
+            @Override
+            public Problem<BitSet> problem() {
+                return problem;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+        };
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeDdo(model);
+        });
+        assertTrue(exception.getMessage().contains("Found relaxed node that lead to worst solution"));
+    }
+
+
+}
