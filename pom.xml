@@ -135,6 +135,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/*Main.class</exclude>
+                        <exclude>**/*Main$*.class</exclude>
                         <exclude>**/*Generator.class</exclude>
                     </excludes>
                 </configuration>
