@@ -8,7 +8,8 @@ on:
 jobs:
   run-non-regression-tests:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write  # Allow automatic commit of the badge
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,7 +21,13 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run non-regressions tests
+      - name: Run all tests with coverage
         env:
           MAVEN_OPTS: "-Xms4g -Xmx4g"
-        run: mvn clean test -P non-regression-tests
+        run: mvn clean test -P all-tests jacoco:report
+
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-summary: true
