@@ -18,12 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DebugModeTest {
 
-    @Test
-    public void debugModeDetectFlbError() throws IOException {
-
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+    private static ExactModel<BitSet> getFailingFlbModel(String instance, DebugLevel debugLvl) throws IOException {
         final MispProblem problem = new MispProblem(instance);
-        ExactModel<BitSet> model = new ExactModel<>() {
+        return new ExactModel<>() {
             @Override
             public Problem<BitSet> problem() {
                 return problem;
@@ -36,24 +33,15 @@ public class DebugModeTest {
 
             @Override
             public DebugLevel debugMode() {
-                return DebugLevel.ON;
+                return debugLvl;
             }
         };
-
-        // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeExact(model);
-        });
-        assertTrue(exception.getMessage().contains("lower bound"));
-
     }
 
-    @Test
-    public void debugModeDetectRelaxationError() throws IOException {
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+    public static DdoModel<BitSet> getFailingRelaxationModel(String instance, DebugLevel debugLvl) throws IOException {
         final MispProblem problem = new MispProblem(instance);
-        DdoModel<BitSet> model = new DdoModel<>() {
 
+        return new DdoModel<>() {
             @Override
             public WidthHeuristic<BitSet> widthHeuristic() {
                 return new FixedWidth<>(2);
@@ -89,9 +77,29 @@ public class DebugModeTest {
 
             @Override
             public DebugLevel debugMode() {
-                return DebugLevel.ON;
+                return debugLvl;
             }
         };
+    }
+
+    @Test
+    public void debugModeDetectFlbError() throws IOException {
+
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        ExactModel<BitSet> model = getFailingFlbModel(instance, DebugLevel.ON);
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeExact(model);
+        });
+        assertTrue(exception.getMessage().contains("lower bound"));
+
+    }
+
+    @Test
+    public void debugModeDetectRelaxationError() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        DdoModel<BitSet> model = getFailingRelaxationModel(instance, DebugLevel.ON);
 
         // Expecting a RuntimeException because the lower bound is invalid
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -150,6 +158,32 @@ public class DebugModeTest {
             Solvers.minimizeDdo(model);
         });
         assertTrue(exception.getMessage().contains("Found relaxed node that lead to worst solution"));
+    }
+
+    @Test
+    public void debugModeExportMDDFlbError() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        ExactModel<BitSet> model = getFailingFlbModel(instance, DebugLevel.EXTENDED);
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeExact(model);
+        });
+        assertTrue(exception.getMessage().contains("MDD saved in output/failed.dot"));
+    }
+
+    @Test
+    public void debugModeExportMddRelaxationError() throws IOException {
+        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final MispProblem problem = new MispProblem(instance);
+        DdoModel<BitSet> model = getFailingRelaxationModel(instance, DebugLevel.EXTENDED);
+
+
+        // Expecting a RuntimeException because the lower bound is invalid
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            Solvers.minimizeDdo(model);
+        });
+        assertTrue(exception.getMessage().contains("MDD saved in output/failed.dot"));
     }
 
 
