@@ -97,8 +97,16 @@ public class LCSProblem implements Problem<LCSState> {
      * @param idToChar      Mapping from ID to character.
      * @param optimal       Optional optimal solution value.
      */
-    public LCSProblem(String instance, int stringNb, int diffCharNb, int[][] stringsAsInt, int[] stringsLength, int[][][] nextCharPos,
-                      int[][][] remChar, HashMap<Character, Integer> charToId, Character[] idToChar, Optional<Double> optimal) {
+    public LCSProblem(String instance,
+                      int stringNb,
+                      int diffCharNb,
+                      int[][] stringsAsInt,
+                      int[] stringsLength,
+                      int[][][] nextCharPos,
+                      int[][][] remChar,
+                      HashMap<Character, Integer> charToId,
+                      Character[] idToChar,
+                      Optional<Double> optimal) {
         this.instance = instance;
         this.stringNb = stringNb;
         this.diffCharNb = diffCharNb;

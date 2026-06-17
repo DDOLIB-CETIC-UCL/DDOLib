@@ -1,6 +1,8 @@
 package org.ddolib.examples.smic;
 
+import java.util.Optional;
 import java.util.Random;
+
 /**
  * The {@code SMICGenrator} class is responsible for generating random instances of the
  * Single Machine with Inventory Constraint (SMIC) problem.
@@ -48,44 +50,59 @@ import java.util.Random;
  * @see java.util.Random
  */
 public class SMICGenrator {
-    /** Number of jobs to generate. */
+    /**
+     * Maximum number of random assignments before aborting.
+     */
+    private static final int MAX_ASSIGN_ATTEMPTS = 10000;
+    /**
+     * Number of jobs to generate.
+     */
     private int n;
-
-    /** Upper bound on processing times. */
+    /**
+     * Upper bound on processing times.
+     */
     private int alpha;
-
-    /** Scaling factor for release times. */
+    /**
+     * Scaling factor for release times.
+     */
     private double tau;
-
-    /** Scaling parameter for inventory capacity. */
+    /**
+     * Scaling parameter for inventory capacity.
+     */
     private int eta;
-
-    /** Random seed for reproducibility. */
+    /**
+     * Random seed for reproducibility.
+     */
     private long seed;
-
-    /** Initial inventory level. */
+    /**
+     * Initial inventory level.
+     */
     private int initInventory;
-
-    /** Maximum inventory capacity. */
+    /**
+     * Maximum inventory capacity.
+     */
     private int capaInventory;
-
-    /** Job processing times. */
+    /**
+     * Job processing times.
+     */
     private int[] processing;
-
-    /** Job release times. */
+    /**
+     * Job release times.
+     */
     private int[] release;
-
-    /** Absolute inventory changes per job. */
+    /**
+     * Absolute inventory changes per job.
+     */
     private int[] inventory;
-
-    /** Job types: 1 for production, 0 for consumption. */
+    /**
+     * Job types: 1 for production, 0 for consumption.
+     */
     private int[] type;
-
-    /** Job weights (currently unused in generation). */
+    /**
+     * Job weights (currently unused in generation).
+     */
     private int[] weight;
 
-    /** Maximum number of random assignments before aborting. */
-    private static final int MAX_ASSIGN_ATTEMPTS = 10000;
     /**
      * Constructs a new SMIC instance generator with the given parameters.
      *
@@ -103,6 +120,7 @@ public class SMICGenrator {
         this.seed = seed;
 
     }
+
     /**
      * Generates a random feasible {@link SMICProblem} instance based on
      * the parameters provided at construction.
@@ -157,10 +175,12 @@ public class SMICGenrator {
             boolean violates = false;
             for (int i = 0; i < n; i++) {
                 if (inJplus[i] && inventory[i] > capaInventory) {
-                    violates = true; break;
+                    violates = true;
+                    break;
                 }
                 if (!inJplus[i] && inventory[i] < -capaInventory) {
-                    violates = true; break;
+                    violates = true;
+                    break;
                 }
             }
             if (violates) {
@@ -203,6 +223,6 @@ public class SMICGenrator {
                     " attempts for seed " + seed + ". Try re-running with different random seed.");
         }
 
-        return new SMICProblem("smic_"+n+"_"+initInventory+"_"+capaInventory,n, initInventory, capaInventory, type, processing, weight, release, inventory);
+        return new SMICProblem("smic_" + n + "_" + initInventory + "_" + capaInventory, n, initInventory, capaInventory, type, processing, weight, release, inventory, Optional.empty());
     }
 }

@@ -104,7 +104,14 @@ public class ALPProblem implements Problem<ALPState> {
      * @param classTransitionCost Minimum separation times between classes
      * @param optimal             Optional optimal value
      */
-    public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost, final Optional<Double> optimal) {
+    public ALPProblem(final int nbClasses,
+                      final int nbAircraft,
+                      final int nbRunways,
+                      final int[] aircraftClass,
+                      final int[] aircraftTarget,
+                      final int[] aircraftDeadline,
+                      final int[][] classTransitionCost,
+                      final Optional<Double> optimal) {
         this.nbClasses = nbClasses;
         this.nbAircraft = nbAircraft;
         this.nbRunways = nbRunways;
@@ -114,21 +121,7 @@ public class ALPProblem implements Problem<ALPState> {
         this.classTransitionCost = classTransitionCost;
         this.optimal = optimal;
     }
-
-    /**
-     * Constructs an ALP problem without specifying an optimal value.
-     *
-     * @param nbClasses           Number of aircraft classes
-     * @param nbAircraft          Total number of aircraft
-     * @param nbRunways           Number of runways
-     * @param aircraftClass       Array mapping aircraft to class
-     * @param aircraftTarget      Target landing times
-     * @param aircraftDeadline    Deadline times
-     * @param classTransitionCost Minimum separation times between classes
-     */
-    public ALPProblem(final int nbClasses, final int nbAircraft, final int nbRunways, final int[] aircraftClass, final int[] aircraftTarget, final int[] aircraftDeadline, final int[][] classTransitionCost) {
-        this(nbClasses, nbAircraft, nbRunways, aircraftClass, aircraftTarget, aircraftDeadline, classTransitionCost, Optional.empty());
-    }
+    
 
     /**
      * Constructs an ALP problem by reading from a file.

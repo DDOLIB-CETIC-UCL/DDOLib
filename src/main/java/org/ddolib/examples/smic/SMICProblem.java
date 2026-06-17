@@ -136,41 +136,7 @@ public class SMICProblem implements Problem<SMICState> {
         this.inventory = inventory;
         this.optimal = optimal;
     }
-
-    /**
-     * Constructs a {@code SMICProblem} instance without a known optimal value.
-     *
-     * @param name          the name of the instance
-     * @param nbJob         number of jobs
-     * @param initInventory initial inventory level
-     * @param capaInventory maximum inventory capacity
-     * @param type          job types (0 = consume, 1 = produce)
-     * @param processing    processing times for each job
-     * @param weight        weights associated with each job
-     * @param release       release times for each job
-     * @param inventory     inventory change (positive for production, negative for consumption)
-     */
-    public SMICProblem(String name,
-                       int nbJob,
-                       int initInventory,
-                       int capaInventory,
-                       int[] type,
-                       int[] processing,
-                       int[] weight,
-                       int[] release,
-                       int[] inventory) {
-        this.name = name;
-        this.nbJob = nbJob;
-        this.initInventory = initInventory;
-        this.capaInventory = capaInventory;
-        this.type = type;
-        this.processing = processing;
-        this.weight = weight;
-        this.release = release;
-        this.inventory = inventory;
-        this.optimal = Optional.empty();
-    }
-
+    
     /**
      * Constructs a {@code SMICProblem} instance by parsing a text file.
      * <p>
