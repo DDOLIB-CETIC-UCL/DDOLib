@@ -229,7 +229,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                 }
             }
         }
-        this.name = Optional.of("maxCoverage_" + nElem + "_" + nSet + "_" + budget);
+        this.name = Optional.of(fname);
         this.nbItems = nElem;
         this.nbSubSets = nSet;
         this.nbSubSetsToChoose = budget;
@@ -420,7 +420,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
      */
     @Override
     public String toString() {
-        return name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+        String str = name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+        return name.orElse(str);
     }
 
 
