@@ -2,12 +2,11 @@ name: test
 
 on: push
 
-permissions:
-  contents: read
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       matrix:
         maven: [ '3.8.5' ]
