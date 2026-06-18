@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.msct</a> &gt; <span class="el_source">MSCTProblem.java</span></div><h1>MSCTProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.msct;
+
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Represents an instance of the **Minimum Sum of Completion Times (MSCT)** problem.
+ * &lt;p&gt;
+ * The MSCT problem consists in scheduling a set of jobs on a single machine
+ * to minimize the total completion time (or sum of finishing times).
+ * Each job {@code j} has:
+ * &lt;ul&gt;
+ *   &lt;li&gt;a &lt;b&gt;release date&lt;/b&gt; {@code release[j]} — the earliest time the job can start,&lt;/li&gt;
+ *   &lt;li&gt;a &lt;b&gt;processing time&lt;/b&gt; {@code processing[j]} — the duration required to complete the job.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * The problem can be defined formally as:
+ * &lt;pre&gt;
+ *   minimize   ∑ C_j
+ *   subject to start_j ≥ release_j
+ *               start_j + processing_j = C_j
+ *               machine processes only one job at a time
+ * &lt;/pre&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface to be used by generic optimization
+ * solvers (A*, ACS, DDO, etc.) from the decision diagram framework.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Multiple constructors are provided to:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Load a problem instance from a text file,&lt;/li&gt;
+ *   &lt;li&gt;Manually provide release and processing times,&lt;/li&gt;
+ *   &lt;li&gt;Randomly generate a synthetic instance for testing.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ *
+ * &lt;p&gt;&lt;b&gt;Expected file format:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;The first line contains the number of jobs, optionally followed by the known optimal value.&lt;/li&gt;
+ *   &lt;li&gt;Each of the next {@code n} lines contains two integers:
+ *       the release time and processing time of each job.&lt;/li&gt;
+ *   &lt;li&gt;Example:&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;pre&gt;
+ * 5 215.0
+ * 0 3
+ * 1 2
+ * 2 1
+ * 0 4
+ * 3 2
+ * &lt;/pre&gt;
+ *
+ * @see MSCTState
+ * @see MSCTFastLowerBound
+ * @see MSCTRelax
+ * @see MSCTRanking
+ */
+public class MSCTProblem implements Problem&lt;MSCTState&gt; {
+
+    /**
+     * The release time of each job.
+     * {@code release[i]} gives the earliest time at which job {@code i} can start.
+     */
+    final int[] release;
+
+    /**
+     * The processing time of each job.
+     * {@code processing[i]} gives the duration required to complete job {@code i}.
+     */
+    final int[] processing;
+
+    /**
+     * The known optimal solution value, if available.
+     * Used for testing or benchmarking purposes.
+     */
+    final Optional&lt;Double&gt; optimal;
+
+<span class="pc" id="L87">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs an MSCT problem from explicit arrays of release and processing times,
+     * with an optional known optimal value.
+     *
+     * @param release    an array of release times for each job.
+     * @param processing an array of processing times for each job.
+     * @param optimal    an {@link Optional} containing the known optimal solution value.
+     */
+<span class="fc" id="L97">    public MSCTProblem(final int[] release, final int[] processing, Optional&lt;Double&gt; optimal) {</span>
+<span class="fc" id="L98">        this.release = release;</span>
+<span class="fc" id="L99">        this.processing = processing;</span>
+<span class="fc" id="L100">        this.optimal = optimal;</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Constructs an MSCT problem by reading data from a text file.
+     * &lt;p&gt;
+     * The file must contain the number of jobs, optionally followed by the optimal value,
+     * and then one line per job with its release and processing times.
+     * &lt;/p&gt;
+     *
+     * @param fname the path to the file containing the problem instance.
+     * @throws IOException if an error occurs while reading the file.
+     */
+<span class="fc" id="L113">    public MSCTProblem(final String fname) throws IOException {</span>
+<span class="fc" id="L114">        boolean isFirst = true;</span>
+        String line;
+<span class="fc" id="L116">        int count = 0;</span>
+<span class="fc" id="L117">        int nVar = 0;</span>
+<span class="fc" id="L118">        int[] release = new int[0];</span>
+<span class="fc" id="L119">        int[] proces = new int[0];</span>
+<span class="fc" id="L120">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+<span class="fc" id="L121">        try (final BufferedReader bf = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            while ((line = bf.readLine()) != null) {</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">                if (isFirst) {</span>
+<span class="fc" id="L124">                    isFirst = false;</span>
+<span class="fc" id="L125">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L126">                    nVar = Integer.parseInt(tokens[0]);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                    if (tokens.length == 2) {</span>
+<span class="nc" id="L128">                        optimal = Optional.of(Double.parseDouble(tokens[1]));</span>
+                    }
+<span class="fc" id="L130">                    release = new int[nVar];</span>
+<span class="fc" id="L131">                    proces = new int[nVar];</span>
+<span class="fc" id="L132">                } else {</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">                    if (count &lt; nVar) {</span>
+<span class="fc" id="L134">                        String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L135">                        release[count] = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L136">                        proces[count] = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L137">                        count++;</span>
+<span class="fc" id="L138">                    }</span>
+                }
+            }
+        }
+<span class="fc" id="L142">        this.release = release;</span>
+<span class="fc" id="L143">        this.processing = proces;</span>
+<span class="fc" id="L144">        this.optimal = optimal;</span>
+<span class="fc" id="L145">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Constructs a randomly generated MSCT problem instance for testing purposes.
+     *
+     * @param n the number of jobs to generate.
+     */
+<span class="nc" id="L153">    public MSCTProblem(final int n) {</span>
+<span class="nc" id="L154">        int[] release = new int[n];</span>
+<span class="nc" id="L155">        int[] processing = new int[n];</span>
+<span class="nc" id="L156">        Random rand = new Random(100);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L158">            release[i] = rand.nextInt(10);</span>
+<span class="nc" id="L159">            processing[i] = 1 + rand.nextInt(10);</span>
+        }
+<span class="nc" id="L161">        this.release = release;</span>
+<span class="nc" id="L162">        this.processing = processing;</span>
+<span class="nc" id="L163">        this.optimal = Optional.empty();</span>
+
+<span class="nc" id="L165">    }</span>
+
+    /**
+     * Returns the number of jobs in this instance.
+     *
+     * @return the number of variables (jobs).
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L174">        return release.length;</span>
+    }
+
+    /**
+     * Returns the initial state of the problem, where all jobs are unscheduled.
+     *
+     * @return an {@link MSCTState} representing all jobs remaining and current time = 0.
+     */
+    @Override
+    public MSCTState initialState() {
+<span class="fc" id="L184">        Set&lt;Integer&gt; jobs = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L186">            jobs.add(i);</span>
+        }
+<span class="fc" id="L188">        return new MSCTState(jobs, 0);</span>
+    }
+
+    /**
+     * Returns the initial cost value of the problem (always 0 at the start).
+     *
+     * @return 0.0
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L198">        return 0;</span>
+    }
+
+    /**
+     * Returns the domain of possible decisions at the current state.
+     * &lt;p&gt;
+     * The domain corresponds to the indices of remaining jobs that can still be scheduled.
+     * &lt;/p&gt;
+     *
+     * @param state the current state.
+     * @param var   the variable index (not used here but required by the interface).
+     * @return an iterator over the remaining job indices.
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(MSCTState state, int var) {
+<span class="fc" id="L213">        return state.remainingJobs().iterator();</span>
+    }
+
+    /**
+     * Computes the next state resulting from scheduling a given job.
+     *
+     * @param state    the current scheduling state.
+     * @param decision the decision representing the next job to schedule.
+     * @return a new {@link MSCTState} reflecting the updated remaining jobs and current time.
+     */
+    @Override
+    public MSCTState transition(MSCTState state, Decision decision) {
+<span class="fc" id="L225">        Set&lt;Integer&gt; remaining = new HashSet&lt;&gt;(state.remainingJobs());</span>
+<span class="fc" id="L226">        remaining.remove(decision.value());</span>
+<span class="fc" id="L227">        int currentTime = Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];</span>
+<span class="fc" id="L228">        return new MSCTState(remaining, currentTime);</span>
+    }
+
+    /**
+     * Returns the cost of scheduling a given job from the current state.
+     * &lt;p&gt;
+     * The cost corresponds to the completion time of the scheduled job.
+     * &lt;/p&gt;
+     *
+     * @param state    the current scheduling state.
+     * @param decision the decision representing the next job to schedule.
+     * @return the completion time of the selected job.
+     */
+    @Override
+    public double transitionCost(MSCTState state, Decision decision) {
+<span class="fc" id="L243">        return Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];</span>
+    }
+
+    /**
+     * Returns the known optimal value of this instance, if available.
+     *
+     * @return the negated optimal value wrapped in an {@link Optional}, or empty if unknown.
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L253">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L259">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L260">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L263">        int t = 0;</span>
+<span class="fc" id="L264">        int value = 0;</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">        for (int job : solution) {</span>
+<span class="fc" id="L266">            t = Math.max(t, release[job]) + processing[job];</span>
+<span class="fc" id="L267">            value += t;</span>
+        }
+
+<span class="fc" id="L270">        return value;</span>
+    }
+
+    /**
+     * Returns a string representation of this MSCT instance for debugging purposes.
+     *
+     * @return a string listing the release and processing times.
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L280">        return name.orElse(String.format(&quot;release: %s - processing: %s&quot;, Arrays.toString(release),</span>
+<span class="fc" id="L281">                Arrays.toString(processing)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

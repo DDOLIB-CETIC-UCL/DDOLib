@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VerboseMode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util.verbosity</a> &gt; <span class="el_source">VerboseMode.java</span></div><h1>VerboseMode.java</h1><pre class="source lang-java linenums">package org.ddolib.util.verbosity;
+
+import org.ddolib.ddo.core.SubProblem;
+
+import java.io.*;
+
+/**
+ * Utility class for printing detailed information about the search process
+ * based on a specified {@link VerbosityLevel}.
+ * &lt;p&gt;
+ * Depending on the verbosity level, this class can print:
+ * &lt;ul&gt;
+ *     &lt;li&gt;No output (SILENT)&lt;/li&gt;
+ *     &lt;li&gt;New best solution values (NORMAL)&lt;/li&gt;
+ *     &lt;li&gt;New best solution values, frontier statistics, and details about
+ *     each explored subproblem (LARGE)&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class VerboseMode {
+
+
+    private final VerbosityLevel verbosityLevel;
+    private long nextPrint;
+    private final long printInterval;
+
+    /**
+     * Creates a {@code VerboseMode} instance with a given verbosity level
+     * and interval for printing frontier statistics.
+     *
+     * @param verbosityLevel The level of details to print.
+     * @param printInterval  The minimum delay (in milliseconds) between
+     *                       consecutive prints of frontier statistics.
+     */
+<span class="fc" id="L34">    public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {</span>
+<span class="fc" id="L35">        this.verbosityLevel = verbosityLevel;</span>
+<span class="fc" id="L36">        this.printInterval = printInterval;</span>
+<span class="fc" id="L37">        nextPrint = System.currentTimeMillis() + printInterval;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Prints message when a new best solution is found.
+     *
+     * @param best The value of the new best solution.
+     */
+    public void newBest(double best) {
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        if (verbosityLevel != VerbosityLevel.SILENT) {</span>
+<span class="nc" id="L47">            try (Writer writer = getWriter()) {</span>
+<span class="nc" id="L48">                writer.append(String.format(&quot;new best: %g\n&quot;, best));</span>
+<span class="nc" id="L49">                writer.flush();</span>
+<span class="nc" id="L50">            } catch (IOException e) {</span>
+<span class="nc" id="L51">                throw new RuntimeException(e);</span>
+<span class="nc" id="L52">            }</span>
+        }
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Prints message describing the current explored sub problem.
+     *
+     * @param nbIter The current iteration number.
+     * @param sub    The current sub problem to explore.
+     * @param &lt;T&gt;    The type of the state.
+     */
+    public &lt;T&gt; void currentSubProblem(int nbIter, SubProblem&lt;T&gt; sub) {
+<span class="pc bpc" id="L64" title="2 of 4 branches missed.">        if (verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) {</span>
+<span class="nc" id="L65">            try (Writer writer = getWriter()) {</span>
+<span class="nc" id="L66">                writer.append(String.format(&quot;\tit: %d\n\t\t%s\n&quot;, nbIter, sub));</span>
+<span class="nc" id="L67">                writer.flush();</span>
+<span class="nc" id="L68">            } catch (IOException e) {</span>
+<span class="nc" id="L69">                throw new RuntimeException(e);</span>
+<span class="nc" id="L70">            }</span>
+
+        }
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Prints statistics about the frontier after every half second.
+     *
+     * @param nbIter         The current iteration number.
+     * @param frontierSize   The current size of the frontier.
+     * @param bestObj        The current best objective value.
+     * @param bestInFrontier The best value in the frontier
+     * @param gap            The current gap0
+     */
+    public void detailedSearchState(int nbIter, int frontierSize, double bestObj,
+                                    double bestInFrontier, double gap) {
+<span class="fc" id="L86">        long now = System.currentTimeMillis();</span>
+<span class="pc bpc" id="L87" title="4 of 6 branches missed.">        if ((verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) &amp;&amp; now &gt;= nextPrint) {</span>
+
+<span class="nc" id="L89">            try (Writer writer = getWriter()) {</span>
+<span class="nc" id="L90">                String msg = String.format(&quot;\tit: %d - frontier size: %d - best obj: %g - &quot; +</span>
+<span class="nc" id="L91">                                &quot;best in frontier: %g - gap: %g\n&quot;, nbIter, frontierSize,</span>
+<span class="nc" id="L92">                        bestObj, bestInFrontier, gap);</span>
+
+<span class="nc" id="L94">                writer.append(msg);</span>
+<span class="nc" id="L95">                writer.flush();</span>
+<span class="nc" id="L96">                nextPrint = now + printInterval;</span>
+
+<span class="nc" id="L98">            } catch (IOException e) {</span>
+<span class="nc" id="L99">                throw new RuntimeException(e);</span>
+<span class="nc" id="L100">            }</span>
+        }
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Returns a writer depending on the verbosity level.
+     *
+     * @return If the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
+     * saving logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs
+     * in the console.
+     */
+    public Writer getWriter() {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (verbosityLevel == VerbosityLevel.EXPORT) {</span>
+            try {
+<span class="nc" id="L114">                return new BufferedWriter(new FileWriter(&quot;logs.txt&quot;, true));</span>
+<span class="nc" id="L115">            } catch (IOException e) {</span>
+<span class="nc" id="L116">                throw new RuntimeException(e);</span>
+            }
+        } else {
+<span class="nc" id="L119">            return new NonClosingPrintWriter(new PrintWriter(System.out));</span>
+        }
+    }
+
+
+    /**
+     * Class encapsulating a {@link PrintWriter} ensuring that {@code System.out} will not be
+     * closed.
+     */
+    private static class NonClosingPrintWriter extends FilterWriter {
+
+        public NonClosingPrintWriter(PrintWriter out) {
+<span class="nc" id="L131">            super(out);</span>
+<span class="nc" id="L132">        }</span>
+
+        @Override
+        public void close() throws IOException {
+<span class="nc" id="L136">        }</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

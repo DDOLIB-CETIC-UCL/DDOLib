@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.tsptw</a> &gt; <span class="el_source">TSPTWProblem.java</span></div><h1>TSPTWProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.tsptw;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Class representing an instance of the Traveling Salesman Problem with Time Windows (TSPTW).
+ *
+ * &lt;p&gt;
+ * Each node has a time window during which it must be visited, and travel between nodes
+ * is defined by a distance matrix. This class implements the {@link Problem} interface
+ * for use in decision diagram solvers.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The problem instance can optionally provide the known optimal solution.
+ * &lt;/p&gt;
+ *
+ * &lt;h2&gt;Data file format&lt;/h2&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;First line: number of nodes (variables). Optionally, a second value may be provided for the optimal objective.&lt;/li&gt;
+ *     &lt;li&gt;Next lines: the distance matrix, one row per node.&lt;/li&gt;
+ *     &lt;li&gt;Following lines: time windows for each node, specified as two integers (start and end) per line.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The distance matrix defines the travel times between nodes, and the {@link TimeWindow} array defines
+ * the allowed visit times for each node.
+ * &lt;/p&gt;
+ */
+public class TSPTWProblem implements Problem&lt;TSPTWState&gt; {
+
+    /**
+     * Distance matrix between nodes. distance[i][j] is the travel time from node i to node j.
+     */
+    public final int[][] distance;
+
+    /**
+     * Time windows for each node.
+     */
+    public final TimeWindow[] timeWindows;
+
+    /**
+     * Optional known optimal value for the instance.
+     */
+    public final Optional&lt;Double&gt; optimal;
+
+    /**
+     * Optional name of the instance, typically the file path.
+     */
+    private final Optional&lt;String&gt; name;
+
+
+    /**
+     * Constructs a TSPTW problem instance from a data file.
+     *
+     * @param fname Path to the input file containing the TSPTW instance.
+     * @throws IOException If an error occurs while reading the file.
+     */
+<span class="fc" id="L67">    public TSPTWProblem(String fname) throws IOException {</span>
+<span class="fc" id="L68">        int numVar = 0;</span>
+<span class="fc" id="L69">        int[][] dist = new int[0][0];</span>
+<span class="fc" id="L70">        TimeWindow[] tw = new TimeWindow[0];</span>
+<span class="fc" id="L71">        Optional&lt;Double&gt; opti = Optional.empty();</span>
+
+<span class="fc" id="L73">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L74">            int lineCount = 0;</span>
+            String line;
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+                //Skip comment
+<span class="pc bpc" id="L78" title="1 of 4 branches missed.">                if (line.startsWith(&quot;#&quot;) || line.isEmpty()) {</span>
+<span class="nc" id="L79">                    continue;</span>
+                }
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                if (lineCount == 0) {</span>
+<span class="fc" id="L82">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L83">                    numVar = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L84">                    dist = new int[numVar][numVar];</span>
+<span class="fc" id="L85">                    tw = new TimeWindow[numVar];</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                    if (tokens.length == 2) opti = Optional.of(Double.parseDouble(tokens[1]));</span>
+<span class="pc bpc" id="L87" title="1 of 4 branches missed.">                } else if (1 &lt;= lineCount &amp;&amp; lineCount &lt;= numVar) {</span>
+<span class="fc" id="L88">                    int i = lineCount - 1;</span>
+<span class="fc" id="L89">                    String[] distanceFromI = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L90">                    dist[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();</span>
+<span class="fc" id="L91">                } else {</span>
+<span class="fc" id="L92">                    int i = lineCount - 1 - numVar;</span>
+<span class="fc" id="L93">                    String[] twStr = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L94">                    tw[i] = new TimeWindow(Integer.parseInt(twStr[0]), Integer.parseInt(twStr[1]));</span>
+                }
+<span class="fc" id="L96">                lineCount++;</span>
+            }
+        }
+
+<span class="fc" id="L100">        this.distance = dist;</span>
+<span class="fc" id="L101">        this.timeWindows = tw;</span>
+<span class="fc" id="L102">        this.optimal = opti;</span>
+<span class="fc" id="L103">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L104">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L108">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L109">        sb.append(name).append(&quot;\n&quot;);</span>
+<span class="fc" id="L110">        sb.append(Arrays.toString(timeWindows)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L111">        String timeStr = Arrays.stream(distance)</span>
+<span class="fc" id="L112">                .map(row -&gt; Arrays.stream(row)</span>
+<span class="fc" id="L113">                        .mapToObj(x -&gt; String.format(&quot;%4s&quot;, x))</span>
+<span class="fc" id="L114">                        .collect(Collectors.joining(&quot; &quot;)))</span>
+<span class="fc" id="L115">                .collect(Collectors.joining(&quot;\n&quot;));</span>
+<span class="fc" id="L116">        sb.append(timeStr);</span>
+<span class="fc" id="L117">        return name.orElse(sb.toString());</span>
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L122">        return distance.length;</span>
+    }
+
+    @Override
+    public TSPTWState initialState() {
+<span class="fc" id="L127">        BitSet must = new BitSet(nbVars());</span>
+<span class="fc" id="L128">        must.set(1, nbVars(), true);</span>
+<span class="fc" id="L129">        BitSet might = new BitSet(nbVars());</span>
+<span class="fc" id="L130">        return new TSPTWState(new TSPNode(0), 0, must, might, 0);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L135">        return 0;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(TSPTWState state, int var) {
+<span class="fc" id="L140">        BitSet toReturn = new BitSet(state.mustVisit().length());</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (state.depth() == nbVars() - 1) {</span>
+            //The only decision for the last variable is to go back to the depot
+<span class="fc" id="L143">            toReturn.set(0, reachable(state, 0));</span>
+        } else {
+
+<span class="fc" id="L146">            var mustIt = state.mustVisit().stream().iterator();</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            while (mustIt.hasNext()) {</span>
+<span class="fc" id="L148">                int i = mustIt.nextInt();</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">                if (!reachable(state, i)) {</span>
+                    // We found a node that is no more reachable at the current time.
+                    // Eventually, this state will lead to unfeasible solution.
+                    // So we return now an empty set of decision to cut the sub diagram.
+<span class="fc" id="L153">                    return Collections.emptyIterator();</span>
+                } else {
+<span class="fc" id="L155">                    toReturn.set(i, true);</span>
+                }
+<span class="fc" id="L157">            }</span>
+
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">            if (state.mustVisit().cardinality() &lt; nbVars() - state.depth()) {</span>
+                // The state is a merged state. Its mustVisit set can be too small. In that case, we can take decision
+                // from the possiblyVisit state.
+<span class="fc" id="L162">                var possiblyIt = state.possiblyVisit().stream().iterator();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">                while (possiblyIt.hasNext()) {</span>
+<span class="fc" id="L164">                    int i = possiblyIt.nextInt();</span>
+<span class="fc" id="L165">                    toReturn.set(i, reachable(state, i));</span>
+<span class="fc" id="L166">                }</span>
+            }
+        }
+<span class="fc" id="L169">        return toReturn.stream().iterator();</span>
+    }
+
+    @Override
+    public TSPTWState transition(TSPTWState state, Decision decision) {
+<span class="fc" id="L174">        int target = decision.value();</span>
+<span class="fc" id="L175">        TSPNode newPos = new TSPNode(target);</span>
+<span class="fc" id="L176">        int newTime = arrivalTime(state, target);</span>
+<span class="fc" id="L177">        BitSet newMust = (BitSet) state.mustVisit().clone();</span>
+<span class="fc" id="L178">        newMust.set(target, false);</span>
+<span class="fc" id="L179">        BitSet newMight = (BitSet) state.possiblyVisit().clone();</span>
+<span class="fc" id="L180">        newMight.set(target, false);</span>
+<span class="fc" id="L181">        return new TSPTWState(newPos, newTime, newMust, newMight, state.depth() + 1);</span>
+    }
+
+    @Override
+    public double transitionCost(TSPTWState state, Decision decision) {
+<span class="fc" id="L186">        int to = decision.value();</span>
+
+<span class="fc" id="L188">        int travel = minDuration(state, to);</span>
+<span class="fc" id="L189">        int arrival = state.time() + travel;</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        int waiting = arrival &lt; timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;</span>
+<span class="fc" id="L191">        return travel + waiting;</span>
+
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L197">        return optimal;</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L203">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L204">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L207">        Map&lt;Integer, Long&gt; count = Arrays.stream(solution)</span>
+<span class="fc" id="L208">                .boxed()</span>
+<span class="fc" id="L209">                .collect(Collectors.groupingBy(x -&gt; x, Collectors.counting()));</span>
+
+<span class="pc bpc" id="L211" title="2 of 4 branches missed.">        if (count.values().stream().anyMatch(x -&gt; x != 1)) {</span>
+<span class="nc" id="L212">            String msg = &quot;The solution has duplicated nodes and does not reach each node&quot;;</span>
+<span class="nc" id="L213">            throw new InvalidSolutionException(msg);</span>
+        }
+
+<span class="fc" id="L216">        double value = distance[0][solution[0]]; //Start from the depot.</span>
+<span class="fc" id="L217">        value += Math.max(0, timeWindows[solution[0]].start() - value);</span>
+
+
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        for (int i = 1; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L221">            int from = solution[i - 1];</span>
+<span class="fc" id="L222">            int to = solution[i];</span>
+<span class="fc" id="L223">            value += distance[from][to];</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">            if (value &gt; timeWindows[to].end()) {</span>
+<span class="nc" id="L225">                String msg = String.format(&quot;This solution does not respect time windows. \nYou &quot; +</span>
+<span class="nc" id="L226">                                &quot;arrive at node %d at time %f. Its time window is %s&quot;, to, value,</span>
+                        timeWindows[to]);
+<span class="nc" id="L228">                throw new InvalidSolutionException(msg);</span>
+            }
+<span class="fc" id="L230">            value += Math.max(0, timeWindows[to].start() - value);</span>
+        }
+
+<span class="fc" id="L233">        return value;</span>
+    }
+
+    /**
+     * Checks if a target node is reachable from the given state within its time window.
+     *
+     * @param from Current state.
+     * @param to   Target node.
+     * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise.
+     */
+    boolean reachable(TSPTWState from, Integer to) {
+<span class="fc" id="L244">        int duration = minDuration(from, to);</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        return from.time() + duration &lt;= timeWindows[to].end();</span>
+    }
+
+    /**
+     * Computes the minimal duration to reach a target node from the current state.
+     *
+     * @param from Current state.
+     * @param to   Target node.
+     * @return Minimum travel time to reach node {@code to}.
+     */
+    int minDuration(TSPTWState from, Integer to) {
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        return switch (from.position()) {</span>
+<span class="fc" id="L257">            case TSPNode(int value) -&gt; distance[value][to];</span>
+<span class="fc" id="L258">            case VirtualNodes(Set&lt;Integer&gt; nodes) -&gt;</span>
+<span class="fc" id="L259">                    nodes.stream().mapToInt(x -&gt; distance[x][to]).min().getAsInt();</span>
+        };
+    }
+
+    /**
+     * Computes the arrival time at a target node, accounting for travel time and waiting
+     * until the time window opens.
+     *
+     * @param from Current state.
+     * @param to   Target node.
+     * @return Arrival time at node {@code to}.
+     */
+    int arrivalTime(TSPTWState from, Integer to) {
+<span class="fc" id="L272">        int time = from.time() + minDuration(from, to);</span>
+<span class="fc" id="L273">        return Integer.max(time, timeWindows[to].start());</span>
+    }
+
+}
+
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

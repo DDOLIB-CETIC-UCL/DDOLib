@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MKSDominance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mks</a> &gt; <span class="el_source">MKSDominance.java</span></div><h1>MKSDominance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mks;
+
+import org.ddolib.modeling.Dominance;
+/**
+ * Implements a dominance relation for Multi-dimensional Knapsack (MKS) states.
+ *
+ * &lt;p&gt;
+ * In this dominance relation, one state {@code state1} is considered dominated by or equal to
+ * another state {@code state2} if, in every dimension, {@code state1} has less than or equal
+ * remaining capacity compared to {@code state2}.
+ *
+ * &lt;p&gt;
+ * This is useful for pruning the search space in decision diagram optimization:
+ * dominated states can be safely discarded without losing optimality.
+ */
+<span class="nc" id="L16">public class MKSDominance implements Dominance&lt;MKSState&gt; {</span>
+    /**
+     * Returns a key for grouping states in dominance checks.
+     *
+     * &lt;p&gt;
+     * Here, all states share the same key (0), meaning that all states are comparable
+     * for dominance against each other.
+     *
+     * @param state the state
+     * @return the key for dominance grouping (always 0)
+     */
+    @Override
+    public Integer getKey(MKSState state) {
+<span class="nc" id="L29">        return 0;</span>
+    }
+    /**
+     * Determines whether {@code state1} is dominated by or equal to {@code state2}.
+     *
+     * &lt;p&gt;
+     * {@code state1} is dominated if its remaining capacity in every dimension is less than or
+     * equal to the corresponding capacity in {@code state2}.
+     *
+     * @param state1 the first state to compare
+     * @param state2 the second state to compare
+     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise
+     */
+    @Override
+    public boolean isDominatedOrEqual(MKSState state1, MKSState state2) {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (int dim = 0; dim &lt; state1.capacities.length; dim++) {</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (state1.capacities[dim] &gt; state2.capacities[dim]) {</span>
+<span class="nc" id="L46">                return false;</span>
+            }
+        }
+
+<span class="nc" id="L50">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

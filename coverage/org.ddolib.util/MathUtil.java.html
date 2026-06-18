@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MathUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util</a> &gt; <span class="el_source">MathUtil.java</span></div><h1>MathUtil.java</h1><pre class="source lang-java linenums">package org.ddolib.util;
+/**
+ * Utility class providing mathematical operations with saturation semantics.
+ * &lt;p&gt;
+ * Saturated operations ensure that results do not overflow or underflow,
+ * returning {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY}
+ * instead of exceeding the representable range of a double.
+ */
+<span class="nc" id="L9">public class MathUtil {</span>
+
+    /**
+     * Performs a saturated addition of two double values.
+     * &lt;p&gt;
+     * If the addition overflows the maximum representable double, the result
+     * is {@link Double#POSITIVE_INFINITY}. If it underflows below the minimum
+     * representable double, the result is {@link Double#NEGATIVE_INFINITY}.
+     *
+     * @param a the first operand
+     * @param b the second operand
+     * @return the saturated sum of {@code a} and {@code b}
+     */
+    public static double saturatedAdd(double a, double b) {
+<span class="fc" id="L23">        double sum = a + b;</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (Double.isInfinite(sum)) {</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">            return sum &gt; 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;</span>
+        }
+<span class="fc" id="L27">        return sum;</span>
+    }
+
+
+    /**
+     * Performs a saturated subtraction of two double values.
+     * &lt;p&gt;
+     * If the subtraction overflows the maximum representable double, the result
+     * is {@link Double#POSITIVE_INFINITY}. If it underflows below the minimum
+     * representable double, the result is {@link Double#NEGATIVE_INFINITY}.
+     *
+     * @param a the minuend
+     * @param b the subtrahend
+     * @return the saturated difference {@code a - b}
+     */
+    public static double saturatedDiff(double a, double b) {
+<span class="fc" id="L43">        double diff = a - b;</span>
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (Double.isInfinite(diff)) {</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            return diff &lt; 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;</span>
+        }
+<span class="fc" id="L47">        return diff;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SMICGenrator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.smic</a> &gt; <span class="el_source">SMICGenrator.java</span></div><h1>SMICGenrator.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.smic;
+
+import java.util.Optional;
+import java.util.Random;
+
+/**
+ * The {@code SMICGenrator} class is responsible for generating random instances of the
+ * Single Machine with Inventory Constraint (SMIC) problem.
+ * &lt;p&gt;
+ * Each generated instance defines a set of production jobs characterized by:
+ * processing times, release dates, inventory changes (positive or negative),
+ * and an initial inventory level that satisfies the given capacity constraints.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The generator takes several tunable parameters that control the instance structure and difficulty:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code n} – number of jobs,&lt;/li&gt;
+ *     &lt;li&gt;{@code alpha} – upper bound on job processing times,&lt;/li&gt;
+ *     &lt;li&gt;{@code tau} – scaling factor for release dates,&lt;/li&gt;
+ *     &lt;li&gt;{@code eta} – inventory scaling factor used to derive capacity limits,&lt;/li&gt;
+ *     &lt;li&gt;{@code seed} – random seed for reproducibility.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * The generator randomly samples job attributes and ensures feasibility
+ * by checking that the resulting initial inventory and signed inventory
+ * variations do not violate capacity constraints. If a valid instance cannot
+ * be constructed after {@value #MAX_ASSIGN_ATTEMPTS} trials, an exception is thrown.
+ * &lt;/p&gt;
+ *
+ * &lt;h2&gt;Generation Process&lt;/h2&gt;
+ * &lt;ol&gt;
+ *     &lt;li&gt;Sample job processing times uniformly from {@code [1, α]};&lt;/li&gt;
+ *     &lt;li&gt;Sample absolute inventory changes |Δᵢ| uniformly from {@code [1, 10]};&lt;/li&gt;
+ *     &lt;li&gt;Randomly assign each job as a production (+1) or consumption (0) job;&lt;/li&gt;
+ *     &lt;li&gt;Determine a feasible initial inventory {@code I₀} within capacity bounds;&lt;/li&gt;
+ *     &lt;li&gt;Generate release dates uniformly from {@code [0, τ × pᵢ]};&lt;/li&gt;
+ *     &lt;li&gt;Construct a {@link SMICProblem} instance encapsulating the generated data.&lt;/li&gt;
+ * &lt;/ol&gt;
+ *
+ * &lt;h2&gt;Example&lt;/h2&gt;
+ * &lt;pre&gt;{@code
+ * SMICGenrator generator = new SMICGenrator(10, 5, 0.5, 2, 12345L);
+ * SMICProblem instance = generator.generate();
+ * System.out.println(instance);
+ * }&lt;/pre&gt;
+ *
+ * @see SMICProblem
+ * @see java.util.Random
+ */
+public class SMICGenrator {
+    /**
+     * Maximum number of random assignments before aborting.
+     */
+    private static final int MAX_ASSIGN_ATTEMPTS = 10000;
+    /**
+     * Number of jobs to generate.
+     */
+    private int n;
+    /**
+     * Upper bound on processing times.
+     */
+    private int alpha;
+    /**
+     * Scaling factor for release times.
+     */
+    private double tau;
+    /**
+     * Scaling parameter for inventory capacity.
+     */
+    private int eta;
+    /**
+     * Random seed for reproducibility.
+     */
+    private long seed;
+    /**
+     * Initial inventory level.
+     */
+    private int initInventory;
+    /**
+     * Maximum inventory capacity.
+     */
+    private int capaInventory;
+    /**
+     * Job processing times.
+     */
+    private int[] processing;
+    /**
+     * Job release times.
+     */
+    private int[] release;
+    /**
+     * Absolute inventory changes per job.
+     */
+    private int[] inventory;
+    /**
+     * Job types: 1 for production, 0 for consumption.
+     */
+    private int[] type;
+    /**
+     * Job weights (currently unused in generation).
+     */
+    private int[] weight;
+
+    /**
+     * Constructs a new SMIC instance generator with the given parameters.
+     *
+     * @param n     the number of jobs to generate
+     * @param alpha the upper bound for processing times
+     * @param tau   the release time scaling factor
+     * @param eta   the scaling factor for inventory capacity
+     * @param seed  the random seed for reproducibility
+     */
+<span class="nc" id="L115">    public SMICGenrator(int n, int alpha, double tau, int eta, long seed) {</span>
+<span class="nc" id="L116">        this.n = n;</span>
+<span class="nc" id="L117">        this.alpha = alpha;</span>
+<span class="nc" id="L118">        this.tau = tau;</span>
+<span class="nc" id="L119">        this.eta = eta;</span>
+<span class="nc" id="L120">        this.seed = seed;</span>
+
+<span class="nc" id="L122">    }</span>
+
+    /**
+     * Generates a random feasible {@link SMICProblem} instance based on
+     * the parameters provided at construction.
+     * &lt;p&gt;
+     * The generator repeatedly samples job attributes and type assignments until
+     * a feasible configuration (respecting inventory capacity constraints)
+     * is found or until {@value #MAX_ASSIGN_ATTEMPTS} iterations are exceeded.
+     * &lt;/p&gt;
+     *
+     * @return a feasible {@link SMICProblem} instance
+     * @throws RuntimeException if no feasible configuration can be generated
+     *                          after {@value #MAX_ASSIGN_ATTEMPTS} attempts
+     */
+    public SMICProblem generate() {
+<span class="nc" id="L138">        Random rand = new Random(seed);</span>
+<span class="nc" id="L139">        processing = new int[n];</span>
+<span class="nc" id="L140">        release = new int[n];</span>
+<span class="nc" id="L141">        type = new int[n];</span>
+<span class="nc" id="L142">        weight = new int[n];</span>
+<span class="nc" id="L143">        inventory = new int[n];</span>
+        // step 1: sample processing[i]
+<span class="nc" id="L145">        int sumProcessing = 0;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L147">            processing[i] = 1 + rand.nextInt(alpha); // uniform in [1, alpha]</span>
+<span class="nc" id="L148">            sumProcessing += processing[i];</span>
+        }
+
+        // step 2: sample |delta_i|
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L153">            inventory[i] = 1 + rand.nextInt(10); // uniform [1,10]</span>
+        }
+
+        // compute the bound of the capacity of onventory
+<span class="nc" id="L157">        int minInventoryCapacitory = 10 * eta;</span>
+<span class="nc" id="L158">        int maxInventoryCapacitory = 20 * eta;</span>
+<span class="nc" id="L159">        capaInventory = minInventoryCapacitory + rand.nextInt(maxInventoryCapacitory - minInventoryCapacitory + 1);</span>
+<span class="nc" id="L160">        boolean feasible = false;</span>
+<span class="nc bnc" id="L161" title="All 4 branches missed.">        for (int attempt = 0; attempt &lt; MAX_ASSIGN_ATTEMPTS &amp;&amp; !feasible; attempt++) {</span>
+
+            // assign signs randomly 50/50
+<span class="nc" id="L164">            boolean[] inJplus = new boolean[n];</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L166">                inJplus[i] = rand.nextBoolean();</span>
+            }
+
+            // build signed delta according to assignment
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                type[i] = inJplus[i] ? 1 : 0;</span>
+            }
+
+            // check job-level constraints (no job exceeds IC in its signed delta sense)
+<span class="nc" id="L175">            boolean violates = false;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">                if (inJplus[i] &amp;&amp; inventory[i] &gt; capaInventory) {</span>
+<span class="nc" id="L178">                    violates = true;</span>
+<span class="nc" id="L179">                    break;</span>
+                }
+<span class="nc bnc" id="L181" title="All 4 branches missed.">                if (!inJplus[i] &amp;&amp; inventory[i] &lt; -capaInventory) {</span>
+<span class="nc" id="L182">                    violates = true;</span>
+<span class="nc" id="L183">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (violates) {</span>
+<span class="nc" id="L187">                continue; // reassign</span>
+            }
+
+            // sum over J+ and J-
+<span class="nc" id="L191">            int sumPos = 0;</span>
+<span class="nc" id="L192">            int sumNeg = 0;</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                if (inJplus[i]) sumPos += inventory[i];</span>
+<span class="nc" id="L195">                else sumNeg -= inventory[i]; // sumNeg &lt;= 0</span>
+            }
+
+            // compute capacity of the inventory:
+<span class="nc" id="L199">            int lower = Math.min(capaInventory, Math.max(0, sumNeg));</span>
+<span class="nc" id="L200">            int upper = Math.max(0, Math.min(capaInventory, capaInventory - sumPos));</span>
+
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            if (lower &gt; upper) {</span>
+                // this assignment can't yield a valid I0; retry
+<span class="nc" id="L204">                continue;</span>
+            }
+
+            // draw I0 uniformly in [lower, upper]
+<span class="nc" id="L208">            initInventory = lower + rand.nextInt(upper - lower + 1);</span>
+
+            // sample r_i with ri in [0, floor(tau * p_i)]
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L212">                int maxRi = (int) Math.floor(tau * processing[i]);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                if (maxRi &lt; 0) maxRi = 0;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                release[i] = maxRi == 0 ? 0 : rand.nextInt(maxRi + 1);</span>
+            }
+
+<span class="nc" id="L217">            feasible = true;</span>
+        }
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (!feasible) {</span>
+            // as fallback, try a weaker strategy: regenerate absDelta until feasible (rare)
+            // but for safety, throw an exception to signal user to retry with different params
+<span class="nc" id="L222">            throw new RuntimeException(&quot;Failed to generate feasible assignment after &quot; + MAX_ASSIGN_ATTEMPTS +</span>
+                    &quot; attempts for seed &quot; + seed + &quot;. Try re-running with different random seed.&quot;);
+        }
+
+<span class="nc" id="L226">        return new SMICProblem(&quot;smic_&quot; + n + &quot;_&quot; + initInventory + &quot;_&quot; + capaInventory, n, initInventory, capaInventory, type, processing, weight, release, inventory, Optional.empty());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

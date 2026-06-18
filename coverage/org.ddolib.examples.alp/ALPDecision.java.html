@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ALPDecision.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.alp</a> &gt; <span class="el_source">ALPDecision.java</span></div><h1>ALPDecision.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.alp;
+
+import java.util.Objects;
+/**
+ * Represents a decision in the &lt;b&gt;Aircraft Landing Problem (ALP)&lt;/b&gt;.
+ * &lt;p&gt;
+ * This decision consists of assigning an aircraft of a given class to a specific runway.
+ * The actual aircraft chosen is determined by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The {@code state}: the number of remaining aircraft of that class.&lt;/li&gt;
+ *     &lt;li&gt;The {@code problem}: an ordered list (by target arrival time) of aircraft per class.&lt;/li&gt;
+ *     &lt;li&gt;The remaining aircraft count acts as the index into the ordered list to select the specific aircraft.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * Instances of this class are immutable with respect to their {@code aircraftClass} and {@code runway} values.
+ * Equality and hash code are defined based on these two fields.
+ * &lt;/p&gt;
+ *
+ * @see ALPProblem
+ * @see ALPState
+ */
+public class ALPDecision {
+    /** The class of the aircraft being assigned. */
+    public int aircraftClass;
+    /** The runway to which the aircraft is assigned. */
+    public int runway;
+    /**
+     * Constructs a new decision assigning an aircraft of the given class to the given runway.
+     *
+     * @param aircraftClass the class of the aircraft
+     * @param runway        the runway number
+     */
+<span class="fc" id="L35">    public ALPDecision(int aircraftClass, int runway) {</span>
+<span class="fc" id="L36">        this.aircraftClass = aircraftClass;</span>
+<span class="fc" id="L37">        this.runway = runway;</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Checks whether this decision is equal to another object.
+     * Two decisions are equal if they have the same aircraft class and runway.
+     *
+     * @param o the object to compare with
+     * @return {@code true} if the objects represent the same decision, {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L50">        ALPDecision that = (ALPDecision) o;</span>
+<span class="nc bnc" id="L51" title="All 4 branches missed.">        return aircraftClass == that.aircraftClass &amp;&amp; runway == that.runway;</span>
+    }
+    /**
+     * Computes the hash code of this decision based on the aircraft class and runway.
+     *
+     * @return the hash code
+     */
+    @Override
+    public int hashCode() {
+<span class="nc" id="L60">        return Objects.hash(aircraftClass, runway);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

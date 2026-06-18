@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InputReader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util.io</a> &gt; <span class="el_source">InputReader.java</span></div><h1>InputReader.java</h1><pre class="source lang-java linenums">/*
+ * MaxiCP is under MIT License
+ * Copyright (c)  2023 UCLouvain
+ */
+
+
+package org.ddolib.util.io;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+
+/**
+ * Utility class to read formatted input from a file.
+ * &lt;p&gt;
+ * This class provides convenient methods to read integers, doubles, lines of integers,
+ * matrices of numbers, and individual strings from a text file. It uses a
+ * {@link BufferedReader} for efficient line-by-line reading and a {@link StringTokenizer}
+ * to parse tokens from each line.
+ * &lt;p&gt;
+ * The methods throw a {@link RuntimeException} when an I/O error occurs or when
+ * attempting to read beyond the end of the file.
+ */
+public class InputReader {
+
+    private BufferedReader in;
+    private StringTokenizer tokenizer;
+    /**
+     * Constructs an InputReader for the specified file.
+     *
+     * @param file the path to the input file
+     * @throws RuntimeException if the file cannot be opened
+     */
+<span class="fc" id="L36">    public InputReader(String file) {</span>
+        try {
+
+<span class="fc" id="L39">            FileInputStream istream = new FileInputStream(file);</span>
+<span class="fc" id="L40">            in = new BufferedReader(new InputStreamReader(istream));</span>
+<span class="fc" id="L41">            tokenizer = new StringTokenizer(&quot;&quot;);</span>
+<span class="nc" id="L42">        } catch (Exception e) {</span>
+<span class="nc" id="L43">            throw new RuntimeException();</span>
+<span class="fc" id="L44">        }</span>
+<span class="fc" id="L45">    }</span>
+    /**
+     * Reads the next integer from the input.
+     *
+     * @return the next integer
+     * @throws RuntimeException if the end of file is reached or parsing fails
+     */
+    public Integer getInt() throws RuntimeException {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (!tokenizer.hasMoreTokens()) {</span>
+            try {
+                String line;
+                do {
+<span class="fc" id="L57">                    line = in.readLine();</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">                    if (line == null) {</span>
+                        //System.out.println(&quot;No more line to read&quot;);
+<span class="nc" id="L60">                        throw new RuntimeException(&quot;End of file&quot;);</span>
+                    }
+<span class="fc" id="L62">                    tokenizer = new StringTokenizer(line);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                } while (!tokenizer.hasMoreTokens());</span>
+
+<span class="nc" id="L65">            } catch (IOException e) {</span>
+<span class="nc" id="L66">                throw new RuntimeException(e.toString());</span>
+<span class="fc" id="L67">            }</span>
+        }
+<span class="fc" id="L69">        return Integer.parseInt(tokenizer.nextToken());</span>
+    }
+    /**
+     * Reads the next double from the input.
+     *
+     * @return the next double
+     * @throws RuntimeException if the end of file is reached or parsing fails
+     */
+    public double getDouble() throws RuntimeException {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (!tokenizer.hasMoreTokens()) {</span>
+            try {
+                String line;
+                do {
+<span class="nc" id="L82">                    line = in.readLine();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                    if (line == null) {</span>
+                        //System.out.println(&quot;No more line to read&quot;);
+<span class="nc" id="L85">                        throw new RuntimeException(&quot;End of file&quot;);</span>
+                    }
+<span class="nc" id="L87">                    tokenizer = new StringTokenizer(line);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                } while (!tokenizer.hasMoreTokens());</span>
+
+<span class="nc" id="L90">            } catch (IOException e) {</span>
+<span class="nc" id="L91">                throw new RuntimeException(e.toString());</span>
+<span class="nc" id="L92">            }</span>
+        }
+<span class="nc" id="L94">        return Double.parseDouble(tokenizer.nextToken());</span>
+    }
+    /**
+     * Reads a matrix of doubles with the given dimensions.
+     *
+     * @param n number of rows
+     * @param m number of columns
+     * @return a 2D array containing the matrix
+     * @throws RuntimeException if reading fails
+     */
+    public double[][] getDoubleMatrix(int n, int m) throws RuntimeException {
+<span class="nc" id="L105">        double[][] matrix = new double[n][m];</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            for (int j = 0; j &lt; m; j++) {</span>
+<span class="nc" id="L108">                matrix[i][j] = getDouble();</span>
+            }
+        }
+<span class="nc" id="L111">        return matrix;</span>
+    }
+    /**
+     * Reads a matrix of integers with the given dimensions.
+     *
+     * @param n number of rows
+     * @param m number of columns
+     * @return a 2D array containing the matrix
+     * @throws RuntimeException if reading fails
+     */
+    public int[][] getIntMatrix(int n, int m) throws RuntimeException {
+<span class="nc" id="L122">        int[][] matrix = new int[n][m];</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            for (int j = 0; j &lt; m; j++) {</span>
+<span class="nc" id="L125">                matrix[i][j] = getInt();</span>
+            }
+        }
+<span class="nc" id="L128">        return matrix;</span>
+    }
+
+    /**
+     * Reads a full line of integers.
+     *
+     * @return an array of integers representing the line
+     * @throws RuntimeException if reading fails
+     */
+    public Integer[] getIntLine() throws RuntimeException {
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (!tokenizer.hasMoreTokens()) {</span>
+            try {
+                String line;
+                do {
+<span class="nc" id="L142">                    line = in.readLine();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                    if (line == null) {</span>
+                        //System.out.println(&quot;No more line to read&quot;);
+<span class="nc" id="L145">                        throw new RuntimeException(&quot;End of file&quot;);</span>
+                    }
+<span class="nc" id="L147">                    tokenizer = new StringTokenizer(line);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                } while (!tokenizer.hasMoreTokens());</span>
+
+<span class="nc" id="L150">            } catch (IOException e) {</span>
+<span class="nc" id="L151">                throw new RuntimeException(e.toString());</span>
+<span class="nc" id="L152">            }</span>
+        }
+<span class="nc" id="L154">        Integer[] res = new Integer[tokenizer.countTokens()];</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        for (int i = 0; i &lt; res.length; i++) {</span>
+<span class="nc" id="L156">            res[i] = Integer.parseInt(tokenizer.nextToken());</span>
+        }
+<span class="nc" id="L158">        return res;</span>
+    }
+    /**
+     * Skips the next line in the input.
+     *
+     * @throws RuntimeException if end of file is reached or reading fails
+     */
+    public void skipLine() throws RuntimeException {
+        try {
+            String line;
+            do {
+<span class="nc" id="L169">                line = in.readLine();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                if (line == null) {</span>
+                    //System.out.println(&quot;No more line to read&quot;);
+<span class="nc" id="L172">                    throw new RuntimeException(&quot;End of file&quot;);</span>
+                }
+<span class="nc" id="L174">                tokenizer = new StringTokenizer(line);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            } while (!tokenizer.hasMoreTokens());</span>
+
+<span class="nc" id="L177">        } catch (IOException e) {</span>
+<span class="nc" id="L178">            throw new RuntimeException(e.toString());</span>
+<span class="nc" id="L179">        }</span>
+<span class="nc" id="L180">    }</span>
+    /**
+     * Reads the next token as a string.
+     *
+     * @return the next token
+     * @throws RuntimeException if end of file is reached
+     */
+    public String getString() throws RuntimeException {
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (!tokenizer.hasMoreTokens()) {</span>
+            try {
+                String line;
+                do {
+<span class="nc" id="L192">                    line = in.readLine();</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                    if (line == null) {</span>
+                        //System.out.println(&quot;No more line to read&quot;);
+<span class="nc" id="L195">                        throw new RuntimeException(&quot;End of file&quot;);</span>
+                    }
+<span class="nc" id="L197">                    tokenizer = new StringTokenizer(line);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                } while (!tokenizer.hasMoreTokens());</span>
+
+<span class="nc" id="L200">            } catch (IOException e) {</span>
+<span class="nc" id="L201">                throw new RuntimeException(e.toString());</span>
+<span class="nc" id="L202">            }</span>
+        }
+<span class="nc" id="L204">        return tokenizer.nextToken();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SMICDominance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.smic</a> &gt; <span class="el_source">SMICDominance.java</span></div><h1>SMICDominance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.smic;
+
+import org.ddolib.modeling.Dominance;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+/**
+ * The {@code SMICDominance} class defines the dominance relation between two
+ * states of the {@link SMICState} in the context of the
+ * &lt;b&gt;Single Machine with Inventory Constraint (SMIC)&lt;/b&gt; problem.
+ * &lt;p&gt;
+ * Dominance relations are used by search algorithms (such as DDO, A*, or ACS)
+ * to prune suboptimal or redundant states during the exploration process.
+ * A state {@code s1} is said to be dominated by another state {@code s2}
+ * if {@code s2} represents an equivalent or better configuration of the system
+ * according to a defined dominance rule.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * In this implementation, the dominance rule is defined as follows:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Two states are compared only if they have the same set of remaining jobs;&lt;/li&gt;
+ *     &lt;li&gt;Among such states, the one with the smaller (or equal) current time
+ *         dominates the other, since it reaches the same configuration earlier
+ *         or at the same time.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ *
+ * &lt;p&gt;
+ * This criterion allows pruning of states that would take longer to reach the same
+ * remaining set of jobs, improving search efficiency without losing optimality.
+ * &lt;/p&gt;
+ *
+ * @see SMICState
+ * @see Dominance
+ * @see SimpleDominanceChecker
+ * @see SMICDdoMain
+ */
+<span class="fc" id="L38">public class SMICDominance implements Dominance&lt;SMICState&gt; {</span>
+    /**
+     * Returns a key used to group comparable states.
+     * &lt;p&gt;
+     * In this implementation, all states share the same key ({@code 0}),
+     * meaning that any pair of states can potentially be compared for dominance.
+     * &lt;/p&gt;
+     *
+     * @param state the state for which the grouping key is computed
+     * @return always {@code 0}, as no grouping distinction is applied
+     */
+    @Override
+    public SMICDominanceKey getKey(SMICState state) {
+<span class="fc" id="L51">        return new SMICDominanceKey(state.remainingJobs());</span>
+    }
+    /**
+     * Determines whether one state is dominated by or equal to another.
+     * &lt;p&gt;
+     * A state {@code state1} is considered dominated (or equivalent) to
+     * {@code state2} if:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *   &lt;li&gt;Both states have the same set of remaining jobs to process;&lt;/li&gt;
+     *   &lt;li&gt;The current time of {@code state2} is less than or equal to that of {@code state1}.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * This ensures that the search does not revisit slower or redundant configurations.
+     * @param state1 the state being tested for dominance
+     * @param state2 the state potentially dominating {@code state1}
+     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2},
+     *         {@code false} otherwise
+     */
+
+    @Override
+    public boolean isDominatedOrEqual(SMICState state1, SMICState state2) {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        return state2.currentTime() &lt;= state1.currentTime();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MKSDistance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mks</a> &gt; <span class="el_source">MKSDistance.java</span></div><h1>MKSDistance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mks;
+
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import static org.ddolib.util.DistanceUtil.euclideanDistance;
+
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+/**
+ * Computes a normalized distance between Multi-dimensional Knapsack (MKS) states.
+ *
+ * &lt;p&gt;
+ * This class implements {@link StateDistance} for {@link MKSState} objects. The distance
+ * is based on the Euclidean distance between the remaining capacities of two states,
+ * normalized by the maximal distance of the knapsack capacities.
+ *
+ * &lt;p&gt;
+ * This distance can be used in clustering or merging strategies in decision diagram
+ * optimization algorithms to guide state aggregation.
+ */
+public class MKSDistance implements StateDistance&lt;MKSState&gt; {
+    /** The MKS problem instance for which distances are computed. */
+    final MKSProblem instance;
+    /**
+     * Constructs a distance evaluator for the given MKS problem.
+     *
+     * @param instance the multi-dimensional knapsack problem instance
+     */
+<span class="nc" id="L28">    public MKSDistance(MKSProblem instance) {</span>
+<span class="nc" id="L29">        this.instance = instance;</span>
+<span class="nc" id="L30">    }</span>
+    /**
+     * Computes the normalized Euclidean distance between two MKS states.
+     *
+     * @param a the first state
+     * @param b the second state
+     * @return the normalized distance between {@code a} and {@code b}
+     */
+    @Override
+    public double distance(MKSState a, MKSState b) {
+<span class="nc" id="L40">        return euclideanDistance(a.capacities, b.capacities) / instance.maximalDistance;</span>
+    }
+    /**
+     * Computes the normalized Euclidean distance from the given state to the initial state.
+     *
+     * @param a the state
+     * @return the normalized distance from {@code a} to the initial state
+     */
+    @Override
+    public double distanceWithRoot(MKSState a) {
+<span class="nc" id="L50">        return euclideanDistance(a.capacities, instance.initialState().capacities) / instance.maximalDistance;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

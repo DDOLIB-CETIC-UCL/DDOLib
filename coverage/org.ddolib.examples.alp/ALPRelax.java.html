@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ALPRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.alp</a> &gt; <span class="el_source">ALPRelax.java</span></div><h1>ALPRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.alp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.Arrays;
+import java.util.Iterator;
+/**
+ * Relaxation operator for {@link ALPState} in the Aircraft Landing Problem (ALP).
+ * &lt;p&gt;
+ * This class defines how multiple states are merged into a single relaxed state
+ * when building a relaxed decision diagram. The relaxation helps to limit the size
+ * of the decision diagram while maintaining bounds on the optimal solution.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * The merged state is computed by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;For each aircraft class, taking the minimum number of remaining aircraft
+ *         among all merged states.&lt;/li&gt;
+ *     &lt;li&gt;For each runway, taking the minimum previous landing time among all merged states.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * This ensures that the merged state is a valid under-approximation of the original states.
+ *
+ * @see ALPState
+ * @see Relaxation
+ */
+public class ALPRelax implements Relaxation&lt;ALPState&gt; {
+    /** The ALP problem instance. */
+    ALPProblem problem;
+    /**
+     * Constructs a relaxation operator for the given ALP problem.
+     *
+     * @param problem the ALP problem instance
+     */
+<span class="fc" id="L36">    public ALPRelax(ALPProblem problem) {</span>
+<span class="fc" id="L37">        this.problem = problem;</span>
+<span class="fc" id="L38">    }</span>
+    /**
+     * Merges multiple states into a single relaxed state.
+     * &lt;p&gt;
+     * The merged state takes the minimum remaining aircraft count per class
+     * and the minimum previous landing time per runway.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the states to merge
+     * @return the merged relaxed state
+     */
+    @Override
+    public ALPState mergeStates(Iterator&lt;ALPState&gt; states) {
+<span class="fc" id="L51">        int[] remainingAircraft = new int[problem.nbClasses];</span>
+<span class="fc" id="L52">        Arrays.fill(remainingAircraft, Integer.MAX_VALUE);</span>
+<span class="fc" id="L53">        RunwayState[] runwayStates = new RunwayState[problem.nbRunways];</span>
+<span class="fc" id="L54">        Arrays.fill(runwayStates, new RunwayState(ALPProblem.DUMMY, Integer.MAX_VALUE));</span>
+
+        // Set the remaining nb of aircraft (for each class) of the merged state as the minimal value of each merged states.
+        // Set the previous time of each runway of the merged state as the minimal value of each merged states.
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L59">            ALPState s = states.next();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (int i = 0; i &lt; remainingAircraft.length; i++) {</span>
+<span class="fc" id="L61">                remainingAircraft[i] = Math.min(remainingAircraft[i], s.remainingAircraftOfClass[i]);</span>
+            }
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            for (int i = 0; i &lt; runwayStates.length; i++) {</span>
+<span class="fc" id="L64">                runwayStates[i].prevTime = Math.min(s.runwayStates[i].prevTime, runwayStates[i].prevTime);</span>
+            }
+<span class="fc" id="L66">        }</span>
+
+<span class="fc" id="L68">        return new ALPState(remainingAircraft, runwayStates);</span>
+    }
+    /**
+     * Returns the relaxed cost of a transition (edge) between states.
+     * &lt;p&gt;
+     * In this default implementation, the edge cost remains unchanged.
+     * &lt;/p&gt;
+     *
+     * @param from the source state
+     * @param to the destination state
+     * @param merged the merged state
+     * @param d the decision leading to this transition
+     * @param cost the original cost of the transition
+     * @return the relaxed cost of the edge
+     */
+    @Override
+    public double relaxEdge(ALPState from, ALPState to, ALPState merged, Decision d, double cost) {
+<span class="fc" id="L85">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

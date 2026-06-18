@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SMICState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.smic</a> &gt; <span class="el_source">SMICState.java</span></div><h1>SMICState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.smic;
+
+
+import java.util.BitSet;
+
+/**
+ * The {@code SMICState} record represents a state in the search space of the
+ * Single Machine with Inventory Constraint (SMIC) scheduling problem.
+ * &lt;p&gt;
+ * Each state encodes the current progress of the scheduling process, including:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The set of jobs that remain to be scheduled,&lt;/li&gt;
+ *     &lt;li&gt;The current simulation time,&lt;/li&gt;
+ *     &lt;li&gt;The minimum and maximum possible inventory levels, used to handle relaxations
+ *         and dominance checks in state-space search algorithms.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * This record is immutable and is typically used in algorithms such as
+ * &lt;b&gt;Decision Diagram Optimization (DDO)&lt;/b&gt;, &lt;b&gt;Anytime Column Search (ACS)&lt;/b&gt;,
+ * or other &lt;b&gt;branch-and-bound&lt;/b&gt; based solvers to represent nodes of the search tree
+ * or diagram layers.
+ * &lt;/p&gt;
+ *
+ * &lt;h2&gt;Example Usage&lt;/h2&gt;
+ * &lt;pre&gt;{@code
+ * Set&lt;Integer&gt; remaining = Set.of(1, 2, 3);
+ * SMICState state = new SMICState(remaining, 10, 5, 15);
+ * System.out.println(state);
+ * }&lt;/pre&gt;
+ *
+ * &lt;p&gt;Output:&lt;/p&gt;
+ * &lt;pre&gt;
+ * RemainingJobs [1, 2, 3] ----&gt; currentTime 10 ---&gt; minCurrentInventory5 ---&gt; maxCurrentInventory15
+ * &lt;/pre&gt;
+ *
+ * @param remainingJobs        the set of job indices that remain to be scheduled
+ * @param currentTime          the current time in the schedule
+ * @param minCurrentInventory  the minimum possible inventory level at this state
+ * @param maxCurrentInventory  the maximum possible inventory level at this state
+ *
+ * @see SMICProblem
+ * @see SMICRelax
+ * @see SMICRanking
+ * @see SMICDominance
+ */
+<span class="fc" id="L48">public record SMICState(BitSet remainingJobs,</span>
+                        int currentTime,
+                        int minCurrentInventory,
+                        int maxCurrentInventory) {
+    /**
+     * Returns a string representation of this state, displaying the set of
+     * remaining jobs, the current time, and the current inventory bounds.
+     *
+     * @return a formatted string describing the state
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L60">        return &quot;RemainingJobs : &quot; + remainingJobs + &quot; ----&gt; currentTime : &quot; + currentTime + &quot; ---&gt; minCurrentInventory : &quot; + minCurrentInventory + &quot; ---&gt; maxCurrentInventory : &quot; + maxCurrentInventory;</span>
+    }
+
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

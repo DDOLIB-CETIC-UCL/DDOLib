@@ -1,0 +1,1308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LinkedDecisionDiagram.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.mdd</a> &gt; <span class="el_source">LinkedDecisionDiagram.java</span></div><h1>LinkedDecisionDiagram.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.mdd;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.cache.SimpleCache;
+import org.ddolib.ddo.core.cache.Threshold;
+import org.ddolib.ddo.core.compilation.CompilationConfig;
+import org.ddolib.ddo.core.compilation.CompilationType;
+import org.ddolib.ddo.core.frontier.CutSetType;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.Relaxation;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static org.ddolib.util.MathUtil.saturatedAdd;
+import static org.ddolib.util.MathUtil.saturatedDiff;
+
+/**
+ * This class implements a decision diagram as a linked structure (linked MDD).
+ * &lt;p&gt;
+ * Each node in the diagram is represented by a {@link Node} object, and edges
+ * between nodes represent decisions made during the problem-solving process.
+ * This class supports the compilation of exact, relaxed, and restricted decision
+ * diagrams using various heuristics and dominance rules.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The main responsibilities of this class include:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Building the decision diagram layer by layer from an initial state.&lt;/li&gt;
+ *     &lt;li&gt;Managing exact and relaxed cutsets of nodes.&lt;/li&gt;
+ *     &lt;li&gt;Applying restrictions and relaxations to limit layer width.&lt;/li&gt;
+ *     &lt;li&gt;Computing local bounds and fast lower bounds.&lt;/li&gt;
+ *     &lt;li&gt;Exporting the decision diagram to DOT format for visualization.&lt;/li&gt;
+ *     &lt;li&gt;Interfacing with caches to optimize repeated computations.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the type of state used in the problem modeled by this decision diagram
+ */
+public final class LinkedDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt; {
+    /**
+     * The set of decisions that led to the root of this decision diagram.
+     */
+    private final Set&lt;Decision&gt; pathToRoot;
+
+    /**
+     * Nodes from the previous layer, mapped to their associated subproblems.
+     */
+<span class="fc" id="L62">    private final HashMap&lt;Node, NodeSubProblem&lt;T&gt;&gt; prevLayer = new HashMap&lt;&gt;();</span>
+
+    /**
+     * Nodes to expand in the current layer.
+     */
+<span class="fc" id="L67">    private final List&lt;NodeSubProblem&lt;T&gt;&gt; currentLayer = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Nodes in the next layer.
+     */
+<span class="fc" id="L72">    private final HashMap&lt;T, Node&gt; nextLayer = new HashMap&lt;&gt;();</span>
+
+    /**
+     * Nodes in the last exact cutset or frontier cutset.
+     */
+<span class="fc" id="L77">    private final List&lt;NodeSubProblem&lt;T&gt;&gt; cutset = new ArrayList&lt;&gt;();</span>
+    /**
+     * String builder used for generating DOT representation of the MDD.
+     */
+<span class="fc" id="L81">    private final StringBuilder dotStr = new StringBuilder();</span>
+    /**
+     * Maps edge hash codes to their DOT representation.
+     */
+<span class="fc" id="L85">    private final HashMap&lt;Integer, String&gt; edgesDotStr = new HashMap&lt;&gt;();</span>
+    /**
+     * Debug level for additional checks and information during compilation.
+     */
+    private final DebugLevel debugLevel;
+    /**
+     * Configuration and parameters for compiling the decision diagram.
+     */
+    private final CompilationConfig&lt;T&gt; config;
+
+    /**
+     * Optional cache used to store thresholds and avoid redundant computations.
+     */
+    private final Optional&lt;SimpleCache&lt;T&gt;&gt; cache;
+    /**
+     * Comparator used to rank nodes within a layer based on their associated subproblems.
+     */
+    private final NodeSubProblemComparator&lt;T&gt; ranking;
+    /**
+     * List of depths for the current relaxed compilation of the decision diagram.
+     */
+<span class="fc" id="L106">    private ArrayList&lt;Integer&gt; listDepths = null;</span>
+    /**
+     * The list of {@link NodeSubProblem}s of the corresponding depth.
+     */
+<span class="fc" id="L110">    private ArrayList&lt;ArrayList&lt;NodeSubProblem&lt;T&gt;&gt;&gt; nodeSubProblemPerLayer = null;</span>
+    /**
+     * The list of {@link Threshold}s of the corresponding depth.
+     */
+<span class="fc" id="L114">    private ArrayList&lt;ArrayList&lt;Threshold&gt;&gt; layersThresholds = null;</span>
+    /**
+     * List of nodes pruned during the compilation process.
+     */
+<span class="fc" id="L118">    private ArrayList&lt;NodeSubProblem&lt;T&gt;&gt; pruned = null;</span>
+    /**
+     * Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false).
+     */
+<span class="fc" id="L122">    private boolean exact = true;</span>
+    /**
+     * The best node in the terminal layer, if one exists.
+     */
+<span class="fc" id="L126">    private Node best = null;</span>
+    /**
+     * Depth of the last exact layer.
+     */
+<span class="fc" id="L130">    private int depthLEL = -1;</span>
+    /**
+     * The minimum lower bound among all expanded nodes in the decision diagram.
+     */
+    private double lowerBound;
+
+    /**
+     * Total number of nodes created in this diagram.
+     */
+<span class="fc" id="L139">    private int nodesCount = 0;</span>
+
+
+    /**
+     * Creates a new linked decision diagram.
+     *
+     * @param config the configuration object containing problem parameters, heuristics,
+     *               relaxation operators, dominance checkers, and compilation settings
+     */
+<span class="fc" id="L148">    public LinkedDecisionDiagram(CompilationConfig&lt;T&gt; config) {</span>
+<span class="fc" id="L149">        final SubProblem&lt;T&gt; residual = config.residual;</span>
+<span class="fc" id="L150">        final Node root = createNode(residual.getValue());</span>
+<span class="fc" id="L151">        this.pathToRoot = residual.getPath();</span>
+<span class="fc" id="L152">        this.nextLayer.put(residual.getState(), root);</span>
+<span class="fc" id="L153">        this.debugLevel = config.debugLevel;</span>
+<span class="fc" id="L154">        this.config = config;</span>
+<span class="fc" id="L155">        this.lowerBound = Double.MAX_VALUE;</span>
+<span class="fc" id="L156">        this.ranking = new NodeSubProblemComparator&lt;&gt;(config.stateRanking);</span>
+
+<span class="fc" id="L158">        dotStr.append(&quot;digraph %s{%n&quot;.formatted(config.compilationType.toString().toLowerCase()));</span>
+<span class="fc" id="L159">        this.cache = config.cache;</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if (this.cache.isPresent()) {</span>
+<span class="fc" id="L161">            listDepths = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L162">            nodeSubProblemPerLayer = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L163">            layersThresholds = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L164">            pruned = new ArrayList&lt;&gt;();</span>
+        }
+
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Helper method to create a new node and increment the counter.
+     *
+     * @param value the initial value of the node
+     * @return the newly created node
+     */
+    private Node createNode(double value) {
+<span class="fc" id="L176">        nodesCount++;</span>
+<span class="fc" id="L177">        return new Node(value);</span>
+    }
+
+    /**
+     * Compiles the decision diagram according to the configuration:
+     * &lt;ul&gt;
+     *     &lt;li&gt;Exact, relaxed, or restricted compilation type.&lt;/li&gt;
+     *     &lt;li&gt;Layer-wise variable ordering and heuristics.&lt;/li&gt;
+     *     &lt;li&gt;Application of relaxations or restrictions based on width limits.&lt;/li&gt;
+     *     &lt;li&gt;Construction of the DOT graph if export or debugging is enabled.&lt;/li&gt;
+     *     &lt;li&gt;Optional caching of thresholds for faster branch-and-bound computations.&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    @Override
+    public void compile() {
+        // Identify the set of variables to be assigned
+<span class="fc" id="L193">        final Set&lt;Integer&gt; variables = varSet(config);</span>
+
+<span class="fc" id="L195">        int depthGlobalDD = config.residual.getDepth();</span>
+<span class="fc" id="L196">        int depthCurrentDD = 0;</span>
+<span class="fc" id="L197">        int initialDepth = depthGlobalDD;</span>
+
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        while (!variables.isEmpty()) {</span>
+<span class="fc" id="L200">            Integer nextVar = config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());</span>
+
+            // Prepare for the next layer by moving the current layer to previous
+<span class="fc" id="L203">            updatePrevLayer();</span>
+            // Build the current layer from the nodes in the next layer
+<span class="fc" id="L205">            updateCurrentLayer(variables, depthGlobalDD);</span>
+
+            // Prune nodes using cached thresholds
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            if (cache.isPresent()) pruneFromCache(depthGlobalDD, initialDepth);</span>
+
+<span class="fc" id="L210">            this.nextLayer.clear();</span>
+
+            // There is no feasible solution to this subproblem, we can stop the compilation here
+<span class="fc bfc" id="L213" title="All 2 branches covered.">            if (currentLayer.isEmpty()) return;</span>
+
+
+            // Some variables simply can't be assigned
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">            if (nextVar == null) return;</span>
+
+            // If the current layer is too large, we need to shrink it down.
+            // Whether this shrinking down means that we want to perform a restriction
+            // or a relaxation depends on the type of compilation which has been 
+            // requested from this decision diagram  
+            //
+            // IMPORTANT NOTE:
+            // The check is on depth 2 because the parent of the current layer is saved
+            // if a LEL is to be remembered. In order to be sure
+            // to make progress, we must be certain to develop AT LEAST one layer per 
+            // mdd compiled otherwise the LEL is going to be the root of this MDD (and
+            // we would be stuck in an infinite loop)
+<span class="fc bfc" id="L230" title="All 6 branches covered.">            if (!config.useLNS &amp;&amp; depthCurrentDD &gt;= 2 &amp;&amp; currentLayer.size() &gt; config.maxWidth)</span>
+<span class="fc" id="L231">                limitCurrentLayerWidth(variables, depthCurrentDD);</span>
+
+<span class="fc" id="L233">            variables.remove(nextVar);</span>
+
+<span class="fc bfc" id="L235" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; n : currentLayer) {</span>
+<span class="pc bpc" id="L236" title="1 of 4 branches missed.">                if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED)</span>
+<span class="fc" id="L237">                    dotStr.append(generateDotStr(n, false));</span>
+
+<span class="fc bfc" id="L239" title="All 2 branches covered.">                if (n.lb &gt;= config.bestUB) continue;</span>
+
+                // Create children nodes from the current node
+<span class="fc" id="L242">                genChildren(n, nextVar);</span>
+
+                // Update the frontier cutset for relaxed MDDs
+<span class="pc bpc" id="L245" title="1 of 8 branches missed.">                if (config.cutSetType == CutSetType.Frontier</span>
+                        &amp;&amp; config.compilationType == CompilationType.Relaxed
+                        &amp;&amp; !exact &amp;&amp; depthCurrentDD &gt;= 2)
+<span class="fc" id="L248">                    updateFrontierCutset(variables, n);</span>
+<span class="fc" id="L249">            }</span>
+
+<span class="fc bfc" id="L251" title="All 2 branches covered.">            if (config.useLNS) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">                if (currentLayer.size() &gt; config.maxWidth) {</span>
+<span class="fc" id="L253">                    exact = false;</span>
+                    // Apply restriction for LNS
+<span class="fc" id="L255">                    restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);</span>
+                }
+            }
+
+
+            // Prepare information for cache updates
+<span class="fc bfc" id="L261" title="All 4 branches covered.">            if (cache.isPresent() &amp;&amp; config.compilationType == CompilationType.Relaxed)</span>
+<span class="fc" id="L262">                updateCacheLists(depthGlobalDD, depthCurrentDD);</span>
+
+<span class="fc" id="L264">            depthGlobalDD += 1;</span>
+<span class="fc" id="L265">            depthCurrentDD += 1;</span>
+<span class="fc" id="L266">        }</span>
+
+        // Finalize: find best
+<span class="fc bfc" id="L269" title="All 2 branches covered.">        for (Node n : nextLayer.values()) {</span>
+<span class="fc bfc" id="L270" title="All 4 branches covered.">            if (best == null || n.value &lt; best.value) best = n;</span>
+<span class="fc" id="L271">        }</span>
+
+<span class="pc bpc" id="L273" title="1 of 4 branches missed.">        if (config.exportAsDot || debugLevel == DebugLevel.EXTENDED) {</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            for (Entry&lt;T, Node&gt; entry : nextLayer.entrySet()) {</span>
+<span class="fc" id="L275">                T state = entry.getKey();</span>
+<span class="fc" id="L276">                Node node = entry.getValue();</span>
+<span class="fc" id="L277">                NodeSubProblem&lt;T&gt; subProblem = new NodeSubProblem&lt;&gt;(state, best.value, node);</span>
+<span class="fc" id="L278">                dotStr.append(generateDotStr(subProblem, true));</span>
+<span class="fc" id="L279">            }</span>
+        }
+
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (config.compilationType == CompilationType.Relaxed) {</span>
+            // Compute local bounds for all nodes in the diagram
+<span class="fc" id="L284">            computeLocalBounds();</span>
+
+            // Apply updates to the cache
+<span class="fc bfc" id="L287" title="All 4 branches covered.">            if (cache.isPresent() &amp;&amp; !cutset.isEmpty()) finishCacheUpdates();</span>
+        }
+
+<span class="fc bfc" id="L290" title="All 4 branches covered.">        if (debugLevel != DebugLevel.OFF &amp;&amp; config.compilationType != CompilationType.Relaxed)</span>
+<span class="fc" id="L291">            checkFlb(config.problem);</span>
+<span class="fc" id="L292">    }</span>
+
+    /**
+     * Returns whether the decision diagram is exact.
+     *
+     * @return {@code true} if the MDD is exact, {@code false} if relaxed/restricted nodes exist
+     */
+    @Override
+    public boolean isExact() {
+<span class="fc" id="L301">        return exact;</span>
+    }
+
+    /**
+     * Returns the value of the best solution found in this decision diagram, if any.
+     *
+     * @return an {@link Optional} containing the best value or empty if no solution exists
+     */
+    @Override
+    public Optional&lt;Double&gt; bestValue() {
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        if (best == null) {</span>
+<span class="fc" id="L312">            return Optional.empty();</span>
+        } else {
+<span class="fc" id="L314">            return Optional.of(best.value);</span>
+        }
+    }
+
+    /**
+     * Returns the set of decisions representing the best solution found in this MDD.
+     *
+     * @return an {@link Optional} containing the set of decisions in the best solution,
+     * or empty if no solution exists
+     */
+    @Override
+    public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
+<span class="fc bfc" id="L326" title="All 2 branches covered.">        if (best == null) {</span>
+<span class="fc" id="L327">            return Optional.empty();</span>
+        } else {
+<span class="fc" id="L329">            Set&lt;Decision&gt; sol = new HashSet&lt;&gt;(pathToRoot);</span>
+
+<span class="fc" id="L331">            Edge eb = best.best;</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">            while (eb != null) {</span>
+<span class="fc" id="L333">                sol.add(eb.decision);</span>
+<span class="fc" id="L334">                updateBestEdgeColor(eb.hashCode(), &quot;#6fb052&quot;);</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">                eb = eb.origin == null ? null : eb.origin.best;</span>
+            }
+<span class="fc" id="L337">            return Optional.of(sol);</span>
+        }
+    }
+
+    /**
+     * Returns an iterator over the nodes in the exact cutset, transformed into subproblems.
+     *
+     * @return iterator of subproblems in the exact cutset
+     */
+    @Override
+    public Iterator&lt;SubProblem&lt;T&gt;&gt; exactCutset() {
+<span class="fc" id="L348">        return new NodeSubProblemsAsSubProblemsIterator&lt;&gt;(cutset.iterator(), pathToRoot);</span>
+    }
+
+    /**
+     * Checks whether the best path found in a relaxed MDD consists entirely of exact nodes.
+     *
+     * @return {@code true} if the best path contains only exact nodes, {@code false} otherwise
+     */
+    @Override
+    public boolean relaxedBestPathIsExact() {
+<span class="fc bfc" id="L358" title="All 2 branches covered.">        if (best == null) {</span>
+<span class="fc" id="L359">            return false;</span>
+        } else {
+<span class="fc" id="L361">            Edge eb = best.best;</span>
+<span class="fc bfc" id="L362" title="All 2 branches covered.">            while (eb != null) {</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">                if (eb.origin.type == NodeType.RELAXED)</span>
+<span class="fc" id="L364">                    return false;</span>
+<span class="fc" id="L365">                eb = eb.origin.best;</span>
+            }
+<span class="fc" id="L367">            return true;</span>
+        }
+    }
+
+    /**
+     * Exports the compiled decision diagram in DOT format.
+     *
+     * @return a string containing the DOT representation of the MDD
+     */
+    @Override
+    public String exportAsDot() {
+<span class="fc bfc" id="L378" title="All 2 branches covered.">        for (String e : edgesDotStr.values()) {</span>
+<span class="fc" id="L379">            dotStr.append(e);</span>
+<span class="fc" id="L380">            dotStr.append(&quot;];\n&quot;);</span>
+<span class="fc" id="L381">        }</span>
+<span class="fc" id="L382">        dotStr.append(&quot;}&quot;);</span>
+<span class="fc" id="L383">        return dotStr.toString();</span>
+    }
+
+    @Override
+    public int nbNodes() {
+<span class="fc" id="L388">        return nodesCount;</span>
+    }
+
+    /**
+     * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
+     *
+     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
+     */
+
+    @Override
+    public double minLowerBound() {
+<span class="fc" id="L399">        return lowerBound;</span>
+    }
+
+
+    //METHODS USED DURING THE COMPILATION
+
+    /**
+     * Changes the layer focus: what was previously the current layer is now becoming the
+     * previous layer.
+     */
+    private void updatePrevLayer() {
+<span class="fc" id="L410">        prevLayer.clear();</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">        for (NodeSubProblem&lt;T&gt; n : this.currentLayer) {</span>
+<span class="fc" id="L412">            this.prevLayer.put(n.node, n);</span>
+<span class="fc" id="L413">        }</span>
+<span class="fc" id="L414">    }</span>
+
+    /**
+     * Changes the layer focus: what was previously the next layer is now becoming the current
+     * layer
+     *
+     * @param variables     the remaining variables in the decision-making process
+     * @param depthGlobalDD the current depth in the global mdd
+     */
+    private void updateCurrentLayer(Set&lt;Integer&gt; variables, int depthGlobalDD) {
+<span class="fc" id="L424">        currentLayer.clear();</span>
+<span class="fc bfc" id="L425" title="All 2 branches covered.">        for (Entry&lt;T, Node&gt; e : this.nextLayer.entrySet()) {</span>
+<span class="fc" id="L426">            T state = e.getKey();</span>
+<span class="fc" id="L427">            Node node = e.getValue();</span>
+<span class="fc bfc" id="L428" title="All 4 branches covered.">            if (node.type != NodeType.EXACT || !config.dominance.updateDominance(state,</span>
+                    depthGlobalDD, node.value)) {
+<span class="fc" id="L430">                double flb = config.flb.fastLowerBound(state, variables);</span>
+<span class="fc" id="L431">                double rlb = saturatedAdd(node.value, flb);</span>
+<span class="fc" id="L432">                node.flb = flb;</span>
+<span class="fc" id="L433">                this.currentLayer.add(new NodeSubProblem&lt;&gt;(state, rlb, node));</span>
+            }
+<span class="fc" id="L435">        }</span>
+<span class="fc" id="L436">    }</span>
+
+    /**
+     * Prunes items from the current layer using the cache.
+     *
+     * @param depthGlobalDD the current depth in the global mdd
+     * @param initialDepth  the depth when starting the compilation
+     */
+    private void pruneFromCache(int depthGlobalDD, int initialDepth) {
+<span class="fc" id="L445">        pruned.clear();</span>
+<span class="fc bfc" id="L446" title="All 2 branches covered.">        if (depthGlobalDD &gt; initialDepth) {</span>
+<span class="fc bfc" id="L447" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; n : this.currentLayer) {</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">                if (cache.get().getLayer(depthGlobalDD).containsKey(n.state)</span>
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">                        &amp;&amp; cache.get().getThreshold(n.state, depthGlobalDD).isPresent()</span>
+<span class="fc bfc" id="L450" title="All 2 branches covered.">                        &amp;&amp; n.node.value &gt;= cache.get().getThreshold(n.state, depthGlobalDD).get().getValue()) {</span>
+<span class="fc" id="L451">                    pruned.add(n);</span>
+                }
+<span class="fc" id="L453">            }</span>
+<span class="fc" id="L454">            currentLayer.removeAll(pruned);</span>
+        }
+<span class="fc" id="L456">    }</span>
+
+    /**
+     * Updates the lists used to update the cache at the end of the compilation.
+     *
+     * @param depthGlobalDD  the current depth in the global mdd
+     * @param depthCurrentDD the current depth in the current sub-mdd
+     */
+    private void updateCacheLists(int depthGlobalDD, int depthCurrentDD) {
+<span class="fc" id="L465">        listDepths.add(depthGlobalDD);</span>
+<span class="fc" id="L466">        nodeSubProblemPerLayer.add(new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L467">        layersThresholds.add(new ArrayList&lt;&gt;());</span>
+<span class="fc bfc" id="L468" title="All 2 branches covered.">        for (NodeSubProblem&lt;T&gt; n : this.currentLayer) {</span>
+<span class="fc" id="L469">            nodeSubProblemPerLayer.get(depthCurrentDD).add(n);</span>
+<span class="fc" id="L470">            layersThresholds.get(depthCurrentDD).add(new Threshold(Integer.MIN_VALUE, false));</span>
+<span class="fc" id="L471">        }</span>
+<span class="fc" id="L472">    }</span>
+
+    /**
+     * Updates the cache according to the last compilation.
+     */
+    private void finishCacheUpdates() {
+<span class="fc bfc" id="L478" title="All 2 branches covered.">        for (NodeSubProblem&lt;T&gt; n : cutset) {</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">            if (n.node.isMarked) n.node.isInExactCutSet = true;</span>
+<span class="fc" id="L480">        }</span>
+
+<span class="fc" id="L482">        markNodesAboveExactCutSet(nodeSubProblemPerLayer, config.cutSetType);</span>
+        // Update the cache to improve the next computation of the BB
+<span class="fc" id="L484">        computeAndUpdateThreshold(cache.get(), listDepths, nodeSubProblemPerLayer,</span>
+<span class="fc" id="L485">                layersThresholds, config.bestUB, config.cutSetType);</span>
+<span class="fc" id="L486">    }</span>
+
+    /**
+     * Given a node and the associated decision variable generate the children nodes.
+     *
+     * @param n       the parent node
+     * @param nextVar the associated decision variable
+     */
+    private void genChildren(NodeSubProblem&lt;T&gt; n, int nextVar) {
+<span class="fc" id="L495">        lowerBound = Math.min(lowerBound, n.lb);</span>
+<span class="fc" id="L496">        final Iterator&lt;Integer&gt; domain = config.problem.domain(n.state, nextVar);</span>
+<span class="fc bfc" id="L497" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
+<span class="fc" id="L498">            final int val = domain.next();</span>
+<span class="fc" id="L499">            final Decision decision = new Decision(nextVar, val);</span>
+
+<span class="fc" id="L501">            branchOn(n, decision, config.problem);</span>
+<span class="fc" id="L502">        }</span>
+<span class="fc" id="L503">    }</span>
+
+    /**
+     * Updates the frontier cutset with the given node if it meets the criteria.
+     *
+     * @param variables the remaining variables
+     * @param n         the node to potentially add to the cutset
+     */
+    private void updateFrontierCutset(Set&lt;Integer&gt; variables, NodeSubProblem&lt;T&gt; n) {
+<span class="fc bfc" id="L512" title="All 4 branches covered.">        if (variables.isEmpty() &amp;&amp; n.node.type == NodeType.EXACT) {</span>
+<span class="fc" id="L513">            cutset.add(n);</span>
+        }
+<span class="fc bfc" id="L515" title="All 2 branches covered.">        if (n.node.type == NodeType.RELAXED) {</span>
+<span class="fc bfc" id="L516" title="All 2 branches covered.">            for (Edge e : n.node.edges) {</span>
+<span class="fc" id="L517">                Node origin = e.origin;</span>
+<span class="fc bfc" id="L518" title="All 2 branches covered.">                if (origin.type == NodeType.EXACT) {</span>
+<span class="fc" id="L519">                    cutset.add(prevLayer.get(origin));</span>
+                }
+<span class="fc" id="L521">            }</span>
+        }
+<span class="fc" id="L523">    }</span>
+
+    /**
+     * Limits the width of the current layer according to the compilation configuration.
+     *
+     * @param variables      the remaining variables
+     * @param depthCurrentDD the current depth in the decision diagram
+     */
+    private void limitCurrentLayerWidth(Set&lt;Integer&gt; variables, int depthCurrentDD) {
+<span class="fc bfc" id="L532" title="All 3 branches covered.">        switch (config.compilationType) {</span>
+            case Restricted -&gt; {
+<span class="fc" id="L534">                exact = false;</span>
+<span class="fc" id="L535">                restrict(config.maxWidth, ranking, config.reductionStrategy, 0);</span>
+<span class="fc" id="L536">            }</span>
+            case Relaxed -&gt; {
+<span class="fc bfc" id="L538" title="All 2 branches covered.">                if (exact) {</span>
+<span class="fc" id="L539">                    exact = false;</span>
+<span class="fc bfc" id="L540" title="All 2 branches covered.">                    if (config.cutSetType == CutSetType.LastExactLayer) {</span>
+<span class="fc" id="L541">                        cutset.addAll(prevLayer.values());</span>
+<span class="fc" id="L542">                        depthLEL = depthCurrentDD - 1;</span>
+                    }
+                }
+<span class="fc" id="L545">                relax(config.maxWidth, config.relaxation, config.reductionStrategy,</span>
+                        variables);
+<span class="fc" id="L547">            }</span>
+            case Exact -&gt; {
+                /* nothing to do */
+            }
+        }
+<span class="fc" id="L552">    }</span>
+
+    // UTILITY METHODS -----------------------------------------------
+
+    /**
+     * Returns the set of variable indices that have not yet been assigned a value.
+     *
+     * @param input the compilation configuration
+     * @return a set of unassigned variable indices
+     */
+    private Set&lt;Integer&gt; varSet(final CompilationConfig&lt;T&gt; input) {
+<span class="fc" id="L563">        final HashSet&lt;Integer&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L564" title="All 2 branches covered.">        for (int i = 0; i &lt; config.problem.nbVars(); i++) {</span>
+<span class="fc" id="L565">            set.add(i);</span>
+        }
+
+<span class="fc bfc" id="L568" title="All 2 branches covered.">        for (Decision d : input.residual.getPath()) {</span>
+<span class="fc" id="L569">            set.remove(d.variable());</span>
+<span class="fc" id="L570">        }</span>
+<span class="fc" id="L571">        return set;</span>
+    }
+
+    /**
+     * Performs a restriction of the current layer.
+     *
+     * @param maxWidth the maximum tolerated layer width
+     */
+    private void restrict(final int maxWidth, final NodeSubProblemComparator&lt;T&gt; ranking, final ReductionStrategy&lt;T&gt; restrictStrategy, int depth) {
+<span class="fc bfc" id="L580" title="All 4 branches covered.">        if (config.useLNS &amp;&amp; config.solution != null) {</span>
+<span class="fc" id="L581">            List&lt;NodeSubProblem&lt;T&gt;&gt; layer = new ArrayList&lt;&gt;(currentLayer);</span>
+<span class="fc" id="L582">            currentLayer.clear();</span>
+<span class="fc" id="L583">            int frontier = 0;</span>
+<span class="fc" id="L584">            Random random = new Random();</span>
+<span class="fc bfc" id="L585" title="All 2 branches covered.">            for (int k = 0; k &lt; layer.size(); k++) {</span>
+<span class="fc bfc" id="L586" title="All 4 branches covered.">                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() &lt; config.probability) {</span>
+<span class="fc" id="L587">                    swap(layer, frontier, k);</span>
+<span class="fc" id="L588">                    frontier++;</span>
+                }
+            }
+<span class="fc" id="L591">            List&lt;NodeSubProblem&lt;T&gt;&gt; keep = new ArrayList&lt;&gt;(layer.subList(0, frontier));</span>
+<span class="fc" id="L592">            List&lt;NodeSubProblem&lt;T&gt;&gt; candidates = new ArrayList&lt;&gt;(layer.subList(frontier, layer.size()));</span>
+<span class="pc bpc" id="L593" title="1 of 2 branches missed.">            if (keep.size() + candidates.size() &gt; maxWidth) {</span>
+<span class="fc" id="L594">                candidates.sort(Comparator.comparing(NodeSubProblem&lt;T&gt;::getLb));</span>
+<span class="fc" id="L595">                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();</span>
+            }
+<span class="fc" id="L597">            keep.addAll(candidates);</span>
+<span class="fc" id="L598">            currentLayer.addAll(keep);</span>
+<span class="fc" id="L599">        } else {</span>
+<span class="fc" id="L600">            List&lt;NodeSubProblem&lt;T&gt;&gt;[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);</span>
+<span class="fc" id="L601">            currentLayer.clear();</span>
+
+            // For each cluster, select the node with the best cost and add it to the layer, the other are dropped.
+<span class="fc bfc" id="L604" title="All 2 branches covered.">            for (List&lt;NodeSubProblem&lt;T&gt;&gt; cluster : clusters) {</span>
+<span class="pc bpc" id="L605" title="1 of 2 branches missed.">                if (cluster.isEmpty()) continue;</span>
+
+<span class="fc" id="L607">                cluster.sort(ranking);</span>
+<span class="fc" id="L608">                currentLayer.add(cluster.getFirst());</span>
+<span class="fc" id="L609">                cluster.clear();</span>
+            }
+        }
+<span class="fc" id="L612">    }</span>
+
+    /**
+     * Swaps two elements in the given list.
+     *
+     * @param layer the list of nodes
+     * @param f     the index of the first element
+     * @param k     the index of the second element
+     */
+    private void swap(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int f, int k) {
+<span class="fc" id="L622">        NodeSubProblem&lt;T&gt; temp = layer.get(f);</span>
+<span class="fc" id="L623">        layer.set(f, layer.get(k));</span>
+<span class="fc" id="L624">        layer.set(k, temp);</span>
+<span class="fc" id="L625">    }</span>
+
+    /**
+     * Computes the cumulative cost of a solution up to a given depth.
+     *
+     * @param solution the array of decision values
+     * @param depth    the depth up to which the cost should be computed
+     * @return the cumulative cost
+     */
+    private double costInSolutionAtDepth(int[] solution, int depth) {
+<span class="fc" id="L635">        double sum = config.problem.initialValue();</span>
+<span class="fc" id="L636">        T state = config.problem.initialState();</span>
+<span class="fc" id="L637">        int k = 0;</span>
+<span class="fc bfc" id="L638" title="All 2 branches covered.">        while (k &lt; depth) {</span>
+<span class="fc" id="L639">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="fc" id="L640">            sum += config.problem.transitionCost(state, dec);</span>
+<span class="fc" id="L641">            state = config.problem.transition(state, dec);</span>
+<span class="fc" id="L642">            k++;</span>
+<span class="fc" id="L643">        }</span>
+<span class="fc" id="L644">        return sum;</span>
+    }
+
+
+    /**
+     * Performs a restriction of the current layer.
+     *
+     * @param maxWidth the maximum tolerated layer width
+     * @param relax    the relaxation operators which we will use to merge nodes
+     */
+    private void relax(final int maxWidth,
+                       final Relaxation&lt;T&gt; relax,
+                       final ReductionStrategy&lt;T&gt; relaxStrategy,
+                       Set&lt;Integer&gt; variables) {
+        // Generates clusters
+<span class="fc" id="L659">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] clusters = relaxStrategy.defineClusters(currentLayer, maxWidth);</span>
+<span class="fc" id="L660">        currentLayer.clear();</span>
+
+        // For each cluster, merge all the nodes together and add the new node to the layer.
+<span class="fc bfc" id="L663" title="All 2 branches covered.">        for (List&lt;NodeSubProblem&lt;T&gt;&gt; cluster : clusters) {</span>
+<span class="fc bfc" id="L664" title="All 2 branches covered.">            if (cluster.size() == 1) {</span>
+<span class="fc" id="L665">                currentLayer.add(cluster.getFirst());</span>
+<span class="fc" id="L666">                continue;</span>
+            }
+
+<span class="pc bpc" id="L669" title="1 of 2 branches missed.">            if (cluster.isEmpty()) {</span>
+<span class="nc" id="L670">                continue;</span>
+            }
+
+<span class="fc" id="L673">            T merged = relax.mergeStates(new NodeSubProblemsAsStateIterator&lt;&gt;(cluster.iterator()));</span>
+<span class="fc" id="L674">            NodeSubProblem&lt;T&gt; mergedNode = null;</span>
+<span class="fc bfc" id="L675" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; n : currentLayer) {</span>
+<span class="fc bfc" id="L676" title="All 2 branches covered.">                if (n.state.equals(merged)) {</span>
+<span class="fc" id="L677">                    mergedNode = n;</span>
+<span class="fc" id="L678">                    mergedNode.node.type = NodeType.RELAXED;</span>
+<span class="fc" id="L679">                    break;</span>
+                }
+<span class="fc" id="L681">            }</span>
+
+<span class="fc bfc" id="L683" title="All 2 branches covered.">            if (mergedNode == null) {</span>
+<span class="fc" id="L684">                Node newNode = createNode(Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L685">                newNode.type = NodeType.RELAXED;</span>
+<span class="fc" id="L686">                mergedNode = new NodeSubProblem&lt;&gt;(merged, Double.POSITIVE_INFINITY, newNode);</span>
+<span class="fc" id="L687">                currentLayer.add(mergedNode);</span>
+            }
+
+            // redirect and relax all arcs entering the merged node
+<span class="fc bfc" id="L691" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; drop : cluster) {</span>
+<span class="fc" id="L692">                mergedNode.lb = Math.min(mergedNode.lb, drop.lb);</span>
+
+<span class="fc bfc" id="L694" title="All 2 branches covered.">                for (Edge e : drop.node.edges) {</span>
+<span class="fc" id="L695">                    double rcost = relax.relaxEdge(prevLayer.get(e.origin).state, drop.state, merged, e.decision, e.weight);</span>
+
+<span class="fc" id="L697">                    double value = saturatedAdd(e.origin.value, rcost);</span>
+<span class="fc" id="L698">                    e.weight = rcost;</span>
+                    // if there exists an entring arc with relaxed origin, set the merged node to relaxed
+<span class="fc bfc" id="L700" title="All 2 branches covered.">                    if (e.origin.type == NodeType.RELAXED) {</span>
+<span class="fc" id="L701">                        mergedNode.node.type = NodeType.RELAXED;</span>
+                    }
+
+<span class="fc" id="L704">                    mergedNode.node.edges.add(e);</span>
+<span class="fc bfc" id="L705" title="All 2 branches covered.">                    if (value &lt; mergedNode.node.value) {</span>
+<span class="fc" id="L706">                        mergedNode.node.value = value;</span>
+<span class="fc" id="L707">                        mergedNode.node.best = e;</span>
+                    }
+<span class="fc" id="L709">                }</span>
+<span class="fc" id="L710">            }</span>
+
+<span class="fc" id="L712">            mergedNode.node.flb = config.flb.fastLowerBound(merged, variables);</span>
+<span class="fc bfc" id="L713" title="All 2 branches covered.">            if (debugLevel != DebugLevel.OFF) {</span>
+<span class="fc" id="L714">                checkRelaxation(cluster, mergedNode);</span>
+            }
+        }
+<span class="fc" id="L717">    }</span>
+
+    /**
+     * This method performs the branching from the subproblem rooted in &quot;node&quot;, making the given decision
+     * and behaving as per the problem definition.
+     *
+     * @param node     the origin of the transition
+     * @param decision the decision being made
+     * @param problem  the problem that defines the transition and transition cost functions
+     */
+    private void branchOn(final NodeSubProblem&lt;T&gt; node,
+                          final Decision decision,
+                          final Problem&lt;T&gt; problem) {
+<span class="fc bfc" id="L730" title="All 2 branches covered.">        if (debugLevel != DebugLevel.OFF)</span>
+<span class="fc" id="L731">            DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);</span>
+
+<span class="fc" id="L733">        T state = problem.transition(node.state, decision);</span>
+<span class="fc" id="L734">        double cost = problem.transitionCost(node.state, decision);</span>
+<span class="fc" id="L735">        double value = saturatedAdd(node.node.value, cost);</span>
+
+        // when the origin is relaxed, the destination must be relaxed
+<span class="fc" id="L738">        Node n = nextLayer.get(state);</span>
+<span class="fc bfc" id="L739" title="All 2 branches covered.">        if (n == null) {</span>
+<span class="fc" id="L740">            n = createNode(value);</span>
+<span class="fc bfc" id="L741" title="All 2 branches covered.">            if (node.node.type == NodeType.RELAXED) {</span>
+<span class="fc" id="L742">                n.type = NodeType.RELAXED;</span>
+            }
+<span class="fc" id="L744">            nextLayer.put(state, n);</span>
+        } else {
+<span class="fc bfc" id="L746" title="All 2 branches covered.">            if (node.node.type == NodeType.RELAXED) {</span>
+<span class="fc" id="L747">                n.type = NodeType.RELAXED;</span>
+            }
+        }
+
+<span class="fc" id="L751">        Edge edge = new Edge(node.node, decision, cost);</span>
+<span class="fc" id="L752">        n.edges.add(edge);</span>
+<span class="fc bfc" id="L753" title="All 2 branches covered.">        if (value &lt;= n.value) {</span>
+<span class="fc" id="L754">            n.best = edge;</span>
+<span class="fc" id="L755">            n.value = value;</span>
+        }
+<span class="fc" id="L757">    }</span>
+
+    /**
+     * Performs a bottom up traversal of the mdd to compute the local bounds
+     */
+    private void computeLocalBounds() {
+<span class="fc" id="L763">        HashSet&lt;Node&gt; current = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L764">        HashSet&lt;Node&gt; parent = new HashSet&lt;&gt;(nextLayer.values());</span>
+
+<span class="fc bfc" id="L766" title="All 2 branches covered.">        for (Node n : parent) {</span>
+<span class="fc" id="L767">            n.suffix = 0.0;</span>
+<span class="fc" id="L768">            n.isMarked = true;</span>
+<span class="fc" id="L769">        }</span>
+
+<span class="fc bfc" id="L771" title="All 2 branches covered.">        while (!parent.isEmpty()) {</span>
+<span class="fc" id="L772">            HashSet&lt;Node&gt; tmp = current;</span>
+<span class="fc" id="L773">            current = parent;</span>
+<span class="fc" id="L774">            parent = tmp;</span>
+<span class="fc" id="L775">            parent.clear();</span>
+
+<span class="fc bfc" id="L777" title="All 2 branches covered.">            for (Node n : current) {</span>
+<span class="pc bpc" id="L778" title="1 of 2 branches missed.">                if (n.isMarked) {</span>
+<span class="fc bfc" id="L779" title="All 2 branches covered.">                    for (Edge e : n.edges) {</span>
+                        // Note: we might want to do something and stop as soon as the lel has been reached
+<span class="fc" id="L781">                        Node origin = e.origin;</span>
+<span class="fc" id="L782">                        parent.add(origin);</span>
+
+<span class="fc bfc" id="L784" title="All 2 branches covered.">                        if (origin.suffix == null) {</span>
+<span class="fc" id="L785">                            origin.suffix = saturatedAdd(n.suffix, e.weight);</span>
+                        } else {
+<span class="fc" id="L787">                            origin.suffix = Math.min(origin.suffix, saturatedAdd(n.suffix, e.weight));</span>
+                        }
+<span class="fc" id="L789">                        origin.isMarked = true;</span>
+<span class="fc" id="L790">                    }</span>
+                }
+<span class="fc" id="L792">            }</span>
+<span class="fc" id="L793">        }</span>
+<span class="fc" id="L794">    }</span>
+
+    /**
+     * Marks nodes that are above the exact cutset in the decision diagram.
+     *
+     * @param nodePerLayer the nodes organized by layer
+     * @param cutSetType   the type of cutset being used
+     */
+    private void markNodesAboveExactCutSet(ArrayList&lt;ArrayList&lt;NodeSubProblem&lt;T&gt;&gt;&gt; nodePerLayer, CutSetType cutSetType) {
+<span class="fc" id="L803">        HashSet&lt;Node&gt; current = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L804">        HashSet&lt;Node&gt; parent = new HashSet&lt;&gt;();</span>
+
+<span class="fc bfc" id="L806" title="All 2 branches covered.">        if (cutSetType == CutSetType.LastExactLayer) {</span>
+<span class="fc bfc" id="L807" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; n : nodePerLayer.get(depthLEL)) {</span>
+<span class="fc" id="L808">                parent.add(n.node);</span>
+<span class="fc" id="L809">            }</span>
+        } else {
+<span class="fc" id="L811">            parent.addAll(nextLayer.values());</span>
+        }
+
+<span class="fc bfc" id="L814" title="All 2 branches covered.">        while (!parent.isEmpty()) {</span>
+<span class="fc" id="L815">            HashSet&lt;Node&gt; tmp = current;</span>
+<span class="fc" id="L816">            current = parent;</span>
+<span class="fc" id="L817">            parent = tmp;</span>
+<span class="fc" id="L818">            parent.clear();</span>
+
+<span class="fc bfc" id="L820" title="All 2 branches covered.">            for (Node n : current) {</span>
+<span class="fc bfc" id="L821" title="All 2 branches covered.">                for (Edge e : n.edges) {</span>
+                    // Note: we might want to do something and stop as soon as the lel has been reached
+<span class="fc" id="L823">                    Node origin = e.origin;</span>
+<span class="fc" id="L824">                    parent.add(origin);</span>
+<span class="pc bpc" id="L825" title="1 of 8 branches missed.">                    if ((n.isInExactCutSet || n.isAboveExactCutSet)</span>
+                            &amp;&amp; origin.type == NodeType.EXACT
+                            &amp;&amp; !origin.isInExactCutSet) {
+<span class="fc" id="L828">                        origin.isAboveExactCutSet = true;</span>
+                    }
+<span class="fc" id="L830">                }</span>
+<span class="fc" id="L831">            }</span>
+<span class="fc" id="L832">        }</span>
+<span class="fc" id="L833">    }</span>
+
+    /**
+     * Performs the bottom up traversal of the mdd to compute and update the cache
+     */
+    private void computeAndUpdateThreshold(SimpleCache&lt;T&gt; simpleCache,
+                                           ArrayList&lt;Integer&gt; listDepth,
+                                           ArrayList&lt;ArrayList&lt;NodeSubProblem&lt;T&gt;&gt;&gt; nodePerLayer,
+                                           ArrayList&lt;ArrayList&lt;Threshold&gt;&gt; currentCache,
+                                           double ub,
+                                           CutSetType cutSetType) {
+<span class="fc bfc" id="L844" title="All 2 branches covered.">        for (int j = listDepth.size() - 1; j &gt;= 0; j--) {</span>
+<span class="fc" id="L845">            int depth = listDepth.get(j);</span>
+<span class="fc bfc" id="L846" title="All 2 branches covered.">            for (int i = 0; i &lt; nodePerLayer.get(j).size(); i++) {</span>
+<span class="fc" id="L847">                NodeSubProblem&lt;T&gt; sub = nodePerLayer.get(j).get(i);</span>
+<span class="fc bfc" id="L848" title="All 2 branches covered.">                if (simpleCache.getLayer(depth).containsKey(sub.state)</span>
+<span class="pc bpc" id="L849" title="1 of 2 branches missed.">                        &amp;&amp; simpleCache.getLayer(depth).get(sub.state).isPresent()</span>
+<span class="fc bfc" id="L850" title="All 2 branches covered.">                        &amp;&amp; sub.node.value &gt;= simpleCache.getLayer(depth).get(sub.state).get().getValue()) {</span>
+<span class="fc" id="L851">                    double value = simpleCache.getLayer(depth).get(sub.state).get().getValue();</span>
+<span class="fc" id="L852">                    currentCache.get(j).get(i).setValue(value);</span>
+<span class="fc" id="L853">                } else {</span>
+<span class="fc bfc" id="L854" title="All 2 branches covered.">                    if (sub.lb &gt;= ub) {</span>
+<span class="fc" id="L855">                        double rlb = saturatedDiff(sub.lb, sub.node.value);</span>
+<span class="fc" id="L856">                        double value = saturatedDiff(ub, rlb);</span>
+<span class="fc" id="L857">                        currentCache.get(j).get(i).setValue(value);</span>
+<span class="fc bfc" id="L858" title="All 2 branches covered.">                    } else if (sub.node.isInExactCutSet) {</span>
+<span class="pc bpc" id="L859" title="1 of 4 branches missed.">                        if (sub.node.suffix != null &amp;&amp; saturatedAdd(sub.node.value, sub.node.suffix) &gt;= ub) {</span>
+<span class="fc" id="L860">                            double value = Math.min(currentCache.get(j).get(i).getValue(), saturatedDiff(ub, sub.node.suffix));</span>
+<span class="fc" id="L861">                            currentCache.get(j).get(i).setValue(value);</span>
+<span class="fc" id="L862">                        } else {</span>
+<span class="fc" id="L863">                            currentCache.get(j).get(i).setValue(sub.node.value);</span>
+                        }
+                    }
+<span class="fc bfc" id="L866" title="All 2 branches covered.">                    if (sub.node.type == NodeType.EXACT) {</span>
+<span class="pc bpc" id="L867" title="1 of 4 branches missed.">                        if (sub.node.isAboveExactCutSet &amp;&amp; !sub.node.isInExactCutSet) {</span>
+<span class="fc" id="L868">                            currentCache.get(j).get(i).setExplored(true);</span>
+                        }
+<span class="fc bfc" id="L870" title="All 2 branches covered.">                        if (cutSetType == CutSetType.LastExactLayer</span>
+<span class="fc bfc" id="L871" title="All 4 branches covered.">                                &amp;&amp; sub.node.value &gt; currentCache.get(j).get(i).getValue()</span>
+                                &amp;&amp; sub.node.isInExactCutSet)
+<span class="fc" id="L873">                            currentCache.get(j).get(i).setExplored(true);</span>
+<span class="fc bfc" id="L874" title="All 2 branches covered.">                        if (currentCache.get(j).get(i).isExplored()) {</span>
+<span class="fc" id="L875">                            simpleCache.getLayer(depth).update(sub.state, currentCache.get(j).get(i));</span>
+                        }
+                    }
+                }
+<span class="fc bfc" id="L879" title="All 2 branches covered.">                for (Edge e : sub.node.edges) {</span>
+<span class="fc" id="L880">                    Node origin = e.origin;</span>
+<span class="fc" id="L881">                    int index = -1;</span>
+<span class="pc bpc" id="L882" title="1 of 2 branches missed.">                    for (int k = 0; k &lt; nodePerLayer.get(j - 1).size(); k++) {</span>
+<span class="fc bfc" id="L883" title="All 2 branches covered.">                        if (nodePerLayer.get(j - 1).get(k).node.equals(origin)) {</span>
+<span class="fc" id="L884">                            index = k;</span>
+<span class="fc" id="L885">                            break;</span>
+                        }
+                    }
+<span class="fc" id="L888">                    double value = Math.max(currentCache.get(j - 1).get(index).getValue(), saturatedDiff(currentCache.get(j).get(i).getValue(), e.weight));</span>
+<span class="fc" id="L889">                    currentCache.get(j - 1).get(index).setValue(value);</span>
+<span class="fc" id="L890">                }</span>
+            }
+        }
+<span class="fc" id="L893">    }</span>
+
+
+    // ----- DEBUG AND EXPORT STUFF -----
+
+    /**
+     * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
+     *
+     * @param node      The node to add to the .dot string
+     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
+     * @return A .dot formatted string containing the node and the edges leading to this node.
+     */
+    private StringBuilder generateDotStr(NodeSubProblem&lt;T&gt; node, boolean lastLayer) {
+<span class="fc" id="L906">        DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+
+<span class="fc bfc" id="L908" title="All 2 branches covered.">        if (lastLayer) {</span>
+<span class="fc" id="L909">            node.node.flb = config.flb.fastLowerBound(node.state, new HashSet&lt;&gt;());</span>
+        }
+<span class="fc" id="L911">        String nodeStr = &quot;\&quot;%s\nh: %s - g: %s\&quot;&quot;.formatted(</span>
+                node.state,
+<span class="fc" id="L913">                df.format(node.node.flb),</span>
+<span class="fc" id="L914">                df.format(node.node.value)</span>
+        );
+
+<span class="fc" id="L917">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L918">        sb.append(node.node.hashCode());</span>
+<span class="fc" id="L919">        sb.append(&quot; [label=&quot;).append(nodeStr);</span>
+<span class="fc bfc" id="L920" title="All 2 branches covered.">        if (node.node.type == NodeType.RELAXED) {</span>
+<span class="fc" id="L921">            sb.append(&quot;, shape=box, tooltip=\&quot;Relaxed node\&quot;&quot;);</span>
+        } else {
+<span class="fc" id="L923">            sb.append(&quot;, style=rounded, shape=rectangle, tooltip=\&quot;Exact node\&quot;&quot;);</span>
+        }
+<span class="fc bfc" id="L925" title="All 2 branches covered.">        if (lastLayer) {</span>
+<span class="fc" id="L926">            sb.append(&quot;, style=\&quot;filled, rounded\&quot;, shape=rectangle, color=black, fontcolor=white&quot;);</span>
+<span class="fc" id="L927">            sb.append(&quot;, tooltip=\&quot;Terminal node\&quot;&quot;);</span>
+        }
+<span class="fc" id="L929">        sb.append(&quot;];\n&quot;);</span>
+
+<span class="fc bfc" id="L931" title="All 2 branches covered.">        for (Edge e : node.node.edges) {</span>
+<span class="fc" id="L932">            String edgeStr = e.origin.hashCode() + &quot; -&gt; &quot; + node.node.hashCode() +</span>
+<span class="fc" id="L933">                    &quot; [label=&quot; + df.format(e.weight) +</span>
+<span class="fc" id="L934">                    &quot;, tooltip=\&quot;&quot; + e.decision.toString() + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L935">            edgesDotStr.put(e.hashCode(), edgeStr);</span>
+<span class="fc" id="L936">        }</span>
+<span class="fc" id="L937">        return sb;</span>
+    }
+
+    /**
+     * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
+     *
+     * @param edgeHash The hashcode of the edge to color.
+     * @param color    HTML string for the color of the edge
+     */
+    private void updateBestEdgeColor(int edgeHash, String color) {
+<span class="fc" id="L947">        String edgeStr = edgesDotStr.get(edgeHash);</span>
+<span class="fc bfc" id="L948" title="All 2 branches covered.">        if (edgeStr != null) {</span>
+<span class="fc" id="L949">            edgeStr += &quot;, color=\&quot;&quot; + color + &quot;\&quot;, fontcolor=\&quot;&quot; + color + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L950">            edgesDotStr.replace(edgeHash, edgeStr);</span>
+        }
+<span class="fc" id="L952">    }</span>
+
+
+    /**
+     * Finds the shortest path between two nodes in the decision diagram using a Dijkstra variant.
+     * &lt;p&gt;
+     * Since nodes only store incoming edges, the search starts from the target node
+     * and explores the graph backwards until the source node is reached.
+     * &lt;/p&gt;
+     *
+     * @param source the starting node of the path
+     * @param target the ending node of the path
+     * @return a list of decisions representing the shortest path from source to target
+     */
+    private List&lt;Decision&gt; shortestPath(Node source, Node target) {
+<span class="pc bpc" id="L967" title="2 of 4 branches missed.">        if (source == null || target == null) {</span>
+<span class="nc" id="L968">            return Collections.emptyList();</span>
+        }
+
+<span class="fc bfc" id="L971" title="All 2 branches covered.">        if (source.equals(target)) {</span>
+<span class="fc" id="L972">            return Collections.emptyList();</span>
+        }
+
+<span class="fc" id="L975">        record NodeDist(Node node, double dist) implements Comparable&lt;NodeDist&gt; {</span>
+            @Override
+            public int compareTo(NodeDist o) {
+<span class="fc" id="L978">                return Double.compare(this.dist, o.dist);</span>
+            }
+        }
+
+<span class="fc" id="L982">        final Map&lt;Node, Double&gt; distances = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L983">        final Map&lt;Node, Edge&gt; bestEdgeToSuccessor = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L984">        final Map&lt;Node, Node&gt; successors = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L985">        PriorityQueue&lt;NodeDist&gt; pq = new PriorityQueue&lt;&gt;();</span>
+
+<span class="fc" id="L987">        distances.put(target, 0.0);</span>
+<span class="fc" id="L988">        pq.add(new NodeDist(target, 0.0));</span>
+
+<span class="pc bpc" id="L990" title="1 of 2 branches missed.">        while (!pq.isEmpty()) {</span>
+<span class="fc" id="L991">            NodeDist current = pq.poll();</span>
+<span class="fc" id="L992">            Node u = current.node();</span>
+<span class="fc" id="L993">            double d = current.dist();</span>
+
+<span class="fc bfc" id="L995" title="All 2 branches covered.">            if (d &gt; distances.getOrDefault(u, Double.POSITIVE_INFINITY)) continue;</span>
+
+
+<span class="fc bfc" id="L998" title="All 2 branches covered.">            if (u.equals(source)) break;</span>
+
+
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">            for (Edge e : u.edges) {</span>
+<span class="fc" id="L1002">                Node v = e.origin;</span>
+<span class="pc bpc" id="L1003" title="1 of 2 branches missed.">                if (v == null) continue;</span>
+
+<span class="fc" id="L1005">                double newDist = d + e.weight;</span>
+<span class="fc bfc" id="L1006" title="All 2 branches covered.">                if (newDist &lt; distances.getOrDefault(v, Double.POSITIVE_INFINITY)) {</span>
+<span class="fc" id="L1007">                    distances.put(v, newDist);</span>
+<span class="fc" id="L1008">                    bestEdgeToSuccessor.put(v, e);</span>
+<span class="fc" id="L1009">                    successors.put(v, u);</span>
+<span class="fc" id="L1010">                    pq.add(new NodeDist(v, newDist));</span>
+                }
+<span class="fc" id="L1012">            }</span>
+<span class="fc" id="L1013">        }</span>
+
+<span class="pc bpc" id="L1015" title="1 of 2 branches missed.">        if (!bestEdgeToSuccessor.containsKey(source)) {</span>
+<span class="nc" id="L1016">            return Collections.emptyList();</span>
+        }
+
+<span class="fc" id="L1019">        List&lt;Decision&gt; path = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1020">        Node curr = source;</span>
+<span class="pc bpc" id="L1021" title="1 of 4 branches missed.">        while (curr != null &amp;&amp; !curr.equals(target)) {</span>
+<span class="fc" id="L1022">            Edge e = bestEdgeToSuccessor.get(curr);</span>
+<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">            if (e == null) break;</span>
+<span class="fc" id="L1024">            path.add(e.decision);</span>
+<span class="pc bpc" id="L1025" title="1 of 2 branches missed.">            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(e.hashCode(), &quot;#ff0000&quot;);</span>
+<span class="fc" id="L1026">            curr = successors.get(curr);</span>
+<span class="fc" id="L1027">        }</span>
+<span class="fc" id="L1028">        return path;</span>
+    }
+
+    /**
+     * Given a node, returns the list of decisions taken from the root to reach this node.
+     *
+     * @param node A node of the mdd
+     * @return The list of decisions took from the root to reach the input node.
+     */
+    private LinkedList&lt;PathInfo&gt; constructPathFromRoot(Node node, double lengthToEnd) {
+<span class="fc" id="L1038">        LinkedList&lt;PathInfo&gt; path = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L1039">        Edge eb = node.best;</span>
+<span class="fc" id="L1040">        double currentLength = lengthToEnd;</span>
+<span class="fc bfc" id="L1041" title="All 2 branches covered.">        while (eb != null) {</span>
+<span class="fc" id="L1042">            currentLength += eb.weight;</span>
+<span class="fc" id="L1043">            PathInfo info = new PathInfo(eb.decision, eb.origin.flb, currentLength);</span>
+<span class="fc" id="L1044">            path.addFirst(info);</span>
+<span class="fc bfc" id="L1045" title="All 2 branches covered.">            if (debugLevel == DebugLevel.EXTENDED) updateBestEdgeColor(eb.hashCode(), &quot;#ff0000&quot;);</span>
+<span class="fc" id="L1046">            eb = eb.origin.best;</span>
+
+<span class="fc" id="L1048">        }</span>
+<span class="fc" id="L1049">        return path;</span>
+    }
+
+
+    /**
+     * Given a list of decisions returns string describing the states from root.
+     *
+     * @param pathFromRoot A list of decision.
+     * @param problem      The problem linked to this mdd.
+     * @return A list of decisions of the generated states from root.
+     */
+    private LinkedList&lt;String&gt; constructStateDescriptionFromRoot(LinkedList&lt;PathInfo&gt; pathFromRoot,
+                                                                 Problem&lt;T&gt; problem) {
+<span class="fc" id="L1062">        LinkedList&lt;String&gt; states = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L1063">        T current = problem.initialState();</span>
+<span class="fc" id="L1064">        int depth = 0;</span>
+<span class="fc" id="L1065">        StringBuilder msg = new StringBuilder(&quot;%-23s&quot;.formatted(depth + &quot;.&quot;));</span>
+<span class="fc bfc" id="L1066" title="All 2 branches covered.">        for (PathInfo pathInfo : pathFromRoot) {</span>
+<span class="fc" id="L1067">            msg.append(&quot;length to end: %6s&quot;.formatted(pathInfo.lengthToEnd));</span>
+<span class="fc" id="L1068">            msg.append(&quot; - flb: %6s&quot;.formatted(pathInfo.flbOfOrigin));</span>
+<span class="pc bpc" id="L1069" title="1 of 2 branches missed.">            if (pathInfo.flbOfOrigin - 1e-10 &gt; pathInfo.lengthToEnd) msg.append(&quot;!&quot;);</span>
+<span class="fc" id="L1070">            msg.append(&quot; - &quot;).append(current.toString());</span>
+<span class="fc" id="L1071">            msg.append(&quot;\n&quot;).append(pathInfo.decision);</span>
+<span class="fc" id="L1072">            states.addLast(msg.toString());</span>
+<span class="fc" id="L1073">            depth++;</span>
+<span class="fc" id="L1074">            msg = new StringBuilder(&quot;%-20s - &quot;.formatted(depth + &quot;. cost: &quot; + problem.transitionCost(current,</span>
+                    pathInfo.decision)));
+<span class="fc" id="L1076">            current = problem.transition(current, pathInfo.decision);</span>
+
+
+<span class="fc" id="L1079">        }</span>
+<span class="fc" id="L1080">        states.addLast(msg.toString());</span>
+<span class="fc" id="L1081">        states.addLast(current.toString());</span>
+<span class="fc" id="L1082">        return states;</span>
+    }
+
+    /**
+     * Checks if the {@link FastLowerBound} is well-defined.
+     * This method constructs longest path from terminal nodes and checks for each node the mdd
+     * if the associated fast lower bound is larger than the identified path.
+     *
+     */
+    private void checkFlb(Problem&lt;T&gt; problem) {
+<span class="fc" id="L1092">        DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+<span class="fc bfc" id="L1093" title="All 2 branches covered.">        for (Node last : nextLayer.values()) {</span>
+            //For each node we save the shortest path to last
+<span class="fc" id="L1095">            LinkedHashMap&lt;Node, Double&gt; parent = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L1096">            parent.put(last, 0.0);</span>
+<span class="fc bfc" id="L1097" title="All 2 branches covered.">            while (!parent.isEmpty()) {</span>
+<span class="fc" id="L1098">                Entry&lt;Node, Double&gt; current = parent.pollFirstEntry();</span>
+<span class="fc bfc" id="L1099" title="All 2 branches covered.">                if (current.getKey().flb - 1e-10 &gt; current.getValue()) {</span>
+<span class="fc" id="L1100">                    LinkedList&lt;PathInfo&gt; pathFromRoot = constructPathFromRoot(current.getKey(),</span>
+<span class="fc" id="L1101">                            current.getValue());</span>
+<span class="fc" id="L1102">                    List&lt;Decision&gt; fullPath = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1103">                    pathFromRoot.forEach(pi -&gt; fullPath.add(pi.decision()));</span>
+<span class="fc" id="L1104">                    fullPath.addAll(shortestPath(current.getKey(), last));</span>
+
+<span class="fc" id="L1106">                    LinkedList&lt;String&gt; failedState = constructStateDescriptionFromRoot(pathFromRoot, problem);</span>
+<span class="fc" id="L1107">                    String lastState = failedState.getLast();</span>
+<span class="fc" id="L1108">                    lastState = &quot; - flb: %6s&quot;.formatted(current.getKey().flb) + &quot;! - &quot; + lastState;</span>
+<span class="fc" id="L1109">                    lastState = &quot;length to end: %6s&quot;.formatted(current.getValue()) + lastState;</span>
+<span class="fc" id="L1110">                    failedState.removeLast();</span>
+<span class="fc" id="L1111">                    lastState = failedState.getLast() + lastState;</span>
+<span class="fc" id="L1112">                    failedState.removeLast();</span>
+<span class="fc" id="L1113">                    failedState.addLast(lastState);</span>
+<span class="fc" id="L1114">                    String statesStr = failedState.stream().map(Objects::toString).collect(Collectors.joining(&quot;\n\t&quot;));</span>
+<span class="fc" id="L1115">                    String failureMsg = (&quot;Found node with lower bound (%s) bigger than its &quot; +</span>
+<span class="fc" id="L1116">                            &quot;shortest path (%s)\n&quot;).formatted(df.format(current.getKey().flb),</span>
+<span class="fc" id="L1117">                            df.format(current.getValue()));</span>
+<span class="fc" id="L1118">                    failureMsg += &quot;Path from root: \n\t%s\n\n&quot;.formatted(statesStr);</span>
+<span class="fc" id="L1119">                    failureMsg += &quot;Failing state: %s\n&quot;.formatted(failedState.getLast());</span>
+<span class="fc" id="L1120">                    failureMsg += &quot;\nFull failing path:\n&quot;;</span>
+<span class="fc" id="L1121">                    failureMsg += fullPath</span>
+<span class="fc" id="L1122">                            .stream()</span>
+<span class="fc" id="L1123">                            .map(d -&gt; &quot;\t&quot; + d.toString())</span>
+<span class="fc" id="L1124">                            .collect(Collectors.joining(&quot;\n&quot;));</span>
+<span class="fc" id="L1125">                    failureMsg += &quot;\n&quot;;</span>
+<span class="fc bfc" id="L1126" title="All 2 branches covered.">                    if (debugLevel == DebugLevel.EXTENDED) {</span>
+<span class="fc" id="L1127">                        failureMsg = finalizeErrorMsgAndExport(failureMsg);</span>
+                    }
+
+<span class="fc" id="L1130">                    throw new RuntimeException(failureMsg);</span>
+                }
+
+<span class="fc bfc" id="L1133" title="All 2 branches covered.">                for (Edge edge : current.getKey().edges) {</span>
+<span class="fc" id="L1134">                    double shortestFromParent = parent.getOrDefault(edge.origin, Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L1135">                    parent.put(edge.origin, Double.min(shortestFromParent, edge.weight + current.getValue()));</span>
+<span class="fc" id="L1136">                }</span>
+<span class="fc" id="L1137">            }</span>
+<span class="fc" id="L1138">        }</span>
+<span class="fc" id="L1139">    }</span>
+
+    /**
+     * Checks whether the relaxation is coherent. This method compiles mdd starting from a
+     * relaxed node and each merged nodes. Then, it compares the best values of each solution.
+     * The path passing through the relaxed node must be a lower bound.
+     *
+     */
+    private void checkRelaxation(List&lt;NodeSubProblem&lt;T&gt;&gt; nodesToMerge,
+                                 NodeSubProblem&lt;T&gt; relaxedNode) {
+<span class="fc" id="L1149">        DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+
+<span class="fc" id="L1151">        Set&lt;Decision&gt; pathFromRelaxedToRoot = constructPathToRoot(relaxedNode.node);</span>
+<span class="fc" id="L1152">        pathFromRelaxedToRoot.addAll(pathToRoot);</span>
+<span class="fc" id="L1153">        SubProblem&lt;T&gt; relaxedSub = new SubProblem&lt;&gt;(relaxedNode.state, relaxedNode.node.value,</span>
+                relaxedNode.lb, pathFromRelaxedToRoot);
+
+<span class="fc" id="L1156">        int relaxationDepth = relaxedSub.getDepth();</span>
+<span class="fc" id="L1157">        LinkedDecisionDiagram&lt;T&gt; relaxedMdd = compileSubMdd(relaxedSub);</span>
+<span class="fc" id="L1158">        Optional&lt;Double&gt; bestWithRelaxed = relaxedMdd.bestValue();</span>
+<span class="fc" id="L1159">        Optional&lt;Set&lt;Decision&gt;&gt; bestRelaxedSol = relaxedMdd.bestSolution();</span>
+<span class="fc" id="L1160">        Optional&lt;Double&gt; bestTransitionToRelaxed = Optional.of(relaxedNode.node.best.weight);</span>
+
+        for (NodeSubProblem&lt;T&gt; node :
+<span class="fc bfc" id="L1163" title="All 4 branches covered.">                nodesToMerge.stream().filter(n -&gt; n.node.type == NodeType.EXACT).toList()) {</span>
+<span class="fc" id="L1164">            Set&lt;Decision&gt; pathFromCurrentToRoot = constructPathToRoot(node.node);</span>
+<span class="fc" id="L1165">            pathFromCurrentToRoot.addAll(pathToRoot);</span>
+<span class="fc" id="L1166">            SubProblem&lt;T&gt; sub = new SubProblem&lt;&gt;(node.state, node.node.value, node.lb, pathFromCurrentToRoot);</span>
+<span class="fc" id="L1167">            LinkedDecisionDiagram&lt;T&gt; mdd = compileSubMdd(sub);</span>
+<span class="fc" id="L1168">            Optional&lt;Double&gt; bestWithNode = mdd.bestValue();</span>
+<span class="fc" id="L1169">            Optional&lt;Set&lt;Decision&gt;&gt; bestSol = mdd.bestSolution();</span>
+<span class="fc" id="L1170">            String failureMsg = &quot;&quot;;</span>
+<span class="fc bfc" id="L1171" title="All 2 branches covered.">            if (bestWithRelaxed.isPresent()</span>
+<span class="fc bfc" id="L1172" title="All 2 branches covered.">                    &amp;&amp; bestWithNode.isPresent()</span>
+<span class="fc bfc" id="L1173" title="All 2 branches covered.">                    &amp;&amp; bestWithRelaxed.get() - 1e-10 &gt; bestWithNode.get()) {</span>
+
+<span class="fc" id="L1175">                failureMsg = &quot;Found relaxed node that lead to worst solution&quot; +</span>
+<span class="fc" id="L1176">                        &quot; (%s) than one of the merged nodes (%s).\n&quot;.formatted(</span>
+<span class="fc" id="L1177">                                df.format(bestWithRelaxed.get()), df.format(bestWithNode.get()));</span>
+
+<span class="fc" id="L1179">                failureMsg += &quot;Depth: &quot; + relaxationDepth + &quot;\n&quot;;</span>
+<span class="fc" id="L1180">                failureMsg += &quot;Relaxed state: &quot; + relaxedNode.state + &quot;\n&quot;;</span>
+<span class="fc" id="L1181">                failureMsg += &quot;Merged states state:\n\t&quot; + nodesToMerge</span>
+<span class="fc" id="L1182">                        .stream().map(n -&gt; n.state.toString()).collect(Collectors.joining(&quot;\n\t&quot;));</span>
+<span class="fc" id="L1183">                failureMsg += &quot;\n\nPath by relaxed node : %s - value: %s\n&quot;.formatted(</span>
+<span class="fc" id="L1184">                        relaxedNode.state, df.format(bestWithRelaxed.get()));</span>
+<span class="fc" id="L1185">                failureMsg += describePath(bestRelaxedSol.get(), Optional.of(relaxationDepth),</span>
+<span class="fc" id="L1186">                        Optional.of(relaxedSub.getState()), bestTransitionToRelaxed);</span>
+
+<span class="fc" id="L1188">                failureMsg += &quot;\n\nPath by exact node : %s - value: %s\n&quot;.formatted(</span>
+<span class="fc" id="L1189">                        node.state, df.format(bestWithNode.get()));</span>
+<span class="fc" id="L1190">                failureMsg += describePath(bestSol.get(), Optional.empty(), Optional.empty(),</span>
+<span class="fc" id="L1191">                        Optional.empty());</span>
+
+<span class="pc bpc" id="L1193" title="1 of 4 branches missed.">            } else if (bestWithRelaxed.isEmpty() &amp;&amp; bestWithNode.isPresent()) {</span>
+<span class="nc" id="L1194">                failureMsg = &quot;Found relaxed node that lead to no solution but not the &quot; +</span>
+                        &quot;merged ones.\n&quot;;
+<span class="nc" id="L1196">                failureMsg += &quot;Depth: &quot; + relaxationDepth + &quot;\n&quot;;</span>
+<span class="nc" id="L1197">                failureMsg += &quot;Relaxed state: &quot; + relaxedNode.state;</span>
+<span class="nc" id="L1198">                failureMsg += &quot;\nMerged states state:\n\t&quot; + nodesToMerge</span>
+<span class="nc" id="L1199">                        .stream().map(n -&gt; n.state.toString()).collect(Collectors.joining(&quot;\n\t&quot;));</span>
+            }
+
+<span class="fc bfc" id="L1202" title="All 2 branches covered.">            if (!failureMsg.isEmpty()) {</span>
+<span class="fc" id="L1203">                failureMsg += &quot;\n&quot;;</span>
+<span class="fc bfc" id="L1204" title="All 2 branches covered.">                if (debugLevel == DebugLevel.EXTENDED) {</span>
+<span class="fc" id="L1205">                    dotStr.append(generateDotStr(relaxedNode, false));</span>
+<span class="fc" id="L1206">                    failureMsg = finalizeErrorMsgAndExport(failureMsg);</span>
+                }
+<span class="fc" id="L1208">                throw new RuntimeException(failureMsg);</span>
+            }
+<span class="fc" id="L1210">        }</span>
+<span class="fc" id="L1211">    }</span>
+
+    private String finalizeErrorMsgAndExport(String failureMsg) {
+<span class="fc" id="L1214">        String dot = exportAsDot();</span>
+<span class="fc" id="L1215">        Path path = Path.of(&quot;output&quot;, &quot;failed.dot&quot;);</span>
+        try {
+<span class="fc" id="L1217">            Files.createDirectories(path.getParent());</span>
+<span class="fc" id="L1218">            try (BufferedWriter bw =</span>
+<span class="fc" id="L1219">                         new BufferedWriter(new FileWriter(path.toFile()))) {</span>
+<span class="fc" id="L1220">                bw.write(dot);</span>
+<span class="fc" id="L1221">                failureMsg += &quot;MDD saved in output/failed.dot\n&quot;;</span>
+            }
+<span class="nc" id="L1223">        } catch (IOException e) {</span>
+<span class="nc" id="L1224">            throw new RuntimeException(e);</span>
+<span class="fc" id="L1225">        }</span>
+<span class="fc" id="L1226">        return failureMsg;</span>
+    }
+
+    /**
+     * Given a node sub-problem compiles the associated mdd and returns it.
+     */
+    private LinkedDecisionDiagram&lt;T&gt; compileSubMdd(SubProblem&lt;T&gt; sub) {
+<span class="fc" id="L1233">        CompilationConfig&lt;T&gt; compilation = config.copy();</span>
+<span class="fc" id="L1234">        compilation.residual = sub;</span>
+<span class="fc" id="L1235">        compilation.exportAsDot = false;</span>
+<span class="fc" id="L1236">        compilation.debugLevel = DebugLevel.OFF;</span>
+<span class="fc" id="L1237">        compilation.compilationType = CompilationType.Exact;</span>
+
+<span class="fc" id="L1239">        LinkedDecisionDiagram&lt;T&gt; mdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="fc" id="L1240">        mdd.compile();</span>
+<span class="fc" id="L1241">        return mdd;</span>
+    }
+
+    /**
+     * Returns the set of decision leading the root to the input node.
+     *
+     * @param node The target node.
+     * @return The set of decision leading the root to the input node.
+     */
+    private Set&lt;Decision&gt; constructPathToRoot(Node node) {
+<span class="fc" id="L1251">        Edge eb = node.best;</span>
+<span class="fc" id="L1252">        Set&lt;Decision&gt; path = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L1253" title="All 2 branches covered.">        while (eb != null) {</span>
+<span class="fc" id="L1254">            Decision decision = eb.decision;</span>
+<span class="fc" id="L1255">            path.add(decision);</span>
+<span class="fc" id="L1256">            eb = eb.origin.best;</span>
+<span class="fc" id="L1257">        }</span>
+<span class="fc" id="L1258">        return path;</span>
+    }
+
+    /**
+     * Given a set of decision going from the root to a terminal node, returns a description of
+     * the path.
+     *
+     */
+    private String describePath(Set&lt;Decision&gt; pathFromRoot, Optional&lt;Integer&gt; relaxationDepth,
+                                Optional&lt;T&gt; relaxedState, Optional&lt;Double&gt; relaxedCost) {
+<span class="fc" id="L1268">        List&lt;Decision&gt; path = pathFromRoot.stream().sorted(Comparator.comparingInt(Decision::variable)).toList();</span>
+<span class="fc" id="L1269">        T current = config.problem.initialState();</span>
+<span class="fc" id="L1270">        int depth = 0;</span>
+<span class="fc" id="L1271">        StringBuilder msg = new StringBuilder(&quot;\t\t%-23s&quot;.formatted(depth + &quot;.&quot;));</span>
+<span class="fc bfc" id="L1272" title="All 2 branches covered.">        for (Decision decision : path) {</span>
+<span class="fc" id="L1273">            msg.append(current).append(&quot;\n\t&quot;);</span>
+<span class="fc" id="L1274">            msg.append(decision);</span>
+<span class="fc" id="L1275">            msg.append(&quot;\n&quot;);</span>
+<span class="fc" id="L1276">            depth++;</span>
+
+            double cost;
+<span class="fc bfc" id="L1279" title="All 4 branches covered.">            if (relaxationDepth.isPresent() &amp;&amp; depth == relaxationDepth.get()) {</span>
+<span class="fc" id="L1280">                cost = relaxedCost.get();</span>
+<span class="fc" id="L1281">                current = relaxedState.get();</span>
+            } else {
+<span class="fc" id="L1283">                cost = config.problem.transitionCost(current, decision);</span>
+<span class="fc" id="L1284">                current = config.problem.transition(current, decision);</span>
+            }
+
+<span class="fc" id="L1287">            msg.append(&quot;\t\t%-20s - &quot;.formatted(depth + &quot;. cost: &quot; + cost));</span>
+
+<span class="fc" id="L1289">        }</span>
+<span class="fc" id="L1290">        msg.append(current);</span>
+<span class="fc" id="L1291">        return msg.toString();</span>
+    }
+
+
+    /**
+     * A helper record to store information about a path segment.
+     *
+     * @param decision    the decision made at this step
+     * @param flbOfOrigin the fast lower bound of the origin node
+     * @param lengthToEnd the length of the path from this point to the end
+     */
+<span class="fc" id="L1302">    private record PathInfo(Decision decision, double flbOfOrigin, double lengthToEnd) {</span>
+    }
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

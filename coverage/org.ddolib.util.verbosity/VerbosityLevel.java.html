@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VerbosityLevel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util.verbosity</a> &gt; <span class="el_source">VerbosityLevel.java</span></div><h1>VerbosityLevel.java</h1><pre class="source lang-java linenums">package org.ddolib.util.verbosity;
+
+/**
+ * Defines the different verbosity levels controlling the amount of information
+ * printed during the execution of a solver.
+ * &lt;p&gt;
+ * The verbosity level determines how much runtime feedback is displayed
+ * while solving an optimization problem. This can range from completely silent
+ * operation to detailed tracing of solver progress and subproblem development.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Typical usage involves selecting an appropriate verbosity level in the model
+ * configuration (see {@link org.ddolib.modeling.Model#verbosityLevel()}), depending
+ * on whether the focus is on performance, debugging, or visualization of the search process.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L18">public enum VerbosityLevel {</span>
+    /**
+     * No output is produced.
+     * &lt;p&gt;
+     * This mode is intended for fully silent execution, where performance
+     * measurements or logs are not required.
+     * &lt;/p&gt;
+     */
+<span class="fc" id="L26">    SILENT,</span>
+    /**
+     * Displays important progress updates.
+     * &lt;p&gt;
+     * In this mode, the solver prints a message each time a new best objective
+     * value is found during the search.
+     * &lt;/p&gt;
+     */
+<span class="fc" id="L34">    NORMAL,</span>
+    /**
+     * Displays detailed runtime information for debugging or analysis purposes.
+     * &lt;p&gt;
+     * In this mode, the solver outputs:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;A message whenever a new best objective is found.&lt;/li&gt;
+     *     &lt;li&gt;Periodic statistics about the search frontier (approximately every 0.5 seconds).&lt;/li&gt;
+     *     &lt;li&gt;Information about each developed subproblem as the search progresses.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * This mode provides the highest level of detail and is useful for
+     * performance analysis and algorithmic tuning.
+     */
+<span class="fc" id="L48">    LARGE,</span>
+
+    /**
+     * Same that {@code LARGE} but save the logs into {@code logs.txt} files.
+     */
+<span class="fc" id="L53">    EXPORT,</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

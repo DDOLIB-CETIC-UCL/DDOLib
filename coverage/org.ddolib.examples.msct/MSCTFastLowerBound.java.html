@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.msct</a> &gt; <span class="el_source">MSCTFastLowerBound.java</span></div><h1>MSCTFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.msct;
+
+import org.ddolib.modeling.FastLowerBound;
+
+import java.util.Set;
+/**
+ * Provides a fast lower bound computation for the Maximum Sum of Compatible Tasks (MSCT) problem.
+ * &lt;p&gt;
+ * The {@link MSCTFastLowerBound} class estimates a lower bound on the total completion time
+ * (or cost) that can be achieved from a given partial state of the problem.
+ * This lower bound is used within search-based optimization algorithms
+ * (such as A*, ACS, or DDO) to prune suboptimal branches and guide the search toward
+ * promising solutions.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The lower bound is computed based on the remaining tasks to be scheduled and the
+ * current state of the system. It takes into account the earliest possible start time
+ * (release date) and the smallest processing time among the remaining tasks.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Computation logic:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Let {@code k} be the number of remaining tasks to schedule.&lt;/li&gt;
+ *   &lt;li&gt;{@code minProcessing} is the smallest processing time among the remaining tasks.&lt;/li&gt;
+ *   &lt;li&gt;{@code minRelease} is the smallest release time among the remaining tasks.&lt;/li&gt;
+ *   &lt;li&gt;{@code u} is the maximum between {@code state.currentTime()} and {@code minRelease}.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * The lower bound is then estimated as:
+ * &lt;pre&gt;
+ *     LB = k * u + minProcessing * (k * (k + 1) / 2.0)
+ * &lt;/pre&gt;
+ * &lt;p&gt;
+ * This formula roughly estimates the minimal cumulative processing time that remains
+ * given the current schedule state.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;
+ * MSCTProblem problem = new MSCTProblem(&quot;data/MSCT/msct1.txt&quot;);
+ * MSCTState state = new MSCTState(...);
+ * MSCTFastLowerBound lb = new MSCTFastLowerBound(problem);
+ *
+ * double lowerBound = lb.fastLowerBound(state, Set.of(0, 1, 2));
+ * System.out.println(&quot;Estimated lower bound: &quot; + lowerBound);
+ * &lt;/pre&gt;
+ */
+public class MSCTFastLowerBound implements FastLowerBound&lt;MSCTState&gt; {
+    /**
+     * The MSCT problem instance for which the lower bound is computed.
+     */
+    private final MSCTProblem problem;
+
+    /**
+     * Constructs a lower bound evaluator for a specific instance of the MSCT problem.
+     *
+     * @param problem the {@link MSCTProblem} instance containing the task data
+     *                (processing times, release dates, etc.).
+     */
+<span class="fc" id="L60">    public MSCTFastLowerBound(MSCTProblem problem) {</span>
+<span class="fc" id="L61">        this.problem = problem;</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Computes a fast lower bound on the total completion time (or cost)
+     * from the given state and remaining variables.
+     * &lt;p&gt;
+     * This method evaluates how good a partial solution can potentially become by estimating
+     * the minimal additional cost required to schedule the remaining tasks.
+     * &lt;/p&gt;
+     *
+     * @param state      the current state of the problem, representing already scheduled tasks.
+     * @param variables  the set of remaining variables (tasks) to be scheduled.
+     * @return an estimated lower bound on the minimal total cost achievable from the current state.
+     */
+    @Override
+    public double fastLowerBound(MSCTState state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L78">        int lb = 0;</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (Integer v : state.remainingJobs()) {</span>
+<span class="fc" id="L81">            lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];</span>
+<span class="fc" id="L82">        }</span>
+<span class="fc" id="L83">        return lb;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

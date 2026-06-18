@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Max2SatFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.max2sat</a> &gt; <span class="el_source">Max2SatFastLowerBound.java</span></div><h1>Max2SatFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.max2sat;
+
+import org.ddolib.modeling.FastLowerBound;
+
+import java.util.Set;
+
+import static java.lang.Integer.max;
+
+/**
+ * Implementation of a fast lower bound heuristic for the &lt;b&gt;Maximum 2-Satisfiability (MAX2SAT)&lt;/b&gt; problem.
+ * &lt;p&gt;
+ * This class provides a quick computation of a lower bound on the best possible solution
+ * from a given partial assignment (state) in a MAX2SAT instance. It is designed to be
+ * used in branch-and-bound, A*, or DDO algorithms to prune suboptimal branches efficiently.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The heuristic combines:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;A ranking of the current state using {@link Max2SatRanking}.&lt;/li&gt;
+ *     &lt;li&gt;Precomputed contributions from unary clauses (single variable) that only depend on the variable's depth.&lt;/li&gt;
+ *     &lt;li&gt;An over-approximation of the optimal solution for the remaining subproblem (pairwise interactions of remaining variables).&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * Precomputations are performed once during construction to speed up repeated lower bound queries.
+ * &lt;/p&gt;
+ *
+ * @see Max2SatProblem
+ * @see Max2SatState
+ * @see FastLowerBound
+ */
+public class Max2SatFastLowerBound implements FastLowerBound&lt;Max2SatState&gt; {
+
+    /** The MAX2SAT problem instance associated with this lower bound. */
+    private final Max2SatProblem problem;
+
+    /** Precomputed over-approximation of the optimal solution for the remaining variables. */
+    private final int[] overApprox;
+
+    /** Precomputed contributions for unary clauses for each depth. */
+    private final int[] precomputationForUnary;
+
+    /**
+     * Constructs the fast lower bound for a given MAX2SAT problem instance.
+     *
+     * @param problem the MAX2SAT problem instance
+     */
+<span class="fc" id="L49">    public Max2SatFastLowerBound(Max2SatProblem problem) {</span>
+<span class="fc" id="L50">        this.problem = problem;</span>
+<span class="fc" id="L51">        overApprox = precomputeOverApproximation();</span>
+<span class="fc" id="L52">        precomputationForUnary = precomputeUnary();</span>
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Computes the fast lower bound for a given state and set of remaining variables.
+     *
+     * @param state the current MAX2SAT state (partial assignment)
+     * @param variables the set of remaining variable indices (not yet assigned)
+     * @return a fast lower bound on the best possible solution from this state
+     */
+    @Override
+    public double fastLowerBound(Max2SatState state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L64">        int k = state.depth();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (k == problem.nbVars()) return 0.0;</span>
+<span class="fc" id="L66">        return -(Max2SatRanking.rank(state) + precomputationForUnary[state.depth()] + overApprox[state.depth()]);</span>
+    }
+
+    /**
+     * Precomputes the contributions of unary clauses for each depth in the search tree.
+     * &lt;p&gt;
+     * For each variable, the maximum weight that can be achieved by assigning it to true or false
+     * is accumulated with the contributions of remaining variables.
+     * &lt;/p&gt;
+     *
+     * @return an array of unary contributions for each depth
+     */
+    private int[] precomputeUnary() {
+<span class="fc" id="L79">        int[] toReturn = new int[problem.nbVars()];</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (int i = problem.nbVars() - 1; i &gt;= 0; i--) {</span>
+<span class="fc" id="L81">            int approx = Math.max(problem.weight(problem.t(i), problem.t(i)),</span>
+<span class="fc" id="L82">                    problem.weight(problem.f(i), problem.f(i)));</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (i != problem.nbVars() - 1) {</span>
+<span class="fc" id="L84">                approx += toReturn[i + 1];</span>
+            }
+<span class="fc" id="L86">            toReturn[i] = approx;</span>
+        }
+<span class="fc" id="L88">        return toReturn;</span>
+    }
+
+    /**
+     * Precomputes an over-approximation of the optimal solution for all remaining variables.
+     * &lt;p&gt;
+     * For each pair of remaining variables i &amp;lt; j, it considers the four possible
+     * pairwise assignments and sums the maximum achievable weight. The cumulative sums
+     * of these maxima provide a fast upper estimate of the remaining potential.
+     * &lt;/p&gt;
+     *
+     * @return an array of over-approximated scores for each depth in the search tree
+     */
+    private int[] precomputeOverApproximation() {
+<span class="fc" id="L102">        int[] toReturn = new int[problem.nbVars()];</span>
+<span class="fc" id="L103">        toReturn[problem.nbVars() - 1] = 0;</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        for (int i = problem.nbVars() - 2; i &gt;= 0; i--) {</span>
+<span class="fc" id="L105">            int approx = 0;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">            for (int j = i + 1; j &lt; problem.nbVars(); j++) {</span>
+<span class="fc" id="L107">                int gtt = problem.weight(problem.t(i), problem.t(j))</span>
+<span class="fc" id="L108">                        + problem.weight(problem.t(i), problem.f(j))</span>
+<span class="fc" id="L109">                        + problem.weight(problem.f(i), problem.t(j));</span>
+
+<span class="fc" id="L111">                int gtf = problem.weight(problem.t(i), problem.t(j))</span>
+<span class="fc" id="L112">                        + problem.weight(problem.t(i), problem.f(j))</span>
+<span class="fc" id="L113">                        + problem.weight(problem.f(i), problem.f(j));</span>
+
+<span class="fc" id="L115">                int gft = problem.weight(problem.t(i), problem.t(j))</span>
+<span class="fc" id="L116">                        + problem.weight(problem.f(i), problem.t(j))</span>
+<span class="fc" id="L117">                        + problem.weight(problem.f(i), problem.f(j));</span>
+
+<span class="fc" id="L119">                int gff = problem.weight(problem.t(i), problem.f(j))</span>
+<span class="fc" id="L120">                        + problem.weight(problem.f(i), problem.t(j))</span>
+<span class="fc" id="L121">                        + problem.weight(problem.f(i), problem.f(j));</span>
+
+<span class="fc" id="L123">                approx += Math.max(Math.max(gtt, gtf), Math.max(gft, gff));</span>
+            }
+<span class="fc" id="L125">            toReturn[i] = approx + toReturn[i + 1];</span>
+        }
+<span class="fc" id="L127">        return toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

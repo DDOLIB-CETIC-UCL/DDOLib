@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPTWState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pdptw</a> &gt; <span class="el_source">PDPTWState.java</span></div><h1>PDPTWState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pdptw;
+
+import java.util.BitSet;
+import java.util.Objects;
+
+/**
+ * State representation for the Pickup and Delivery Problem with Time Windows (PDPTW).
+ */
+public class PDPTWState {
+
+    /**
+     * Nodes that can currently be visited.
+     * &lt;p&gt;
+     * Includes all unvisited pickup nodes and all unvisited delivery nodes whose
+     * corresponding pickup node has already been visited.
+     * &lt;/p&gt;
+     */
+    BitSet openToVisit;
+
+    /**
+     * All nodes that have not yet been visited, including those that cannot
+     * currently be visited due to pickup-delivery constraints.
+     */
+    BitSet allToVisit;
+
+    /**
+     * The current node(s) of the vehicle.
+     * &lt;p&gt;
+     * Typically a singleton. In case of merged states (relaxation), it can contain multiple nodes.
+     * &lt;/p&gt;
+     */
+    BitSet current;
+    /**
+     * The minimum possible vehicle content (number of items) at this state.
+     */
+    int minContent;
+    /**
+     * The maximum possible vehicle content (number of items) at this state.
+     */
+    int maxContent ;
+
+    /**
+     * The current time at this state, or earlier in case of fusion
+     */
+    double minCurrentTime;
+    double maxCurrentTime;
+
+    /**
+     * Builds a PDPTW state with interval-valued content/time information.
+     *
+     * @param current current node(s)
+     * @param openToVisit currently reachable unvisited nodes
+     * @param allToVisit all remaining unvisited nodes
+     * @param minContent lower bound on vehicle load
+     * @param maxContent upper bound on vehicle load
+     * @param minCurrentTime lower bound on current time
+     * @param maxCurrentTime upper bound on current time
+     */
+<span class="fc" id="L59">    public PDPTWState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent, double minCurrentTime, double maxCurrentTime) {</span>
+<span class="fc" id="L60">        this.openToVisit = openToVisit;</span>
+<span class="fc" id="L61">        this.allToVisit = allToVisit;</span>
+<span class="fc" id="L62">        this.current = current;</span>
+<span class="fc" id="L63">        this.minContent = minContent;</span>
+<span class="fc" id="L64">        this.maxContent = maxContent;</span>
+<span class="fc" id="L65">        this.minCurrentTime = minCurrentTime;</span>
+<span class="fc" id="L66">        this.maxCurrentTime = maxCurrentTime;</span>
+<span class="fc" id="L67">    }</span>
+
+    public int hashCode() {
+<span class="fc" id="L70">        return Objects.hash(openToVisit, allToVisit,</span>
+<span class="fc" id="L71">                current, minContent,maxContent, minCurrentTime,maxCurrentTime);</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc" id="L76">        PDPTWState that = (PDPTWState) obj;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if(this.minContent != that.minContent) return false;</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if(this.maxContent != that.maxContent) return false;</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if(this.minCurrentTime != that.minCurrentTime) return false;</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if(this.maxCurrentTime != that.maxCurrentTime) return false;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (!that.current.equals(this.current)) return false;</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (!that.openToVisit.equals(this.openToVisit)) return false;</span>
+<span class="fc" id="L83">        return (that.allToVisit.equals(this.allToVisit));</span>
+    }
+
+    public BitSet singleton(int singletonValue) {
+<span class="fc" id="L87">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L88">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L89">        return toReturn;</span>
+    }
+
+    public String printInterval(double min,double max){
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if(min == max) return &quot;&quot; + min;</span>
+<span class="nc" id="L94">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+    }
+    public String printInterval(int min,int max){
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if(min == max) return &quot;&quot; + min;</span>
+<span class="nc" id="L98">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+    }
+    @Override
+    public String toString() {
+<span class="fc" id="L102">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
+<span class="fc" id="L103">        closedToVisit.xor(openToVisit);</span>
+<span class="fc" id="L104">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime,maxCurrentTime)</span>
+                + &quot; openToVisit:&quot; + openToVisit + &quot; closedToVisit:&quot; + closedToVisit + &quot; allToVisit:&quot; + allToVisit
+<span class="fc" id="L106">                + &quot; content:&quot; + printInterval(minContent,maxContent) + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

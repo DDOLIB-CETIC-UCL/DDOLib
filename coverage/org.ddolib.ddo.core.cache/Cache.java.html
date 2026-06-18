@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.cache</a> &gt; <span class="el_source">Cache.java</span></div><h1>Cache.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.cache;
+
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.modeling.Problem;
+
+import java.util.Optional;
+
+/**
+ * Defines the abstraction of a &lt;b&gt;cache mechanism&lt;/b&gt; used to prune and reduce the
+ * search space during the compilation or exploration of a Decision Diagram (DD).
+ * &lt;p&gt;
+ * The cache stores &lt;em&gt;thresholds&lt;/em&gt; associated with subproblems encountered
+ * during the search. These thresholds represent bounds (on value or feasibility)
+ * that can be reused to avoid re-exploring equivalent or dominated states in
+ * subsequent iterations or at different depths of the DD.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;By maintaining and comparing thresholds, the cache helps:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Prevent redundant computation on subproblems already explored with
+ *       better or equivalent objective values.&lt;/li&gt;
+ *   &lt;li&gt;Accelerate convergence of relaxed DDs by reusing partial results.&lt;/li&gt;
+ *   &lt;li&gt;Reduce memory footprint by discarding obsolete layers.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;This interface defines the operations required for cache initialization,
+ * lookup, update, and cleanup at various layers of the decision diagram.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the problem states stored in the cache
+ *
+ * @see Threshold
+ * @see SimpleCache
+ * @see SubProblem
+ * @see Problem
+ */
+
+public interface Cache&lt;T&gt; {
+    /**
+     * Determines whether the given subproblem must still be explored,
+     * based on the information currently stored in the cache.
+     * &lt;p&gt;
+     * This method checks if there exists a {@link Threshold} in the cache
+     * associated with the same state and depth. If such a threshold exists
+     * and its stored value is &lt;em&gt;better or equal&lt;/em&gt; than the subproblem’s
+     * current value, the subproblem may be safely skipped.
+     * &lt;/p&gt;
+     *
+     * @param subproblem the subproblem being considered for expansion in the DD
+     * @param depth      the current depth (layer index) in the DD
+     * @return {@code true} if the subproblem should still be explored;
+     *         {@code false} if it can be pruned using cached thresholds
+     */
+    default boolean mustExplore(SubProblem&lt;T&gt; subproblem, int depth) {
+<span class="nc" id="L55">        Optional&lt;Threshold&gt; thresholdOpt = getThreshold(subproblem.getState(), depth);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (thresholdOpt.isPresent()) {</span>
+<span class="nc" id="L57">            Threshold threshold = thresholdOpt.get();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            return subproblem.getValue() &lt; threshold.getValue()</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">                    || (subproblem.getValue() == threshold.getValue() &amp;&amp; threshold.isExplored());</span>
+        } else {
+<span class="nc" id="L61">            return true;</span>
+        }
+    }
+
+    /**
+     * Initializes the cache for use with the specified problem instance.
+     * &lt;p&gt;
+     * This method is typically called once before the DD compilation begins.
+     * It prepares the internal data structures to store thresholds for the
+     * given problem states and layers.
+     * &lt;/p&gt;
+     *
+     * @param problem the problem instance for which the cache will be used
+     */
+    void initialize(final Problem&lt;T&gt; problem);
+
+    /**
+     * Retrieves the cache layer associated with the specified depth.
+     * &lt;p&gt;
+     * Each layer maintains the thresholds of all states encountered at a
+     * specific depth of the decision diagram.
+     * &lt;/p&gt;
+     *
+     * @param depth the depth (layer index) of the DD
+     * @return the {@link SimpleCache.Layer} object containing thresholds
+     *         for the specified layer
+     */
+    SimpleCache.Layer&lt;T&gt; getLayer(int depth);
+
+    /**
+     * Retrieves the threshold currently associated with a given state and depth.
+     *
+     * @param state the state whose threshold is being requested
+     * @param depth the depth (layer) where the state resides
+     * @return an {@link Optional} containing the corresponding {@link Threshold}
+     *         if present, or an empty {@link Optional} otherwise
+     */
+    Optional&lt;Threshold&gt; getThreshold(final T state, int depth);
+
+    /**
+     * Updates the threshold associated with a given state at a given depth.
+     * &lt;p&gt;
+     * The threshold is updated only if the new value is an &lt;em&gt;improvement&lt;/em&gt;
+     * (e.g., higher for maximization or lower for minimization problems)
+     * over the one currently stored in the cache.
+     * &lt;/p&gt;
+     *
+     * @param state      the state whose threshold is to be updated
+     * @param depth      the depth (layer index) in the DD
+     * @param threshold  the new threshold to associate with the state
+     */
+    void updateThreshold(final T state, final int depth, Threshold threshold);
+
+    /**
+     * Removes all thresholds associated with states at the specified depth.
+     * &lt;p&gt;
+     * This operation is useful to reclaim memory once a DD layer has been
+     * fully processed or when restarting a computation from a specific level.
+     * &lt;/p&gt;
+     *
+     * @param depth the depth (layer index) to clear
+     */
+    void clearLayer(final int depth);
+
+    /**
+     * Clears cache data up to a specified depth.
+     * &lt;p&gt;
+     * This operation removes cached thresholds from the beginning of the DD
+     * up to (and possibly including) the specified layer index, depending on
+     * the implementation.
+     * &lt;/p&gt;
+     *
+     * @param n the depth up to which to clear the cache
+     */
+    void clear(int n);
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

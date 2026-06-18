@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MCPRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mcp</a> &gt; <span class="el_source">MCPRanking.java</span></div><h1>MCPRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mcp;
+
+import org.ddolib.modeling.StateRanking;
+
+/**
+ * Class used to compare two states for the MCP problem.
+ * &lt;br&gt;
+ * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
+ * That's why we sum the absolute value of each benefit to compare the states.
+ */
+<span class="fc" id="L11">public class MCPRanking implements StateRanking&lt;MCPState&gt; {</span>
+
+    public static int rank(MCPState state) {
+<span class="fc" id="L14">        int toReturn = 0;</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
+<span class="fc" id="L16">            toReturn += Math.abs(state.netBenefit().get(i));</span>
+
+        }
+<span class="fc" id="L19">        return toReturn;</span>
+    }
+
+    @Override
+    public int compare(MCPState o1, MCPState o2) {
+<span class="fc" id="L24">        return Integer.compare(rank(o1), rank(o2));</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

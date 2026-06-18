@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MCPRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mcp</a> &gt; <span class="el_source">MCPRelax.java</span></div><h1>MCPRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mcp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import static java.lang.Integer.*;
+import static java.lang.Math.abs;
+
+/**
+ * Implements a relaxation strategy for the &lt;b&gt;Maximum Cut Problem (MCP)&lt;/b&gt;.
+ * &lt;p&gt;
+ * This relaxation is used in dynamic programming or branch-and-bound algorithms to
+ * merge multiple states into a single optimistic state while preserving bounds.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The merging strategy works as follows:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;If all net benefits for a variable are positive, the merged state keeps the smallest value.&lt;/li&gt;
+ *     &lt;li&gt;If all net benefits for a variable are negative, the merged state keeps the largest value.&lt;/li&gt;
+ *     &lt;li&gt;If net benefits have mixed signs, the merged value is set to 0.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The {@link #relaxEdge(MCPState, MCPState, MCPState, Decision, double)} method adjusts
+ * the transition cost to ensure the relaxation remains an over-approximation of the
+ * true cost.
+ * &lt;/p&gt;
+ *
+ * @see MCPProblem
+ * @see MCPState
+ * @see Relaxation
+ */
+public class MCPRelax implements Relaxation&lt;MCPState&gt; {
+
+    /**
+     * The MCP problem instance for which this relaxation is applied.
+     */
+    final MCPProblem problem;
+
+    /**
+     * Constructs a relaxation for the given MCP problem.
+     *
+     * @param problem the MCP problem instance
+     */
+<span class="fc" id="L50">    public MCPRelax(MCPProblem problem) {</span>
+<span class="fc" id="L51">        this.problem = problem;</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Merges multiple MCP states into a single optimistic state.
+     * &lt;p&gt;
+     * The merged state keeps a conservative estimate of net benefits for remaining
+     * decision variables in order to maintain an over-approximation of the optimal solution.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over states to merge
+     * @return a new {@link MCPState} representing the merged state
+     */
+    @Override
+    public MCPState mergeStates(Iterator&lt;MCPState&gt; states) {
+<span class="fc" id="L66">        MCPState state = states.next();</span>
+<span class="fc" id="L67">        ArrayList&lt;Integer&gt; merged = new ArrayList&lt;&gt;(state.netBenefit());</span>
+<span class="fc" id="L68">        int depth = state.depth();</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L71">            MCPState current = states.next();</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            for (int i = depth; i &lt; problem.nbVars(); i++) {</span>
+<span class="fc" id="L73">                Integer mergedI = merged.get(i);</span>
+<span class="fc" id="L74">                Integer currentI = current.netBenefit().get(i);</span>
+
+
+<span class="fc bfc" id="L77" title="All 4 branches covered.">                if (signum(mergedI) == 1 &amp;&amp; signum(currentI) == 1) {</span>
+                    //If all the net benefits are positive, we keep the smallest one
+<span class="fc" id="L79">                    merged.set(i, min(mergedI, currentI));</span>
+<span class="fc bfc" id="L80" title="All 4 branches covered.">                } else if (signum(mergedI) == -1 &amp;&amp; signum(currentI) == -1) {</span>
+                    // If all the net benefits are negative, we keep the biggest one
+<span class="fc" id="L82">                    merged.set(i, max(mergedI, currentI));</span>
+                } else {
+                    // Otherwise, we set at 0
+<span class="fc" id="L85">                    merged.set(i, 0);</span>
+                }
+            }
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        return new MCPState(merged, depth);</span>
+    }
+
+    /**
+     * Computes the relaxed transition cost from one state to another given a merged state.
+     * &lt;p&gt;
+     * This method adjusts the cost to account for the differences between the actual net
+     * benefits in the target state and the merged state, ensuring that the relaxation
+     * remains optimistic.
+     * &lt;/p&gt;
+     *
+     * @param from   the initial state
+     * @param to     the target state
+     * @param merged the merged state used for relaxation
+     * @param d      the decision applied to reach the target state
+     * @param cost   the original transition cost
+     * @return the relaxed transition cost
+     */
+
+    @Override
+    public double relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, double cost) {
+<span class="fc" id="L110">        double toReturn = -cost;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (int i = d.variable() + 1; i &lt; problem.nbVars(); i++) {</span>
+<span class="fc" id="L112">            toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));</span>
+        }
+<span class="fc" id="L114">        return -toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

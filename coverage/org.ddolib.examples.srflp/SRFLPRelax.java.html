@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SRFLPRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.srflp</a> &gt; <span class="el_source">SRFLPRelax.java</span></div><h1>SRFLPRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.srflp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+
+/**
+ * Implementation of a relaxation for the Single Row Facility Layout Problem (SRFLP).
+ *
+ * &lt;p&gt;
+ * In this relaxation, multiple SRFLP states can be merged into a single state
+ * to reduce the search space. The merged state over-approximates the possible
+ * states by combining the &quot;must&quot; and &quot;maybe&quot; sets and taking minimal cut values.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Relaxation} interface and is typically used
+ * in decision diagram or DDO-based algorithms for SRFLP to enable state merging
+ * and efficient pruning.
+ * &lt;/p&gt;
+ */
+public class SRFLPRelax implements Relaxation&lt;SRFLPState&gt; {
+
+    private final SRFLPProblem problem;
+
+    /**
+     * Constructs a new relaxation instance for a given SRFLP problem.
+     *
+     * @param problem The SRFLP problem instance to which this relaxation applies.
+     */
+<span class="fc" id="L37">    public SRFLPRelax(SRFLPProblem problem) {</span>
+<span class="fc" id="L38">        this.problem = problem;</span>
+
+<span class="fc" id="L40">    }</span>
+
+    /**
+     * Merges multiple SRFLP states into a single relaxed state.
+     *
+     * &lt;p&gt;
+     * The merged state:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;Intersects the &quot;must&quot; sets of all input states.&lt;/li&gt;
+     *     &lt;li&gt;Unites the &quot;must&quot; and &quot;maybe&quot; sets into the merged &quot;maybe&quot; set.&lt;/li&gt;
+     *     &lt;li&gt;Takes the minimal cut values for each department.&lt;/li&gt;
+     *     &lt;li&gt;Uses the maximum depth among all merged states.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param states An iterator over the states to merge.
+     * @return A new SRFLPState representing the merged relaxation of the input states.
+     */
+    @Override
+    public SRFLPState mergeStates(Iterator&lt;SRFLPState&gt; states) {
+<span class="fc" id="L60">        BitSet mergedMust = new BitSet(problem.nbVars());</span>
+<span class="fc" id="L61">        mergedMust.set(0, problem.nbVars(), true);</span>
+<span class="fc" id="L62">        BitSet mergedMaybes = new BitSet(problem.nbVars());</span>
+<span class="fc" id="L63">        int[] mergedCut = new int[problem.nbVars()];</span>
+<span class="fc" id="L64">        Arrays.fill(mergedCut, Integer.MAX_VALUE);</span>
+<span class="fc" id="L65">        int mergedDepth = 0;</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L68">            SRFLPState state = states.next();</span>
+<span class="fc" id="L69">            mergedMust.and(state.must());</span>
+<span class="fc" id="L70">            mergedMaybes.or(state.must());</span>
+<span class="fc" id="L71">            mergedMaybes.or(state.maybe());</span>
+<span class="fc" id="L72">            mergedDepth = max(mergedDepth, state.depth());</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">            for (int i = state.must().nextSetBit(0); i &gt;= 0; i = state.must().nextSetBit(i + 1)) {</span>
+<span class="fc" id="L75">                mergedCut[i] = min(mergedCut[i], state.cut()[i]);</span>
+            }
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            for (int i = state.maybe().nextSetBit(0); i &gt;= 0; i = state.maybe().nextSetBit(i + 1)) {</span>
+<span class="fc" id="L79">                mergedCut[i] = min(mergedCut[i], state.cut()[i]);</span>
+            }
+<span class="fc" id="L81">        }</span>
+
+<span class="fc" id="L83">        mergedMaybes.andNot(mergedMust);</span>
+
+<span class="fc" id="L85">        return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);</span>
+    }
+    /**
+     * Relaxation of an edge cost between two states.
+     *
+     * &lt;p&gt;
+     * In this implementation, the edge cost is not modified by the relaxation and
+     * is returned as-is.
+     * &lt;/p&gt;
+     *
+     * @param from   The source state.
+     * @param to     The target state.
+     * @param merged The merged state containing this edge.
+     * @param d      The decision taken to move from {@code from} to {@code to}.
+     * @param cost   The original cost of the edge.
+     * @return The relaxed cost of the edge, which in this case is equal to {@code cost}.
+     */
+    @Override
+    public double relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d,
+                            double cost) {
+<span class="fc" id="L105">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

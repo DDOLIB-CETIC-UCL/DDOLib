@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AcsModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling</a> &gt; <span class="el_source">AcsModel.java</span></div><h1>AcsModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling;
+
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the structure of an optimization model solved using the
+ * &lt;b&gt;Anytime Column Search (ACS)&lt;/b&gt; algorithm within the
+ * Decision Diagram Optimization (DDO) framework.
+ *
+ * &lt;p&gt;
+ * The Anytime Column Search is an iterative approach that incrementally
+ * builds and refines decision diagrams (MDDs) to improve solution quality
+ * over time. The {@code AcsModel} interface provides the problem definition
+ * and configuration elements required by the ACS solver.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the state of the problem
+ * @see Model
+ * @see Solvers
+ */
+
+public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
+    /**
+     * Returns the default column width used for formatted output during
+     * the Anytime Column Search process.
+     * &lt;p&gt;
+     * This parameter is primarily used for visual alignment of
+     * intermediate results or search statistics in console or file outputs.
+     * &lt;/p&gt;
+     *
+     * @return the default column width, in characters (default is {@code 5})
+     */
+
+    default int columnWidth() {
+<span class="fc" id="L38">        return 5;</span>
+    }
+
+    /**
+     * Returns a copy of this model but with another column width.
+     *
+     * @param width The column width to use.
+     * @return A copy of this model but with another column width.
+     */
+    default AcsModel&lt;T&gt; setColumnWidth(int width) {
+<span class="fc" id="L48">        return new AcsModel&lt;T&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L51">                return AcsModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L56">                return AcsModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L61">                return AcsModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L66">                return AcsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L71">                return AcsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L76">                return AcsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public int columnWidth() {
+<span class="fc" id="L81">                return width;</span>
+            }
+        };
+    }
+
+    @Override
+    default AcsModel&lt;T&gt; disableDominance() {
+<span class="fc" id="L88">        return new AcsModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L91">                return AcsModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L96">                return AcsModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L101">                return AcsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L106">                return AcsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L111">                return AcsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public int columnWidth() {
+<span class="fc" id="L116">                return AcsModel.this.columnWidth();</span>
+            }
+        };
+    }
+
+    @Override
+    default AcsModel&lt;T&gt; disableLowerBound() {
+<span class="nc" id="L123">        return new AcsModel&lt;T&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L126">                return AcsModel.this.problem();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L131">                return AcsModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L136">                return AcsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L141">                return AcsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L146">                return AcsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public int columnWidth() {
+<span class="nc" id="L151">                return AcsModel.this.columnWidth();</span>
+            }
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

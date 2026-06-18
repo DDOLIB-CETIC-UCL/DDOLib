@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxCoverProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.maximumcoverage</a> &gt; <span class="el_source">MaxCoverProblem.java</span></div><h1>MaxCoverProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.maximumcoverage;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Represents an instance of the Maximum Coverage (MaxCover) problem.
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface and provides:
+ * &lt;ul&gt;
+ *   &lt;li&gt;Creation of random or file-based problem instances&lt;/li&gt;
+ *   &lt;li&gt;Evaluation of solutions and state transitions for Decision Diagram Optimization (DDO)&lt;/li&gt;
+ *   &lt;li&gt;Computation of centralities for each item, used in heuristics&lt;/li&gt;
+ *   &lt;li&gt;Support for reading/writing instances in a standard text format&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The problem is defined by:
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@code nbItems}: the total number of items to cover&lt;/li&gt;
+ *   &lt;li&gt;{@code nbSubSets}: the total number of available subsets&lt;/li&gt;
+ *   &lt;li&gt;{@code nbSubSetsToChoose}: the number of subsets allowed to select&lt;/li&gt;
+ *   &lt;li&gt;{@code subSets}: the array of BitSets representing the items covered by each subset&lt;/li&gt;
+ *   &lt;li&gt;{@code centralities}: the relative frequency of each item appearing in subsets&lt;/li&gt;
+ *   &lt;li&gt;{@code optimal}: optionally, the optimal solution value (for benchmarking)&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+
+public class MaxCoverProblem implements Problem&lt;MaxCoverState&gt; {
+    /**
+     * Number of items in the instance.
+     */
+    public final int nbItems;
+    /**
+     * Number of subsets in the instance.
+     */
+    public final int nbSubSets;
+    /**
+     * Number of subsets that can be selected.
+     */
+    public final int nbSubSetsToChoose;
+    /**
+     * Array of subsets represented as BitSets, where each BitSet indicates the items it covers.
+     */
+    public final BitSet[] subSets;
+    /**
+     * Relative frequency (centrality) of each item in all subsets.
+     */
+    public final double[] centralities;
+    /**
+     * Optional instance name.
+     */
+    public Optional&lt;String&gt; name;
+    /**
+     * Optional optimal solution value.
+     */
+    public Optional&lt;Double&gt; optimal;
+
+    /**
+     * Constructs a MaxCover instance without a name.
+     *
+     * @param nbItems           number of items
+     * @param nbSubSets         number of subsets
+     * @param nbSubSetsToChoose number of subsets allowed to select
+     * @param subSets           array of subsets represented as BitSets
+     * @param optimal           optional optimal solution value
+     */
+<span class="nc" id="L76">    public MaxCoverProblem(int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets, Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L77">        this.name = Optional.empty();</span>
+<span class="nc" id="L78">        this.nbItems = nbItems;</span>
+<span class="nc" id="L79">        this.nbSubSets = nbSubSets;</span>
+<span class="nc" id="L80">        this.nbSubSetsToChoose = nbSubSetsToChoose;</span>
+<span class="nc" id="L81">        this.subSets = subSets;</span>
+<span class="nc" id="L82">        this.optimal = optimal;</span>
+<span class="nc" id="L83">        this.centralities = new double[nbItems];</span>
+<span class="nc" id="L84">        computeCentralities();</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Generates a random MaxCover instance using coordinates and a distance threshold.
+     *
+     * @param n    number of items
+     * @param m    number of subsets
+     * @param k    number of subsets to select
+     * @param maxR maximum coverage radius
+     * @param seed random seed
+     */
+<span class="nc" id="L96">    public MaxCoverProblem(int n, int m, int k, double maxR, int seed) {</span>
+<span class="nc" id="L97">        Random rand = new Random(seed);</span>
+<span class="nc" id="L98">        double[] xcoord = new double[n];</span>
+<span class="nc" id="L99">        double[] ycoord = new double[n];</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L101">            xcoord[i] = rand.nextDouble();</span>
+<span class="nc" id="L102">            ycoord[i] = rand.nextDouble();</span>
+        }
+<span class="nc" id="L104">        BitSet[] subSets = new BitSet[m];</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L106">            subSets[i] = new BitSet(n);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc" id="L108">                double dist = distance(xcoord, ycoord, i, j);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                if (dist &lt;= maxR) {</span>
+<span class="nc" id="L110">                    subSets[i].set(j, true);</span>
+                }
+            }
+        }
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (!isContained(subSets, i)) {</span>
+<span class="nc" id="L116">                int f = minItems(xcoord, ycoord, subSets, i);</span>
+<span class="nc" id="L117">                subSets[f].set(i, true);</span>
+            }
+        }
+
+<span class="nc" id="L121">        this.name = Optional.of(&quot;maxCoverage_&quot; + n + &quot;_&quot; + m + &quot;_&quot; + k + &quot;_&quot; + maxR + &quot;_&quot; + seed);</span>
+<span class="nc" id="L122">        this.nbItems = n;</span>
+<span class="nc" id="L123">        this.nbSubSets = m;</span>
+<span class="nc" id="L124">        this.nbSubSetsToChoose = k;</span>
+<span class="nc" id="L125">        this.subSets = subSets;</span>
+<span class="nc" id="L126">        this.optimal = Optional.empty();</span>
+<span class="nc" id="L127">        this.centralities = new double[nbItems];</span>
+<span class="nc" id="L128">        computeCentralities();</span>
+<span class="nc" id="L129">    }</span>
+
+    /**
+     * Loads a MaxCover instance from a file.
+     *
+     * &lt;p&gt;
+     * The file should contain the number of items, number of subsets, budget,
+     * optional optimal value, and the item indices for each subset.
+     *
+     * @param fname path to the instance file
+     * @throws IOException if the file cannot be read
+     */
+<span class="fc" id="L141">    public MaxCoverProblem(final String fname) throws IOException {</span>
+<span class="fc" id="L142">        final File f = new File(fname);</span>
+<span class="fc" id="L143">        int context = 0;</span>
+<span class="fc" id="L144">        int nElem = 0;</span>
+<span class="fc" id="L145">        int nSet = 0;</span>
+<span class="fc" id="L146">        int budget = 0;</span>
+<span class="fc" id="L147">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+<span class="fc" id="L148">        BitSet[] sets = null;</span>
+<span class="fc" id="L149">        int setCount = 0;</span>
+        String s;
+<span class="fc" id="L151">        try (final BufferedReader br = new BufferedReader(new FileReader(f))) {</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">            while ((s = br.readLine()) != null) {</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">                if (context == 0) {</span>
+<span class="fc" id="L154">                    context++;</span>
+
+<span class="fc" id="L156">                    String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L157">                    nElem = Integer.parseInt(tokens[0]);</span>
+
+<span class="fc bfc" id="L159" title="All 2 branches covered.">                } else if (context == 1) {</span>
+<span class="fc" id="L160">                    context++;</span>
+
+<span class="fc" id="L162">                    String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L163">                    nSet = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L164">                    sets = new BitSet[nSet];</span>
+
+<span class="fc bfc" id="L166" title="All 2 branches covered.">                } else if (context == 2) {</span>
+<span class="fc" id="L167">                    context++;</span>
+<span class="fc" id="L168">                    String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L169">                    budget = Integer.parseInt(tokens[0]);</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">                } else if (context == 3) {</span>
+<span class="fc" id="L171">                    context++;</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">                    if (!s.isBlank()) {</span>
+<span class="fc" id="L173">                        String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L174">                        optimal = Optional.of(Double.parseDouble(tokens[0]));</span>
+<span class="fc" id="L175">                    }</span>
+                } else {
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                    if (setCount &lt; nSet) {</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">                        if (!s.isBlank()) {</span>
+<span class="fc" id="L179">                            String[] tokens = s.split(&quot;\\s&quot;);</span>
+
+<span class="fc" id="L181">                            sets[setCount] = new BitSet(nElem);</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">                            for (String token : tokens) {</span>
+<span class="fc" id="L183">                                sets[setCount].set(Integer.parseInt(token));</span>
+                            }
+<span class="fc" id="L185">                            setCount++;</span>
+<span class="fc" id="L186">                        }</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L191">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L192">        this.nbItems = nElem;</span>
+<span class="fc" id="L193">        this.nbSubSets = nSet;</span>
+<span class="fc" id="L194">        this.nbSubSetsToChoose = budget;</span>
+<span class="fc" id="L195">        this.subSets = sets;</span>
+<span class="fc" id="L196">        this.optimal = optimal;</span>
+<span class="fc" id="L197">        this.centralities = new double[nbItems];</span>
+<span class="fc" id="L198">        computeCentralities();</span>
+<span class="fc" id="L199">    }</span>
+
+    /**
+     * Returns a formatted string representing the instance for writing to a file.
+     *
+     * @return the formatted instance as a string
+     */
+    public String instanceFormat() {
+<span class="nc" id="L207">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L208">        sb.append(String.format(&quot;%d%n%d%n%d%n&quot;, nbItems, nbSubSets, nbSubSetsToChoose));</span>
+<span class="nc" id="L209">        optimal.ifPresent(aDouble -&gt; sb.append(String.format(&quot;%d%n&quot;, (int) Math.ceil(aDouble))));</span>
+<span class="nc" id="L210">        sb.append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        for (int i = 0; i &lt; nbSubSets; i++) {</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">            for (int j = subSets[i].nextSetBit(0); j &gt;= 0; j = subSets[i].nextSetBit(j + 1)) {</span>
+<span class="nc" id="L213">                sb.append(String.format(&quot;%d &quot;, j));</span>
+            }
+<span class="nc" id="L215">            sb.append(&quot;\n&quot;);</span>
+        }
+
+<span class="nc" id="L218">        return sb.toString();</span>
+    }
+
+    /**
+     * Returns the number of decision variables in the problem.
+     *
+     * @return number of variables (subsets to select)
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L228">        return nbSubSetsToChoose;</span>
+    }
+
+    /**
+     * Returns the initial state for the DDO search.
+     *
+     * @return a state with no items covered
+     */
+    @Override
+    public MaxCoverState initialState() {
+<span class="fc" id="L238">        return new MaxCoverState(new BitSet(nbItems));</span>
+    }
+
+    /**
+     * Returns the initial objective value for the initial state.
+     *
+     * @return 0 (no items covered yet)
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L248">        return 0;</span>
+    }
+
+    /**
+     * Returns an iterator over the domain of values for a given variable in a state.
+     *
+     * @param state the current state
+     * @param var   the variable index
+     * @return an iterator over feasible subset indices (or -1 if no options)
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(MaxCoverState state, int var) {
+<span class="fc" id="L260">        ArrayList&lt;Integer&gt; domain = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        for (int i = 0; i &lt; nbSubSets; i++) {</span>
+<span class="fc" id="L262">            BitSet ss = (BitSet) subSets[i].clone();</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">            if (!isInclude(ss, state.coveredItems())) {</span>
+<span class="fc" id="L264">                domain.add(i);</span>
+            }
+        }
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        if (domain.isEmpty())</span>
+<span class="nc" id="L268">            domain.add(-1);</span>
+<span class="fc" id="L269">        return domain.iterator();</span>
+    }
+
+    /**
+     * Applies a decision to a state to produce a new state.
+     *
+     * @param state    the current state
+     * @param decision the decision to apply
+     * @return a new state reflecting the added subset
+     */
+    @Override
+    public MaxCoverState transition(MaxCoverState state, Decision decision) {
+<span class="fc" id="L281">        int val = decision.value();</span>
+<span class="fc" id="L282">        BitSet coveredItems = (BitSet) state.coveredItems().clone();</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        if (val != -1)</span>
+<span class="fc" id="L284">            coveredItems.or(subSets[val]);</span>
+<span class="fc" id="L285">        return new MaxCoverState(coveredItems);</span>
+    }
+
+    /**
+     * Returns the cost of applying a decision to a state.
+     *
+     * &lt;p&gt;
+     * Cost is defined as the negative number of newly covered items.
+     *
+     * @param state    the current state
+     * @param decision the decision to apply
+     * @return the transition cost
+     */
+    @Override
+    public double transitionCost(MaxCoverState state, Decision decision) {
+<span class="fc" id="L300">        int val = decision.value();</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">        if (val == -1)</span>
+<span class="nc" id="L302">            return 0;</span>
+<span class="fc" id="L303">        BitSet coveredItems = (BitSet) state.coveredItems().clone();</span>
+<span class="fc" id="L304">        coveredItems.or(subSets[val]);</span>
+<span class="fc" id="L305">        coveredItems.andNot(state.coveredItems());</span>
+<span class="fc" id="L306">        return -coveredItems.cardinality();</span>
+    }
+
+    /**
+     * Returns the optimal value of the instance, if known.
+     *
+     * @return the negative of the optimal value (for minimization DDO)
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L316">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    /**
+     * Evaluates a complete solution.
+     *
+     * @param solution array of selected subset indices
+     * @return negative number of items covered
+     * @throws InvalidSolutionException if the solution length is incorrect
+     */
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L329">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L330">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+<span class="fc" id="L332">        BitSet coveredItems = new BitSet(nbItems);</span>
+<span class="fc bfc" id="L333" title="All 2 branches covered.">        for (int selected : solution) {</span>
+<span class="fc" id="L334">            coveredItems.or(subSets[selected]);</span>
+        }
+
+<span class="fc" id="L337">        return -coveredItems.cardinality();</span>
+    }
+
+    private boolean isInclude(BitSet A, BitSet B) {
+<span class="fc" id="L341">        BitSet temp = (BitSet) A.clone();</span>
+<span class="fc" id="L342">        temp.andNot(B);</span>
+<span class="fc" id="L343">        return temp.isEmpty();</span>
+    }
+
+    private double distance(double[] x, double[] y, int i, int j) {
+<span class="nc" id="L347">        double dx = x[j] - x[i];</span>
+<span class="nc" id="L348">        double dy = y[j] - y[i];</span>
+<span class="nc" id="L349">        return Math.sqrt(dx * dx + dy * dy);</span>
+    }
+
+    private boolean isContained(BitSet[] subSets, int j) {
+<span class="nc bnc" id="L353" title="All 2 branches missed.">        for (int i = 0; i &lt; subSets.length; i++) {</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">            if (subSets[i].get(j)) {</span>
+<span class="nc" id="L355">                return true;</span>
+            }
+        }
+<span class="nc" id="L358">        return false;</span>
+    }
+
+    private int minItems(double[] x, double[] y, BitSet[] subSets, int j) {
+<span class="nc" id="L362">        int min = -1;</span>
+<span class="nc" id="L363">        double minDistance = Double.MAX_VALUE;</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        for (int i = 0; i &lt; subSets.length; i++) {</span>
+<span class="nc" id="L365">            double dist = distance(x, y, i, j);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">            if (dist &lt; minDistance) {</span>
+<span class="nc" id="L367">                minDistance = dist;</span>
+<span class="nc" id="L368">                min = i;</span>
+            }
+        }
+<span class="nc" id="L371">        return min;</span>
+    }
+
+
+    /**
+     * Returns a string representation of the instance.
+     *
+     * @return instance name, parameters, and subsets
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L382">        String str = name + &quot; &quot; + nbItems + &quot; &quot; + nbSubSets + &quot; &quot; + nbSubSetsToChoose + &quot; &quot; + Arrays.toString(subSets);</span>
+<span class="fc" id="L383">        return name.orElse(str);</span>
+    }
+
+
+    /**
+     * Computes centralities of all items, i.e., the fraction of subsets that cover each item.
+     */
+    private void computeCentralities() {
+<span class="fc bfc" id="L391" title="All 2 branches covered.">        for (int i = 0; i &lt; nbItems; i++) {</span>
+<span class="fc" id="L392">            double centrality = 0;</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">            for (int j = 0; j &lt; nbSubSets; j++) {</span>
+<span class="fc bfc" id="L394" title="All 2 branches covered.">                if (subSets[j].get(i)) {</span>
+<span class="fc" id="L395">                    centrality++;</span>
+                }
+            }
+<span class="fc" id="L398">            centralities[i] = centrality / nbSubSets;</span>
+        }
+<span class="fc" id="L400">    }</span>
+}
+
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

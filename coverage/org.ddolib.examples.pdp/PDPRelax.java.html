@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pdp</a> &gt; <span class="el_source">PDPRelax.java</span></div><h1>PDPRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pdp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.BitSet;
+import java.util.Iterator;
+/**
+ * Implements a relaxation operator for the Pickup and Delivery Problem (PDP) states.
+ * &lt;p&gt;
+ * This class is used in decision diagram-based algorithms (e.g., DDO) to merge
+ * multiple states into a single relaxed state, thereby reducing the search space
+ * while maintaining a conservative approximation of the solution.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The relaxation is performed by taking the union of the sets of nodes to visit
+ * and the current nodes from the input states. The minimum and maximum vehicle
+ * content are adjusted accordingly to cover all merged states.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The {@link #relaxEdge(PDPState, PDPState, PDPState, Decision, double)} method
+ * currently does not modify the edge cost and simply returns the original cost.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Relaxation} interface and can be plugged into
+ * any PDP-based model that requires state relaxation for approximate or exact search.
+ * &lt;/p&gt;
+ */
+class PDPRelax implements Relaxation&lt;PDPState&gt; {
+    private final PDPProblem problem;
+    /**
+     * Constructs a PDPRelax object for a given PDP problem instance.
+     *
+     * @param problem the PDP problem instance used for state information and constraints
+     */
+<span class="fc" id="L39">    public PDPRelax(PDPProblem problem) {</span>
+<span class="fc" id="L40">        this.problem = problem;</span>
+<span class="fc" id="L41">    }</span>
+    /**
+     * Merges multiple PDP states into a single relaxed state.
+     * &lt;p&gt;
+     * The merged state represents the union of the input states, allowing the
+     * algorithm to consider multiple possible states as a single relaxed node.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the PDP states to be merged
+     * @return a new {@link PDPState} representing the merged relaxation
+     */
+    @Override
+    public PDPState mergeStates(final Iterator&lt;PDPState&gt; states) {
+<span class="fc" id="L54">        BitSet openToVisit = new BitSet(problem.n);</span>
+<span class="fc" id="L55">        BitSet current = new BitSet(problem.n);</span>
+<span class="fc" id="L56">        BitSet allToVisit = new BitSet(problem.n);</span>
+<span class="fc" id="L57">        int minContent = Integer.MAX_VALUE;</span>
+<span class="fc" id="L58">        int maxContent = Integer.MIN_VALUE;</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L61">            PDPState state = states.next();</span>
+            //take the union; loose precision here
+<span class="fc" id="L63">            openToVisit.or(state.openToVisit);</span>
+<span class="fc" id="L64">            allToVisit.or(state.allToVisit);</span>
+<span class="fc" id="L65">            current.or(state.current);</span>
+<span class="fc" id="L66">            minContent = Math.min(minContent, state.minContent);</span>
+<span class="fc" id="L67">            maxContent = Math.max(maxContent, state.maxContent);</span>
+<span class="fc" id="L68">        }</span>
+        //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
+<span class="fc" id="L70">        return new PDPState(current, openToVisit, allToVisit,minContent,maxContent);</span>
+    }
+    /**
+     * Relaxes the cost of an edge between two states.
+     * &lt;p&gt;
+     * Currently, this implementation returns the original edge cost without modification.
+     * &lt;/p&gt;
+     *
+     * @param from the origin PDP state
+     * @param to the destination PDP state
+     * @param merged the relaxed merged state
+     * @param d the decision taken along the edge
+     * @param cost the original cost of the edge
+     * @return the relaxed cost of the edge (currently identical to {@code cost})
+     */
+    @Override
+    public double relaxEdge(PDPState from, PDPState to, PDPState merged, Decision d, double cost) {
+<span class="fc" id="L87">        return cost;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

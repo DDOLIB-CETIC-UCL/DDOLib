@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MCPFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mcp</a> &gt; <span class="el_source">MCPFastLowerBound.java</span></div><h1>MCPFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mcp;
+
+import org.ddolib.modeling.FastLowerBound;
+
+import java.util.Set;
+
+/**
+ * Implementation of fast lower bound heuristic for the MCP.
+ */
+public class MCPFastLowerBound implements FastLowerBound&lt;MCPState&gt; {
+
+    final MCPProblem problem;
+    private final double initVal;
+    private final int[] estimation;
+    private final int[] partialSum;
+
+<span class="fc" id="L17">    public MCPFastLowerBound(MCPProblem problem) {</span>
+<span class="fc" id="L18">        this.problem = problem;</span>
+<span class="fc" id="L19">        initVal = problem.initialValue();</span>
+<span class="fc" id="L20">        estimation = precomputeAllEstimate();</span>
+<span class="fc" id="L21">        partialSum = precomputeAllPartialSum();</span>
+<span class="fc" id="L22">    }</span>
+
+    @Override
+    public double fastLowerBound(MCPState state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L26">        int k = state.depth();</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (k == problem.nbVars()) return 0.0;</span>
+<span class="fc" id="L28">        else return -(MCPRanking.rank(state) + estimation[k] + partialSum[k]) - initVal;</span>
+    }
+
+    /**
+     * Returns the sum of positive weight from edges starting at node bigger than the given depth.
+     * It approximates the solution of the given state.
+     */
+    private int precomputeEstimate(int depth) {
+<span class="fc" id="L36">        int toReturn = 0;</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (int from = depth; from &lt; problem.nbVars(); from++) {</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            for (int to = from + 1; to &lt; problem.nbVars(); to++) {</span>
+<span class="fc" id="L39">                int w = problem.graph.weightOf(from, to);</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">                if (w &gt; 0) toReturn += w;</span>
+            }
+        }
+<span class="fc" id="L43">        return toReturn;</span>
+    }
+
+    /**
+     * Returns the sum of positive weight for all the depth
+     */
+    private int[] precomputeAllEstimate() {
+<span class="fc" id="L50">        int[] toReturn = new int[problem.nbVars()];</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (int node = 0; node &lt; problem.nbVars(); node++) {</span>
+<span class="fc" id="L52">            toReturn[node] = precomputeEstimate(node);</span>
+        }
+<span class="fc" id="L54">        return toReturn;</span>
+    }
+
+    /**
+     * Returns the partial sum of negative weight of edges ending at nodes smaller than the given edges.
+     */
+    private int precomputePartialSum(int depth) {
+<span class="fc" id="L61">        int toReturn = 0;</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (int j = 0; j &lt; depth; j++) {</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            for (int i = 0; i &lt; j; i++) {</span>
+<span class="fc" id="L64">                int w = problem.graph.weightOf(i, j);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">                if (w &lt; 0) toReturn += w;</span>
+            }
+        }
+<span class="fc" id="L68">        return toReturn;</span>
+    }
+
+    /**
+     * Returns the partial sum for all depths
+     */
+    private int[] precomputeAllPartialSum() {
+<span class="fc" id="L75">        int[] toReturn = new int[problem.nbVars()];</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (int node = 0; node &lt; problem.nbVars(); node++) {</span>
+<span class="fc" id="L77">            toReturn[node] = precomputePartialSum(node);</span>
+        }
+<span class="fc" id="L79">        return toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxCoverRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.maximumcoverage</a> &gt; <span class="el_source">MaxCoverRelax.java</span></div><h1>MaxCoverRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.maximumcoverage;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.BitSet;
+import java.util.Iterator;
+/**
+ * Relaxation operator for {@link MaxCoverState} in the Maximum Coverage problem.
+ *
+ * &lt;p&gt;
+ * This class implements {@link Relaxation} and defines how multiple states
+ * can be merged into a single relaxed state. It is typically used in
+ * Decision Diagram Optimization (DDO) to reduce the size of the diagram
+ * while maintaining an admissible relaxation.
+ *
+ * &lt;p&gt;
+ * The relaxation merges states by computing the intersection of their covered
+ * items. Additional statistics (total intersection size, number of merges, and
+ * number of zero intersections) are tracked for analysis or debugging purposes.
+ */
+public class    MaxCoverRelax implements Relaxation&lt;MaxCoverState&gt; {
+    /** The MaxCover problem instance associated with this relaxation. */
+    final MaxCoverProblem problem;
+    /** Sum of the cardinalities of intersections computed during merges. */
+<span class="fc" id="L26">    double totInsersectionSize = 0;</span>
+    /** Number of merge operations performed. */
+<span class="fc" id="L28">    int nbMerge = 0;</span>
+    /** Number of merges that resulted in an empty intersection. */
+<span class="fc" id="L30">    int nbZeroIntersection = 0;</span>
+    /**
+     * Constructs a MaxCover relaxation operator for a given problem instance.
+     *
+     * @param problem the MaxCover problem instance
+     */
+<span class="fc" id="L36">    public MaxCoverRelax(MaxCoverProblem problem) {</span>
+<span class="fc" id="L37">        this.problem = problem;</span>
+<span class="fc" id="L38">    }</span>
+    /**
+     * Merges a collection of states into a single relaxed state.
+     *
+     * &lt;p&gt;
+     * The merged state covers only the items that are common to all input states
+     * (intersection). This ensures the relaxation is admissible, as it does not
+     * overestimate coverage.
+     *
+     * @param states an iterator over the states to merge
+     * @return a new {@link MaxCoverState} representing the intersection of the input states
+     */
+    @Override
+    public MaxCoverState mergeStates(final Iterator&lt;MaxCoverState&gt; states) {
+<span class="fc" id="L52">        MaxCoverState state = states.next();</span>
+<span class="fc" id="L53">        BitSet intersectionCoveredItems = (BitSet) state.coveredItems().clone();</span>
+<span class="fc" id="L54">        int nbStatesMerged = 0;</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L56">            state = states.next();</span>
+<span class="fc" id="L57">            intersectionCoveredItems.and(state.coveredItems());</span>
+<span class="fc" id="L58">            nbStatesMerged++;</span>
+        }
+
+
+<span class="fc" id="L62">        int intersectionCard = intersectionCoveredItems.cardinality();</span>
+<span class="fc" id="L63">        totInsersectionSize += intersectionCard;</span>
+<span class="fc" id="L64">        nbMerge++;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (intersectionCard == 0) {</span>
+<span class="fc" id="L66">            nbZeroIntersection++;</span>
+        }
+<span class="fc" id="L68">        return new MaxCoverState(intersectionCoveredItems);</span>
+    }
+    /**
+     * Computes the relaxed cost of a transition between states.
+     *
+     * &lt;p&gt;
+     * In this implementation, the cost is not modified by the relaxation and
+     * is returned as-is.
+     *
+     * @param from the source state
+     * @param to the destination state
+     * @param merged the merged state after relaxation
+     * @param d the decision applied
+     * @param cost the original transition cost
+     * @return the relaxed transition cost (same as input cost)
+     */
+    @Override
+    public double relaxEdge(MaxCoverState from, MaxCoverState to, MaxCoverState merged, Decision d, double cost) {
+<span class="fc" id="L86">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

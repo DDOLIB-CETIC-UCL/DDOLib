@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.misp</a> &gt; <span class="el_source">MispRanking.java</span></div><h1>MispRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.misp;
+
+import org.ddolib.modeling.StateRanking;
+
+import java.util.BitSet;
+/**
+ * Implements a ranking strategy for states in the Maximum Independent Set Problem (MISP).
+ * &lt;p&gt;
+ * The ranking is based on the number of remaining nodes in the state: a state with
+ * more remaining nodes is considered more promising for exploration in a decision diagram.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This ranking can be used by solvers to prioritize which states to expand first
+ * when building or traversing the search space.
+ * &lt;/p&gt;
+ */
+
+<span class="fc" id="L18">public class MispRanking implements StateRanking&lt;BitSet&gt; {</span>
+    /**
+     * Compares two states based on the number of remaining nodes.
+     *
+     * @param o1 the first state to compare
+     * @param o2 the second state to compare
+     * @return a negative integer, zero, or a positive integer as the first state has
+     *         fewer, equal, or more remaining nodes than the second state
+     */
+    @Override
+    public int compare(BitSet o1, BitSet o2) {
+        // The state with the most remaining nodes is most interesting
+<span class="fc" id="L30">        return Integer.compare(o1.cardinality(), o2.cardinality());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

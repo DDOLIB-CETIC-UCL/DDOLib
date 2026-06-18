@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Graph.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mcp</a> &gt; <span class="el_source">Graph.java</span></div><h1>Graph.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mcp;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+/**
+ * Represents a Graph with adjacency matrix. Used for MCP problem
+ */
+public class Graph {
+
+    private final int[][] adjacencyMatrix;
+    public final int numNodes;
+    public final int numEdges;
+
+    /**
+     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we suppose that 2 nodes
+     * are not connected if the edge has weight {@code 0}
+     *
+     * @param adjacencyMatrix The adjacency matrix to initialize the graph.
+     */
+<span class="fc" id="L21">    public Graph(int[][] adjacencyMatrix) {</span>
+<span class="fc" id="L22">        this.adjacencyMatrix = adjacencyMatrix;</span>
+<span class="fc" id="L23">        this.numNodes = adjacencyMatrix.length;</span>
+<span class="fc" id="L24">        this.numEdges = Arrays.stream(adjacencyMatrix)</span>
+<span class="fc" id="L25">                .map(row -&gt; (int) Arrays.stream(row)</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">                        .filter(x -&gt; x != 0)</span>
+<span class="fc" id="L27">                        .count()</span>
+                )
+<span class="fc" id="L29">                .reduce(0, Integer::sum) / 2;</span>
+<span class="fc" id="L30">    }</span>
+
+
+    /**
+     * Given two nodes, returns the weight of their edges.
+     *
+     * @param from The start node of the edge.
+     * @param to   The end node of the edges.
+     * @return The weight of the edge.
+     */
+    public int weightOf(int from, int to) {
+<span class="fc" id="L41">        return adjacencyMatrix[from][to];</span>
+    }
+
+
+    @Override
+    public String toString() {
+<span class="nc" id="L47">        return Arrays.stream(adjacencyMatrix)</span>
+<span class="nc" id="L48">                .map(row -&gt; Arrays.stream(row)</span>
+<span class="nc" id="L49">                        .mapToObj(x -&gt; String.format(&quot;%2s&quot;, x))</span>
+<span class="nc" id="L50">                        .collect(Collectors.joining(&quot; &quot;)))</span>
+<span class="nc" id="L51">                .collect(Collectors.joining(&quot;\n&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

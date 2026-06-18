@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MKSProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mks</a> &gt; <span class="el_source">MKSProblem.java</span></div><h1>MKSProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mks;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Represents a Multi-dimensional Knapsack Problem (MKS) as a {@link Problem} for decision diagram optimization.
+ *
+ * &lt;p&gt;
+ * Each instance defines a set of items, their profits, and weights along multiple dimensions,
+ * along with the capacities of the knapsacks. This class supports evaluation of solutions,
+ * state transitions, and generation of variable domains.
+ *
+ * &lt;p&gt;
+ * States in this problem are represented by {@link MKSState}, which tracks the remaining capacities
+ * in each dimension.
+ *
+ * &lt;p&gt;
+ * The problem can be constructed either programmatically or loaded from a file.
+ * The class also provides an optional known optimal solution for testing purposes.
+ */
+<span class="fc" id="L32">public class MKSProblem implements Problem&lt;MKSState&gt; {</span>
+    /**
+     * Optional known optimal solution value.
+     */
+    public final Optional&lt;Double&gt; optimal;
+    /**
+     * Capacities of each knapsack dimension.
+     */
+    final double[] capa;
+    /**
+     * Profit of each item.
+     */
+    final int[] profit;
+    /**
+     * Weights of each item along each dimension.
+     */
+    final int[][] weights;
+    /**
+     * Optional problem name or file name.
+     */
+    final Optional&lt;String&gt; name;
+    /**
+     * Maximal Euclidean distance of the capacities, used for normalization or heuristics.
+     */
+    final double maximalDistance;
+
+    /**
+     * Constructs an MKSProblem with the given capacities, profits, and weights.
+     *
+     * @param capa    the capacities of each knapsack dimension
+     * @param profit  the profit of each item
+     * @param weight  the weight of each item along each dimension
+     * @param optimal the known optimal solution value
+     */
+<span class="nc" id="L66">    public MKSProblem(final double[] capa, final int[] profit, final int[][] weight, final double optimal) {</span>
+<span class="nc" id="L67">        this.capa = capa;</span>
+<span class="nc" id="L68">        this.profit = profit;</span>
+<span class="nc" id="L69">        this.weights = weight;</span>
+<span class="nc" id="L70">        this.optimal = Optional.of(optimal);</span>
+<span class="nc" id="L71">        this.name = Optional.empty();</span>
+
+<span class="nc" id="L73">        double distance = 0.0;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (int i = 0; i &lt; capa.length; i++) {</span>
+<span class="nc" id="L75">            distance += Math.pow(capa[i], 2);</span>
+        }
+<span class="nc" id="L77">        maximalDistance = Math.sqrt(distance);</span>
+<span class="nc" id="L78">    }</span>
+
+    /**
+     * Loads an MKSProblem from a text file.
+     *
+     * &lt;p&gt;
+     * The file format is expected to contain:
+     * &lt;ul&gt;
+     *   &lt;li&gt;First line: number of items, number of dimensions, optional optimal value&lt;/li&gt;
+     *   &lt;li&gt;Second line: capacities of each dimension&lt;/li&gt;
+     *   &lt;li&gt;Next lines: profit and weights of each item (profit first, then weights)&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param fname the path to the file
+     * @throws IOException if the file cannot be read
+     */
+<span class="fc" id="L94">    public MKSProblem(final String fname) throws IOException {</span>
+<span class="fc" id="L95">        final File f = new File(fname);</span>
+<span class="fc" id="L96">        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {</span>
+<span class="fc" id="L97">            final PinReadContext context = new PinReadContext();</span>
+<span class="fc" id="L98">            bf.lines().forEachOrdered((String s) -&gt; {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">                if (context.isFirst) {</span>
+<span class="fc" id="L100">                    context.isFirst = false;</span>
+<span class="fc" id="L101">                    context.isSecond = true;</span>
+<span class="fc" id="L102">                    String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L103">                    context.n = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L104">                    context.dimensions = Integer.parseInt(tokens[1]);</span>
+
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                    if (tokens.length == 3) {</span>
+<span class="fc" id="L107">                        context.optimal = Optional.of(Double.parseDouble(tokens[2]));</span>
+                    }
+
+<span class="fc" id="L110">                    context.profit = new int[context.n];</span>
+<span class="fc" id="L111">                    context.weights = new int[context.n][context.dimensions];</span>
+<span class="fc" id="L112">                    context.capa = new double[context.dimensions];</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">                } else if (context.isSecond) {</span>
+<span class="fc" id="L114">                    context.isSecond = false;</span>
+<span class="fc" id="L115">                    String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">                    assert tokens.length == context.dimensions;</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">                    for (int i = 0; i &lt; context.dimensions; i++) {</span>
+<span class="fc" id="L118">                        context.capa[i] = Integer.parseInt(tokens[i]);</span>
+                    }
+<span class="fc" id="L120">                } else {</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">                    if (context.count &lt; context.n) {</span>
+<span class="fc" id="L122">                        String[] tokens = s.split(&quot;\\s&quot;);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">                        assert tokens.length == context.dimensions + 1;</span>
+<span class="fc" id="L124">                        context.profit[context.count] = Integer.parseInt(tokens[0]);</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">                        for (int i = 0; i &lt; context.dimensions; i++) {</span>
+<span class="fc" id="L126">                            context.weights[context.count][i] = Integer.parseInt(tokens[i + 1]);</span>
+                        }
+<span class="fc" id="L128">                        context.count++;</span>
+                    }
+                }
+<span class="fc" id="L131">            });</span>
+<span class="fc" id="L132">            this.capa = context.capa;</span>
+<span class="fc" id="L133">            this.profit = context.profit;</span>
+<span class="fc" id="L134">            this.weights = context.weights;</span>
+<span class="fc" id="L135">            this.optimal = context.optimal;</span>
+<span class="fc" id="L136">            this.name = Optional.of(f.getName());</span>
+
+<span class="fc" id="L138">            double distance = 0.0;</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">            for (int i = 0; i &lt; capa.length; i++) {</span>
+<span class="fc" id="L140">                distance += Math.pow(capa[i], 2);</span>
+            }
+<span class="fc" id="L142">            maximalDistance = Math.sqrt(distance);</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Returns the number of decision variables (items).
+     *
+     * @return number of items
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L153">        return profit.length;</span>
+    }
+
+    /**
+     * Returns the initial state for this problem, representing full capacities.
+     *
+     * @return initial {@link MKSState}
+     */
+    @Override
+    public MKSState initialState() {
+<span class="fc" id="L163">        return new MKSState(capa.clone());</span>
+    }
+
+    /**
+     * Returns the initial value associated with the initial state.
+     *
+     * @return 0
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L173">        return 0;</span>
+    }
+
+    /**
+     * Returns an iterator over the domain of a variable (item) in a given state.
+     *
+     * &lt;p&gt;
+     * An item can be either taken (1) or not taken (0), depending on remaining capacities.
+     *
+     * @param state the current MKS state
+     * @param var   the index of the variable (item)
+     * @return iterator over possible decisions (0 or 1)
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(MKSState state, int var) {
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        for (int dim = 0; dim &lt; capa.length; dim++) {</span>
+            // the item cannot be taken
+<span class="fc bfc" id="L190" title="All 2 branches covered.">            if (state.capacities[dim] &lt; weights[var][dim]) {</span>
+<span class="fc" id="L191">                return List.of(0).iterator();</span>
+            }
+        } // The item can be taken or not
+<span class="fc" id="L194">        return List.of(1, 0).iterator();</span>
+    }
+
+    /**
+     * Computes the state resulting from taking a decision in the current state.
+     *
+     * @param state    the current MKS state
+     * @param decision the decision to apply
+     * @return the resulting {@link MKSState} after the decision
+     */
+    @Override
+    public MKSState transition(MKSState state, Decision decision) {
+<span class="fc" id="L206">        double[] newCapa = state.capacities.clone();</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        for (int dim = 0; dim &lt; capa.length; dim++) {</span>
+<span class="fc" id="L208">            newCapa[dim] -= weights[decision.variable()][dim] * decision.value();</span>
+        }
+<span class="fc" id="L210">        return new MKSState(newCapa);</span>
+    }
+
+    /**
+     * Computes the cost of taking a decision in a given state.
+     *
+     * &lt;p&gt;
+     * The cost is equal to the negative profit if the item is taken, or 0 otherwise.
+     *
+     * @param state    the current MKS state
+     * @param decision the decision applied
+     * @return the transition cost
+     */
+    @Override
+    public double transitionCost(MKSState state, Decision decision) {
+        // If the item is taken (1) the cost is the profit of the item, 0 otherwise
+<span class="fc" id="L226">        return -profit[decision.variable()] * decision.value();</span>
+    }
+
+    /**
+     * Returns the optional optimal value (negated to follow minimization conventions in DDO).
+     *
+     * @return optional negated optimal value
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L236">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    /**
+     * Evaluates the cost of a given solution.
+     *
+     * &lt;p&gt;
+     * Checks that the solution respects knapsack capacities; if violated,
+     * an {@link InvalidSolutionException} is thrown.
+     *
+     * @param solution the selection vector of items (1 = taken, 0 = not taken)
+     * @return the negated total profit of the solution
+     * @throws InvalidSolutionException if the solution is invalid
+     */
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L253">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L254">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L257">        int totalProfit = 0;</span>
+<span class="fc" id="L258">        int[] totalWeights = new int[this.capa.length];</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length; i++) {</span>
+<span class="fc" id="L260">            totalProfit += profit[i] * solution[i];</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">            for (int j = 0; j &lt; totalWeights.length; j++) {</span>
+<span class="fc" id="L262">                totalWeights[j] += weights[i][j] * solution[i];</span>
+            }
+        }
+
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for (int dim = 0; dim &lt; this.capa.length; dim++) {</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">            if (totalWeights[dim] &gt; capa[dim]) {</span>
+<span class="nc" id="L268">                String msg = String.format(&quot;The weight of %s (%d) exceeds the capacity of the &quot; +</span>
+<span class="nc" id="L269">                        &quot;knapsack (%d)&quot;, Arrays.toString(solution), totalWeights[dim], capa);</span>
+<span class="nc" id="L270">                throw new InvalidSolutionException(msg);</span>
+            }
+        }
+
+
+<span class="fc" id="L275">        return -totalProfit;</span>
+    }
+
+    /**
+     * Returns a human-readable string representation of the problem,
+     * including capacities, items' profits, weights, and known optimal value.
+     *
+     * @return string representation of the problem
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L286">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L287">        builder.append(&quot;Capacities: &quot;).append(Arrays.toString(capa)).append(&quot;\n&quot;);</span>
+<span class="fc" id="L288">        builder.append(&quot;Optimal: &quot;).append(optimal).append(&quot;\n&quot;);</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">        for (int item = 0; item &lt; profit.length; item++) {</span>
+<span class="fc" id="L290">            builder.append(&quot;Item: &quot;).append(profit[item]).append(&quot;, &quot;).append(Arrays.toString(weights[item])).append(&quot;\n&quot;);</span>
+        }
+<span class="fc" id="L292">        return builder.toString();</span>
+    }
+
+
+<span class="fc" id="L296">    private static class PinReadContext {</span>
+<span class="fc" id="L297">        boolean isFirst = true;</span>
+<span class="fc" id="L298">        boolean isSecond = false;</span>
+<span class="fc" id="L299">        int n = 0;</span>
+<span class="fc" id="L300">        int dimensions = 0;</span>
+<span class="fc" id="L301">        int count = 0;</span>
+<span class="fc" id="L302">        double[] capa = new double[0];</span>
+<span class="fc" id="L303">        int[] profit = new int[0];</span>
+<span class="fc" id="L304">        int[][] weights = new int[0][0];</span>
+<span class="fc" id="L305">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

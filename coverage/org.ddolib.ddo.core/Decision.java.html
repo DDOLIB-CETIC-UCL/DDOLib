@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Decision.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core</a> &gt; <span class="el_source">Decision.java</span></div><h1>Decision.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core;
+
+/**
+ * Represents a single decision within an optimization problem.
+ * &lt;p&gt;
+ * A {@code Decision} associates a variable identifier with a specific value.
+ * It is an immutable data structure that captures a single assignment performed
+ * during the search or compilation of a decision diagram (e.g., in an MDD-based solver).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * Decision d = new Decision(2, 5);
+ * System.out.println(d); // prints: Decision[variable=4, value=2]
+ *
+ * }&lt;/pre&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Use in DD-based solvers:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Encapsulates the assignment of a value to a variable during branching.&lt;/li&gt;
+ *   &lt;li&gt;Used to reconstruct solutions from paths in the decision diagram.&lt;/li&gt;
+ *   &lt;li&gt;Acts as a key element in comparing or storing decision paths in sets and maps.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ */
+<span class="fc" id="L26">public record Decision(int variable, int value) {</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

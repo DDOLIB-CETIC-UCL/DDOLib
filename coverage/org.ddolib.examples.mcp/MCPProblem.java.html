@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MCPProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mcp</a> &gt; <span class="el_source">MCPProblem.java</span></div><h1>MCPProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mcp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+import static java.lang.Math.abs;
+
+/**
+ * Represents an instance of the &lt;b&gt;Maximum Cut Problem (MCP)&lt;/b&gt;.
+ * &lt;p&gt;
+ * In the MCP, given a weighted undirected graph, the goal is to partition the nodes
+ * into two sets (S and T) such that the sum of the weights of edges between the sets
+ * is maximized.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface and provides methods for:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Initializing the problem from a graph or a file.&lt;/li&gt;
+ *     &lt;li&gt;Defining the decision domain (which partition a node belongs to).&lt;/li&gt;
+ *     &lt;li&gt;Computing transitions and transition costs between states.&lt;/li&gt;
+ *     &lt;li&gt;Accessing the initial state and value, and optional optimal value.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * Constants {@link #S} and {@link #T} are used to model decisions: placing a node in
+ * partition S or T, respectively.
+ * &lt;/p&gt;
+ *
+ * @see Graph
+ * @see MCPState
+ * @see Decision
+ */
+
+public class MCPProblem implements Problem&lt;MCPState&gt; {
+
+    /**
+     * Constant to model decision &quot;put in partition {@code S}&quot;.
+     */
+<span class="pc" id="L49">    public final int S = 0;</span>
+
+    /**
+     * Constant to model decision &quot;put in partition {@code T}&quot;.
+     */
+<span class="pc" id="L54">    public final int T = 1;</span>
+
+    /**
+     * The underlying graph representing the instance.
+     */
+    final Graph graph;
+
+    /**
+     * Optional known optimal value for the problem instance.
+     */
+<span class="pc" id="L64">    public Optional&lt;Double&gt; optimal = Optional.empty();</span>
+
+    /**
+     * Optional name for the instance to ease readability in tests.
+     */
+<span class="pc" id="L69">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs an MCP problem from a given graph.
+     *
+     * @param graph the graph representing the instance
+     */
+
+<span class="nc" id="L77">    public MCPProblem(Graph graph) {</span>
+<span class="nc" id="L78">        this.graph = graph;</span>
+<span class="nc" id="L79">    }</span>
+
+    /**
+     * Constructs an MCP problem from a given graph and known optimal value.
+     *
+     * @param graph   the graph representing the instance
+     * @param optimal the known optimal value of the instance
+     */
+<span class="nc" id="L87">    public MCPProblem(Graph graph, Double optimal) {</span>
+<span class="nc" id="L88">        this.graph = graph;</span>
+<span class="nc" id="L89">        this.optimal = Optional.of(optimal);</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Constructs an MCP problem by reading an instance from a file.
+     * &lt;p&gt;
+     * The file should contain the number of nodes and the adjacency matrix of weights,
+     * optionally including the optimal solution value.
+     * &lt;/p&gt;
+     *
+     * @param fname the path to the file containing the instance
+     * @throws IOException if the file cannot be read
+     */
+<span class="fc" id="L102">    public MCPProblem(String fname) throws IOException {</span>
+<span class="fc" id="L103">        int[][] matrix = new int[0][0];</span>
+<span class="fc" id="L104">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+
+<span class="fc" id="L106">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L107">            int linesCount = 0;</span>
+<span class="fc" id="L108">            int skip = 0;</span>
+
+            String line;
+<span class="fc bfc" id="L111" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
+<span class="fc" id="L113">                    skip++;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                } else if (linesCount == 0) {</span>
+<span class="fc" id="L115">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L116">                    int n = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L117">                    matrix = new int[n][n];</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">                    if (tokens.length &gt;= 4) {</span>
+<span class="fc" id="L119">                        optimal = Optional.of(Double.parseDouble(tokens[3]));</span>
+                    }
+<span class="fc" id="L121">                } else {</span>
+<span class="fc" id="L122">                    int node = linesCount - skip - 1;</span>
+<span class="fc" id="L123">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                    int[] row = Arrays.stream(tokens).filter(s -&gt; !s.isEmpty()).mapToInt(Integer::parseInt).toArray();</span>
+<span class="fc" id="L125">                    matrix[node] = row;</span>
+                }
+<span class="fc" id="L127">                linesCount++;</span>
+            }
+        }
+<span class="fc" id="L130">        Graph g = new Graph(matrix);</span>
+<span class="fc" id="L131">        this.graph = g;</span>
+<span class="fc" id="L132">        this.optimal = optimal;</span>
+<span class="fc" id="L133">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L134">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L138">        return name.orElseGet(graph::toString);</span>
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L143">        return graph.numNodes;</span>
+    }
+
+    @Override
+    public MCPState initialState() {
+<span class="fc" id="L148">        return new MCPState(new ArrayList&lt;&gt;(Collections.nCopies(nbVars(), 0)), 0);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L153">        int val = 0;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            for (int j = i + 1; j &lt; nbVars(); j++) {</span>
+<span class="fc" id="L156">                val += negativeOrNull(graph.weightOf(i, j));</span>
+            }
+        }
+<span class="fc" id="L159">        return -val;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(MCPState state, int var) {
+        // The first node can be arbitrary put in S
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (state.depth() == 0) return List.of(S).iterator();</span>
+<span class="fc" id="L166">        else return List.of(S, T).iterator();</span>
+    }
+
+    @Override
+    public MCPState transition(MCPState state, Decision decision) {
+<span class="fc" id="L171">        ArrayList&lt;Integer&gt; newBenefits = new ArrayList&lt;&gt;(Collections.nCopies(nbVars(), 0));</span>
+<span class="fc" id="L172">        int k = decision.variable();</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        if (decision.value() == S) {</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // If k is put in S, and then l is put in T, we gain the weight of the edge k -- l
+<span class="fc" id="L176">                int benef = state.netBenefit().get(l) + graph.weightOf(k, l);</span>
+<span class="fc" id="L177">                newBenefits.set(l, benef);</span>
+            }
+        } else {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // If k is put in T, and then l is also put in T, we lose the weight of the edge k -- l
+<span class="fc" id="L182">                int benef = state.netBenefit().get(l) - graph.weightOf(k, l);</span>
+<span class="fc" id="L183">                newBenefits.set(l, benef);</span>
+            }
+        }
+<span class="fc" id="L186">        return new MCPState(newBenefits, state.depth() + 1);</span>
+    }
+
+    @Override
+    public double transitionCost(MCPState state, Decision decision) {
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (state.depth() == 0) return 0;</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        else if (decision.value() == S) return -branchOnS(state, decision.variable());</span>
+<span class="fc" id="L193">        else return -branchOnT(state, decision.variable());</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L198">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L204">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L205">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L208">        BitSet s = new BitSet(nbVars());</span>
+<span class="fc" id="L209">        BitSet t = new BitSet(nbVars());</span>
+
+<span class="fc bfc" id="L211" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length; i++) {</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">            if (solution[i] == 0) s.set(i);</span>
+<span class="fc" id="L213">            else t.set(i);</span>
+        }
+
+<span class="fc" id="L216">        double value = 0.0;</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        for (int i = s.nextSetBit(0); i &gt;= 0; i = s.nextSetBit(i + 1)) {</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            for (int j = t.nextSetBit(0); j &gt;= 0; j = t.nextSetBit(j + 1)) {</span>
+<span class="fc" id="L219">                value += graph.weightOf(i, j);</span>
+            }
+        }
+
+<span class="fc" id="L223">        return -value;</span>
+    }
+
+    /**
+     * Computes the transition cost when placing node {@code k} in partition S.
+     *
+     * @param state the current state
+     * @param k     the node index
+     * @return the estimated cost
+     */
+    private int branchOnS(MCPState state, int k) {
+        // If k is set to S, we gain the net benefit if it is &lt; 0
+<span class="fc" id="L235">        int cost = positiveOrNull(-state.netBenefit().get(k));</span>
+
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+<span class="fc" id="L238">            int skl = state.netBenefit().get(l);</span>
+<span class="fc" id="L239">            int wkl = graph.weightOf(k, l);</span>
+
+<span class="fc bfc" id="L241" title="All 2 branches covered.">            if (skl * wkl &lt;= 0) cost += min(abs(skl), abs(wkl));</span>
+        }
+
+<span class="fc" id="L244">        return cost;</span>
+    }
+
+    /**
+     * Computes the transition cost when placing node {@code k} in partition T.
+     *
+     * @param state the current state
+     * @param k     the node index
+     * @return the estimated cost
+     */
+    private int branchOnT(MCPState state, int k) {
+        // If k is set to T, we gain the net benefit if it is &gt; 0
+<span class="fc" id="L256">        int cost = positiveOrNull(state.netBenefit().get(k));</span>
+
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+<span class="fc" id="L259">            int skl = state.netBenefit().get(l);</span>
+<span class="fc" id="L260">            int wkl = graph.weightOf(k, l);</span>
+
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            if (skl * wkl &gt;= 0) cost += min(abs(skl), abs(wkl));</span>
+        }
+
+<span class="fc" id="L265">        return cost;</span>
+    }
+
+    /**
+     * Returns the positive part of a value, or zero if negative.
+     *
+     * @param x the value
+     * @return max(x, 0)
+     */
+    private int positiveOrNull(int x) {
+<span class="fc" id="L275">        return max(x, 0);</span>
+    }
+
+    /**
+     * Returns the negative part of a value, or zero if positive.
+     *
+     * @param x the value
+     * @return min(x, 0)
+     */
+
+    private int negativeOrNull(int x) {
+<span class="fc" id="L286">        return min(x, 0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

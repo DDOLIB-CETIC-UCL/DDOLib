@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExactModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling</a> &gt; <span class="el_source">ExactModel.java</span></div><h1>ExactModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.frontier.Frontier;
+import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+
+import java.util.Iterator;
+
+/**
+ * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model, used by the
+ * {@link org.ddolib.ddo.core.solver.ExactSolver}
+ * &lt;p&gt;
+ * It specifies the
+ * {@link Problem} instance to solve and optionally provides custom heuristics,
+ * dominance relations, and debugging or verbosity configurations.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the state space of the problem
+ */
+<span class="fc" id="L23">public abstract class ExactModel&lt;T&gt; implements DdoModel&lt;T&gt; {</span>
+
+
+    @Override
+    public final Relaxation&lt;T&gt; relaxation() {
+<span class="fc" id="L28">        return new DummyRelaxation&lt;&gt;();</span>
+    }
+
+    @Override
+    public final StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L33">        return DdoModel.super.ranking();</span>
+    }
+
+    @Override
+    public final WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L38">        return DdoModel.super.widthHeuristic();</span>
+    }
+
+    @Override
+    public final Frontier&lt;T&gt; frontier() {
+<span class="nc" id="L43">        return DdoModel.super.frontier();</span>
+    }
+
+    @Override
+    public final boolean useCache() {
+<span class="nc" id="L48">        return DdoModel.super.useCache();</span>
+    }
+
+    @Override
+    public final ReductionStrategy&lt;T&gt; relaxStrategy() {
+<span class="nc" id="L53">        return DdoModel.super.relaxStrategy();</span>
+    }
+
+    @Override
+    public final ReductionStrategy&lt;T&gt; restrictStrategy() {
+<span class="nc" id="L58">        return DdoModel.super.restrictStrategy();</span>
+    }
+
+    @Override
+    public final StateDistance&lt;T&gt; stateDistance() {
+<span class="nc" id="L63">        return DdoModel.super.stateDistance();</span>
+    }
+
+    @Override
+    public final VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L68">        return DdoModel.super.variableHeuristic();</span>
+    }
+
+    /**
+     * Relaxation that does nothing
+     */
+    private static class DummyRelaxation&lt;T&gt; implements Relaxation&lt;T&gt; {
+
+        @Override
+        public T mergeStates(Iterator&lt;T&gt; states) {
+<span class="nc" id="L78">            return null;</span>
+        }
+
+        @Override
+        public double relaxEdge(T from, T to, T merged, Decision d, double cost) {
+<span class="nc" id="L83">            return cost;</span>
+        }
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

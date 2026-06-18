@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FixedWidth.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.heuristics.width</a> &gt; <span class="el_source">FixedWidth.java</span></div><h1>FixedWidth.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.heuristics.width;
+
+
+/**
+ * Implements a static maximum width heuristic for decision diagram or search-based algorithms.
+ * &lt;p&gt;
+ * This heuristic always returns a fixed maximum width for any state, regardless of the depth or
+ * characteristics of the state. It can be used to restrict the size of a decision diagram (DD)
+ * or a layer in a search algorithm.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of state for which the width is calculated
+ */
+public final class FixedWidth&lt;T&gt; implements WidthHeuristic&lt;T&gt; {
+    /** The fixed maximum width. */
+    private final int w;
+
+    /**
+     * Constructs a new {@code FixedWidth} heuristic with the specified maximum width.
+     *
+     * @param w the fixed maximum width
+     */
+<span class="fc" id="L23">    public FixedWidth(final int w) {</span>
+<span class="fc" id="L24">        this.w = w;</span>
+<span class="fc" id="L25">    }</span>
+    /**
+     * Returns the maximum width for the given state.
+     * &lt;p&gt;
+     * Since this is a fixed-width heuristic, the same value {@code w} is returned for every state.
+     * &lt;/p&gt;
+     *
+     * @param state the state (ignored in this heuristic)
+     * @return the fixed maximum width
+     */
+    @Override
+    public int maximumWidth(final T state) {
+<span class="fc" id="L37">        return w;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

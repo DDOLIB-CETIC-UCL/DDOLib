@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.gruler</a> &gt; <span class="el_source">GRRanking.java</span></div><h1>GRRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.gruler;
+
+import org.ddolib.modeling.StateRanking;
+/**
+ * Defines a ranking strategy for states in the Golomb Ruler (GR) problem.
+ * &lt;p&gt;
+ * This class provides a simple heuristic ordering between two {@link GRState} objects
+ * based on the position of their last mark. It can be used by search algorithms
+ * such as DDO, A*, or Anytime Column Search to prioritize exploration.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The comparison criterion is straightforward: the state with the smaller last mark
+ * (i.e., the shorter current ruler) is considered better.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example usage:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * GRRanking ranking = new GRRanking();
+ * int result = ranking.compare(state1, state2);
+ * // result &lt; 0 means state1 is preferred (smaller last mark)
+ * }&lt;/pre&gt;
+ *
+ * @see GRState
+ * @see StateRanking
+ */
+<span class="fc" id="L27">public class GRRanking implements StateRanking&lt;GRState&gt; {</span>
+    /**
+     * Compares two {@link GRState} instances based on their last placed mark.
+     * &lt;p&gt;
+     * A state with a smaller {@code lastMark} value is considered better,
+     * since it represents a shorter partial ruler.
+     * &lt;/p&gt;
+     *
+     * @param s1 the first state to compare.
+     * @param s2 the second state to compare.
+     * @return a negative integer if {@code s1} has a smaller last mark than {@code s2},
+     *         zero if they are equal, or a positive integer otherwise.
+     */
+    @Override
+    public int compare(GRState s1, GRState s2) {
+<span class="fc" id="L42">        return Integer.compare(s1.getLastMark(), s2.getLastMark()); // sort by last mark</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

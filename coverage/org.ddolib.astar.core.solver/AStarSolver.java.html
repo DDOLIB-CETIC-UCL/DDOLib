@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AStarSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.astar.core.solver</a> &gt; <span class="el_source">AStarSolver.java</span></div><h1>AStarSolver.java</h1><pre class="source lang-java linenums">package org.ddolib.astar.core.solver;
+
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.AstarStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.modeling.DefaultFastLowerBound;
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.Model;
+import org.ddolib.modeling.Problem;
+import org.ddolib.util.SolverUtil;
+import org.ddolib.util.StateAndDepth;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.DebugUtil;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * A* solver implementation for decision-diagram based optimization models.
+ *
+ * &lt;p&gt;The solver explores subproblems ordered by their {@code f = g + h} value, where
+ * {@code g} is the accumulated cost and {@code h} is a fast lower bound on the residual
+ * problem. It maintains open/closed sets and updates incumbents whenever a better complete
+ * assignment is discovered.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; type of states handled by the model
+ */
+<span class="fc" id="L39">public final class AStarSolver&lt;T&gt; implements Solver {</span>
+
+    // The problem we want to minimize
+    private final Problem&lt;T&gt; problem;
+    // A suitable lb for the problem we want to minimize
+    private final FastLowerBound&lt;T&gt; lb;
+    // A heuristic to choose the next variable to branch on
+    private final VariableHeuristic&lt;T&gt; varh;
+    // HashMap mapping (state,depth) to the f value
+    private final HashMap&lt;StateAndDepth&lt;T&gt;, Double&gt; closed;
+    // HashMap mapping (state,depth) open nodes to the f value.
+    private final HashMap&lt;StateAndDepth&lt;T&gt;, Double&gt; present;
+    // The dominance object that will be used to prune the search space.
+    private final DominanceChecker&lt;T&gt; dominance;
+    // The priority queue containing the open subproblems by decreasing f = g + h (lower-bound
+<span class="fc" id="L54">    private final PriorityQueue&lt;SubProblem&lt;T&gt;&gt; open = new PriorityQueue&lt;&gt;(</span>
+<span class="fc" id="L55">            Comparator.comparingDouble(SubProblem&lt;T&gt;::f));</span>
+    private final SubProblem&lt;T&gt; root;
+    /**
+     * &lt;ul&gt;
+     *     &lt;li&gt;0: no verbosity&lt;/li&gt;
+     *     &lt;li&gt;1: display newBest whenever there is a newBest&lt;/li&gt;
+     *     &lt;li&gt;2: 1 + statistics about the front every half a second (or so)&lt;/li&gt;
+     *     &lt;li&gt;3: 2 + every developed subproblem&lt;/li&gt;
+     *     &lt;li&gt;4: 3 + details about the developed state&lt;/li&gt;
+     * &lt;/ul&gt;
+     * &lt;p&gt;
+     * &lt;p&gt;
+     * 3: 2 + every developed subproblem
+     * 4: 3 + details about the developed state
+     */
+    private final VerbosityLevel verbosityLevel;
+    private final VerboseMode verboseMode;
+    /**
+     * The debug level of the compilation to add additional checks (see
+     * {@link DebugLevel for details}
+     */
+    private final DebugLevel debugLevel;
+    private final boolean defaultLowerBoundValue;
+    // Statistics
+    private AstarStats statistics;
+    // Value of the best known upper bound.
+    private double bestUB;
+    // If set, this keeps the info about the best solution so far.
+    private Optional&lt;Set&lt;Decision&gt;&gt; bestSol;
+
+<span class="fc" id="L85">    public AStarSolver(Model&lt;T&gt; model) {</span>
+<span class="fc" id="L86">        this.problem = model.problem();</span>
+<span class="fc" id="L87">        this.varh = model.variableHeuristic();</span>
+<span class="fc" id="L88">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L89">        this.dominance = model.dominance();</span>
+<span class="fc" id="L90">        this.bestUB = model.upperBound();</span>
+<span class="fc" id="L91">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L92">        this.present = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L93">        this.closed = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L94">        this.verbosityLevel = model.verbosityLevel();</span>
+<span class="fc" id="L95">        this.verboseMode = new VerboseMode(this.verbosityLevel, 500L);</span>
+<span class="fc" id="L96">        this.debugLevel = model.debugMode();</span>
+<span class="fc" id="L97">        this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);</span>
+<span class="fc" id="L98">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Internal constructor used for debug. The solver start the search from a node of the main
+     * search. For testing purpose, this constructor assumes that the path to the given node has
+     * 0 length.
+     *
+     * @param model   All parameters needed ton configure the solver.
+     * @param rootKey The state and the depth from which start the search.
+     */
+    private AStarSolver(
+            Model&lt;T&gt; model,
+            StateAndDepth&lt;T&gt; rootKey
+<span class="fc" id="L112">    ) {</span>
+<span class="fc" id="L113">        this.problem = model.problem();</span>
+<span class="fc" id="L114">        this.varh = model.variableHeuristic();</span>
+<span class="fc" id="L115">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L116">        this.dominance = model.dominance();</span>
+<span class="fc" id="L117">        this.bestUB = model.upperBound();</span>
+<span class="fc" id="L118">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L119">        this.present = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L120">        this.closed = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L121">        this.verbosityLevel = VerbosityLevel.SILENT;</span>
+<span class="fc" id="L122">        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);</span>
+<span class="fc" id="L123">        this.debugLevel = DebugLevel.OFF;</span>
+<span class="fc" id="L124">        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());</span>
+<span class="fc" id="L125">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
+<span class="fc" id="L126">    }</span>
+
+    @Override
+    public Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
+                             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L131">        statistics = new AstarStats(System.currentTimeMillis(), bestUB);</span>
+<span class="fc" id="L132">        open.add(root);</span>
+<span class="fc" id="L133">        present.put(new StateAndDepth&lt;&gt;(root.getState(), root.getDepth()), root.f());</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        while (!open.isEmpty()) {</span>
+            // -- debug, stat, verbosity, stopping  ---
+<span class="fc" id="L136">            verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,</span>
+<span class="fc" id="L137">                    open.peek().getLowerBound(), 100 * gap());</span>
+
+<span class="fc" id="L139">            statistics = statistics.incrementNbIter()</span>
+<span class="fc" id="L140">                    .updateFrontierMaxSize(open.size())</span>
+<span class="fc" id="L141">                    .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L142">                    .updateGap(gap());</span>
+
+
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">            if (limit.test(statistics)) { // user-defined stopping criterion</span>
+<span class="nc" id="L146">                return new Solution(bestSolution(), statistics);</span>
+            }
+            // -- end debug, stat, verbosity, stopping  ---
+
+<span class="fc" id="L150">            SubProblem&lt;T&gt; sub = open.poll();</span>
+            // if the new state is dominated, we skip it
+<span class="pc bpc" id="L152" title="1 of 4 branches missed.">            if (sub.getState() != null &amp;&amp; dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {</span>
+<span class="fc" id="L153">                continue;</span>
+            }
+<span class="fc" id="L155">            StateAndDepth&lt;T&gt; subKey = new StateAndDepth&lt;&gt;(sub.getState(), sub.getDepth());</span>
+<span class="fc" id="L156">            present.remove(subKey);</span>
+
+            // The current node has been explored. We can skip it.
+<span class="fc bfc" id="L159" title="All 2 branches covered.">            if (closed.containsKey(subKey)) continue;</span>
+
+<span class="fc" id="L161">            closed.put(subKey, sub.f());</span>
+
+            // sub can only lead to less good solution
+<span class="fc bfc" id="L164" title="All 2 branches covered.">            if (sub.f() + 1e-10 &gt; bestUB) continue;</span>
+
+<span class="fc bfc" id="L166" title="All 2 branches covered.">            if (sub.getPath().size() == problem.nbVars()) {// target node reached</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">                assert (sub.getValue() == sub.f());</span>
+<span class="fc" id="L168">                bestSol = Optional.of(sub.getPath());</span>
+<span class="fc" id="L169">                bestUB = sub.getValue();</span>
+<span class="fc" id="L170">                break;</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">            } else if (sub.getPath().size() &lt; problem.nbVars()) {</span>
+<span class="fc" id="L172">                verboseMode.currentSubProblem(statistics.nbIterations(), sub);</span>
+<span class="fc" id="L173">                addChildren(sub, onSolution);</span>
+            }
+<span class="fc" id="L175">        }</span>
+
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (debugLevel != DebugLevel.OFF) {</span>
+<span class="fc" id="L178">            checkFLBAdmissibility();</span>
+        }
+
+<span class="fc" id="L181">        statistics = statistics.updateTime(System.currentTimeMillis());</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);</span>
+<span class="fc" id="L183">        else statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+
+<span class="fc" id="L185">        return new Solution(bestSolution(), statistics);</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; bestValue() {
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
+<span class="fc" id="L191">            return Optional.of(bestUB);</span>
+        } else {
+<span class="fc" id="L193">            return Optional.empty();</span>
+        }
+    }
+
+    @Override
+    public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
+<span class="fc" id="L199">        return bestSol;</span>
+    }
+
+    private double gap() {
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if (Double.isInfinite(bestUB)) {</span>
+<span class="fc" id="L204">            return Double.POSITIVE_INFINITY;</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        } else if (open.isEmpty()) {</span>
+<span class="nc" id="L206">            return 0.0;</span>
+        } else {
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            double globalLB = defaultLowerBoundValue ? open.peek().getValue() : open.peek().f();</span>
+<span class="fc" id="L209">            return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);</span>
+        }
+    }
+
+    /**
+     * Construct the root of a problem given the state, the value and the depth of the root node.
+     * A non-zero depth is used for debug. For debug, the value of root is 0.
+     *
+     * @param state The states of the current root.
+     * @param value The value of the current root.
+     * @param depth Used only for debug. The depth of the subproblem root in the main search.
+     * @return the root subproblem
+     */
+    private SubProblem&lt;T&gt; constructRoot(T state, double value, int depth) {
+<span class="fc" id="L223">        Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L224">                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L225">        Set&lt;Decision&gt; nullDecisions = new HashSet&lt;&gt;(); // needed for debug mode</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        if (depth != 0) {</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">            for (int i = 0; i &lt; depth; i++) {</span>
+<span class="fc" id="L228">                nullDecisions.add(new Decision(i, 0));</span>
+            }
+        }
+<span class="fc" id="L231">        return new SubProblem&lt;&gt;(</span>
+                state,
+                value,
+<span class="fc" id="L234">                lb.fastLowerBound(state, vars),</span>
+                nullDecisions);
+    }
+
+
+    // return if a feasible solution was found by expanding children, false otherwise
+    private void addChildren(SubProblem&lt;T&gt; subProblem, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L241">        T state = subProblem.getState();</span>
+<span class="fc" id="L242">        int var = subProblem.getPath().size();</span>
+<span class="fc" id="L243">        final Iterator&lt;Integer&gt; domain = problem.domain(state, var);</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
+<span class="fc" id="L245">            final int val = domain.next();</span>
+<span class="fc" id="L246">            final Decision decision = new Decision(var, val);</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">            if (debugLevel != DebugLevel.OFF) {</span>
+<span class="fc" id="L248">                DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);</span>
+            }
+<span class="fc" id="L250">            T newState = problem.transition(state, decision);</span>
+<span class="fc" id="L251">            double cost = problem.transitionCost(state, decision);</span>
+<span class="fc" id="L252">            double g = subProblem.getValue() + cost;</span>
+<span class="fc" id="L253">            Set&lt;Decision&gt; path = new HashSet&lt;&gt;(subProblem.getPath());</span>
+<span class="fc" id="L254">            path.add(decision);</span>
+<span class="fc" id="L255">            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));</span>
+            // h-cost from this state to the target
+<span class="fc" id="L257">            double f = g + h;</span>
+
+            // this child can only lead to less good solution
+<span class="fc bfc" id="L260" title="All 2 branches covered.">            if (f + 1e-10 &gt; bestUB) continue;</span>
+
+<span class="fc" id="L262">            SubProblem&lt;T&gt; newSub = new SubProblem&lt;&gt;(newState, g, h, path);</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">            if (debugLevel == DebugLevel.EXTENDED) {</span>
+<span class="nc" id="L264">                DebugUtil.checkFlbConsistency(subProblem, newSub, cost);</span>
+            }
+<span class="fc" id="L266">            StateAndDepth&lt;T&gt; newKey = new StateAndDepth&lt;&gt;(newState, newSub.getDepth());</span>
+<span class="fc" id="L267">            Double presentValue = present.get(newKey);</span>
+<span class="fc bfc" id="L268" title="All 4 branches covered.">            if (presentValue != null &amp;&amp; presentValue &gt; newSub.f()) {</span>
+<span class="fc" id="L269">                open.add(newSub);</span>
+<span class="fc" id="L270">                present.put(newKey, newSub.f());</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">            } else if (presentValue == null) {</span>
+<span class="fc" id="L272">                Double closedValue = closed.get(newKey);</span>
+<span class="fc bfc" id="L273" title="All 4 branches covered.">                if (closedValue != null &amp;&amp; closedValue &gt; newSub.f()) {</span>
+<span class="fc" id="L274">                    open.add(newSub);</span>
+<span class="fc" id="L275">                    closed.remove(newKey);</span>
+<span class="fc" id="L276">                    present.put(newKey, newSub.f());</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">                } else if (closedValue == null) {</span>
+<span class="fc" id="L278">                    open.add(newSub);</span>
+<span class="fc" id="L279">                    present.put(newKey, newSub.f());</span>
+                }
+            }
+
+            // is the new state a solution?
+<span class="pc bpc" id="L284" title="1 of 4 branches missed.">            if (newSub.getPath().size() == problem.nbVars() &amp;&amp; (newSub.getValue() &lt; bestUB)) {</span>
+<span class="pc bpc" id="L285" title="1 of 2 branches missed.">                assert (h == 0.0);</span>
+<span class="fc" id="L286">                bestSol = Optional.of(newSub.getPath());</span>
+<span class="fc" id="L287">                bestUB = newSub.getValue();</span>
+<span class="fc" id="L288">                statistics = statistics.updateIncumbent(bestUB, gap())</span>
+<span class="fc" id="L289">                        .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L290">                onSolution.accept(constructSolution(path), statistics);</span>
+<span class="fc" id="L291">                verboseMode.newBest(bestUB);</span>
+            }
+<span class="fc" id="L293">        }</span>
+<span class="fc" id="L294">    }</span>
+
+    /**
+     * Checks if the lower bound of explored nodes of the search is admissible.
+     */
+    private void checkFLBAdmissibility() {
+
+<span class="fc" id="L301">        HashSet&lt;StateAndDepth&lt;T&gt;&gt; toCheck = new HashSet&lt;&gt;(closed.keySet());</span>
+<span class="fc" id="L302">        toCheck.addAll(present.keySet());</span>
+<span class="fc" id="L303">        Model&lt;T&gt; model = new Model&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L306">                return problem;</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L311">                return lb;</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L316">                return dominance;</span>
+            }
+        };
+
+<span class="fc" id="L320">        DebugUtil.checkFlbAdmissibility(toCheck, model, key -&gt; new AStarSolver&lt;&gt;(model, key));</span>
+<span class="fc" id="L321">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

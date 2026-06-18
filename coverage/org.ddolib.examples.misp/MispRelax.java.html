@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.misp</a> &gt; <span class="el_source">MispRelax.java</span></div><h1>MispRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.misp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.BitSet;
+import java.util.Iterator;
+/**
+ * Implements a relaxation strategy for the Maximum Independent Set Problem (MISP)
+ * to be used in decision diagram optimization (DDO) algorithms.
+ * &lt;p&gt;
+ * This relaxation defines how to merge multiple states and how to adjust transition
+ * costs when exploring the relaxed search space.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * In this implementation:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The merged state is computed as the union of all given states, meaning all nodes
+ *         that are available in at least one state are considered available in the merged state.&lt;/li&gt;
+ *     &lt;li&gt;The edge relaxation does not modify the transition cost; it returns the original cost.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class MispRelax implements Relaxation&lt;BitSet&gt; {
+
+    /**
+     * The MISP problem instance.
+     */
+    private final MispProblem problem;
+
+    /**
+     * Constructs a relaxation for the given MISP problem instance.
+     *
+     * @param problem the Maximum Independent Set problem instance
+     */
+
+<span class="fc" id="L37">    public MispRelax(MispProblem problem) {</span>
+<span class="fc" id="L38">        this.problem = problem;</span>
+<span class="fc" id="L39">    }</span>
+    /**
+     * Merges multiple states into a single relaxed state.
+     * &lt;p&gt;
+     * The merged state is the union of all input states: a node is considered available
+     * if it is available in at least one of the states.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the states to merge
+     * @return the merged state representing an over-approximation of all input states
+     */
+    @Override
+    public BitSet mergeStates(Iterator&lt;BitSet&gt; states) {
+<span class="fc" id="L52">        var merged = new BitSet(problem.nbVars());</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L54">            final BitSet state = states.next();</span>
+            // the merged state is the union of all the state
+<span class="fc" id="L56">            merged.or(state);</span>
+<span class="fc" id="L57">        }</span>
+<span class="fc" id="L58">        return merged;</span>
+    }
+    /**
+     * Adjusts the transition cost when moving from one state to another in the relaxed space.
+     * &lt;p&gt;
+     * In this implementation, the relaxation does not modify the cost and simply returns it.
+     * &lt;/p&gt;
+     *
+     * @param from the source state
+     * @param to the destination state
+     * @param merged the merged state
+     * @param d the decision applied
+     * @param cost the original transition cost
+     * @return the relaxed transition cost (here equal to {@code cost})
+     */
+    @Override
+    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
+<span class="fc" id="L75">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

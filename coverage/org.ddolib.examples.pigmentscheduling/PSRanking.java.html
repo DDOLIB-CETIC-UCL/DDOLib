@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pigmentscheduling</a> &gt; <span class="el_source">PSRanking.java</span></div><h1>PSRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pigmentscheduling;
+
+import org.ddolib.modeling.StateRanking;
+
+import java.util.Arrays;
+/**
+ * Provides a ranking heuristic for comparing two {@link PSState} objects
+ * within the Production Scheduling Problem (PSP) search framework.
+ * &lt;p&gt;
+ * The {@code PSRanking} class implements the {@link StateRanking} interface
+ * and defines a simple heuristic ordering between states based on
+ * their total remaining demand.
+ * This ranking is typically used by search algorithms such as DDO
+ * (Decision Diagram Optimization) to prioritize which states
+ * should be expanded first during the exploration of the search tree.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * In this implementation, states with a smaller total demand are considered
+ * &quot;better&quot; (i.e., ranked higher), as they represent configurations that are
+ * closer to satisfying all production demands.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Note: this ranking heuristic is a simple and potentially suboptimal choice.
+ * More advanced heuristics may consider additional aspects such as
+ * stocking cost accumulation, changeover penalties, or temporal feasibility.
+ * &lt;/p&gt;
+ *
+ * @see PSState
+ * @see StateRanking
+ */
+<span class="fc" id="L33">public class PSRanking implements StateRanking&lt;PSState&gt; {</span>
+    /**
+     * Compares two PSP states based on their total remaining demand.
+     * &lt;p&gt;
+     * The state with the smaller sum of {@code previousDemands} values
+     * (i.e., fewer remaining demands) is considered to have a better rank.
+     * &lt;/p&gt;
+     *
+     * @param s1 the first {@link PSState} to compare
+     * @param s2 the second {@link PSState} to compare
+     * @return a negative integer if {@code s1} is better than {@code s2},
+     *         zero if they are equivalent, or a positive integer otherwise
+     */
+    @Override
+    public int compare(PSState s1, PSState s2) {
+        // the state with the smallest total demand is the best (not sure about this)
+<span class="nc" id="L49">        int totS1 = Arrays.stream(s1.previousDemands).sum();</span>
+<span class="nc" id="L50">        int totS2 = Arrays.stream(s2.previousDemands).sum();</span>
+<span class="nc" id="L51">        return Integer.compare(totS1, totS2);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

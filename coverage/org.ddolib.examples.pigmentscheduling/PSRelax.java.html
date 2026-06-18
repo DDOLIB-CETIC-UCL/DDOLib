@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pigmentscheduling</a> &gt; <span class="el_source">PSRelax.java</span></div><h1>PSRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pigmentscheduling;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import static org.ddolib.examples.pigmentscheduling.PSProblem.IDLE;
+/**
+ * Implements the relaxation mechanism used in the DDO framework
+ * for the Pigment Scheduling Problem (PSP).
+ * &lt;p&gt;
+ * The {@code PSRelax} class defines how multiple {@link PSState} objects
+ * can be merged into a single relaxed state during the search process.
+ * Relaxation is a key component of the DDO algorithm, enabling the merging
+ * of similar or compatible states to reduce the size of the search graph
+ * while preserving admissibility.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * In this implementation, the relaxation rule merges states by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Taking the earliest time index among all merged states;&lt;/li&gt;
+ *     &lt;li&gt;Taking the minimum value of {@code previousDemands} for each item type,
+ *         effectively under-approximating remaining demands;&lt;/li&gt;
+ *     &lt;li&gt;Setting the machine to the {@link PSProblem#IDLE} state, as the
+ *         specific pigment context is lost during merging.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * The resulting relaxed state is less constrained (hence &quot;relaxed&quot;),
+ * which allows the solver to reason over fewer states while maintaining
+ * lower-bound consistency.
+ * &lt;/p&gt;
+ *
+ * @see PSProblem
+ * @see PSState
+ * @see Relaxation
+ * @see PSDdoMain
+ */
+<span class="fc" id="L44">public class PSRelax implements Relaxation&lt;PSState&gt; {</span>
+    /** Reference to the Pigment Scheduling problem definition. */
+    PSProblem problem;
+
+    /**
+     * Constructs a relaxation operator associated with a given PSP problem.
+     *
+     * @param problem the {@link PSProblem} instance that defines
+     *                the scheduling parameters, costs, and demands.
+     */
+<span class="fc" id="L54">    public PSRelax(PSProblem problem) {</span>
+<span class="fc" id="L55">        this.problem = problem;</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Computes the set of item types that still have unsatisfied demands,
+     * along with the currently produced item type (if any).
+     *
+     * @param state the {@link PSState} for which to extract the set of active items
+     * @return a set of integers representing the indices of active or pending item types
+     */
+    private static Set&lt;Integer&gt; members(PSState state) {
+<span class="nc" id="L66">        Set&lt;Integer&gt; mem = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (int i = 0; i &lt; state.previousDemands.length; i++) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (state.previousDemands[i] &gt;= 0) {</span>
+<span class="nc" id="L69">                mem.add(i);</span>
+            }
+        }
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (state.next != -1) {</span>
+<span class="nc" id="L73">            mem.add(state.next);</span>
+        }
+<span class="nc" id="L75">        return mem;</span>
+    }
+    /**
+     * Merges multiple PSP states into a single relaxed state.
+     * &lt;p&gt;
+     * The merging process:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;Takes the minimum time index among the given states;&lt;/li&gt;
+     *     &lt;li&gt;For each item type, takes the smallest (earliest) previous demand index;&lt;/li&gt;
+     *     &lt;li&gt;Sets the resulting state to the idle production mode.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * This method effectively creates an under-approximation of the merged states,
+     * representing a superset of their feasible continuations.
+     * @param states an iterator over the {@link PSState} instances to be merged
+     * @return a new relaxed {@link PSState} representing the merged configuration
+     */
+    @Override
+    public PSState mergeStates(final Iterator&lt;PSState&gt; states) {
+<span class="fc" id="L94">        PSState state = states.next();</span>
+<span class="fc" id="L95">        int[] prevDemands = Arrays.copyOf(state.previousDemands, state.previousDemands.length);</span>
+<span class="fc" id="L96">        int time = state.t;</span>
+<span class="fc" id="L97">        int nextItem = state.next;</span>
+<span class="fc" id="L98">        boolean disagreeOnNext = false; // becomes true if not all states agree on nextItem</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L100">            state = states.next();</span>
+<span class="fc bfc" id="L101" title="All 4 branches covered.">            disagreeOnNext = disagreeOnNext || (state.next != nextItem);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            assert(state.t == time); // all states must be at the same time, as this is the variable/layer</span>
+            // for each item type, take the earliest prevDemand
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            for (int i = 0; i &lt; prevDemands.length; i++) {</span>
+<span class="fc" id="L105">                prevDemands[i] = Math.min(prevDemands[i], state.previousDemands[i]);</span>
+            }
+        }
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        return new PSState(time, disagreeOnNext ? IDLE : nextItem, prevDemands);</span>
+    }
+    /**
+     * Returns the relaxed transition cost between two PSP states.
+     * &lt;p&gt;
+     * In this simple implementation, the relaxation does not alter
+     * the transition cost and simply returns the original value.
+     * More advanced relaxations could, however, modify this cost
+     * to tighten the lower bounds.
+     * &lt;/p&gt;
+     *
+     * @param from    the originating state
+     * @param to      the destination state
+     * @param merged  the merged (relaxed) state
+     * @param d       the decision leading to the transition
+     * @param cost    the original transition cost
+     * @return the (possibly modified) transition cost after relaxation
+     */
+
+    @Override
+    public double relaxEdge(PSState from, PSState to, PSState merged, Decision d, double cost) {
+<span class="fc" id="L129">        return cost;</span>
+    }
+
+    private long[] computeMST(int[][] changeover) {
+<span class="nc" id="L133">        int n = changeover.length;</span>
+<span class="nc" id="L134">        long[] minEdge = new long[n];</span>
+<span class="nc" id="L135">        boolean[] inMST = new boolean[n];</span>
+<span class="nc" id="L136">        Arrays.fill(minEdge, Long.MAX_VALUE);</span>
+<span class="nc" id="L137">        minEdge[0] = 0; // Start from the first item</span>
+<span class="nc" id="L138">        long[] mstCost = new long[1 &lt;&lt; n]; // To store the MST cost for each subset of nodes</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L140">            int u = -1;</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L142" title="All 6 branches missed.">                if (!inMST[j] &amp;&amp; (u == -1 || minEdge[j] &lt; minEdge[u])) {</span>
+<span class="nc" id="L143">                    u = j;</span>
+                }
+            }
+<span class="nc" id="L146">            inMST[u] = true;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            for (int v = 0; v &lt; n; v++) {</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                if (changeover[u][v] &lt; minEdge[v]) {</span>
+<span class="nc" id="L149">                    minEdge[v] = changeover[u][v];</span>
+                }
+            }
+            // Update the MST cost for the current subset
+<span class="nc bnc" id="L153" title="All 2 branches missed.">            for (int mask = 0; mask &lt; (1 &lt;&lt; n); mask++) {</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">                if ((mask &amp; (1 &lt;&lt; u)) == 0) {</span>
+<span class="nc" id="L155">                    mstCost[mask | (1 &lt;&lt; u)] = Math.min(mstCost[mask | (1 &lt;&lt; u)], mstCost[mask] + minEdge[u]);</span>
+                }
+            }
+        }
+<span class="nc" id="L159">        return mstCost;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

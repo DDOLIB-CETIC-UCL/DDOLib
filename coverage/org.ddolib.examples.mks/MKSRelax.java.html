@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MKSRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mks</a> &gt; <span class="el_source">MKSRelax.java</span></div><h1>MKSRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mks;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.Relaxation;
+
+import java.util.Iterator;
+
+import static java.lang.Math.max;
+/**
+ * Relaxation strategy for the multi-dimensional Knapsack problem (MKS) states.
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Relaxation} interface and provides a way to
+ * merge multiple MKS states into a single relaxed state for use in decision diagrams.
+ * The relaxation ensures that the merged state overestimates the remaining capacities,
+ * which is safe for optimization purposes.
+ */
+<span class="fc" id="L18">public class MKSRelax implements Relaxation&lt;MKSState&gt; {</span>
+    /**
+     * Merges multiple MKS states into a single relaxed state.
+     *
+     * &lt;p&gt;
+     * The merged state takes the maximum capacity along each dimension across all
+     * input states. This produces a relaxed state that safely overestimates the
+     * remaining capacities.
+     *
+     * @param states an iterator over the states to merge
+     * @return a new {@link MKSState} representing the relaxed merged state
+     */
+    @Override
+    public MKSState mergeStates(Iterator&lt;MKSState&gt; states) {
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        assert states.hasNext();</span>
+<span class="fc" id="L33">        MKSState state = states.next();</span>
+<span class="fc" id="L34">        double[] capa = state.capacities.clone();</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L36">            state = states.next();</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (int dim = 0; dim &lt; capa.length; dim++) {</span>
+<span class="fc" id="L38">                capa[dim] = max(capa[dim], state.capacities[dim]);</span>
+            }
+        }
+<span class="fc" id="L41">        return new MKSState(capa);</span>
+    }
+    /**
+     * Returns the cost of an edge in the relaxed decision diagram.
+     *
+     * &lt;p&gt;
+     * For this relaxation, the edge cost is unchanged and simply returns the
+     * original cost.
+     *
+     * @param from the source state
+     * @param to the destination state
+     * @param merged the merged state corresponding to the relaxation
+     * @param d the decision taken along this edge
+     * @param cost the original cost of the edge
+     * @return the relaxed edge cost, equal to {@code cost}
+     */
+    @Override
+    public double relaxEdge(MKSState from, MKSState to, MKSState merged, Decision d, double cost) {
+<span class="fc" id="L59">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

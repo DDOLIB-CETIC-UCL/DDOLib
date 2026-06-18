@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pdp</a> &gt; <span class="el_source">PDPFastLowerBound.java</span></div><h1>PDPFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pdp;
+
+import org.ddolib.modeling.FastLowerBound;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Set;
+
+/**
+ * Provides a fast lower bound estimation for the &lt;b&gt;Pickup and Delivery Problem (PDP)&lt;/b&gt;.
+ * &lt;p&gt;
+ * This class implements the {@link FastLowerBound} interface and computes a quick lower
+ * bound on the remaining cost of a PDP state. The lower bound is based on the minimum
+ * distance of incident edges for each unvisited node, providing a heuristic for pruning
+ * suboptimal branches in decision diagram optimization (DDO) or ACS search.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Key features:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Precomputes the smallest edge incident to each node in the problem instance.&lt;/li&gt;
+ *     &lt;li&gt;For a given state and a set of variables to assign, sums the smallest edges
+ *         associated with the unvisited nodes to estimate a lower bound of the remaining cost.&lt;/li&gt;
+ *     &lt;li&gt;Includes the starting node (typically node 0) in the estimation to account
+ *         for the return or depot cost in PDP instances.&lt;/li&gt;
+ *     &lt;li&gt;Designed for efficiency: uses precomputed values and simple selection logic
+ *         to quickly estimate the bound.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;This fast lower bound is particularly useful in search algorithms such as ACS,
+ * A*, or DDO to prune infeasible or suboptimal states and accelerate the solution
+ * process.&lt;/p&gt;
+ *
+ * @see FastLowerBound
+ * @see PDPState
+ * @see PDPProblem
+ */
+public class PDPFastLowerBound implements FastLowerBound&lt;PDPState&gt; {
+    /** Precomputed minimum incident edge for each node in the PDP instance. */
+    private final double[] leastIncidentEdge;
+
+    /**
+     * Constructs a new fast lower bound estimator for a given PDP problem instance.
+     *
+     * @param problem the PDP problem instance containing the distance matrix
+     *                and number of nodes
+     */
+
+<span class="fc" id="L49">    public PDPFastLowerBound(PDPProblem problem) {</span>
+<span class="fc" id="L50">        this.leastIncidentEdge = new double[problem.n];</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
+<span class="fc" id="L52">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                if (i != j) {</span>
+<span class="fc" id="L55">                    min = Math.min(min, problem.distanceMatrix[i][j]);</span>
+                }
+            }
+<span class="fc" id="L58">            leastIncidentEdge[i] = min;</span>
+        }
+<span class="fc" id="L60">    }</span>
+    /**
+     * Computes a fast lower bound for a given state and a set of unassigned variables.
+     *
+     * @param state     the current PDP state
+     * @param variables the set of variables (nodes) that remain to be assigned
+     * @return a lower bound on the cost to complete the PDP from the given state
+     */
+    @Override
+    public double fastLowerBound(PDPState state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L70">        BitSet toVisit = state.allToVisit;</span>
+        // for each unvisited node, we take the smallest incident edge
+<span class="fc" id="L72">        ArrayList&lt;Double&gt; toVisitLB = new ArrayList&lt;&gt;(variables.size());</span>
+<span class="fc" id="L73">        toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
+<span class="fc" id="L75">            toVisitLB.add(leastIncidentEdge[i]);</span>
+        }
+        // only unassigned.size() elements are to be visited
+        // and there can be fewer than toVisit.size()
+<span class="fc" id="L79">        int lb = 0;</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (toVisitLB.size() &gt; variables.size()) {</span>
+<span class="fc" id="L81">            Collections.sort(toVisitLB);</span>
+        }
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int i = 0; i &lt; variables.size(); i++) {</span>
+<span class="fc" id="L84">            lb += toVisitLB.get(i);</span>
+        }
+<span class="fc" id="L86">        return lb;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

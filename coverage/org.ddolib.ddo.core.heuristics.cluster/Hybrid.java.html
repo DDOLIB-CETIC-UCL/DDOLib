@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Hybrid.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.heuristics.cluster</a> &gt; <span class="el_source">Hybrid.java</span></div><h1>Hybrid.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.heuristics.cluster;
+
+import org.ddolib.ddo.core.mdd.NodeSubProblem;
+import org.ddolib.modeling.StateRanking;
+
+import java.util.ArrayList;
+import java.util.List;
+import static java.lang.Math.ceil;
+/**
+ * Hybrid reduction strategy that combines cost-based and distance-based clustering
+ * for decision diagram layers.
+ * This strategy is a hybridation between cost based selection and GHP.
+ * It preserves the w * alpha best nodes (alpha between 0 and 1) and merge the other nodes using clustering.
+ * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost,
+ * and a problem-specif StateDistance to quantify the dissimilarity between states.
+ * &lt;p&gt;
+ * This class implements {@link ReductionStrategy} and merges two strategies:
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@link CostBased}: preserves a fraction of nodes based on their ranking&lt;/li&gt;
+ *   &lt;li&gt;{@link GHP}: clusters the remaining nodes based on a distance metric&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The combination is controlled by a weighting parameter {@code alpha}:
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@code alpha} fraction of the clusters are preserved using cost-based ranking&lt;/li&gt;
+ *   &lt;li&gt;{@code 1-alpha} fraction of the clusters are formed using the GHP distance-based method&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the type of states in the decision diagram
+ */
+public class Hybrid&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
+    /** Cost-based clustering component. */
+    final private CostBased&lt;T&gt; costBased;
+    /** Distance-based clustering component (GHP). */
+    final private GHP&lt;T&gt; ghp;
+    /** Fraction of clusters preserved using the cost-based method. */
+    final private double alpha;
+    /**
+     * Constructs a Hybrid reduction strategy with specified ranking, distance, alpha, and seed.
+     *
+     * @param ranking state ranking used for cost-based preservation
+     * @param distance state distance used for GHP clustering
+     * @param alpha fraction of clusters preserved using cost-based strategy
+     * @param seed random seed for distance-based clustering
+     */
+<span class="fc" id="L47">    public Hybrid(final StateRanking&lt;T&gt; ranking, final StateDistance&lt;T&gt; distance, final double alpha, final long seed) {</span>
+<span class="fc" id="L48">        this.costBased = new CostBased&lt;&gt;(ranking);</span>
+<span class="fc" id="L49">        this.ghp = new GHP&lt;&gt;(distance, seed);</span>
+<span class="fc" id="L50">        this.alpha = alpha;</span>
+<span class="fc" id="L51">    }</span>
+    /**
+     * Constructs a Hybrid reduction strategy with default alpha (0.5) and seed.
+     *
+     * @param ranking state ranking used for cost-based preservation
+     * @param distance state distance used for GHP clustering
+     */
+    public Hybrid(final StateRanking&lt;T&gt; ranking, final StateDistance&lt;T&gt; distance) {
+<span class="fc" id="L59">        this(ranking, distance, 0.5, 465465);</span>
+<span class="fc" id="L60">    }</span>
+    /**
+     * Sets the random seed used for the distance-based GHP clustering.
+     *
+     * @param seed the new random seed
+     */
+    public void setSeed(long seed) {
+<span class="nc" id="L67">        this.ghp.setSeed(seed);</span>
+<span class="nc" id="L68">    }</span>
+    /**
+     * Defines clusters from a layer of nodes using a hybrid strategy.
+     *
+     * &lt;p&gt;
+     * A fraction {@code alpha} of nodes are clustered using cost-based ranking,
+     * while the remaining nodes are clustered using the GHP distance-based method.
+     *
+     * @param layer the list of nodes at the current layer
+     * @param maxWidth the desired maximum width after clustering
+     * @return an array of clusters, each cluster being a list of nodes
+     */
+    @Override
+    public List&lt;NodeSubProblem&lt;T&gt;&gt;[] defineClusters(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int maxWidth) {
+<span class="fc" id="L82">        int nbPreserved = (int) ceil(maxWidth*alpha);</span>
+
+<span class="fc" id="L84">        List&lt;List&lt;NodeSubProblem&lt;T&gt;&gt;&gt; clusters = new ArrayList&lt;List&lt;NodeSubProblem&lt;T&gt;&gt;&gt;();</span>
+<span class="fc" id="L85">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] costClusters = costBased.defineClusters(layer, nbPreserved+1);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        for (int i = 0; i &lt; costClusters.length-1; i++) {</span>
+<span class="fc" id="L87">            clusters.add(costClusters[i]);</span>
+        }
+<span class="fc" id="L89">        List&lt;NodeSubProblem&lt;T&gt;&gt; toCluster = costClusters[nbPreserved];</span>
+<span class="fc" id="L90">        int nbClusters = maxWidth - nbPreserved;</span>
+<span class="fc" id="L91">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] ghpClusters = ghp.defineClusters(toCluster, nbClusters);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (int i = 0; i &lt; ghpClusters.length; i++) {</span>
+<span class="fc" id="L93">            clusters.add(ghpClusters[i]);</span>
+        }
+<span class="fc" id="L95">        return clusters.toArray(new List[clusters.size()]);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

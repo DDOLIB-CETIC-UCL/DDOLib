@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SRFLPRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.srflp</a> &gt; <span class="el_source">SRFLPRanking.java</span></div><h1>SRFLPRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.srflp;
+
+
+import org.ddolib.modeling.StateRanking;
+
+/**
+ * Implements a ranking between two {@link SRFLPState} instances for use in
+ * decision diagram or search-based algorithms.
+ *
+ * &lt;p&gt;
+ * The ranking is based on the number of departments that still need to be placed,
+ * i.e., the sum of departments in the {@code must} and {@code maybe} sets of a state.
+ * A state with fewer remaining departments is considered &quot;better&quot; (ranked lower).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link StateRanking} interface and can be used
+ * to prioritize states during search, pruning, or frontier management in
+ * SRFLP solvers.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L22">public class SRFLPRanking implements StateRanking&lt;SRFLPState&gt; {</span>
+    /**
+     * Compares two SRFLP states based on the total number of remaining departments.
+     *
+     * @param o1 the first state to compare
+     * @param o2 the second state to compare
+     * @return a negative integer if {@code o1} has fewer remaining departments than {@code o2},
+     *         zero if they have the same number of remaining departments,
+     *         or a positive integer if {@code o1} has more remaining departments than {@code o2}.
+     */
+    @Override
+    public int compare(SRFLPState o1, SRFLPState o2) {
+<span class="fc" id="L34">        int total1 = o1.must().cardinality() + o1.maybe().cardinality();</span>
+<span class="fc" id="L35">        int total2 = o2.must().cardinality() + o2.maybe().cardinality();</span>
+<span class="fc" id="L36">        return Integer.compare(total1, total2);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

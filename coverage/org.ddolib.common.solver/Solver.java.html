@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Solver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver</a> &gt; <span class="el_source">Solver.java</span></div><h1>Solver.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver;
+
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.ddo.core.Decision;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+
+/**
+ * Interface representing a generic solver for decision diagram based optimization problems.
+ * &lt;p&gt;
+ * A solver explores the search space defined by a decision diagram, applies bounds and relaxations,
+ * and can return the best solution found along with its value.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Implementations of this interface typically provide algorithms such as:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Dynamic programming on decision diagrams&lt;/li&gt;
+ *     &lt;li&gt;A* search&lt;/li&gt;
+ *     &lt;li&gt;Branch-and-bound or anytime search strategies&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @see SearchStatistics
+ * @see Decision
+ */
+public interface Solver {
+    /**
+     * Minimizes the objective function according to the solver strategy.
+     *
+     * @param limit      a {@link Predicate} that can limit or stop the search based on current {@link SearchStatistics}
+     * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the solution array and
+     *                   current statistics
+     * @return the statistics of the search after completion
+     */
+    Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
+                      BiConsumer&lt;int[], SearchStatistics&gt; onSolution);
+
+    /**
+     * @return the value of the best solution in this decision diagram if there is one
+     */
+    Optional&lt;Double&gt; bestValue();
+
+    /**
+     * Returns the set of decisions that lead to the best solution found by this solver, if any.
+     *
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
+     * or empty if no solution exists
+     */
+    Optional&lt;Set&lt;Decision&gt;&gt; bestSolution();
+
+    /**
+     * Constructs an array representing the values assigned to each variable from a set of decisions.
+     *
+     * @param decisions a set of {@link Decision} objects representing variable assignments
+     * @return an array {@code t} such that {@code t[i]} is the assigned value of variable {@code i},
+     * or an empty array if the solution does not exist
+     */
+    default int[] constructSolution(Set&lt;Decision&gt; decisions) {
+<span class="fc" id="L63">        int[] toReturn = new int[decisions.size()];</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
+<span class="fc" id="L65">            toReturn[d.variable()] = d.value();</span>
+<span class="fc" id="L66">        }</span>
+<span class="fc" id="L67">        return toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

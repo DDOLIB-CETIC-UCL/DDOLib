@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MKSState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.mks</a> &gt; <span class="el_source">MKSState.java</span></div><h1>MKSState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.mks;
+
+import java.util.Arrays;
+/**
+ * Represents the state of a multi-dimensional Knapsack problem (MKS) in terms of
+ * the remaining capacities of each knapsack dimension.
+ *
+ * &lt;p&gt;
+ * This class encapsulates the capacities as a double array and provides standard
+ * methods for cloning, equality checking, and string representation.
+ */
+<span class="fc" id="L12">public class MKSState {</span>
+    /** Remaining capacities of each knapsack dimension. */
+    double[] capacities;
+    /**
+     * Constructs a new MKSState with the given capacities.
+     *
+     * @param capacities an array representing the remaining capacities of each knapsack dimension
+     */
+<span class="fc" id="L20">    public MKSState(double[] capacities) {</span>
+<span class="fc" id="L21">        this.capacities = capacities;</span>
+<span class="fc" id="L22">    }</span>
+    /**
+     * Creates a deep copy of this state.
+     *
+     * @return a new {@code MKSState} with a cloned capacities array
+     */
+    @Override
+    public MKSState clone() {
+<span class="nc" id="L30">        return new MKSState(capacities.clone());</span>
+    }
+    /**
+     * Returns a string representation of this state.
+     *
+     * @return a string showing the capacities array
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L39">        return Arrays.toString(capacities);</span>
+    }
+    /**
+     * Computes the hash code based on the capacities array.
+     *
+     * @return the hash code of this state
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L48">        return Arrays.hashCode(capacities);</span>
+    }
+    /**
+     * Compares this state to another object for equality.
+     *
+     * @param o the object to compare with
+     * @return {@code true} if {@code o} is an MKSState and has identical capacities; {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        assert o instanceof MKSState;</span>
+<span class="fc" id="L59">        return Arrays.equals(capacities, ((MKSState) o).capacities);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

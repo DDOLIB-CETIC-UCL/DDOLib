@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pigmentscheduling</a> &gt; <span class="el_source">PSFastLowerBound.java</span></div><h1>PSFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pigmentscheduling;
+
+import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.util.TSPLowerBound;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+import java.util.Set;
+
+/**
+ * Computes a fast lower bound for the Pigment Sequencing Problem (PSP).
+ * &lt;p&gt;
+ * This class implements the {@link FastLowerBound} interface for {@link PSState}
+ * and combines two complementary lower-bound estimations:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;A &lt;b&gt;changeover cost lower bound&lt;/b&gt; derived from a precomputed
+ *         Travelling Salesman Problem (TSP) lower bound on all subsets of items.&lt;/li&gt;
+ *     &lt;li&gt;A &lt;b&gt;stocking cost lower bound&lt;/b&gt; computed using the Wagner-Whitin approach
+ *         on the remaining items to produce.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * These estimations follow the principle presented in the
+ * &lt;a href=&quot;https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf&quot;&gt;
+ * PhD Thesis of Vianney Coppe (2024)&lt;/a&gt;, which states that since the two cost components
+ * (changeover and stocking) do not overlap, their respective lower bounds can be summed
+ * to produce a stronger Relaxed Lower Bound (RLB) for the PSP.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Key idea:&lt;/b&gt; The changeover costs are bounded using a TSP-like structure,
+ * while the stocking costs are bounded based on the minimal inventory holding
+ * costs required to satisfy all pending demands.&lt;/p&gt;
+ */
+public class PSFastLowerBound implements FastLowerBound&lt;PSState&gt; {
+    /** The production scheduling problem instance. */
+    private final PSProblem problem;
+
+    /** Precomputed TSP lower bounds for all subsets of items, indexed by bitmask. */
+    private final int[] tspLb;
+    /**
+     * Constructs a fast lower bound evaluator for a given PSP instance.
+     * &lt;p&gt;
+     * During initialization, the TSP lower bounds for all subsets of item types
+     * are precomputed using the  {@link TSPLowerBound#lowerBoundForAllSubsets(int[][])} method,
+     * which allows for fast lookup during the search.
+     * &lt;/p&gt;
+     *
+     * @param problem the PSP instance for which this lower bound will be computed
+     */
+<span class="fc" id="L51">    public PSFastLowerBound(PSProblem problem) {</span>
+<span class="fc" id="L52">        this.problem = problem;</span>
+<span class="fc" id="L53">        tspLb = TSPLowerBound.lowerBoundForAllSubsets(problem.changeoverCost);</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Extracts the set of item types that are relevant in the given state.
+     * &lt;p&gt;
+     * This includes all item types that still have unmet demand and the next
+     * item type to be produced, if any.
+     * &lt;/p&gt;
+     *
+     * @param state the current PSP state
+     * @return a set of indices representing items that remain to be produced
+     */
+    private static Set&lt;Integer&gt; members(PSState state) {
+<span class="fc" id="L67">        Set&lt;Integer&gt; mem = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (int i = 0; i &lt; state.previousDemands.length; i++) {</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (state.previousDemands[i] &gt;= 0) {</span>
+<span class="fc" id="L70">                mem.add(i);</span>
+            }
+        }
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (state.next != -1) {</span>
+<span class="fc" id="L74">            mem.add(state.next);</span>
+        }
+<span class="fc" id="L76">        return mem;</span>
+    }
+
+
+    /**
+     * Computes a fast (but admissible) lower bound on the remaining production cost
+     * for the given PSP state.
+     * &lt;p&gt;
+     * The bound combines:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;A &lt;b&gt;changeover cost lower bound&lt;/b&gt; obtained from a precomputed TSP bound
+     *     on the subset of item types that remain to be produced.&lt;/li&gt;
+     *     &lt;li&gt;A &lt;b&gt;stocking cost lower bound&lt;/b&gt; derived from the minimal inventory
+     *     cost required to satisfy future demands, following a Wagner-Whitin formulation.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * &lt;p&gt;
+     * This heuristic offers an efficient way to estimate the minimal achievable cost
+     * without solving the entire subproblem, thus improving pruning during the search.
+     * &lt;/p&gt;
+     *
+     * @param state     the current partial PSP state
+     * @param variables the set of decision variables yet to be assigned
+     * @return a non-negative lower bound on the remaining total cost
+     */
+    @Override
+    public double fastLowerBound(PSState state, Set&lt;Integer&gt; variables) {
+        // Convert to bitset-like index
+<span class="fc" id="L104">        int idx = members(state).stream().</span>
+<span class="fc" id="L105">                mapToInt(Integer::intValue).</span>
+<span class="fc" id="L106">                reduce(0, (a, b) -&gt; a | (1 &lt;&lt; b));</span>
+
+<span class="fc" id="L108">        int changeOverLb = tspLb[idx]; // lower-bound on the changeOverCost</span>
+
+<span class="fc" id="L110">        int stockingCostLb = 0; // lower-bound on the stocking cost</span>
+<span class="fc" id="L111">        PriorityQueue&lt;ItemDemand&gt; itemDemands = new PriorityQueue&lt;&gt;(Comparator.comparingInt(ItemDemand::cost));</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        for (int time = state.t - 1; time &gt;= 0; time--) {</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            for (int i = 0; i &lt; state.previousDemands.length; i++) {</span>
+<span class="fc" id="L114">                int demand = state.previousDemands[i]; // previous demand of item i</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">                while (demand &gt;= time) {</span>
+<span class="fc" id="L116">                    itemDemands.offer(new ItemDemand(problem.stockingCost[i], demand)); // Assuming pb.stocking is defined</span>
+<span class="fc" id="L117">                    demand = problem.previousDemands[i][demand];</span>
+                }
+            }
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (!itemDemands.isEmpty()) {</span>
+<span class="fc" id="L121">                ItemDemand item = itemDemands.poll();</span>
+<span class="fc" id="L122">                stockingCostLb += item.cost() * (time - item.deadLine());</span>
+            }
+        }
+<span class="fc" id="L125">        return changeOverLb + stockingCostLb;</span>
+    }
+    /**
+     * A simple record used to represent an item demand, defined by its
+     * stocking cost and deadline.
+     *
+     * @param cost     the unit stocking cost of the item
+     * @param deadLine the time period by which the item must be produced
+     */
+<span class="fc" id="L134">    private record ItemDemand(int cost, int deadLine) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

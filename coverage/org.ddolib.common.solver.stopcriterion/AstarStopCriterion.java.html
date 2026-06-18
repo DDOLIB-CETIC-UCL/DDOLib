@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AstarStopCriterion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver.stopcriterion</a> &gt; <span class="el_source">AstarStopCriterion.java</span></div><h1>AstarStopCriterion.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver.stopcriterion;
+
+import org.ddolib.common.solver.stat.AstarStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+
+/**
+ * Interface representing a stop criterion specifically for A* search variants.
+ * &lt;p&gt;
+ * This extends {@link StopCriterion} to provide access to A*-specific statistics
+ * such as the valid children percentage.
+ * &lt;/p&gt;
+ */
+@FunctionalInterface
+public interface AstarStopCriterion extends StopCriterion {
+
+    /**
+     * Creates a stop criterion that terminates the search when the smoothed percentage
+     * of valid children falls below or equal to a specified threshold.
+     *
+     * @param minPercent the minimum required percentage of valid children to continue
+     * @return an AstarStopCriterion for minimum valid children percentage
+     */
+    static AstarStopCriterion minValidChildrenPercent(double minPercent) {
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        return stats -&gt; stats.validChildrenPercent() &lt;= minPercent;</span>
+    }
+
+    /**
+     * Evaluates this criterion against the given A* search statistics.
+     *
+     * @param stats the A* search statistics
+     * @return {@code true} if the search should be terminated, {@code false} otherwise
+     */
+    boolean testAstarStats(AstarStats stats);
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalArgumentException if the provided statistics are not an instance of {@link AstarStats}
+     */
+    @Override
+    default boolean test(SearchStatistics stats) {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (stats instanceof AstarStats aStarStats) {</span>
+<span class="fc" id="L43">            return testAstarStats(aStarStats);</span>
+        }
+<span class="fc" id="L45">        throw new IllegalArgumentException(&quot;AStarStopCriterion requires AstarSearchStatistics.&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.knapsack</a> &gt; <span class="el_source">KSRanking.java</span></div><h1>KSRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.knapsack;
+
+import org.ddolib.modeling.StateRanking;
+/**
+ * State ranking for the Knapsack Problem (KS).
+ * &lt;p&gt;
+ * The ranking is based on the remaining capacity of the knapsack.
+ * States with a larger remaining capacity are considered &quot;better&quot; (i.e., ranked higher).
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This ranking can be used by solvers to prioritize states during search.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L14">public class KSRanking implements StateRanking&lt;Integer&gt; {</span>
+    /**
+     * Compares two states based on their remaining capacity.
+     *
+     * @param o1 remaining capacity of the first state
+     * @param o2 remaining capacity of the second state
+     * @return a negative integer, zero, or a positive integer if the first state
+     *         has less, equal, or greater remaining capacity than the second state
+     */
+    @Override
+    public int compare(final Integer o1, final Integer o2) {
+<span class="fc" id="L25">        return o1 - o2;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

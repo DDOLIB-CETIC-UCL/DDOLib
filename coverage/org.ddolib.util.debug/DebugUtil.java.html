@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DebugUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util.debug</a> &gt; <span class="el_source">DebugUtil.java</span></div><h1>DebugUtil.java</h1><pre class="source lang-java linenums">package org.ddolib.util.debug;
+
+import org.ddolib.common.solver.Solver;
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.modeling.Model;
+import org.ddolib.util.StateAndDepth;
+
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * Utility class providing methods useful for debugging state transitions.
+ * &lt;p&gt;
+ * This class helps to verify the correctness of the state transition function by
+ * checking that states generated from the same origin with the same decision
+ * are both equal and have the same hash code.
+ */
+<span class="nc" id="L24">public class DebugUtil {</span>
+
+    /**
+     * Checks the consistency of a transition function by generating two states
+     * from the same origin state and decision, then verifying that they are equal
+     * and have the same hash code.
+     * &lt;p&gt;
+     * If the generated states either differ in hash code or are not equal, a
+     * {@link RuntimeException} is thrown with detailed information about the
+     * origin state, decision, and resulting states.
+     *
+     * @param state      the original state from which the new states are generated
+     * @param decision   the decision applied to the original state
+     * @param transition the transition function that generates a new state from a state and a decision
+     * @param &lt;T&gt;        the type of the states
+     * @throws RuntimeException if the generated states are not equal or have different hash codes
+     */
+    public static &lt;T&gt; void checkHashCodeAndEquality(T state, Decision decision,
+                                                    BiFunction&lt;T, Decision, T&gt; transition) {
+<span class="fc" id="L43">        T newState = transition.apply(state, decision);</span>
+<span class="fc" id="L44">        T duplicate = transition.apply(state, decision);</span>
+<span class="fc" id="L45">        String transitionDescription = String.format(&quot;\torigin state: %s\n&quot;, state);</span>
+<span class="fc" id="L46">        transitionDescription += String.format(&quot;\tdecision: %s\n&quot;, decision);</span>
+<span class="fc" id="L47">        transitionDescription += String.format(&quot;\tnew state: %s\n&quot;, newState);</span>
+<span class="fc" id="L48">        transitionDescription += String.format(&quot;\tduplicate: %s\n&quot;, duplicate);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (newState.hashCode() != duplicate.hashCode()) {</span>
+<span class="nc" id="L50">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+                    &quot;decision does not have the same hash code !\n&quot;;
+<span class="nc" id="L52">            failureMsg += transitionDescription;</span>
+
+<span class="nc" id="L54">            throw new RuntimeException(failureMsg);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        } else if (!newState.equals(duplicate)) {</span>
+<span class="nc" id="L56">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+                    &quot;decision have the same hash code but are not equals!\n&quot;;
+<span class="nc" id="L58">            failureMsg += transitionDescription;</span>
+<span class="nc" id="L59">            throw new RuntimeException(failureMsg);</span>
+        }
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Given a set of states check if the {@link org.ddolib.modeling.FastLowerBound} is
+     * admissible, i.e., whether the bound does not overestimate the path from the states to a
+     * terminal node.
+     * &lt;p&gt;
+     * The checks are performed by running solvers starting for the tested states.
+     *
+     * @param toCheck The states to check.
+     * @param model   A model used to initialize solvers ran during the tests.
+     * @param solver  Returns a solver given a root state.
+     * @param &lt;T&gt;     The type of the states.
+     */
+    public static &lt;T&gt; void checkFlbAdmissibility(Set&lt;StateAndDepth&lt;T&gt;&gt; toCheck,
+                                                 Model&lt;T&gt; model,
+                                                 Function&lt;StateAndDepth&lt;T&gt;, Solver&gt; solver) {
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (StateAndDepth&lt;T&gt; current : toCheck) {</span>
+<span class="fc" id="L80">            Solver internalSolver = solver.apply(current);</span>
+<span class="fc" id="L81">            Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L82">                    IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L83">            double currentFLB = model.lowerBound().fastLowerBound(current.state(), vars);</span>
+
+<span class="fc" id="L85">            internalSolver.minimize(s -&gt; false, (sol, stats) -&gt; {</span>
+<span class="fc" id="L86">            });</span>
+<span class="fc" id="L87">            Optional&lt;Double&gt; shortestFromCurrent = internalSolver.bestValue();</span>
+<span class="fc" id="L88">            Optional&lt;Set&lt;Decision&gt;&gt; shortestPath = internalSolver.bestSolution();</span>
+<span class="pc bpc" id="L89" title="1 of 4 branches missed.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFLB - 1e-10 &gt; shortestFromCurrent.get()) {</span>
+<span class="nc" id="L90">                List&lt;Decision&gt; sortedDecisions = new ArrayList&lt;&gt;(shortestPath.get());</span>
+<span class="nc" id="L91">                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));</span>
+
+<span class="nc" id="L93">                List&lt;Decision&gt; subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());</span>
+
+<span class="nc" id="L95">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
+<span class="nc" id="L96">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
+<span class="nc" id="L97">                        &quot;State: &quot; + current.state().toString() + &quot;\n&quot; +</span>
+<span class="nc" id="L98">                        &quot;Depth: &quot; + current.depth() + &quot;\n&quot; +</span>
+<span class="nc" id="L99">                        &quot;Path estimation: &quot; + df.format(currentFLB) + &quot;\n&quot; +</span>
+<span class="nc" id="L100">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
+                        + &quot;\n\nFull Path to end:\n&quot; +
+<span class="nc" id="L102">                        subPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
+                        + &quot;\n&quot;;
+
+<span class="nc" id="L105">                throw new RuntimeException(failureMsg);</span>
+            }
+<span class="fc" id="L107">        }</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Given the current node and one of its successor. Checks if the lower bound is consistent.
+     *
+     * @param current        The current node.
+     * @param next           A successor of the current node.
+     * @param transitionCost The transition cost from {@code current} to {@code next}.
+     * @param &lt;T&gt;            The type of the states.
+     */
+    public static &lt;T&gt; void checkFlbConsistency(
+            SubProblem&lt;T&gt; current,
+            SubProblem&lt;T&gt; next,
+            double transitionCost
+    ) {
+<span class="nc" id="L123">        Logger logger = Logger.getLogger(&quot;Debug Mode&quot;);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (current.getLowerBound() - 1e-10 &gt; next.getLowerBound() + transitionCost) {</span>
+<span class="nc" id="L125">            String warningMsg = &quot;Your lower bound is not consistent. You may lose performance.\n&quot; +</span>
+                    &quot;Current state &quot; + current + &quot;\n&quot; +
+                    &quot;Next state: &quot; + next + &quot;\n&quot; +
+                    &quot;Transition cost: &quot; + transitionCost + &quot;\n&quot;;
+<span class="nc" id="L129">            logger.warning(warningMsg);</span>
+        }
+
+<span class="nc" id="L132">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

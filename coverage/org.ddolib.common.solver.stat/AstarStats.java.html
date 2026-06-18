@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AstarStats.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver.stat</a> &gt; <span class="el_source">AstarStats.java</span></div><h1>AstarStats.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver.stat;
+
+/**
+ * Class tracking statistics specific to A* variants
+ */
+public class AstarStats extends SearchStatistics {
+
+    /**
+     * The Exponential Moving Average (EMA) of the ratio of children added to the priority queue (open)
+     * compared to the total number of children generated.
+     * Initialized to 1.0 (optimistic value) to account for the initial warm-up phase.
+     */
+<span class="fc" id="L13">    private double _validChildrenRatio = 1.0;</span>
+
+    /**
+     * Constructs a new SearchStatistics instance.
+     *
+     * @param startTime the start time of the search (in milliseconds)
+     * @param initValue the initial value for the incumbent
+     */
+    public AstarStats(long startTime, double initValue) {
+<span class="fc" id="L22">        super(startTime, initValue);</span>
+<span class="fc" id="L23">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected AstarStats createSpecificInstance() {
+<span class="fc" id="L30">        AstarStats clone = new AstarStats(this._startTime, this._incumbent);</span>
+<span class="fc" id="L31">        clone._validChildrenRatio = this._validChildrenRatio;</span>
+<span class="fc" id="L32">        return clone;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats copy() {
+<span class="fc" id="L40">        AstarStats clone = (AstarStats) super.copy();</span>
+<span class="fc" id="L41">        clone._validChildrenRatio = this._validChildrenRatio;</span>
+<span class="fc" id="L42">        return clone;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateIncumbent(double incumbent, double gap) {
+<span class="fc" id="L50">        return (AstarStats) super.updateIncumbent(incumbent, gap);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateStatus(SearchStatus status) {
+<span class="fc" id="L58">        return (AstarStats) super.updateStatus(status);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats incrementNbIter() {
+<span class="fc" id="L66">        return (AstarStats) super.incrementNbIter();</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateFrontierMaxSize(int frontierSize) {
+<span class="fc" id="L74">        return (AstarStats) super.updateFrontierMaxSize(frontierSize);</span>
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateGap(double gap) {
+<span class="fc" id="L83">        return (AstarStats) super.updateGap(gap);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateTime(long time) {
+<span class="fc" id="L91">        return (AstarStats) super.updateTime(time);</span>
+    }
+
+    /**
+     * Retrieves the current Exponential Moving Average (EMA) of the novelty percentage.
+     * A value close to 0.0 indicates that the algorithm is generating a massive amount
+     * of redundant or suboptimal states, signaling probable stagnation.
+     *
+     * @return the smoothed ratio value (theoretically between 0 % and 1 %)
+     */
+    public double validChildrenPercent() {
+<span class="fc" id="L102">        return 100 * _validChildrenRatio;</span>
+    }
+
+    /**
+     * Calculates the local novelty ratio for the current iteration and updates
+     * the Exponential Moving Average (EMA).
+     * &lt;p&gt;
+     * EMA is a type of moving average that places a greater weight on the most recent data points,
+     * providing a smoothed trend of the ratio over time while remaining responsive to recent changes.
+     * By smoothing the data, it is less sensitive to extreme local variations—such as nodes with
+     * zero or a sudden surge of selected children—resulting in a more stable and reliable indicator
+     * of the search efficiency.
+     * The smoothing is performed with a default alpha factor of 0.05.
+     * If no children were generated, the EMA is not modified to prevent division by zero.
+     * &lt;/p&gt;
+     *
+     * @param nbGeneratedChildren the total number of children generated by the transition function
+     * @param nbSelectedChildren  the number of relevant children (not pruned by upper bound and not in closed list)
+     * @return a new instance with updated validChildrenRatio
+     */
+    public AstarStats updateValidChildrenPercent(int nbGeneratedChildren, int nbSelectedChildren) {
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if (nbSelectedChildren == 0) return this;</span>
+
+<span class="fc" id="L125">        AstarStats toReturn = this.copy();</span>
+<span class="fc" id="L126">        double r = (double) nbSelectedChildren / nbGeneratedChildren;</span>
+<span class="fc" id="L127">        double alpha = 0.05;</span>
+<span class="fc" id="L128">        toReturn._validChildrenRatio = alpha * r + (1 - alpha) * this._validChildrenRatio;</span>
+<span class="fc" id="L129">        return toReturn;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

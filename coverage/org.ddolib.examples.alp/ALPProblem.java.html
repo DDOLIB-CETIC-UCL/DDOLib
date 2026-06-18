@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ALPProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.alp</a> &gt; <span class="el_source">ALPProblem.java</span></div><h1>ALPProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.alp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.IntStream;
+
+/**
+ * Represents the &lt;b&gt;Aircraft Landing Problem (ALP)&lt;/b&gt;.
+ * &lt;p&gt;
+ * The ALP consists in scheduling the landing of a fleet of aircraft on one or multiple runways.
+ * Each aircraft has a target landing time and a deadline. The objective is to minimize the total
+ * deviation from target times (tardiness) while respecting deadlines and runway separation constraints.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Landing times are constrained by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The previous aircraft landed on the same runway;&lt;/li&gt;
+ *     &lt;li&gt;The minimum separation time between aircraft classes;&lt;/li&gt;
+ *     &lt;li&gt;The aircraft’s target and deadline times.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface for states of type {@link ALPState}.
+ * It defines the state space, the feasible domain of decisions, the transition function, and the cost function.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Fields:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code nbClasses}: Number of aircraft classes.&lt;/li&gt;
+ *     &lt;li&gt;{@code nbAircraft}: Total number of aircraft.&lt;/li&gt;
+ *     &lt;li&gt;{@code nbRunways}: Number of runways available.&lt;/li&gt;
+ *     &lt;li&gt;{@code aircraftClass}: Array mapping each aircraft to its class.&lt;/li&gt;
+ *     &lt;li&gt;{@code aircraftTarget}: Target landing time of each aircraft.&lt;/li&gt;
+ *     &lt;li&gt;{@code aircraftDeadline}: Deadline for each aircraft.&lt;/li&gt;
+ *     &lt;li&gt;{@code classTransitionCost}: Minimum separation times between classes.&lt;/li&gt;
+ *     &lt;li&gt;{@code optimal}: Optional optimal value if known.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @see Problem
+ * @see ALPState
+ * @see ALPDecision
+ */
+public class ALPProblem implements Problem&lt;ALPState&gt; {
+    // When no plane has yet landed the previous class is -1.
+    public static final int DUMMY = -1;
+    /**
+     * Number of aircraft classes.
+     */
+    public final int nbClasses;
+    /**
+     * Total number of aircraft.
+     */
+    public final int nbAircraft;
+    /**
+     * Number of available runways.
+     */
+    public final int nbRunways;
+    /**
+     * Mapping of each aircraft to its class.
+     */
+    public final int[] aircraftClass;
+    /**
+     * Target landing time for each aircraft.
+     */
+    public final int[] aircraftTarget;
+    /**
+     * Deadline for each aircraft.
+     */
+    public final int[] aircraftDeadline;
+    /**
+     * Minimum separation times between aircraft classes.
+     */
+    public final int[][] classTransitionCost;
+    /**
+     * Known optimal value, if available.
+     */
+    public final Optional&lt;Double&gt; optimal;
+    /**
+     * Used to know which aircraft of each class will be next to land.
+     */
+    public ArrayList&lt;ArrayList&lt;Integer&gt;&gt; latestToEarliestAircraftByClass;
+    /**
+     * Minimal time between a &quot;no_class&quot; aircraft and &quot;class&quot; aircraft.
+     */
+    int[] minSeparationTo;
+<span class="pc" id="L93">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs an ALP problem with the specified parameters.
+     *
+     * @param nbClasses           Number of aircraft classes
+     * @param nbAircraft          Total number of aircraft
+     * @param nbRunways           Number of runways
+     * @param aircraftClass       Array mapping aircraft to class
+     * @param aircraftTarget      Target landing times
+     * @param aircraftDeadline    Deadline times
+     * @param classTransitionCost Minimum separation times between classes
+     * @param optimal             Optional optimal value
+     */
+    public ALPProblem(final int nbClasses,
+                      final int nbAircraft,
+                      final int nbRunways,
+                      final int[] aircraftClass,
+                      final int[] aircraftTarget,
+                      final int[] aircraftDeadline,
+                      final int[][] classTransitionCost,
+<span class="nc" id="L114">                      final Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L115">        this.nbClasses = nbClasses;</span>
+<span class="nc" id="L116">        this.nbAircraft = nbAircraft;</span>
+<span class="nc" id="L117">        this.nbRunways = nbRunways;</span>
+<span class="nc" id="L118">        this.aircraftClass = aircraftClass;</span>
+<span class="nc" id="L119">        this.aircraftTarget = aircraftTarget;</span>
+<span class="nc" id="L120">        this.aircraftDeadline = aircraftDeadline;</span>
+<span class="nc" id="L121">        this.classTransitionCost = classTransitionCost;</span>
+<span class="nc" id="L122">        this.optimal = optimal;</span>
+<span class="nc" id="L123">    }</span>
+    
+
+    /**
+     * Constructs an ALP problem by reading from a file.
+     * &lt;p&gt;
+     * The file format is expected to provide the number of aircraft, classes, runways,
+     * optionally the known optimal value, aircraft target and deadline times, and class separation costs.
+     * &lt;/p&gt;
+     *
+     * @param fname Path to the input file
+     * @throws IOException if the file cannot be read
+     */
+
+<span class="fc" id="L137">    public ALPProblem(final String fname) throws IOException {</span>
+<span class="fc" id="L138">        final File f = new File(fname);</span>
+<span class="fc" id="L139">        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {</span>
+<span class="fc" id="L140">            int lineCounter = 0;</span>
+<span class="fc" id="L141">            List&lt;String&gt; linesList = bf.lines().toList();</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">            linesList = linesList.stream().filter(line -&gt; !line.isBlank()).toList();</span>
+<span class="fc" id="L143">            String[] firstLine = linesList.get(0).split(&quot; &quot;);</span>
+<span class="fc" id="L144">            int nbAircraft = Integer.parseInt(firstLine[0]);</span>
+<span class="fc" id="L145">            int nbClasses = Integer.parseInt(firstLine[1]);</span>
+<span class="fc" id="L146">            int nbRunways = Integer.parseInt(firstLine[2]);</span>
+<span class="fc" id="L147">            Optional&lt;Double&gt; optimal = Optional.empty();</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            if (firstLine.length == 4) {</span>
+<span class="fc" id="L149">                optimal = Optional.of(Double.parseDouble(firstLine[3]));</span>
+            }
+
+<span class="fc" id="L152">            int[] aircraftClass = new int[nbAircraft];</span>
+<span class="fc" id="L153">            int[] aircraftDeadline = new int[nbAircraft];</span>
+<span class="fc" id="L154">            int[] aircraftTarget = new int[nbAircraft];</span>
+<span class="fc" id="L155">            int[][] classTransitionCost = new int[nbClasses][nbClasses];</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            for (int i = 1; i &lt; linesList.size(); i++) {</span>
+<span class="fc" id="L157">                String[] splitLine = linesList.get(i).split(&quot; &quot;);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">                if (lineCounter &lt; nbAircraft) {</span>
+<span class="fc" id="L159">                    aircraftTarget[lineCounter] = Integer.parseInt(splitLine[0]);</span>
+<span class="fc" id="L160">                    aircraftDeadline[lineCounter] = Integer.parseInt(splitLine[1]);</span>
+<span class="fc" id="L161">                    aircraftClass[lineCounter] = Integer.parseInt(splitLine[2]);</span>
+                } else {
+<span class="fc" id="L163">                    int cnt = 0;</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">                    for (String s : splitLine) {</span>
+<span class="fc" id="L165">                        classTransitionCost[lineCounter - nbAircraft][cnt] = Integer.parseInt(s);</span>
+<span class="fc" id="L166">                        cnt++;</span>
+                    }
+                }
+<span class="fc" id="L169">                lineCounter++;</span>
+            }
+<span class="fc" id="L171">            this.nbAircraft = nbAircraft;</span>
+<span class="fc" id="L172">            this.nbClasses = nbClasses;</span>
+<span class="fc" id="L173">            this.nbRunways = nbRunways;</span>
+<span class="fc" id="L174">            this.aircraftClass = aircraftClass;</span>
+<span class="fc" id="L175">            this.aircraftTarget = aircraftTarget;</span>
+<span class="fc" id="L176">            this.aircraftDeadline = aircraftDeadline;</span>
+<span class="fc" id="L177">            this.classTransitionCost = classTransitionCost;</span>
+<span class="fc" id="L178">            this.optimal = optimal;</span>
+
+<span class="fc" id="L180">            latestToEarliestAircraftByClass = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L181">            minSeparationTo = new int[nbClasses];</span>
+<span class="fc" id="L182">            Arrays.fill(minSeparationTo, Integer.MAX_VALUE);</span>
+
+<span class="fc bfc" id="L184" title="All 2 branches covered.">            for (int i = 0; i &lt; nbClasses; i++)</span>
+<span class="fc" id="L185">                latestToEarliestAircraftByClass.add(new ArrayList&lt;&gt;(List.of(0)));</span>
+
+<span class="fc bfc" id="L187" title="All 2 branches covered.">            for (int i = nbAircraft - 1; i &gt;= 0; i--) {</span>
+<span class="fc" id="L188">                latestToEarliestAircraftByClass.get(aircraftClass[i]).add(i);</span>
+            }
+
+<span class="fc bfc" id="L191" title="All 2 branches covered.">            for (int i = 0; i &lt; nbClasses; i++) {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">                for (int j = 0; j &lt; nbClasses; j++) {</span>
+<span class="fc" id="L193">                    minSeparationTo[j] = Math.min(minSeparationTo[j], classTransitionCost[i][j]);</span>
+                }
+            }
+<span class="fc" id="L196">            this.name = Optional.of(fname);</span>
+        }
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Computes the arrival time of an aircraft on a given runway.
+     *
+     * @param runwayStates The current state of each runway
+     * @param aircraft     The aircraft to land
+     * @param runway       The runway index
+     * @return The computed landing time
+     */
+    public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway) {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        if (runwayStates[runway].prevClass == DUMMY) {</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">            if (runwayStates[runway].prevTime == 0)</span>
+<span class="fc" id="L211">                return aircraftTarget[aircraft];</span>
+            else
+<span class="fc" id="L213">                return Math.max(aircraftTarget[aircraft],</span>
+                        runwayStates[runway].prevTime + minSeparationTo[aircraftClass[aircraft]]);
+        } else {
+<span class="fc" id="L216">            return Math.max(aircraftTarget[aircraft],</span>
+                    runwayStates[runway].prevTime +
+                            classTransitionCost[runwayStates[runway].prevClass][aircraftClass[aircraft]]);
+        }
+    }
+
+    /**
+     * Converts an {@link ALPDecision} to its integer representation.
+     *
+     * @param decision The decision
+     * @return The integer encoding of the decision
+     */
+    public int toDecision(ALPDecision decision) {
+<span class="fc" id="L229">        return decision.aircraftClass + nbClasses * decision.runway;</span>
+    }
+
+    /**
+     * Restores an {@link ALPDecision} from its integer representation.
+     *
+     * @param value The integer encoding
+     * @return The decoded decision
+     */
+    public ALPDecision fromDecision(int value) {
+<span class="fc" id="L239">        return new ALPDecision(</span>
+                value % nbClasses,
+                value / nbClasses
+        );
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L247">        return nbAircraft;</span>
+    }
+
+    @Override
+    public ALPState initialState() {
+<span class="fc" id="L252">        int[] remaining = new int[nbClasses];</span>
+<span class="fc" id="L253">        Arrays.fill(remaining, 0);</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">        for (int i = 0; i &lt; nbAircraft; i++)</span>
+<span class="fc" id="L255">            remaining[aircraftClass[i]] += 1;</span>
+<span class="fc" id="L256">        RunwayState[] runwayStates = new RunwayState[nbRunways];</span>
+<span class="fc" id="L257">        Arrays.fill(runwayStates, new RunwayState(DUMMY, 0));</span>
+<span class="fc" id="L258">        return new ALPState(remaining, runwayStates);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L263">        return 0;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(ALPState state, int var) {
+<span class="fc" id="L268">        int totRemaining = 0;</span>
+<span class="fc" id="L269">        HashSet&lt;RunwayState&gt; used = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L270">        ArrayList&lt;Integer&gt; decisions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L271">        int[] remainingAircraftOfClass = state.remainingAircraftOfClass;</span>
+
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        for (int c = 0; c &lt; remainingAircraftOfClass.length; c++) {       // For each class</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            if (remainingAircraftOfClass[c] &gt; 0) {                         // If there still are aircraft to land.</span>
+                // Get the earliest aircraft in the queue.
+<span class="fc" id="L276">                int aircraft = latestToEarliestAircraftByClass.get(c).get(state.remainingAircraftOfClass[c]);</span>
+
+<span class="fc" id="L278">                used.clear();</span>
+                // For each runway, try to find at least one suitable runway.
+<span class="fc bfc" id="L280" title="All 2 branches covered.">                for (int runway = 0; runway &lt; nbRunways; runway++) {</span>
+<span class="fc" id="L281">                    int arrival = getArrivalTime(state.runwayStates, aircraft, runway);</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">                    if (arrival &lt;= aircraftDeadline[aircraft]) {</span>
+<span class="fc" id="L283">                        decisions.add(toDecision(new ALPDecision(c, runway)));</span>
+<span class="fc" id="L284">                        used.add(state.runwayStates[runway]);</span>
+                    }
+                }
+
+<span class="fc bfc" id="L288" title="All 2 branches covered.">                if (used.isEmpty()) {</span>
+                    // This aircraft will never be able to land.
+<span class="fc" id="L290">                    return Collections.emptyIterator();</span>
+                }
+            }
+<span class="fc" id="L293">            totRemaining += remainingAircraftOfClass[c];</span>
+        }
+
+<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (totRemaining == 0) {</span>
+<span class="fc" id="L297">            return Collections.singletonList(DUMMY).iterator();</span>
+        } else {
+<span class="fc" id="L299">            return decisions.iterator();</span>
+        }
+    }
+
+    @Override
+    public ALPState transition(ALPState state, Decision decision) {
+<span class="fc bfc" id="L305" title="All 2 branches covered.">        if (decision.value() == DUMMY) {</span>
+            // Latest decision says that there are no plane to land left.
+<span class="fc" id="L307">            return new ALPState(state);</span>
+        } else {
+            // Generating the new state.
+<span class="fc" id="L310">            ALPDecision alpDecision = fromDecision(decision.value());</span>
+<span class="fc" id="L311">            int aircraftClass = alpDecision.aircraftClass;</span>
+<span class="fc" id="L312">            int runway = alpDecision.runway;</span>
+<span class="fc" id="L313">            int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);</span>
+<span class="fc" id="L314">            ALPState nextState = new ALPState(state);</span>
+<span class="fc" id="L315">            nextState.remainingAircraftOfClass[aircraftClass] -= 1;</span>
+<span class="fc" id="L316">            nextState.runwayStates[runway].prevClass = aircraftClass;</span>
+<span class="fc" id="L317">            nextState.runwayStates[runway].prevTime = getArrivalTime(state.runwayStates, aircraft, runway);</span>
+
+<span class="fc" id="L319">            return nextState;</span>
+        }
+    }
+
+    @Override
+    public double transitionCost(ALPState state, Decision decision) {
+        // The delta between the arrival time and the earliest arrival time.
+<span class="fc bfc" id="L326" title="All 2 branches covered.">        if (decision.value() == DUMMY) {</span>
+<span class="fc" id="L327">            return 0;</span>
+        } else {
+<span class="fc" id="L329">            ALPDecision alpDecision = fromDecision(decision.value());</span>
+<span class="fc" id="L330">            int aircraftClass = alpDecision.aircraftClass;</span>
+<span class="fc" id="L331">            int aircraft = latestToEarliestAircraftByClass.get(aircraftClass).get(state.remainingAircraftOfClass[aircraftClass]);</span>
+<span class="fc" id="L332">            return getArrivalTime(state.runwayStates, aircraft, alpDecision.runway) - aircraftTarget[aircraft];</span>
+        }
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L338">        return optimal;</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L344">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L345">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+        // For each runway, the last time, it was used.
+<span class="fc" id="L349">        int[] lastTime = IntStream.range(0, nbRunways).map(r -&gt; Integer.MAX_VALUE).toArray();</span>
+        // For each runway, the class of the last aircraft landing to it.
+<span class="fc" id="L351">        int[] lastClass = new int[nbRunways];</span>
+
+<span class="fc" id="L353">        ALPSolution alpSol = new ALPSolution(this, solution);</span>
+<span class="fc" id="L354">        int value = 0;</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">        for (ALPSchedule a : alpSol) {</span>
+<span class="fc" id="L356">            int target = aircraftTarget[a.aircraft()];</span>
+<span class="fc" id="L357">            int deadline = aircraftDeadline[a.aircraft()];</span>
+<span class="pc bpc" id="L358" title="2 of 4 branches missed.">            if (a.landingTime() &lt; target || a.landingTime() &gt; deadline) {</span>
+<span class="nc" id="L359">                String msg = String.format(&quot;Aircraft %d is landing at %d outside its time window &quot; +</span>
+<span class="nc" id="L360">                        &quot;[%d , %d]&quot;, a.aircraft(), a.landingTime(), target, deadline);</span>
+<span class="nc" id="L361">                throw new InvalidSolutionException(msg);</span>
+            }
+<span class="fc" id="L363">            int allowedTime = lastTime[a.runway()] + classTransitionCost[lastClass[a.runway()]][a.aircraftClass()];</span>
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">            if (a.landingTime() &lt; allowedTime) {</span>
+<span class="nc" id="L365">                String msg = String.format(</span>
+                        &quot;Aircraft %d of class %d is landing on runway %d at %d.\n&quot; +
+                                &quot;The previous aircraft using this runway was class %d landing at &quot; +
+                                &quot;%d. The next landing should be at least at %d&quot;,
+<span class="nc" id="L369">                        a.aircraft(),</span>
+<span class="nc" id="L370">                        a.aircraftClass(),</span>
+<span class="nc" id="L371">                        a.runway(),</span>
+<span class="nc" id="L372">                        a.landingTime(),</span>
+<span class="nc" id="L373">                        lastClass[a.runway()],</span>
+<span class="nc" id="L374">                        lastTime[a.runway()],</span>
+<span class="nc" id="L375">                        allowedTime</span>
+                );
+<span class="nc" id="L377">                throw new InvalidSolutionException(msg);</span>
+            }
+<span class="fc" id="L379">            value += a.landingTime() - target;</span>
+<span class="fc" id="L380">            lastTime[a.runway()] = a.landingTime();</span>
+<span class="fc" id="L381">            lastClass[a.runway()] = a.aircraftClass();</span>
+<span class="fc" id="L382">        }</span>
+
+<span class="fc" id="L384">        return value;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L389">        String out = String.format(&quot;ALP problem with %d aircrafts, %d classes and %d runways&quot;,</span>
+<span class="fc" id="L390">                nbAircraft, nbClasses, nbRunways);</span>
+<span class="fc" id="L391">        return name.orElse(out);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

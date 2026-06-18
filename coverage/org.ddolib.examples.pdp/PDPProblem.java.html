@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pdp</a> &gt; <span class="el_source">PDPProblem.java</span></div><h1>PDPProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pdp;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
+ * &lt;p&gt;
+ * In this problem:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before its associated delivery node.&lt;/li&gt;
+ *     &lt;li&gt;There may also be unrelated nodes that are not part of any pair.&lt;/li&gt;
+ *     &lt;li&gt;The vehicle has a capacity limit that restricts how many pickups can be carried simultaneously.&lt;/li&gt;
+ *     &lt;li&gt;The problem is represented as a TSP-like graph with distances between nodes.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;The class implements the {@link Problem} interface, providing methods for:&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Number of variables {@link #nbVars()}&lt;/li&gt;
+ *     &lt;li&gt;Initial state {@link #initialState()}&lt;/li&gt;
+ *     &lt;li&gt;Transition function {@link #transition(PDPState, Decision)}&lt;/li&gt;
+ *     &lt;li&gt;Transition cost {@link #transitionCost(PDPState, Decision)}&lt;/li&gt;
+ *     &lt;li&gt;Domain of possible decisions {@link #domain(PDPState, int)}&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ *
+ * &lt;p&gt;States are represented by {@link PDPState}, including:&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The set of currently visited nodes&lt;/li&gt;
+ *     &lt;li&gt;The set of nodes still to visit&lt;/li&gt;
+ *     &lt;li&gt;The current vehicle load&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class PDPProblem implements Problem&lt;PDPState&gt; {
+    /**
+     * Distance matrix between all nodes.
+     */
+    public final double[][] distanceMatrix;
+    /**
+     * Maximum capacity of the vehicle.
+     */
+    public final int maxCapa;
+    /**
+     * Number of nodes in the problem.
+     */
+    public int n;
+    /**
+     * Map of pickup nodes to their associated delivery nodes.
+     */
+    public HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery;
+    /**
+     * Set of nodes that are not part of any pickup-delivery pair.
+     */
+    public Set&lt;Integer&gt; unrelatedNodes;
+    /**
+     * Map of delivery nodes to their associated pickup nodes.
+     */
+    HashMap&lt;Integer, Integer&gt; deliveryToAssociatedPickup;
+    /**
+     * Optional known optimal value of the problem.
+     */
+    private Optional&lt;Double&gt; optimal;
+
+    /**
+     * Optional name of the instance to ease readability in tests.
+     */
+<span class="pc" id="L76">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs a PDPProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
+     *
+     * @param distanceMatrix             distance matrix between all nodes
+     * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
+     * @param maxCapa                    maximum capacity of the vehicle
+     */
+    public PDPProblem(final double[][] distanceMatrix,
+<span class="nc" id="L86">                      HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery, int maxCapa) {</span>
+<span class="nc" id="L87">        this.distanceMatrix = distanceMatrix;</span>
+<span class="nc" id="L88">        this.n = distanceMatrix.length;</span>
+<span class="nc" id="L89">        this.maxCapa = maxCapa;</span>
+
+<span class="nc" id="L91">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
+<span class="nc" id="L92">        this.unrelatedNodes = new HashSet&lt;&gt;(IntStream.range(0, n).boxed().toList());</span>
+
+<span class="nc" id="L94">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (Map.Entry&lt;Integer, Integer&gt; entry : pickupToAssociatedDelivery.entrySet()) {</span>
+<span class="nc" id="L96">            int p = entry.getKey();</span>
+<span class="nc" id="L97">            int d = entry.getValue();</span>
+<span class="nc" id="L98">            unrelatedNodes.remove(p);</span>
+<span class="nc" id="L99">            unrelatedNodes.remove(d);</span>
+<span class="nc" id="L100">            deliveryToAssociatedPickup.put(d, p);</span>
+<span class="nc" id="L101">        }</span>
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Constructs a PDPProblem by reading an instance from a file.
+     * &lt;p&gt;
+     * The file format should include:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;The number of nodes and optionally the optimal value.&lt;/li&gt;
+     *     &lt;li&gt;The distance matrix between nodes.&lt;/li&gt;
+     *     &lt;li&gt;The pickup-delivery pairs.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param fname path to the instance file
+     * @throws IOException if the file cannot be read
+     */
+<span class="fc" id="L118">    public PDPProblem(String fname) throws IOException {</span>
+        int numNodes;
+<span class="fc" id="L120">        double[][] matrix = new double[0][0];</span>
+<span class="fc" id="L121">        Optional&lt;Double&gt; opti = Optional.empty();</span>
+<span class="fc" id="L122">        HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L124">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L125">            int linesCount = 0;</span>
+<span class="fc" id="L126">            int skip = 0;</span>
+
+            String line;
+<span class="fc bfc" id="L129" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
+<span class="fc" id="L131">                    skip++;</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">                } else if (linesCount == 0) { // read num nodes and optimal value</span>
+<span class="fc" id="L133">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L134">                    numNodes = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L135">                    matrix = new double[numNodes][numNodes];</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">                    if (tokens.length &gt;= 4) {</span>
+<span class="fc" id="L137">                        opti = Optional.of(Double.parseDouble(tokens[3]));</span>
+                    }
+<span class="fc bfc" id="L139" title="All 2 branches covered.">                } else if (skip == 1) { // read distance matrix</span>
+<span class="fc" id="L140">                    int node = linesCount - skip - 1;</span>
+<span class="fc" id="L141">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L142">                    double[] row =</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">                            Arrays.stream(tokens).filter(s -&gt; !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();</span>
+<span class="fc" id="L144">                    matrix[node] = row;</span>
+<span class="fc" id="L145">                } else { // read pick-up and delivery pairs</span>
+<span class="fc" id="L146">                    String[] tokens = line.split(&quot; -&gt; &quot;);</span>
+<span class="fc" id="L147">                    pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));</span>
+                }
+
+<span class="fc" id="L150">                linesCount++;</span>
+            }
+        }
+
+<span class="fc" id="L154">        this.distanceMatrix = matrix;</span>
+<span class="fc" id="L155">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
+
+<span class="fc" id="L157">        this.n = distanceMatrix.length;</span>
+<span class="fc" id="L158">        this.optimal = opti;</span>
+
+<span class="fc" id="L160">        this.unrelatedNodes = new HashSet&lt;&gt;(IntStream.range(0, n).boxed().toList());</span>
+<span class="fc" id="L161">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, Integer&gt; entry : pickupToAssociatedDelivery.entrySet()) {</span>
+<span class="fc" id="L163">            int p = entry.getKey();</span>
+<span class="fc" id="L164">            int d = entry.getValue();</span>
+<span class="fc" id="L165">            unrelatedNodes.remove(p);</span>
+<span class="fc" id="L166">            unrelatedNodes.remove(d);</span>
+<span class="fc" id="L167">            deliveryToAssociatedPickup.put(d, p);</span>
+<span class="fc" id="L168">        }</span>
+
+<span class="fc" id="L170">        this.maxCapa = Integer.MAX_VALUE;</span>
+
+<span class="fc" id="L172">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Returns the number of variables (decisions) in the problem.
+     * &lt;p&gt;
+     * Note: the last decision corresponds to returning to the depot (node 0).
+     * &lt;/p&gt;
+     *
+     * @return number of variables
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L185">        return n; //the last decision will be to come back to point zero</span>
+    }
+
+    /**
+     * Returns the initial state of the problem.
+     *
+     * @return initial {@link PDPState} with vehicle at the depot and all other nodes unvisited
+     */
+    @Override
+    public PDPState initialState() {
+<span class="fc" id="L195">        BitSet openToVisit = new BitSet(n);</span>
+<span class="fc" id="L196">        openToVisit.set(1, n);</span>
+
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        for (int p : pickupToAssociatedDelivery.keySet()) {</span>
+<span class="fc" id="L199">            openToVisit.clear(pickupToAssociatedDelivery.get(p));</span>
+<span class="fc" id="L200">        }</span>
+
+<span class="fc" id="L202">        BitSet allToVisit = new BitSet(n);</span>
+<span class="fc" id="L203">        allToVisit.set(1, n);</span>
+
+<span class="fc" id="L205">        return new PDPState(singleton(0), openToVisit, allToVisit, 0, 0);</span>
+    }
+
+    /**
+     * Returns the initial value of the problem.
+     *
+     * @return 0
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L215">        return 0;</span>
+    }
+
+    /**
+     * Returns the domain of possible decisions (nodes to visit) from a given state and variable index.
+     *
+     * @param state current {@link PDPState}
+     * @param var   index of the decision variable
+     * @return iterator over possible node indices for the decision
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(PDPState state, int var) {
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        if (var == n - 1) {</span>
+            //the final decision is to come back to node zero
+<span class="fc" id="L229">            return singleton(0).stream().iterator();</span>
+        } else {
+
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">            boolean canIncludePickups = state.minContent &lt; maxCapa;</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">            boolean canIncludeDeliveries = state.maxContent != 0;</span>
+
+<span class="fc" id="L235">            return state</span>
+                    .openToVisit
+<span class="fc" id="L237">                    .stream()</span>
+<span class="fc" id="L238">                    .filter(point -&gt;</span>
+<span class="pc bpc" id="L239" title="1 of 4 branches missed.">                            ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))</span>
+<span class="fc bfc" id="L240" title="All 4 branches covered.">                                    &amp;&amp; (canIncludeDeliveries | !deliveryToAssociatedPickup.containsKey(point))))</span>
+<span class="fc" id="L241">                    .boxed()</span>
+<span class="fc" id="L242">                    .iterator();</span>
+        }
+    }
+
+    /**
+     * Computes the next state given a current state and a decision.
+     *
+     * @param state    current {@link PDPState}
+     * @param decision the {@link Decision} made
+     * @return new {@link PDPState} after applying the decision
+     */
+    @Override
+    public PDPState transition(PDPState state, Decision decision) {
+<span class="fc" id="L255">        int node = decision.value();</span>
+<span class="fc" id="L256">        BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();</span>
+<span class="fc" id="L257">        newOpenToVisit.clear(node);</span>
+
+<span class="fc" id="L259">        BitSet newAllToVisit = (BitSet) state.allToVisit.clone();</span>
+<span class="fc" id="L260">        newAllToVisit.clear(node);</span>
+<span class="fc" id="L261">        int newMinContent = state.minContent;</span>
+<span class="fc" id="L262">        int newMaxContent = state.maxContent;</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        if (pickupToAssociatedDelivery.containsKey(node)) {</span>
+<span class="fc" id="L264">            newOpenToVisit.set(pickupToAssociatedDelivery.get(node));</span>
+<span class="fc" id="L265">            newMinContent += 1;</span>
+<span class="fc" id="L266">            newMaxContent += 1;</span>
+        }
+
+<span class="fc bfc" id="L269" title="All 2 branches covered.">        if (deliveryToAssociatedPickup.containsKey(node)) {</span>
+<span class="fc" id="L270">            int p = deliveryToAssociatedPickup.get(node);</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">            if (newOpenToVisit.get(p)) {</span>
+<span class="fc" id="L272">                newOpenToVisit.clear(p);</span>
+            }
+<span class="fc" id="L274">            newMinContent -= 1;</span>
+<span class="fc" id="L275">            newMaxContent -= 1;</span>
+        }
+
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        if (newMinContent &lt; 0) newMinContent = 0;</span>
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">        if (newMaxContent &gt; maxCapa) newMaxContent = maxCapa;</span>
+<span class="fc" id="L280">        return new PDPState(</span>
+<span class="fc" id="L281">                state.singleton(node),</span>
+                newOpenToVisit,
+                newAllToVisit,
+                newMinContent,
+                newMaxContent);
+    }
+
+    /**
+     * Computes the cost of transitioning from a state via a decision.
+     * &lt;p&gt;
+     * Typically corresponds to the travel distance from the current node to the chosen node.
+     * &lt;/p&gt;
+     *
+     * @param state    current {@link PDPState}
+     * @param decision the {@link Decision} made
+     * @return cost of the transition
+     */
+    @Override
+    public double transitionCost(PDPState state, Decision decision) {
+<span class="fc" id="L300">        return state.current.stream()</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">                .filter(possibleCurrentNode -&gt; possibleCurrentNode != decision.value())</span>
+<span class="fc" id="L302">                .mapToDouble(possibleCurrentNode -&gt; distanceMatrix[possibleCurrentNode][decision.value()])</span>
+<span class="fc" id="L303">                .min()</span>
+<span class="fc" id="L304">                .getAsDouble();</span>
+    }
+
+    /**
+     * Returns the known optimal value of the problem, if available.
+     *
+     * @return optional optimal value
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L314">        return optimal;</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L320">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L321">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L324">        Map&lt;Integer, Long&gt; count = Arrays.stream(solution)</span>
+<span class="fc" id="L325">                .boxed()</span>
+<span class="fc" id="L326">                .collect(Collectors.groupingBy(x -&gt; x, Collectors.counting()));</span>
+
+<span class="pc bpc" id="L328" title="2 of 4 branches missed.">        if (count.values().stream().anyMatch(x -&gt; x != 1)) {</span>
+<span class="nc" id="L329">            String msg = &quot;The solution has duplicated nodes and does not reache each node&quot;;</span>
+<span class="nc" id="L330">            throw new InvalidSolutionException(msg);</span>
+        }
+
+
+<span class="fc" id="L334">        int[] posInRoute = new int[nbVars()];</span>
+<span class="fc bfc" id="L335" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L336">            int node = solution[i];</span>
+<span class="fc" id="L337">            posInRoute[node] = i;</span>
+        }
+
+<span class="fc bfc" id="L340" title="All 2 branches covered.">        for (int node : solution) {</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">            if (pickupToAssociatedDelivery.containsKey(node)) {</span>
+<span class="fc" id="L342">                int delivery = pickupToAssociatedDelivery.get(node);</span>
+<span class="fc" id="L343">                int pickUpPos = posInRoute[node];</span>
+<span class="fc" id="L344">                int deliveryPos = posInRoute[delivery];</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">                if (pickUpPos &gt;= deliveryPos) {</span>
+<span class="nc" id="L346">                    String msg = String.format(&quot;The precedance constraint %d -&gt; %d is not &quot; +</span>
+<span class="nc" id="L347">                            &quot;respected in %s&quot;, node, delivery, Arrays.toString(solution));</span>
+<span class="nc" id="L348">                    throw new InvalidSolutionException(msg);</span>
+                }
+
+            }
+        }
+
+<span class="fc" id="L354">        double value = distanceMatrix[0][solution[0]]; //Start from the depot.</span>
+<span class="fc" id="L355">        int vehicleContent = 0;</span>
+<span class="fc bfc" id="L356" title="All 2 branches covered.">        if (pickupToAssociatedDelivery.containsKey(solution[0])) vehicleContent++;</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">        else if (deliveryToAssociatedPickup.containsKey(solution[0])) vehicleContent--;</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">        for (int i = 1; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L359">            value += distanceMatrix[solution[i - 1]][solution[i]];</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) vehicleContent++;</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">            else if (deliveryToAssociatedPickup.containsKey(solution[i])) vehicleContent--;</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
+<span class="nc" id="L363">                String msg = String.format(&quot;The capacity of %s (%d) exceeds the capacity &quot; +</span>
+<span class="nc" id="L364">                        &quot;of the vehicle (%d)&quot;, Arrays.toString(solution), vehicleContent, maxCapa);</span>
+<span class="nc" id="L365">                throw new InvalidSolutionException(msg);</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">            } else if (vehicleContent &lt; 0) {</span>
+<span class="nc" id="L367">                String msg = String.format(&quot;The capacity of %s (%d) goes below 0&quot;, Arrays.toString(solution), vehicleContent);</span>
+<span class="nc" id="L368">                throw new InvalidSolutionException(msg);</span>
+            }
+        }
+
+
+<span class="fc" id="L373">        return value;</span>
+    }
+
+    public BitSet singleton(int singletonValue) {
+<span class="fc" id="L377">        BitSet toReturn = new BitSet(n);</span>
+<span class="fc" id="L378">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L379">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a string representation of the PDP instance.
+     *
+     * @return string describing the PDP instance
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L389">        String str = &quot;PDP(\n\tn:&quot; + n + &quot;\n&quot; +</span>
+<span class="fc" id="L390">                &quot;\tpdp:&quot; + pickupToAssociatedDelivery.keySet().stream().map(p -&gt; p + &quot;-&gt;&quot; + pickupToAssociatedDelivery.get(p)).toList() + &quot;\n&quot; +</span>
+<span class="fc" id="L391">                &quot;\tunrelated:&quot; + unrelatedNodes.stream().toList() + &quot;\n&quot; +</span>
+<span class="fc" id="L392">                &quot;\t&quot; + Arrays.stream(distanceMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList();</span>
+
+<span class="fc" id="L394">        return name.orElse(str);</span>
+    }
+
+    /**
+     * Evaluates a solution represented as an array of node indices.
+     *
+     * @param solution array of node indices representing the route
+     * @return total distance of the solution, or -1 if it violates vehicle capacity
+     */
+    public double eval(int[] solution) {
+<span class="nc" id="L404">        int vehicleContent = 0;</span>
+<span class="nc" id="L405">        double toReturn = 0;</span>
+<span class="nc bnc" id="L406" title="All 2 branches missed.">        for (int i = 1; i &lt; solution.length; i++) {</span>
+<span class="nc" id="L407">            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) {</span>
+<span class="nc" id="L409">                vehicleContent += 1;</span>
+<span class="nc bnc" id="L410" title="All 2 branches missed.">            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {</span>
+<span class="nc" id="L411">                vehicleContent -= 1;</span>
+            }
+<span class="nc bnc" id="L413" title="All 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
+<span class="nc" id="L414">                return -1;</span>
+            }
+        }
+<span class="nc" id="L417">        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back</span>
+<span class="nc" id="L418">        return toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

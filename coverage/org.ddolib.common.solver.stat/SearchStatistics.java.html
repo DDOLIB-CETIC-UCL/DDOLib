@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchStatistics.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver.stat</a> &gt; <span class="el_source">SearchStatistics.java</span></div><h1>SearchStatistics.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver.stat;
+
+import org.ddolib.util.PrettyPrint;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.List;
+import java.util.Locale;
+
+import static java.lang.Math.abs;
+
+/**
+ * Class representing the statistics of a search process in a solver.
+ * &lt;p&gt;
+ * This class tracks various metrics such as runtime, number of iterations,
+ * incumbent value, and optimality gap. It is designed to be immutable-like,
+ * where update methods return a new instance with the updated value.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * It represents the search statistics of a solver. Subclasses override the update
+ * methods to return their specific type via covariant return types.
+ * &lt;/p&gt;
+ */
+public abstract class SearchStatistics {
+    /**
+     * Start time of the search (in milliseconds)
+     */
+    protected final long _startTime;
+    /**
+     * Time at which the last improvement was found (in milliseconds)
+     */
+    protected long _lastTimeOfImprovement;
+    /**
+     * Current time of the search (in milliseconds)
+     */
+    protected long _currentTime;
+    /**
+     * Current status of the search
+     */
+<span class="fc" id="L40">    protected SearchStatus _status = SearchStatus.UNKNOWN;</span>
+    /**
+     * Total number of iterations performed
+     */
+<span class="fc" id="L44">    protected int _nbIterations = 0;</span>
+    /**
+     * Iteration during which the last improvement was found
+     */
+<span class="fc" id="L48">    protected int _lastIterationOfImprovement = 0;</span>
+    /**
+     * Value of the best solution found so far (incumbent)
+     */
+    protected double _incumbent;
+    /**
+     * Value of the previous incumbent found
+     */
+<span class="fc" id="L56">    protected double _prevIncumbent = Double.POSITIVE_INFINITY;</span>
+    /**
+     * Best optimality gap reached so far
+     */
+<span class="fc" id="L60">    protected double _gap = Double.POSITIVE_INFINITY;</span>
+    /**
+     * Maximum size reached by the search frontier
+     */
+<span class="fc" id="L64">    protected int _frontierMaxSize = 0;</span>
+    /**
+     * Relative improvement of the incumbent value
+     */
+<span class="fc" id="L68">    protected double _relativeImprovement = 1.0;</span>
+    /**
+     * Iteration during which the last gap improvement was found
+     */
+<span class="fc" id="L72">    protected int _lastIterationOfGapImprovement = 0;</span>
+
+
+    /**
+     * Constructs a new SearchStatistics instance.
+     *
+     * @param startTime the start time of the search (in milliseconds)
+     * @param initValue the initial value for the incumbent
+     */
+<span class="fc" id="L81">    public SearchStatistics(long startTime, double initValue) {</span>
+<span class="fc" id="L82">        _startTime = startTime;</span>
+<span class="fc" id="L83">        _lastTimeOfImprovement = startTime;</span>
+<span class="fc" id="L84">        _currentTime = startTime;</span>
+<span class="fc" id="L85">        _incumbent = initValue;</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Creates a new instance of the specific subclass with initial values.
+     * This is used by the copy method to maintain the correct type.
+     *
+     * @return a new instance of the specific subclass
+     */
+    protected abstract SearchStatistics createSpecificInstance();
+
+    /**
+     * Returns the time at which the last improvement was found.
+     *
+     * @return the last time of improvement (in milliseconds)
+     */
+    public long lastTimeOfImprovement() {
+<span class="fc" id="L102">        return _lastTimeOfImprovement;</span>
+    }
+
+    /**
+     * Returns the total runtime of the search.
+     *
+     * @return the runtime (in milliseconds)
+     */
+    public long runtime() {
+<span class="fc" id="L111">        return _currentTime - _startTime;</span>
+    }
+
+    /**
+     * Returns the current time recorded in these statistics.
+     *
+     * @return the current time (in milliseconds)
+     */
+    public long currentTime() {
+<span class="fc" id="L120">        return _currentTime;</span>
+    }
+
+    /**
+     * Returns the total number of iterations performed by the search.
+     *
+     * @return the number of iterations
+     */
+    public int nbIterations() {
+<span class="fc" id="L129">        return _nbIterations;</span>
+    }
+
+    /**
+     * Returns the iteration number during which the last improvement was found.
+     *
+     * @return the last iteration of improvement
+     */
+    public int lastIterationOfImprovement() {
+<span class="fc" id="L138">        return _lastIterationOfImprovement;</span>
+    }
+
+    /**
+     * Returns the iteration number during which the last gap improvement was found.
+     *
+     * @return the last iteration of gap improvement
+     */
+    public int lastIterationOfGapImprovement() {
+<span class="fc" id="L147">        return _lastIterationOfGapImprovement;</span>
+    }
+
+    /**
+     * Returns the current optimality gap.
+     *
+     * @return the gap (percentage)
+     */
+    public double gap() {
+<span class="fc" id="L156">        return _gap;</span>
+    }
+
+    /**
+     * Returns the value of the best solution found so far (incumbent).
+     *
+     * @return the incumbent value
+     */
+    public double incumbent() {
+<span class="fc" id="L165">        return _incumbent;</span>
+    }
+
+    /**
+     * Returns the value of the previous incumbent found before the current one.
+     *
+     * @return the previous incumbent value
+     */
+    public double prevIncumbent() {
+<span class="nc" id="L174">        return _prevIncumbent;</span>
+    }
+
+    /**
+     * Returns the current status of the search.
+     *
+     * @return the {@link SearchStatus}
+     */
+    public SearchStatus status() {
+<span class="fc" id="L183">        return _status;</span>
+    }
+
+    /**
+     * Returns the maximum size reached by the search frontier during the process.
+     *
+     * @return the maximum frontier size
+     */
+    public int frontierMaxSize() {
+<span class="fc" id="L192">        return _frontierMaxSize;</span>
+    }
+
+    /**
+     * Returns the relative improvement of the last incumbent update in percent.
+     *
+     * @return the relative improvement in percent
+     */
+    public double relativeImprovement() {
+<span class="fc" id="L201">        return 100 * _relativeImprovement;</span>
+    }
+
+    /**
+     * Creates and returns a copy of this statistics instance.
+     *
+     * @return a copy of the current statistics
+     */
+    public SearchStatistics copy() {
+<span class="fc" id="L210">        SearchStatistics clone = createSpecificInstance();</span>
+
+<span class="fc" id="L212">        clone._currentTime = this._currentTime;</span>
+<span class="fc" id="L213">        clone._lastTimeOfImprovement = this._lastTimeOfImprovement;</span>
+<span class="fc" id="L214">        clone._status = this._status;</span>
+<span class="fc" id="L215">        clone._nbIterations = this._nbIterations;</span>
+<span class="fc" id="L216">        clone._lastIterationOfImprovement = this._lastIterationOfImprovement;</span>
+<span class="fc" id="L217">        clone._lastIterationOfGapImprovement = this._lastIterationOfGapImprovement;</span>
+<span class="fc" id="L218">        clone._prevIncumbent = this._prevIncumbent;</span>
+<span class="fc" id="L219">        clone._gap = this._gap;</span>
+<span class="fc" id="L220">        clone._frontierMaxSize = this._frontierMaxSize;</span>
+<span class="fc" id="L221">        clone._relativeImprovement = this._relativeImprovement;</span>
+
+<span class="fc" id="L223">        return clone;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with an updated incumbent value and gap.
+     *
+     * @param incumbent the new incumbent value
+     * @param gap       the new optimality gap
+     * @return a new instance with updated incumbent and gap
+     */
+    public SearchStatistics updateIncumbent(double incumbent, double gap) {
+<span class="fc" id="L234">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L235">        toReturn._incumbent = incumbent;</span>
+<span class="fc" id="L236">        toReturn._prevIncumbent = this._incumbent;</span>
+<span class="fc" id="L237">        toReturn._currentTime = System.currentTimeMillis();</span>
+<span class="fc" id="L238">        toReturn._lastTimeOfImprovement = toReturn._currentTime;</span>
+<span class="fc" id="L239">        toReturn._lastIterationOfImprovement = this._nbIterations;</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
+<span class="fc" id="L241">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
+<span class="fc" id="L242">            toReturn._gap = gap;</span>
+        }
+<span class="fc bfc" id="L244" title="All 4 branches covered.">        if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {</span>
+<span class="fc" id="L245">            toReturn._relativeImprovement = 1.0;</span>
+        } else {
+<span class="fc" id="L247">            toReturn._relativeImprovement = abs(incumbent - this._incumbent) / abs(this._incumbent);</span>
+        }
+
+<span class="fc" id="L250">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with an updated search status.
+     *
+     * @param status the new {@link SearchStatus}
+     * @return a new instance with the updated status
+     */
+    public SearchStatistics updateStatus(SearchStatus status) {
+<span class="fc" id="L260">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L261">        toReturn._status = status;</span>
+<span class="fc" id="L262">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with the iteration count incremented by one.
+     *
+     * @return a new instance with incremented iterations
+     */
+    public SearchStatistics incrementNbIter() {
+<span class="fc" id="L271">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L272">        toReturn._nbIterations++;</span>
+<span class="fc" id="L273">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with an updated maximum frontier size.
+     *
+     * @param frontierSize the current frontier size to potentially update the maximum
+     * @return a new instance with the updated maximum frontier size
+     */
+    public SearchStatistics updateFrontierMaxSize(int frontierSize) {
+<span class="fc" id="L283">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L284">        toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);</span>
+<span class="fc" id="L285">        return toReturn;</span>
+    }
+    
+    /**
+     * Returns a new SearchStatistics instance with an updated optimality gap.
+     *
+     * @param gap the new gap value
+     * @return a new instance with the updated gap
+     */
+    public SearchStatistics updateGap(double gap) {
+<span class="fc" id="L295">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
+<span class="fc" id="L297">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
+<span class="fc" id="L298">            toReturn._gap = gap;</span>
+        }
+<span class="fc" id="L300">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with an updated current time.
+     *
+     * @param time the current time (in milliseconds)
+     * @return a new instance with the updated time
+     */
+    public SearchStatistics updateTime(long time) {
+<span class="fc" id="L310">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L311">        toReturn._currentTime = time;</span>
+<span class="fc" id="L312">        return toReturn;</span>
+    }
+
+
+    @Override
+    public String toString() {
+<span class="nc" id="L318">        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);</span>
+<span class="nc" id="L319">        symbols.setGroupingSeparator(' ');</span>
+<span class="nc" id="L320">        DecimalFormat df = new DecimalFormat(&quot;#,##0.##########&quot;, symbols);</span>
+<span class="nc" id="L321">        DecimalFormat gapFormat = new DecimalFormat(&quot;#,##0.####&quot;, symbols);</span>
+
+<span class="nc" id="L323">        List&lt;String&gt; labels = List.of(</span>
+                &quot;Status&quot;,
+                &quot;Iterations&quot;,
+                &quot;Frontier Max Size&quot;,
+                &quot;Runtime&quot;,
+                &quot;Incumbent&quot;,
+                &quot;Gap&quot;,
+                &quot;Relative improvement&quot;
+        );
+
+<span class="nc" id="L333">        List&lt;String&gt; values = List.of(</span>
+<span class="nc" id="L334">                _status.toString(),</span>
+<span class="nc" id="L335">                df.format(_nbIterations),</span>
+<span class="nc" id="L336">                df.format(_frontierMaxSize),</span>
+<span class="nc" id="L337">                PrettyPrint.formatMs(runtime()),</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                Double.isInfinite(_incumbent) ? &quot;∞&quot; : df.format(_incumbent),</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                Double.isInfinite(_gap) ? &quot;∞&quot; : gapFormat.format(_gap) + &quot; %&quot;,</span>
+<span class="nc" id="L340">                df.format(relativeImprovement()) + &quot; %&quot;</span>
+        );
+
+<span class="nc" id="L343">        int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
+<span class="nc" id="L344">        int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
+<span class="nc" id="L345">        StringBuilder sb = new StringBuilder();</span>
+
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        for (int i = 0; i &lt; labels.size(); i++) {</span>
+<span class="nc" id="L348">            sb.append(&quot;\t&quot;);</span>
+<span class="nc" id="L349">            sb.append((&quot;%-&quot; + labelSize + &quot;s &quot;).formatted(labels.get(i) + &quot;:&quot;));</span>
+<span class="nc" id="L350">            sb.append((&quot;%&quot; + valueSize + &quot;s&quot;).formatted(values.get(i)));</span>
+<span class="nc" id="L351">            sb.append(&quot;\n&quot;);</span>
+        }
+
+<span class="nc" id="L354">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

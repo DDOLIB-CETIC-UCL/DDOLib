@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeSubProblemsAsSubProblemsIterator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.mdd</a> &gt; <span class="el_source">NodeSubProblemsAsSubProblemsIterator.java</span></div><h1>NodeSubProblemsAsSubProblemsIterator.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.mdd;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.ddo.core.SubProblem;
+
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * An iterator that converts inner {@link NodeSubProblem} instances into full {@link SubProblem} objects.
+ * &lt;p&gt;
+ * This iterator decorates another iterator over {@code NodeSubProblem} objects and, for each element,
+ * applies the path of decisions from the root to create a complete {@code SubProblem}.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of state contained in the subproblems
+ */
+final class NodeSubProblemsAsSubProblemsIterator&lt;T&gt; implements Iterator&lt;SubProblem&lt;T&gt;&gt; {
+    /** The underlying iterator over node subproblems. */
+    private final Iterator&lt;NodeSubProblem&lt;T&gt;&gt; it;
+
+    /** The set of decisions that form the path from the root to the node. */
+    private final Set&lt;Decision&gt; ptr;
+
+    /**
+     * Constructs a new iterator that converts {@link NodeSubProblem} instances into {@link SubProblem}.
+     *
+     * @param it  the iterator over {@code NodeSubProblem} objects
+     * @param ptr the path of decisions from the root to each node
+     */
+<span class="fc" id="L31">    public NodeSubProblemsAsSubProblemsIterator(final Iterator&lt;NodeSubProblem&lt;T&gt;&gt; it, final Set&lt;Decision&gt; ptr) {</span>
+<span class="fc" id="L32">        this.it = it;</span>
+<span class="fc" id="L33">        this.ptr = ptr;</span>
+<span class="fc" id="L34">    }</span>
+    /**
+     * Returns {@code true} if the underlying iterator has more elements.
+     *
+     * @return {@code true} if there are more subproblems, {@code false} otherwise
+     */
+    @Override
+    public boolean hasNext() {
+<span class="fc" id="L42">        return it.hasNext();</span>
+    }
+    /**
+     * Returns the next {@link SubProblem} by converting the next {@link NodeSubProblem} using the path to root.
+     *
+     * @return the next full {@code SubProblem}
+     */
+    @Override
+    public SubProblem&lt;T&gt; next() {
+<span class="fc" id="L51">        return it.next().toSubProblem(ptr);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

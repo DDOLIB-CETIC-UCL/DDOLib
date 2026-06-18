@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.pigmentscheduling</a> &gt; <span class="el_source">PSProblem.java</span></div><h1>PSProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.pigmentscheduling;
+
+import org.ddolib.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.Problem;
+import org.ddolib.util.io.InputReader;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+/**
+ * Represents an instance of the Pigment Sequencing Problem (PSP)
+ * used within a Decision Diagram Optimization (DDO) framework.
+ * &lt;p&gt;
+ * The {@code PSProblem} class models a single-machine scheduling problem
+ * with production changeover costs, item-dependent stocking costs,
+ * and demand constraints distributed over a finite planning horizon.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Each time period can be assigned to the production of one item or remain idle.
+ * The goal of the optimization is to minimize the total cost, which includes:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;&lt;b&gt;Stocking costs&lt;/b&gt; — penalizing early production of items before their demand dates.&lt;/li&gt;
+ *     &lt;li&gt;&lt;b&gt;Changeover costs&lt;/b&gt; — incurred when switching production between different items.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface parameterized by {@link PSState},
+ * and defines all problem-specific behavior such as initial state construction,
+ * variable domain generation, state transitions, and transition cost computation.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The structure of this problem is based on instances compatible with the PhD thesis of
+ * &lt;a href=&quot;https://webperso.info.ucl.ac.be/~pschaus/assets/thesis/2024-coppe.pdf&quot;&gt;Vianney Coppe (2024)&lt;/a&gt;.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L42">public class PSProblem implements Problem&lt;PSState&gt; {</span>
+
+    /**
+     * Represents the idle state of the machine (no production).
+     */
+    public static final int IDLE = -1;
+    /**
+     * Number of distinct item types.
+     */
+    final int nItems;
+
+    /**
+     * Total number of discrete time periods in the planning horizon.
+     */
+    final int horizon;
+
+    /**
+     * Stocking cost for each item type (per unit time of early production).
+     */
+    final int[] stockingCost;
+
+    /**
+     * Changeover cost matrix: cost of switching from item {@code i} to item {@code j}.
+     */
+    final int[][] changeoverCost;
+    /**
+     * For each item {@code i} and time {@code t}, gives the latest time slot before {@code t}
+     * in which a demand for {@code i} occurred.
+     * &lt;p&gt;
+     * If no such demand exists, the value is {@code -1}.
+     * &lt;/p&gt;
+     */
+    final int[][] previousDemands;
+
+    /**
+     * For each item {@code i} and time {@code t}, stores the total number of remaining
+     * demands for item {@code i} in the time interval {@code [0..t]}.
+     */
+    int[][] remainingDemands;
+
+    /**
+     * Optional known optimal objective value for benchmarking or validation purposes.
+     */
+    private Optional&lt;Double&gt; optimal;
+    /**
+     * Optional name of the problem instance.
+     */
+<span class="pc" id="L89">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs a PSP instance from explicit data arrays and a known optimal value.
+     *
+     * @param nItems          number of item types
+     * @param horizon         number of time periods
+     * @param stockingCost    array of stocking costs for each item type
+     * @param changeoverCost  matrix of changeover costs between item types
+     * @param previousDemands matrix of previous demand indices for each item and time
+     * @param optimal         known optimal objective value (if available)
+     */
+    public PSProblem(final int nItems,
+                     final int horizon,
+                     final int[] stockingCost,
+                     final int[][] changeoverCost,
+                     final int[][] previousDemands,
+<span class="nc" id="L106">                     final Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L107">        this.nItems = nItems;</span>
+<span class="nc" id="L108">        this.horizon = horizon;</span>
+<span class="nc" id="L109">        this.stockingCost = stockingCost;</span>
+<span class="nc" id="L110">        this.changeoverCost = changeoverCost;</span>
+<span class="nc" id="L111">        this.previousDemands = previousDemands;</span>
+<span class="nc" id="L112">        this.optimal = optimal;</span>
+<span class="nc" id="L113">    }</span>
+
+    /**
+     * Constructs a PSP instance from a data file.
+     * &lt;p&gt;
+     * The file format is expected to contain:
+     * &lt;/p&gt;
+     * &lt;ol&gt;
+     *     &lt;li&gt;Horizon (number of time periods)&lt;/li&gt;
+     *     &lt;li&gt;Number of item types&lt;/li&gt;
+     *     &lt;li&gt;Number of orders&lt;/li&gt;
+     *     &lt;li&gt;Changeover cost matrix ({@code nItems × nItems})&lt;/li&gt;
+     *     &lt;li&gt;Stocking costs for each item&lt;/li&gt;
+     *     &lt;li&gt;Demand matrix ({@code nItems × horizon})&lt;/li&gt;
+     *     &lt;li&gt;Known optimal value (optional)&lt;/li&gt;
+     * &lt;/ol&gt;
+     *
+     * @param filename path to the input data file
+     */
+<span class="fc" id="L132">    public PSProblem(final String filename) {</span>
+<span class="fc" id="L133">        InputReader reader = new InputReader(filename);</span>
+<span class="fc" id="L134">        horizon = reader.getInt();</span>
+<span class="fc" id="L135">        nItems = reader.getInt();</span>
+<span class="fc" id="L136">        reader.getInt(); // to skip the order</span>
+
+<span class="fc" id="L138">        changeoverCost = new int[nItems][nItems];</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            for (int j = 0; j &lt; nItems; j++) {</span>
+<span class="fc" id="L141">                changeoverCost[i][j] = reader.getInt();</span>
+            }
+        }
+
+<span class="fc" id="L145">        stockingCost = new int[nItems];</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L147">            stockingCost[i] = reader.getInt();</span>
+        }
+
+<span class="fc" id="L150">        int[][] demands = new int[nItems][horizon];</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">            for (int j = 0; j &lt; horizon; j++) {</span>
+<span class="fc" id="L153">                demands[i][j] = reader.getInt();</span>
+            }
+        }
+
+<span class="fc" id="L157">        optimal = Optional.of((double) reader.getInt());</span>
+
+<span class="fc" id="L159">        previousDemands = new int[nItems][horizon + 1];</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L161">            Arrays.fill(previousDemands[i], -1);</span>
+        }
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (int t = 1; t &lt;= horizon; t++) {</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">            for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">                if (demands[i][t - 1] &gt; 0) {</span>
+<span class="fc" id="L166">                    previousDemands[i][t] = t - 1;</span>
+                } else {
+<span class="fc" id="L168">                    previousDemands[i][t] = previousDemands[i][t - 1];</span>
+                }
+            }
+        }
+<span class="fc" id="L172">        remainingDemands = new int[nItems][horizon];</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">                if (t == 0) {</span>
+<span class="fc" id="L176">                    remainingDemands[i][t] = demands[i][t];</span>
+                } else {
+<span class="fc" id="L178">                    remainingDemands[i][t] = remainingDemands[i][t - 1] + demands[i][t];</span>
+                }
+            }
+        }
+
+<span class="fc" id="L183">        this.name = Optional.of(filename);</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Assigns a name to the problem instance for display or debugging purposes.
+     *
+     * @param name the name of the instance
+     */
+    public void setName(String name) {
+<span class="nc" id="L192">        this.name = Optional.of(name);</span>
+<span class="nc" id="L193">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L200">        return optimal;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L208">        return name.orElse(super.toString());</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L216">        return horizon;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L224">        return 0;</span>
+    }
+
+    /**
+     * Builds the initial problem state, where no items have been produced
+     * and the machine is idle.
+     *
+     * @return the initial {@link PSState} representing the start of the planning horizon
+     */
+    @Override
+    public PSState initialState() {
+<span class="fc" id="L235">        int[] prevDemands = new int[nItems];</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L237">            prevDemands[i] = previousDemands[i][horizon];</span>
+        }
+<span class="fc" id="L239">        return new PSState(horizon, IDLE, prevDemands);</span>
+    }
+
+    /**
+     * Defines the domain of feasible decisions (items to produce or idle) for a given state and time depth.
+     * &lt;p&gt;
+     * The domain depends on the remaining demands and available time periods.
+     * If there is insufficient time to satisfy all remaining demands,
+     * the domain becomes empty. Otherwise, the IDLE option may be included
+     * if there is enough slack in the schedule.
+     * &lt;/p&gt;
+     *
+     * @param state the current scheduling state
+     * @param depth the depth of the decision variable (i.e., time index)
+     * @return an iterator over feasible item indices (and possibly {@link #IDLE})
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(PSState state, int depth) {
+
+<span class="fc" id="L258">        int t = horizon - depth - 1;</span>
+<span class="fc" id="L259">        IntStream dom = IntStream.range(0, nItems)</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= t);</span>
+
+        // total number of remaining demands &lt;= t
+<span class="fc" id="L263">        int remDemands = IntStream.range(0, nItems)</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= 0)</span>
+<span class="fc" id="L265">                .map(i -&gt; remainingDemands[i][state.previousDemands[i]])</span>
+<span class="fc" id="L266">                .sum();</span>
+
+        //System.out.println(&quot;remDemands: &quot; + remDemands);
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (remDemands &gt; t + 1) {</span>
+            // fail to produce all the remaining demands
+<span class="nc" id="L271">            return Collections.emptyIterator();</span>
+        }
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (remDemands &lt; t + 1) {</span>
+            // ok to add IDLE, we have enough time to produce all the remaining demands
+<span class="fc" id="L275">            return IntStream.concat(dom, IntStream.of(IDLE)).iterator();</span>
+        } else {
+            // just enough time to produce remaining demands, no IDLE possible
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">            assert remDemands == t + 1;</span>
+<span class="fc" id="L279">            return dom.iterator();</span>
+        }
+    }
+
+    /**
+     * Applies a production decision to the current state and returns the resulting new state.
+     *
+     * @param state    the current scheduling state
+     * @param decision the production decision (item index or {@link #IDLE})
+     * @return the successor state after applying the decision
+     */
+    @Override
+    public PSState transition(PSState state, Decision decision) {
+<span class="fc" id="L292">        PSState ret = state.clone();</span>
+<span class="fc" id="L293">        int item = decision.value();</span>
+<span class="fc bfc" id="L294" title="All 2 branches covered.">        if (item != IDLE) {</span>
+<span class="fc" id="L295">            ret.next = item;</span>
+<span class="fc" id="L296">            ret.previousDemands[item] = previousDemands[item][state.previousDemands[item]];</span>
+        }
+<span class="fc" id="L298">        return ret;</span>
+    }
+
+    /**
+     * Computes the cost incurred by executing a given decision from the current state.
+     * &lt;p&gt;
+     * The cost consists of two components:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;&lt;b&gt;Stocking cost&lt;/b&gt;: proportional to how early the produced item is made
+     *     relative to its next demand time.&lt;/li&gt;
+     *     &lt;li&gt;&lt;b&gt;Changeover cost&lt;/b&gt;: cost of switching from the last produced item
+     *     to the current one.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param state    the current state
+     * @param decision the production decision (item or idle)
+     * @return the transition cost incurred by the decision
+     */
+    @Override
+    public double transitionCost(PSState state, Decision decision) {
+<span class="fc" id="L319">        int item = decision.value();</span>
+<span class="fc bfc" id="L320" title="All 2 branches covered.">        if (item == IDLE) {</span>
+<span class="fc" id="L321">            return 0;</span>
+        } else {
+<span class="fc" id="L323">            int t = (horizon - decision.variable() - 1);</span>
+<span class="fc" id="L324">            int duration = state.previousDemands[item] - t;</span>
+<span class="fc" id="L325">            int stocking = stockingCost[item] * duration;</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">            int changeover = state.next != IDLE ? changeoverCost[item][state.next] : 0;</span>
+            // stocking cost + changeover cost
+<span class="fc" id="L328">            return changeover + stocking;</span>
+        }
+    }
+
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L336">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L337">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+        // For each item, contains the time slots of the demands
+<span class="fc" id="L341">        List&lt;LinkedList&lt;Integer&gt;&gt; nextDemand = Stream.generate(LinkedList&lt;Integer&gt;::new)</span>
+<span class="fc" id="L342">                .limit(nItems)</span>
+<span class="fc" id="L343">                .collect(Collectors.toCollection(LinkedList::new));</span>
+
+<span class="fc bfc" id="L345" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">                int demand = t == 0 ? remainingDemands[i][t] : remainingDemands[i][t] - remainingDemands[i][t - 1];</span>
+
+<span class="fc bfc" id="L349" title="All 2 branches covered.">                if (demand != 0) nextDemand.get(i).add(t);</span>
+            }
+        }
+
+<span class="fc" id="L353">        int value = 0;</span>
+<span class="fc" id="L354">        int prevItem = solution[solution.length - 1];</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">        for (int t = 0; t &lt; horizon; t++) {</span>
+            //The solution starts with the last time slots
+<span class="fc" id="L357">            int item = solution[solution.length - 1 - t];</span>
+<span class="fc" id="L358">            int demand = nextDemand.get(item).remove();</span>
+<span class="fc" id="L359">            int duration = demand - t;</span>
+<span class="fc" id="L360">            value += duration * stockingCost[item];</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">            if (prevItem != item) value += changeoverCost[prevItem][item];</span>
+<span class="fc" id="L362">            prevItem = item;</span>
+        }
+
+<span class="fc" id="L365">        return value;</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.tsptw</a> &gt; <span class="el_source">TSPTWFastLowerBound.java</span></div><h1>TSPTWFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.tsptw;
+
+import org.ddolib.modeling.FastLowerBound;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+
+/**
+ * Implementation of a fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW).
+ *
+ * &lt;p&gt;
+ * This class provides a heuristic lower bound on the total tour cost starting from a given {@link TSPTWState}.
+ * The lower bound is computed by summing the shortest available edges from the current position,
+ * including all mandatory nodes that must be visited and a selection of optional nodes if needed
+ * to complete the tour. The bound also considers returning to the depot and respects time window constraints.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * If any mandatory node is unreachable from the current state, or if completing the tour is impossible
+ * within the time windows, the bound returns {@link Integer#MAX_VALUE} to indicate infeasibility.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Precomputes the cheapest outgoing edge for each node to speed up repeated lower bound calculations.
+ * &lt;/p&gt;
+ */
+public class TSPTWFastLowerBound implements FastLowerBound&lt;TSPTWState&gt; {
+
+    private static final int INFINITY = Integer.MAX_VALUE;
+
+    private final int numVar;
+    private final TSPTWProblem problem;
+    private final int[] cheapestEdges;
+
+    /**
+     * Constructs a fast lower bound calculator for a given TSPTW problem instance.
+     *
+     * @param problem The TSPTW problem instance.
+     */
+<span class="fc" id="L44">    public TSPTWFastLowerBound(TSPTWProblem problem) {</span>
+<span class="fc" id="L45">        this.problem = problem;</span>
+<span class="fc" id="L46">        this.numVar = problem.distance.length;</span>
+<span class="fc" id="L47">        cheapestEdges = precomputeCheapestEdges();</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * Computes a fast lower bound on the remaining tour cost from the given state.
+     *
+     * &lt;p&gt;
+     * The bound includes:
+     * &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;Distance to the closest next node from the current position&lt;/li&gt;
+     *     &lt;li&gt;Distance covering all mandatory nodes to be visited&lt;/li&gt;
+     *     &lt;li&gt;Distance covering optional nodes if necessary to complete the tour&lt;/li&gt;
+     *     &lt;li&gt;Distance returning to the depot&lt;/li&gt;
+     * &lt;/ul&gt;
+     * The calculation respects the time window constraints; if a tour is infeasible, {@code INFINITY} is returned.
+     *
+     * @param state     The current state in the TSPTW problem.
+     * @param variables The set of unassigned variables (nodes) to consider for the lower bound.
+     * @return A fast lower bound on the tour cost from the current state, or {@link Integer#MAX_VALUE} if infeasible.
+     */
+    @Override
+    public double fastLowerBound(TSPTWState state, Set&lt;Integer&gt; variables) {
+        // This lower bound assumes that we will always select the cheapest edges from each node
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        int travelCost = switch (state.position()) {</span>
+<span class="fc" id="L73">            case TSPNode(int pos) -&gt; cheapestEdges[pos];</span>
+<span class="fc" id="L74">            case VirtualNodes(Set&lt;Integer&gt; nodes) -&gt;</span>
+<span class="fc" id="L75">                    nodes.stream().mapToInt(pos -&gt; cheapestEdges[pos]).min().getAsInt();</span>
+
+        }; // The sum of shortest edges, starting from the current position
+<span class="fc" id="L78">        int backToDepot = Integer.MAX_VALUE; // The shortest edges to the depot</span>
+<span class="fc" id="L79">        int maxEdge = travelCost;</span>
+
+
+<span class="fc" id="L82">        var mustIt = state.mustVisit().stream().iterator();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        while (mustIt.hasNext()) {</span>
+<span class="fc" id="L84">            int i = mustIt.nextInt();</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (!problem.reachable(state, i)) return INFINITY;</span>
+<span class="fc" id="L86">            travelCost += cheapestEdges[i];</span>
+<span class="fc" id="L87">            maxEdge = max(maxEdge, cheapestEdges[i]);</span>
+<span class="fc" id="L88">            backToDepot = min(backToDepot, problem.distance[i][0]);</span>
+<span class="fc" id="L89">        }</span>
+
+
+<span class="fc" id="L92">        int numToCompleteTour = numVar - state.depth() - 1 - state.mustVisit().cardinality();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (numToCompleteTour &gt; 0) { // There are not enough mustVisit nodes. We complete the tour with the</span>
+            // possiblyVisit nodes
+<span class="fc" id="L95">            ArrayList&lt;Integer&gt; candidatesToCompleteTour = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L96">            int violation = 0;</span>
+<span class="fc" id="L97">            var possiblyIt = state.possiblyVisit().stream().iterator();</span>
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            while (possiblyIt.hasNext()) {</span>
+<span class="fc" id="L100">                int i = possiblyIt.nextInt();</span>
+<span class="fc" id="L101">                candidatesToCompleteTour.add(cheapestEdges[i]);</span>
+<span class="fc" id="L102">                backToDepot = min(backToDepot, problem.distance[i][0]);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">                if (!problem.reachable(state, i)) violation++;</span>
+<span class="fc" id="L104">            }</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            if (candidatesToCompleteTour.size() - violation &lt; numToCompleteTour) return INFINITY;</span>
+
+<span class="fc" id="L107">            Collections.sort(candidatesToCompleteTour);</span>
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            for (int maybeEdge : candidatesToCompleteTour.subList(0, numToCompleteTour)) {</span>
+<span class="fc" id="L110">                travelCost += maybeEdge;</span>
+<span class="fc" id="L111">                maxEdge = max(maxEdge, maybeEdge);</span>
+<span class="fc" id="L112">            }</span>
+        }
+
+        // Currently travelCost contains all the travel for going from a city to another.
+        // However, after visiting the last city, we do not go to another but to the depot. We
+        // assume that the longest edge will be replaced by the return to the depot
+<span class="fc" id="L118">        travelCost -= maxEdge;</span>
+
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        int total = travelCost == 0 ? problem.minDuration(state, 0) : travelCost + backToDepot;</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        if (state.time() + total &gt; problem.timeWindows[0].end()) return INFINITY;</span>
+<span class="fc" id="L122">        else return total;</span>
+    }
+
+    /**
+     * Precomputes the cheapest outgoing edge for each node in the problem.
+     *
+     * @return An array where {@code cheapestEdges[i]} is the minimum distance from node {@code i} to any other node.
+     */
+    private int[] precomputeCheapestEdges() {
+<span class="fc" id="L131">        int[] toReturn = new int[numVar];</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (int i = 0; i &lt; numVar; i++) {</span>
+<span class="fc" id="L133">            int cheapest = INFINITY;</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            for (int j = 0; j &lt; numVar; j++) {</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                if (j != i) {</span>
+<span class="fc" id="L136">                    cheapest = Integer.min(cheapest, problem.distance[i][j]);</span>
+                }
+            }
+<span class="fc" id="L139">            toReturn[i] = cheapest;</span>
+        }
+<span class="fc" id="L141">        return toReturn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

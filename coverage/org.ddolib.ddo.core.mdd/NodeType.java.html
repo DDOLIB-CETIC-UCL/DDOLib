@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.ddo.core.mdd</a> &gt; <span class="el_source">NodeType.java</span></div><h1>NodeType.java</h1><pre class="source lang-java linenums">package org.ddolib.ddo.core.mdd;
+
+/**
+ * Enum representing the different types of nodes in the decision diagram.
+ * &lt;p&gt;
+ * Nodes can be classified into various types to signify their role in the problem-solving process.
+ * For example, exact nodes are used for exact solutions, while relaxed nodes are used in relaxed solutions
+ * that may not yield an optimal solution but provide bounds or approximations.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L11">public enum NodeType {</span>
+    /**
+     * Represents an exact node in the decision diagram.
+     * This type of node corresponds to an exact solution or a state that contributes to the final solution.
+     */
+<span class="fc" id="L16">    EXACT,</span>
+
+    /**
+     * Represents a relaxed node in the decision diagram.
+     * This type of node is part of a relaxed version of the problem, typically used for bounding or approximating solutions.
+     */
+<span class="fc" id="L22">    RELAXED</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

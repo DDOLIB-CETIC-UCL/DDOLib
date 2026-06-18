@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SolutionPrinter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util.io</a> &gt; <span class="el_source">SolutionPrinter.java</span></div><h1>SolutionPrinter.java</h1><pre class="source lang-java linenums">package org.ddolib.util.io;
+
+import org.ddolib.common.solver.stat.SearchStatistics;
+
+import java.util.Arrays;
+
+/**
+ * Utility class providing helper methods to display solutions found by a solver.
+ * &lt;p&gt;
+ * The {@code SolutionPrinter} is typically used as a callback or logging utility
+ * during the search process to print newly found incumbent (best so far) solutions,
+ * along with their associated search statistics.
+ */
+<span class="nc" id="L14">public class SolutionPrinter {</span>
+    /**
+     * Prints a newly found solution and its associated statistics to the standard output.
+     * &lt;p&gt;
+     * This method is usually invoked each time a better solution is found during the solving
+     * process, displaying both the solver's performance information and the variable assignment.
+     *
+     * @param stats    the {@link SearchStatistics} object containing information about the current search state
+     * @param solution an array of integers representing the variable assignments of the new incumbent solution
+     */
+    public static void printSolution(SearchStatistics stats, int[] solution) {
+<span class="nc" id="L25">        System.out.println(&quot;===== New Incumbent Solution =====&quot;);</span>
+<span class="nc" id="L26">        System.out.println(stats);</span>
+<span class="nc" id="L27">        System.out.println(&quot;Solution: &quot; + Arrays.toString(solution) + &quot;\n&quot;);</span>
+<span class="nc" id="L28">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

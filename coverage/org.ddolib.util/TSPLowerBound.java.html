@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.util</a> &gt; <span class="el_source">TSPLowerBound.java</span></div><h1>TSPLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.util;
+
+import java.util.HashSet;
+import java.util.Set;
+/**
+ * Utility class to compute lower bounds for the Traveling Salesman Problem (TSP).
+ * &lt;p&gt;
+ * This class provides methods to compute a simple yet effective lower bound on the
+ * cost of visiting subsets of nodes in a TSP instance, based on the minimum incident
+ * edges for each node in the subset.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The lower bound is used in more complex problems (like Production Scheduling Problem)
+ * where the TSP component appears in the calculation of minimum changeover costs.
+ * &lt;/p&gt;
+ */
+<span class="nc" id="L18">public class TSPLowerBound {</span>
+
+    /**
+     * Computes a lower-bound for all subsets of a set of nodes based on the given cost matrix.
+     * &lt;p&gt;
+     * For a given cost matrix, this method calculates a lower bound for each subset of nodes
+     * {0, ..., n-1}, where n is the size of the matrix. The lower bound is computed by
+     * summing the minimum incident edge of each node in the subset, considering only edges
+     * connecting nodes within the subset.
+     * &lt;/p&gt;
+     *
+     * &lt;p&gt;
+     * Each subset of nodes is represented by an integer using its binary representation:
+     * the i-th bit is 1 if node i is included in the subset, 0 otherwise.
+     * &lt;/p&gt;
+     *
+     * @param costMatrix a square matrix of size n x n representing the cost between nodes
+     * @return an array of integers where the i-th element represents the lower bound
+     *         for the subset corresponding to the binary representation of i
+     */
+    public static int[] lowerBoundForAllSubsets(int[][] costMatrix) {
+<span class="fc" id="L39">        int nItems = costMatrix.length;</span>
+<span class="fc" id="L40">        int nPoss = 1 &lt;&lt; nItems; // 2 ^ nItems = number of all possible subsets</span>
+<span class="fc" id="L41">        int[] result = new int[nPoss];</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = 0; i &lt; nPoss; i++) {</span>
+<span class="fc" id="L43">            Set&lt;Integer&gt; members = intToSet(i, nItems);</span>
+<span class="fc" id="L44">            result[i] = (sumMinIncident(members, costMatrix));</span>
+        }
+<span class="fc" id="L46">        return result;</span>
+    }
+    /**
+     * Computes the sum of the minimum incident edges for a given subset of nodes.
+     * &lt;p&gt;
+     * For each node in the subset, find the smallest edge connecting it to another node
+     * in the subset and sum these minimum edges. Each node is counted at most once
+     * to avoid double-counting edges.
+     * &lt;/p&gt;
+     *
+     * @param members a set of node indices representing the subset
+     * @param changeover a square cost matrix
+     * @return the sum of the minimum incident edges for the subset
+     */
+    private static int sumMinIncident(Set&lt;Integer&gt; members, int[][] changeover) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (members.size() &lt;= 1) {</span>
+<span class="fc" id="L62">            return 0;</span>
+        }
+<span class="fc" id="L64">        Set&lt;Integer&gt; covered = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L65">        int total = 0;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        for (int a : members) {</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (covered.contains(a)) {</span>
+<span class="fc" id="L68">                continue;</span>
+            }
+<span class="fc" id="L70">            int emin = Integer.MAX_VALUE; // minimum edge adjacent to a</span>
+<span class="fc" id="L71">            int bmin = a; // the other end of the minimum edge</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            for (int b : members) {</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                if (a == b) {</span>
+<span class="fc" id="L74">                    continue;</span>
+                }
+<span class="fc" id="L76">                int edge = Math.min(changeover[a][b], changeover[b][a]);</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">                if (edge &lt; emin) {</span>
+<span class="fc" id="L78">                    emin = edge;</span>
+<span class="fc" id="L79">                    bmin = b;</span>
+                }
+<span class="fc" id="L81">            }</span>
+<span class="fc" id="L82">            total += emin;</span>
+<span class="fc" id="L83">            covered.add(a);</span>
+<span class="fc" id="L84">            covered.add(bmin);</span>
+<span class="fc" id="L85">        }</span>
+<span class="fc" id="L86">        return total;</span>
+    }
+    /**
+     * Converts an integer representation of a subset to a set of node indices.
+     * &lt;p&gt;
+     * Each bit in the integer represents whether the corresponding node is included
+     * in the subset (1) or not (0).
+     * &lt;/p&gt;
+     *
+     * @param num an integer representing the subset in binary
+     * @param size the total number of nodes
+     * @return a set of integers corresponding to the indices of nodes in the subset
+     */
+    private static Set&lt;Integer&gt; intToSet(int num, int size) {
+<span class="fc" id="L100">        Set&lt;Integer&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if ((num &amp; (1 &lt;&lt; i)) != 0) {</span>
+<span class="fc" id="L103">                set.add(i);</span>
+            }
+        }
+<span class="fc" id="L106">        return set;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

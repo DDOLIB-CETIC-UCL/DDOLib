@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DdoStopCriterion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver.stopcriterion</a> &gt; <span class="el_source">DdoStopCriterion.java</span></div><h1>DdoStopCriterion.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver.stopcriterion;
+
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+
+/**
+ * Interface representing a stop criterion specifically for Decision Diagram Optimization (DDO) solvers.
+ * &lt;p&gt;
+ * This extends {@link StopCriterion} to provide access to DDO-specific statistics
+ * such as the total number of MDD nodes or the explored depth.
+ * &lt;/p&gt;
+ */
+@FunctionalInterface
+public interface DdoStopCriterion extends StopCriterion {
+
+    /**
+     * Creates a stop criterion that terminates the search when the total number
+     * of MDD nodes created exceeds a specified limit.
+     *
+     * @param maxNodes the maximum allowed number of MDD nodes
+     * @return a DdoStopCriterion for maximum total nodes
+     */
+    static DdoStopCriterion maxTotalMddNodes(long maxNodes) {
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        return stats -&gt; stats.totalNodes() &gt;= maxNodes;</span>
+    }
+
+    /**
+     * Creates a stop criterion that terminates the search when the number of iterations
+     * without any lower bound improvement exceeds a specified limit.
+     *
+     * @param maxIter the maximum allowed number of iterations since the last lower bound improvement
+     * @return a DdoStopCriterion based on iterations since last lower bound improvement
+     */
+    static DdoStopCriterion maxIterWithoutLowerBoundImprovement(int maxIter) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        return stats -&gt; (stats.nbIterations() - stats.lastIterationOfLowerBoundImprovement()) &gt;= maxIter;</span>
+    }
+
+    /**
+     * Creates a stop criterion that terminates the search when the depth of the
+     * subproblem root being explored (the node popped from the frontier)
+     * reaches or exceeds a specified limit.
+     *
+     * @param maxDepth the maximum allowed depth for a subproblem root
+     * @return a DdoStopCriterion for maximum explored depth
+     */
+    static DdoStopCriterion maxExploredDepth(int maxDepth) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        return stats -&gt; stats.maxExploredDepth() &gt;= maxDepth;</span>
+    }
+
+    /**
+     * Evaluates this criterion against the given DDO search statistics.
+     *
+     * @param stats the DDO search statistics
+     * @return {@code true} if the search should be terminated, {@code false} otherwise
+     */
+    boolean testDdoStats(DdoStats stats);
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalArgumentException if the provided statistics are not an instance of {@link DdoStats}
+     */
+    @Override
+    default boolean test(SearchStatistics stats) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (stats instanceof DdoStats ddoStats) {</span>
+<span class="fc" id="L66">            return testDdoStats(ddoStats);</span>
+        }
+<span class="fc" id="L68">        throw new IllegalArgumentException(&quot;DdoStopCriterion requires DdoStats.&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

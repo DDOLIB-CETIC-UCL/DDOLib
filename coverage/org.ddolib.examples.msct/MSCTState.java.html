@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.msct</a> &gt; <span class="el_source">MSCTState.java</span></div><h1>MSCTState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.msct;
+
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Set;
+
+
+/**
+ * Represents a state in the {@link MSCTProblem} (Minimum Sum of Completion Times) scheduling problem.
+ * &lt;p&gt;
+ * A state captures the current status of the scheduling process:
+ * it stores the set of jobs that remain to be scheduled and the
+ * current simulation time (i.e., the total time elapsed so far in the partial schedule).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Structure:&lt;/b&gt;&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@code remainingJobs}: the set of jobs that have not yet been scheduled.&lt;/li&gt;
+ *   &lt;li&gt;{@code currentTime}: the time at which the next job can start, representing the
+ *       accumulated processing time of all scheduled jobs so far.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * This class is implemented as a Java {@code record}, meaning it is immutable and
+ * provides automatically generated implementations for equals, hashCode, and accessors.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * Set&lt;Integer&gt; jobs = Set.of(0, 1, 2);
+ * MSCTState state = new MSCTState(jobs, 5);
+ * System.out.println(state);
+ * // Output: RemainingJobs [0, 1, 2] ----&gt; currentTime 5
+ * }&lt;/pre&gt;
+ *
+ * @param remainingJobs the set of job indices that have not yet been scheduled.
+ * @param currentTime   the current time (sum of processing times of scheduled jobs).
+ *
+ * @see MSCTProblem
+ * @see MSCTRelax
+ * @see MSCTRanking
+ */
+<span class="fc" id="L43">public record MSCTState(Set&lt;Integer&gt; remainingJobs, int currentTime) {</span>
+    /**
+     * Returns a string representation of the state for debugging or logging purposes.
+     * &lt;p&gt;
+     * The output includes the list of remaining jobs and the current simulation time.
+     * &lt;/p&gt;
+     *
+     * @return a formatted string describing this state.
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L54">        return &quot;RemainingJobs &quot; + Arrays.toString(remainingJobs.toArray()) + &quot; ----&gt; currentTime &quot; + currentTime;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
