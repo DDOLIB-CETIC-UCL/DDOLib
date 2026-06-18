@@ -8,6 +8,7 @@ import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.frontier.Frontier;
 import org.ddolib.ddo.core.frontier.SimpleFrontier;
 import org.ddolib.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
@@ -115,9 +116,10 @@ public final class PDPTWDdoMain {
 
             @Override
             public ReductionStrategy<PDPTWState> relaxStrategy() {
-                return new PDPTWReductionStrategy2();
+                //return new PDPTWReductionStrategy2();
                 //return new PDPTWReductionStrategy2(problem);
                 //return new CostBased<>((o1, o2) -> 0);
+                return new GHP<>(new PDPTWStateDistance());
             }
 
             @Override
