@@ -6,7 +6,6 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.LnsModel;
 import org.ddolib.modeling.Problem;
 import org.ddolib.modeling.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -136,11 +135,7 @@ public class MispLnsMain {
         };
 
         Solution bestSolution = Solvers.minimizeLns(
-                model,
-                s -> s.runtime() < 100,
-                (sol, s) -> {
-                    SolutionPrinter.printSolution(s, sol);
-                }
+                model
         );
 
         System.out.println(bestSolution.statistics());

@@ -18,6 +18,7 @@ public class TSPTests {
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;
+        bench.testLns = false;
         return bench.generateTests();
     }
 }

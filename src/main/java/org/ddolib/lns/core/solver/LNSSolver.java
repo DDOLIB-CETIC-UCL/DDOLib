@@ -89,7 +89,7 @@ public final class LNSSolver<T> implements Solver {
                     .incrementNbIter()
                     .updateFrontierMaxSize(queueMaxSize)
                     .updateGap(gap);
-            if (!limit.test(stats)) {
+            if (limit.test(stats)) {
                 break;
             }
             verboseMode.detailedSearchState(nbIter, queueMaxSize, bestUB,
@@ -129,7 +129,6 @@ public final class LNSSolver<T> implements Solver {
 
             gap = computeGap(bestUB, restrictedMdd.minLowerBound());
 
-            String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
                 gap = computeGap(bestUB, restrictedMdd.minLowerBound());
@@ -141,6 +140,7 @@ public final class LNSSolver<T> implements Solver {
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
+                String problemName = problem.getClass().getSimpleName().replace("Problem", "");
                 exportDot(restrictedMdd.exportAsDot(),
                         Paths.get("output", problemName + "_restricted.dot").toString());
             }
@@ -196,8 +196,7 @@ public final class LNSSolver<T> implements Solver {
         if (ddval.isPresent() && ddval.get() < bestUB) {
             bestUB = ddval.get();
             bestSol = currentMdd.bestSolution();
-            if (model.useLNS())
-                d = maxDepth;
+            if (model.useLNS()) d = maxDepth;
             verboseMode.newBest(bestUB);
             return true;
         } else {

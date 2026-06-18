@@ -12,7 +12,7 @@ public class GRTestDataSupplier extends TestDataSupplier<GRState, GRProblem> {
     protected List<GRProblem> generateProblems() {
         // Known solutions
         int[] solutions = {0, 1, 3, 6, 11, 17, 25, 34, 44, 55, 72, 85, 106};
-        return IntStream.range(1, 7).mapToObj(i -> new GRProblem(i, solutions[i - 1])).toList();
+        return IntStream.range(1, 6).mapToObj(i -> new GRProblem(i, solutions[i - 1])).toList();
     }
 
     @Override

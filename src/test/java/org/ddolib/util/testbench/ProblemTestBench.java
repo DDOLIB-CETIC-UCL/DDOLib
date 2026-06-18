@@ -46,6 +46,11 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      * Whether the cache has to be tested.
      */
     public boolean testCache = false;
+
+    /**
+     * Whether the LNS solver must be tested.
+     */
+    public boolean testLns = true;
     /**
      * The minimum width of mdd to test with the relaxation.
      */
@@ -111,6 +116,7 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
             case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
             case AwAstarModel<T> awastarModel -> Solvers.minimizeAwAStar(awastarModel);
+            case LnsModel<T> lsnModel -> Solvers.minimizeLns(lsnModel);
             default -> Solvers.minimizeAstar(model);
         };
 
@@ -372,6 +378,44 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         testSolverResult(testModel);
     }
 
+    private void testLnsSolver(P problem) throws InvalidSolutionException {
+        DdoModel<T> globalModel = model.apply(problem);
+
+        LnsModel<T> testModel = new LnsModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return globalModel.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return globalModel.dominance();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return globalModel.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return new FixedWidth<>(50);
+            }
+        };
+
+        testSolverResult(testModel);
+    }
+
     /**
      * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal solution. As side
      * effect, it tests if the fast lower bound on merged states does not cause errors.
@@ -499,6 +543,12 @@ public class ProblemTestBench<T, P extends Problem<T>> {
         Stream<DynamicTest> awastarTests = problems.stream().map(p -> DynamicTest.dynamicTest(
                 String.format("AWA* for %s", p.toString()), () -> testAwAstarSolver(p)));
         allTests = Stream.concat(allTests, awastarTests);
+
+        if (testLns) {
+            Stream<DynamicTest> lsnTests = problems.stream().map(p ->
+                    DynamicTest.dynamicTest("LSN for %s".formatted(p.toString()), () -> testLnsSolver(p)));
+            allTests = Stream.concat(allTests, lsnTests);
+        }
 
         return allTests;
     }
