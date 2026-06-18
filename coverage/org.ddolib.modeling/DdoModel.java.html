@@ -150,67 +150,67 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="fc" id="L150">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="fc" id="L153">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L158">                return DdoModel.this.lowerBound();</span>
+                return DdoModel.this.lowerBound();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L163">                return DdoModel.this.dominance();</span>
+                return DdoModel.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L168">                return DdoModel.this.variableHeuristic();</span>
+                return DdoModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="fc" id="L173">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="fc" id="L178">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public Relaxation&lt;T&gt; relaxation() {
-<span class="fc" id="L183">                return DdoModel.this.relaxation();</span>
+                return DdoModel.this.relaxation();
             }
 
             @Override
             public StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L188">                return DdoModel.this.ranking();</span>
+                return DdoModel.this.ranking();
             }
 
             @Override
             public WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="fc" id="L193">                return new FixedWidth&lt;&gt;(width);</span>
+                return new FixedWidth&lt;&gt;(width);
             }
 
             @Override
             public Frontier&lt;T&gt; frontier() {
-<span class="fc" id="L198">                return DdoModel.this.frontier();</span>
+                return DdoModel.this.frontier();
             }
 
             @Override
             public boolean useCache() {
-<span class="fc" id="L203">                return DdoModel.this.useCache();</span>
+                return DdoModel.this.useCache();
             }
 
             @Override
             public boolean exportDot() {
-<span class="fc" id="L208">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public boolean useLNS() {
-<span class="nc" id="L213">                return DdoModel.this.useLNS();</span>
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -225,67 +225,67 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="fc" id="L225">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="fc" id="L228">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L233">                return DdoModel.this.lowerBound();</span>
+                return DdoModel.this.lowerBound();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L238">                return DdoModel.this.dominance();</span>
+                return DdoModel.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L243">                return DdoModel.this.variableHeuristic();</span>
+                return DdoModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="fc" id="L248">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="fc" id="L253">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public Relaxation&lt;T&gt; relaxation() {
-<span class="fc" id="L258">                return DdoModel.this.relaxation();</span>
+                return DdoModel.this.relaxation();
             }
 
             @Override
             public StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L263">                return DdoModel.this.ranking();</span>
+                return DdoModel.this.ranking();
             }
 
             @Override
             public WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="fc" id="L268">                return DdoModel.this.widthHeuristic();</span>
+                return DdoModel.this.widthHeuristic();
             }
 
             @Override
             public Frontier&lt;T&gt; frontier() {
-<span class="fc" id="L273">                return new SimpleFrontier&lt;&gt;(ranking(), type);</span>
+                return new SimpleFrontier&lt;&gt;(ranking(), type);
             }
 
             @Override
             public boolean useCache() {
-<span class="fc" id="L278">                return DdoModel.this.useCache();</span>
+                return DdoModel.this.useCache();
             }
 
             @Override
             public boolean exportDot() {
-<span class="fc" id="L283">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public boolean useLNS() {
-<span class="nc" id="L288">                return DdoModel.this.useLNS();</span>
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -300,67 +300,67 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="fc" id="L300">        return new DdoModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="fc" id="L303">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L308">                return DdoModel.this.lowerBound();</span>
+                return DdoModel.this.lowerBound();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L313">                return DdoModel.this.dominance();</span>
+                return DdoModel.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L318">                return DdoModel.this.variableHeuristic();</span>
+                return DdoModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="fc" id="L323">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="fc" id="L328">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public Relaxation&lt;T&gt; relaxation() {
-<span class="fc" id="L333">                return DdoModel.this.relaxation();</span>
+                return DdoModel.this.relaxation();
             }
 
             @Override
             public StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L338">                return DdoModel.this.ranking();</span>
+                return DdoModel.this.ranking();
             }
 
             @Override
             public WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="fc" id="L343">                return DdoModel.this.widthHeuristic();</span>
+                return DdoModel.this.widthHeuristic();
             }
 
             @Override
             public Frontier&lt;T&gt; frontier() {
-<span class="fc" id="L348">                return DdoModel.this.frontier();</span>
+                return DdoModel.this.frontier();
             }
 
             @Override
             public boolean useCache() {
-<span class="fc" id="L353">                return b;</span>
+                return b;
             }
 
             @Override
             public boolean exportDot() {
-<span class="fc" id="L358">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public boolean useLNS() {
-<span class="nc" id="L363">                return DdoModel.this.useLNS();</span>
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -370,62 +370,62 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="fc" id="L370">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="fc" id="L373">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L378">                return DdoModel.this.lowerBound();</span>
+                return DdoModel.this.lowerBound();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L383">                return DdoModel.this.variableHeuristic();</span>
+                return DdoModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="fc" id="L388">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="fc" id="L393">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public Relaxation&lt;T&gt; relaxation() {
-<span class="fc" id="L398">                return DdoModel.this.relaxation();</span>
+                return DdoModel.this.relaxation();
             }
 
             @Override
             public StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L403">                return DdoModel.this.ranking();</span>
+                return DdoModel.this.ranking();
             }
 
             @Override
             public WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="fc" id="L408">                return DdoModel.this.widthHeuristic();</span>
+                return DdoModel.this.widthHeuristic();
             }
 
             @Override
             public Frontier&lt;T&gt; frontier() {
-<span class="fc" id="L413">                return DdoModel.this.frontier();</span>
+                return DdoModel.this.frontier();
             }
 
             @Override
             public boolean useCache() {
-<span class="fc" id="L418">                return DdoModel.this.useCache();</span>
+                return DdoModel.this.useCache();
             }
 
             @Override
             public boolean exportDot() {
-<span class="fc" id="L423">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public boolean useLNS() {
-<span class="nc" id="L428">                return DdoModel.this.useLNS();</span>
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -435,67 +435,67 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="nc" id="L435">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="nc" id="L438">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="nc" id="L443">                return DdoModel.this.dominance();</span>
+                return DdoModel.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="nc" id="L448">                return DdoModel.this.variableHeuristic();</span>
+                return DdoModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L453">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="nc" id="L458">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public Relaxation&lt;T&gt; relaxation() {
-<span class="nc" id="L463">                return DdoModel.this.relaxation();</span>
+                return DdoModel.this.relaxation();
             }
 
             @Override
             public StateRanking&lt;T&gt; ranking() {
-<span class="nc" id="L468">                return DdoModel.this.ranking();</span>
+                return DdoModel.this.ranking();
             }
 
             @Override
             public WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="nc" id="L473">                return DdoModel.this.widthHeuristic();</span>
+                return DdoModel.this.widthHeuristic();
             }
 
             @Override
             public Frontier&lt;T&gt; frontier() {
-<span class="nc" id="L478">                return DdoModel.this.frontier();</span>
+                return DdoModel.this.frontier();
             }
 
             @Override
             public boolean useCache() {
-<span class="nc" id="L483">                return DdoModel.this.useCache();</span>
+                return DdoModel.this.useCache();
             }
 
             @Override
             public boolean exportDot() {
-<span class="nc" id="L488">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public DdoModel&lt;T&gt; fixWidth(int width) {
-<span class="nc" id="L493">                return DdoModel.this.fixWidth(width);</span>
+                return DdoModel.this.fixWidth(width);
             }
 
             @Override
             public boolean useLNS() {
-<span class="nc" id="L498">                return DdoModel.this.useLNS();</span>
+                return DdoModel.this.useLNS();
             }
         };
     }
@@ -508,37 +508,37 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="nc" id="L508">        return new ExactModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="nc" id="L511">                return DdoModel.this.problem();</span>
+                return DdoModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="nc" id="L516">                return DdoModel.this.lowerBound();</span>
+                return DdoModel.this.lowerBound();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="nc" id="L521">                return DdoModel.this.dominance();</span>
+                return DdoModel.this.dominance();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L526">                return DdoModel.this.verbosityLevel();</span>
+                return DdoModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="nc" id="L531">                return DdoModel.this.debugMode();</span>
+                return DdoModel.this.debugMode();
             }
 
             @Override
             public boolean exportDot() {
-<span class="nc" id="L536">                return DdoModel.this.exportDot();</span>
+                return DdoModel.this.exportDot();
             }
 
             @Override
             public ExactModel&lt;T&gt; toExactModel() {
-<span class="nc" id="L541">                return DdoModel.this.toExactModel();</span>
+                return DdoModel.this.toExactModel();
             }
         };
     }

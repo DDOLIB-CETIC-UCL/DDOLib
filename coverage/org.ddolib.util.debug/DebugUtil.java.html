@@ -86,23 +86,23 @@ import java.util.stream.IntStream;
 <span class="fc" id="L86">            });</span>
 <span class="fc" id="L87">            Optional&lt;Double&gt; shortestFromCurrent = internalSolver.bestValue();</span>
 <span class="fc" id="L88">            Optional&lt;Set&lt;Decision&gt;&gt; shortestPath = internalSolver.bestSolution();</span>
-<span class="pc bpc" id="L89" title="1 of 4 branches missed.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFLB - 1e-10 &gt; shortestFromCurrent.get()) {</span>
-<span class="nc" id="L90">                List&lt;Decision&gt; sortedDecisions = new ArrayList&lt;&gt;(shortestPath.get());</span>
-<span class="nc" id="L91">                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));</span>
+<span class="fc bfc" id="L89" title="All 4 branches covered.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFLB - 1e-10 &gt; shortestFromCurrent.get()) {</span>
+<span class="fc" id="L90">                List&lt;Decision&gt; sortedDecisions = new ArrayList&lt;&gt;(shortestPath.get());</span>
+<span class="fc" id="L91">                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));</span>
 
-<span class="nc" id="L93">                List&lt;Decision&gt; subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());</span>
+<span class="fc" id="L93">                List&lt;Decision&gt; subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());</span>
 
-<span class="nc" id="L95">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
-<span class="nc" id="L96">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
-<span class="nc" id="L97">                        &quot;State: &quot; + current.state().toString() + &quot;\n&quot; +</span>
-<span class="nc" id="L98">                        &quot;Depth: &quot; + current.depth() + &quot;\n&quot; +</span>
-<span class="nc" id="L99">                        &quot;Path estimation: &quot; + df.format(currentFLB) + &quot;\n&quot; +</span>
-<span class="nc" id="L100">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
+<span class="fc" id="L95">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
+<span class="fc" id="L96">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
+<span class="fc" id="L97">                        &quot;State: &quot; + current.state().toString() + &quot;\n&quot; +</span>
+<span class="fc" id="L98">                        &quot;Depth: &quot; + current.depth() + &quot;\n&quot; +</span>
+<span class="fc" id="L99">                        &quot;Path estimation: &quot; + df.format(currentFLB) + &quot;\n&quot; +</span>
+<span class="fc" id="L100">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
                         + &quot;\n\nFull Path to end:\n&quot; +
-<span class="nc" id="L102">                        subPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
+<span class="fc" id="L102">                        subPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
                         + &quot;\n&quot;;
 
-<span class="nc" id="L105">                throw new RuntimeException(failureMsg);</span>
+<span class="fc" id="L105">                throw new RuntimeException(failureMsg);</span>
             }
 <span class="fc" id="L107">        }</span>
 <span class="fc" id="L108">    }</span>

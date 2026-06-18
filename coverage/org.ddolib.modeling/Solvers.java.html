@@ -338,6 +338,7 @@ import java.util.function.Predicate;
 <span class="nc" id="L338">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
     }
 
+
     /**
      * Runs a Large Neighborhood Search (LNS) on the specified model with a given
      * termination condition and a callback for each solution found.
@@ -352,8 +353,8 @@ import java.util.function.Predicate;
      * @return the best {@link Solution} found during the search
      */
 
-    public static final &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L356">        return new LNSSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L357">        return new LNSSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
     /**
@@ -363,15 +364,14 @@ import java.util.function.Predicate;
      * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
      * with {@code limit} always false and an empty callback.
      *
-     * @param &lt;T&gt;        the type of state used in the problem
-     * @param model      the {@link LnsModel} describing the problem and search heuristics
-     * @param onSolution a {@link BiConsumer} called for each solution found (can be ignored)
+     * @param &lt;T&gt;   the type of state used in the problem
+     * @param model the {@link LnsModel} describing the problem and search heuristics
      * @return the best {@link Solution} found during the search
      */
 
-    public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L373">        return minimizeLns(model, stats -&gt; false, (sol, s) -&gt; {</span>
-<span class="nc" id="L374">        });</span>
+    public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model) {
+<span class="fc" id="L373">        return minimizeLns(model, stats -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L374">        });</span>
     }
 
     /**

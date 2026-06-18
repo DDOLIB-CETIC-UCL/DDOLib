@@ -38,37 +38,37 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
 <span class="nc" id="L38">        return new AwAstarModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="nc" id="L41">                return AwAstarModel.this.problem();</span>
+                return AwAstarModel.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="nc" id="L46">                return AwAstarModel.this.lowerBound();</span>
+                return AwAstarModel.this.lowerBound();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="nc" id="L51">                return AwAstarModel.this.dominance();</span>
+                return AwAstarModel.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="nc" id="L56">                return AwAstarModel.this.variableHeuristic();</span>
+                return AwAstarModel.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L61">                return AwAstarModel.this.verbosityLevel();</span>
+                return AwAstarModel.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="nc" id="L66">                return AwAstarModel.this.debugMode();</span>
+                return AwAstarModel.this.debugMode();
             }
 
             @Override
             public double weight() {
-<span class="nc" id="L71">                return w;</span>
+                return w;
             }
         };
     }

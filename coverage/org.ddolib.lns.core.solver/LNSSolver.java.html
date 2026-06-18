@@ -89,7 +89,7 @@ public final class LNSSolver&lt;T&gt; implements Solver {
 <span class="fc" id="L89">                    .incrementNbIter()</span>
 <span class="fc" id="L90">                    .updateFrontierMaxSize(queueMaxSize)</span>
 <span class="fc" id="L91">                    .updateGap(gap);</span>
-<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (!limit.test(stats)) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (limit.test(stats)) {</span>
 <span class="fc" id="L93">                break;</span>
             }
 <span class="fc" id="L95">            verboseMode.detailedSearchState(nbIter, queueMaxSize, bestUB,</span>
@@ -101,7 +101,7 @@ public final class LNSSolver&lt;T&gt; implements Solver {
 <span class="fc bfc" id="L101" title="All 2 branches covered.">                if (model.initialSolution() != null) {</span>
 <span class="fc" id="L102">                    solution = model.initialSolution();</span>
 <span class="fc" id="L103">                    bestUB = costInSolutionAtDepth(model.initialSolution(), problem.nbVars());</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">                    if (Double.isInfinite(stats.incumbent())) {</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">                    if (Double.isInfinite(stats.incumbent())) {</span>
 <span class="fc" id="L105">                        stats = stats.updateIncumbent(bestUB, gap).updateStatus(SearchStatus.SAT);</span>
                     }
                 } else {
@@ -129,18 +129,18 @@ public final class LNSSolver&lt;T&gt; implements Solver {
 
 <span class="fc" id="L130">            gap = computeGap(bestUB, restrictedMdd.minLowerBound());</span>
 
-<span class="fc" id="L132">            String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
-<span class="pc bpc" id="L133" title="3 of 4 branches missed.">            boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot &amp;&amp; firstRestricted);</span>
-<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (newbest) {</span>
-<span class="fc" id="L135">                gap = computeGap(bestUB, restrictedMdd.minLowerBound());</span>
-<span class="fc" id="L136">                stats = stats</span>
-<span class="fc" id="L137">                        .updateTime(System.currentTimeMillis())</span>
-<span class="fc" id="L138">                        .updateIncumbent(bestUB, gap)</span>
-<span class="fc" id="L139">                        .updateStatus(SearchStatus.SAT)</span>
-<span class="fc" id="L140">                        .updateGap(gap);</span>
-<span class="fc" id="L141">                onSolution.accept(constructSolution(bestSol.get()), stats);</span>
+<span class="pc bpc" id="L132" title="3 of 4 branches missed.">            boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot &amp;&amp; firstRestricted);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">            if (newbest) {</span>
+<span class="fc" id="L134">                gap = computeGap(bestUB, restrictedMdd.minLowerBound());</span>
+<span class="fc" id="L135">                stats = stats</span>
+<span class="fc" id="L136">                        .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L137">                        .updateIncumbent(bestUB, gap)</span>
+<span class="fc" id="L138">                        .updateStatus(SearchStatus.SAT)</span>
+<span class="fc" id="L139">                        .updateGap(gap);</span>
+<span class="fc" id="L140">                onSolution.accept(constructSolution(bestSol.get()), stats);</span>
             }
-<span class="pc bpc" id="L143" title="3 of 4 branches missed.">            if (exportAsDot &amp;&amp; firstRestricted) {</span>
+<span class="pc bpc" id="L142" title="3 of 4 branches missed.">            if (exportAsDot &amp;&amp; firstRestricted) {</span>
+<span class="nc" id="L143">                String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
 <span class="nc" id="L144">                exportDot(restrictedMdd.exportAsDot(),</span>
 <span class="nc" id="L145">                        Paths.get(&quot;output&quot;, problemName + &quot;_restricted.dot&quot;).toString());</span>
             }
@@ -160,7 +160,7 @@ public final class LNSSolver&lt;T&gt; implements Solver {
 <span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (stats.incumbent() != bestUB) {</span>
 <span class="nc" id="L161">            stats = stats.updateIncumbent(bestUB, gap);</span>
         }
-<span class="pc bpc" id="L163" title="2 of 4 branches missed.">        if (!Double.isInfinite(bestUB) &amp;&amp; stats.status() == SearchStatus.UNKNOWN) {</span>
+<span class="pc bpc" id="L163" title="3 of 4 branches missed.">        if (!Double.isInfinite(bestUB) &amp;&amp; stats.status() == SearchStatus.UNKNOWN) {</span>
 <span class="nc" id="L164">            stats = stats.updateStatus(SearchStatus.SAT);</span>
         }
 
@@ -193,25 +193,24 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      */
     private boolean maybeUpdateBest(DecisionDiagram&lt;T&gt; currentMdd, boolean exportDot) {
 <span class="fc" id="L195">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
-<span class="pc bpc" id="L196" title="1 of 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
+<span class="fc bfc" id="L196" title="All 4 branches covered.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
 <span class="fc" id="L197">            bestUB = ddval.get();</span>
 <span class="fc" id="L198">            bestSol = currentMdd.bestSolution();</span>
-<span class="pc bpc" id="L199" title="1 of 2 branches missed.">            if (model.useLNS())</span>
-<span class="fc" id="L200">                d = maxDepth;</span>
-<span class="fc" id="L201">            verboseMode.newBest(bestUB);</span>
-<span class="fc" id="L202">            return true;</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">            if (model.useLNS()) d = maxDepth;</span>
+<span class="fc" id="L200">            verboseMode.newBest(bestUB);</span>
+<span class="fc" id="L201">            return true;</span>
         } else {
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">            if (exportDot)</span>
-<span class="nc" id="L205">                currentMdd.exportAsDot(); // to be sure to update the color of the edges.</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">            if (model.useLNS()) {</span>
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">                if (d == 0) {</span>
-<span class="nc" id="L208">                    d = maxDepth;</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">            if (exportDot)</span>
+<span class="nc" id="L204">                currentMdd.exportAsDot(); // to be sure to update the color of the edges.</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">            if (model.useLNS()) {</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">                if (d == 0) {</span>
+<span class="nc" id="L207">                    d = maxDepth;</span>
                 } else {
-<span class="fc" id="L210">                    d--;</span>
+<span class="fc" id="L209">                    d--;</span>
                 }
             }
         }
-<span class="fc" id="L214">        return false;</span>
+<span class="fc" id="L213">        return false;</span>
     }
 
     /**
@@ -221,12 +220,12 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @param fileName output file path
      */
     private void exportDot(String dot, String fileName) {
-<span class="nc" id="L224">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
-<span class="nc" id="L225">            bw.write(dot);</span>
-<span class="nc" id="L226">        } catch (IOException e) {</span>
-<span class="nc" id="L227">            throw new RuntimeException(e);</span>
-<span class="nc" id="L228">        }</span>
-<span class="nc" id="L229">    }</span>
+<span class="nc" id="L223">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
+<span class="nc" id="L224">            bw.write(dot);</span>
+<span class="nc" id="L225">        } catch (IOException e) {</span>
+<span class="nc" id="L226">            throw new RuntimeException(e);</span>
+<span class="nc" id="L227">        }</span>
+<span class="nc" id="L228">    }</span>
 
 
     /**
@@ -235,13 +234,13 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @return root residual subproblem
      */
     private SubProblem&lt;T&gt; root() {
-<span class="fc" id="L238">        Set&lt;Integer&gt; vars =</span>
-<span class="fc" id="L239">                IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
-<span class="fc" id="L240">        return new SubProblem&lt;&gt;(</span>
-<span class="fc" id="L241">                problem.initialState(),</span>
-<span class="fc" id="L242">                problem.initialValue(),</span>
-<span class="fc" id="L243">                model.lowerBound().fastLowerBound(problem.initialState(), vars),</span>
-<span class="fc" id="L244">                Collections.emptySet());</span>
+<span class="fc" id="L237">        Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L238">                IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L239">        return new SubProblem&lt;&gt;(</span>
+<span class="fc" id="L240">                problem.initialState(),</span>
+<span class="fc" id="L241">                problem.initialValue(),</span>
+<span class="fc" id="L242">                model.lowerBound().fastLowerBound(problem.initialState(), vars),</span>
+<span class="fc" id="L243">                Collections.emptySet());</span>
     }
 
 
@@ -253,26 +252,26 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @return residual subproblem rooted at the state reached after the fixed prefix
      */
     private SubProblem&lt;T&gt; buildInitialSubProblem(int[] solution, int depth) {
-<span class="fc" id="L256">        final HashSet&lt;Integer&gt; vars = new HashSet&lt;&gt;();</span>
-<span class="fc" id="L257">        Set&lt;Decision&gt; decisionSet = new HashSet&lt;&gt;();</span>
-<span class="fc" id="L258">        T state = problem.initialState();</span>
-<span class="fc" id="L259">        double sum = problem.initialValue();</span>
-<span class="fc" id="L260">        int k = 0;</span>
-<span class="fc bfc" id="L261" title="All 2 branches covered.">        while (k &lt; problem.nbVars()) {</span>
-<span class="fc" id="L262">            Decision dec = new Decision(k, solution[k]);</span>
-<span class="fc bfc" id="L263" title="All 2 branches covered.">            if (k &lt; depth) {</span>
-<span class="fc" id="L264">                decisionSet.add(dec);</span>
-<span class="fc" id="L265">                sum += problem.transitionCost(state, dec);</span>
-<span class="fc" id="L266">                state = problem.transition(state, dec);</span>
+<span class="fc" id="L255">        final HashSet&lt;Integer&gt; vars = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L256">        Set&lt;Decision&gt; decisionSet = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L257">        T state = problem.initialState();</span>
+<span class="fc" id="L258">        double sum = problem.initialValue();</span>
+<span class="fc" id="L259">        int k = 0;</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        while (k &lt; problem.nbVars()) {</span>
+<span class="fc" id="L261">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            if (k &lt; depth) {</span>
+<span class="fc" id="L263">                decisionSet.add(dec);</span>
+<span class="fc" id="L264">                sum += problem.transitionCost(state, dec);</span>
+<span class="fc" id="L265">                state = problem.transition(state, dec);</span>
             } else {
-<span class="fc" id="L268">                vars.add(dec.variable());</span>
+<span class="fc" id="L267">                vars.add(dec.variable());</span>
             }
-<span class="fc" id="L270">            k++;</span>
-<span class="fc" id="L271">        }</span>
-<span class="fc" id="L272">        return new SubProblem&lt;&gt;(</span>
+<span class="fc" id="L269">            k++;</span>
+<span class="fc" id="L270">        }</span>
+<span class="fc" id="L271">        return new SubProblem&lt;&gt;(</span>
                 state,
                 sum,
-<span class="fc" id="L275">                model.lowerBound().fastLowerBound(state, vars),</span>
+<span class="fc" id="L274">                model.lowerBound().fastLowerBound(state, vars),</span>
                 decisionSet
         );
     }
@@ -286,16 +285,16 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @return cumulative objective value up to {@code depth}
      */
     private double costInSolutionAtDepth(int[] solution, int depth) {
-<span class="fc" id="L289">        double sum = problem.initialValue();</span>
-<span class="fc" id="L290">        T state = problem.initialState();</span>
-<span class="fc" id="L291">        int k = 0;</span>
-<span class="fc bfc" id="L292" title="All 2 branches covered.">        while (k &lt; depth) {</span>
-<span class="fc" id="L293">            Decision dec = new Decision(k, solution[k]);</span>
-<span class="fc" id="L294">            sum += problem.transitionCost(state, dec);</span>
-<span class="fc" id="L295">            state = problem.transition(state, dec);</span>
-<span class="fc" id="L296">            k++;</span>
-<span class="fc" id="L297">        }</span>
-<span class="fc" id="L298">        return sum;</span>
+<span class="fc" id="L288">        double sum = problem.initialValue();</span>
+<span class="fc" id="L289">        T state = problem.initialState();</span>
+<span class="fc" id="L290">        int k = 0;</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">        while (k &lt; depth) {</span>
+<span class="fc" id="L292">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="fc" id="L293">            sum += problem.transitionCost(state, dec);</span>
+<span class="fc" id="L294">            state = problem.transition(state, dec);</span>
+<span class="fc" id="L295">            k++;</span>
+<span class="fc" id="L296">        }</span>
+<span class="fc" id="L297">        return sum;</span>
     }
 
 
@@ -307,14 +306,14 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @return state reached at the requested depth
      */
     private T stateInSolutionAtDepth(int[] solution, int depth) {
-<span class="nc" id="L310">        T state = problem.initialState();</span>
-<span class="nc" id="L311">        int k = 0;</span>
-<span class="nc bnc" id="L312" title="All 2 branches missed.">        while (k &lt; depth) {</span>
-<span class="nc" id="L313">            Decision dec = new Decision(k, solution[k]);</span>
-<span class="nc" id="L314">            state = problem.transition(state, dec);</span>
-<span class="nc" id="L315">            k++;</span>
-<span class="nc" id="L316">        }</span>
-<span class="nc" id="L317">        return state;</span>
+<span class="nc" id="L309">        T state = problem.initialState();</span>
+<span class="nc" id="L310">        int k = 0;</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        while (k &lt; depth) {</span>
+<span class="nc" id="L312">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="nc" id="L313">            state = problem.transition(state, dec);</span>
+<span class="nc" id="L314">            k++;</span>
+<span class="nc" id="L315">        }</span>
+<span class="nc" id="L316">        return state;</span>
     }
 
     /**
@@ -328,28 +327,28 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      */
     private CompilationConfig&lt;T&gt; configureCompilation(CompilationType type, SubProblem&lt;T&gt; sub,
                                                       int maxWidth, boolean exportAsDot) {
-<span class="fc" id="L331">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
-<span class="fc" id="L332">        compilation.compilationType = type;</span>
-<span class="fc" id="L333">        compilation.problem = model.problem();</span>
-<span class="fc" id="L334">        compilation.variableHeuristic = model.variableHeuristic();</span>
-<span class="fc" id="L335">        compilation.stateRanking = model.ranking();</span>
-<span class="fc" id="L336">        compilation.residual = sub;</span>
-<span class="fc" id="L337">        compilation.maxWidth = maxWidth;</span>
-<span class="fc" id="L338">        compilation.flb = model.lowerBound();</span>
-<span class="fc" id="L339">        compilation.dominance = model.dominance();</span>
-<span class="fc" id="L340">        compilation.bestUB = this.bestUB;</span>
-<span class="fc" id="L341">        compilation.exportAsDot = exportAsDot;</span>
-<span class="fc" id="L342">        compilation.debugLevel = model.debugMode();</span>
-<span class="fc" id="L343">        compilation.reductionStrategy = model.restrictStrategy();</span>
-<span class="fc" id="L344">        compilation.initialSolution = model.initialSolution();</span>
-<span class="fc" id="L345">        compilation.probability = model.probability();</span>
-<span class="fc" id="L346">        compilation.useLNS = model.useLNS();</span>
-<span class="fc bfc" id="L347" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
-<span class="fc" id="L348">            compilation.solution = constructSolution(bestSol.get());</span>
+<span class="fc" id="L330">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="fc" id="L331">        compilation.compilationType = type;</span>
+<span class="fc" id="L332">        compilation.problem = model.problem();</span>
+<span class="fc" id="L333">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="fc" id="L334">        compilation.stateRanking = model.ranking();</span>
+<span class="fc" id="L335">        compilation.residual = sub;</span>
+<span class="fc" id="L336">        compilation.maxWidth = maxWidth;</span>
+<span class="fc" id="L337">        compilation.flb = model.lowerBound();</span>
+<span class="fc" id="L338">        compilation.dominance = model.dominance();</span>
+<span class="fc" id="L339">        compilation.bestUB = this.bestUB;</span>
+<span class="fc" id="L340">        compilation.exportAsDot = exportAsDot;</span>
+<span class="fc" id="L341">        compilation.debugLevel = model.debugMode();</span>
+<span class="fc" id="L342">        compilation.reductionStrategy = model.restrictStrategy();</span>
+<span class="fc" id="L343">        compilation.initialSolution = model.initialSolution();</span>
+<span class="fc" id="L344">        compilation.probability = model.probability();</span>
+<span class="fc" id="L345">        compilation.useLNS = model.useLNS();</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
+<span class="fc" id="L347">            compilation.solution = constructSolution(bestSol.get());</span>
         } else {
-<span class="fc" id="L350">            compilation.solution = model.initialSolution();</span>
+<span class="fc" id="L349">            compilation.solution = model.initialSolution();</span>
         }
-<span class="fc" id="L352">        return compilation;</span>
+<span class="fc" id="L351">        return compilation;</span>
     }
 
     /**
@@ -364,15 +363,15 @@ public final class LNSSolver&lt;T&gt; implements Solver {
      * @return relative gap percentage
      */
     private double computeGap(double upperBound, double lowerBound) {
-<span class="fc bfc" id="L367" title="All 2 branches covered.">        if (Double.isInfinite(upperBound)) {</span>
-<span class="fc" id="L368">            return Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">        if (Double.isInfinite(upperBound)) {</span>
+<span class="fc" id="L367">            return Double.POSITIVE_INFINITY;</span>
         }
-<span class="fc" id="L370">        double numerator = Math.abs(upperBound - lowerBound);</span>
-<span class="fc" id="L371">        double denominator = Math.abs(upperBound);</span>
-<span class="fc bfc" id="L372" title="All 2 branches covered.">        if (denominator == 0.0) {</span>
-<span class="pc bpc" id="L373" title="1 of 2 branches missed.">            return numerator == 0.0 ? 0.0 : Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L369">        double numerator = Math.abs(upperBound - lowerBound);</span>
+<span class="fc" id="L370">        double denominator = Math.abs(upperBound);</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        if (denominator == 0.0) {</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">            return numerator == 0.0 ? 0.0 : Double.POSITIVE_INFINITY;</span>
         }
-<span class="fc" id="L375">        return 100.0 * numerator / denominator;</span>
+<span class="fc" id="L374">        return 100.0 * numerator / denominator;</span>
     }
 
 

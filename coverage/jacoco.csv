@@ -1,32 +1,14 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AwAstarModel.new AwAstarModel() {...},36,0,0,0,8,0,8,0,8,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,InvalidSolutionException,4,0,0,0,2,0,1,0,1,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AwAstarModel,6,2,0,0,1,1,1,1,1,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Problem,2,0,0,0,1,0,1,0,1,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AcsModel.new AcsModel() {...},0,30,0,0,0,7,0,7,0,7
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AcsModel.new AcsModel() {...},30,0,0,0,7,0,7,0,7,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AcsModel.new AcsModel() {...},0,36,0,0,0,8,0,8,0,8
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel,16,57,0,0,4,11,5,14,5,14
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DefaultFastLowerBound,0,10,0,2,0,3,0,3,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Model,5,23,0,0,1,7,1,7,1,7
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Model.new Model() {...},0,26,0,0,0,6,0,6,0,6
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Model.new Model() {...},26,0,0,0,6,0,6,0,6,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,LnsModel.new LnsModel() {...},52,0,0,0,12,0,12,0,12,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,LnsModel.new LnsModel() {...},56,0,0,0,13,0,13,0,13,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,LnsModel.new LnsModel() {...},51,0,0,0,11,0,11,0,11,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new DdoModel() {...},4,59,0,0,1,13,1,13,1,13
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new DdoModel() {...},4,50,0,0,1,12,1,12,1,12
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new DdoModel() {...},59,0,0,0,14,0,14,0,14,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new DdoModel() {...},4,61,0,0,1,13,1,13,1,13
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new DdoModel() {...},4,56,0,0,1,13,1,13,1,13
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,DdoModel.new ExactModel() {...},34,0,0,0,8,0,8,0,8,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,ExactModel,18,13,0,0,6,4,6,4,6,4
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Solvers,122,107,0,0,27,18,34,26,34,26
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,ExactModel.DummyRelaxation,4,0,0,0,2,0,2,0,2,0
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,Solvers,114,115,0,0,25,20,31,29,31,29
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,LnsModel,31,15,0,0,6,5,8,6,8,6
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.modeling,AcsModel,5,13,0,0,1,3,1,3,1,3
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.solver,RelaxationSolver,251,0,10,0,57,0,13,0,8,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.solver,RestrictionSolver,265,0,12,0,61,0,14,0,8,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.solver,SequentialSolver,100,575,26,50,17,127,20,29,2,9
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.solver,ExactSolver,57,201,2,6,11,48,4,7,2,5
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.srflp,SRFLPProblem,70,620,9,47,11,100,7,38,1,16
@@ -116,14 +98,11 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,LinkedDecisionDiagram.
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,NodeType,0,15,0,0,0,3,0,1,0,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,NodeSubProblemsAsSubProblemsIterator,0,21,0,0,0,6,0,3,0,3
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,NodeSubProblemsAsStateIterator,0,16,0,0,0,5,0,3,0,3
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,NodeSubProblem,32,79,1,5,2,18,2,6,1,4
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,LinkedDecisionDiagram,49,3214,25,300,10,592,26,181,1,43
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,NodeSubProblem,35,76,1,5,3,17,3,5,2,3
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,LinkedDecisionDiagram,209,3054,35,290,40,562,33,174,3,41
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,LinkedDecisionDiagram.PathInfo,0,12,0,0,0,1,0,1,0,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,Node,26,45,0,0,2,14,1,3,1,3
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.mdd,Edge,21,12,0,0,1,5,1,1,1,1
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.verbosity,VerboseMode,136,39,9,5,27,12,8,4,1,4
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.verbosity,VerboseMode.NonClosingPrintWriter,5,0,0,0,3,0,2,0,2,0
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.verbosity,VerbosityLevel,0,27,0,0,0,5,0,1,0,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.msct,MSCTRanking,0,9,0,0,0,2,0,2,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.msct,MSCTDominance,0,21,0,4,0,5,0,5,0,3
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.msct,MSCTFastLowerBound,0,42,0,2,0,8,0,3,0,2
@@ -170,7 +149,7 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsptw,TimeWindow,0,9,0,0,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsptw,TSPTWDominanceKey,15,9,0,0,1,1,1,1,1,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsptw,TSPTWDominance,0,20,0,2,0,3,0,4,0,3
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.debug,DebugLevel,0,21,0,0,0,4,0,1,0,1
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.debug,DebugUtil,104,123,5,7,23,21,7,6,3,4
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.debug,DebugUtil,49,178,4,8,12,32,5,8,2,5
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.compilation,CompilationConfig,20,148,0,0,1,42,1,2,1,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.compilation,CompilationType,0,21,0,0,0,4,0,1,0,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.ddo.core.cache,SimpleCache.Layer,22,94,1,5,5,21,3,6,2,4
@@ -194,9 +173,7 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsp,TSPRelax,0,44,0,2,0,12
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsp,TSPState,0,76,0,6,0,14,0,8,0,5
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsp,TSPFastLowerBound,0,111,0,12,0,20,0,8,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.tsp,TSPRanking,0,5,0,0,0,2,0,2,0,2
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,ArraysUtil,35,0,2,0,7,0,3,0,2,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,TSPLowerBound,3,138,1,17,1,34,2,11,1,3
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,PrettyPrint,90,0,6,0,12,0,5,0,2,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,DistanceUtil,178,0,14,0,38,0,14,0,7,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,SolverUtil,3,20,0,2,1,4,1,2,1,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util,StateAndDepth,0,9,0,0,0,1,0,1,0,1
@@ -226,8 +203,6 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.smic,SMICProblem,102,352,4
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.smic,SMICGenrator,341,0,40,0,57,0,22,0,2,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.smic,SMICFastLowerBound,0,58,1,5,0,12,1,4,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.smic,SMICDominanceKey,5,6,0,0,1,1,1,1,1,1
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.io,InputReader,233,51,33,5,57,13,23,4,6,2
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.util.io,SolutionPrinter,15,0,0,0,5,0,2,0,2,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.common.dominance,DominanceChecker,0,6,0,0,0,3,0,1,0,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.common.dominance,DefaultDominanceChecker,0,8,0,0,0,3,0,2,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.common.dominance,SimpleDominanceChecker,0,132,0,18,0,25,0,12,0,3
@@ -235,4 +210,4 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.common.dominance,SimpleDominanceChe
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.common.dominance,DefaultDominanceChecker.new Dominance() {...},4,3,0,0,2,1,2,1,2,1
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.astar.core.solver,AStarSolver,22,721,8,52,3,131,8,33,0,11
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.astar.core.solver,AStarSolver.new Model() {...},0,18,0,0,0,4,0,4,0,4
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.lns.core.solver,LNSSolver,118,633,26,42,25,146,23,23,3,9
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.lns.core.solver,LNSSolver,128,623,26,42,26,144,22,24,3,9

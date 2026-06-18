@@ -124,27 +124,27 @@ public interface Model&lt;T&gt; {
 <span class="fc" id="L124">        return new Model&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="fc" id="L127">                return Model.this.problem();</span>
+                return Model.this.problem();
             }
 
             @Override
             public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L132">                return Model.this.lowerBound();</span>
+                return Model.this.lowerBound();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L137">                return Model.this.variableHeuristic();</span>
+                return Model.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="fc" id="L142">                return Model.this.verbosityLevel();</span>
+                return Model.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="fc" id="L147">                return Model.this.debugMode();</span>
+                return Model.this.debugMode();
             }
         };
     }
@@ -158,27 +158,27 @@ public interface Model&lt;T&gt; {
 <span class="nc" id="L158">        return new Model&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
-<span class="nc" id="L161">                return Model.this.problem();</span>
+                return Model.this.problem();
             }
 
             @Override
             public DominanceChecker&lt;T&gt; dominance() {
-<span class="nc" id="L166">                return Model.this.dominance();</span>
+                return Model.this.dominance();
             }
 
             @Override
             public VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="nc" id="L171">                return Model.this.variableHeuristic();</span>
+                return Model.this.variableHeuristic();
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L176">                return Model.this.verbosityLevel();</span>
+                return Model.this.verbosityLevel();
             }
 
             @Override
             public DebugLevel debugMode() {
-<span class="nc" id="L181">                return Model.this.debugMode();</span>
+                return Model.this.debugMode();
             }
         };
 

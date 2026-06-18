@@ -577,26 +577,26 @@ public final class LinkedDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;
      * @param maxWidth the maximum tolerated layer width
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator&lt;T&gt; ranking, final ReductionStrategy&lt;T&gt; restrictStrategy, int depth) {
-<span class="fc bfc" id="L580" title="All 4 branches covered.">        if (config.useLNS &amp;&amp; config.solution != null) {</span>
-<span class="fc" id="L581">            List&lt;NodeSubProblem&lt;T&gt;&gt; layer = new ArrayList&lt;&gt;(currentLayer);</span>
-<span class="fc" id="L582">            currentLayer.clear();</span>
-<span class="fc" id="L583">            int frontier = 0;</span>
-<span class="fc" id="L584">            Random random = new Random();</span>
-<span class="fc bfc" id="L585" title="All 2 branches covered.">            for (int k = 0; k &lt; layer.size(); k++) {</span>
-<span class="fc bfc" id="L586" title="All 4 branches covered.">                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() &lt; config.probability) {</span>
-<span class="fc" id="L587">                    swap(layer, frontier, k);</span>
-<span class="fc" id="L588">                    frontier++;</span>
+<span class="pc bpc" id="L580" title="1 of 4 branches missed.">        if (config.useLNS &amp;&amp; config.solution != null) {</span>
+<span class="nc" id="L581">            List&lt;NodeSubProblem&lt;T&gt;&gt; layer = new ArrayList&lt;&gt;(currentLayer);</span>
+<span class="nc" id="L582">            currentLayer.clear();</span>
+<span class="nc" id="L583">            int frontier = 0;</span>
+<span class="nc" id="L584">            Random random = new Random();</span>
+<span class="nc bnc" id="L585" title="All 2 branches missed.">            for (int k = 0; k &lt; layer.size(); k++) {</span>
+<span class="nc bnc" id="L586" title="All 4 branches missed.">                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() &lt; config.probability) {</span>
+<span class="nc" id="L587">                    swap(layer, frontier, k);</span>
+<span class="nc" id="L588">                    frontier++;</span>
                 }
             }
-<span class="fc" id="L591">            List&lt;NodeSubProblem&lt;T&gt;&gt; keep = new ArrayList&lt;&gt;(layer.subList(0, frontier));</span>
-<span class="fc" id="L592">            List&lt;NodeSubProblem&lt;T&gt;&gt; candidates = new ArrayList&lt;&gt;(layer.subList(frontier, layer.size()));</span>
-<span class="pc bpc" id="L593" title="1 of 2 branches missed.">            if (keep.size() + candidates.size() &gt; maxWidth) {</span>
-<span class="fc" id="L594">                candidates.sort(Comparator.comparing(NodeSubProblem&lt;T&gt;::getLb));</span>
-<span class="fc" id="L595">                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();</span>
+<span class="nc" id="L591">            List&lt;NodeSubProblem&lt;T&gt;&gt; keep = new ArrayList&lt;&gt;(layer.subList(0, frontier));</span>
+<span class="nc" id="L592">            List&lt;NodeSubProblem&lt;T&gt;&gt; candidates = new ArrayList&lt;&gt;(layer.subList(frontier, layer.size()));</span>
+<span class="nc bnc" id="L593" title="All 2 branches missed.">            if (keep.size() + candidates.size() &gt; maxWidth) {</span>
+<span class="nc" id="L594">                candidates.sort(Comparator.comparing(NodeSubProblem&lt;T&gt;::getLb));</span>
+<span class="nc" id="L595">                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();</span>
             }
-<span class="fc" id="L597">            keep.addAll(candidates);</span>
-<span class="fc" id="L598">            currentLayer.addAll(keep);</span>
-<span class="fc" id="L599">        } else {</span>
+<span class="nc" id="L597">            keep.addAll(candidates);</span>
+<span class="nc" id="L598">            currentLayer.addAll(keep);</span>
+<span class="nc" id="L599">        } else {</span>
 <span class="fc" id="L600">            List&lt;NodeSubProblem&lt;T&gt;&gt;[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);</span>
 <span class="fc" id="L601">            currentLayer.clear();</span>
 
@@ -619,10 +619,10 @@ public final class LinkedDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;
      * @param k     the index of the second element
      */
     private void swap(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int f, int k) {
-<span class="fc" id="L622">        NodeSubProblem&lt;T&gt; temp = layer.get(f);</span>
-<span class="fc" id="L623">        layer.set(f, layer.get(k));</span>
-<span class="fc" id="L624">        layer.set(k, temp);</span>
-<span class="fc" id="L625">    }</span>
+<span class="nc" id="L622">        NodeSubProblem&lt;T&gt; temp = layer.get(f);</span>
+<span class="nc" id="L623">        layer.set(f, layer.get(k));</span>
+<span class="nc" id="L624">        layer.set(k, temp);</span>
+<span class="nc" id="L625">    }</span>
 
     /**
      * Computes the cumulative cost of a solution up to a given depth.
@@ -632,16 +632,16 @@ public final class LinkedDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;
      * @return the cumulative cost
      */
     private double costInSolutionAtDepth(int[] solution, int depth) {
-<span class="fc" id="L635">        double sum = config.problem.initialValue();</span>
-<span class="fc" id="L636">        T state = config.problem.initialState();</span>
-<span class="fc" id="L637">        int k = 0;</span>
-<span class="fc bfc" id="L638" title="All 2 branches covered.">        while (k &lt; depth) {</span>
-<span class="fc" id="L639">            Decision dec = new Decision(k, solution[k]);</span>
-<span class="fc" id="L640">            sum += config.problem.transitionCost(state, dec);</span>
-<span class="fc" id="L641">            state = config.problem.transition(state, dec);</span>
-<span class="fc" id="L642">            k++;</span>
-<span class="fc" id="L643">        }</span>
-<span class="fc" id="L644">        return sum;</span>
+<span class="nc" id="L635">        double sum = config.problem.initialValue();</span>
+<span class="nc" id="L636">        T state = config.problem.initialState();</span>
+<span class="nc" id="L637">        int k = 0;</span>
+<span class="nc bnc" id="L638" title="All 2 branches missed.">        while (k &lt; depth) {</span>
+<span class="nc" id="L639">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="nc" id="L640">            sum += config.problem.transitionCost(state, dec);</span>
+<span class="nc" id="L641">            state = config.problem.transition(state, dec);</span>
+<span class="nc" id="L642">            k++;</span>
+<span class="nc" id="L643">        }</span>
+<span class="nc" id="L644">        return sum;</span>
     }
 
 
