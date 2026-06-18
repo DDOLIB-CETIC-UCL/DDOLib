@@ -12,13 +12,14 @@ jobs:
         maven: [ '3.8.5' ]
         java: [ '21' ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Maven
         uses: s4u/setup-maven-action@v1.18.0
         with:
           java-version: ${{ matrix.java }}
           maven-version: ${{ matrix.maven }}
+          checkout-enabled: false
 
       - name: Clean and Compile
         run: mvn clean compile
