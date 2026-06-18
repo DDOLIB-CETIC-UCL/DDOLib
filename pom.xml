@@ -134,9 +134,15 @@
                 <version>0.8.13</version>
                 <configuration>
                     <excludes>
+                        <exclude>org/ddolib/util/io/*</exclude>
+                        <exclude>org/ddolib/util/verbosity/*</exclude>
                         <exclude>**/*Main.class</exclude>
                         <exclude>**/*Main$*.class</exclude>
                         <exclude>**/*Generator.class</exclude>
+                        <exclude>**/modeling/*Model$*.class</exclude>
+                        <exclude>org/ddolib/ddo/core/solver/RelaxationSolver.class</exclude>
+                        <exclude>org/ddolib/ddo/core/solver/RestrictionSolver.class</exclude>
+                        <exclude>org/ddolib/util/PrettyPrint.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
