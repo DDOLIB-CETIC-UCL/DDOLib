@@ -1,7 +1,7 @@
 [![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
 [![Userguide](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/userguide.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)
 ![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
-![Coverage](https://raw.githubusercontent.com/DDOLIB-CETIC-UCL/DDOLib/main/.github/badges/jacoco.svg)
+![Coverage](https://raw.githubusercontent.com/DDOLIB-CETIC-UCL/DDOLib/264-imporve-test-coverage/.github/badges/jacoco.svg)
 
 # DDOLib
 
