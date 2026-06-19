@@ -8,7 +8,7 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.solving.ddo.core.SubProblem;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.modeling.layered.AcsModel;
 import org.ddolib.modeling.layered.DefaultFastLowerBound;
 import org.ddolib.modeling.layered.FastLowerBound;

@@ -1,4 +1,4 @@
-package org.ddolib.solving.ddo.core.heuristics.cluster;
+package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
@@ -22,19 +22,19 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Unit tests for evaluating Generalized Hyperplane Partitioning (GHP) clustering
- * on Knapsack problems (KSProblem) using Decision Diagram Optimization (DDO).
+ * Unit tests for evaluating the Hybrid reduction strategy on Knapsack problems (KSProblem)
+ * using Decision Diagram Optimization (DDO).
  *
  * <p>
  * This test class compares the optimal solutions obtained using two different
  * reduction strategies:
  * <ul>
  *   <li>Cost-based clustering</li>
- *   <li>GHP (Generalized Hyperplane Partitioning) clustering</li>
+ *   <li>Hybrid clustering (combining cost-based and distance-based GHP methods)</li>
  * </ul>
  *
  * <p>
- * The tests verify that the GHP-based clustering produces solutions equivalent
+ * The tests ensure that the Hybrid strategy produces solutions equivalent
  * to the cost-based method across a range of knapsack instances, layer widths,
  * and cut set types.
  *
@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * {@link org.junit.jupiter.params.provider.MethodSource} for generating test
  * instances.
  */
-public class KSGHPTest {
+public class KSHybridTest {
     /**
      * Generates a stream of KSProblem instances for testing.
      *
@@ -52,7 +52,7 @@ public class KSGHPTest {
      * and a fixed knapsack capacity.
      *
      * @return a stream of {@link KSProblem} instances
-     * @throws IOException if any IO error occurs (not expected here)
+     * @throws IOException if any I/O error occurs (not expected here)
      */
     static Stream<KSProblem> dataProvider() throws IOException {
         Random rand = new Random(10);
@@ -139,14 +139,18 @@ public class KSGHPTest {
     }
 
     /**
-     * Computes the optimal solution using GHP clustering strategy.
+     * Computes the optimal solution using the Hybrid clustering strategy.
+     *
+     * <p>
+     * The Hybrid strategy combines cost-based ranking and distance-based GHP
+     * clustering to reduce the width of the decision diagram.
      *
      * @param problem    the knapsack problem instance
      * @param w          the maximum width of the decision diagram
      * @param cutSetType the type of cut set used in frontier-based DDO
      * @return the optimal objective value
      */
-    private double optimalSolutionGHPClustering(KSProblem problem, int w, CutSetType cutSetType) {
+    private double optimalSolutionHybridClustering(KSProblem problem, int w, CutSetType cutSetType) {
         final DdoModel<Integer> model = new DdoModel<>() {
             ;
 
@@ -197,12 +201,12 @@ public class KSGHPTest {
 
             @Override
             public ReductionStrategy<Integer> relaxStrategy() {
-                return new GHP<>(new KSDistance(problem));
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
 
             @Override
             public ReductionStrategy<Integer> restrictStrategy() {
-                return new GHP<>(new KSDistance(problem));
+                return new Hybrid<>(new KSRanking(), new KSDistance(problem));
             }
         };
 
@@ -212,12 +216,12 @@ public class KSGHPTest {
     }
 
     /**
-     * Parameterized test that compares the solutions obtained with GHP clustering
+     * Parameterized test that compares the solutions obtained with Hybrid clustering
      * against cost-based clustering for each test problem instance.
      *
      * <p>
      * The test iterates over different layer widths and cut set types, asserting
-     * that GHP clustering produces the same optimal value as cost-based clustering.
+     * that the Hybrid strategy produces the same optimal value as cost-based clustering.
      *
      * @param problem a knapsack problem instance from the data provider
      */
@@ -227,7 +231,7 @@ public class KSGHPTest {
         CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionGHPClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionHybridClustering(problem, wid, ct));
             }
         }
     }

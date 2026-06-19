@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.layered.DdoModel;

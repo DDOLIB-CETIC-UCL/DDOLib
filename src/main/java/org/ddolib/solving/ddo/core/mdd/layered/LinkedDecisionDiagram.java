@@ -1,13 +1,14 @@
-package org.ddolib.solving.ddo.core.mdd;
+package org.ddolib.solving.ddo.core.mdd.layered;
 
+import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.solving.ddo.core.SubProblem;
 import org.ddolib.solving.ddo.core.cache.SimpleCache;
 import org.ddolib.solving.ddo.core.cache.Threshold;
-import org.ddolib.solving.ddo.core.compilation.CompilationConfig;
+import org.ddolib.solving.ddo.core.compilation.layered.CompilationConfig;
 import org.ddolib.solving.ddo.core.compilation.CompilationType;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
-import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
 import org.ddolib.modeling.layered.FastLowerBound;
 import org.ddolib.modeling.layered.Problem;
 import org.ddolib.modeling.layered.Relaxation;

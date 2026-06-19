@@ -1,10 +1,10 @@
 package org.ddolib.modeling.layered;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.solving.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.util.debug.DebugLevel;

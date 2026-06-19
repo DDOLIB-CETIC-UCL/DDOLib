@@ -14,13 +14,13 @@ public final class TSPTWAStarMain {
         final TSPTWModel model = new TSPTWModel(problem);
 
         org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<TSPTWState> solver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(model);
+                
+                
 
         Solution bestSolution = solver.minimize(
                 stats -> false,
                 (sol, stats) -> {
-                    SolutionPrinter.printSolution(stats, sol);
-                }
-        );
+                         });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

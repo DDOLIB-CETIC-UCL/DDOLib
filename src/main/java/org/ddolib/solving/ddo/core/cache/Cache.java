@@ -1,7 +1,6 @@
 package org.ddolib.solving.ddo.core.cache;
 
 import org.ddolib.solving.ddo.core.SubProblem;
-import org.ddolib.modeling.layered.Problem;
 
 import java.util.Optional;
 
@@ -70,9 +69,9 @@ public interface Cache<T> {
      * given problem states and layers.
      * </p>
      *
-     * @param problem the problem instance for which the cache will be used
+     * 
      */
-    void initialize(final Problem<T> problem);
+    void initialize();
 
     /**
      * Retrieves the cache layer associated with the specified depth.

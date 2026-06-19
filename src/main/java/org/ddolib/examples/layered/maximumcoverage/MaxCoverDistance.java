@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
-import org.ddolib.solving.ddo.core.mdd.NodeSubProblem;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
 import static org.ddolib.util.DistanceUtil.weightedJaccardDistance;
 import static org.ddolib.util.DistanceUtil.symmetricDifferenceDistance;
 

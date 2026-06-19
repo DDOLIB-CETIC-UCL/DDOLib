@@ -1,6 +1,5 @@
 package org.ddolib.solving.ddo.core.cache;
 
-import org.ddolib.modeling.layered.Problem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +36,12 @@ public class SimpleCache<T> implements Cache<T> {
      * @param problem the problem for which the cache is initialized
      */
     @Override
-    public void initialize(Problem<T> problem) {
-        int nbVariables = problem.nbVars();
-        for (int i = 0; i < nbVariables; i++) {
+    public void initialize() {
+        thresholdsByLayer.clear();
+    }
+
+    private void ensureCapacity(int depth) {
+        while (thresholdsByLayer.size() <= depth) {
             thresholdsByLayer.add(new Layer<T>());
         }
     }
@@ -52,6 +54,7 @@ public class SimpleCache<T> implements Cache<T> {
      */
     @Override
     public SimpleCache.Layer<T> getLayer(int depth) {
+        ensureCapacity(depth);
         return thresholdsByLayer.get(depth);
     }
 
@@ -64,6 +67,7 @@ public class SimpleCache<T> implements Cache<T> {
      */
     @Override
     public Optional<Threshold> getThreshold(T state, int depth) {
+        if (depth >= thresholdsByLayer.size()) return Optional.empty();
         for (T s : thresholdsByLayer.get(depth).map.keySet()) {
             if (s.equals(state)) {
                 return Optional.of(thresholdsByLayer.get(depth).map.get(s));
@@ -83,7 +87,7 @@ public class SimpleCache<T> implements Cache<T> {
      */
     @Override
     public void updateThreshold(T state, int depth, Threshold threshold) {
-        if (depth >= thresholdsByLayer.size()) return;
+        ensureCapacity(depth);
         thresholdsByLayer.get(depth).update(state, threshold);
     }
 
@@ -94,7 +98,9 @@ public class SimpleCache<T> implements Cache<T> {
      */
     @Override
     public void clearLayer(int depth) {
-        thresholdsByLayer.get(depth).clear();
+        if (depth < thresholdsByLayer.size()) {
+            thresholdsByLayer.get(depth).clear();
+        }
     }
 
     /**
@@ -103,9 +109,9 @@ public class SimpleCache<T> implements Cache<T> {
      * @param nbVariables number of layers to clear
      */
     @Override
-    public void clear(int nbVariables) {
-        for (int depth = 0; depth < nbVariables; depth++) {
-            thresholdsByLayer.get(depth).clear();
+    public void clear(int depth) {
+        for (int d = 0; d < Math.min(depth, thresholdsByLayer.size()); d++) {
+            thresholdsByLayer.get(d).clear();
         }
     }
 

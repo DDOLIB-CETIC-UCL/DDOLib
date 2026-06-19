@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
 import static org.ddolib.util.DistanceUtil.euclideanDistance;
 
 import static java.lang.Math.pow;

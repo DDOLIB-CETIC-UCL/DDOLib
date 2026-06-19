@@ -1,4 +1,4 @@
-package org.ddolib.solving.ddo.core.heuristics.variable;
+package org.ddolib.solving.ddo.core.heuristics.variable.layered;
 
 import java.util.Iterator;
 import java.util.Set;

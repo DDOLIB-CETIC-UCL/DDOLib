@@ -22,7 +22,7 @@ public class Threshold implements Comparable<Threshold> {
      * @param value the numeric threshold value
      * @param explored true if the state is explored, false otherwise
      */
-    public Threshold(int value, boolean explored) {
+    public Threshold(double value, boolean explored) {
         this.value = value;
         this.explored = explored;
     }

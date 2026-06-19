@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
 /**
  * Distance measure for states in a Knapsack (KS) problem.
  *

@@ -1,6 +1,6 @@
-package org.ddolib.solving.ddo.core.heuristics.cluster;
+package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
 
-import org.ddolib.solving.ddo.core.mdd.NodeSubProblem;
+import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
 import org.ddolib.examples.layered.maximumcoverage.MaxCoverState;
 
 /**

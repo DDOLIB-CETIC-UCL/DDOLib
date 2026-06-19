@@ -9,14 +9,14 @@ import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.solving.ddo.core.SubProblem;
 import org.ddolib.solving.ddo.core.cache.SimpleCache;
-import org.ddolib.solving.ddo.core.compilation.CompilationConfig;
+import org.ddolib.solving.ddo.core.compilation.layered.CompilationConfig;
 import org.ddolib.solving.ddo.core.compilation.CompilationType;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
 import org.ddolib.solving.ddo.core.frontier.Frontier;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
-import org.ddolib.solving.ddo.core.mdd.LinkedDecisionDiagram;
+import org.ddolib.solving.ddo.core.mdd.layered.LinkedDecisionDiagram;
 import org.ddolib.modeling.layered.*;
 import org.ddolib.util.verbosity.VerboseMode;
 import org.ddolib.util.verbosity.VerbosityLevel;
@@ -182,7 +182,7 @@ public final class SequentialSolver<T> implements Solver {
 
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.push(root());
-        cache.ifPresent(c -> c.initialize(problem));
+        cache.ifPresent(c -> c.initialize());
 
         while (!frontier.isEmpty()) {
             verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,

@@ -1,4 +1,4 @@
-package org.ddolib.solving.ddo.core.mdd;
+package org.ddolib.solving.ddo.core.mdd.layered;
 
 /**
  * Enum representing the different types of nodes in the decision diagram.

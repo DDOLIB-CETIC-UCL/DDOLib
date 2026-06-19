@@ -1,11 +1,12 @@
-package org.ddolib.solving.ddo.core.compilation;
+package org.ddolib.solving.ddo.core.compilation.layered;
 
+import org.ddolib.solving.ddo.core.compilation.CompilationType;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.solving.ddo.core.SubProblem;
 import org.ddolib.solving.ddo.core.cache.SimpleCache;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
-import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.modeling.layered.*;
 import org.ddolib.util.debug.DebugLevel;
 

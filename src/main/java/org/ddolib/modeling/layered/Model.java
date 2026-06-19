@@ -2,8 +2,8 @@ package org.ddolib.modeling.layered;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.solving.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.DefaultVariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerbosityLevel;
 

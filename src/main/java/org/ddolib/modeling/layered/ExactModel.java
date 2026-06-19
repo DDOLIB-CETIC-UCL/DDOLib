@@ -2,9 +2,9 @@ package org.ddolib.modeling.layered;
 
 import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.solving.ddo.core.frontier.Frontier;
-import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
-import org.ddolib.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 
 import java.util.Iterator;

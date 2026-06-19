@@ -1,4 +1,4 @@
-package org.ddolib.solving.ddo.core.mdd;
+package org.ddolib.solving.ddo.core.mdd.layered;
 
 import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
