@@ -26,12 +26,12 @@ public class TSPState {
     /**
      * Set of nodes that have not been visited yet.
      */
-    BitSet toVisit;
+    public BitSet toVisit;
 
     /**
      * Current node(s). Usually a singleton, but can be multiple in merged states.
      */
-    BitSet current;
+    public BitSet current;
     /**
      * Constructs a new TSPState.
      *
