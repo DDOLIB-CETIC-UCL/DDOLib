@@ -1,0 +1,69 @@
+package org.ddolib.modeling.nolayer;
+
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
+import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the core model interface for describing an optimization problem
+ * in the NoLayer API.
+ *
+ * @param <T> the type representing the state space of the problem
+ */
+public interface NoLayerModel<T> {
+
+    /**
+     * Returns the optimization problem instance associated with this model.
+     *
+     * @return the {@link NoLayerProblem} defining the structure, transitions,
+     * and objective function
+     */
+    NoLayerProblem<T> problem();
+
+    /**
+     * Returns a heuristic that estimates a lower bound on the objective value
+     * for a given state.
+     *
+     * @return the {@link NoLayerFastLowerBound} heuristic
+     */
+    default NoLayerFastLowerBound<T> lowerBound() {
+        return new DefaultNoLayerFastLowerBound<>();
+    }
+
+    /**
+     * Returns a precomputed upper bound on the optimal value.
+     *
+     * @return a precomputed upper bound on the optimal value
+     */
+    default double upperBound() {
+        return Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * Returns the dominance checker used to prune dominated states.
+     *
+     * @return the {@link NoLayerDominanceChecker} used for dominance testing
+     */
+    default NoLayerDominanceChecker<T> dominance() {
+        return new DefaultNoLayerDominanceChecker<>();
+    }
+
+    /**
+     * Returns the verbosity level of the solver when this model is executed.
+     *
+     * @return the desired {@link VerbosityLevel}
+     */
+    default VerbosityLevel verbosityLevel() {
+        return VerbosityLevel.SILENT;
+    }
+
+    /**
+     * Returns the debugging level.
+     *
+     * @return the {@link DebugLevel} controlling debug behavior
+     */
+    default DebugLevel debugMode() {
+        return DebugLevel.OFF;
+    }
+}
