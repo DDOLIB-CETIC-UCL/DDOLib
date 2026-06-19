@@ -122,7 +122,7 @@ public class MCPLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runtime() < 1000,
+                s -> s.runtime() > 1000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

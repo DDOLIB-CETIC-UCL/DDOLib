@@ -130,7 +130,7 @@ public class PDPLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runtime() < 10000,
+                s -> s.runtime() > 10000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

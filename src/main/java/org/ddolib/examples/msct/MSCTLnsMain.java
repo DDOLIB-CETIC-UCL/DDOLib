@@ -144,7 +144,7 @@ public class MSCTLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runtime() < 100,
+                s -> s.runtime() > 1000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }

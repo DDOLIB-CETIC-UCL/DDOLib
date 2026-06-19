@@ -141,7 +141,7 @@ public class KSLnsMain {
 
         Solution bestSolution = Solvers.minimizeLns(
                 model,
-                s -> s.runtime() < 30000,
+                s -> s.runtime() > 30000,
                 (sol, s) -> {
                     SolutionPrinter.printSolution(s, sol);
                 }
