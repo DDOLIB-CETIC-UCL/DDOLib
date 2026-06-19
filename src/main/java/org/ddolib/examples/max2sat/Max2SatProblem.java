@@ -77,18 +77,6 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     /**
-     * Constructs a MAX2SAT problem instance without specifying an optimal value.
-     *
-     * @param numVar  Number of decision variables.
-     * @param weights Map of binary clauses to their weights.
-     */
-    public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights) {
-        this.numVar = numVar;
-        this.weights = weights;
-        this.optimal = Optional.empty();
-    }
-
-    /**
      * Constructs a MAX2SAT problem instance from a file.
      * <p>
      * The file format:

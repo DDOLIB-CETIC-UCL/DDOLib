@@ -74,13 +74,6 @@ public class AstarStats extends SearchStatistics {
         return (AstarStats) super.updateFrontierMaxSize(frontierSize);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AstarStats incrementFrontierSize() {
-        return (AstarStats) super.incrementFrontierSize();
-    }
 
     /**
      * {@inheritDoc}
@@ -115,8 +108,8 @@ public class AstarStats extends SearchStatistics {
      * <p>
      * EMA is a type of moving average that places a greater weight on the most recent data points,
      * providing a smoothed trend of the ratio over time while remaining responsive to recent changes.
-     * By smoothing the data, it is less sensitive to extreme local variations—such as nodes with 
-     * zero or a sudden surge of selected children—resulting in a more stable and reliable indicator 
+     * By smoothing the data, it is less sensitive to extreme local variations—such as nodes with
+     * zero or a sudden surge of selected children—resulting in a more stable and reliable indicator
      * of the search efficiency.
      * The smoothing is performed with a default alpha factor of 0.05.
      * If no children were generated, the EMA is not modified to prevent division by zero.

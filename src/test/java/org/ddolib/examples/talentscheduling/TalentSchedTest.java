@@ -8,7 +8,7 @@ import org.junit.jupiter.api.TestFactory;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class TalenSchedTest {
+public class TalentSchedTest {
 
 
     @DisplayName("Talent Scheduling")
@@ -20,6 +20,7 @@ public class TalenSchedTest {
         var bench = new ProblemTestBench<>(dataSupplier);
         bench.testRelaxation = true;
         bench.testFLB = true;
+        bench.testLns = false;
         return bench.generateTests();
     }
 

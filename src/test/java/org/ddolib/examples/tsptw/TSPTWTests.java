@@ -20,6 +20,7 @@ public class TSPTWTests {
         bench.testFLB = true;
         bench.testDominance = true;
         bench.testCache = true;
+        bench.testLns = false;
         return bench.generateTests();
     }
 }

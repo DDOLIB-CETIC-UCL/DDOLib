@@ -97,14 +97,6 @@ public class DdoStats extends SearchStatistics {
      * {@inheritDoc}
      */
     @Override
-    public DdoStats incrementFrontierSize() {
-        return (DdoStats) super.incrementFrontierSize();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public DdoStats updateGap(double gap) {
         return (DdoStats) super.updateGap(gap);
     }
@@ -119,6 +111,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Returns the total number of nodes created in all compiled MDDs.
+     *
      * @return the total number of nodes
      */
     public long totalNodes() {
@@ -127,6 +120,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Returns the maximum depth reached during the search.
+     *
      * @return the maximum depth
      */
     public int maxExploredDepth() {
@@ -135,6 +129,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Returns the best (highest) global lower bound found so far.
+     *
      * @return the best lower bound
      */
     public double bestLowerBound() {
@@ -143,6 +138,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Returns the iteration during which the last lower bound improvement was found.
+     *
      * @return the last iteration of lower bound improvement
      */
     public int lastIterationOfLowerBoundImprovement() {
@@ -151,6 +147,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Updates the total number of nodes created.
+     *
      * @param nodes the number of nodes to add
      * @return a new DdoStats instance with updated totalNodes
      */
@@ -162,6 +159,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Updates the maximum depth reached.
+     *
      * @param depth the current depth
      * @return a new DdoStats instance with updated maxExploredDepth
      */
@@ -173,6 +171,7 @@ public class DdoStats extends SearchStatistics {
 
     /**
      * Updates the best lower bound and tracks its improvement iteration.
+     *
      * @param lb the new lower bound
      * @return a new DdoStats instance with updated bestLowerBound
      */

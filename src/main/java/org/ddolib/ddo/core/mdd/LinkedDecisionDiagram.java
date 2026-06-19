@@ -17,7 +17,8 @@ import org.ddolib.util.debug.DebugUtil;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -167,6 +168,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
 
     /**
      * Helper method to create a new node and increment the counter.
+     *
      * @param value the initial value of the node
      * @return the newly created node
      */
@@ -1122,15 +1124,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                             .collect(Collectors.joining("\n"));
                     failureMsg += "\n";
                     if (debugLevel == DebugLevel.EXTENDED) {
-                        String dot = exportAsDot();
-                        try (BufferedWriter bw =
-                                     new BufferedWriter(new FileWriter(Paths.get("output",
-                                             "failed.dot").toString()))) {
-                            bw.write(dot);
-                            failureMsg += "MDD saved in output/failed.dot\n";
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        failureMsg = finalizeErrorMsgAndExport(failureMsg);
                     }
 
                     throw new RuntimeException(failureMsg);
@@ -1209,19 +1203,27 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 failureMsg += "\n";
                 if (debugLevel == DebugLevel.EXTENDED) {
                     dotStr.append(generateDotStr(relaxedNode, false));
-                    String dot = exportAsDot();
-                    try (BufferedWriter bw =
-                                 new BufferedWriter(new FileWriter(Paths.get("output",
-                                         "failed.dot").toString()))) {
-                        bw.write(dot);
-                        failureMsg += "MDD saved in output/failed.dot\n";
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    failureMsg = finalizeErrorMsgAndExport(failureMsg);
                 }
                 throw new RuntimeException(failureMsg);
             }
         }
+    }
+
+    private String finalizeErrorMsgAndExport(String failureMsg) {
+        String dot = exportAsDot();
+        Path path = Path.of("output", "failed.dot");
+        try {
+            Files.createDirectories(path.getParent());
+            try (BufferedWriter bw =
+                         new BufferedWriter(new FileWriter(path.toFile()))) {
+                bw.write(dot);
+                failureMsg += "MDD saved in output/failed.dot\n";
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return failureMsg;
     }
 
     /**

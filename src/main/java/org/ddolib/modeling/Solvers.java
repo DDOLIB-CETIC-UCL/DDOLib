@@ -338,6 +338,7 @@ public class Solvers {
         return new ExactSolver<>(model).minimize(s -> false, onSolution);
     }
 
+
     /**
      * Runs a Large Neighborhood Search (LNS) on the specified model with a given
      * termination condition and a callback for each solution found.
@@ -352,7 +353,7 @@ public class Solvers {
      * @return the best {@link Solution} found during the search
      */
 
-    public static final <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         return new LNSSolver<>(model).minimize(limit, onSolution);
     }
 
@@ -363,13 +364,12 @@ public class Solvers {
      * Equivalent to calling {@link #minimizeLns(LnsModel, Predicate, BiConsumer)}
      * with {@code limit} always false and an empty callback.
      *
-     * @param <T>        the type of state used in the problem
-     * @param model      the {@link LnsModel} describing the problem and search heuristics
-     * @param onSolution a {@link BiConsumer} called for each solution found (can be ignored)
+     * @param <T>   the type of state used in the problem
+     * @param model the {@link LnsModel} describing the problem and search heuristics
      * @return the best {@link Solution} found during the search
      */
 
-    public static <T> Solution minimizeLns(LnsModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> Solution minimizeLns(LnsModel<T> model) {
         return minimizeLns(model, stats -> false, (sol, s) -> {
         });
     }

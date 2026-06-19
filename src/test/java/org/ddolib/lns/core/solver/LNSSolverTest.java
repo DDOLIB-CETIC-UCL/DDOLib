@@ -56,7 +56,7 @@ public class LNSSolverTest {
         };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
+        Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             int computedProfit = 0;
             int computedWeight = 0;
@@ -76,7 +76,7 @@ public class LNSSolverTest {
 
         for (int i = 1; i < statsList.size(); i++) {
             assertTrue(statsList.get(i).incumbent() < statsList.get(i - 1).incumbent());
-//            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
+            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
     }
@@ -119,7 +119,7 @@ public class LNSSolverTest {
         };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
+        Solvers.minimizeLns(model, s -> s.runtime() < 1000, (sol, s) -> {
             // verify that each found solution is valid and corresponds to its cost
             int computedProfit = 0;
             int computedWeight = 0;
@@ -139,7 +139,7 @@ public class LNSSolverTest {
 
         for (int i = 1; i < statsList.size(); i++) {
             assertTrue(statsList.get(i).incumbent() < statsList.get(i - 1).incumbent());
-//            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
+            assertTrue(statsList.get(i).gap() < statsList.get(i - 1).gap());
             assertTrue(statsList.get(i).nbIterations() > statsList.get(i - 1).nbIterations());
         }
     }
@@ -179,7 +179,7 @@ public class LNSSolverTest {
             }
         };
 
-        Solution finalSol = Solvers.minimizeLns(model, s -> s.nbIterations() <= 1, (sol, s) -> {
+        Solution finalSol = Solvers.minimizeLns(model, s -> s.nbIterations() > 1, (sol, s) -> {
         });
 
         assertEquals(0.0, finalSol.statistics().incumbent());

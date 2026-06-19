@@ -1,7 +1,7 @@
 [![Doc](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/javadoc.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/index.html)
 [![Userguide](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/userguide.yml/badge.svg)](https://ddolib-cetic-ucl.github.io/DDOLib/userguide/index.html)
 ![Test](https://github.com/DDOLIB-CETIC-UCL/DDOLib/actions/workflows/test.yml/badge.svg)
-<!-- ![Test coverage](https://raw.githubusercontent.com/<username>/<repository>/badges/badges/<branch>/badge.svg) -->
+[![Coverage](https://DDOLIB-CETIC-UCL.github.io/DDOLib/badges/jacoco.svg)](https://DDOLIB-CETIC-UCL.github.io/DDOLib/coverage/index.html)
 
 # DDOLib
 
@@ -20,6 +20,7 @@ DDOLib is published on [Maven Central](https://central.sonatype.com/artifact/io.
 Add the following to your `pom.xml`:
 
 ```xml
+
 <dependency>
     <groupId>io.github.ddolib-cetic-ucl</groupId>
     <artifactId>ddolib</artifactId>
@@ -38,7 +39,8 @@ INFORMS Journal on Computing.*
 
 Then the technique was improved in several papers that are also implemented in this project or will eventually be:
 
-* Alice Burlat, Roger Kameugne, Cristel Pelsser, Pierre Schaus (2026). *Clustering for Relaxed and Restricted Decision Diagram Bounds: When It Works and Why.*
+* Alice Burlat, Roger Kameugne, Cristel Pelsser, Pierre Schaus (2026). *Clustering for Relaxed and Restricted Decision
+  Diagram Bounds: When It Works and Why.*
   CPAIOR.
 * *Coppé, V., Gillard, X., & Schaus, P. (2024). Decision diagram-based branch-and-bound with caching for
   dominance and suboptimality detection. INFORMS Journal on Computing.*
@@ -215,6 +217,7 @@ public class KSRelax implements Relaxation<Integer> {
         }
         return capa;
     }
+
     /**
      * Relaxes the cost of an edge between states in the decision diagram.
      * <p>
@@ -295,7 +298,8 @@ We recommend using **IntelliJ IDEA** to develop and run the DDOLib project.
 
 3. **Running the tests**:
 
-   For the IntelliJ IDEA editor, take a look at our [wiki page](https://github.com/DDOLIB-CETIC-UCL/DDOLib/wiki/Conventions-for-tests) to learn about our tests
+   For the IntelliJ IDEA editor, take a look at
+   our [wiki page](https://github.com/DDOLIB-CETIC-UCL/DDOLib/wiki/Conventions-for-tests) to learn about our tests
    convention and
    how to configure your IDE properly.
 
