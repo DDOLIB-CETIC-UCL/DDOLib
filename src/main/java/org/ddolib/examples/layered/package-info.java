@@ -4,8 +4,8 @@
  * In the layered modeling API, a fixed number of variables (or layers) must be specified.
  * The solver explores the state space layer by layer, building paths from the root layer down
  * to a terminal layer (where the length of the path corresponds strictly to the pre-defined
- * number of variables). The solver expects a {@link org.ddolib.modeling.Model} which internally uses a 
- * {@link org.ddolib.modeling.Problem} defining the number of variables.
+ * number of variables). The solver expects a {@link org.ddolib.modeling.layered.Model} which internally uses a 
+ * {@link org.ddolib.modeling.layered.Problem} defining the number of variables.
  * </p>
  */
 package org.ddolib.examples.layered;

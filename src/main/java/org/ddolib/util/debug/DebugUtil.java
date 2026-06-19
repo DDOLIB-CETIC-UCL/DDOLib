@@ -61,7 +61,7 @@ public class DebugUtil {
     }
 
     /**
-     * Given a set of states check if the {@link org.ddolib.modeling.FastLowerBound} is
+     * Given a set of states check if the {@link org.ddolib.modeling.layered.FastLowerBound} is
      * admissible, i.e., whether the bound does not overestimate the path from the states to a
      * terminal node.
      * <p>

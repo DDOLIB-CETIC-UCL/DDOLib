@@ -11,7 +11,7 @@ package org.ddolib.util.verbosity;
  *
  * <p>
  * Typical usage involves selecting an appropriate verbosity level in the model
- * configuration (see {@link org.ddolib.modeling.Model#verbosityLevel()}), depending
+ * configuration (see {@link org.ddolib.modeling.layered.Model#verbosityLevel()}), depending
  * on whether the focus is on performance, debugging, or visualization of the search process.
  * </p>
  */

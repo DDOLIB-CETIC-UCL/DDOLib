@@ -12,7 +12,7 @@ package org.ddolib.util.debug;
  *
  * <p>
  * This configuration is typically set through the model definition
- * (see {@link org.ddolib.modeling.Model#debugMode()}), allowing
+ * (see {@link org.ddolib.modeling.layered.Model#debugMode()}), allowing
  * users to choose between performance-oriented runs and
  * detailed debugging sessions.
  * </p>
