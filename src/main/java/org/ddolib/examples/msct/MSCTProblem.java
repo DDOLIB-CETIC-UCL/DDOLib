@@ -101,19 +101,6 @@ public class MSCTProblem implements Problem<MSCTState> {
     }
 
     /**
-     * Constructs an MSCT problem from explicit arrays of release and processing times,
-     * without specifying an optimal value.
-     *
-     * @param release    an array of release times for each job.
-     * @param processing an array of processing times for each job.
-     */
-    public MSCTProblem(final int[] release, final int[] processing) {
-        this.release = release;
-        this.processing = processing;
-        this.optimal = Optional.empty();
-    }
-
-    /**
      * Constructs an MSCT problem by reading data from a text file.
      * <p>
      * The file must contain the number of jobs, optionally followed by the optimal value,

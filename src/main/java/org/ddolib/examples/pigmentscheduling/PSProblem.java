@@ -98,31 +98,18 @@ public class PSProblem implements Problem<PSState> {
      * @param previousDemands matrix of previous demand indices for each item and time
      * @param optimal         known optimal objective value (if available)
      */
-    public PSProblem(final int nItems, final int horizon, final int[] stockingCost, final int[][] changeoverCost, final int[][] previousDemands, final Optional<Double> optimal) {
+    public PSProblem(final int nItems,
+                     final int horizon,
+                     final int[] stockingCost,
+                     final int[][] changeoverCost,
+                     final int[][] previousDemands,
+                     final Optional<Double> optimal) {
         this.nItems = nItems;
         this.horizon = horizon;
         this.stockingCost = stockingCost;
         this.changeoverCost = changeoverCost;
         this.previousDemands = previousDemands;
         this.optimal = optimal;
-    }
-
-    /**
-     * Constructs a PSP instance from explicit data arrays without a known optimal value.
-     *
-     * @param nItems          number of item types
-     * @param horizon         number of time periods
-     * @param stockingCost    array of stocking costs for each item type
-     * @param changeoverCost  matrix of changeover costs between item types
-     * @param previousDemands matrix of previous demand indices for each item and time
-     */
-    public PSProblem(final int nItems, final int horizon, final int[] stockingCost, final int[][] changeoverCost, final int[][] previousDemands) {
-        this.nItems = nItems;
-        this.horizon = horizon;
-        this.stockingCost = stockingCost;
-        this.changeoverCost = changeoverCost;
-        this.previousDemands = previousDemands;
-        this.optimal = Optional.empty();
     }
 
     /**

@@ -90,16 +90,6 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     }
 
     /**
-     * Constructs a new SRFLP instance with given lengths and flows.
-     *
-     * @param lengths The lengths of the departments.
-     * @param flows   The traffic flow matrix between departments (must be symmetric).
-     */
-    public SRFLPProblem(int[] lengths, int[][] flows) {
-        this(lengths, flows, Optional.empty());
-    }
-
-    /**
      * Reads an SRFLP instance from a file.
      *
      * <p>

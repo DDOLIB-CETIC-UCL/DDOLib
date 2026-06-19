@@ -65,28 +65,6 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public Optional<Double> optimal;
 
     /**
-     * Constructs a MaxCover instance with full specification.
-     *
-     * @param name              optional instance name
-     * @param nbItems           number of items
-     * @param nbSubSets         number of subsets
-     * @param nbSubSetsToChoose number of subsets allowed to select
-     * @param subSets           array of subsets represented as BitSets
-     * @param optimal           optional optimal solution value
-     */
-    public MaxCoverProblem(Optional<String> name, int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets, Optional<Double> optimal) {
-        this.name = name;
-        this.nbItems = nbItems;
-        this.nbSubSets = nbSubSets;
-        this.nbSubSetsToChoose = nbSubSetsToChoose;
-        this.subSets = subSets;
-        this.optimal = optimal;
-        this.centralities = new double[nbItems];
-        computeCentralities();
-    }
-
-
-    /**
      * Constructs a MaxCover instance without a name.
      *
      * @param nbItems           number of items
@@ -102,25 +80,6 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         this.nbSubSetsToChoose = nbSubSetsToChoose;
         this.subSets = subSets;
         this.optimal = optimal;
-        this.centralities = new double[nbItems];
-        computeCentralities();
-    }
-
-    /**
-     * Constructs a MaxCover instance without name or optimal value.
-     *
-     * @param nbItems           number of items
-     * @param nbSubSets         number of subsets
-     * @param nbSubSetsToChoose number of subsets allowed to select
-     * @param subSets           array of subsets represented as BitSets
-     */
-    public MaxCoverProblem(int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets) {
-        this.name = Optional.empty();
-        this.nbItems = nbItems;
-        this.nbSubSets = nbSubSets;
-        this.nbSubSetsToChoose = nbSubSetsToChoose;
-        this.subSets = subSets;
-        this.optimal = Optional.empty();
         this.centralities = new double[nbItems];
         computeCentralities();
     }
@@ -229,7 +188,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                 }
             }
         }
-        this.name = Optional.of("maxCoverage_" + nElem + "_" + nSet + "_" + budget);
+        this.name = Optional.of(fname);
         this.nbItems = nElem;
         this.nbSubSets = nSet;
         this.nbSubSetsToChoose = budget;
@@ -420,7 +379,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
      */
     @Override
     public String toString() {
-        return name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+        String str = name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+        return name.orElse(str);
     }
 
 

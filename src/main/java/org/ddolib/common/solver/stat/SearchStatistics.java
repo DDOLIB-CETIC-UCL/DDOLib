@@ -284,18 +284,7 @@ public abstract class SearchStatistics {
         toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);
         return toReturn;
     }
-
-    /**
-     * Returns a new SearchStatistics instance with the maximum frontier size incremented by one.
-     *
-     * @return a new instance with incremented maximum frontier size
-     */
-    public SearchStatistics incrementFrontierSize() {
-        SearchStatistics toReturn = this.copy();
-        toReturn._frontierMaxSize++;
-        return toReturn;
-    }
-
+    
     /**
      * Returns a new SearchStatistics instance with an updated optimality gap.
      *

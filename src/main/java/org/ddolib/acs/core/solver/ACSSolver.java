@@ -388,24 +388,6 @@ public final class ACSSolver<T> implements Solver {
         }
     }
 
-    /**
-     * Returns the set of variables not yet assigned in a given path.
-     *
-     * @param path set of decisions already taken
-     * @return set of remaining variable indices
-     */
-    private Set<Integer> varSet(Set<Decision> path) {
-        final HashSet<Integer> set = new HashSet<>();
-        for (int i = 0; i < problem.nbVars(); i++) {
-            set.add(i);
-        }
-        for (Decision d : path) {
-            set.remove(d.variable());
-        }
-        return set;
-    }
-
-
     private void checkAdmissibility() {
         Set<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());

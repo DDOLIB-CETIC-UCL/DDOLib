@@ -57,27 +57,12 @@ public class MispProblem implements Problem<BitSet> {
      * @param weight         weights of each node
      * @param optimal        known optimal solution value
      */
-    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, double optimal) {
+    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Double> optimal) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
-        this.optimal = Optional.of(optimal);
+        this.optimal = optimal;
     }
-
-    /**
-     * Constructs a MISP problem with a given state, adjacency lists, and weights.
-     * The optimal solution is unknown.
-     *
-     * @param remainingNodes the initial set of selectable nodes
-     * @param neighbors      adjacency lists for each node
-     * @param weight         weights of each node
-     */
-    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight) {
-        this.remainingNodes = remainingNodes;
-        this.neighbors = neighbors;
-        this.weight = weight;
-    }
-
 
     /**
      * Loads a MISP problem from a DOT file.

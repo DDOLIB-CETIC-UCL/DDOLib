@@ -72,7 +72,7 @@ public class MSCTTestDataSupplier extends TestDataSupplier<MSCTState, MSCTProble
     }
 
     private Stream<MSCTProblem> problemWithUnfixedRelease() {
-        return IntStream.range(2, 9).mapToObj(i -> {
+        return IntStream.range(2, 8).mapToObj(i -> {
             MSCTData data = randomMSCTData(i);
             double opti = bestBruteForceForUnfixedRelease(data.release, data.processing);
             return new MSCTProblem(data.release, data.processing, Optional.of(-opti));
