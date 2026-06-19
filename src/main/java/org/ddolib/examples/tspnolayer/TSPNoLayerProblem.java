@@ -1,6 +1,5 @@
 package org.ddolib.examples.tspnolayer;
 
-import org.ddolib.examples.tsp.TSPState;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.nolayer.NoLayerProblem;
 
@@ -11,7 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TSPNoLayerProblem implements NoLayerProblem<TSPState> {
+public class TSPNoLayerProblem implements NoLayerProblem<TSPNoLayerState> {
 
     public final double[][] distanceMatrix;
     private final int n;
@@ -22,10 +21,10 @@ public class TSPNoLayerProblem implements NoLayerProblem<TSPState> {
     }
 
     @Override
-    public TSPState initialState() {
+    public TSPNoLayerState initialState() {
         BitSet toVisit = new BitSet(n);
         toVisit.set(1, n);
-        return new TSPState(singleton(0), toVisit);
+        return new TSPNoLayerState(singleton(0), toVisit);
     }
 
     @Override
@@ -34,13 +33,13 @@ public class TSPNoLayerProblem implements NoLayerProblem<TSPState> {
     }
 
     @Override
-    public boolean isTarget(TSPState state) {
+    public boolean isTarget(TSPNoLayerState state) {
         // Target is reached when no more cities to visit and current is 0
         return state.toVisit.isEmpty() && state.current.get(0);
     }
 
     @Override
-    public Iterator<Integer> domain(TSPState state) {
+    public Iterator<Integer> domain(TSPNoLayerState state) {
         if (state.toVisit.isEmpty()) {
             if (!state.current.get(0)) {
                 return singleton(0).stream().iterator();
@@ -53,14 +52,14 @@ public class TSPNoLayerProblem implements NoLayerProblem<TSPState> {
     }
 
     @Override
-    public TSPState transition(TSPState state, int label) {
+    public TSPNoLayerState transition(TSPNoLayerState state, int label) {
         BitSet newToVisit = (BitSet) state.toVisit.clone();
         newToVisit.clear(label);
-        return new TSPState(singleton(label), newToVisit);
+        return new TSPNoLayerState(singleton(label), newToVisit);
     }
 
     @Override
-    public double transitionCost(TSPState state, int label) {
+    public double transitionCost(TSPNoLayerState state, int label) {
         return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != label)
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][label])
