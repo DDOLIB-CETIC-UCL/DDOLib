@@ -2,10 +2,10 @@ package org.ddolib.examples.nolayer.gruler;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Solvers;
-import org.ddolib.modeling.nolayer.NoLayerAcsModel;
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.modeling.nolayer.AcsModel;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Problem;
 import org.ddolib.util.io.SolutionPrinter;
 
 public final class GRAcsMain {
@@ -14,14 +14,14 @@ public final class GRAcsMain {
         final GRProblem problem = new GRProblem(n);
         final GRModel baseModel = new GRModel(problem);
 
-        final NoLayerAcsModel<GRState> model = new NoLayerAcsModel<>() {
+        final AcsModel<GRState> model = new AcsModel<>() {
             @Override
-            public NoLayerProblem<GRState> problem() {
+            public Problem<GRState> problem() {
                 return problem;
             }
 
             @Override
-            public NoLayerFastLowerBound<GRState> lowerBound() {
+            public FastLowerBound<GRState> lowerBound() {
                 return baseModel.lowerBound();
             }
 
@@ -36,7 +36,7 @@ public final class GRAcsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeNoLayerAcs(model,
+        Solution bestSolution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model,
                 stats -> false,
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);

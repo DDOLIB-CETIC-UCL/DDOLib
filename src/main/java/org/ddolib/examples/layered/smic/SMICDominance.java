@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 /**
  * The {@code SMICDominance} class defines the dominance relation between two

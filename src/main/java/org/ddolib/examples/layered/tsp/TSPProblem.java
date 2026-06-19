@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.tsp;
 
 
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.layered.Problem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

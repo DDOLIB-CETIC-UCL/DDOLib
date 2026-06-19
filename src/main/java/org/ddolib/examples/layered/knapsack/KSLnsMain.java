@@ -3,12 +3,12 @@ package org.ddolib.examples.layered.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.LnsModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.modeling.layered.LnsModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.maximumcoverage;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.layered.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;

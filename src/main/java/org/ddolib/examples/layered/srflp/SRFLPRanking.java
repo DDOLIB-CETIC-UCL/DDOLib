@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.srflp;
 
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 
 /**
  * Implements a ranking between two {@link SRFLPState} instances for use in

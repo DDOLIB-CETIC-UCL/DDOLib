@@ -1,6 +1,6 @@
 package org.ddolib.common.dominance;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 
 /**
  * Object that, given a dominance, will check if a state is dominated.

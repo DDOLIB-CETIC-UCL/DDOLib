@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.modeling.*;
+import org.ddolib.modeling.layered.*;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Provides a ranking strategy for {@link MSCTState} objects
  * used in the search process for solving the

@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.lcs;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.LnsModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.LnsModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

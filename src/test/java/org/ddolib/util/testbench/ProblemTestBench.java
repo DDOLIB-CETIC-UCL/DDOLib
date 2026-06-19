@@ -1,10 +1,12 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.modeling.InvalidSolutionException;
+
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.DynamicTest;
 

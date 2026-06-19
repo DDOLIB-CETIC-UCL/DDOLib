@@ -1,8 +1,8 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.astar.core.solver.nolayer.AStarSolver;
+import org.ddolib.solving.astar.core.solver.nolayer.AStarSolver;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.nolayer.NoLayerModel;
+import org.ddolib.modeling.nolayer.Model;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -14,7 +14,7 @@ public class TSPAStarMain {
         double[][] distMatrix = generator.distanceMatrix;
 
         TSPProblem problem = new TSPProblem(distMatrix);
-        NoLayerModel<TSPState> model = new TSPModel(problem);
+        Model<TSPState> model = new TSPModel(problem);
 
         AStarSolver<TSPState> solver = new AStarSolver<>(model);
         

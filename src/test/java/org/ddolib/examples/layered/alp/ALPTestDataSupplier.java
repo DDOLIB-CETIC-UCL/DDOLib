@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.modeling.DdoModel;
+import org.ddolib.modeling.layered.DdoModel;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;

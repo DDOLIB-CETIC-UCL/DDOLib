@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.AcsModel;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Ranking function for {@link MaxCoverState} used in the Maximum Coverage problem.
  *

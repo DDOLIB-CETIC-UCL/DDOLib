@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 
 /**
  * Class used to compare two states for the MCP problem.

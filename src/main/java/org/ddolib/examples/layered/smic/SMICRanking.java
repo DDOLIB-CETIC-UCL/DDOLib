@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * The {@code SMICRanking} class defines a heuristic ranking criterion for
  * comparing two {@link SMICState} instances during search or optimization.

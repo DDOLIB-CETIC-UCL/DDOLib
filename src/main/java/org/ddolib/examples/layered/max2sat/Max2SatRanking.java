@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.max2sat;
 
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 
 /**
  * Class used to compare two states for the Max2Sat problem.

@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.tsp;
 
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TSPProblem implements NoLayerProblem<TSPState> {
+public class TSPProblem implements Problem<TSPState> {
 
     public final double[][] distanceMatrix;
     private final int n;

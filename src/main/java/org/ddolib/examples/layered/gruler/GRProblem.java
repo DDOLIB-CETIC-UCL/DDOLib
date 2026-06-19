@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.layered.Problem;
 
 import java.util.*;
 import java.util.stream.IntStream;

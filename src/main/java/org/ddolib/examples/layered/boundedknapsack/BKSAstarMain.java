@@ -3,8 +3,8 @@ package org.ddolib.examples.layered.boundedknapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.Model;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 /**

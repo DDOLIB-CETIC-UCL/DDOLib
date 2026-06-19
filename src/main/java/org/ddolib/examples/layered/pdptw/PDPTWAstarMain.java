@@ -5,9 +5,9 @@ import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.Model;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

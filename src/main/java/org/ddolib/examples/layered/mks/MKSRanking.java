@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Ranking strategy for multi-dimensional Knapsack (MKS) states.
  *

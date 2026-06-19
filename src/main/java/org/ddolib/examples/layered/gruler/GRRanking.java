@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Defines a ranking strategy for states in the Golomb Ruler (GR) problem.
  * <p>

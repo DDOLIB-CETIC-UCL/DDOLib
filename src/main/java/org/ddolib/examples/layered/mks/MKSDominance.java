@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 /**
  * Implements a dominance relation for Multi-dimensional Knapsack (MKS) states.
  *

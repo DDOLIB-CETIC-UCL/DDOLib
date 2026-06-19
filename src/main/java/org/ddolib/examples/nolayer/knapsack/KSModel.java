@@ -1,13 +1,13 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerModel;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Model;
+import org.ddolib.modeling.nolayer.Problem;
 
-public class KSModel implements NoLayerModel<KSState> {
+public class KSModel implements Model<KSState> {
 
     private final KSProblem problem;
-    private final NoLayerFastLowerBound<KSState> lowerBound;
+    private final FastLowerBound<KSState> lowerBound;
 
     public KSModel(KSProblem problem) {
         this.problem = problem;
@@ -25,12 +25,12 @@ public class KSModel implements NoLayerModel<KSState> {
     }
 
     @Override
-    public NoLayerProblem<KSState> problem() {
+    public Problem<KSState> problem() {
         return problem;
     }
 
     @Override
-    public NoLayerFastLowerBound<KSState> lowerBound() {
+    public FastLowerBound<KSState> lowerBound() {
         return lowerBound;
     }
 }

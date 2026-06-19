@@ -3,12 +3,12 @@ package org.ddolib.examples.layered.knapsack;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.*;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.solving.ddo.core.frontier.Frontier;
+import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.*;
 import org.ddolib.util.io.SolutionPrinter;
 import org.ddolib.util.verbosity.VerbosityLevel;
 

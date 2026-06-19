@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.tsptw;
 
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class TSPTWProblem implements NoLayerProblem<TSPTWState> {
+public class TSPTWProblem implements Problem<TSPTWState> {
 
     public final int[][] distance;
     public final TimeWindow[] timeWindows;

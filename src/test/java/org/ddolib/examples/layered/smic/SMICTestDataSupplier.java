@@ -2,8 +2,8 @@ package org.ddolib.examples.layered.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.Problem;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.TestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;

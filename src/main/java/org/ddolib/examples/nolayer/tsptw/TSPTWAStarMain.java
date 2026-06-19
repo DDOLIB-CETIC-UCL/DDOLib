@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.tsptw;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.nolayer.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ public final class TSPTWAStarMain {
         final TSPTWProblem problem = TSPTWProblem.fromFile(instance);
         final TSPTWModel model = new TSPTWModel(problem);
 
-        org.ddolib.astar.core.solver.nolayer.AStarSolver<TSPTWState> solver = new org.ddolib.astar.core.solver.nolayer.AStarSolver<>(model);
+        org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<TSPTWState> solver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(model);
 
         Solution bestSolution = solver.minimize(
                 stats -> false,

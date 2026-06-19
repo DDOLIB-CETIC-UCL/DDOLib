@@ -1,17 +1,17 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerModel;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Model;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 
-public class TSPModel implements NoLayerModel<TSPState> {
+public class TSPModel implements Model<TSPState> {
 
     private final TSPProblem problem;
-    private final NoLayerFastLowerBound<TSPState> lowerBound;
+    private final FastLowerBound<TSPState> lowerBound;
 
     public TSPModel(TSPProblem problem) {
         this.problem = problem;
@@ -54,12 +54,12 @@ public class TSPModel implements NoLayerModel<TSPState> {
     }
 
     @Override
-    public NoLayerProblem<TSPState> problem() {
+    public Problem<TSPState> problem() {
         return problem;
     }
 
     @Override
-    public NoLayerFastLowerBound<TSPState> lowerBound() {
+    public FastLowerBound<TSPState> lowerBound() {
         return lowerBound;
     }
 }

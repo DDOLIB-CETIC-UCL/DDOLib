@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * A default state ranking implementation for the Bounded Knapsack Problem (BKP).
  * <p>

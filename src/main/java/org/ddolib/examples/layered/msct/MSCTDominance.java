@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 /**
  * Implements the dominance relation for the Maximum Sum of Compatible Tasks (MSCT) problem.
  * <p>

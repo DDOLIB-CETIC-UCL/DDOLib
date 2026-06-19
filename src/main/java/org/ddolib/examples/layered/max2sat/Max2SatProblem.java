@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.Problem;
+import org.ddolib.modeling.layered.Problem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

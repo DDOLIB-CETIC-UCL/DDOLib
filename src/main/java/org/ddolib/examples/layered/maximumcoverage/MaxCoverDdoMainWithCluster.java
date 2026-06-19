@@ -1,14 +1,14 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

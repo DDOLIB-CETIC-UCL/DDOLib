@@ -1,13 +1,13 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerModel;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Model;
+import org.ddolib.modeling.nolayer.Problem;
 
-public class GRModel implements NoLayerModel<GRState> {
+public class GRModel implements Model<GRState> {
 
     private final GRProblem problem;
-    private final NoLayerFastLowerBound<GRState> lowerBound;
+    private final FastLowerBound<GRState> lowerBound;
 
     public GRModel(GRProblem problem) {
         this.problem = problem;
@@ -28,12 +28,12 @@ public class GRModel implements NoLayerModel<GRState> {
     }
 
     @Override
-    public NoLayerProblem<GRState> problem() {
+    public Problem<GRState> problem() {
         return problem;
     }
 
     @Override
-    public NoLayerFastLowerBound<GRState> lowerBound() {
+    public FastLowerBound<GRState> lowerBound() {
         return lowerBound;
     }
 }

@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.modeling.Relaxation;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
 
 import java.util.ArrayList;
 import java.util.Iterator;

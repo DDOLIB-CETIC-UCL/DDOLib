@@ -2,12 +2,12 @@ package org.ddolib.examples.layered.maximumcoverage;
 
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Relaxation;
+import org.ddolib.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Relaxation;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerbosityLevel;
 

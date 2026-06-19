@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 
 import java.util.Arrays;
 /**

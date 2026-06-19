@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Ranking class for states in the Traveling Salesman Problem with Time Windows (TSPTW).
  *

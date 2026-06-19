@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.layered.FastLowerBound;
 
 import java.util.Set;
 

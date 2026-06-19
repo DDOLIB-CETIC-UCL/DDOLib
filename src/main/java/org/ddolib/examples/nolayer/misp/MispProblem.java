@@ -1,14 +1,14 @@
 package org.ddolib.examples.nolayer.misp;
 
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 
-public class MispProblem implements NoLayerProblem<MispState> {
+public class MispProblem implements Problem<MispState> {
 
     public final BitSet[] neighbors;
     public final int[] weight;

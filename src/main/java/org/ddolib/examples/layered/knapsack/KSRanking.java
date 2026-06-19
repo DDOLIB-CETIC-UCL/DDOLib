@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * State ranking for the Knapsack Problem (KS).
  * <p>

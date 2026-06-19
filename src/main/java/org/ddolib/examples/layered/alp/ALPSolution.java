@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 
 import java.util.Arrays;
 import java.util.Iterator;

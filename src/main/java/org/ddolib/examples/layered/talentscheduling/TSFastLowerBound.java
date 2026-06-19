@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.modeling.FastLowerBound;
+import org.ddolib.modeling.layered.FastLowerBound;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

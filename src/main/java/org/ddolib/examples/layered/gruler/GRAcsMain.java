@@ -1,10 +1,10 @@
 package org.ddolib.examples.layered.gruler;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.AcsModel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.AcsModel;
+import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

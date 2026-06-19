@@ -1,13 +1,13 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.ddo.core.heuristics.cluster.CostBased;
-import org.ddolib.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.FastLowerBound;
-import org.ddolib.modeling.Problem;
+import org.ddolib.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.modeling.layered.Problem;
 import org.ddolib.util.testbench.TestDataSupplier;
 
 import java.io.File;

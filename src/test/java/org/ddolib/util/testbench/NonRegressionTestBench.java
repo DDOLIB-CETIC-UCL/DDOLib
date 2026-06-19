@@ -1,10 +1,12 @@
 package org.ddolib.util.testbench;
 
+import org.ddolib.modeling.InvalidSolutionException;
+
 import org.ddolib.common.dominance.DefaultDominanceChecker;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.modeling.*;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.modeling.layered.*;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 /**
  * Implementation of a dominance rule for the Bounded Knapsack (BKS) problem.
  * <p>

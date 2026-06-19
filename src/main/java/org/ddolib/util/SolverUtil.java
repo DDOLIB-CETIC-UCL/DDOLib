@@ -1,6 +1,6 @@
 package org.ddolib.util;
 
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 
 import java.util.HashSet;
 import java.util.Set;

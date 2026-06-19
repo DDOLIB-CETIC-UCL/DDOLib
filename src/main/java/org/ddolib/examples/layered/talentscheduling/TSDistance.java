@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.talentscheduling;
 
 import static org.ddolib.util.DistanceUtil.*;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.cluster.StateDistance;
 
 import java.util.BitSet;
 

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Class that defines a ranking (ordering) between two {@link TSState} instances.
  *

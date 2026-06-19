@@ -3,9 +3,9 @@ package org.ddolib.examples.layered.misp;
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Model;
-import org.ddolib.modeling.Problem;
-import org.ddolib.modeling.Solvers;
+import org.ddolib.modeling.layered.Model;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.io.SolutionPrinter;
 

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 
 /**
  * Heuristic for computing the width of a layer in the dynamic programming model

@@ -2,10 +2,10 @@ package org.ddolib.examples.nolayer.tsptw;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Solvers;
-import org.ddolib.modeling.nolayer.NoLayerAcsModel;
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.modeling.nolayer.AcsModel;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Problem;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -17,14 +17,14 @@ public final class TSPTWAcsMain {
         final TSPTWProblem problem = TSPTWProblem.fromFile(instance);
         final TSPTWModel baseModel = new TSPTWModel(problem);
 
-        final NoLayerAcsModel<TSPTWState> model = new NoLayerAcsModel<>() {
+        final AcsModel<TSPTWState> model = new AcsModel<>() {
             @Override
-            public NoLayerProblem<TSPTWState> problem() {
+            public Problem<TSPTWState> problem() {
                 return problem;
             }
 
             @Override
-            public NoLayerFastLowerBound<TSPTWState> lowerBound() {
+            public FastLowerBound<TSPTWState> lowerBound() {
                 return baseModel.lowerBound();
             }
 
@@ -39,7 +39,7 @@ public final class TSPTWAcsMain {
             }
         };
 
-        Solution bestSolution = Solvers.minimizeNoLayerAcs(model, (sol, stats) -> {
+        Solution bestSolution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model, (sol, stats) -> {
             SolutionPrinter.printSolution(stats, sol);
         });
 

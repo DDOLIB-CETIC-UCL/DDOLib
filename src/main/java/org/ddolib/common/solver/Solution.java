@@ -1,7 +1,7 @@
 package org.ddolib.common.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 import org.ddolib.util.PrettyPrint;
 
 import java.util.Arrays;

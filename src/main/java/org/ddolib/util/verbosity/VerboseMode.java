@@ -1,6 +1,6 @@
 package org.ddolib.util.verbosity;
 
-import org.ddolib.ddo.core.SubProblem;
+import org.ddolib.solving.ddo.core.SubProblem;
 
 import java.io.*;
 

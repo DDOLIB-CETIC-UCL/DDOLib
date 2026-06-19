@@ -2,13 +2,13 @@ package org.ddolib.examples.layered.pdptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.ddo.core.frontier.CutSetType;
-import org.ddolib.ddo.core.frontier.Frontier;
-import org.ddolib.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.DdoModel;
-import org.ddolib.modeling.Problem;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.solving.ddo.core.frontier.Frontier;
+import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.Problem;
 import org.ddolib.util.testbench.TestDataSupplier;
 
 import java.io.IOException;

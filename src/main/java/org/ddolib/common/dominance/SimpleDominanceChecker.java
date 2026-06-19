@@ -1,7 +1,7 @@
 package org.ddolib.common.dominance;
 
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 
 import java.util.*;
 

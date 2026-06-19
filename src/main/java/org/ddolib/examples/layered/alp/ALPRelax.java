@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.modeling.Relaxation;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
 
 import java.util.Arrays;
 import java.util.Iterator;

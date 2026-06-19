@@ -1,16 +1,16 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerModel;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Model;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class TSPTWModel implements NoLayerModel<TSPTWState> {
+public class TSPTWModel implements Model<TSPTWState> {
 
     private final TSPTWProblem problem;
-    private final NoLayerFastLowerBound<TSPTWState> lowerBound;
+    private final FastLowerBound<TSPTWState> lowerBound;
 
     public TSPTWModel(TSPTWProblem problem) {
         this.problem = problem;
@@ -52,12 +52,12 @@ public class TSPTWModel implements NoLayerModel<TSPTWState> {
     }
 
     @Override
-    public NoLayerProblem<TSPTWState> problem() {
+    public Problem<TSPTWState> problem() {
         return problem;
     }
 
     @Override
-    public NoLayerFastLowerBound<TSPTWState> lowerBound() {
+    public FastLowerBound<TSPTWState> lowerBound() {
         return lowerBound;
     }
 }

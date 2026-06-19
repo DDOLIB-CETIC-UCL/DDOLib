@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Implements a state ranking strategy for the Pickup and Delivery Problem (PDP).
  * <p>

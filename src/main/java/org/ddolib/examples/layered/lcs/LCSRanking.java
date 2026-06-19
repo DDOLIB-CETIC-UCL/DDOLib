@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.modeling.StateRanking;
+import org.ddolib.modeling.layered.StateRanking;
 /**
  * Ranking strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
  * <p>

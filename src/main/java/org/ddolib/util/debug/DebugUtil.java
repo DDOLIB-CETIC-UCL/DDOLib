@@ -1,9 +1,9 @@
 package org.ddolib.util.debug;
 
 import org.ddolib.common.solver.Solver;
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.SubProblem;
-import org.ddolib.modeling.Model;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.modeling.layered.Model;
 import org.ddolib.util.StateAndDepth;
 
 import java.text.DecimalFormat;

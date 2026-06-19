@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 
 import java.util.BitSet;
 /**

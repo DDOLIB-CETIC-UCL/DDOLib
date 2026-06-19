@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.gruler;
 
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 
-public class GRProblem implements NoLayerProblem<GRState> {
+public class GRProblem implements Problem<GRState> {
 
     public final int order;
 

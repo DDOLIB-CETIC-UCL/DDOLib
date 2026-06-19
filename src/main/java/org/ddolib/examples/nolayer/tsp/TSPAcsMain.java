@@ -2,10 +2,10 @@ package org.ddolib.examples.nolayer.tsp;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.Solvers;
-import org.ddolib.modeling.nolayer.NoLayerAcsModel;
-import org.ddolib.modeling.nolayer.NoLayerFastLowerBound;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.modeling.nolayer.AcsModel;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -19,14 +19,14 @@ public class TSPAcsMain {
         TSPProblem problem = new TSPProblem(distMatrix);
         TSPModel baseModel = new TSPModel(problem);
 
-        final NoLayerAcsModel<TSPState> model = new NoLayerAcsModel<>() {
+        final AcsModel<TSPState> model = new AcsModel<>() {
             @Override
-            public NoLayerProblem<TSPState> problem() {
+            public Problem<TSPState> problem() {
                 return problem;
             }
 
             @Override
-            public NoLayerFastLowerBound<TSPState> lowerBound() {
+            public FastLowerBound<TSPState> lowerBound() {
                 return baseModel.lowerBound();
             }
 
@@ -42,7 +42,7 @@ public class TSPAcsMain {
         };
 
         System.out.println("Starting ACS Search on TSPNoLayer Problem...");
-        Solution solution = Solvers.minimizeNoLayerAcs(model,
+        Solution solution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model,
                 stats -> false,
                 (sol, stats) -> {
                     System.out.println("Found a solution with value: " + stats.incumbent());

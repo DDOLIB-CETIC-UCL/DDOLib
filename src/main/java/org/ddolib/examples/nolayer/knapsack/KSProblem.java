@@ -1,12 +1,12 @@
 package org.ddolib.examples.nolayer.knapsack;
 
 import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.NoLayerProblem;
+import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class KSProblem implements NoLayerProblem<KSState> {
+public class KSProblem implements Problem<KSState> {
 
     public final int[] profit;
     public final int[] weight;

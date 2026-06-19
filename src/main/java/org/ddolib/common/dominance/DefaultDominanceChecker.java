@@ -1,6 +1,6 @@
 package org.ddolib.common.dominance;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 
 /**
  * Default implementation of a {@link DominanceChecker} that performs no dominance checking.

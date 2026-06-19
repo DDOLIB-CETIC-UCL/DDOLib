@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 /**
  * Dominance relation for the Knapsack Problem (KS).
  * <p>

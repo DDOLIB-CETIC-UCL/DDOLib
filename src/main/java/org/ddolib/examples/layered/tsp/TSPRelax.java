@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.tsp;
 
 
-import org.ddolib.ddo.core.Decision;
-import org.ddolib.modeling.Relaxation;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
 
 import java.util.BitSet;
 import java.util.Iterator;
