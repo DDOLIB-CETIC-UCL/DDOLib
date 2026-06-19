@@ -19,8 +19,8 @@ import org.ddolib.util.verbosity.VerbosityLevel;
  *
  * <p>
  * Implementations of this interface typically serve as the entry point for
- * configuring solvers such as {@link org.ddolib.ddo.core.solver.ExactSolver} or
- * {@link org.ddolib.ddo.core.solver.SequentialSolver}. Users can override the
+ * configuring solvers such as {@link org.ddolib.ddo.core.solver.layered.ExactSolver} or
+ * {@link org.ddolib.ddo.core.solver.layered.SequentialSolver}. Users can override the
  * default methods to customize behavior such as lower bound evaluation,
  * variable selection heuristics, or dominance checking.
  * </p>

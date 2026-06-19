@@ -1,15 +1,15 @@
 package org.ddolib.modeling;
 
-import org.ddolib.acs.core.solver.ACSSolver;
-import org.ddolib.astar.core.solver.AStarSolver;
-import org.ddolib.awastar.core.solver.AwAstarSolver;
+import org.ddolib.acs.core.solver.layered.AcsSolver;
+import org.ddolib.astar.core.solver.layered.AStarSolver;
+import org.ddolib.awastar.core.solver.layered.AwAstarSolver;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.RelaxationSolver;
-import org.ddolib.ddo.core.solver.RestrictionSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
-import org.ddolib.lns.core.solver.LNSSolver;
+import org.ddolib.ddo.core.solver.layered.ExactSolver;
+import org.ddolib.ddo.core.solver.layered.RelaxationSolver;
+import org.ddolib.ddo.core.solver.layered.RestrictionSolver;
+import org.ddolib.ddo.core.solver.layered.SequentialSolver;
+import org.ddolib.lns.core.solver.layered.LnsSolver;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -38,7 +38,7 @@ import java.util.function.Predicate;
  * @see SearchStatistics
  * @see SequentialSolver
  * @see AStarSolver
- * @see ACSSolver
+ * @see AcsSolver
  * @see AwAstarSolver
  */
 public class Solvers {
@@ -227,7 +227,7 @@ public class Solvers {
     /**
      * Core method for solving an ACS model with custom stopping condition and solution callback.
      * <p>
-     * The method configures and delegates the solving process to an {@link ACSSolver}.
+     * The method configures and delegates the solving process to an {@link AcsSolver}.
      * </p>
      *
      * @param model      the ACS model to solve
@@ -236,7 +236,60 @@ public class Solvers {
      * @return sa solution to the related problem with search statistics summarizing solver's performance
      */
     public static <T> Solution minimizeAcs(AcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        return new ACSSolver<>(model).minimize(limit, onSolution);
+        return new AcsSolver<>(model).minimize(limit, onSolution);
+    }
+
+    // =============================================================
+    // NoLayer Anytime Column Search (ACS) Solver Methods
+    // =============================================================
+
+    /**
+     * Solves the given model using the NoLayer Anytime Column Search (ACS) algorithm.
+     *
+     * @param model the NoLayer ACS model to solve
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
+    public static <T> Solution minimizeNoLayerAcs(org.ddolib.modeling.nolayer.NoLayerAcsModel<T> model) {
+        return minimizeNoLayerAcs(model, s -> false, (sol, s) -> {
+        });
+    }
+
+    /**
+     * Solves the given model using NoLayer ACS, stopping when the limit condition is satisfied.
+     *
+     * @param model the NoLayer ACS model to solve
+     * @param limit predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
+    public static <T> Solution minimizeNoLayerAcs(org.ddolib.modeling.nolayer.NoLayerAcsModel<T> model, Predicate<SearchStatistics> limit) {
+        return minimizeNoLayerAcs(model, limit, (sol, s) -> {
+        });
+    }
+
+    /**
+     * Solves the given model using NoLayer ACS and calls the callback when a new incumbent is found.
+     *
+     * @param model      the NoLayer ACS model to solve
+     * @param onSolution callback executed on discovery of a new best solution
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
+    public static <T> Solution minimizeNoLayerAcs(org.ddolib.modeling.nolayer.NoLayerAcsModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+        return minimizeNoLayerAcs(model, s -> false, onSolution);
+    }
+
+    /**
+     * Core method for solving a NoLayer ACS model with custom stopping condition and solution callback.
+     * <p>
+     * The method configures and delegates the solving process to a {@link org.ddolib.acs.core.solver.nolayer.AcsSolver}.
+     * </p>
+     *
+     * @param model      the NoLayer ACS model to solve
+     * @param limit      predicate defining the stopping condition
+     * @param onSolution callback invoked when new incumbent solutions are found
+     * @return a solution to the related problem with search statistics summarizing solver's performance
+     */
+    public static <T> Solution minimizeNoLayerAcs(org.ddolib.modeling.nolayer.NoLayerAcsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        return new org.ddolib.acs.core.solver.nolayer.AcsSolver<>(model).minimize(limit, onSolution);
     }
 
     // =============================================================
@@ -354,7 +407,7 @@ public class Solvers {
      */
 
     public static <T> Solution minimizeLns(LnsModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        return new LNSSolver<>(model).minimize(limit, onSolution);
+        return new LnsSolver<>(model).minimize(limit, onSolution);
     }
 
     /**

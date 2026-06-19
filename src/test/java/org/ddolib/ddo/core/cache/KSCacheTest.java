@@ -6,7 +6,7 @@ import org.ddolib.common.solver.Solution;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.knapsack.*;
+import org.ddolib.examples.layered.knapsack.*;
 import org.ddolib.modeling.*;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;

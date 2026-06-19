@@ -1,7 +1,7 @@
 package org.ddolib.ddo.core.heuristics.cluster;
 
 import org.ddolib.ddo.core.mdd.NodeSubProblem;
-import org.ddolib.examples.maximumcoverage.MaxCoverState;
+import org.ddolib.examples.layered.maximumcoverage.MaxCoverState;
 
 /**
  * Interface defining a distance function between states, used to form clusters
