@@ -3,7 +3,7 @@ package org.ddolib.ddo.core.mdd;
 import org.ddolib.ddo.core.Decision;
 import org.ddolib.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.misp.MispProblem;
+import org.ddolib.examples.layered.misp.MispProblem;
 import org.ddolib.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.Test;

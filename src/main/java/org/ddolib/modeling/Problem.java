@@ -1,8 +1,8 @@
 package org.ddolib.modeling;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.ddo.core.solver.ExactSolver;
-import org.ddolib.ddo.core.solver.SequentialSolver;
+import org.ddolib.ddo.core.solver.layered.ExactSolver;
+import org.ddolib.ddo.core.solver.layered.SequentialSolver;
 
 import java.util.Iterator;
 import java.util.Optional;

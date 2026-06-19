@@ -11,7 +11,7 @@ import java.util.Iterator;
 
 /**
  * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model, used by the
- * {@link org.ddolib.ddo.core.solver.ExactSolver}
+ * {@link org.ddolib.ddo.core.solver.layered.ExactSolver}
  * <p>
  * It specifies the
  * {@link Problem} instance to solve and optionally provides custom heuristics,
