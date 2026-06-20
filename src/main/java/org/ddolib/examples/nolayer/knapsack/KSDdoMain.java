@@ -1,10 +1,15 @@
 package org.ddolib.examples.nolayer.knapsack;
 
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.Decision;
+import java.util.Comparator;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.nolayer.DdoModel;
 import org.ddolib.modeling.nolayer.Relaxation;
@@ -20,7 +25,8 @@ import java.util.Iterator;
 public class KSDdoMain {
 
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "KP", "f10_l-d_kp_20_878").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
+                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = KSProblem.fromFile(instance);
 
         DdoModel<KSState> model = new KSDdoModel(problem) {
@@ -37,7 +43,8 @@ public class KSDdoMain {
                         while (it.hasNext()) {
                             KSState s = it.next();
                             maxCapacity = Math.max(maxCapacity, s.remainingCapacity()); // Relax by taking max capacity
-                            currentItem = Math.max(currentItem, s.currentItem()); // Arbitrary/safe
+                            currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem to
+                                                                                  // overapproximate
                         }
                         return new KSState(currentItem, maxCapacity);
                     }
@@ -52,7 +59,28 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<KSState> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(10);
+            }
+
+            @Override
+            public NoLayerDominanceChecker<KSState> dominance() {
+                return new NoLayerDominanceChecker<KSState>() {
+                    private final java.util.Map<Integer, java.util.List<java.util.Map.Entry<KSState, Double>>> bestStates = new java.util.HashMap<>();
+
+                    @Override
+                    public boolean updateDominance(KSState state, double value) {
+                        java.util.List<java.util.Map.Entry<KSState, Double>> list = bestStates
+                                .computeIfAbsent(state.currentItem(), k -> new java.util.ArrayList<>());
+                        for (java.util.Map.Entry<KSState, Double> entry : list) {
+                            KSState o = entry.getKey();
+                            if (o.remainingCapacity() >= state.remainingCapacity() && entry.getValue() <= value) {
+                                return true; // Dominated!
+                            }
+                        }
+                        list.add(new java.util.AbstractMap.SimpleEntry<>(state, value));
+                        return false;
+                    }
+                };
             }
 
             @Override
@@ -78,13 +106,27 @@ public class KSDdoMain {
 
         DdoSolver<KSState> solver = new DdoSolver<>(model);
         Solution bestSolution = solver.minimize(
-                limit -> limit.nbIterations() > 1000,
-                (sol, stats) -> SolutionPrinter.printSolution(stats, sol)
-        );
+                limit -> limit.nbIterations() > 500, // ADD LIMIT SO IT STOPS
+                (sol, stats) -> {
+                    SolutionPrinter.printSolution(stats, sol);
+                    try {
+                        double val = problem.evaluate(sol);
+                        System.out.println("ON SOLUTION EVALUATE: " + val);
+                    } catch (Exception e) {
+                        System.out.println("EVALUATE ERROR: " + e.getMessage());
+                    }
+                });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
+        try {
+            int[] solArray = bestSolution.solution();
+            double val = problem.evaluate(solArray);
+            System.out.println("Evaluated value: " + val);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

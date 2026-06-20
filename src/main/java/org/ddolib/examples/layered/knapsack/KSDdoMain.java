@@ -18,32 +18,36 @@ import java.nio.file.Path;
 /**
  * Knapsack Problem (KS) with Ddo.
  * <p>
- * This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP)
+ * This class demonstrates how to solve an instance of the bounded Knapsack
+ * Problem (BKP)
  * using a Decision Diagram Optimization (DDO) algorithm.
  * </p>
  * <p>
  * The program performs the following steps:
  * </p>
  * <ol>
- *     <li>Loads a knapsack instance from a data file.</li>
- *     <li>Defines a {@link DdoModel} with:
- *         <ul>
- *             <li>A relaxation function for merging states ({@link KSRelax}).</li>
- *             <li>A state ranking heuristic ({@link KSRanking}).</li>
- *             <li>A fast lower bound heuristic ({@link KSFastLowerBound}).</li>
- *             <li>A dominance checker ({@link KSDominance}).</li>
- *             <li>A frontier of type {@link CutSetType#Frontier} ({@link SimpleFrontier}).</li>
- *             <li>A width heuristic ({@link FixedWidth}) and cache usage.</li>
- *             <li>Verbose output level ({@link VerbosityLevel}).</li>
- *         </ul>
- *     </li>
- *     <li>Creates a {@link Solvers} and runs the DDO algorithm.</li>
- *     <li>Prints updates when a new incumbent solution is found and stops after 10 seconds of runtime.</li>
- *     <li>Outputs the final search statistics.</li>
+ * <li>Loads a knapsack instance from a data file.</li>
+ * <li>Defines a {@link DdoModel} with:
+ * <ul>
+ * <li>A relaxation function for merging states ({@link KSRelax}).</li>
+ * <li>A state ranking heuristic ({@link KSRanking}).</li>
+ * <li>A fast lower bound heuristic ({@link KSFastLowerBound}).</li>
+ * <li>A dominance checker ({@link KSDominance}).</li>
+ * <li>A frontier of type {@link CutSetType#Frontier}
+ * ({@link SimpleFrontier}).</li>
+ * <li>A width heuristic ({@link FixedWidth}) and cache usage.</li>
+ * <li>Verbose output level ({@link VerbosityLevel}).</li>
+ * </ul>
+ * </li>
+ * <li>Creates a {@link Solvers} and runs the DDO algorithm.</li>
+ * <li>Prints updates when a new incumbent solution is found and stops after 10
+ * seconds of runtime.</li>
+ * <li>Outputs the final search statistics.</li>
  * </ol>
  *
  * <p>
- * The DDO solver leverages relaxed decision diagrams, caching, and state ranking to
+ * The DDO solver leverages relaxed decision diagrams, caching, and state
+ * ranking to
  * efficiently explore the search space for high-quality solutions.
  * </p>
  */
@@ -86,7 +90,7 @@ public class KSDdoMain {
 
             @Override
             public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(2);
+                return new FixedWidth<>(10);
             }
 
             @Override
@@ -106,7 +110,6 @@ public class KSDdoMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
 
     }
 }

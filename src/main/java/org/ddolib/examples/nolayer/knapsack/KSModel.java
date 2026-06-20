@@ -18,6 +18,10 @@ public class KSModel implements Model<KSState> {
                 if (cap >= problem.weight[i]) {
                     lb += -problem.profit[i];
                     cap -= problem.weight[i];
+                } else if (cap > 0) {
+                    double ratio = (double) problem.profit[i] / problem.weight[i];
+                    lb += -Math.ceil(ratio * cap);
+                    break;
                 }
             }
             return lb;

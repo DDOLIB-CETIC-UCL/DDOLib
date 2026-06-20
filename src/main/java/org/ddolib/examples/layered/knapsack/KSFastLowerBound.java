@@ -68,7 +68,7 @@ public class KSFastLowerBound implements FastLowerBound<Integer> {
                 capacity -= problem.weight[item];
             } else {
                 double itemProfit = ratio[item] * capacity;
-                maxProfit += (int) Math.floor(itemProfit);
+                maxProfit += (int) Math.ceil(itemProfit);
                 capacity = 0;
             }
         }

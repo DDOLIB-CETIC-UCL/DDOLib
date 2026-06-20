@@ -13,7 +13,8 @@ import java.nio.file.Path;
 
 public final class KSAcsMain {
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "KP", "f10_l-d_kp_20_878").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
+                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
         final KSProblem problem = KSProblem.fromFile(instance);
         final KSModel baseModel = new KSModel(problem);
 
@@ -46,5 +47,12 @@ public final class KSAcsMain {
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
+        try {
+            int[] solArray = bestSolution.solution();
+            double val = problem.evaluate(solArray);
+            System.out.println("Evaluated KS value: " + val);
+        } catch (Exception e) {
+            System.out.println("ACS EVALUATION ERROR: " + e.getMessage());
+        }
     }
 }

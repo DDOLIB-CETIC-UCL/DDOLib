@@ -5,26 +5,32 @@ import org.ddolib.solving.ddo.core.SubProblem;
 import java.util.Optional;
 
 /**
- * Defines the abstraction of a <b>cache mechanism</b> used to prune and reduce the
- * search space during the compilation or exploration of a Decision Diagram (DD).
+ * Defines the abstraction of a <b>cache mechanism</b> used to prune and reduce
+ * the
+ * search space during the compilation or exploration of a Decision Diagram
+ * (DD).
  * <p>
  * The cache stores <em>thresholds</em> associated with subproblems encountered
- * during the search. These thresholds represent bounds (on value or feasibility)
+ * during the search. These thresholds represent bounds (on value or
+ * feasibility)
  * that can be reused to avoid re-exploring equivalent or dominated states in
  * subsequent iterations or at different depths of the DD.
  * </p>
  *
- * <p>By maintaining and comparing thresholds, the cache helps:
+ * <p>
+ * By maintaining and comparing thresholds, the cache helps:
  * </p>
  * <ul>
- *   <li>Prevent redundant computation on subproblems already explored with
- *       better or equivalent objective values.</li>
- *   <li>Accelerate convergence of relaxed DDs by reusing partial results.</li>
- *   <li>Reduce memory footprint by discarding obsolete layers.</li>
+ * <li>Prevent redundant computation on subproblems already explored with
+ * better or equivalent objective values.</li>
+ * <li>Accelerate convergence of relaxed DDs by reusing partial results.</li>
+ * <li>Reduce memory footprint by discarding obsolete layers.</li>
  * </ul>
  *
- * <p>This interface defines the operations required for cache initialization,
- * lookup, update, and cleanup at various layers of the decision diagram.</p>
+ * <p>
+ * This interface defines the operations required for cache initialization,
+ * lookup, update, and cleanup at various layers of the decision diagram.
+ * </p>
  *
  * @param <T> the type representing the problem states stored in the cache
  *
@@ -104,9 +110,9 @@ public interface Cache<T> {
      * over the one currently stored in the cache.
      * </p>
      *
-     * @param state      the state whose threshold is to be updated
-     * @param depth      the depth (layer index) in the DD
-     * @param threshold  the new threshold to associate with the state
+     * @param state     the state whose threshold is to be updated
+     * @param depth     the depth (layer index) in the DD
+     * @param threshold the new threshold to associate with the state
      */
     void updateThreshold(final T state, final int depth, Threshold threshold);
 

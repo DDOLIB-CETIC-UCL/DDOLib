@@ -7,6 +7,7 @@ import org.ddolib.solving.ddo.core.SubProblem;
 import org.ddolib.solving.ddo.core.cache.Cache;
 import org.ddolib.solving.ddo.core.cache.Threshold;
 import org.ddolib.solving.ddo.core.compilation.CompilationType;
+import static org.ddolib.util.MathUtil.saturatedDiff;
 
 import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.modeling.nolayer.DdoModel;
@@ -77,7 +78,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         this.cache = cache;
 
         this.rootNode = makeNode(rootSubProblem.getState(), true);
-        this.rootNode.layer = 0;
+        this.rootNode.layer = rootSubProblem.getPath().size();
         this.rootNode.bound = rootSubProblem.getValue();
     }
 
@@ -180,15 +181,8 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                 boolean newNode = (child == null);
 
                 if (newNode) {
-                    // Check dominance
-                    Node<T> dominator = null;
-                    for (Node<T> o : qn) {
-                        if (isBetterEQ(o.bound, ep) && dominance.updateDominance(o.state, o.bound)) {
-                            // Wait, dominance checker typically checks if one state dominates another.
-                            // In CODD: dominates(o, n) checks if o dominates n.
-                            // But DDOLib's DominanceChecker is stateful (it stores states).
-                            // Let's assume the node is dominated if updateDominance returns false or if we manually check
-                        }
+                    if (dominance.updateDominance(nextState, ep)) {
+                        continue; // Dominated!
                     }
                 }
                 
@@ -221,6 +215,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
             t1.bound = t2.bound;
             t1.bestParentEdge = t2.bestParentEdge;
         }
+        t1.isExact &= t2.isExact;
         stateMap.remove(t2.state);
         return t1;
     }
@@ -229,20 +224,12 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         if (layerNodes.size() <= maxWidth) return;
         exact = false;
         
-        layerNodes.sort((o1, o2) -> {
-            int comp = model.ranking().compare(o1.state, o2.state);
-            return comp == 0 ? Double.compare(o2.bound, o1.bound) : comp;
-        });
-
-        List<Node<T>> toKeep = new ArrayList<>(layerNodes.subList(layerNodes.size() - maxWidth + 1, layerNodes.size()));
-        List<Node<T>> toMerge = new ArrayList<>(layerNodes.subList(0, layerNodes.size() - maxWidth + 1));
-        
-        List<T> toMergeStates = toMerge.stream().map(n -> n.state).collect(Collectors.toList());
-        List<Double> toMergeBounds = toMerge.stream().map(n -> n.bound).collect(Collectors.toList());
+        List<T> toMergeStates = layerNodes.stream().map(n -> n.state).collect(Collectors.toList());
+        List<Double> toMergeBounds = layerNodes.stream().map(n -> saturatedAdd(n.bound, model.lowerBound().fastLowerBound(n.state))).collect(Collectors.toList());
         List<List<T>> grouped = model.relaxStrategy().defineClusters(toMergeStates, toMergeBounds, maxWidth);
 
+        int originalLayer = layerNodes.get(0).layer;
         layerNodes.clear();
-        layerNodes.addAll(toKeep);
 
         for (List<T> states : grouped) {
             T mergedState = model.relaxation().merge(states);
@@ -251,9 +238,11 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
             double bestBound = Double.POSITIVE_INFINITY;
             Edge<T> bestEdge = null;
             
+            boolean allExact = true;
             for (T sp : states) {
                 Node<T> oldNode = stateMap.remove(sp);
                 if (oldNode != null) {
+                    allExact &= oldNode.isExact;
                     allInEdges.addAll(oldNode.inEdges);
                     if (isBetter(oldNode.bound, bestBound)) {
                         bestBound = oldNode.bound;
@@ -262,8 +251,10 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
             }
             
-            Node<T> mergedNode = makeNode(mergedState, false);
-            mergedNode.layer = toMerge.get(0).layer;
+            // It is exact if the cluster size is 1 and the original node was exact
+            boolean isExactNode = (states.size() == 1) && allExact;
+            Node<T> mergedNode = makeNode(mergedState, isExactNode);
+            mergedNode.layer = originalLayer;
             
             for (Edge<T> e : allInEdges) {
                 e.destination = mergedNode;
@@ -286,11 +277,15 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         exact = false;
         
         layerNodes.sort((o1, o2) -> {
-            int comp = model.ranking().compare(o1.state, o2.state);
-            return comp == 0 ? Double.compare(o2.bound, o1.bound) : comp;
+            double v1 = saturatedAdd(o1.bound, model.lowerBound().fastLowerBound(o1.state));
+            double v2 = saturatedAdd(o2.bound, model.lowerBound().fastLowerBound(o2.state));
+            int comp = Double.compare(v1, v2);
+            return comp == 0 ? model.ranking().compare(o1.state, o2.state) : comp;
         });
 
-        List<Node<T>> toDrop = new ArrayList<>(layerNodes.subList(0, layerNodes.size() - maxWidth));
+        // The best nodes are at the beginning (index 0). We keep the first `maxWidth` nodes.
+        // We drop the remaining nodes from `maxWidth` to `size`.
+        List<Node<T>> toDrop = new ArrayList<>(layerNodes.subList(maxWidth, layerNodes.size()));
         for (Node<T> n : toDrop) {
             stateMap.remove(n.state);
             for (Edge<T> e : n.inEdges) {
@@ -337,7 +332,8 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         if (!cache.isPresent()) return;
         for (Node<T> n : stateMap.values()) {
             if (n.backwardBound != Double.POSITIVE_INFINITY) {
-                Threshold t = new Threshold(n.backwardBound, n.isExact);
+                double thresholdValue = saturatedDiff(primalBound, n.backwardBound);
+                Threshold t = new Threshold(thresholdValue, n.isExact);
                 cache.get().updateThreshold(n.state, n.layer, t);
             }
         }
@@ -357,7 +353,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         if (targetNode == null) return Optional.empty();
-        Set<Decision> sol = new HashSet<>();
+        Set<Decision> sol = new HashSet<>(rootSubProblem.getPath());
         Edge<T> edge = targetNode.bestParentEdge;
         int depth = targetNode.layer;
         while (edge != null) {
@@ -385,7 +381,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                     }
                 }
                 if (!allKidsExact || n.outEdges.isEmpty()) {
-                    cutset.add(new SubProblem<>(n.state, n.bound, n.backwardBound, Collections.emptySet()));
+                    cutset.add(new SubProblem<>(n.state, n.bound, saturatedAdd(n.bound, n.backwardBound), pathOfNode(n)));
                 }
             }
         }
@@ -395,12 +391,35 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public boolean relaxedBestPathIsExact() {
         if (targetNode == null) return false;
+        if (!targetNode.isExact) return false;
         Edge<T> edge = targetNode.bestParentEdge;
         while (edge != null) {
             if (!edge.origin.isExact) return false;
             edge = edge.origin.bestParentEdge;
         }
+        
+        if (targetNode.bound < -1477.0) {
+            System.out.println("FOUND INVALID EXACT PATH WITH BOUND " + targetNode.bound);
+            edge = targetNode.bestParentEdge;
+            while (edge != null) {
+                System.out.println("Path node: " + edge.origin.state + " exact: " + edge.origin.isExact);
+                edge = edge.origin.bestParentEdge;
+            }
+        }
+        
         return true;
+    }
+
+    private Set<Decision> pathOfNode(Node<T> n) {
+        Set<Decision> path = new HashSet<>(rootSubProblem.getPath());
+        Edge<T> e = n.bestParentEdge;
+        int depth = n.layer;
+        while (e != null) {
+            depth--;
+            path.add(new Decision(depth, e.label));
+            e = e.origin.bestParentEdge;
+        }
+        return path;
     }
 
     @Override
