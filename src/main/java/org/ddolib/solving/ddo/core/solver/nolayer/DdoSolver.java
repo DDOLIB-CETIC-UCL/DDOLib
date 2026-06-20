@@ -87,6 +87,7 @@ public final class DdoSolver<T> implements Solver {
             int maxWidth = model.widthHeuristic().maximumWidth(sub.getState());
 
             // 1. RELAXATION
+            if (model.dominance() != null) model.dominance().clear();
             NoLayerDecisionDiagram<T> relaxedMdd = new NoLayerDecisionDiagram<>(
                     model, sub, CompilationType.Relaxed, maxWidth, bestUB, cache.map(c -> (Cache<T>) c));
 
@@ -106,6 +107,7 @@ public final class DdoSolver<T> implements Solver {
             if (!relaxedMdd.isExact() && (relaxedMdd.bestValue().isEmpty() || relaxedMdd.bestValue().get() < bestUB)) {
                 
                 // 2. RESTRICTION
+                if (model.dominance() != null) model.dominance().clear();
                 NoLayerDecisionDiagram<T> restrictedMdd = new NoLayerDecisionDiagram<>(
                         model, sub, CompilationType.Restricted, maxWidth, bestUB, cache.map(c -> (Cache<T>) c));
 

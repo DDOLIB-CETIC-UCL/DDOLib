@@ -22,15 +22,17 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Unit tests for evaluating the Hybrid reduction strategy on Knapsack problems (KSProblem)
+ * Unit tests for evaluating the Hybrid reduction strategy on Knapsack problems
+ * (KSProblem)
  * using Decision Diagram Optimization (DDO).
  *
  * <p>
  * This test class compares the optimal solutions obtained using two different
  * reduction strategies:
  * <ul>
- *   <li>Cost-based clustering</li>
- *   <li>Hybrid clustering (combining cost-based and distance-based GHP methods)</li>
+ * <li>Cost-based clustering</li>
+ * <li>Hybrid clustering (combining cost-based and distance-based GHP
+ * methods)</li>
  * </ul>
  *
  * <p>
@@ -216,22 +218,25 @@ public class KSHybridTest {
     }
 
     /**
-     * Parameterized test that compares the solutions obtained with Hybrid clustering
+     * Parameterized test that compares the solutions obtained with Hybrid
+     * clustering
      * against cost-based clustering for each test problem instance.
      *
      * <p>
      * The test iterates over different layer widths and cut set types, asserting
-     * that the Hybrid strategy produces the same optimal value as cost-based clustering.
+     * that the Hybrid strategy produces the same optimal value as cost-based
+     * clustering.
      *
      * @param problem a knapsack problem instance from the data provider
      */
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testOptimalSolutionFound(KSProblem problem) {
-        CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
+        CutSetType[] cs = new CutSetType[] { CutSetType.LastExactLayer, CutSetType.Frontier };
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionHybridClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem),
+                        optimalSolutionHybridClustering(problem, wid, ct));
             }
         }
     }

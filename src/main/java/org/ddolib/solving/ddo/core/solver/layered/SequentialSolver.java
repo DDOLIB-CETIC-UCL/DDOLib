@@ -216,7 +216,7 @@ public final class SequentialSolver<T> implements Solver {
             int maxWidth = width.maximumWidth(sub.getState());
             CompilationConfig<T> compilation = configureCompilation(CompilationType.Restricted,
                     sub, maxWidth, model.exportDot() && this.firstRestricted);
-
+            if (this.dominance != null) this.dominance.clear();
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
@@ -244,7 +244,7 @@ public final class SequentialSolver<T> implements Solver {
             // 2. RELAXATION
             compilation = configureCompilation(CompilationType.Relaxed, sub, maxWidth,
                     model.exportDot() && this.firstRelaxed);
-
+            if (this.dominance != null) this.dominance.clear();
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
             statistics = statistics.addNodes(relaxedMdd.nbNodes());

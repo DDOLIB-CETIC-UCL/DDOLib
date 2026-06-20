@@ -22,15 +22,16 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Unit tests for evaluating Generalized Hyperplane Partitioning (GHP) clustering
+ * Unit tests for evaluating Generalized Hyperplane Partitioning (GHP)
+ * clustering
  * on Knapsack problems (KSProblem) using Decision Diagram Optimization (DDO).
  *
  * <p>
  * This test class compares the optimal solutions obtained using two different
  * reduction strategies:
  * <ul>
- *   <li>Cost-based clustering</li>
- *   <li>GHP (Generalized Hyperplane Partitioning) clustering</li>
+ * <li>Cost-based clustering</li>
+ * <li>GHP (Generalized Hyperplane Partitioning) clustering</li>
  * </ul>
  *
  * <p>
@@ -224,10 +225,11 @@ public class KSGHPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testOptimalSolutionFound(KSProblem problem) {
-        CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
+        CutSetType[] cs = new CutSetType[] { CutSetType.LastExactLayer, CutSetType.Frontier };
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
-                assertEquals(optimalSolutionCostBasedClustering(problem), optimalSolutionGHPClustering(problem, wid, ct));
+                assertEquals(optimalSolutionCostBasedClustering(problem),
+                        optimalSolutionGHPClustering(problem, wid, ct));
             }
         }
     }

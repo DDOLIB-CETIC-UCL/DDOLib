@@ -96,6 +96,10 @@ public class GHP<T> implements ReductionStrategy<T> {
             ClusterNode nodeCurrent = pqClusters.poll();
             assert nodeCurrent != null;
             List<NodeSubProblem<T>> current = nodeCurrent.cluster;
+            if (current.size() <= 1) {
+                pqClusters.add(nodeCurrent);
+                break;
+            }
             pivotA = nodeCurrent.pivot;
             pivotB = nodeCurrent.furthestFromPivot;
             // Generates the two clusters

@@ -24,4 +24,12 @@ public abstract class DominanceChecker<T> {
      * @return Whether the input state is dominated.
      */
     public abstract boolean updateDominance(T state, int depth, double objValue);
+
+    /**
+     * Clears the dominance checker state.
+     * This is useful for search algorithms that restart and need to clear previously cached dominance relations.
+     */
+    public void clear() {
+        // Default implementation does nothing.
+    }
 }

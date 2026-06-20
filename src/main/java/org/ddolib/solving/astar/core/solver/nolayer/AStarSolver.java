@@ -53,6 +53,7 @@ public final class AStarSolver<T> implements Solver {
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
+        if (dominance != null) dominance.clear();
         open.add(root);
         present.put(root.getState(), root.f());
 

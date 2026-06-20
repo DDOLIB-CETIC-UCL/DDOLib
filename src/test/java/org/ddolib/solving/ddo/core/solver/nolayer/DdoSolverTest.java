@@ -1,7 +1,6 @@
 package org.ddolib.solving.ddo.core.solver.nolayer;
 
 import org.ddolib.common.solver.Solution;
-import org.ddolib.examples.layered.knapsack.KSGenerator;
 import org.ddolib.examples.nolayer.knapsack.KSDdoMain;
 import org.ddolib.examples.nolayer.knapsack.KSProblem;
 import org.ddolib.examples.nolayer.knapsack.KSState;

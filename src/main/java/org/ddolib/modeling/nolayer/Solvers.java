@@ -23,6 +23,20 @@ public class Solvers {
         return new AcsSolver<>(model).minimize(limit, onSolution);
     }
 
+    // DDO Solver Methods
+    public static <T> Solution minimizeDdo(DdoModel<T> model) {
+        return minimizeDdo(model, s -> false, (sol, s) -> {});
+    }
+    public static <T> Solution minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit) {
+        return minimizeDdo(model, limit, (sol, s) -> {});
+    }
+    public static <T> Solution minimizeDdo(DdoModel<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+        return minimizeDdo(model, s -> false, onSolution);
+    }
+    public static <T> Solution minimizeDdo(DdoModel<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        return new org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver<>(model).minimize(limit, onSolution);
+    }
+
     // A* Solver Methods
     public static <T> Solution minimizeAstar(Model<T> model) {
         return minimizeAstar(model, s -> false, (sol, s) -> {});

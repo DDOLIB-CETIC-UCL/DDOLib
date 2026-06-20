@@ -15,4 +15,10 @@ public interface NoLayerDominanceChecker<T> {
      * @return {@code true} if the state is dominated and should be pruned; {@code false} otherwise
      */
     boolean updateDominance(T state, double value);
+
+    /**
+     * Clears the internally cached states used for dominance checking.
+     * This is useful to reset the checker's state between solver iterations.
+     */
+    default void clear() {}
 }

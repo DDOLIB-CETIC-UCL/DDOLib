@@ -64,11 +64,11 @@ public class CostBased<T> implements ReductionStrategy<T> {
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {
-            double cmp = o1.getValue() - o2.getValue();
+            int cmp = Double.compare(o1.node.value, o2.node.value);
             if (cmp == 0 && delegate != null) {
                 return delegate.compare(o1.state, o2.state);
             } else {
-                return Double.compare(o1.getValue(), o2.getValue());
+                return cmp;
             }
         }
     }

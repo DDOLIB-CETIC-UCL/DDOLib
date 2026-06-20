@@ -173,4 +173,10 @@ public class SimpleDominanceChecker<T> extends DominanceChecker<T> {
         return dominated;
     }
 
+    @Override
+    public void clear() {
+        for (Map<Object, TreeSet<ValueState>> front : fronts) {
+            front.clear();
+        }
+    }
 }

@@ -1236,6 +1236,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         compilation.exportAsDot = false;
         compilation.debugLevel = DebugLevel.OFF;
         compilation.compilationType = CompilationType.Exact;
+        compilation.cache = Optional.empty();
 
         LinkedDecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();

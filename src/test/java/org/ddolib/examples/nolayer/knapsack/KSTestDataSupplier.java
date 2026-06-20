@@ -1,35 +1,55 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.modeling.nolayer.Relaxation;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.Decision;
-import java.util.Comparator;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.testbench.NoLayerTestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
-public class KSDdoMain {
+public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProblem> {
 
-    public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
-                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
-        final KSProblem problem = KSProblem.fromFile(instance);
+    private final Path dir;
 
-        DdoModel<KSState> model = new KSDdoModel(problem) {
+    public KSTestDataSupplier(Path dir) {
+        this.dir = dir;
+    }
+
+    @Override
+    protected List<KSProblem> generateProblems() {
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return KSProblem.fromFile(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected DdoModel<KSState> model(KSProblem problem) {
+        return new KSDdoModel(problem) {
             @Override
             public Relaxation<KSState> relaxation() {
                 return new Relaxation<KSState>() {
@@ -43,8 +63,7 @@ public class KSDdoMain {
                         while (it.hasNext()) {
                             KSState s = it.next();
                             maxCapacity = Math.max(maxCapacity, s.remainingCapacity()); // Relax by taking max capacity
-                            currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem to
-                                                                                  // overapproximate
+                            currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem
                         }
                         return new KSState(currentItem, maxCapacity);
                     }
@@ -119,43 +138,24 @@ public class KSDdoMain {
 
             @Override
             public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.NORMAL;
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
 
             @Override
             public boolean useCache() {
-                return true;
+                return false;
             }
         };
-
-        DdoSolver<KSState> solver = new DdoSolver<>(model);
-        Solution bestSolution = solver.minimize(
-                limit -> limit.nbIterations() > 500, // ADD LIMIT SO IT STOPS
-                (sol, stats) -> {
-                    SolutionPrinter.printSolution(stats, sol);
-                    try {
-                        double val = problem.evaluate(sol);
-                        System.out.println("ON SOLUTION EVALUATE: " + val);
-                    } catch (Exception e) {
-                        System.out.println("EVALUATE ERROR: " + e.getMessage());
-                    }
-                });
-
-        System.out.println(bestSolution.statistics());
-        System.out.println(bestSolution);
-        System.out.println("Optimal KS value: " + -bestSolution.value());
-        try {
-            int[] solArray = bestSolution.solution();
-            double val = problem.evaluate(solArray);
-            System.out.println("Evaluated value: " + val);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
-}
 
-abstract class KSDdoModel extends KSModel implements DdoModel<KSState> {
-    public KSDdoModel(KSProblem problem) {
-        super(problem);
+    private abstract static class KSDdoModel extends KSModel implements DdoModel<KSState> {
+        public KSDdoModel(KSProblem problem) {
+            super(problem);
+        }
     }
 }
