@@ -60,7 +60,13 @@ public interface Solver {
      * or an empty array if the solution does not exist
      */
     default int[] constructSolution(Set<Decision> decisions) {
-        int[] toReturn = new int[decisions.size()];
+        int maxVar = -1;
+        for (Decision d : decisions) {
+            if (d.variable() > maxVar) maxVar = d.variable();
+        }
+        if (maxVar == -1) return new int[0];
+        
+        int[] toReturn = new int[maxVar + 1];
         for (Decision d : decisions) {
             toReturn[d.variable()] = d.value();
         }

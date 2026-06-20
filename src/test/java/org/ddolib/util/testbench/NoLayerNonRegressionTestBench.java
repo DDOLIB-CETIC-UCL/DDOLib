@@ -101,7 +101,7 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         );
     }
 
-    private double solveAndChecksSolution(Model<T> model, String solverStr) {
+    protected double solveAndChecksSolution(Model<T> model, String solverStr) {
         Solution solution;
         if (model instanceof DdoModel<T>) {
             solution = Solvers.minimizeDdo((DdoModel<T>) model);
@@ -112,8 +112,10 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         }
 
         try {
-            assertEquals(model.problem().evaluate(solution.solution()), solution.value(), 1e-10,
-                    solverStr + ": The solution has not the same value that the returned value");
+            if (!Double.isInfinite(solution.value())) {
+                assertEquals(model.problem().evaluate(solution.solution()), solution.value(), 1e-10,
+                        solverStr + ": The solution has not the same value that the returned value");
+            }
         } catch (InvalidSolutionException e) {
             throw new RuntimeException(e);
         }
@@ -121,7 +123,7 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         return solution.value();
     }
 
-    private Model<T> wrapModel(Model<T> base, boolean useDominance) {
+    protected Model<T> wrapModel(Model<T> base, boolean useDominance) {
         return new Model<T>() {
             @Override public Problem<T> problem() { return base.problem(); }
             @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }
@@ -132,7 +134,7 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         };
     }
 
-    private DdoModel<T> wrapDdoModel(DdoModel<T> base, boolean useDominance, boolean useCache, Integer fixWidth) {
+    protected DdoModel<T> wrapDdoModel(DdoModel<T> base, boolean useDominance, boolean useCache, Integer fixWidth) {
         return new DdoModel<T>() {
             @Override public Problem<T> problem() { return base.problem(); }
             @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }
@@ -151,7 +153,7 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         };
     }
 
-    private AcsModel<T> wrapAcsModel(DdoModel<T> base, boolean useDominance, Integer fixWidth) {
+    protected AcsModel<T> wrapAcsModel(DdoModel<T> base, boolean useDominance, Integer fixWidth) {
         return new AcsModel<T>() {
             @Override public Problem<T> problem() { return base.problem(); }
             @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }

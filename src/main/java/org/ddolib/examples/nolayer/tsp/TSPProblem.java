@@ -20,6 +20,41 @@ public class TSPProblem implements Problem<TSPState> {
         this.n = distanceMatrix.length;
     }
 
+    public TSPProblem(final String fname) throws java.io.IOException {
+        javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        int n;
+        double[][] distanceMatrix;
+        try {
+            dbf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
+            org.w3c.dom.Document doc = db.parse(new java.io.File(fname));
+            doc.getDocumentElement().normalize();
+
+            org.w3c.dom.NodeList list = doc.getElementsByTagName("vertex");
+            n = list.getLength();
+            distanceMatrix = new double[n][n];
+
+            for (int i = 0; i < n; i++) {
+                org.w3c.dom.NodeList edgeList = list.item(i).getChildNodes();
+                for (int v = 0; v < edgeList.getLength(); v++) {
+                    org.w3c.dom.Node node = edgeList.item(v);
+                    if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        org.w3c.dom.Element element = (org.w3c.dom.Element) node;
+                        String cost = element.getAttribute("cost");
+                        String adjacentNode = element.getTextContent();
+                        int j = Integer.parseInt(adjacentNode);
+                        distanceMatrix[i][j] = Math.rint(Double.parseDouble(cost));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new java.io.IOException(e);
+        }
+
+        this.n = n;
+        this.distanceMatrix = distanceMatrix;
+    }
+
     @Override
     public TSPState initialState() {
         BitSet toVisit = new BitSet(n);

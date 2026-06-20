@@ -26,9 +26,17 @@ public class Solution {
      */
     public Solution(Optional<Set<Decision>> decisions, SearchStatistics statistics) {
         if (decisions.isPresent()) {
-            solution = new int[decisions.get().size()];
+            int maxVar = -1;
             for (Decision d : decisions.get()) {
-                solution[d.variable()] = d.value();
+                if (d.variable() > maxVar) maxVar = d.variable();
+            }
+            if (maxVar == -1) {
+                solution = new int[0];
+            } else {
+                solution = new int[maxVar + 1];
+                for (Decision d : decisions.get()) {
+                    solution[d.variable()] = d.value();
+                }
             }
         } else {
             solution = new int[0];

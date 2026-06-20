@@ -28,24 +28,13 @@ public class TSPTWModel implements Model<TSPTWState> {
         }
 
         this.lowerBound = state -> {
+            if (state.mustVisit().isEmpty() && state.currentCity() == 0) {
+                return 0.0;
+            }
             var toVisit = state.mustVisit();
-            ArrayList<Double> toVisitLB = new ArrayList<>(toVisit.cardinality() + 1);
-            toVisitLB.add(leastIncidentEdge[0]); // for returning to origin
+            double lb = leastIncidentEdge[0]; // for returning to origin
             for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
-                toVisitLB.add(leastIncidentEdge[i]);
-            }
-
-            int remainingSteps = toVisit.cardinality();
-            if (state.currentCity() != 0 || !toVisit.isEmpty()) {
-                remainingSteps++;
-            }
-
-            int lb = 0;
-            if (toVisitLB.size() > remainingSteps) {
-                Collections.sort(toVisitLB);
-            }
-            for (int i = 0; i < remainingSteps && i < toVisitLB.size(); i++) {
-                lb += toVisitLB.get(i);
+                lb += leastIncidentEdge[i];
             }
             return lb;
         };

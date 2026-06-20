@@ -1,30 +1,59 @@
 package org.ddolib.examples.nolayer.misp;
 
-import org.ddolib.common.solver.Solution;
 import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.modeling.nolayer.Relaxation;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.testbench.NoLayerTestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
-public class MispDdoMain {
+public class MispTestDataSupplier extends NoLayerTestDataSupplier<MispState, MispProblem> {
 
-    public static void main(String[] args) throws IOException {
-        String instance = args.length == 0 ? Path.of("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
-        final MispProblem problem = MispProblem.fromFile(instance);
+    private final Path dir;
 
-        DdoModel<MispState> model = new MispDdoModel(problem) {
+    public MispTestDataSupplier(Path dir) {
+        this.dir = dir;
+    }
+
+    @Override
+    protected List<MispProblem> generateProblems() {
+        try (Stream<Path> stream = Files.walk(dir)) {
+            return stream.filter(Files::isRegularFile) // get only files
+                    .map(filePath -> {
+                        try {
+                            return MispProblem.fromFile(filePath.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected DdoModel<MispState> model(MispProblem problem) {
+        return new MispDdoModel(problem) {
+            @Override
+            public FastLowerBound<MispState> lowerBound() {
+                return (state) -> state.remainingNodes().isEmpty() ? 0 : -1;
+            }
             @Override
             public Relaxation<MispState> relaxation() {
                 return new Relaxation<MispState>() {
@@ -66,7 +95,17 @@ public class MispDdoMain {
 
             @Override
             public VerbosityLevel verbosityLevel() {
-                return VerbosityLevel.NORMAL;
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+
+            @Override
+            public org.ddolib.common.dominance.NoLayerDominanceChecker<MispState> dominance() {
+                return new MispNoLayerDominanceChecker();
             }
 
             @Override
@@ -74,21 +113,11 @@ public class MispDdoMain {
                 return true;
             }
         };
-
-        DdoSolver<MispState> solver = new DdoSolver<>(model);
-        Solution bestSolution = solver.minimize(
-                limit -> limit.nbIterations() > 1000,
-                (sol, stats) -> SolutionPrinter.printSolution(stats, sol)
-        );
-
-        System.out.println(bestSolution.statistics());
-        System.out.println(bestSolution);
-        System.out.println("Optimal MISP value: " + -bestSolution.value());
     }
-}
 
-abstract class MispDdoModel extends MispModel implements DdoModel<MispState> {
-    public MispDdoModel(MispProblem problem) {
-        super(problem);
+    private abstract static class MispDdoModel extends MispModel implements DdoModel<MispState> {
+        public MispDdoModel(MispProblem problem) {
+            super(problem);
+        }
     }
 }

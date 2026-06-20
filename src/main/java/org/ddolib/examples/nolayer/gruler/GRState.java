@@ -20,6 +20,10 @@ public class GRState {
      * The position of the last placed mark on the ruler.
      */
     private int lastMark;
+    /**
+     * The layer (depth) of the state.
+     */
+    private int layer;
 
     /**
      * Constructs a new {@link GRState} from given sets of marks and distances.
@@ -31,10 +35,11 @@ public class GRState {
      * @param distances the set of pairwise distances already covered.
      * @param lastMark  the position of the last placed mark.
      */
-    public GRState(BitSet marks, BitSet distances, int lastMark) {
+    public GRState(BitSet marks, BitSet distances, int lastMark, int layer) {
         this.marks = (BitSet) marks.clone();
         this.distances = (BitSet) distances.clone();
         this.lastMark = lastMark;
+        this.layer = layer;
     }
 
     /**
@@ -61,7 +66,11 @@ public class GRState {
      * @return the number of marks in this state.
      */
     public int getNumberOfMarks() {
-        return marks.cardinality();
+        return layer; // Return the explicit layer instead of cardinality
+    }
+
+    public int getLayer() {
+        return layer;
     }
 
     /**
@@ -79,7 +88,7 @@ public class GRState {
      * @return a new {@link GRState} identical to the current one.
      */
     public GRState copy() {
-        return new GRState(marks, distances, lastMark);
+        return new GRState(marks, distances, lastMark, layer);
     }
 
     /**
@@ -89,7 +98,7 @@ public class GRState {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(marks, distances, lastMark);
+        return Objects.hash(marks, distances, lastMark, layer);
     }
 
     /**
@@ -103,7 +112,7 @@ public class GRState {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof GRState other) {
-            return this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark;
+            return this.marks.equals(other.marks) && this.distances.equals(other.distances) && this.lastMark == other.lastMark && this.layer == other.layer;
         }
         return false;
     }
@@ -118,6 +127,6 @@ public class GRState {
      */
     @Override
     public String toString() {
-        return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + ")";
+        return "(" + Arrays.toString(marks.stream().toArray()) + " , " + Arrays.toString(distances.stream().toArray()) + " , " + lastMark + " , " + layer + ")";
     }
 }

@@ -23,7 +23,7 @@ public class GRProblem implements Problem<GRState> {
     public GRState initialState() {
         BitSet mark = new BitSet();
         mark.set(0);
-        return new GRState(mark, new BitSet(), 0);
+        return new GRState(mark, new BitSet(), 0, 1);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class GRProblem implements Problem<GRState> {
         }
         nextMarks.set(label);
 
-        return new GRState(nextMarks, nextDistances, label);
+        return new GRState(nextMarks, nextDistances, label, state.getLayer() + 1);
     }
 
     @Override

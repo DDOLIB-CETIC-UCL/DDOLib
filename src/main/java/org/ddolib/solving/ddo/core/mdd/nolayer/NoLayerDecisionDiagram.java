@@ -119,7 +119,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     private void compileRelaxed() {
-        LinkedList<Node<T>> qn = new LinkedList<>();
+        PriorityQueue<Node<T>> qn = new PriorityQueue<>(Comparator.comparingInt(n -> n.layer));
         qn.add(rootNode);
 
         List<Node<T>> currentLayerNodes = new ArrayList<>();
@@ -142,7 +142,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     }
 
     private void compileRestricted() {
-        LinkedList<Node<T>> qn = new LinkedList<>();
+        PriorityQueue<Node<T>> qn = new PriorityQueue<>(Comparator.comparingInt(n -> n.layer));
         qn.add(rootNode);
 
         List<Node<T>> currentLayerNodes = new ArrayList<>();
@@ -159,9 +159,15 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         }
     }
 
-    private void expandLayer(List<Node<T>> layerNodes, LinkedList<Node<T>> qn) {
+    private void expandLayer(List<Node<T>> layerNodes, PriorityQueue<Node<T>> qn) {
         NoLayerDominanceChecker<T> dominance = model.dominance();
         for (Node<T> n : layerNodes) {
+            if (cache.isPresent()) {
+                Optional<org.ddolib.solving.ddo.core.cache.Threshold> th = cache.get().getThreshold(n.state, n.layer);
+                if (th.isPresent() && n.bound >= th.get().getValue()) {
+                    continue; // Pruned by cache
+                }
+            }
             if (n.isSink(problem)) {
                 if (targetNode == null) targetNode = n;
                 else if (targetNode != n) {
@@ -176,6 +182,10 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                 T nextState = problem.transition(n.state, l);
                 double cost = problem.transitionCost(n.state, l);
                 double ep = saturatedAdd(n.bound, cost);
+                double flb = model.lowerBound().fastLowerBound(nextState);
+                if (saturatedAdd(ep, flb) >= primalBound) {
+                    continue;
+                }
 
                 Node<T> child = stateMap.get(nextState);
                 boolean newNode = (child == null);
@@ -197,8 +207,12 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                     child.bestParentEdge = e;
                 }
 
-                child.layer = Math.max(child.layer, n.layer + 1);
-                if (newNode) {
+                int newLayer = Math.max(child.layer, n.layer + 1);
+                if (newLayer > child.layer) {
+                    if (!newNode) qn.remove(child);
+                    child.layer = newLayer;
+                    qn.add(child);
+                } else if (newNode) {
                     qn.add(child);
                 }
             }
@@ -258,9 +272,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
             
             for (Edge<T> e : allInEdges) {
                 e.destination = mergedNode;
-                if (!mergedNode.inEdges.contains(e)) {
-                    mergedNode.inEdges.add(e);
-                }
+                mergedNode.inEdges.add(e);
             }
             
             if (isBetter(bestBound, mergedNode.bound)) {

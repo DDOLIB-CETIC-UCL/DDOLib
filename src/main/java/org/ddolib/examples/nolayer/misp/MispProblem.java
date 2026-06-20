@@ -24,7 +24,7 @@ public class MispProblem implements Problem<MispState> {
     public MispState initialState() {
         BitSet remaining = new BitSet(nbVars);
         remaining.set(0, nbVars);
-        return new MispState(remaining, -1);
+        return new MispState(remaining);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MispProblem implements Problem<MispState> {
     @Override
     public Iterator<Integer> domain(MispState state) {
         List<Integer> dom = new ArrayList<>();
-        int i = state.remainingNodes().nextSetBit(state.lastSelected() + 1);
+        int i = state.remainingNodes().nextSetBit(0);
         while (i >= 0) {
             dom.add(i);
             i = state.remainingNodes().nextSetBit(i + 1);
@@ -53,7 +53,7 @@ public class MispProblem implements Problem<MispState> {
         BitSet nextRemaining = (BitSet) state.remainingNodes().clone();
         nextRemaining.andNot(neighbors[label]);
         nextRemaining.clear(0, label + 1);
-        return new MispState(nextRemaining, label);
+        return new MispState(nextRemaining);
     }
 
     @Override
