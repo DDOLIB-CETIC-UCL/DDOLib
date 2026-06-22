@@ -26,4 +26,6 @@ public abstract class DominanceChecker<T> {
     public abstract boolean updateDominance(T state, int depth, double objValue);
 
     public abstract boolean dominated(T state, double objValue, int depth);
+
+    public abstract void reset();
 }

@@ -65,4 +65,10 @@ public class DefaultDominanceChecker<T> extends DominanceChecker<T> {
         return false;
     }
 
+    @Override
+    public void reset() {
+        return ;
+    }
+
+
 }

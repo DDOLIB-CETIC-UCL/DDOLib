@@ -161,4 +161,11 @@ public class SimpleDominanceChecker<T> extends DominanceChecker<T> {
         return false;
     }
 
+    @Override
+    public void reset() {
+        for(int i=0; i<fronts.size(); i++) {
+            fronts.get(i).clear();
+        }
+    }
+
 }
