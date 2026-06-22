@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsp</a> &gt; <span class="el_source">TSPProblem.java</span></div><h1>TSPProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsp;
+
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.nolayer.Problem;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class TSPProblem implements Problem&lt;TSPState&gt; {
+
+    public final double[][] distanceMatrix;
+    private final int n;
+
+<span class="fc" id="L18">    public TSPProblem(final double[][] distanceMatrix) {</span>
+<span class="fc" id="L19">        this.distanceMatrix = distanceMatrix;</span>
+<span class="fc" id="L20">        this.n = distanceMatrix.length;</span>
+<span class="fc" id="L21">    }</span>
+
+<span class="fc" id="L23">    public TSPProblem(final String fname) throws java.io.IOException {</span>
+<span class="fc" id="L24">        javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();</span>
+        int n;
+        double[][] distanceMatrix;
+        try {
+<span class="fc" id="L28">            dbf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="fc" id="L29">            javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="fc" id="L30">            org.w3c.dom.Document doc = db.parse(new java.io.File(fname));</span>
+<span class="fc" id="L31">            doc.getDocumentElement().normalize();</span>
+
+<span class="fc" id="L33">            org.w3c.dom.NodeList list = doc.getElementsByTagName(&quot;vertex&quot;);</span>
+<span class="fc" id="L34">            n = list.getLength();</span>
+<span class="fc" id="L35">            distanceMatrix = new double[n][n];</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L38">                org.w3c.dom.NodeList edgeList = list.item(i).getChildNodes();</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">                for (int v = 0; v &lt; edgeList.getLength(); v++) {</span>
+<span class="fc" id="L40">                    org.w3c.dom.Node node = edgeList.item(v);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">                    if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L42">                        org.w3c.dom.Element element = (org.w3c.dom.Element) node;</span>
+<span class="fc" id="L43">                        String cost = element.getAttribute(&quot;cost&quot;);</span>
+<span class="fc" id="L44">                        String adjacentNode = element.getTextContent();</span>
+<span class="fc" id="L45">                        int j = Integer.parseInt(adjacentNode);</span>
+<span class="fc" id="L46">                        distanceMatrix[i][j] = Math.rint(Double.parseDouble(cost));</span>
+                    }
+                }
+            }
+<span class="nc" id="L50">        } catch (Exception e) {</span>
+<span class="nc" id="L51">            throw new java.io.IOException(e);</span>
+<span class="fc" id="L52">        }</span>
+
+<span class="fc" id="L54">        this.n = n;</span>
+<span class="fc" id="L55">        this.distanceMatrix = distanceMatrix;</span>
+<span class="fc" id="L56">    }</span>
+
+    @Override
+    public TSPState initialState() {
+<span class="fc" id="L60">        BitSet toVisit = new BitSet(n);</span>
+<span class="fc" id="L61">        toVisit.set(1, n);</span>
+<span class="fc" id="L62">        return new TSPState(singleton(0), toVisit);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L67">        return 0;</span>
+    }
+
+    @Override
+    public boolean isTarget(TSPState state) {
+        // Target is reached when no more cities to visit and current is 0
+<span class="fc bfc" id="L73" title="All 4 branches covered.">        return state.toVisit.isEmpty() &amp;&amp; state.current.get(0);</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(TSPState state) {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (state.toVisit.isEmpty()) {</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">            if (!state.current.get(0)) {</span>
+<span class="fc" id="L80">                return singleton(0).stream().iterator();</span>
+            }
+<span class="nc" id="L82">            return new ArrayList&lt;Integer&gt;().iterator(); // Already at target</span>
+        } else {
+<span class="fc" id="L84">            ArrayList&lt;Integer&gt; domain = new ArrayList&lt;&gt;(state.toVisit.stream().boxed().toList());</span>
+<span class="fc" id="L85">            return domain.iterator();</span>
+        }
+    }
+
+    @Override
+    public TSPState transition(TSPState state, int label) {
+<span class="fc" id="L91">        BitSet newToVisit = (BitSet) state.toVisit.clone();</span>
+<span class="fc" id="L92">        newToVisit.clear(label);</span>
+<span class="fc" id="L93">        return new TSPState(singleton(label), newToVisit);</span>
+    }
+
+    @Override
+    public double transitionCost(TSPState state, int label) {
+<span class="fc" id="L98">        return state.current.stream()</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                .filter(possibleCurrentNode -&gt; possibleCurrentNode != label)</span>
+<span class="fc" id="L100">                .mapToDouble(possibleCurrentNode -&gt; distanceMatrix[possibleCurrentNode][label])</span>
+<span class="fc" id="L101">                .min()</span>
+<span class="fc" id="L102">                .orElse(0.0);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (solution.length != n) {</span>
+<span class="nc" id="L108">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L109">                    &quot;the number %d variables&quot;, Arrays.toString(solution), n));</span>
+        }
+
+<span class="fc" id="L112">        Map&lt;Integer, Long&gt; count = Arrays.stream(solution)</span>
+<span class="fc" id="L113">                .boxed()</span>
+<span class="fc" id="L114">                .collect(Collectors.groupingBy(x -&gt; x, Collectors.counting()));</span>
+
+<span class="pc bpc" id="L116" title="2 of 4 branches missed.">        if (count.values().stream().anyMatch(x -&gt; x != 1)) {</span>
+<span class="nc" id="L117">            String msg = &quot;The solution has duplicated nodes and does not reach each node exactly once&quot;;</span>
+<span class="nc" id="L118">            throw new InvalidSolutionException(msg);</span>
+        }
+
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        if (solution[n - 1] != 0) {</span>
+<span class="nc" id="L122">            throw new InvalidSolutionException(&quot;The solution does not return to the depot (node 0)&quot;);</span>
+        }
+
+<span class="fc" id="L125">        double value = distanceMatrix[0][solution[0]];</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        for (int i = 1; i &lt; n; i++) {</span>
+<span class="fc" id="L127">            value += distanceMatrix[solution[i - 1]][solution[i]];</span>
+        }
+
+<span class="fc" id="L130">        return value;</span>
+    }
+
+    public BitSet singleton(int singletonValue) {
+<span class="fc" id="L134">        BitSet toReturn = new BitSet(n);</span>
+<span class="fc" id="L135">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L136">        return toReturn;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L141">        return &quot;TSPNoLayer(n:&quot; + n + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

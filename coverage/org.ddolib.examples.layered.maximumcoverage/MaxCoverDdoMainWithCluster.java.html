@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxCoverDdoMainWithCluster.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.maximumcoverage</a> &gt; <span class="el_source">MaxCoverDdoMainWithCluster.java</span></div><h1>MaxCoverDdoMainWithCluster.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.maximumcoverage;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.modeling.layered.Solvers;
+import org.ddolib.util.io.SolutionPrinter;
+
+import java.io.IOException;
+/**
+ * Maximum Coverage (MaxCover) problem with Ddo
+ * &lt;p&gt;
+ * This class demonstrates how to solve an instance of the Maximum Coverage (MaxCover) problem (BKP)
+ * using a Decision Diagram Optimization (DDO) algorithm.
+ * &lt;ul&gt;
+ *   &lt;li&gt;Builds an instance of the MaxCover problem (randomly generated or loaded from a file)&lt;/li&gt;
+ *   &lt;li&gt;Defines a {@link DdoModel} by specifying the problem, relaxation,
+ *       ranking strategy, width heuristic, and lower bound&lt;/li&gt;
+ *   &lt;li&gt;Runs the DDO solver to compute a solution&lt;/li&gt;
+ *   &lt;li&gt;Prints the resulting solution&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The problem parameters (size, cardinality, random seed, etc.) can be
+ * easily modified to experiment with different instances.
+ */
+<span class="nc" id="L32">public class MaxCoverDdoMainWithCluster {</span>
+    public static void main(String[] args) throws IOException {
+        /**
+         * Program entry point.
+         *
+         * &lt;p&gt;
+         * This method:
+         * &lt;ol&gt;
+         *   &lt;li&gt;Creates an instance of the MaxCover problem&lt;/li&gt;
+         *   &lt;li&gt;Builds a DDO model by defining:
+         *     &lt;ul&gt;
+         *       &lt;li&gt;the problem to solve&lt;/li&gt;
+         *       &lt;li&gt;the relaxation used during search&lt;/li&gt;
+         *       &lt;li&gt;the state ranking strategy&lt;/li&gt;
+         *       &lt;li&gt;the width heuristic (fixed width in this example)&lt;/li&gt;
+         *       &lt;li&gt;a fast lower bound&lt;/li&gt;
+         *     &lt;/ul&gt;
+         *   &lt;/li&gt;
+         *   &lt;li&gt;Runs the DDO solver in minimization mode&lt;/li&gt;
+         *   &lt;li&gt;Prints the intermediate and final solutions&lt;/li&gt;
+         * &lt;/ol&gt;
+         *
+         * @param args command-line arguments (not used)
+         * @throws IOException if an error occurs while loading a problem instance from a file
+         */
+<span class="nc" id="L57">        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);</span>
+        // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
+
+        // MaxCoverProblem problem = new MaxCoverProblem(&quot;src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt&quot;);
+<span class="nc" id="L61">        System.out.println(problem);</span>
+<span class="nc" id="L62">        DdoModel&lt;MaxCoverState&gt; model = new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;MaxCoverState&gt; problem() {
+<span class="nc" id="L65">                return problem;</span>
+            }
+
+            @Override
+            public MaxCoverRelax relaxation() {
+<span class="nc" id="L70">                return new MaxCoverRelax(problem);</span>
+            }
+
+            @Override
+            public MaxCoverRanking ranking() {
+<span class="nc" id="L75">                return new MaxCoverRanking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;MaxCoverState&gt; widthHeuristic() {
+<span class="nc" id="L80">                return new FixedWidth&lt;&gt;(100);</span>
+            }
+
+            @Override
+            public MaxCoverFastLowerBound lowerBound() {
+<span class="nc" id="L85">                return new MaxCoverFastLowerBound(problem);</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L90">                return false;</span>
+            }
+
+            @Override
+            public ReductionStrategy&lt;MaxCoverState&gt; relaxStrategy() {
+<span class="nc" id="L95">                return new GHP&lt;&gt;(new MaxCoverDistance(problem));</span>
+//                return new Hybrid&lt;&gt;(new MaxCoverRanking(), new MaxCoverDistance(problem));
+//                return new CostBased&lt;&gt;(new MaxCoverRanking()); // default strategy
+            }
+
+            @Override
+            public ReductionStrategy&lt;MaxCoverState&gt; restrictStrategy() {
+<span class="nc" id="L102">                return new GHP&lt;&gt;(new MaxCoverDistance(problem));</span>
+//                return new Hybrid&lt;&gt;(new MaxCoverRanking(), new MaxCoverDistance(problem));
+//                return new CostBased&lt;&gt;(new MaxCoverRanking()); // default strategy
+            }
+        };
+
+<span class="nc" id="L108">        Solution solution = Solvers.minimizeDdo(model, (sol, s) -&gt; {</span>
+<span class="nc" id="L109">            SolutionPrinter.printSolution(s,sol);</span>
+<span class="nc" id="L110">        });</span>
+<span class="nc" id="L111">        System.out.println();</span>
+<span class="nc" id="L112">        System.out.println(solution);</span>
+<span class="nc" id="L113">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

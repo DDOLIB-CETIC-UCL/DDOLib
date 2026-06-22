@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsp</a> &gt; <span class="el_source">TSPProblem.java</span></div><h1>TSPProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsp;
+
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.layered.Problem;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Class representing an instance of the Traveling Salesman Problem (TSP).
+ *
+ * &lt;p&gt;
+ * This class provides functionality to:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Store the number of nodes and the distance matrix.&lt;/li&gt;
+ *     &lt;li&gt;Evaluate the cost of a given TSP tour.&lt;/li&gt;
+ *     &lt;li&gt;Create TSP instances from a distance matrix (double[][]) or from an XML file following XML-TSPLIB.&lt;/li&gt;
+ *     &lt;li&gt;Provide the initial state, variable domains, and transition costs for search algorithms.&lt;/li&gt;
+ *     &lt;li&gt;Optionally store the optimal solution value for benchmarking purposes.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * Example usage:
+ * &lt;/p&gt;
+ * &lt;pre&gt;
+ *     double[][] distMatrix = ...;
+ *     TSPProblem problem = new TSPProblem(distMatrix);
+ *     double cost = problem.eval(new int[]{0,1,2,3});
+ * &lt;/pre&gt;
+ *
+ * @see &lt;a href=&quot;http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf&quot;&gt;
+ * XML-TSPLIB specification&lt;/a&gt;
+ */
+public class TSPProblem implements Problem&lt;TSPState&gt; {
+
+    /**
+     * Distance matrix between nodes
+     */
+    public final double[][] distanceMatrix;
+    /**
+     * Number of nodes (cities)
+     */
+    final int n;
+    /**
+     * Optional value of the known optimal solution
+     */
+<span class="pc" id="L58">    private Optional&lt;Double&gt; optimal = Optional.empty();</span>
+
+    /**
+     * Optional name for easier readability of tests
+     */
+<span class="pc" id="L63">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs a TSP instance from a given distance matrix.
+     *
+     * @param distanceMatrix the distance matrix of the instance
+     */
+<span class="fc" id="L70">    public TSPProblem(final double[][] distanceMatrix) {</span>
+<span class="fc" id="L71">        this.distanceMatrix = distanceMatrix;</span>
+<span class="fc" id="L72">        this.n = distanceMatrix.length;</span>
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Constructs a TSP instance from a given distance matrix and known optimal value.
+     *
+     * @param distanceMatrix the distance matrix of the instance
+     * @param optimal        the optimal solution value
+     */
+<span class="nc" id="L81">    public TSPProblem(final double[][] distanceMatrix, double optimal) {</span>
+<span class="nc" id="L82">        this.distanceMatrix = distanceMatrix;</span>
+<span class="nc" id="L83">        this.n = distanceMatrix.length;</span>
+<span class="nc" id="L84">        this.optimal = Optional.of(optimal);</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Constructs a TSP instance by reading an XML file in the XML-TSPLIB format.
+     *
+     * @param fname the path to the XML file
+     * @throws IOException if an error occurs while reading or parsing the file
+     */
+<span class="fc" id="L93">    public TSPProblem(final String fname) throws IOException {</span>
+        // Instantiate the Factory
+<span class="fc" id="L95">        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L96">        Optional&lt;Double&gt; obj = Optional.empty();</span>
+        int n;
+        double[][] distanceMatrix;
+        try {
+
+            // optional, but recommended
+            // process XML securely, avoid attacks like XML External Entities (XXE)
+<span class="fc" id="L103">            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+
+            // parse XML file
+<span class="fc" id="L106">            DocumentBuilder db = dbf.newDocumentBuilder();</span>
+
+<span class="fc" id="L108">            Document doc = db.parse(new File(fname));</span>
+<span class="fc" id="L109">            doc.getDocumentElement().normalize();</span>
+
+<span class="fc" id="L111">            NodeList objlist = doc.getElementsByTagName(&quot;objective&quot;);</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">            if (objlist.getLength() &gt; 0) {</span>
+<span class="fc" id="L113">                obj = Optional.of(Double.parseDouble(objlist.item(0).getTextContent()));</span>
+            }
+
+<span class="fc" id="L116">            NodeList list = doc.getElementsByTagName(&quot;vertex&quot;);</span>
+
+<span class="fc" id="L118">            n = list.getLength();</span>
+<span class="fc" id="L119">            distanceMatrix = new double[n][n];</span>
+
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L122">                NodeList edgeList = list.item(i).getChildNodes();</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">                for (int v = 0; v &lt; edgeList.getLength(); v++) {</span>
+
+<span class="fc" id="L125">                    Node node = edgeList.item(v);</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                    if (node.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L127">                        Element element = (Element) node;</span>
+<span class="fc" id="L128">                        String cost = element.getAttribute(&quot;cost&quot;);</span>
+<span class="fc" id="L129">                        String adjacentNode = element.getTextContent();</span>
+<span class="fc" id="L130">                        int j = Integer.parseInt(adjacentNode);</span>
+<span class="fc" id="L131">                        distanceMatrix[i][j] = Math.rint(Double.parseDouble(cost));</span>
+                    }
+                }
+            }
+<span class="nc" id="L135">        } catch (Exception e) {</span>
+<span class="nc" id="L136">            throw new IOException(e);</span>
+<span class="fc" id="L137">        }</span>
+
+<span class="fc" id="L139">        this.n = n;</span>
+<span class="fc" id="L140">        this.distanceMatrix = distanceMatrix;</span>
+<span class="fc" id="L141">        this.optimal = obj;</span>
+<span class="fc" id="L142">        this.name = Optional.of(fname);</span>
+
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Evaluates the total tour cost for a given solution.
+     *
+     * @param solution an array representing the node visit order
+     * @return the total cost of the tour including return to the starting node
+     */
+    public double eval(int[] solution) {
+<span class="fc" id="L153">        double toReturn = 0;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        for (int i = 1; i &lt; solution.length; i++) {</span>
+<span class="fc" id="L155">            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];</span>
+        }
+<span class="fc" id="L157">        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back</span>
+<span class="fc" id="L158">        return toReturn;</span>
+    }
+
+    /**
+     * Returns the number of decision variables in the problem.
+     *
+     * @return number of variables (equal to number of nodes)
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L168">        return n; //the last decision will be to come back to point zero</span>
+    }
+
+    /**
+     * Returns the initial state for a search algorithm.
+     * The initial state starts at node 0, with all other nodes unvisited.
+     *
+     * @return the initial TSPState
+     */
+    @Override
+    public TSPState initialState() {
+<span class="fc" id="L179">        BitSet toVisit = new BitSet(n);</span>
+<span class="fc" id="L180">        toVisit.set(1, n);</span>
+
+<span class="fc" id="L182">        return new TSPState(singleton(0), toVisit);</span>
+    }
+
+    /**
+     * Returns the initial cost of the problem, which is 0.
+     *
+     * @return 0.0
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L192">        return 0;</span>
+    }
+
+    /**
+     * Returns the domain of possible decisions for a given state and variable index.
+     * The last variable represents returning to the starting node.
+     *
+     * @param state the current state
+     * @param var   the variable index
+     * @return an iterator over possible node indices
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(TSPState state, int var) {
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (var == n - 1) {</span>
+            //the final decision is to come back to node zero
+<span class="fc" id="L207">            return singleton(0).stream().iterator();</span>
+        } else {
+<span class="fc" id="L209">            ArrayList&lt;Integer&gt; domain = new ArrayList&lt;&gt;(state.toVisit.stream().boxed().toList());</span>
+<span class="fc" id="L210">            return domain.iterator();</span>
+        }
+    }
+
+    /**
+     * Computes the next state after making a decision from the current state.
+     *
+     * @param state    the current TSPState
+     * @param decision the decision made
+     * @return the resulting TSPState after applying the decision
+     */
+    @Override
+    public TSPState transition(TSPState state, Decision decision) {
+<span class="fc" id="L223">        int node = decision.value();</span>
+
+
+<span class="fc" id="L226">        BitSet newToVisit = (BitSet) state.toVisit.clone();</span>
+<span class="fc" id="L227">        newToVisit.clear(node);</span>
+
+<span class="fc" id="L229">        return new TSPState(state.singleton(node), newToVisit);</span>
+    }
+
+    /**
+     * Computes the transition cost of moving from the current state to the next state
+     * by visiting a given node.
+     *
+     * @param state    the current TSPState
+     * @param decision the decision to move to a node
+     * @return the cost of the transition
+     */
+    @Override
+    public double transitionCost(TSPState state, Decision decision) {
+<span class="fc" id="L242">        return state.current.stream()</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">                .filter(possibleCurrentNode -&gt; possibleCurrentNode != decision.value())</span>
+<span class="fc" id="L244">                .mapToDouble(possibleCurrentNode -&gt; distanceMatrix[possibleCurrentNode][decision.value()])</span>
+<span class="fc" id="L245">                .min()</span>
+<span class="fc" id="L246">                .getAsDouble();</span>
+    }
+
+    /**
+     * Returns the optimal value of the instance if known.
+     *
+     * @return an Optional containing the optimal value, or empty if unknown
+     */
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L256">        return optimal;</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L262">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L263">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L266">        Map&lt;Integer, Long&gt; count = Arrays.stream(solution)</span>
+<span class="fc" id="L267">                .boxed()</span>
+<span class="fc" id="L268">                .collect(Collectors.groupingBy(x -&gt; x, Collectors.counting()));</span>
+
+<span class="pc bpc" id="L270" title="2 of 4 branches missed.">        if (count.values().stream().anyMatch(x -&gt; x != 1)) {</span>
+<span class="nc" id="L271">            String msg = &quot;The solution has duplicated nodes and does not reache each node&quot;;</span>
+<span class="nc" id="L272">            throw new InvalidSolutionException(msg);</span>
+        }
+
+<span class="fc" id="L275">        double value = distanceMatrix[0][solution[0]]; //Start from the depot.</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">        for (int i = 1; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L277">            value += distanceMatrix[solution[i - 1]][solution[i]];</span>
+        }
+
+
+<span class="fc" id="L281">        return value;</span>
+    }
+
+    /**
+     * Creates a BitSet containing only a single node.
+     *
+     * @param singletonValue the node to include
+     * @return a BitSet with only the specified node set
+     */
+    public BitSet singleton(int singletonValue) {
+<span class="fc" id="L291">        BitSet toReturn = new BitSet(n);</span>
+<span class="fc" id="L292">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L293">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a string representation of the instance.
+     * If a name is set, it returns the name; otherwise, it prints the size and distance matrix.
+     *
+     * @return string representation of the TSPProblem
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L304">        String defaultStr = &quot;TSP(n:&quot; + n + &quot;\n&quot; +</span>
+<span class="fc" id="L305">                &quot;\t&quot; + Arrays.stream(distanceMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList() + &quot;\n)&quot;;</span>
+<span class="fc" id="L306">        return name.orElse(defaultStr);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

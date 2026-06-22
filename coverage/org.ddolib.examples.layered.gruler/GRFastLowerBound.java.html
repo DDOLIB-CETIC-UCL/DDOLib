@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.gruler</a> &gt; <span class="el_source">GRFastLowerBound.java</span></div><h1>GRFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.gruler;
+
+import org.ddolib.modeling.layered.FastLowerBound;
+
+import java.util.Set;
+
+/**
+ * Lower bound for the Golomb Ruler.
+ *
+ * &lt;p&gt; It assumes that the next marks will add the smallest missing distances.&lt;/p&gt;
+ *
+ */
+<span class="fc" id="L13">public class GRFastLowerBound implements FastLowerBound&lt;GRState&gt; {</span>
+
+
+    @Override
+    public double fastLowerBound(GRState state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L18">        int missingMarks = variables.size();</span>
+
+<span class="fc" id="L20">        int i = 0;</span>
+<span class="fc" id="L21">        int cost = 0;</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        while (missingMarks != 0) {</span>
+<span class="fc bfc" id="L23" title="All 4 branches covered.">            if (i != 0 &amp;&amp; !state.getDistances().get(i)) {</span>
+<span class="fc" id="L24">                cost += i;</span>
+<span class="fc" id="L25">                missingMarks--;</span>
+            }
+<span class="fc" id="L27">            i++;</span>
+        }
+<span class="fc" id="L29">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

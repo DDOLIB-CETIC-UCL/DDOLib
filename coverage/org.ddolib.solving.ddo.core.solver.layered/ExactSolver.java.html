@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExactSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.solver.layered</a> &gt; <span class="el_source">ExactSolver.java</span></div><h1>ExactSolver.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.solver.layered;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.solving.ddo.core.compilation.layered.CompilationConfig;
+import org.ddolib.solving.ddo.core.compilation.CompilationType;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.solving.ddo.core.mdd.layered.LinkedDecisionDiagram;
+import org.ddolib.modeling.layered.DdoModel;
+import org.ddolib.modeling.layered.ExactModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+
+/**
+ * Solver that compiles a single exact decision diagram (MDD) to find the optimal solution.
+ * &lt;p&gt;
+ * &lt;b&gt;Warning:&lt;/b&gt; Using only exact MDDs can consume a significant amount of memory.
+ * It is recommended to use this solver for small instances or for testing your model.
+ * For larger instances or more advanced strategies, consider using {@link SequentialSolver}.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This solver constructs the MDD in a single pass:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Initializes the root subproblem from the initial state.&lt;/li&gt;
+ *     &lt;li&gt;Compiles the MDD using exact node expansion without any width restriction.&lt;/li&gt;
+ *     &lt;li&gt;Optionally uses dominance rules and caching to prune redundant subproblems.&lt;/li&gt;
+ *     &lt;li&gt;Extracts the best solution and value from the compiled MDD.&lt;/li&gt;
+ *     &lt;li&gt;Can export the MDD in DOT format if enabled.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the type of state used by the problem
+ */
+public final class ExactSolver&lt;T&gt; implements Solver {
+
+    /**
+     * The problem instance to be minimized.
+     */
+    private final Problem&lt;T&gt; problem;
+
+    /**
+     * Verbosity level controlling output during the solving process.
+     */
+    private final VerbosityLevel verbosityLevel;
+    /**
+     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
+     */
+    private final boolean exportAsDot;
+    private final ExactModel&lt;T&gt; model;
+    /**
+     * Optional set containing the best solution found so far.
+     */
+    private Optional&lt;Set&lt;Decision&gt;&gt; bestSol;
+    /**
+     * Optional value of the best solution found so far.
+     */
+<span class="fc" id="L75">    private Optional&lt;Double&gt; bestValue = Optional.empty();</span>
+
+
+    /**
+     * Creates a fully-configured ExactSolver instance.
+     *
+     * @param model The {@link DdoModel} containing all necessary parameters and heuristics
+     *              to configure the solver, including the problem, relaxation, ranking,
+     *              variable heuristic, lower bound, dominance checker, caching, and verbosity settings.
+     */
+<span class="fc" id="L85">    public ExactSolver(ExactModel&lt;T&gt; model) {</span>
+<span class="fc" id="L86">        this.problem = model.problem();</span>
+<span class="fc" id="L87">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L88">        this.verbosityLevel = model.verbosityLevel();</span>
+<span class="fc" id="L89">        this.exportAsDot = model.exportDot();</span>
+<span class="fc" id="L90">        this.model = model;</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Minimizes the problem by compiling an exact decision diagram (MDD).
+     * &lt;p&gt;
+     * The method performs the following steps:
+     * &lt;ul&gt;
+     *     &lt;li&gt;Initializes the root subproblem with the initial state.&lt;/li&gt;
+     *     &lt;li&gt;Configures the compilation parameters for an exact MDD.&lt;/li&gt;
+     *     &lt;li&gt;Compiles the MDD and optionally prunes using dominance and caching.&lt;/li&gt;
+     *     &lt;li&gt;Extracts the best solution and value.&lt;/li&gt;
+     *     &lt;li&gt;Optionally exports the MDD in DOT format.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param limit      a predicate that may be used to limit the search based on statistics
+     * @param onSolution a callback invoked when a solution is found
+     * @return statistics about the search process, including the best value found
+     */
+    @Override
+    public Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
+                             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L112">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
+
+<span class="fc" id="L114">        SubProblem&lt;T&gt; root = new SubProblem&lt;&gt;(</span>
+<span class="fc" id="L115">                problem.initialState(),</span>
+<span class="fc" id="L116">                problem.initialValue(),</span>
+                Double.POSITIVE_INFINITY,
+<span class="fc" id="L118">                Collections.emptySet());</span>
+
+<span class="fc" id="L120">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="fc" id="L121">        compilation.compilationType = CompilationType.Exact;</span>
+<span class="fc" id="L122">        compilation.problem = this.problem;</span>
+<span class="fc" id="L123">        compilation.relaxation = model.relaxation();</span>
+<span class="fc" id="L124">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="fc" id="L125">        compilation.stateRanking = model.ranking();</span>
+<span class="fc" id="L126">        compilation.residual = root;</span>
+<span class="fc" id="L127">        compilation.maxWidth = Integer.MAX_VALUE;</span>
+<span class="fc" id="L128">        compilation.flb = model.lowerBound();</span>
+<span class="fc" id="L129">        compilation.dominance = model.dominance();</span>
+<span class="fc" id="L130">        compilation.cache = Optional.empty();</span>
+<span class="fc" id="L131">        compilation.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L132">        compilation.cutSetType = CutSetType.LastExactLayer;</span>
+<span class="fc" id="L133">        compilation.exportAsDot = this.exportAsDot;</span>
+<span class="fc" id="L134">        compilation.debugLevel = model.debugMode();</span>
+<span class="fc" id="L135">        compilation.useLNS = false;</span>
+
+<span class="fc" id="L137">        DecisionDiagram&lt;T&gt; mdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="fc" id="L138">        mdd.compile();</span>
+<span class="fc" id="L139">        extractBest(mdd);</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        if (exportAsDot) {</span>
+<span class="nc" id="L141">            String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
+<span class="nc" id="L142">            exportDot(mdd.exportAsDot(),</span>
+<span class="nc" id="L143">                    Paths.get(&quot;output&quot;, problemName + &quot;_exact.dot&quot;).toString());</span>
+        }
+
+<span class="fc" id="L146">        statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();</span>
+
+<span class="fc bfc" id="L148" title="All 2 branches covered.">        if (bestValue.isPresent()) {</span>
+<span class="fc" id="L149">            statistics = statistics.updateIncumbent(bestValue.get(), 0.0).updateStatus(SearchStatus.OPTIMAL);</span>
+        } else {
+<span class="fc" id="L151">            statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+        }
+
+<span class="fc" id="L154">        final SearchStatistics finalStats = statistics;</span>
+
+<span class="fc" id="L156">        bestSol.ifPresent(sol -&gt; onSolution.accept(constructSolution(bestSol.get()), finalStats));</span>
+<span class="fc" id="L157">        return new Solution(bestSolution(), finalStats);</span>
+    }
+
+    /**
+     * Returns the value of the best solution found so far.
+     *
+     * @return an {@link Optional} containing the best solution value or empty if none was found
+     */
+    @Override
+    public Optional&lt;Double&gt; bestValue() {
+<span class="nc" id="L167">        return bestValue;</span>
+    }
+
+    /**
+     * Returns the best solution found so far as a set of decisions.
+     *
+     * @return an {@link Optional} containing the best solution or empty if none was found
+     */
+    @Override
+    public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
+<span class="fc" id="L177">        return bestSol;</span>
+    }
+
+    /**
+     * Extracts the best solution and value from a compiled decision diagram.
+     *
+     * @param mdd the compiled {@link DecisionDiagram} from which to extract the best solution
+     */
+    private void extractBest(DecisionDiagram&lt;T&gt; mdd) {
+<span class="fc" id="L186">        Optional&lt;Double&gt; ddval = mdd.bestValue();</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (ddval.isPresent()) {</span>
+<span class="fc" id="L188">            bestSol = mdd.bestSolution();</span>
+<span class="fc" id="L189">            bestValue = ddval;</span>
+<span class="fc" id="L190">            DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">            if (verbosityLevel != VerbosityLevel.SILENT)</span>
+<span class="nc" id="L192">                System.out.printf(&quot;best solution found: %s\n&quot;, df.format(ddval.get()));</span>
+        }
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * Exports a DOT representation of the MDD to a file.
+     *
+     * @param dot      the DOT string representing the MDD
+     * @param fileName the output file path
+     */
+    private void exportDot(String dot, String fileName) {
+<span class="nc" id="L203">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
+<span class="nc" id="L204">            bw.write(dot);</span>
+<span class="nc" id="L205">        } catch (IOException e) {</span>
+<span class="nc" id="L206">            throw new RuntimeException(e);</span>
+<span class="nc" id="L207">        }</span>
+<span class="nc" id="L208">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

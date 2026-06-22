@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultVariableHeuristic.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.heuristics.variable.layered</a> &gt; <span class="el_source">DefaultVariableHeuristic.java</span></div><h1>DefaultVariableHeuristic.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.heuristics.variable.layered;
+
+
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * A default implementation of {@link VariableHeuristic} that selects
+ * the next variable to branch on without applying any specific strategy.
+ * &lt;p&gt;
+ * This heuristic simply returns the first element obtained from the iterator
+ * of the provided {@code variables} set. Therefore, it does not guarantee
+ * any particular or deterministic order, as the iteration order of a
+ * {@link java.util.Set} depends on its concrete implementation
+ * (e.g., {@link java.util.HashSet} is not ordered).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;This class serves as a minimal or placeholder heuristic to ensure
+ * that the compilation or search process can proceed when no specific
+ * variable ordering rule has been defined by the user.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the problem state
+ * @see VariableHeuristic
+ * @see java.util.Set
+ */
+<span class="fc" id="L26">public final class DefaultVariableHeuristic&lt;T&gt; implements VariableHeuristic&lt;T&gt; {</span>
+    /**
+     * Returns the next variable to branch on by selecting the first element
+     * from the set of remaining variables.
+     * &lt;p&gt;
+     * This implementation applies no logic based on the current layer states
+     * and provides no guarantees on reproducibility unless a deterministic
+     * {@link java.util.Set} implementation (e.g., {@link java.util.LinkedHashSet})
+     * is used.
+     * &lt;/p&gt;
+     *
+     * @param variables the set of variables that have not yet been assigned
+     * @param states    an iterator over the states in the current layer (unused)
+     * @return the next variable to branch on, as given by {@code variables.iterator().next()}
+     * @throws java.util.NoSuchElementException if the {@code variables} set is empty
+     */
+    @Override
+    public Integer nextVariable(final Set&lt;Integer&gt; variables, final Iterator&lt;T&gt; states) {
+<span class="fc" id="L44">        return variables.iterator().next();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

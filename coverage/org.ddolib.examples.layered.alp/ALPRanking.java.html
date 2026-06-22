@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ALPRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.alp</a> &gt; <span class="el_source">ALPRanking.java</span></div><h1>ALPRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.alp;
+
+import org.ddolib.modeling.layered.StateRanking;
+
+import java.util.Arrays;
+
+/**
+ * Ranking heuristic for {@link ALPState} objects in the Aircraft Landing Problem (ALP).
+ * &lt;p&gt;
+ * This ranking is used to prioritize states when building decision diagrams or exploring
+ * the search space. The comparison is done in two steps:
+ * &lt;/p&gt;
+ * &lt;ol&gt;
+ *     &lt;li&gt;Compare the total number of remaining aircraft to land across all classes.&lt;/li&gt;
+ *     &lt;li&gt;If the remaining aircraft count is equal, compare the sum of previous landing times
+ *         on all runways (lower total indicates higher priority).&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;p&gt;
+ * This heuristic helps solvers decide which states to keep and which to discard during
+ * relaxed or bounded search, promoting states closer to completion and with lower cumulative
+ * runway occupancy times.
+ * &lt;/p&gt;
+ *
+ * @see ALPState
+ * @see StateRanking
+ */
+<span class="fc" id="L27">public class ALPRanking implements StateRanking&lt;ALPState&gt; {</span>
+    /**
+     * Compares two ALP states according to the number of remaining aircraft
+     * and the sum of runway previous landing times.
+     *
+     * @param a the first state to compare
+     * @param b the second state to compare
+     * @return a negative integer, zero, or a positive integer if {@code a} is ranked
+     *         less than, equal to, or greater than {@code b}, respectively
+     */
+    @Override
+    public int compare(ALPState a, ALPState b) {
+<span class="fc" id="L39">        int remAircraftA = Arrays.stream(a.remainingAircraftOfClass).sum();</span>
+<span class="fc" id="L40">        int remAircraftB = Arrays.stream(b.remainingAircraftOfClass).sum();</span>
+<span class="fc" id="L41">        int totA = Arrays.stream(a.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
+<span class="fc" id="L42">        int totB = Arrays.stream(b.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
+
+<span class="fc" id="L44">        int remCompare = Integer.compare(remAircraftA, remAircraftB);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (remCompare == 0) return Integer.compare(totA, totB);</span>
+<span class="fc" id="L46">        else return remCompare;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.talentscheduling</a> &gt; <span class="el_source">TSRelax.java</span></div><h1>TSRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.talentscheduling;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
+
+import java.util.BitSet;
+import java.util.Iterator;
+/**
+ * Implementation of a relaxation for the Talent Scheduling problem (TSP).
+ *
+ * &lt;p&gt;
+ * This class defines how multiple {@link TSState} instances can be merged into a single
+ * relaxed state and how edge costs are relaxed in the context of DDO or other
+ * relaxed decision diagrams.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The relaxation is implemented by merging the remaining and maybe scenes from multiple states:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code mergedRemaining} is the intersection of all {@code remainingScenes} sets.&lt;/li&gt;
+ *     &lt;li&gt;{@code mergedMaybe} is the union of all {@code remainingScenes} and {@code maybeScenes},
+ *         minus the {@code mergedRemaining} scenes.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class TSRelax implements Relaxation&lt;TSState&gt; {
+
+    private final TSProblem problem;
+    /**
+     * Constructs a new relaxation instance for the given Talent Scheduling problem.
+     *
+     * @param problem The TSP problem instance associated with this relaxation.
+     */
+<span class="fc" id="L34">    public TSRelax(TSProblem problem) {</span>
+<span class="fc" id="L35">        this.problem = problem;</span>
+<span class="fc" id="L36">    }</span>
+    /**
+     * Merges multiple {@link TSState} instances into a single relaxed state.
+     *
+     * @param states An iterator over the states to merge.
+     * @return A new {@link TSState} representing the merged state.
+     */
+    @Override
+    public TSState mergeStates(Iterator&lt;TSState&gt; states) {
+<span class="fc" id="L45">        BitSet mergedRemaining = new BitSet(problem.nbVars());</span>
+<span class="fc" id="L46">        mergedRemaining.set(0, problem.nbVars(), true);</span>
+<span class="fc" id="L47">        BitSet mergedMaybe = new BitSet(problem.nbVars());</span>
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L50">            TSState state = states.next();</span>
+<span class="fc" id="L51">            mergedRemaining.and(state.remainingScenes());</span>
+<span class="fc" id="L52">            mergedMaybe.or(state.remainingScenes());</span>
+<span class="fc" id="L53">            mergedMaybe.or(state.maybeScenes());</span>
+<span class="fc" id="L54">        }</span>
+<span class="fc" id="L55">        mergedMaybe.andNot(mergedRemaining);</span>
+
+<span class="fc" id="L57">        return new TSState(mergedRemaining, mergedMaybe, problem.onLocationActors(mergedRemaining, mergedMaybe));</span>
+    }
+    /**
+     * Returns the relaxed edge cost between two states.
+     *
+     * &lt;p&gt;In this implementation, the cost is not changed and returned as-is.&lt;/p&gt;
+     *
+     * @param from   The source state.
+     * @param to     The target state.
+     * @param merged The merged state if multiple states are combined.
+     * @param d      The decision associated with the edge.
+     * @param cost   The original edge cost.
+     * @return The relaxed edge cost (here equal to {@code cost}).
+     */
+    @Override
+    public double relaxEdge(TSState from, TSState to, TSState merged, Decision d, double cost) {
+<span class="fc" id="L73">        return cost;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

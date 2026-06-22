@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DdoModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.nolayer</a> &gt; <span class="el_source">DdoModel.java</span></div><h1>DdoModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.nolayer;
+
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
+import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
+import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the interface for an unlayered Dynamic Decision Diagram Optimization (DDO) model.
+ *
+ * @param &lt;T&gt; the state type
+ */
+public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
+    /**
+     * Returns the relaxation of the model used to merge states in the decision diagram.
+     *
+     * @return the {@link Relaxation} object associated with this model
+     */
+    Relaxation&lt;T&gt; relaxation();
+
+    /**
+     * Returns the ranking function used to order states when width must be reduced.
+     * Higher priority states are kept exact, lower priority states are dropped or merged.
+     *
+     * @return a {@link StateRanking} comparator between states
+     */
+    default StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L33">        return (o1, o2) -&gt; 0;</span>
+    }
+
+    /**
+     * Returns the width heuristic controlling the maximum number of states in the frontier.
+     *
+     * @return a {@link WidthHeuristic} instance controlling diagram width
+     */
+    default WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L42">        return new FixedWidth&lt;&gt;(10);</span>
+    }
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    default ReductionStrategy&lt;T&gt; relaxStrategy() {
+<span class="nc" id="L49">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+    }
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    default ReductionStrategy&lt;T&gt; restrictStrategy() {
+<span class="nc" id="L56">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+    }
+
+    /**
+     * Indicates whether caching should be used during the diagram construction.
+     *
+     * @return {@code true} if caching is enabled, {@code false} otherwise
+     */
+    default boolean useCache() {
+<span class="nc" id="L65">        return false;</span>
+    }
+    
+    /**
+     * Returns a dominance checker to prune inferior states during compilation.
+     *
+     * @return a {@link DominanceChecker} instance
+     */
+    default NoLayerDominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L74">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+    }
+    
+    /**
+     * Indicates whether the generated decision diagram should be exported
+     * to a DOT file (Graphviz format).
+     *
+     * @return {@code true} if DOT export is enabled, {@code false} otherwise
+     */
+    default boolean exportDot() {
+<span class="nc" id="L84">        return false;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

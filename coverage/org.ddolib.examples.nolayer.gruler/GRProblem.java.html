@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.gruler</a> &gt; <span class="el_source">GRProblem.java</span></div><h1>GRProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.gruler;
+
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.nolayer.Problem;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
+
+public class GRProblem implements Problem&lt;GRState&gt; {
+
+    public final int order;
+
+<span class="fc" id="L18">    public GRProblem(int order) {</span>
+<span class="fc" id="L19">        this.order = order;</span>
+<span class="fc" id="L20">    }</span>
+
+    @Override
+    public GRState initialState() {
+<span class="fc" id="L24">        BitSet mark = new BitSet();</span>
+<span class="fc" id="L25">        mark.set(0);</span>
+<span class="fc" id="L26">        return new GRState(mark, new BitSet(), 0, 1);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L31">        return 0;</span>
+    }
+
+    @Override
+    public boolean isTarget(GRState state) {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        return state.getNumberOfMarks() == order;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(GRState state) {
+<span class="fc" id="L41">        List&lt;Integer&gt; dom = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L42">        int nextMark = state.getLastMark() + 1;</span>
+        // The maximum length of a Golomb ruler of order n is strictly less than n^2
+<span class="fc" id="L44">        int maxL = order * order;</span>
+        
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (int label = nextMark; label &lt; maxL; label++) {</span>
+<span class="fc" id="L47">            boolean legal = true;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            for (int mark = state.getMarks().nextSetBit(0); mark &gt;= 0; mark = state.getMarks().nextSetBit(mark + 1)) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                if (state.getDistances().get(label - mark)) {</span>
+<span class="fc" id="L50">                    legal = false;</span>
+<span class="fc" id="L51">                    break;</span>
+                }
+            }
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (legal) {</span>
+<span class="fc" id="L55">                dom.add(label);</span>
+            }
+        }
+<span class="fc" id="L58">        return dom.iterator();</span>
+    }
+
+    @Override
+    public GRState transition(GRState state, int label) {
+<span class="fc" id="L63">        BitSet nextMarks = (BitSet) state.getMarks().clone();</span>
+<span class="fc" id="L64">        BitSet nextDistances = (BitSet) state.getDistances().clone();</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        for (int mark = state.getMarks().nextSetBit(0); mark &gt;= 0; mark = state.getMarks().nextSetBit(mark + 1)) {</span>
+<span class="fc" id="L67">            nextDistances.set(label - mark);</span>
+        }
+<span class="fc" id="L69">        nextMarks.set(label);</span>
+
+<span class="fc" id="L71">        return new GRState(nextMarks, nextDistances, label, state.getLayer() + 1);</span>
+    }
+
+    @Override
+    public double transitionCost(GRState state, int label) {
+<span class="fc" id="L76">        return label - state.getLastMark();</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="fc" id="L81">        int nbVars = order - 1;</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (solution.length != nbVars) {</span>
+<span class="nc" id="L83">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L84">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars));</span>
+        }
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (nbVars == 0) return 0;</span>
+
+<span class="fc" id="L88">        Map&lt;Integer, Integer[]&gt; distance = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        for (int j = 0; j &lt; solution.length; j++) {</span>
+<span class="fc" id="L91">            distance.put(solution[j], new Integer[]{0, j + 1});</span>
+        }
+
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (int i = 1; i &lt; order; i++) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            for (int j = i + 1; j &lt; order; j++) {</span>
+<span class="fc" id="L96">                int from = solution[i - 1];</span>
+<span class="fc" id="L97">                int to = solution[j - 1];</span>
+<span class="fc" id="L98">                int d = to - from;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                if (distance.containsKey(d)) {</span>
+<span class="nc" id="L100">                    Integer[] pair = distance.get(d);</span>
+<span class="nc" id="L101">                    String msg = String.format(&quot;The marks %d &amp; %d have the same distance (%d) &quot; +</span>
+<span class="nc" id="L102">                            &quot;than the marks %d &amp; %d&quot;, i, j, d, pair[0], pair[1]);</span>
+<span class="nc" id="L103">                    throw new InvalidSolutionException(msg);</span>
+                }
+
+<span class="fc" id="L106">                distance.put(d, new Integer[]{i, j});</span>
+            }
+        }
+<span class="fc" id="L109">        return solution[solution.length - 1];</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L114">        return &quot;GRProblem(order:&quot; + order + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SRFLPState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.srflp</a> &gt; <span class="el_source">SRFLPState.java</span></div><h1>SRFLPState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.srflp;
+
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Objects;
+
+/**
+ * Represents a state in a Single Row Facility Layout Problem (SRFLP) instance.
+ *
+ * &lt;p&gt;
+ * Each state keeps track of which departments must still be placed, which departments
+ * are optional (in case of merged nodes), the cumulative cut values, and the depth
+ * in the decision diagram or search tree.
+ * &lt;/p&gt;
+ *
+ * @param must  The set of departments that must still be placed in all possible completions
+ *              of the current state. Represented as a {@link BitSet}.
+ * @param maybe The set of departments that must be placed for some of the merged states,
+ *              but may have already been placed in others. Used primarily in relaxed/merged states.
+ * @param cut   An array containing, for each free department, the sum of all traffic intensities
+ *              from the fixed departments to that department.
+ * @param depth The depth of the state in the associated decision diagram or search tree.
+ */
+<span class="fc" id="L24">public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L28">        return String.format(&quot;State: must: %s - maybe: %s - cut: %s - depth: %d&quot;,</span>
+<span class="fc" id="L29">                must, maybe, Arrays.toString(cut), depth);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L34">        return Objects.hash(must, maybe, Arrays.hashCode(cut), depth);</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (obj instanceof SRFLPState(</span>
+<span class="fc" id="L40">                BitSet otherMust, BitSet otherMaybe, int[] otherCut, int otherDepth</span>
+        )) {
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            return this.must.equals(otherMust)</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">                    &amp;&amp; this.maybe.equals(otherMaybe)</span>
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">                    &amp;&amp; Arrays.equals(this.cut, otherCut)</span>
+                    &amp;&amp; this.depth == otherDepth;
+        } else {
+<span class="nc" id="L47">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CompilationConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.compilation.layered</a> &gt; <span class="el_source">CompilationConfig.java</span></div><h1>CompilationConfig.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.compilation.layered;
+
+import org.ddolib.solving.ddo.core.compilation.CompilationType;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.solving.ddo.core.cache.SimpleCache;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
+import org.ddolib.modeling.layered.*;
+import org.ddolib.util.debug.DebugLevel;
+
+import java.util.Optional;
+
+/**
+ * Represents the configuration parameters used during the compilation
+ * of a Multi-valued Decision Diagram (MDD) or similar decision structure.
+ * &lt;p&gt;
+ * A {@code CompilationConfig} object centralizes all components, heuristics,
+ * and algorithmic options required to guide the compilation process.
+ * It defines how the search space is explored, bounded, reduced, and pruned.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This configuration supports multiple compilation strategies such as exact,
+ * relaxed, approximate, or hybrid approaches. It also integrates advanced
+ * mechanisms like dominance checking, caching, and large neighborhood search (LNS).
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the state of the problem
+ *
+ * @see CompilationType
+ * @see Problem
+ * @see Relaxation
+ * @see VariableHeuristic
+ * @see StateRanking
+ * @see SubProblem
+ * @see FastLowerBound
+ * @see DominanceChecker
+ * @see SimpleCache
+ * @see CutSetType
+ * @see DebugLevel
+ * @see ReductionStrategy
+ */
+public class CompilationConfig&lt;T&gt; {
+
+    /**
+     * The underlying model containing problem-specific components such as
+     * constraints, heuristics, and bounds.
+     */
+    private final Model&lt;T&gt; model;
+
+    /**
+     * Specifies how the MDD is compiled.
+     * &lt;p&gt;
+     * Determines whether the compilation is exact, relaxed, approximate,
+     * or hybrid depending on the selected algorithm.
+     * &lt;/p&gt;
+     */
+<span class="fc" id="L60">    public CompilationType compilationType = null;</span>
+
+    /**
+     * Reference to the optimization or constraint problem being solved.
+     */
+<span class="fc" id="L65">    public Problem&lt;T&gt; problem = null;</span>
+
+    /**
+     * Heuristic used to select the next variable to branch on during compilation.
+     */
+<span class="fc" id="L70">    public VariableHeuristic&lt;T&gt; variableHeuristic = null;</span>
+
+    /**
+     * Ranking heuristic used to prioritize states when pruning nodes
+     * in width-limited MDD layers.
+     */
+<span class="fc" id="L76">    public StateRanking&lt;T&gt; stateRanking = null;</span>
+
+    /**
+     * The residual (sub)problem defining the remaining search space
+     * to explore during compilation.
+     */
+<span class="fc" id="L82">    public SubProblem&lt;T&gt; residual = null;</span>
+
+    /**
+     * Maximum allowed width (number of nodes) per layer in the MDD.
+     * &lt;p&gt;
+     * Smaller values improve performance but may reduce solution quality.
+     * &lt;/p&gt;
+     */
+<span class="fc" id="L90">    public Integer maxWidth = null;</span>
+
+    /**
+     * Fast lower bound heuristic used to estimate the best achievable
+     * objective value from a given state.
+     */
+<span class="fc" id="L96">    public FastLowerBound&lt;T&gt; flb = null;</span>
+
+    /**
+     * Dominance checker used to prune dominated states and reduce
+     * the size of the search space.
+     */
+<span class="fc" id="L102">    public DominanceChecker&lt;T&gt; dominance = null;</span>
+
+    /**
+     * Best known upper bound on the objective value at compilation time.
+     */
+<span class="fc" id="L107">    public Double bestUB = null;</span>
+
+    /**
+     * Indicates whether the compiled MDD should be exported as a DOT file
+     * (Graphviz format) for visualization purposes.
+     */
+<span class="fc" id="L113">    public Boolean exportAsDot = null;</span>
+
+    /**
+     * Debugging level controlling logging and internal consistency checks.
+     * &lt;p&gt;
+     * Higher levels provide more detailed diagnostics but may impact performance.
+     * &lt;/p&gt;
+     */
+<span class="fc" id="L121">    public DebugLevel debugLevel = null;</span>
+
+    /**
+     * Strategy used to reduce the width of the MDD by merging or discarding nodes.
+     */
+<span class="fc" id="L126">    public ReductionStrategy&lt;T&gt; reductionStrategy = null;</span>
+
+    /**
+     * Relaxation model used to approximate or merge states in relaxed MDD compilation.
+     */
+<span class="fc" id="L131">    public Relaxation&lt;T&gt; relaxation = null;</span>
+
+    /**
+     * Optional cache to store previously computed states and avoid redundant work.
+     */
+<span class="fc" id="L136">    public Optional&lt;SimpleCache&lt;T&gt;&gt; cache = Optional.empty();</span>
+
+    /**
+     * Defines the cut set strategy used to control node expansion and pruning.
+     */
+<span class="fc" id="L141">    public CutSetType cutSetType = null;</span>
+
+    /**
+     * Initial solution provided to guide the search (e.g., for heuristics or LNS).
+     */
+<span class="fc" id="L146">    public int[] initialSolution = null;</span>
+
+    /**
+     * Stores the current or best solution found during compilation.
+     */
+<span class="fc" id="L151">    public int[] solution = null;</span>
+
+    /**
+     * Probability parameter used in randomized strategies (e.g., LNS or heuristics).
+     */
+<span class="fc" id="L156">    public double probability = 0;</span>
+
+    /**
+     * Indicates whether Large Neighborhood Search (LNS) should be used
+     * to improve solutions during compilation.
+     */
+<span class="fc" id="L162">    public Boolean useLNS = null;</span>
+
+    /**
+     * Constructs a new compilation configuration for the given model.
+     *
+     * @param model the model containing problem-specific components
+     *              (heuristics, bounds, dominance, etc.)
+     */
+<span class="fc" id="L170">    public CompilationConfig(Model&lt;T&gt; model) {</span>
+<span class="fc" id="L171">        this.model = model;</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Returns a human-readable string representation of this configuration.
+     *
+     * @return a formatted string containing the compilation type,
+     *         residual problem, and best known upper bound
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L182">        return String.format(</span>
+                &quot;Compilation: %s - Sub problem: %s - bestUB: %f&quot;,
+                compilationType,
+                residual,
+                bestUB
+        );
+    }
+
+    /**
+     * Creates a shallow copy of this configuration.
+     * &lt;p&gt;
+     * Some components are re-fetched from the underlying model
+     * (e.g., heuristics, bounds, dominance), while others are directly copied.
+     * &lt;/p&gt;
+     *
+     * @return a new {@code CompilationConfig} instance with the same parameters
+     */
+    public CompilationConfig&lt;T&gt; copy() {
+<span class="fc" id="L200">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(this.model);</span>
+
+<span class="fc" id="L202">        compilation.compilationType = this.compilationType;</span>
+<span class="fc" id="L203">        compilation.problem = model.problem();</span>
+<span class="fc" id="L204">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="fc" id="L205">        compilation.stateRanking = this.stateRanking;</span>
+<span class="fc" id="L206">        compilation.residual = this.residual;</span>
+<span class="fc" id="L207">        compilation.maxWidth = this.maxWidth;</span>
+<span class="fc" id="L208">        compilation.flb = model.lowerBound();</span>
+<span class="fc" id="L209">        compilation.dominance = model.dominance();</span>
+<span class="fc" id="L210">        compilation.bestUB = this.bestUB;</span>
+
+<span class="fc" id="L212">        compilation.exportAsDot = this.exportAsDot;</span>
+<span class="fc" id="L213">        compilation.debugLevel = model.debugMode();</span>
+<span class="fc" id="L214">        compilation.relaxation = this.relaxation;</span>
+<span class="fc" id="L215">        compilation.cutSetType = this.cutSetType;</span>
+<span class="fc" id="L216">        compilation.cache = this.cache;</span>
+
+<span class="fc" id="L218">        compilation.initialSolution = this.initialSolution;</span>
+<span class="fc" id="L219">        compilation.probability = this.probability;</span>
+<span class="fc" id="L220">        compilation.useLNS = this.useLNS;</span>
+<span class="fc" id="L221">        compilation.solution = this.initialSolution;</span>
+
+<span class="fc" id="L223">        return compilation;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

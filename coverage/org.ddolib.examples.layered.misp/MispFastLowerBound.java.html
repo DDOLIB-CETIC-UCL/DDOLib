@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.misp</a> &gt; <span class="el_source">MispFastLowerBound.java</span></div><h1>MispFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.misp;
+
+import org.ddolib.modeling.layered.FastLowerBound;
+
+import java.util.BitSet;
+import java.util.Set;
+
+/**
+ * Computes a fast lower bound for the Maximum Independent Set Problem (MISP).
+ * &lt;p&gt;
+ * This implementation of {@link FastLowerBound} estimates the best possible solution
+ * from a given state by considering all remaining vertices optimistically.
+ * The bound is used in search algorithms to prune suboptimal branches efficiently.
+ * &lt;/p&gt;
+ */
+public class MispFastLowerBound implements FastLowerBound&lt;BitSet&gt; {
+    /**
+     * The MISP problem instance for which the lower bound is computed.
+     */
+    private final MispProblem problem;
+
+    /**
+     * Constructs a fast lower bound calculator for a given MISP problem.
+     *
+     * @param problem the MISP problem instance
+     */
+
+<span class="fc" id="L28">    public MispFastLowerBound(MispProblem problem) {</span>
+<span class="fc" id="L29">        this.problem = problem;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Computes a fast lower bound for the given state and set of remaining variables.
+     * &lt;p&gt;
+     * The method sums the weights of all vertices already selected in the current {@code state}
+     * and returns its negation, which corresponds to the maximal independent set assumption.
+     * &lt;/p&gt;
+     *
+     * @param state     the current state of the solution as a {@link BitSet}
+     * @param variables the set of remaining variable indices (unused in this implementation)
+     * @return a fast lower bound on the optimal solution value
+     */
+    @Override
+    public double fastLowerBound(BitSet state, Set&lt;Integer&gt; variables) {
+        // We select all the remaining nodes
+<span class="fc" id="L46">        return -state.stream().map(i -&gt; problem.weight[i]).sum();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWWidth.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsptw</a> &gt; <span class="el_source">TSPTWWidth.java</span></div><h1>TSPTWWidth.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsptw;
+
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+
+/**
+ * Heuristic for computing the width of a layer in the dynamic programming model
+ * for the Traveling Salesman Problem with Time Windows (TSPTW).
+ * &lt;p&gt;
+ * The width represents the maximum number of states to keep at a given layer.
+ * It is computed based on the number of variables, the current depth, and a user-defined factor.
+ * &lt;/p&gt;
+ */
+public class TSPTWWidth implements WidthHeuristic&lt;TSPTWState&gt; {
+    /** Number of variables/nodes in the TSPTW problem. */
+    private final int nbVars;
+
+    /** Factor to scale the width. */
+    private final int factor;
+
+    /**
+     * Constructs a width heuristic for TSPTW layers.
+     *
+     * @param nbVars the number of variables/nodes in the problem
+     * @param factor a scaling factor for the width calculation
+     */
+<span class="nc" id="L26">    public TSPTWWidth(int nbVars, int factor) {</span>
+<span class="nc" id="L27">        this.nbVars = nbVars;</span>
+<span class="nc" id="L28">        this.factor = factor;</span>
+<span class="nc" id="L29">    }</span>
+    /**
+     * Computes the maximum width of a layer based on the current state.
+     * &lt;p&gt;
+     * The width is calculated as: (depth + 1) * nbVars * factor.
+     * This allows the width to grow with the depth of the state in the DP model.
+     * &lt;/p&gt;
+     *
+     * @param state the state for which to compute the layer width
+     * @return the maximum number of states to keep at this layer
+     */
+    @Override
+    public int maximumWidth(TSPTWState state) {
+<span class="nc" id="L42">        return (state.depth() + 1) * nbVars * factor;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

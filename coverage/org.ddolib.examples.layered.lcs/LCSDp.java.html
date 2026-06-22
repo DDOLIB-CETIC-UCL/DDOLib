@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LCSDp.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.lcs</a> &gt; <span class="el_source">LCSDp.java</span></div><h1>LCSDp.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.lcs;
+
+import java.util.Arrays;
+
+/**
+ * Naive DP solver the 2-strings longest common subsequence problem, used
+ * to build a heuristic for the m-strings problem.
+ */
+public class LCSDp {
+    int charNb;
+    int[] s1;
+    int[] s2;
+
+<span class="fc" id="L14">    LCSDp(int charNb, int[] s1, int[] s2) {</span>
+<span class="fc" id="L15">        this.charNb = charNb;</span>
+<span class="fc" id="L16">        this.s1 = s1;</span>
+<span class="fc" id="L17">        this.s2 = s2;</span>
+<span class="fc" id="L18">    }</span>
+
+    /**
+     * Solves the 2-strings LCS problem using a naive DP method.
+     * Initiates the matrix and calls the heuristic.
+     *
+     * @return A Matrix containing the remaining LCS length based on the position in the strings.
+     */
+    int[][] solve() {
+        // All cells initiated at -1
+<span class="fc" id="L28">        int[][] table = new int[s1.length + 1][s2.length + 1];</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (int i = 0; i &lt;= s1.length; i++) {</span>
+<span class="fc" id="L30">            int[] initRow = new int[s2.length + 1];</span>
+<span class="fc" id="L31">            Arrays.fill(initRow, -1);</span>
+<span class="fc" id="L32">            table[i] = initRow;</span>
+        }
+
+        // Changes the bottom row and right column values to 0
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (int i = 0; i &lt; s1.length; i++) {</span>
+<span class="fc" id="L37">            table[i][s2.length] = 0;</span>
+        }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (int j = 0; j &lt;= s2.length; j++) {</span>
+<span class="fc" id="L40">            table[s1.length][j] = 0;</span>
+        }
+<span class="fc" id="L42">        _solve(table, 0, 0);</span>
+<span class="fc" id="L43">        return table;</span>
+    }
+
+    int _solve(int[][] table, int i, int j) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (table[i][j] != -1) return table[i][j];</span>
+
+
+        // Max of (below, right, current + 1 (if same id))
+<span class="fc" id="L51">        table[i][j] =</span>
+<span class="fc" id="L52">                Math.max(</span>
+<span class="fc" id="L53">                        Math.max(_solve(table, i + 1, j), _solve(table, i, j + 1)),</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                        _solve(table, i + 1, j + 1) + ((s1[i] == s2[j]) ? 1 : 0));</span>
+<span class="fc" id="L55">        return table[i][j];</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

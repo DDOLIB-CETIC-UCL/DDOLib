@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.layered</a> &gt; <span class="el_source">DefaultFastLowerBound.java</span></div><h1>DefaultFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.layered;
+
+import java.util.Set;
+
+/**
+ * Default implementation of the {@link FastLowerBound} interface that always returns
+ * {@link Integer#MIN_VALUE} as the lower bound estimate.
+ * &lt;p&gt;
+ * This implementation can be used as a placeholder or a fallback when no
+ * meaningful fast lower bound heuristic is available for a given problem.
+ * It effectively disables lower bound pruning since the returned value is
+ * the smallest possible integer.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;In practice, a fast lower bound is a lightweight estimation of the
+ * minimal achievable objective value from a given state and set of remaining variables.
+ * This default implementation deliberately returns the lowest possible value,
+ * ensuring that no pruning occurs based on this bound.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the problem state
+ * @see FastLowerBound
+ */
+<span class="fc" id="L23">public class DefaultFastLowerBound&lt;T&gt; implements FastLowerBound&lt;T&gt; {</span>
+    /**
+     * Computes a trivial fast lower bound for the given state and remaining variables.
+     * &lt;p&gt;
+     * This default implementation always returns {@link Integer#MIN_VALUE},
+     * effectively indicating that no lower bound information is available.
+     * &lt;/p&gt;
+     *
+     * @param state     the current state for which the lower bound is estimated
+     * @param variables the set of remaining variable indices yet to be assigned
+     * @return always {@code Integer.MIN_VALUE}
+     */
+    @Override
+    public double fastLowerBound(T state, Set&lt;Integer&gt; variables) {
+        // must be very careful with this default implementation,
+        // it must be a lower-bound, but when reaching the terminal state
+        // with no remaining variables, it should return 0 otherwise
+        // A* search will not work correctly as it will incorrectly terminate
+        // by thinking it has found an optimal solution when popping the terminal state
+        // from the open list.
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (variables.isEmpty()) return 0;</span>
+<span class="fc" id="L44">        else return Integer.MIN_VALUE;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

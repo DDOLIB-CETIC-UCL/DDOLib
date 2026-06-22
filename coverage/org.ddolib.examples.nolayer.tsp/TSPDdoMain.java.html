@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPDdoMain.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsp</a> &gt; <span class="el_source">TSPDdoMain.java</span></div><h1>TSPDdoMain.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsp;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.Relaxation;
+import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
+import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+
+public class TSPDdoMain {
+
+    public static void main(String[] args) throws IOException {
+        String instance = args.length == 0 ? Paths.get(&quot;data&quot;, &quot;TSP&quot;, &quot;instance_18_0.xml&quot;).toString() : args[0];
+        final TSPProblem problem = new TSPProblem(instance);
+
+        DdoModel&lt;TSPState&gt; model = new TSPDdoModel(problem) {
+            @Override
+            public Relaxation&lt;TSPState&gt; relaxation() {
+                return new Relaxation&lt;TSPState&gt;() {
+                    @Override
+                    public TSPState merge(Collection&lt;TSPState&gt; states) {
+                        Iterator&lt;TSPState&gt; it = states.iterator();
+                        TSPState first = it.next();
+                        BitSet toVisit = (BitSet) first.toVisit.clone();
+                        BitSet current = (BitSet) first.current.clone();
+
+                        while (it.hasNext()) {
+                            TSPState s = it.next();
+                            toVisit.and(s.toVisit);
+                            current.or(s.current);
+                        }
+                        return new TSPState(current, toVisit);
+                    }
+                };
+            }
+
+            @Override
+            public StateRanking&lt;TSPState&gt; ranking() {
+                // Rank by fewest remaining toVisit nodes first
+                return (s1, s2) -&gt; Integer.compare(s1.toVisit.cardinality(), s2.toVisit.cardinality());
+            }
+
+            @Override
+            public WidthHeuristic&lt;TSPState&gt; widthHeuristic() {
+                return new FixedWidth&lt;&gt;(500);
+            }
+
+            @Override
+            public ReductionStrategy&lt;TSPState&gt; relaxStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public ReductionStrategy&lt;TSPState&gt; restrictStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.NORMAL;
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
+
+            @Override
+            public org.ddolib.common.dominance.NoLayerDominanceChecker&lt;TSPState&gt; dominance() {
+                return new TSPNoLayerDominanceChecker();
+            }
+        };
+
+        DdoSolver&lt;TSPState&gt; solver = new DdoSolver&lt;&gt;(model);
+        Solution bestSolution = solver.minimize(
+                limit -&gt; limit.nbIterations() &gt; 1000,
+                (sol, stats) -&gt; SolutionPrinter.printSolution(stats, sol)
+        );
+
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
+        System.out.println(&quot;Optimal TSP value: &quot; + bestSolution.value());
+    }
+}
+
+abstract class TSPDdoModel extends TSPModel implements DdoModel&lt;TSPState&gt; {
+    public TSPDdoModel(TSPProblem problem) {
+<span class="nc" id="L100">        super(problem);</span>
+<span class="nc" id="L101">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

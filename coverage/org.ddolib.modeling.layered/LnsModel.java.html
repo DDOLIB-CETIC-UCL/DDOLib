@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LnsModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.layered</a> &gt; <span class="el_source">LnsModel.java</span></div><h1>LnsModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.layered;
+
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+/**
+ * Interface representing a model for Large Neighborhood Search (LNS) problems.
+ *
+ * &lt;p&gt;This interface extends {@link Model} and provides default implementations
+ * and configuration options specifically for LNS-based search algorithms.&lt;/p&gt;
+ *
+ * &lt;p&gt;Key responsibilities of an {@code LnsModel} include:&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Providing the underlying {@link Problem} instance.&lt;/li&gt;
+ *     &lt;li&gt;Specifying a {@link FastLowerBound} for efficient lower bound estimation.&lt;/li&gt;
+ *     &lt;li&gt;Optionally providing a {@link DominanceChecker} to prune dominated states.&lt;/li&gt;
+ *     &lt;li&gt;Providing heuristics such as {@link StateRanking} and {@link WidthHeuristic} to guide search.&lt;/li&gt;
+ *     &lt;li&gt;Supporting optional configuration of LNS parameters like initial solution, destruction probability, and width.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;Default implementations:&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@link #ranking()} returns a trivial ranking (no preference).&lt;/li&gt;
+ *     &lt;li&gt;{@link #widthHeuristic()} defaults to a {@link FixedWidth} of 10.&lt;/li&gt;
+ *     &lt;li&gt;{@link #exportDot()} returns {@code false} (no DOT export by default).&lt;/li&gt;
+ *     &lt;li&gt;{@link #restrictStrategy()} defaults to a {@link CostBased} reduction with zero comparator.&lt;/li&gt;
+ *     &lt;li&gt;{@link #stateDistance()} returns 0 between any two states.&lt;/li&gt;
+ *     &lt;li&gt;{@link #initialSolution()} returns {@code null} (no initial solution by default).&lt;/li&gt;
+ *     &lt;li&gt;{@link #probability()} returns 0.2 as default destruction probability.&lt;/li&gt;
+ *     &lt;li&gt;{@link #useLNS()} returns {@code true} by default.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;Configuration methods allow creating modified copies of the model with custom parameters:&lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@link #fixWidth(int)} returns a new {@code LnsModel} with a fixed search width.&lt;/li&gt;
+ *     &lt;li&gt;{@link #setInitialSolution(int[])} returns a new {@code LnsModel} using a given initial solution.&lt;/li&gt;
+ *     &lt;li&gt;{@link #setProbability(double)} returns a new {@code LnsModel} with a specified destruction probability.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;Example usage:&lt;/p&gt;
+ * &lt;pre&gt;
+ * LnsModel model = new MyLnsModel()
+ *     .fixWidth(20)
+ *     .setInitialSolution(mySolution)
+ *     .setProbability(0.3);
+ * &lt;/pre&gt;
+ *
+ * &lt;p&gt;This interface is intended for use with {@link Solvers#minimizeLns(LnsModel, java.util.function.Predicate, java.util.function.BiConsumer)}
+ * or similar LNS solvers.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of state used in the problem
+ */
+public interface LnsModel&lt;T&gt; extends Model&lt;T&gt; {
+
+    /**
+     * Returns the state ranking heuristic used to guide the search.
+     * Default implementation returns a neutral ranking (all states equal).
+     *
+     * @return the state ranking
+     */
+    default StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L68">        return (o1, o2) -&gt; 0;</span>
+    }
+    /**
+     * Returns the width heuristic used for tree exploration.
+     * Default is {@link FixedWidth} with width 10.
+     *
+     * @return the width heuristic
+     */
+    default WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L77">        return new FixedWidth&lt;&gt;(10);</span>
+    }
+    /**
+     * Indicates whether to export the search tree to DOT format.
+     * Default is {@code false}.
+     *
+     * @return {@code true} if DOT export is enabled, {@code false} otherwise
+     */
+    default boolean exportDot() {
+<span class="fc" id="L86">        return false;</span>
+    }
+    /**
+     * Returns the strategy used to restrict the search neighborhood.
+     *
+     * @return the reduction strategy
+     */
+    default ReductionStrategy&lt;T&gt; restrictStrategy() {
+<span class="fc" id="L94">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+    }
+    /**
+     * Returns a measure of distance between two states.
+     * Default returns 0 for all states.
+     *
+     * @return the state distance
+     */
+    default StateDistance&lt;T&gt; stateDistance() {
+<span class="nc" id="L103">        return (o1, o2) -&gt; 0;</span>
+    }
+    /**
+     * Returns the initial solution to start the search from.
+     * Default is {@code null} (no initial solution).
+     *
+     * @return the initial solution as an array of variable assignments
+     */
+    default int[] initialSolution() {
+<span class="fc" id="L112">        return null;</span>
+    }
+    /**
+     * Returns the probability used to destruct parts of the solution in LNS.
+     * Default is 0.2.
+     *
+     * @return destruction probability
+     */
+<span class="fc" id="L120">    default double probability() {return 0.2;}</span>
+    /**
+     * Indicates whether LNS should be used.
+     * Default is {@code true}.
+     *
+     * @return {@code true} if LNS is enabled, {@code false} otherwise
+     */
+<span class="fc" id="L127">    default boolean useLNS() {return true;}</span>
+
+    /**
+     * Returns a copy of this model with a fixed search width.
+     *
+     * @param width the width to fix
+     * @return a new {@code LnsModel} with the specified width
+     */
+    default LnsModel&lt;T&gt; fixWidth(int width) {
+<span class="nc" id="L136">        return new LnsModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L139">                return LnsModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="nc" id="L144">                return LnsModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L149">                return LnsModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L154">                return LnsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L159">                return LnsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L164">                return LnsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L169">                return LnsModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L174">                return new FixedWidth&lt;&gt;(width);</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L179">                return LnsModel.this.exportDot();</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L184">                return LnsModel.this.useLNS();</span>
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model with a specified initial solution.
+     *
+     * @param solution the initial solution
+     * @return a new {@code LnsModel} using the given initial solution
+     */
+    default LnsModel&lt;T&gt; setInitialSolution(int[] solution) {
+<span class="nc" id="L196">        return new LnsModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L199">                return LnsModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="nc" id="L204">                return LnsModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L209">                return LnsModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L214">                return LnsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L219">                return LnsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L224">                return LnsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L229">                return LnsModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L234">                return LnsModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L239">                return LnsModel.this.exportDot();</span>
+            }
+
+            @Override
+<span class="nc" id="L243">            public int[] initialSolution() {return  solution;}</span>
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L247">                return LnsModel.this.useLNS();</span>
+            }
+        };
+    }
+    /**
+     * Returns a copy of this model with a specified destruction probability.
+     *
+     * @param proba the probability to use in LNS
+     * @return a new {@code LnsModel} with the specified probability
+     */
+    default LnsModel&lt;T&gt; setProbability(double proba) {
+<span class="nc" id="L258">        return new LnsModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L261">                return LnsModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="nc" id="L266">                return LnsModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L271">                return LnsModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L276">                return LnsModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L281">                return LnsModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L286">                return LnsModel.this.debugMode();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L291">                return LnsModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L296">                return LnsModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L301">                return LnsModel.this.exportDot();</span>
+            }
+
+            @Override
+<span class="nc" id="L305">            public int[] initialSolution() {return  LnsModel.this.initialSolution();}</span>
+
+            @Override
+<span class="nc" id="L308">            public double probability() {return proba;}</span>
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L312">                return LnsModel.this.useLNS();</span>
+            }
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

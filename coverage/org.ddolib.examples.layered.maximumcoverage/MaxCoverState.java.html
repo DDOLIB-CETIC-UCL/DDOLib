@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MaxCoverState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.maximumcoverage</a> &gt; <span class="el_source">MaxCoverState.java</span></div><h1>MaxCoverState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.maximumcoverage;
+
+import java.util.BitSet;
+/**
+ * Represents a state in the Maximum Coverage (MaxCover) problem.
+ *
+ * &lt;p&gt;
+ * Each state tracks which items have been covered so far using a {@link BitSet}.
+ * This is used in Decision Diagram Optimization (DDO) and other search or
+ * combinatorial algorithms to evaluate partial solutions.
+ *
+ * &lt;p&gt;
+ * The record is immutable: the set of covered items cannot be changed once
+ * the state is created. Use state transitions in {@link MaxCoverProblem} to
+ * generate new states with additional items covered.
+ *
+ * @param coveredItems a BitSet representing the items that are covered in this state
+ */
+<span class="fc" id="L19">public record MaxCoverState (BitSet coveredItems) {</span>
+    /**
+     * Returns a string representation of the state.
+     *
+     * @return a string describing the covered items
+     */
+    @Override
+<span class="fc" id="L26">    public String toString() {return &quot;covered items &quot;+this.coveredItems();}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

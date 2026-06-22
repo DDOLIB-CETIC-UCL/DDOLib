@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SMICRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.smic</a> &gt; <span class="el_source">SMICRanking.java</span></div><h1>SMICRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.smic;
+
+import org.ddolib.modeling.layered.StateRanking;
+/**
+ * The {@code SMICRanking} class defines a heuristic ranking criterion for
+ * comparing two {@link SMICState} instances during search or optimization.
+ * &lt;p&gt;
+ * It implements the {@link StateRanking} interface, which is used by
+ * decision diagram optimization (DDO) solvers or search algorithms to
+ * determine the relative quality or priority of explored states.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * In this implementation, the ranking is based solely on the
+ * {@code currentTime} attribute of the state — that is, the state
+ * with the smaller current time is considered better (ranked higher),
+ * since it represents a schedule that reaches an earlier point in time.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This ranking can be used, for example, to expand partial schedules
+ * that have progressed less in time before others, potentially leading
+ * to better exploration efficiency in time-sensitive scheduling problems.
+ * &lt;/p&gt;
+ *
+ * @see SMICState
+ * @see StateRanking
+ * @see SMICProblem
+ */
+<span class="fc" id="L30">public class SMICRanking implements StateRanking&lt;SMICState&gt; {</span>
+    /**
+     * Compares two {@link SMICState} instances based on their current time.
+     * &lt;p&gt;
+     * The comparison is ascending: a state with a smaller {@code currentTime}
+     * is considered &quot;better&quot; or of higher priority.
+     * &lt;/p&gt;
+     *
+     * @param o1 the first state to compare
+     * @param o2 the second state to compare
+     * @return a negative integer if {@code o1} has a smaller current time than {@code o2},
+     *         zero if they are equal, or a positive integer otherwise
+     */
+    @Override
+    public int compare(SMICState o1, SMICState o2) {
+<span class="fc" id="L45">        return Integer.compare(o1.currentTime(), o2.currentTime());</span>
+    }
+}
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

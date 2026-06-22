@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Solver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.solver</a> &gt; <span class="el_source">Solver.java</span></div><h1>Solver.java</h1><pre class="source lang-java linenums">package org.ddolib.common.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.Decision;
 
 import java.util.Optional;
 import java.util.Set;
@@ -60,11 +60,17 @@ public interface Solver {
      * or an empty array if the solution does not exist
      */
     default int[] constructSolution(Set&lt;Decision&gt; decisions) {
-<span class="fc" id="L63">        int[] toReturn = new int[decisions.size()];</span>
+<span class="fc" id="L63">        int maxVar = -1;</span>
 <span class="fc bfc" id="L64" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
-<span class="fc" id="L65">            toReturn[d.variable()] = d.value();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (d.variable() &gt; maxVar) maxVar = d.variable();</span>
 <span class="fc" id="L66">        }</span>
-<span class="fc" id="L67">        return toReturn;</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (maxVar == -1) return new int[0];</span>
+        
+<span class="fc" id="L69">        int[] toReturn = new int[maxVar + 1];</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
+<span class="fc" id="L71">            toReturn[d.variable()] = d.value();</span>
+<span class="fc" id="L72">        }</span>
+<span class="fc" id="L73">        return toReturn;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

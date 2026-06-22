@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSAlgo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSAlgo.java</span></div><h1>KSAlgo.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
+
+import java.util.Arrays;
+
+/**
+ * Utility class providing algorithms to solve the Knapsack Problem.
+ */
+<span class="nc" id="L8">public class KSAlgo {</span>
+
+    /**
+     * Provides a greedy approximation for the Knapsack Problem.
+     *
+     * &lt;p&gt;The algorithm sorts items in descending order of their profit-to-weight ratio
+     * ({@code profit / weight}) and selects items sequentially as long as they fit 
+     * within the remaining capacity.&lt;/p&gt;
+     *
+     * @param problem the Knapsack Problem instance to solve
+     * @return the total profit of the selected items, providing a primal bound (lower bound)
+     *         on the optimal solution
+     */
+    public static int greedyKS(KSProblem problem) {
+<span class="nc" id="L22">        Integer[] items = new Integer[problem.nbVars()];</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="nc" id="L24">            items[i] = i;</span>
+        }
+
+<span class="nc" id="L27">        Arrays.sort(items, (o1, o2) -&gt; {</span>
+<span class="nc" id="L28">            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
+<span class="nc" id="L29">            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
+<span class="nc" id="L30">            return Double.compare(ratio2, ratio1);</span>
+        });
+
+<span class="nc" id="L33">        int capa = problem.capa;</span>
+<span class="nc" id="L34">        int value = 0;</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        for (Integer i : items) {</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) continue;</span>
+<span class="nc" id="L37">            value += problem.profit[i];</span>
+<span class="nc" id="L38">            capa -= problem.weight[i];</span>
+        }
+
+<span class="nc" id="L41">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

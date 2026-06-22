@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Max2SatRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.max2sat</a> &gt; <span class="el_source">Max2SatRanking.java</span></div><h1>Max2SatRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.max2sat;
+
+
+import org.ddolib.modeling.layered.StateRanking;
+
+/**
+ * Class used to compare two states for the Max2Sat problem.
+ * &lt;br&gt;
+ * A positive value means that we have a bigger benefit by setting &lt;code&gt;x&lt;sub&gt;k&lt;/sub&gt;&lt;/code&gt; to &lt;code&gt;T&lt;/code&gt;.&lt;br&gt;
+ * A negative value means that we have a bigger benefit by setting &lt;code&gt;x&lt;sub&gt;k&lt;/sub&gt;&lt;/code&gt; to &lt;code&gt;F&lt;/code&gt;.&lt;br&gt;
+ * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
+ * That's why we sum the absolute value of each benefit to compare the states.
+ */
+<span class="fc" id="L14">public class Max2SatRanking implements StateRanking&lt;Max2SatState&gt; {</span>
+
+    public static int rank(Max2SatState state) {
+<span class="fc" id="L17">        int toReturn = 0;</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
+<span class="fc" id="L19">            toReturn += Math.abs(state.netBenefit().get(i));</span>
+        }
+
+<span class="fc" id="L22">        return toReturn;</span>
+    }
+
+    @Override
+    public int compare(Max2SatState o1, Max2SatState o2) {
+<span class="fc" id="L27">        return Integer.compare(rank(o1), rank(o2));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

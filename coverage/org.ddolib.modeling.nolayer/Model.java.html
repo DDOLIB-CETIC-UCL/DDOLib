@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Model.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.nolayer</a> &gt; <span class="el_source">Model.java</span></div><h1>Model.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.nolayer;
+
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
+import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the core model interface for describing an optimization problem
+ * in the NoLayer API.
+ *
+ * @param &lt;T&gt; the type representing the state space of the problem
+ */
+public interface Model&lt;T&gt; {
+
+    /**
+     * Returns the optimization problem instance associated with this model.
+     *
+     * @return the {@link Problem} defining the structure, transitions,
+     * and objective function
+     */
+    Problem&lt;T&gt; problem();
+
+    /**
+     * Returns a heuristic that estimates a lower bound on the objective value
+     * for a given state.
+     *
+     * @return the {@link FastLowerBound} heuristic
+     */
+    default FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L31">        return new DefaultFastLowerBound&lt;&gt;();</span>
+    }
+
+    /**
+     * Returns a precomputed upper bound on the optimal value.
+     *
+     * @return a precomputed upper bound on the optimal value
+     */
+    default double upperBound() {
+<span class="fc" id="L40">        return Double.POSITIVE_INFINITY;</span>
+    }
+
+    /**
+     * Returns the dominance checker used to prune dominated states.
+     *
+     * @return the {@link NoLayerDominanceChecker} used for dominance testing
+     */
+    default NoLayerDominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L49">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+    }
+
+    /**
+     * Returns the verbosity level of the solver when this model is executed.
+     *
+     * @return the desired {@link VerbosityLevel}
+     */
+    default VerbosityLevel verbosityLevel() {
+<span class="fc" id="L58">        return VerbosityLevel.SILENT;</span>
+    }
+
+    /**
+     * Returns the debugging level.
+     *
+     * @return the {@link DebugLevel} controlling debug behavior
+     */
+    default DebugLevel debugMode() {
+<span class="nc" id="L67">        return DebugLevel.OFF;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Frontier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.frontier</a> &gt; <span class="el_source">Frontier.java</span></div><h1>Frontier.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.frontier;
+
+import org.ddolib.solving.ddo.core.SubProblem;
+
+/**
+ * Defines the abstraction of a &lt;b&gt;frontier&lt;/b&gt; (or &lt;em&gt;open list&lt;/em&gt;) used by solvers
+ * to manage and prioritize the remaining subproblems that must be explored.
+ * &lt;p&gt;
+ * In a Decision Diagram (DD) or branch-and-bound framework, the frontier represents
+ * the set of &lt;em&gt;active subproblems&lt;/em&gt;—those that have been generated but not yet
+ * expanded or solved. Each subproblem corresponds to a node in the search or DD
+ * exploration tree.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;Implementations of this interface define how the solver selects the next node to explore.
+ * The typical behavior is to always extract the most promising node (the one with the
+ * highest bound on the objective function) to maximize pruning efficiency.&lt;/p&gt;
+ *
+ * &lt;h2&gt;Contract:&lt;/h2&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Nodes (&lt;em&gt;subproblems&lt;/em&gt;) are pushed into the frontier using {@link #push(SubProblem)}.&lt;/li&gt;
+ *   &lt;li&gt;Nodes are extracted in &lt;b&gt;descending order of upper bound value&lt;/b&gt; using {@link #pop()}.&lt;/li&gt;
+ *   &lt;li&gt;Implementations must maintain this priority invariant to ensure correct solver behavior.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the type representing the problem state stored in each {@link SubProblem}
+ *
+ * @see SubProblem
+ * @see CutSetType
+ */
+public interface Frontier&lt;T&gt; {
+    /**
+     * Adds a new subproblem to the frontier for future exploration.
+     * &lt;p&gt;
+     * This method inserts a node into the internal priority structure of the frontier
+     * (e.g., a priority queue ordered by the subproblem’s upper bound or heuristic value).
+     * &lt;/p&gt;
+     *
+     * @param sub the subproblem to be added to the frontier
+     */
+    void push(final SubProblem&lt;T&gt; sub);
+
+    /**
+     * Extracts and returns the most promising subproblem from the frontier.
+     * &lt;p&gt;
+     * The solver assumes that subproblems are popped in &lt;b&gt;descending order of upper bound&lt;/b&gt;,
+     * i.e., the node with the best potential objective value should be returned first.
+     * &lt;/p&gt;
+     *
+     * &lt;p&gt;If the frontier is empty, this method may return {@code null}.&lt;/p&gt;
+     *
+     * @return the subproblem with the highest priority in the frontier, or {@code null} if empty
+     */
+    SubProblem&lt;T&gt; pop();
+
+    /**
+     * Removes all subproblems currently stored in the frontier.
+     * &lt;p&gt;
+     * This operation resets the internal structure and is typically used when restarting
+     * a search or reinitializing the solver.
+     * &lt;/p&gt;
+     */
+    void clear();
+
+    /**
+     * Returns the number of subproblems currently stored in the frontier.
+     *
+     * @return the number of nodes in the frontier
+     */
+    int size();
+
+    /**
+     * Returns the type of cut set associated with this frontier.
+     * &lt;p&gt;
+     * The cut set type determines the strategy used to define which nodes belong
+     * to the frontier (e.g., {@link CutSetType#LastExactLayer} or
+     * {@link CutSetType#Frontier}). This affects how the solver manages layers
+     * during compilation.
+     * &lt;/p&gt;
+     *
+     * @return the {@link CutSetType} representing the frontier strategy
+     */
+    CutSetType cutSetType();
+
+    /**
+     * Checks whether the frontier is empty.
+     * &lt;p&gt;
+     * This default implementation returns {@code true} if {@link #size()} is zero.
+     * &lt;/p&gt;
+     *
+     * @return {@code true} if the frontier contains no subproblems; {@code false} otherwise
+     */
+    default boolean isEmpty() {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        return size() == 0;</span>
+    }
+
+    /**
+     * Returns the current &lt;b&gt;best upper bound&lt;/b&gt; among all subproblems stored in the frontier.
+     * &lt;p&gt;
+     * The &quot;best&quot; bound depends on the problem type (e.g., maximum upper bound for minimization
+     * problems). This method is generally used by the solver to monitor convergence or
+     * update global bounds.
+     * &lt;/p&gt;
+     *
+     * &lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; Implementations should throw an exception if this method is called
+     * when the frontier is empty.&lt;/p&gt;
+     *
+     * @return the best upper bound value among subproblems in the frontier
+     * @throws IllegalStateException if the frontier is empty
+     */
+    double bestInFrontier();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

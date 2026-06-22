@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SMICRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.smic</a> &gt; <span class="el_source">SMICRelax.java</span></div><h1>SMICRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.smic;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
+
+import java.util.*;
+
+/**
+ * The {@code SMICRelax} class implements a relaxation operator for the
+ * {@link SMICProblem}, used in Decision Diagram Optimization (DDO)-based solvers.
+ * &lt;p&gt;
+ * The relaxation defines how to merge multiple {@link SMICState} instances
+ * representing similar subproblems into a single aggregated state, in order
+ * to reduce the diagram size while maintaining an admissible relaxation
+ * (i.e., not underestimating the true cost).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This specific relaxation merges states by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Taking the &lt;b&gt;union&lt;/b&gt; of their remaining jobs,&lt;/li&gt;
+ *   &lt;li&gt;Taking the &lt;b&gt;minimum&lt;/b&gt; of their current times (earliest time reached),&lt;/li&gt;
+ *   &lt;li&gt;Taking the &lt;b&gt;maximum&lt;/b&gt; of their minimum inventory levels,&lt;/li&gt;
+ *   &lt;li&gt;Taking the &lt;b&gt;minimum&lt;/b&gt; of their maximum inventory levels.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * If the resulting inventory interval becomes infeasible
+ * (i.e., {@code minCurrentInventory &gt; maxCurrentInventory}),
+ * the merged state uses the same value for both bounds
+ * to ensure consistency.
+ *
+ * &lt;p&gt;
+ * The {@link #relaxEdge(SMICState, SMICState, SMICState, Decision, double)} method
+ * does not alter the transition cost — it returns the same value as the original edge,
+ * meaning this relaxation focuses on state aggregation only.
+ * &lt;/p&gt;
+ *
+ * @see SMICState
+ * @see SMICProblem
+ * @see Relaxation
+ */
+public class SMICRelax implements Relaxation&lt;SMICState&gt; {
+    /** The underlying problem instance associated with this relaxation. */
+    final SMICProblem problem;
+
+    /**
+     * Constructs a relaxation operator for the given {@link SMICProblem}.
+     *
+     * @param problem the problem definition providing data and constraints
+     */
+
+<span class="fc" id="L52">    public SMICRelax(SMICProblem problem) {</span>
+<span class="fc" id="L53">        this.problem = problem;</span>
+<span class="fc" id="L54">    }</span>
+    /**
+     * Merges several {@link SMICState} objects into a single relaxed state.
+     * &lt;p&gt;
+     * The merged state conservatively approximates the set of original states,
+     * ensuring that no feasible solution is lost while potentially combining
+     * multiple subproblems to reduce computational complexity.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the states to be merged
+     * @return a new relaxed {@link SMICState} combining the information of all inputs
+     */
+    @Override
+    public SMICState mergeStates(final Iterator&lt;SMICState&gt; states) {
+<span class="fc" id="L68">        BitSet remaining = new BitSet();</span>
+<span class="fc" id="L69">        int currentTime = Integer.MAX_VALUE;</span>
+<span class="fc" id="L70">        int minCurrentInventory = Integer.MAX_VALUE;</span>
+<span class="fc" id="L71">        int maxCurrentInventory = Integer.MIN_VALUE;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L73">            final SMICState state = states.next();</span>
+<span class="fc" id="L74">            remaining.or(state.remainingJobs());</span>
+<span class="fc" id="L75">            currentTime = Math.min(currentTime, state.currentTime());</span>
+<span class="fc" id="L76">            minCurrentInventory = Math.min(minCurrentInventory, state.minCurrentInventory());</span>
+<span class="fc" id="L77">            maxCurrentInventory = Math.max(maxCurrentInventory, state.maxCurrentInventory());</span>
+<span class="fc" id="L78">        }</span>
+<span class="fc" id="L79">        return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);</span>
+    }
+    /**
+     * Relaxes the cost of an edge between two states.
+     * &lt;p&gt;
+     * In this implementation, the relaxation does not modify the edge cost;
+     * the returned cost is identical to the input cost.
+     * &lt;/p&gt;
+     *
+     * @param from   the source state before applying the decision
+     * @param to     the target state after applying the decision
+     * @param merged the merged state resulting from relaxation
+     * @param d      the decision applied
+     * @param cost   the original transition cost
+     * @return the relaxed (possibly modified) edge cost, unchanged in this implementation
+     */
+    @Override
+    public double relaxEdge(SMICState from, SMICState to, SMICState merged, Decision d, double cost) {
+<span class="fc" id="L97">        return cost;</span>
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

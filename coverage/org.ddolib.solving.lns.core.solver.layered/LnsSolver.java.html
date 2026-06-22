@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LnsSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.lns.core.solver.layered</a> &gt; <span class="el_source">LnsSolver.java</span></div><h1>LnsSolver.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.lns.core.solver.layered;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.solving.ddo.core.compilation.layered.CompilationConfig;
+import org.ddolib.solving.ddo.core.compilation.CompilationType;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.solving.ddo.core.mdd.layered.LinkedDecisionDiagram;
+import org.ddolib.modeling.layered.LnsModel;
+import org.ddolib.modeling.layered.Problem;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * Large Neighborhood Search (LNS) solver based on restricted decision diagrams.
+ *
+ * &lt;p&gt;The solver iteratively destroys part of the incumbent solution, recompiles a restricted
+ * decision diagram on the residual subproblem, and accepts strict improvements on the objective
+ * value.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; type of states manipulated by the underlying problem
+ */
+public final class LnsSolver&lt;T&gt; implements Solver {
+    private final Problem&lt;T&gt; problem;
+    private final WidthHeuristic&lt;T&gt; width;
+    private final VerbosityLevel verbosityLevel;
+    private final VerboseMode verboseMode;
+    private final boolean exportAsDot;
+    private final LnsModel&lt;T&gt; model;
+    private double bestUB;
+    private Optional&lt;Set&lt;Decision&gt;&gt; bestSol;
+<span class="fc" id="L51">    private boolean firstRestricted = true;</span>
+    private int maxDepth;
+    private int d;
+    private int[] solution;
+
+    /**
+     * Creates a new LNS solver for the provided model.
+     *
+     * @param model model containing the problem definition and LNS/DD configuration
+     */
+<span class="fc" id="L61">    public LnsSolver(LnsModel&lt;T&gt; model) {</span>
+<span class="fc" id="L62">        this.problem = model.problem();</span>
+<span class="fc" id="L63">        this.width = model.widthHeuristic();</span>
+<span class="fc" id="L64">        this.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L65">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L66">        this.verbosityLevel = model.verbosityLevel();</span>
+<span class="fc" id="L67">        this.verboseMode = new VerboseMode(verbosityLevel, 500L);</span>
+<span class="fc" id="L68">        this.exportAsDot = model.exportDot();</span>
+<span class="fc" id="L69">        this.model = model;</span>
+<span class="fc" id="L70">        this.maxDepth = Math.max(0, problem.nbVars() - 2);</span>
+<span class="fc" id="L71">        this.d = maxDepth;</span>
+<span class="fc" id="L72">        this.solution = new int[problem.nbVars()];</span>
+<span class="fc" id="L73">    }</span>
+
+    @Override
+    public Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
+                             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L78">        long start = System.currentTimeMillis();</span>
+<span class="fc" id="L79">        int nbIter = 0;</span>
+<span class="fc" id="L80">        int queueMaxSize = 0;</span>
+<span class="fc" id="L81">        DdoStats stats = new DdoStats(start, bestUB);</span>
+        SubProblem&lt;T&gt; rootPrime;
+<span class="fc" id="L83">        double gap = 100;</span>
+        while (true) {
+<span class="fc" id="L85">            nbIter++;</span>
+<span class="fc" id="L86">            queueMaxSize++;</span>
+<span class="fc" id="L87">            stats = stats</span>
+<span class="fc" id="L88">                    .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L89">                    .incrementNbIter()</span>
+<span class="fc" id="L90">                    .updateFrontierMaxSize(queueMaxSize)</span>
+<span class="fc" id="L91">                    .updateGap(gap);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (limit.test(stats)) {</span>
+<span class="fc" id="L93">                break;</span>
+            }
+<span class="fc" id="L95">            verboseMode.detailedSearchState(nbIter, queueMaxSize, bestUB,</span>
+                    Double.POSITIVE_INFINITY, gap);
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">            if (bestSol.isPresent()) {</span>
+<span class="fc" id="L99">                solution = constructSolution(bestSol.get());</span>
+            } else {
+<span class="fc bfc" id="L101" title="All 2 branches covered.">                if (model.initialSolution() != null) {</span>
+<span class="fc" id="L102">                    solution = model.initialSolution();</span>
+<span class="fc" id="L103">                    bestUB = costInSolutionAtDepth(model.initialSolution(), problem.nbVars());</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">                    if (Double.isInfinite(stats.incumbent())) {</span>
+<span class="fc" id="L105">                        stats = stats.updateIncumbent(bestUB, gap).updateStatus(SearchStatus.SAT);</span>
+                    }
+                } else {
+<span class="fc" id="L108">                    solution = null;</span>
+                }
+            }
+
+<span class="pc bpc" id="L112" title="1 of 4 branches missed.">            if (solution == null || !model.useLNS()) {</span>
+<span class="fc" id="L113">                rootPrime = root();</span>
+            } else {
+<span class="fc" id="L115">                rootPrime = buildInitialSubProblem(solution, d);</span>
+            }
+            // 1. RESTRICTION
+<span class="fc" id="L118">            SubProblem&lt;T&gt; sub = rootPrime;</span>
+
+<span class="fc" id="L120">            verboseMode.currentSubProblem(nbIter, sub);</span>
+
+<span class="fc" id="L122">            int maxWidth = width.maximumWidth(sub.getState());</span>
+
+<span class="fc" id="L124">            CompilationConfig&lt;T&gt; compilation = configureCompilation(CompilationType.Restricted,</span>
+<span class="pc bpc" id="L125" title="3 of 4 branches missed.">                    sub, maxWidth, model.exportDot() &amp;&amp; this.firstRestricted);</span>
+
+<span class="fc" id="L127">            DecisionDiagram&lt;T&gt; restrictedMdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="fc" id="L128">            restrictedMdd.compile();</span>
+
+<span class="fc" id="L130">            gap = computeGap(bestUB, restrictedMdd.minLowerBound());</span>
+
+<span class="pc bpc" id="L132" title="3 of 4 branches missed.">            boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot &amp;&amp; firstRestricted);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">            if (newbest) {</span>
+<span class="fc" id="L134">                gap = computeGap(bestUB, restrictedMdd.minLowerBound());</span>
+<span class="fc" id="L135">                stats = stats</span>
+<span class="fc" id="L136">                        .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L137">                        .updateIncumbent(bestUB, gap)</span>
+<span class="fc" id="L138">                        .updateStatus(SearchStatus.SAT)</span>
+<span class="fc" id="L139">                        .updateGap(gap);</span>
+<span class="fc" id="L140">                onSolution.accept(constructSolution(bestSol.get()), stats);</span>
+            }
+<span class="pc bpc" id="L142" title="3 of 4 branches missed.">            if (exportAsDot &amp;&amp; firstRestricted) {</span>
+<span class="nc" id="L143">                String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
+<span class="nc" id="L144">                exportDot(restrictedMdd.exportAsDot(),</span>
+<span class="nc" id="L145">                        Paths.get(&quot;output&quot;, problemName + &quot;_restricted.dot&quot;).toString());</span>
+            }
+<span class="fc" id="L147">            firstRestricted = false;</span>
+
+<span class="pc bpc" id="L149" title="1 of 4 branches missed.">            if (d == 0 &amp;&amp; restrictedMdd.isExact()) {</span>
+<span class="fc" id="L150">                stats = stats</span>
+<span class="fc" id="L151">                        .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L152">                        .updateIncumbent(bestUB, 0.0)</span>
+<span class="fc" id="L153">                        .updateStatus(SearchStatus.OPTIMAL)</span>
+<span class="fc" id="L154">                        .updateGap(0.0);</span>
+<span class="fc" id="L155">                return new Solution(bestSolution(), stats);</span>
+            }
+<span class="fc" id="L157">        }</span>
+
+<span class="fc" id="L159">        stats = stats.updateTime(System.currentTimeMillis()).updateGap(gap);</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (stats.incumbent() != bestUB) {</span>
+<span class="nc" id="L161">            stats = stats.updateIncumbent(bestUB, gap);</span>
+        }
+<span class="pc bpc" id="L163" title="3 of 4 branches missed.">        if (!Double.isInfinite(bestUB) &amp;&amp; stats.status() == SearchStatus.UNKNOWN) {</span>
+<span class="nc" id="L164">            stats = stats.updateStatus(SearchStatus.SAT);</span>
+        }
+
+<span class="fc" id="L167">        return new Solution(bestSolution(), stats);</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; bestValue() {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (bestSol.isPresent()) {</span>
+<span class="nc" id="L173">            return Optional.of(bestUB);</span>
+        } else {
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (model.initialSolution() != null) {</span>
+<span class="nc" id="L176">                return Optional.of(costInSolutionAtDepth(solution, problem.nbVars()));</span>
+            }
+<span class="nc" id="L178">            return Optional.empty();</span>
+        }
+    }
+
+    @Override
+    public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
+<span class="fc" id="L184">        return bestSol;</span>
+    }
+
+    /**
+     * Updates the incumbent solution if the current restricted DD found a strict improvement.
+     *
+     * @param currentMdd restricted decision diagram compiled at the current iteration
+     * @param exportDot  whether to force DOT materialization to reflect incumbent edge coloring
+     * @return {@code true} if the incumbent was improved, {@code false} otherwise
+     */
+    private boolean maybeUpdateBest(DecisionDiagram&lt;T&gt; currentMdd, boolean exportDot) {
+<span class="fc" id="L195">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
+<span class="fc bfc" id="L196" title="All 4 branches covered.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
+<span class="fc" id="L197">            bestUB = ddval.get();</span>
+<span class="fc" id="L198">            bestSol = currentMdd.bestSolution();</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">            if (model.useLNS()) d = maxDepth;</span>
+<span class="fc" id="L200">            verboseMode.newBest(bestUB);</span>
+<span class="fc" id="L201">            return true;</span>
+        } else {
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">            if (exportDot)</span>
+<span class="nc" id="L204">                currentMdd.exportAsDot(); // to be sure to update the color of the edges.</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">            if (model.useLNS()) {</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">                if (d == 0) {</span>
+<span class="nc" id="L207">                    d = maxDepth;</span>
+                } else {
+<span class="fc" id="L209">                    d--;</span>
+                }
+            }
+        }
+<span class="fc" id="L213">        return false;</span>
+    }
+
+    /**
+     * Writes a DOT representation to disk.
+     *
+     * @param dot      DOT graph content
+     * @param fileName output file path
+     */
+    private void exportDot(String dot, String fileName) {
+<span class="nc" id="L223">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
+<span class="nc" id="L224">            bw.write(dot);</span>
+<span class="nc" id="L225">        } catch (IOException e) {</span>
+<span class="nc" id="L226">            throw new RuntimeException(e);</span>
+<span class="nc" id="L227">        }</span>
+<span class="nc" id="L228">    }</span>
+
+
+    /**
+     * Builds the root subproblem covering all decision variables.
+     *
+     * @return root residual subproblem
+     */
+    private SubProblem&lt;T&gt; root() {
+<span class="fc" id="L237">        Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L238">                IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L239">        return new SubProblem&lt;&gt;(</span>
+<span class="fc" id="L240">                problem.initialState(),</span>
+<span class="fc" id="L241">                problem.initialValue(),</span>
+<span class="fc" id="L242">                model.lowerBound().fastLowerBound(problem.initialState(), vars),</span>
+<span class="fc" id="L243">                Collections.emptySet());</span>
+    }
+
+
+    /**
+     * Builds a residual subproblem by fixing a prefix of the current solution.
+     *
+     * @param solution incumbent solution used as reference for neighborhood destruction
+     * @param depth    number of fixed variables in the prefix
+     * @return residual subproblem rooted at the state reached after the fixed prefix
+     */
+    private SubProblem&lt;T&gt; buildInitialSubProblem(int[] solution, int depth) {
+<span class="fc" id="L255">        final HashSet&lt;Integer&gt; vars = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L256">        Set&lt;Decision&gt; decisionSet = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L257">        T state = problem.initialState();</span>
+<span class="fc" id="L258">        double sum = problem.initialValue();</span>
+<span class="fc" id="L259">        int k = 0;</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        while (k &lt; problem.nbVars()) {</span>
+<span class="fc" id="L261">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            if (k &lt; depth) {</span>
+<span class="fc" id="L263">                decisionSet.add(dec);</span>
+<span class="fc" id="L264">                sum += problem.transitionCost(state, dec);</span>
+<span class="fc" id="L265">                state = problem.transition(state, dec);</span>
+            } else {
+<span class="fc" id="L267">                vars.add(dec.variable());</span>
+            }
+<span class="fc" id="L269">            k++;</span>
+<span class="fc" id="L270">        }</span>
+<span class="fc" id="L271">        return new SubProblem&lt;&gt;(</span>
+                state,
+                sum,
+<span class="fc" id="L274">                model.lowerBound().fastLowerBound(state, vars),</span>
+                decisionSet
+        );
+    }
+
+
+    /**
+     * Computes the objective value accumulated by a solution prefix.
+     *
+     * @param solution full variable assignment
+     * @param depth    prefix length to evaluate
+     * @return cumulative objective value up to {@code depth}
+     */
+    private double costInSolutionAtDepth(int[] solution, int depth) {
+<span class="fc" id="L288">        double sum = problem.initialValue();</span>
+<span class="fc" id="L289">        T state = problem.initialState();</span>
+<span class="fc" id="L290">        int k = 0;</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">        while (k &lt; depth) {</span>
+<span class="fc" id="L292">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="fc" id="L293">            sum += problem.transitionCost(state, dec);</span>
+<span class="fc" id="L294">            state = problem.transition(state, dec);</span>
+<span class="fc" id="L295">            k++;</span>
+<span class="fc" id="L296">        }</span>
+<span class="fc" id="L297">        return sum;</span>
+    }
+
+
+    /**
+     * Computes the state reached after applying a solution prefix.
+     *
+     * @param solution full variable assignment
+     * @param depth    prefix length to apply
+     * @return state reached at the requested depth
+     */
+    private T stateInSolutionAtDepth(int[] solution, int depth) {
+<span class="nc" id="L309">        T state = problem.initialState();</span>
+<span class="nc" id="L310">        int k = 0;</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        while (k &lt; depth) {</span>
+<span class="nc" id="L312">            Decision dec = new Decision(k, solution[k]);</span>
+<span class="nc" id="L313">            state = problem.transition(state, dec);</span>
+<span class="nc" id="L314">            k++;</span>
+<span class="nc" id="L315">        }</span>
+<span class="nc" id="L316">        return state;</span>
+    }
+
+    /**
+     * Creates the compilation configuration for a restricted DD iteration.
+     *
+     * @param type        compilation type to use
+     * @param sub         residual subproblem to compile
+     * @param maxWidth    maximal width allowed during restriction
+     * @param exportAsDot whether DOT export is enabled for this compilation
+     * @return fully initialized compilation configuration
+     */
+    private CompilationConfig&lt;T&gt; configureCompilation(CompilationType type, SubProblem&lt;T&gt; sub,
+                                                      int maxWidth, boolean exportAsDot) {
+<span class="fc" id="L330">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="fc" id="L331">        compilation.compilationType = type;</span>
+<span class="fc" id="L332">        compilation.problem = model.problem();</span>
+<span class="fc" id="L333">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="fc" id="L334">        compilation.stateRanking = model.ranking();</span>
+<span class="fc" id="L335">        compilation.residual = sub;</span>
+<span class="fc" id="L336">        compilation.maxWidth = maxWidth;</span>
+<span class="fc" id="L337">        compilation.flb = model.lowerBound();</span>
+<span class="fc" id="L338">        compilation.dominance = model.dominance();</span>
+<span class="fc" id="L339">        compilation.bestUB = this.bestUB;</span>
+<span class="fc" id="L340">        compilation.exportAsDot = exportAsDot;</span>
+<span class="fc" id="L341">        compilation.debugLevel = model.debugMode();</span>
+<span class="fc" id="L342">        compilation.reductionStrategy = model.restrictStrategy();</span>
+<span class="fc" id="L343">        compilation.initialSolution = model.initialSolution();</span>
+<span class="fc" id="L344">        compilation.probability = model.probability();</span>
+<span class="fc" id="L345">        compilation.useLNS = model.useLNS();</span>
+<span class="fc bfc" id="L346" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
+<span class="fc" id="L347">            compilation.solution = constructSolution(bestSol.get());</span>
+        } else {
+<span class="fc" id="L349">            compilation.solution = model.initialSolution();</span>
+        }
+<span class="fc" id="L351">        return compilation;</span>
+    }
+
+    /**
+     * Computes the relative optimality gap in percent.
+     *
+     * &lt;p&gt;Special cases are handled explicitly to avoid {@code NaN}: infinite upper bound returns
+     * an infinite gap; zero upper bound returns 0 when lower bound is also zero, otherwise an
+     * infinite gap.&lt;/p&gt;
+     *
+     * @param upperBound incumbent objective value
+     * @param lowerBound lower bound of the explored neighborhood
+     * @return relative gap percentage
+     */
+    private double computeGap(double upperBound, double lowerBound) {
+<span class="fc bfc" id="L366" title="All 2 branches covered.">        if (Double.isInfinite(upperBound)) {</span>
+<span class="fc" id="L367">            return Double.POSITIVE_INFINITY;</span>
+        }
+<span class="fc" id="L369">        double numerator = Math.abs(upperBound - lowerBound);</span>
+<span class="fc" id="L370">        double denominator = Math.abs(upperBound);</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        if (denominator == 0.0) {</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">            return numerator == 0.0 ? 0.0 : Double.POSITIVE_INFINITY;</span>
+        }
+<span class="fc" id="L374">        return 100.0 * numerator / denominator;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Max2SatProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.max2sat</a> &gt; <span class="el_source">Max2SatProblem.java</span></div><h1>Max2SatProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.max2sat;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.layered.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Represents a &lt;b&gt;Maximum 2-Satisfiability (MAX2SAT)&lt;/b&gt; problem instance.
+ * &lt;p&gt;
+ * In a MAX2SAT problem, each clause involves at most two literals, and each clause
+ * has an associated weight. The objective is to find an assignment to the variables
+ * that maximizes the sum of the weights of satisfied clauses.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface with states of type {@link Max2SatState}.
+ * It provides methods for generating the domain of a variable, computing transitions, and
+ * evaluating the cost of a transition.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Decision variables are indexed from 0 internally, but the {@link BinaryClause} representation
+ * requires indices starting from 1. The methods {@link #t(int)} and {@link #f(int)} handle
+ * this mapping for positive and negated literals, respectively.
+ * &lt;/p&gt;
+ *
+ * @see Max2SatState
+ * @see BinaryClause
+ * @see Problem
+ */
+public class Max2SatProblem implements Problem&lt;Max2SatState&gt; {
+
+    /**
+     * Value representing a decision of TRUE.
+     */
+    final static int T = 1;
+
+    /**
+     * Value representing a decision of FALSE.
+     */
+    final static int F = 0;
+    /**
+     * Map storing the weight of each binary clause.
+     */
+    final HashMap&lt;BinaryClause, Integer&gt; weights;
+    /**
+     * Number of decision variables in this MAX2SAT instance.
+     */
+    private final int numVar;
+    /**
+     * Optional value of the known optimal solution.
+     */
+    private final Optional&lt;Double&gt; optimal;
+
+    /**
+     * Optional name of the instance (e.g., filename).
+     */
+<span class="pc" id="L63">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs a MAX2SAT problem instance.
+     *
+     * @param numVar  Number of decision variables.
+     * @param weights Map of binary clauses to their weights.
+     * @param optimal Optional known optimal value.
+     */
+    public Max2SatProblem(int numVar, HashMap&lt;BinaryClause, Integer&gt; weights,
+<span class="nc" id="L73">                          Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L74">        this.numVar = numVar;</span>
+<span class="nc" id="L75">        this.weights = weights;</span>
+<span class="nc" id="L76">        this.optimal = optimal;</span>
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Constructs a MAX2SAT problem instance from a file.
+     * &lt;p&gt;
+     * The file format:
+     * &lt;ul&gt;
+     *   &lt;li&gt;First line: number of variables [optimal value (optional)]&lt;/li&gt;
+     *   &lt;li&gt;Subsequent lines: each line is a clause:
+     *     &lt;ul&gt;
+     *       &lt;li&gt;Unary clause: variable index and weight&lt;/li&gt;
+     *       &lt;li&gt;Binary clause: two variable indices and weight&lt;/li&gt;
+     *     &lt;/ul&gt;
+     *   &lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param fname Path to the input file.
+     * @throws IOException if the file cannot be read.
+     */
+<span class="fc" id="L96">    public Max2SatProblem(String fname) throws IOException {</span>
+<span class="fc" id="L97">        int n = 0;</span>
+<span class="fc" id="L98">        HashMap&lt;BinaryClause, Integer&gt; weights = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L99">        Optional&lt;Double&gt; opti = Optional.empty();</span>
+<span class="fc" id="L100">        boolean firstLine = true;</span>
+
+<span class="fc" id="L102">        try (BufferedReader bf = new BufferedReader(new FileReader(fname))) {</span>
+            String line;
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            while ((line = bf.readLine()) != null) {</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">                if (firstLine) {</span>
+<span class="fc" id="L106">                    firstLine = false;</span>
+<span class="fc" id="L107">                    String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L108">                    n = Integer.parseInt(tokens[0]);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">                    if (tokens.length == 2) {</span>
+<span class="fc" id="L110">                        opti = Optional.of(Double.parseDouble(tokens[1]));</span>
+                    }
+<span class="fc" id="L112">                } else {</span>
+<span class="fc" id="L113">                    String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                    if (tokens.length == 2) { // Unary clause</span>
+<span class="fc" id="L115">                        int i = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L116">                        int w = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L117">                        weights.put(new BinaryClause(i, i), w);</span>
+<span class="fc" id="L118">                    } else {</span>
+<span class="fc" id="L119">                        int i = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L120">                        int j = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L121">                        int w = Integer.parseInt(tokens[2]);</span>
+<span class="fc" id="L122">                        weights.put(new BinaryClause(i, j), w);</span>
+                    }
+<span class="fc" id="L124">                }</span>
+            }
+        }
+<span class="fc" id="L127">        this.numVar = n;</span>
+<span class="fc" id="L128">        this.weights = weights;</span>
+<span class="fc" id="L129">        this.optimal = opti;</span>
+<span class="fc" id="L130">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L131">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L135">        return name.orElseGet(weights::toString);</span>
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L140">        return numVar;</span>
+    }
+
+    @Override
+    public Max2SatState initialState() {
+<span class="fc" id="L145">        return new Max2SatState(new ArrayList&lt;&gt;(Collections.nCopies(numVar, 0)), 0);</span>
+    }
+
+    /**
+     * Computes the initial value of the problem.
+     * &lt;p&gt;
+     * Unary clauses of the form (x_i OR NOT x_i) are always satisfied,
+     * so their weight is added directly at the start.
+     *
+     * @return the initial value
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L158">        int toReturn = 0;</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L160">            toReturn += weight(t(i), f(i));</span>
+<span class="fc" id="L161">            toReturn += weight(f(i), t(i));</span>
+        }
+<span class="fc" id="L163">        return -toReturn;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(Max2SatState state, int var) {
+<span class="fc" id="L168">        return List.of(F, T).iterator();</span>
+    }
+
+    @Override
+    public Max2SatState transition(Max2SatState state, Decision decision) {
+<span class="fc" id="L173">        ArrayList&lt;Integer&gt; newBenefit = new ArrayList&lt;&gt;(Collections.nCopies(numVar, 0));</span>
+<span class="fc" id="L174">        int k = decision.variable();</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (decision.value() == T) {</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // If the variable k has been set to T, and then we set the variable l to T, we gain the weight of the
+                // clause (!xk || xl). But we lose the weight of the clause (!xk || !xl).
+<span class="fc" id="L179">                newBenefit.set(l, state.netBenefit().get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));</span>
+            }
+        } else {
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // If the variable k has been set to F, and then we set the variable l to T, we gain the weight of the
+                // clause (xk || xl). But we lose the weight of the clause (xk || !xl).
+<span class="fc" id="L185">                newBenefit.set(l, state.netBenefit().get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));</span>
+            }
+        }
+
+<span class="fc" id="L189">        return new Max2SatState(newBenefit, state.depth() + 1);</span>
+    }
+
+    @Override
+    public double transitionCost(Max2SatState state, Decision decision) {
+
+<span class="fc" id="L195">        int k = decision.variable();</span>
+        int toReturn;
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (decision.value() == T) {</span>
+            // If k has been set to T, we gain the net benefit if it is &gt; 0 and the weight of the unary clause xk.
+<span class="fc" id="L199">            toReturn = positiveOrNull(state.netBenefit().get(k)) + weight(t(k), t(k));</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // We gain the weight of the clauses (xk || xl) and (xk || !xl)
+<span class="fc" id="L202">                toReturn += weight(t(k), f(l)) + weight(t(k), t(l));</span>
+<span class="fc" id="L203">                int s_k_l = state.netBenefit().get(l);</span>
+                // According to the decision on l, we can gain (!xk || xl) or (!xk || !xl)
+<span class="fc" id="L205">                toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),</span>
+<span class="fc" id="L206">                        positiveOrNull(-s_k_l) + weight(f(k), f(l)));</span>
+            }
+        } else {
+            // If k has been set to F, we gain the net benefit if it is &lt; 0 and the weight of the unary clause /xk.
+<span class="fc" id="L210">            toReturn = positiveOrNull(-state.netBenefit().get(k)) + weight(f(k), f(k));</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">            for (int l = k + 1; l &lt; nbVars(); l++) {</span>
+                // We gain the weight of the clauses (!xk || !xl) and (!xk || xl)
+<span class="fc" id="L213">                toReturn += weight(f(k), f(l)) + weight(f(k), t(l));</span>
+<span class="fc" id="L214">                int s_k_l = state.netBenefit().get(l);</span>
+                // According to the decision on l, we can gain (xk || xl) or (xk || !xl)
+<span class="fc" id="L216">                toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),</span>
+<span class="fc" id="L217">                        positiveOrNull(-s_k_l) + weight(t(k), f(l)));</span>
+            }
+        }
+<span class="fc" id="L220">        return -toReturn;</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L225">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L231">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L232">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L235">        int value = 0;</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (Map.Entry&lt;BinaryClause, Integer&gt; entry : weights.entrySet()) {</span>
+<span class="fc" id="L237">            BinaryClause bc = entry.getKey();</span>
+<span class="fc" id="L238">            int w = entry.getValue();</span>
+<span class="fc" id="L239">            int a = solution[Math.abs(bc.i) - 1];</span>
+<span class="fc" id="L240">            int b = solution[Math.abs(bc.j) - 1];</span>
+<span class="fc" id="L241">            value += bc.eval(a, b) * w;</span>
+<span class="fc" id="L242">        }</span>
+
+<span class="fc" id="L244">        return -value;</span>
+    }
+
+    /**
+     * Converts zero-based variable index to a 1-based index required by BinaryClause.
+     *
+     * @param x variable index (0-based)
+     * @return 1-based index
+     */
+    private int toBinaryClauseVariable(int x) {
+<span class="fc" id="L254">        return x + 1;</span>
+    }
+
+    /**
+     * Returns the positive literal for a variable.
+     *
+     * @param x variable index
+     * @return value representing x_i
+     */
+    public int t(int x) {
+<span class="fc" id="L264">        return toBinaryClauseVariable(x);</span>
+    }
+
+    /**
+     * Returns the negated literal for a variable.
+     *
+     * @param x variable index
+     * @return value representing NOT x_i
+     */
+    public int f(int x) {
+<span class="fc" id="L274">        return -toBinaryClauseVariable(x);</span>
+    }
+
+    /**
+     * Returns the positive part of a marginal value (or zero if negative).
+     *
+     * @param x marginal value
+     * @return max(0, x)
+     */
+    private int positiveOrNull(int x) {
+<span class="fc" id="L284">        return Integer.max(0, x);</span>
+    }
+
+    /**
+     * Returns the weight of a binary clause (x, y), considering commutativity.
+     *
+     * @param x first literal
+     * @param y second literal
+     * @return weight of the clause, or 0 if absent
+     */
+    public int weight(int x, int y) {
+<span class="fc" id="L295">        BinaryClause bc = new BinaryClause(x, y);</span>
+<span class="fc" id="L296">        BinaryClause bcCommuted = new BinaryClause(y, x);</span>
+<span class="fc" id="L297">        return weights.getOrDefault(bc, weights.getOrDefault(bcCommuted, 0));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

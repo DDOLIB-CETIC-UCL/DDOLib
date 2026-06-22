@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsp</a> &gt; <span class="el_source">TSPRanking.java</span></div><h1>TSPRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsp;
+
+import org.ddolib.modeling.layered.StateRanking;
+/**
+ * Class that defines a ranking between two {@link TSPState} instances.
+ *
+ * &lt;p&gt;
+ * This class implements the {@link StateRanking} interface for TSP states.
+ * It is intended to provide a comparison method between states, which can be used
+ * to prioritize or order states in search algorithms such as DDO or A*.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Currently, the {@link #compare(TSPState, TSPState)} method returns 0 for all states,
+ * indicating that all states are considered equal in terms of ranking.
+ * This can be customized to implement a meaningful heuristic-based ranking.
+ * &lt;/p&gt;
+ *
+ * @see TSPState
+ * @see StateRanking
+ */
+<span class="fc" id="L22">public class TSPRanking implements StateRanking&lt;TSPState&gt; {</span>
+    /**
+     * Compares two TSP states.
+     *
+     * @param o1 the first state
+     * @param o2 the second state
+     * @return 0 as a placeholder, indicating that the two states are equal in ranking
+     */
+    @Override
+    public int compare(final TSPState o1, final TSPState o2) {
+<span class="fc" id="L32">        return 0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

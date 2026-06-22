@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Max2SatRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.max2sat</a> &gt; <span class="el_source">Max2SatRelax.java</span></div><h1>Max2SatRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.max2sat;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
+import static java.lang.Integer.*;
+import static java.lang.Math.abs;
+
+/**
+ * Implements a &lt;b&gt;relaxation&lt;/b&gt; for the Maximum 2-Satisfiability (MAX2SAT) problem.
+ * &lt;p&gt;
+ * This class provides a mechanism to merge multiple {@link Max2SatState} instances into a single
+ * relaxed state, which can be used in relaxation-based search algorithms such as DDO or A*.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The merge strategy aims to be optimistic without overestimating: for each variable, if all states
+ * have the same sign of net benefit, the smallest magnitude is kept; otherwise, the net benefit is set to 0.
+ * This approach ensures that the merged state does not overestimate the achievable benefit, providing a
+ * valid lower bound for maximization.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The {@link #relaxEdge(Max2SatState, Max2SatState, Max2SatState, Decision, double)} method adjusts the
+ * transition cost to account for losses of net benefit in the merged state, ensuring an over-approximation
+ * of the optimal solution.
+ * &lt;/p&gt;
+ *
+ * @see Max2SatProblem
+ * @see Max2SatState
+ * @see Relaxation
+ */
+public class Max2SatRelax implements Relaxation&lt;Max2SatState&gt; {
+
+    /**
+     * The MAX2SAT problem instance being relaxed.
+     */
+    private final Max2SatProblem problem;
+
+    /**
+     * Constructs a relaxation for the given MAX2SAT problem.
+     *
+     * @param problem the MAX2SAT problem instance
+     */
+<span class="fc" id="L49">    public Max2SatRelax(Max2SatProblem problem) {</span>
+<span class="fc" id="L50">        this.problem = problem;</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Merges multiple {@link Max2SatState} instances into a single relaxed state.
+     * &lt;p&gt;
+     * For each variable, if all the net benefits in the states have the same sign, the smallest
+     * magnitude is kept; otherwise, the net benefit is set to 0. The depth of the merged state
+     * corresponds to the depth of the last processed state.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the states to merge
+     * @return a new {@link Max2SatState} representing the merged relaxed state
+     */
+    @Override
+    public Max2SatState mergeStates(Iterator&lt;Max2SatState&gt; states) {
+        //Being to optimistic can lead to bad decision. For the merged state we keep the net
+        // benefit near to 0.
+<span class="fc" id="L68">        ArrayList&lt;Integer&gt; merged = new ArrayList&lt;&gt;(Collections.nCopies(problem.nbVars(), 0));</span>
+<span class="fc" id="L69">        int depth = problem.nbVars();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L71">            Max2SatState current = states.next();</span>
+<span class="fc" id="L72">            depth = current.depth();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            for (int i = 0; i &lt; current.netBenefit().size(); i++) {</span>
+<span class="fc" id="L74">                Integer mergedI = merged.get(i);</span>
+<span class="fc" id="L75">                Integer currentI = current.netBenefit().get(i);</span>
+                // If all the net benefits have the same sign, we keep the smallest one in absolute value.
+<span class="pc bpc" id="L77" title="3 of 4 branches missed.">                if (signum(mergedI) == 1 &amp;&amp; signum(currentI) == 1) {</span>
+<span class="nc" id="L78">                    merged.set(i, min(mergedI, currentI));</span>
+<span class="pc bpc" id="L79" title="3 of 4 branches missed.">                } else if (signum(mergedI) == -1 &amp;&amp; signum(currentI) == -1) {</span>
+<span class="nc" id="L80">                    merged.set(i, max(mergedI, currentI));</span>
+                } else {
+                    // Otherwise, we set the benefit to 0.
+<span class="fc" id="L83">                    merged.set(i, 0);</span>
+                }
+            }
+<span class="fc" id="L86">        }</span>
+<span class="fc" id="L87">        return new Max2SatState(merged, depth);</span>
+    }
+
+    /**
+     * Adjusts the cost of transitioning from one state to another in the relaxed model.
+     * &lt;p&gt;
+     * The method compensates for potential losses in net benefits when using a merged state,
+     * ensuring that the transition cost maintains an over-approximation of the optimal solution.
+     * &lt;/p&gt;
+     *
+     * @param from   the original state before the transition
+     * @param to     the original state after the transition
+     * @param merged the merged relaxed state
+     * @param d      the decision taken
+     * @param cost   the original transition cost
+     * @return the adjusted transition cost in the relaxed model
+     */
+    @Override
+    public double relaxEdge(Max2SatState from, Max2SatState to, Max2SatState merged, Decision d,
+                            double cost) {
+        // The net benefits in merged state are smaller than the net benefit in exact states.
+        // To offset the losses of benefit and guarantee an over-approximation of the optimal
+        // solution, we add the losses to the transition cost.
+<span class="fc" id="L110">        double toReturn = -cost;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (int i = d.variable() + 1; i &lt; problem.nbVars(); i++) {</span>
+<span class="fc" id="L112">            toReturn += abs(to.netBenefit().get(i)) - abs(merged.netBenefit().get(i));</span>
+        }
+<span class="fc" id="L114">        return -toReturn;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

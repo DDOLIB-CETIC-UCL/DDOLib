@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsptw</a> &gt; <span class="el_source">TSPTWProblem.java</span></div><h1>TSPTWProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsptw;
+
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.nolayer.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+public class TSPTWProblem implements Problem&lt;TSPTWState&gt; {
+
+    public final int[][] distance;
+    public final TimeWindow[] timeWindows;
+    public final int nbVars;
+
+<span class="fc" id="L22">    public TSPTWProblem(int[][] distance, TimeWindow[] timeWindows) {</span>
+<span class="fc" id="L23">        this.distance = distance;</span>
+<span class="fc" id="L24">        this.timeWindows = timeWindows;</span>
+<span class="fc" id="L25">        this.nbVars = distance.length;</span>
+<span class="fc" id="L26">    }</span>
+
+    @Override
+    public TSPTWState initialState() {
+<span class="fc" id="L30">        BitSet mustVisit = new BitSet(nbVars);</span>
+<span class="fc" id="L31">        mustVisit.set(1, nbVars, true);</span>
+<span class="fc" id="L32">        return new TSPTWState(0, 0, mustVisit);</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L37">        return 0;</span>
+    }
+
+    @Override
+    public boolean isTarget(TSPTWState state) {
+<span class="fc bfc" id="L42" title="All 4 branches covered.">        return state.mustVisit().isEmpty() &amp;&amp; state.currentCity() == 0;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(TSPTWState state) {
+<span class="fc" id="L47">        List&lt;Integer&gt; dom = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (state.mustVisit().isEmpty()) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (state.currentCity() != 0) {</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                if (reachable(state, 0)) {</span>
+<span class="fc" id="L51">                    dom.add(0);</span>
+                }
+            }
+<span class="fc" id="L54">            return dom.iterator();</span>
+        }
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (int i = state.mustVisit().nextSetBit(0); i &gt;= 0; i = state.mustVisit().nextSetBit(i + 1)) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (reachable(state, i)) {</span>
+<span class="fc" id="L59">                dom.add(i);</span>
+            } else {
+                // If any mustVisit node is unreachable, this state is a dead end
+<span class="fc" id="L62">                return Collections.emptyIterator();</span>
+            }
+        }
+<span class="fc" id="L65">        return dom.iterator();</span>
+    }
+
+    @Override
+    public TSPTWState transition(TSPTWState state, int label) {
+<span class="fc" id="L70">        int newTime = arrivalTime(state, label);</span>
+<span class="fc" id="L71">        BitSet newMust = (BitSet) state.mustVisit().clone();</span>
+<span class="fc" id="L72">        newMust.set(label, false);</span>
+<span class="fc" id="L73">        return new TSPTWState(label, newTime, newMust);</span>
+    }
+
+    @Override
+    public double transitionCost(TSPTWState state, int label) {
+<span class="fc" id="L78">        int travel = distance[state.currentCity()][label];</span>
+<span class="fc" id="L79">        int arrival = state.time() + travel;</span>
+<span class="fc" id="L80">        int waiting = Math.max(0, timeWindows[label].start() - arrival);</span>
+<span class="fc" id="L81">        return travel + waiting;</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (solution.length != nbVars) {</span>
+<span class="nc" id="L87">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L88">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars));</span>
+        }
+
+<span class="fc" id="L91">        java.util.Map&lt;Integer, Long&gt; count = Arrays.stream(solution)</span>
+<span class="fc" id="L92">                .boxed()</span>
+<span class="fc" id="L93">                .collect(java.util.stream.Collectors.groupingBy(x -&gt; x, java.util.stream.Collectors.counting()));</span>
+
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">        if (count.values().stream().anyMatch(x -&gt; x != 1)) {</span>
+<span class="nc" id="L96">            String msg = &quot;The solution has duplicated nodes and does not reach each node&quot;;</span>
+<span class="nc" id="L97">            throw new InvalidSolutionException(msg);</span>
+        }
+
+<span class="fc" id="L100">        double value = distance[0][solution[0]]; //Start from the depot.</span>
+<span class="fc" id="L101">        value += Math.max(0, timeWindows[solution[0]].start() - value);</span>
+
+
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        for (int i = 1; i &lt; nbVars; i++) {</span>
+<span class="fc" id="L105">            int from = solution[i - 1];</span>
+<span class="fc" id="L106">            int to = solution[i];</span>
+<span class="fc" id="L107">            value += distance[from][to];</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (value &gt; timeWindows[to].end()) {</span>
+<span class="nc" id="L109">                String msg = String.format(&quot;This solution does not respect time windows. \nYou &quot; +</span>
+<span class="nc" id="L110">                                &quot;arrive at node %d at time %f. Its time window is %s&quot;, to, value,</span>
+                        timeWindows[to]);
+<span class="nc" id="L112">                throw new InvalidSolutionException(msg);</span>
+            }
+<span class="fc" id="L114">            value += Math.max(0, timeWindows[to].start() - value);</span>
+        }
+
+<span class="fc" id="L117">        return value;</span>
+    }
+
+    private boolean reachable(TSPTWState from, int to) {
+<span class="fc" id="L121">        int duration = distance[from.currentCity()][to];</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        return from.time() + duration &lt;= timeWindows[to].end();</span>
+    }
+
+    private int arrivalTime(TSPTWState from, int to) {
+<span class="fc" id="L126">        int time = from.time() + distance[from.currentCity()][to];</span>
+<span class="fc" id="L127">        return Math.max(time, timeWindows[to].start());</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L132">        return &quot;TSPTWProblem(nbVars:&quot; + nbVars + &quot;)&quot;;</span>
+    }
+
+    public static TSPTWProblem fromFile(String fname) throws IOException {
+<span class="fc" id="L136">        int numVar = 0;</span>
+<span class="fc" id="L137">        int[][] dist = new int[0][0];</span>
+<span class="fc" id="L138">        TimeWindow[] tw = new TimeWindow[0];</span>
+
+<span class="fc" id="L140">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L141">            int lineCount = 0;</span>
+            String line;
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+                //Skip comment
+<span class="pc bpc" id="L145" title="1 of 4 branches missed.">                if (line.startsWith(&quot;#&quot;) || line.isEmpty()) {</span>
+<span class="nc" id="L146">                    continue;</span>
+                }
+<span class="fc bfc" id="L148" title="All 2 branches covered.">                if (lineCount == 0) {</span>
+<span class="fc" id="L149">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L150">                    numVar = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L151">                    dist = new int[numVar][numVar];</span>
+<span class="fc" id="L152">                    tw = new TimeWindow[numVar];</span>
+<span class="pc bpc" id="L153" title="1 of 4 branches missed.">                } else if (1 &lt;= lineCount &amp;&amp; lineCount &lt;= numVar) {</span>
+<span class="fc" id="L154">                    int i = lineCount - 1;</span>
+<span class="fc" id="L155">                    String[] distanceFromI = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L156">                    dist[i] = Arrays.stream(distanceFromI).mapToInt(Integer::parseInt).toArray();</span>
+<span class="fc" id="L157">                } else {</span>
+<span class="fc" id="L158">                    int i = lineCount - 1 - numVar;</span>
+<span class="fc" id="L159">                    String[] twStr = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L160">                    tw[i] = new TimeWindow(Integer.parseInt(twStr[0]), Integer.parseInt(twStr[1]));</span>
+                }
+<span class="fc" id="L162">                lineCount++;</span>
+            }
+        }
+<span class="fc" id="L165">        return new TSPTWProblem(dist, tw);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

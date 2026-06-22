@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsp</a> &gt; <span class="el_source">TSPState.java</span></div><h1>TSPState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsp;
+
+import java.util.BitSet;
+import java.util.Objects;
+/**
+ * Represents a state in the Traveling Salesman Problem (TSP).
+ *
+ * &lt;p&gt;
+ * A {@code TSPState} captures the current situation of the tour:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code current} – the set of nodes currently being considered as the current location.
+ *         In most cases, this is a singleton, but during state merging (relaxation), it may contain multiple nodes.&lt;/li&gt;
+ *     &lt;li&gt;{@code toVisit} – the set of nodes that have not yet been visited.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * This class provides methods to handle singleton nodes, and overrides {@code equals}, {@code hashCode},
+ * and {@code toString} for proper use in collections and debugging.
+ * &lt;/p&gt;
+ *
+ * @see TSPProblem
+ * @see TSPRelax
+ */
+public class TSPState {
+    /**
+     * Set of nodes that have not been visited yet.
+     */
+    public BitSet toVisit;
+
+    /**
+     * Current node(s). Usually a singleton, but can be multiple in merged states.
+     */
+    public BitSet current;
+    /**
+     * Constructs a new TSPState.
+     *
+     * @param current the current node(s)
+     * @param toVisit the nodes that have not yet been visited
+     */
+<span class="fc" id="L41">    public TSPState(BitSet current, BitSet toVisit) {</span>
+<span class="fc" id="L42">        this.toVisit = toVisit;</span>
+<span class="fc" id="L43">        this.current = current;</span>
+<span class="fc" id="L44">    }</span>
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L48">        return Objects.hash(toVisit, current);</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc" id="L53">        TSPState that = (TSPState) obj;</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        return (this.current.equals(that.current))</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                &amp;&amp; this.toVisit.equals(that.toVisit);</span>
+    }
+    /**
+     * Creates a BitSet containing only the specified singleton value.
+     *
+     * @param singletonValue the value to set
+     * @return a BitSet with a single bit set
+     */
+    public BitSet singleton(int singletonValue) {
+<span class="fc" id="L64">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L65">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L66">        return toReturn;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (current.cardinality() != 1) {</span>
+<span class="fc" id="L72">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+        } else {
+<span class="fc" id="L74">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Model.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.layered</a> &gt; <span class="el_source">Model.java</span></div><h1>Model.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.layered;
+
+import org.ddolib.common.dominance.DefaultDominanceChecker;
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.DefaultVariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the core model interface for describing an optimization problem to be
+ * solved within the Decision Diagram Optimization (DDO) framework.
+ * &lt;p&gt;
+ * A {@code Model} encapsulates all components required to define, evaluate,
+ * and guide the resolution of an optimization problem. It specifies the
+ * {@link Problem} instance to solve and optionally provides custom heuristics,
+ * dominance relations, and debugging or verbosity configurations.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Implementations of this interface typically serve as the entry point for
+ * configuring solvers such as {@link org.ddolib.solving.ddo.core.solver.layered.ExactSolver} or
+ * {@link org.ddolib.solving.ddo.core.solver.layered.SequentialSolver}. Users can override the
+ * default methods to customize behavior such as lower bound evaluation,
+ * variable selection heuristics, or dominance checking.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type representing the state space of the problem
+ */
+public interface Model&lt;T&gt; {
+    /**
+     * Returns the optimization problem instance associated with this model.
+     *
+     * @return the {@link Problem} defining the structure, transitions,
+     * and objective function of the optimization task
+     */
+    Problem&lt;T&gt; problem();
+
+    /**
+     * Returns a heuristic that estimates a lower bound on the objective value
+     * for a given state.
+     * &lt;p&gt;
+     * By default, this method provides a {@link DefaultFastLowerBound} instance,
+     * which can be overridden for problem-specific bound estimation.
+     * &lt;/p&gt;
+     *
+     * @return the {@link FastLowerBound} heuristic used to compute lower bounds
+     */
+    default FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L50">        return new DefaultFastLowerBound&lt;&gt;();</span>
+    }
+
+    /**
+     * Returns a precomputed upper bound on the optimal value.
+     *
+     * &lt;p&gt; This bound allows to start the search with a better upper bound and start pruning
+     * earlier.&lt;/p&gt;
+     *
+     * &lt;p&gt;By default, it returns {@code Double.POSITIVE_INFINITY}&lt;/p&gt;
+     *
+     * @return a precomputed upper bound on the optimal value
+     */
+    default double upperBound() {
+<span class="fc" id="L64">        return Double.POSITIVE_INFINITY;</span>
+    }
+
+    /**
+     * Returns the dominance checker used to prune dominated states from the search space.
+     * &lt;p&gt;
+     * By default, this method provides a {@link DefaultDominanceChecker} instance,
+     * which can be replaced by custom dominance logic tailored to the problem.
+     * &lt;/p&gt;
+     *
+     * @return the {@link DominanceChecker} used for dominance testing
+     */
+    default DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L77">        return new DefaultDominanceChecker&lt;&gt;();</span>
+    }
+
+    /**
+     * Returns the heuristic used to determine the next variable to branch on
+     * during decision diagram compilation.
+     * &lt;p&gt;
+     * By default, this method returns a {@link DefaultVariableHeuristic} instance.
+     * &lt;/p&gt;
+     *
+     * @return the {@link VariableHeuristic} guiding variable selection
+     */
+    default VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L90">        return new DefaultVariableHeuristic&lt;&gt;();</span>
+    }
+
+    /**
+     * Returns the verbosity level of the solver when this model is executed.
+     * &lt;p&gt;
+     * By default, the verbosity level is {@link VerbosityLevel#SILENT}.
+     * &lt;/p&gt;
+     *
+     * @return the desired {@link VerbosityLevel}
+     */
+    default VerbosityLevel verbosityLevel() {
+<span class="fc" id="L102">        return VerbosityLevel.SILENT;</span>
+    }
+
+    /**
+     * Returns the debugging level to apply during the compilation and solving phases.
+     * &lt;p&gt;
+     * By default, debugging is disabled ({@link DebugLevel#OFF}).
+     * &lt;/p&gt;
+     *
+     * @return the {@link DebugLevel} controlling debug behavior
+     */
+    default DebugLevel debugMode() {
+<span class="fc" id="L114">        return DebugLevel.OFF;</span>
+    }
+
+
+    /**
+     * Returns a copy of this model but without dominance.
+     *
+     * @return A copy of this model but without dominance.
+     */
+    default Model&lt;T&gt; disableDominance() {
+<span class="fc" id="L124">        return new Model&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L127">                return Model.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L132">                return Model.this.lowerBound();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L137">                return Model.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L142">                return Model.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L147">                return Model.this.debugMode();</span>
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but without {@link FastLowerBound}.
+     *
+     * @return A copy of this model but without {@link FastLowerBound}.
+     */
+    default Model&lt;T&gt; disableLowerBound() {
+<span class="nc" id="L158">        return new Model&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L161">                return Model.this.problem();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L166">                return Model.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L171">                return Model.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L176">                return Model.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L181">                return Model.this.debugMode();</span>
+            }
+        };
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

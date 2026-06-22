@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.gruler</a> &gt; <span class="el_source">GRRelax.java</span></div><h1>GRRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.gruler;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
+
+import java.util.BitSet;
+import java.util.Iterator;
+/**
+ * Relaxation operator for the Golomb Ruler (GR) problem.
+ * &lt;p&gt;
+ * This class defines how multiple search states ({@link GRState}) can be merged
+ * to create a relaxed (i.e., aggregated) state during search algorithms such as
+ * DDO (Decision Diagram Optimization) or Anytime Column Search.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The relaxation used here computes the intersection of the sets of marks and
+ * distances present in the input states. This ensures that only marks and
+ * distances common to all states are kept in the merged state.
+ * The resulting state represents a conservative approximation that does not
+ * introduce new distances, preserving feasibility.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The last mark in the merged state is the minimum of all last marks
+ * across the input states, ensuring consistency with the most constrained (shortest) partial ruler.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * GRRelax relax = new GRRelax();
+ * GRState merged = relax.mergeStates(List.of(state1, state2).iterator());
+ * }&lt;/pre&gt;
+ *
+ * @see GRState
+ * @see Relaxation
+ */
+<span class="fc" id="L38">public class GRRelax implements Relaxation&lt;GRState&gt; {</span>
+    /**
+     * Merges several {@link GRState} objects into a single relaxed state.
+     * &lt;p&gt;
+     * The resulting state contains:
+     *  &lt;/p&gt;
+     * &lt;ul&gt;
+     *     &lt;li&gt;The intersection of all mark sets (only marks present in all states are kept).&lt;/li&gt;
+     *     &lt;li&gt;The intersection of all distance sets (only distances present in all states are kept).&lt;/li&gt;
+     *     &lt;li&gt;The smallest {@code lastMark} value among all merged states.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * @param states an iterator over the states to merge.
+     * @return a new {@link GRState} representing the relaxed (merged) state.
+     */
+    @Override
+    public GRState mergeStates(final Iterator&lt;GRState&gt; states) {
+        // take the intersection of the marks and distances sets
+<span class="fc" id="L55">        GRState curr = states.next();</span>
+<span class="fc" id="L56">        BitSet intersectionMarks = (BitSet) curr.getMarks().clone();</span>
+<span class="fc" id="L57">        BitSet intersectionDistances = (BitSet) curr.getDistances().clone();</span>
+<span class="fc" id="L58">        int lastMark = curr.getLastMark();</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L60">            GRState state = states.next();</span>
+<span class="fc" id="L61">            intersectionMarks.and(state.getMarks());</span>
+<span class="fc" id="L62">            intersectionDistances.and(state.getDistances());</span>
+<span class="fc" id="L63">            lastMark = Math.min(lastMark, state.getLastMark());</span>
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">        return new GRState(intersectionMarks, intersectionDistances, lastMark);</span>
+    }
+    /**
+     * Computes the relaxed cost of transitioning between two states in the relaxed problem.
+     * &lt;p&gt;
+     * In this implementation, the relaxation does not modify the cost — it simply returns
+     * the same value as the original transition cost.
+     * &lt;/p&gt;
+     *
+     * @param from   the source state before the transition.
+     * @param to     the destination state after the transition.
+     * @param merged the merged relaxed state (unused in this relaxation).
+     * @param d      the decision made for the transition.
+     * @param cost   the original transition cost.
+     * @return the relaxed transition cost (equal to {@code cost}).
+     */
+    @Override
+    public double relaxEdge(GRState from, GRState to, GRState merged, Decision d, double cost) {
+<span class="fc" id="L83">        return cost;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

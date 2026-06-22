@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DdoModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.layered</a> &gt; <span class="el_source">DdoModel.java</span></div><h1>DdoModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.layered;
+
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.solving.ddo.core.frontier.CutSetType;
+import org.ddolib.solving.ddo.core.frontier.Frontier;
+import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model.
+ * &lt;p&gt;
+ * A {@code DdoModel} extends the generic {@link Model} interface by providing
+ * methods related to relaxation, ranking, width control, and frontier management.
+ * It serves as the foundation for implementing algorithms that construct and explore
+ * decision diagrams dynamically (e.g., exact or approximate methods).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;This interface provides several default behaviors, which can be overridden
+ * to customize model evaluation, search strategy, or diagram generation.&lt;/p&gt;
+ *
+ * &lt;h2&gt;Responsibilities&lt;/h2&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Provide the problem relaxation used for node evaluation ({@link #relaxation()}).&lt;/li&gt;
+ *   &lt;li&gt;Define the ranking strategy between states ({@link #ranking()}).&lt;/li&gt;
+ *   &lt;li&gt;Control the diagram’s width through heuristics ({@link #widthHeuristic()}).&lt;/li&gt;
+ *   &lt;li&gt;Specify how to maintain and update the frontier ({@link #frontier()}).&lt;/li&gt;
+ *   &lt;li&gt;Indicate optional behaviors like caching ({@link #useCache()}) or exporting the structure ({@link #exportDot()}).&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the state type
+ */
+public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
+    /**
+     * Returns the relaxation of the model used to evaluate the nodes or layers
+     * of the decision diagram.
+     * &lt;p&gt;
+     * The relaxation defines a simplified or approximate version of the problem,
+     * which helps bound the objective function or guide the search.
+     * &lt;/p&gt;
+     *
+     * @return the {@link Relaxation} object associated with this model
+     */
+    Relaxation&lt;T&gt; relaxation();
+
+    /**
+     * Returns the ranking function used to order states within a layer.
+     * &lt;p&gt;
+     * The default implementation imposes no specific order (always returns 0),
+     * meaning all states are considered equal in priority.
+     * Override this method to implement problem-specific ranking heuristics.
+     * &lt;/p&gt;
+     *
+     * @return a {@link StateRanking} comparator between states
+     */
+    default StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L63">        return (o1, o2) -&gt; 0;</span>
+    }
+
+    /**
+     * Returns the width heuristic controlling the maximum number of nodes per layer.
+     * &lt;p&gt;
+     * The default implementation uses a fixed width of 10.
+     * &lt;/p&gt;
+     *
+     * @return a {@link WidthHeuristic} instance controlling diagram width
+     */
+    default WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="fc" id="L75">        return new FixedWidth&lt;&gt;(10);</span>
+    }
+
+    /**
+     * Returns the frontier management strategy used to store and expand the current
+     * layer of the decision diagram.
+     * &lt;p&gt;
+     * The default implementation creates a {@link SimpleFrontier} based on
+     * {@link #ranking()} and uses {@link CutSetType#LastExactLayer} as the cut set.
+     * &lt;/p&gt;
+     *
+     * @return a {@link Frontier} instance defining the search frontier
+     */
+    default Frontier&lt;T&gt; frontier() {
+<span class="fc" id="L89">        return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.LastExactLayer);</span>
+    }
+
+    /**
+     * Indicates whether caching should be used during the diagram construction.
+     * &lt;p&gt;
+     * Caching stores intermediate results to avoid redundant computations.
+     * By default, caching is disabled.
+     * &lt;/p&gt;
+     *
+     * @return {@code true} if caching is enabled, {@code false} otherwise
+     */
+    default boolean useCache() {
+<span class="fc" id="L102">        return false;</span>
+    }
+
+    /**
+     * Indicates whether the generated decision diagram should be exported
+     * to a DOT file (Graphviz format).
+     * &lt;p&gt;
+     * This feature allows visualization of the structure of the generated
+     * decision diagram for debugging or analysis purposes.
+     * By default, export is disabled.
+     * &lt;/p&gt;
+     *
+     * @return {@code true} if DOT export is enabled, {@code false} otherwise
+     */
+    default boolean exportDot() {
+<span class="fc" id="L117">        return false;</span>
+    }
+
+    /**
+     * Strategy to select which nodes should be merged together on a relaxed DD.
+     */
+    default ReductionStrategy&lt;T&gt; relaxStrategy() {
+<span class="fc" id="L124">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+    }
+
+    /**
+     * Strategy to select which nodes should be dropped on a restricted DD.
+     */
+    default ReductionStrategy&lt;T&gt; restrictStrategy() {
+<span class="fc" id="L131">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+    }
+
+    default StateDistance&lt;T&gt; stateDistance() {
+<span class="nc" id="L135">        return (o1, o2) -&gt; 0;</span>
+    }
+
+    default boolean useLNS() {
+<span class="nc" id="L139">        return false;</span>
+    }
+
+
+    /**
+     * Returns a copy of this model but with a fixed width.
+     *
+     * @param width The maximum width of the diagram.
+     * @return A copy of this model but with a fixed width.
+     */
+    default DdoModel&lt;T&gt; fixWidth(int width) {
+<span class="fc" id="L150">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L153">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L158">                return DdoModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L163">                return DdoModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L168">                return DdoModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L173">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L178">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+<span class="fc" id="L183">                return DdoModel.this.relaxation();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L188">                return DdoModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="fc" id="L193">                return new FixedWidth&lt;&gt;(width);</span>
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+<span class="fc" id="L198">                return DdoModel.this.frontier();</span>
+            }
+
+            @Override
+            public boolean useCache() {
+<span class="fc" id="L203">                return DdoModel.this.useCache();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="fc" id="L208">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L213">                return DdoModel.this.useLNS();</span>
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model by changing the {@link CutSetType}.
+     *
+     * @param type The new cutset type.
+     * @return A copy of this model by changing the {@link CutSetType}.
+     */
+    default DdoModel&lt;T&gt; setCutSetType(CutSetType type) {
+<span class="fc" id="L225">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L228">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L233">                return DdoModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L238">                return DdoModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L243">                return DdoModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L248">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L253">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+<span class="fc" id="L258">                return DdoModel.this.relaxation();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L263">                return DdoModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="fc" id="L268">                return DdoModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+<span class="fc" id="L273">                return new SimpleFrontier&lt;&gt;(ranking(), type);</span>
+            }
+
+            @Override
+            public boolean useCache() {
+<span class="fc" id="L278">                return DdoModel.this.useCache();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="fc" id="L283">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L288">                return DdoModel.this.useLNS();</span>
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model by enabling or disabling the cache.
+     *
+     * @param b Whether the cache must be used.
+     * @return A copy of this model by enabling or disabling the cache.
+     */
+    default DdoModel&lt;T&gt; useCache(boolean b) {
+<span class="fc" id="L300">        return new DdoModel&lt;T&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L303">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L308">                return DdoModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="fc" id="L313">                return DdoModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L318">                return DdoModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L323">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L328">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+<span class="fc" id="L333">                return DdoModel.this.relaxation();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L338">                return DdoModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="fc" id="L343">                return DdoModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+<span class="fc" id="L348">                return DdoModel.this.frontier();</span>
+            }
+
+            @Override
+            public boolean useCache() {
+<span class="fc" id="L353">                return b;</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="fc" id="L358">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L363">                return DdoModel.this.useLNS();</span>
+            }
+        };
+    }
+
+    @Override
+    default DdoModel&lt;T&gt; disableDominance() {
+<span class="fc" id="L370">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="fc" id="L373">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="fc" id="L378">                return DdoModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="fc" id="L383">                return DdoModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="fc" id="L388">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="fc" id="L393">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+<span class="fc" id="L398">                return DdoModel.this.relaxation();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="fc" id="L403">                return DdoModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="fc" id="L408">                return DdoModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+<span class="fc" id="L413">                return DdoModel.this.frontier();</span>
+            }
+
+            @Override
+            public boolean useCache() {
+<span class="fc" id="L418">                return DdoModel.this.useCache();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="fc" id="L423">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L428">                return DdoModel.this.useLNS();</span>
+            }
+        };
+    }
+
+    @Override
+    default DdoModel&lt;T&gt; disableLowerBound() {
+<span class="nc" id="L435">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L438">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L443">                return DdoModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L448">                return DdoModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L453">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L458">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+<span class="nc" id="L463">                return DdoModel.this.relaxation();</span>
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+<span class="nc" id="L468">                return DdoModel.this.ranking();</span>
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+<span class="nc" id="L473">                return DdoModel.this.widthHeuristic();</span>
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+<span class="nc" id="L478">                return DdoModel.this.frontier();</span>
+            }
+
+            @Override
+            public boolean useCache() {
+<span class="nc" id="L483">                return DdoModel.this.useCache();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L488">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public DdoModel&lt;T&gt; fixWidth(int width) {
+<span class="nc" id="L493">                return DdoModel.this.fixWidth(width);</span>
+            }
+
+            @Override
+            public boolean useLNS() {
+<span class="nc" id="L498">                return DdoModel.this.useLNS();</span>
+            }
+        };
+    }
+    /**
+     * Convert this model into a model for the exact solver.
+     *
+     * @return a model usable by an {@link ExactModel}
+     */
+    default ExactModel&lt;T&gt; toExactModel() {
+<span class="nc" id="L508">        return new ExactModel&lt;T&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L511">                return DdoModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="nc" id="L516">                return DdoModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L521">                return DdoModel.this.dominance();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L526">                return DdoModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L531">                return DdoModel.this.debugMode();</span>
+            }
+
+            @Override
+            public boolean exportDot() {
+<span class="nc" id="L536">                return DdoModel.this.exportDot();</span>
+            }
+
+            @Override
+            public ExactModel&lt;T&gt; toExactModel() {
+<span class="nc" id="L541">                return DdoModel.this.toExactModel();</span>
+            }
+        };
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

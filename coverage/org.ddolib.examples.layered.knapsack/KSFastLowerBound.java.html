@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSFastLowerBound.java</span></div><h1>KSFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
+
+import org.ddolib.modeling.layered.FastLowerBound;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * Fast lower bound heuristic for the Knapsack Problem (KS).
+ * &lt;p&gt;
+ * This class implements a quick estimation of the lower bound of the optimal solution
+ * for a given knapsack state. The heuristic uses a greedy strategy based on the
+ * profit-to-weight ratio of items, selecting the most profitable items first
+ * until the remaining capacity is exhausted.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * The returned value is negated to be compatible with solvers that minimize the objective function.
+ * &lt;/p&gt;
+ */
+public class KSFastLowerBound implements FastLowerBound&lt;Integer&gt; {
+    /**
+     * The associated Knapsack problem instance.
+     */
+    private final KSProblem problem;
+
+    /**
+     * Constructs a new fast lower bound heuristic for the given Knapsack problem.
+     *
+     * @param problem the Knapsack problem instance
+     */
+<span class="fc" id="L33">    public KSFastLowerBound(KSProblem problem) {</span>
+<span class="fc" id="L34">        this.problem = problem;</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Computes a fast lower bound for the given knapsack state.
+     *
+     * @param state     the current remaining capacity of the knapsack
+     * @param variables the set of available item indices
+     * @return a fast estimate of the lower bound (negated)
+     */
+    @Override
+    public double fastLowerBound(Integer state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L46">        double[] ratio = new double[problem.nbVars()];</span>
+<span class="fc" id="L47">        int capacity = state;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (int v : variables) {</span>
+<span class="fc" id="L49">            ratio[v] = ((double) problem.profit[v] / problem.weight[v]);</span>
+<span class="fc" id="L50">        }</span>
+
+<span class="fc" id="L52">        class RatioComparator implements Comparator&lt;Integer&gt; {</span>
+            @Override
+            public int compare(Integer o1, Integer o2) {
+<span class="fc" id="L55">                return Double.compare(ratio[o1], ratio[o2]);</span>
+            }
+        }
+
+<span class="fc" id="L59">        Integer[] sorted = variables.toArray(new Integer[0]);</span>
+<span class="fc" id="L60">        Arrays.sort(sorted, new RatioComparator().reversed());</span>
+
+<span class="fc" id="L62">        int maxProfit = 0;</span>
+<span class="fc" id="L63">        Iterator&lt;Integer&gt; itemIterator = Arrays.stream(sorted).iterator();</span>
+<span class="fc bfc" id="L64" title="All 4 branches covered.">        while (capacity &gt; 0 &amp;&amp; itemIterator.hasNext()) {</span>
+<span class="fc" id="L65">            int item = itemIterator.next();</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (capacity &gt;= problem.weight[item]) {</span>
+<span class="fc" id="L67">                maxProfit += problem.profit[item];</span>
+<span class="fc" id="L68">                capacity -= problem.weight[item];</span>
+            } else {
+<span class="fc" id="L70">                double itemProfit = ratio[item] * capacity;</span>
+<span class="fc" id="L71">                maxProfit += (int) Math.ceil(itemProfit);</span>
+<span class="fc" id="L72">                capacity = 0;</span>
+            }
+<span class="fc" id="L74">        }</span>
+<span class="fc" id="L75">        return -maxProfit;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

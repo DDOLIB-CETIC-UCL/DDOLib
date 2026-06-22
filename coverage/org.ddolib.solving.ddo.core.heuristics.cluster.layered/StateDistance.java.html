@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StateDistance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.heuristics.cluster.layered</a> &gt; <span class="el_source">StateDistance.java</span></div><h1>StateDistance.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
+
+import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
+import org.ddolib.examples.layered.maximumcoverage.MaxCoverState;
+
+/**
+ * Interface defining a distance function between states, used to form clusters
+ * when deciding which nodes on a layer of a decision diagram should be merged.
+ *
+ * &lt;p&gt;
+ * The distance function must satisfy the following properties:
+ * &lt;ul&gt;
+ *   &lt;li&gt;Non-negative: distance(a, b) ≥ 0&lt;/li&gt;
+ *   &lt;li&gt;Symmetric: distance(a, b) = distance(b, a)&lt;/li&gt;
+ *   &lt;li&gt;Triangle inequality: distance(a, c) ≤ distance(a, b) + distance(b, c)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * Type parameter {@code T} denotes the type of the states being compared.
+ *
+ * @param &lt;T&gt; the type of states
+ */
+public interface StateDistance&lt;T&gt; {
+
+    /**
+     * Computes the discrete distance between two states.
+     *
+     * @param a the first state
+     * @param b the second state
+     * @return the distance between {@code a} and {@code b}
+     */
+    double distance(T a, T b);
+    /**
+     * Computes the distance between two nodes of a subproblem.
+     *
+     * &lt;p&gt;
+     * By default, returns 0. Can be overridden for more precise node-level distances.
+     *
+     * @param a the first node
+     * @param b the second node
+     * @return the distance between the nodes
+     */
+    default double distance(NodeSubProblem&lt;T&gt; a, NodeSubProblem&lt;T&gt; b) {
+<span class="nc" id="L44">        return 0;</span>
+    }
+    /**
+     * Computes the distance between a state and the root of the search/tree.
+     *
+     * &lt;p&gt;
+     * By default, returns 0. Can be overridden for root-distance computations.
+     *
+     * @param state the state to measure
+     * @return the distance to the root
+     */
+    default double distanceWithRoot(T state) {
+<span class="nc" id="L56">        return 0;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

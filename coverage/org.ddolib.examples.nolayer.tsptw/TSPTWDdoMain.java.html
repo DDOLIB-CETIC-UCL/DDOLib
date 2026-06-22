@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWDdoMain.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsptw</a> &gt; <span class="el_source">TSPTWDdoMain.java</span></div><h1>TSPTWDdoMain.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsptw;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.Relaxation;
+import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+
+public class TSPTWDdoMain {
+
+    public static void main(String[] args) throws IOException {
+        String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;TSPTW&quot;, &quot;AFG&quot;, &quot;rbg010a.tw&quot;).toString() : args[0];
+        final TSPTWProblem problem = TSPTWProblem.fromFile(instance);
+
+        DdoModel&lt;TSPTWState&gt; model = new TSPTWDdoModel(problem) {
+            @Override
+            public Relaxation&lt;TSPTWState&gt; relaxation() {
+                return new Relaxation&lt;TSPTWState&gt;() {
+                    @Override
+                    public TSPTWState merge(Collection&lt;TSPTWState&gt; states) {
+                        Iterator&lt;TSPTWState&gt; it = states.iterator();
+                        TSPTWState first = it.next();
+                        int currentCity = first.currentCity();
+                        int minTime = first.time();
+                        BitSet mustVisit = (BitSet) first.mustVisit().clone();
+
+                        while (it.hasNext()) {
+                            TSPTWState s = it.next();
+                            minTime = Math.min(minTime, s.time());
+                            mustVisit.and(s.mustVisit()); // Intersection for relaxed states
+                        }
+                        return new TSPTWState(currentCity, minTime, mustVisit);
+                    }
+                };
+            }
+
+            @Override
+            public StateRanking&lt;TSPTWState&gt; ranking() {
+                return (s1, s2) -&gt; Integer.compare(s1.mustVisit().cardinality(), s2.mustVisit().cardinality());
+            }
+
+            @Override
+            public WidthHeuristic&lt;TSPTWState&gt; widthHeuristic() {
+                return new FixedWidth&lt;&gt;(10);
+            }
+
+            @Override
+            public ReductionStrategy&lt;TSPTWState&gt; relaxStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public ReductionStrategy&lt;TSPTWState&gt; restrictStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.NORMAL;
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
+        };
+
+        DdoSolver&lt;TSPTWState&gt; solver = new DdoSolver&lt;&gt;(model);
+        Solution bestSolution = solver.minimize(
+                limit -&gt; limit.nbIterations() &gt; 1000,
+                (sol, stats) -&gt; org.ddolib.util.io.SolutionPrinter.printSolution(stats, sol));
+
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
+    }
+}
+
+// Ensure TSPTWModel implements DdoModel
+abstract class TSPTWDdoModel extends TSPTWModel implements DdoModel&lt;TSPTWState&gt; {
+    public TSPTWDdoModel(TSPTWProblem problem) {
+<span class="nc" id="L92">        super(problem);</span>
+<span class="nc" id="L93">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

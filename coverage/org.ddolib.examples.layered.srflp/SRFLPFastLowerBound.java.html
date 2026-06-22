@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SRFLPFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.srflp</a> &gt; <span class="el_source">SRFLPFastLowerBound.java</span></div><h1>SRFLPFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.srflp;
+
+import org.ddolib.modeling.layered.FastLowerBound;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+/**
+ * Provides a fast lower-bound estimation for the Single-Row Facility Layout Problem (SRFLP)
+ * based on the current state of the solution.
+ *
+ * &lt;p&gt;
+ * The lower bound is decomposed into two components:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;&lt;b&gt;Free lower bound:&lt;/b&gt; under-approximates the traffic between departments
+ *     that must still be placed (free departments).&lt;/li&gt;
+ *     &lt;li&gt;&lt;b&gt;Fixed lower bound:&lt;/b&gt; accounts for the traffic between already placed
+ *     (fixed) departments and the remaining free ones.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * Internally, the class precomputes:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Pairs of departments sorted by their flow in decreasing order,&lt;/li&gt;
+ *     &lt;li&gt;Departments sorted by their lengths in increasing order.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * The class implements {@link FastLowerBound} and can be used in
+ * A* or decision diagram-based solvers to prune suboptimal branches efficiently.
+ * &lt;/p&gt;
+ *
+ * @see SRFLPProblem
+ * @see SRFLPState
+ */
+public class SRFLPFastLowerBound implements FastLowerBound&lt;SRFLPState&gt; {
+    private final SRFLPProblem problem;
+
+    /** Pairs of departments sorted by their flow in decreasing order. */
+<span class="fc" id="L42">    private final ArrayList&lt;PairAndFlow&gt; pairsSortedByFlow = new ArrayList&lt;&gt;();</span>
+
+    /** Departments sorted by their length in increasing order. */
+<span class="fc" id="L45">    private final ArrayList&lt;DepartmentAndLength&gt; departmentsSortedByLength = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Constructs a fast lower-bound estimator for the given SRFLP problem.
+     *
+     * @param problem the SRFLP problem instance
+     */
+
+<span class="fc" id="L53">    public SRFLPFastLowerBound(SRFLPProblem problem) {</span>
+<span class="fc" id="L54">        this.problem = problem;</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            for (int j = i + 1; j &lt; problem.nbVars(); j++) {</span>
+<span class="fc" id="L58">                pairsSortedByFlow.add(new PairAndFlow(i, j, problem.flows[i][j]));</span>
+            }
+<span class="fc" id="L60">            departmentsSortedByLength.add(new DepartmentAndLength(i, problem.lengths[i]));</span>
+        }
+
+<span class="fc" id="L63">        Collections.sort(pairsSortedByFlow);</span>
+<span class="fc" id="L64">        Collections.reverse(pairsSortedByFlow);</span>
+<span class="fc" id="L65">        Collections.sort(departmentsSortedByLength);</span>
+<span class="fc" id="L66">    }</span>
+    /**
+     * Computes a fast lower bound for a given state and a set of variables.
+     *
+     * @param state     the current SRFLP state
+     * @param variables the set of variables to consider
+     * @return a lower bound on the cost of completing the solution from the current state
+     */
+
+    @Override
+    public double fastLowerBound(SRFLPState state, Set&lt;Integer&gt; variables) {
+        /*   This lower bound is decomposed in two terms.
+          One under-approximating the traffic between each free department (that must be placed) and
+           another based on the traffic between the fixed department and the free ones.
+        */
+
+<span class="fc" id="L82">        int complete = problem.nbVars() - state.depth();</span>
+<span class="fc" id="L83">        int maxFromMaybe = complete - state.must().cardinality();</span>
+<span class="fc" id="L84">        int free = freeLB(selectLength(state, complete, maxFromMaybe), selectFlow(state, complete, maxFromMaybe),</span>
+                complete);
+<span class="fc" id="L86">        int fixed = fixedLB(selectCutRatio(state, maxFromMaybe));</span>
+
+<span class="fc" id="L88">        return free + fixed;</span>
+    }
+
+    /**
+     * Computes a lower bound based on the remaining free departments. This bound is cumulatively computed, based on
+     * the length of the free department (sorted in increasing order) and the flows between each pair of free
+     * departments.
+     *
+     * @param selectedLength The department's lengths that will be used to compute the bound.
+     * @param selectedFLows  The traffic flows that will be used to compute the bound.
+     * @param complete       How many department must be placed to complete the solution.
+     * @return A lower bound based on the remaining free departments.
+     */
+    private int freeLB(ArrayList&lt;DepartmentAndLength&gt; selectedLength,
+                       ArrayList&lt;PairAndFlow&gt; selectedFLows, int complete) {
+<span class="fc" id="L103">        int bound = 0;</span>
+<span class="fc" id="L104">        int cumulative = 0;</span>
+<span class="fc" id="L105">        int id = 0;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        for (int k = 0; k &lt; complete - 1; k++) {</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            for (int x = 0; x &lt; complete - k - 1; x++) {</span>
+<span class="fc" id="L108">                bound += cumulative * selectedFLows.get(id).flow;</span>
+<span class="fc" id="L109">                id++;</span>
+            }
+<span class="fc" id="L111">            cumulative += selectedLength.get(k).len;</span>
+        }
+
+<span class="fc" id="L114">        return bound;</span>
+    }
+
+    /**
+     * Computes a lower bound based on the already fixed departments. This bound is cumulatively computed, based on
+     * the cut (see {@link SRFLPState}) of the input state.
+     *
+     * @param ratios The pairs {@code (length, cut)} sorted in decreasing order according to the ration {@code cut / length} that
+     *               will be used to compute the bound.
+     * @return A lower bound based on the already fixed departments.
+     */
+    private int fixedLB(ArrayList&lt;CutRatio&gt; ratios) {
+<span class="fc" id="L126">        int bound = 0;</span>
+<span class="fc" id="L127">        int cumulative = 0;</span>
+
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (CutRatio r : ratios) {</span>
+<span class="fc" id="L130">            bound += cumulative * r.cut;</span>
+<span class="fc" id="L131">            cumulative += r.length;</span>
+<span class="fc" id="L132">        }</span>
+
+<span class="fc" id="L134">        return bound;</span>
+    }
+
+    /**
+     * Selects the departments and lengths that will be used to computes the free lower bound.
+     * All the departments from the &quot;must&quot; set are selected. If needed, some of the departments from
+     * the &quot;maybe&quot; set are selected to complete the solution.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param complete     How many department must be placed to complete the solution.
+     * @param maxFromMaybe The maximum number of departments that can be selected from the &quot;maybe&quot;
+     *                     set.
+     * @return The departments and lengths, sorted in increasing order, that will be used to compute the free lower
+     * bound.
+     */
+    private ArrayList&lt;DepartmentAndLength&gt; selectLength(SRFLPState state, int complete, int maxFromMaybe) {
+
+<span class="fc" id="L151">        ArrayList&lt;DepartmentAndLength&gt; selectedLengths = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L153">        int selectedFromMaybe = maxFromMaybe;</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        for (DepartmentAndLength dl : departmentsSortedByLength) {</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            if (state.must().get(dl.dep)) {</span>
+<span class="fc" id="L156">                selectedLengths.add(dl);</span>
+<span class="fc bfc" id="L157" title="All 4 branches covered.">            } else if (selectedFromMaybe &gt; 0 &amp;&amp; state.maybe().get(dl.dep)) {</span>
+<span class="fc" id="L158">                selectedLengths.add(dl);</span>
+<span class="fc" id="L159">                selectedFromMaybe--;</span>
+            }
+
+<span class="fc bfc" id="L162" title="All 2 branches covered.">            if (selectedLengths.size() == complete) {</span>
+<span class="fc" id="L163">                break;</span>
+            }
+<span class="fc" id="L165">        }</span>
+
+<span class="fc" id="L167">        return selectedLengths;</span>
+    }
+
+    /**
+     * Selects the pairs of department and flows that will be used to compute the free lower bound.
+     * All the departments from the &quot;must&quot; set are selected. If needed, some of the departments from
+     * the &quot;maybe&quot; set are selected to complete the solution.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param complete     How many department must be placed to complete the solution.
+     * @param maxFromMaybe The maximum number of departments that can be selected.
+     * @return The pairs of departments and flows, sorted in decreasing order, that will be used
+     * to compute the free lower bound.
+     */
+    private ArrayList&lt;PairAndFlow&gt; selectFlow(SRFLPState state, int complete, int maxFromMaybe) {
+<span class="fc" id="L182">        int nbFlow = complete * (complete - 1) / 2;</span>
+
+<span class="fc" id="L184">        ArrayList&lt;PairAndFlow&gt; selectedFlows = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L186">        int selectedFromMustAndMaybe = state.must().cardinality() * maxFromMaybe;</span>
+<span class="fc" id="L187">        int selectedFromMaybe = maxFromMaybe * (maxFromMaybe - 1) / 2;</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        for (PairAndFlow pf : pairsSortedByFlow) {</span>
+<span class="fc bfc" id="L189" title="All 4 branches covered.">            if (state.must().get(pf.x) &amp;&amp; state.must().get(pf.y)) {</span>
+<span class="fc" id="L190">                selectedFlows.add(pf);</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">            } else if (selectedFromMustAndMaybe &gt; 0 &amp;&amp;</span>
+<span class="fc bfc" id="L192" title="All 4 branches covered.">                    (state.must().get(pf.x) &amp;&amp; state.maybe().get(pf.y)</span>
+<span class="fc bfc" id="L193" title="All 4 branches covered.">                            || state.must().get(pf.y) &amp;&amp; state.maybe().get(pf.x))) {</span>
+<span class="fc" id="L194">                selectedFlows.add(pf);</span>
+<span class="fc" id="L195">                selectedFromMustAndMaybe--;</span>
+<span class="fc bfc" id="L196" title="All 6 branches covered.">            } else if (selectedFromMaybe &gt; 0 &amp;&amp; state.maybe().get(pf.x) &amp;&amp; state.maybe().get(pf.y)) {</span>
+<span class="fc" id="L197">                selectedFlows.add(pf);</span>
+<span class="fc" id="L198">                selectedFromMaybe--;</span>
+            }
+
+<span class="fc bfc" id="L201" title="All 2 branches covered.">            if (selectedFlows.size() == nbFlow) {</span>
+<span class="fc" id="L202">                break;</span>
+            }
+<span class="fc" id="L204">        }</span>
+
+<span class="fc" id="L206">        return selectedFlows;</span>
+    }
+
+    /**
+     * Selects the cuts from the input state that will be used to compute the fixed lower bound.
+     *
+     * @param state        The state on which compute the lower bound.
+     * @param maxFromMaybe The maximum number of departments that can be selected.
+     * @return The cuts from the inputs state, sorted in decreasing order, that will be used
+     * to compute the fixed lower bound.
+     */
+    private ArrayList&lt;CutRatio&gt; selectCutRatio(SRFLPState state, int maxFromMaybe) {
+<span class="fc" id="L218">        ArrayList&lt;DepartmentAndLength&gt; selectedLengthsFromMaybe = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L219">        int selectedFromMaybe = maxFromMaybe;</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        for (DepartmentAndLength dl : departmentsSortedByLength) {</span>
+<span class="fc bfc" id="L221" title="All 4 branches covered.">            if (selectedFromMaybe &gt; 0 &amp;&amp; state.maybe().get(dl.dep)) {</span>
+<span class="fc" id="L222">                selectedLengthsFromMaybe.add(dl);</span>
+<span class="fc" id="L223">                selectedFromMaybe--;</span>
+            }
+<span class="fc" id="L225">        }</span>
+
+<span class="fc" id="L227">        ArrayList&lt;CutRatio&gt; selectedCutRatios = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">        for (int i = state.must().nextSetBit(0); i &gt;= 0; i = state.must().nextSetBit(i + 1)) {</span>
+<span class="fc" id="L229">            selectedCutRatios.add(new CutRatio(problem.lengths[i], state.cut()[i]));</span>
+        }
+
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        for (DepartmentAndLength dl : selectedLengthsFromMaybe) {</span>
+<span class="fc" id="L233">            selectedCutRatios.add(new CutRatio(dl.len, state.cut()[dl.dep]));</span>
+<span class="fc" id="L234">        }</span>
+
+<span class="fc" id="L236">        Collections.sort(selectedCutRatios);</span>
+<span class="fc" id="L237">        Collections.reverse(selectedCutRatios);</span>
+
+<span class="fc" id="L239">        return selectedCutRatios;</span>
+    }
+
+
+    /**
+     * Contains a pair of department and their flow. It is used to sort the pairs of department by their flow.
+     *
+     * @param x    The first department.
+     * @param y    The seconde department.
+     * @param flow The traffic flow between the first department and the second.
+     */
+<span class="fc" id="L250">    private record PairAndFlow(int x, int y, int flow) implements Comparable&lt;PairAndFlow&gt; {</span>
+
+        @Override
+        public int compareTo(PairAndFlow o) {
+<span class="fc" id="L254">            return Integer.compare(this.flow, o.flow);</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L259">            return String.format(&quot;(%d, %d, %d)&quot;, x, y, flow);</span>
+        }
+    }
+
+    /**
+     * Contains the id of a department and its length. Used to sort the department by their length.
+     *
+     * @param dep The id of the department.
+     * @param len The length of the department.
+     */
+<span class="fc" id="L269">    private record DepartmentAndLength(int dep,</span>
+                                       int len) implements Comparable&lt;DepartmentAndLength&gt; {
+        @Override
+        public int compareTo(DepartmentAndLength o) {
+<span class="fc" id="L273">            return Integer.compare(this.len, o.len);</span>
+        }
+    }
+
+    /**
+     * Contains the length and the cut associated to a state. Used to sort following the ratio {@code cut / length}
+     *
+     * @param length The length associated to a state.
+     * @param cut    The cut value associated to a state (see {@link SRFLPState}
+     */
+<span class="fc" id="L283">    private record CutRatio(int length, int cut) implements Comparable&lt;CutRatio&gt; {</span>
+        @Override
+        public int compareTo(CutRatio o) {
+<span class="fc" id="L286">            return Double.compare((double) this.cut / this.length, (double) o.cut / o.length);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

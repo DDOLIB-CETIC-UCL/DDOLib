@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispNoLayerDominanceChecker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.misp</a> &gt; <span class="el_source">MispNoLayerDominanceChecker.java</span></div><h1>MispNoLayerDominanceChecker.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.misp;
+
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="fc" id="L10">public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;MispState&gt; {</span>
+
+    private static class Entry {
+        BitSet remainingNodes;
+        double value;
+
+<span class="fc" id="L16">        Entry(BitSet remainingNodes, double value) {</span>
+<span class="fc" id="L17">            this.remainingNodes = (BitSet) remainingNodes.clone();</span>
+<span class="fc" id="L18">            this.value = value;</span>
+<span class="fc" id="L19">        }</span>
+    }
+
+<span class="fc" id="L22">    private final Map&lt;Integer, List&lt;Entry&gt;&gt; entriesByCardinality = new HashMap&lt;&gt;();</span>
+
+    @Override
+    public boolean updateDominance(MispState state, double value) {
+<span class="fc" id="L26">        BitSet s2 = state.remainingNodes();</span>
+<span class="fc" id="L27">        int s2Card = s2.cardinality();</span>
+        
+        // Check if state is dominated by any existing entry
+        // A state can only be dominated by an entry with AT LEAST as many remaining nodes
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        for (int card = s2Card; card &lt;= s2.size(); card++) {</span>
+<span class="fc" id="L32">            List&lt;Entry&gt; entries = entriesByCardinality.get(card);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            if (entries == null) continue;</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">            for (Entry entry : entries) {</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                if (entry.value &lt;= value) { // entry is better or equal</span>
+<span class="nc" id="L36">                    BitSet s1 = entry.remainingNodes;</span>
+                    // s1 dominates s2 if all bits in s2 are also in s1
+<span class="nc" id="L38">                    boolean dominated = true;</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                    for (int i = s2.nextSetBit(0); i &gt;= 0; i = s2.nextSetBit(i + 1)) {</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                        if (!s1.get(i)) {</span>
+<span class="nc" id="L41">                            dominated = false;</span>
+<span class="nc" id="L42">                            break;</span>
+                        }
+                    }
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                    if (dominated) {</span>
+<span class="nc" id="L46">                        return true;</span>
+                    }
+                }
+<span class="nc" id="L49">            }</span>
+        }
+        
+        // Add to entries
+<span class="fc" id="L53">        entriesByCardinality.computeIfAbsent(s2Card, k -&gt; new ArrayList&lt;&gt;()).add(new Entry(s2, value));</span>
+
+        // Optional: remove entries that are dominated by the new state
+        // A state can only dominate entries with AT MOST as many remaining nodes
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (int card = 0; card &lt;= s2Card; card++) {</span>
+<span class="fc" id="L58">            List&lt;Entry&gt; entries = entriesByCardinality.get(card);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (entries == null) continue;</span>
+<span class="fc" id="L60">            entries.removeIf(entry -&gt; {</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">                if (value &lt;= entry.value) {</span>
+<span class="fc" id="L62">                    BitSet s1 = s2; // new state</span>
+<span class="fc" id="L63">                    BitSet s = entry.remainingNodes;</span>
+<span class="fc" id="L64">                    boolean dominates = true;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">                    for (int i = s.nextSetBit(0); i &gt;= 0; i = s.nextSetBit(i + 1)) {</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">                        if (!s1.get(i)) {</span>
+<span class="nc" id="L67">                            dominates = false;</span>
+<span class="nc" id="L68">                            break;</span>
+                        }
+                    }
+<span class="fc" id="L71">                    return dominates;</span>
+                }
+<span class="nc" id="L73">                return false;</span>
+            });
+        }
+
+<span class="fc" id="L77">        return false;</span>
+    }
+
+    @Override
+    public void clear() {
+<span class="fc" id="L82">        entriesByCardinality.clear();</span>
+<span class="fc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

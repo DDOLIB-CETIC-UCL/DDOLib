@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ALPSolution.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.alp</a> &gt; <span class="el_source">ALPSolution.java</span></div><h1>ALPSolution.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.alp;
+
+import org.ddolib.solving.ddo.core.Decision;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.stream.Collectors;
+
+/**
+ * Class that converts a solution from a solver to a readable and usable solution for the ALP.
+ */
+class ALPSolution implements Iterable&lt;ALPSchedule&gt; {
+
+    private final ALPSchedule[] solution;
+
+    /**
+     * Instantiate a solution of the ALP
+     *
+     * @param problem  The associated problem.
+     * @param solution An array {@code t} such that {@code t[i]} is the assigned value of
+     *                 variable {@code i}.
+     */
+<span class="fc" id="L23">    public ALPSolution(ALPProblem problem, int[] solution) {</span>
+<span class="fc" id="L24">        this.solution = new ALPSchedule[problem.nbVars()];</span>
+
+<span class="fc" id="L26">        ALPState curState = problem.initialState();</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="fc" id="L28">            RunwayState[] runwayStates = curState.runwayStates;</span>
+<span class="fc" id="L29">            Decision d = new Decision(i, solution[i]);</span>
+<span class="fc" id="L30">            ALPDecision alpD = problem.fromDecision(d.value());</span>
+<span class="fc" id="L31">            int aircraft = problem.latestToEarliestAircraftByClass</span>
+<span class="fc" id="L32">                    .get(alpD.aircraftClass)</span>
+<span class="fc" id="L33">                    .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);</span>
+<span class="fc" id="L34">            int landingTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);</span>
+<span class="fc" id="L35">            curState = problem.transition(curState, d);</span>
+<span class="fc" id="L36">            this.solution[i] = new ALPSchedule(aircraft, problem.aircraftClass[aircraft], landingTime, alpD.runway);</span>
+        }
+
+<span class="fc" id="L39">    }</span>
+
+
+    @Override
+    public String toString() {
+<span class="nc" id="L44">        return Arrays.stream(solution).map(s -&gt; String.format(</span>
+                &quot;Aircraft: %3d - Class: %3d - Landing time: %5d - Runway: %3d&quot;,
+<span class="nc" id="L46">                s.aircraft(), s.aircraftClass(), s.landingTime(), s.runway())).collect(Collectors.joining(&quot;\n&quot;));</span>
+    }
+
+    @Override
+    public Iterator&lt;ALPSchedule&gt; iterator() {
+<span class="fc" id="L51">        return Arrays.stream(solution).iterator();</span>
+    }
+
+
+}
+
+/**
+ * Contains schedule data for an aircraft.
+ *
+ * @param aircraft      The id of the aircraft.
+ * @param aircraftClass The class of the aircraft.
+ * @param landingTime   When the aircraft is landing.
+ * @param runway        The runway on which the aircraft is landing.
+ */
+<span class="fc" id="L65">record ALPSchedule(int aircraft, int aircraftClass, int landingTime, int runway) {</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GenData.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pdptw</a> &gt; <span class="el_source">GenData.java</span></div><h1>GenData.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pdptw;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Random;
+
+/**
+ * Utility entry point to generate PDPTW benchmark instances.
+ */
+<span class="nc" id="L10">public class GenData {</span>
+
+    /**
+     * Generates a small batch of PDPTW instances and writes them under {@code data/PDPTW}.
+     *
+     * @param args ignored
+     * @throws IOException if writing an instance fails
+     */
+    public static void main(final String[] args) throws IOException {
+<span class="nc" id="L19">        Random r = new Random(2);</span>
+<span class="nc bnc" id="L20" title="All 2 branches missed.">        for (int n = 30; n &lt;= 30; n += 5) {</span>
+<span class="nc bnc" id="L21" title="All 2 branches missed.">            for (int i = 0; i &lt; 10; i++) {</span>
+<span class="nc" id="L22">                final PDPTWProblem problem = PDPTWGenerator.constructInstanceWithSolution(n, 3, 7, r, false);</span>
+<span class="nc" id="L23">                String path = Paths.get(&quot;data&quot;, &quot;PDPTW&quot;, &quot;instance_&quot; + n + &quot;_&quot; + i).toAbsolutePath().toString();</span>
+<span class="nc" id="L24">                problem.saveToFile(path);</span>
+            }
+        }
+<span class="nc" id="L27">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

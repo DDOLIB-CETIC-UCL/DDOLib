@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSRelax.java</span></div><h1>KSRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.layered.Relaxation;
+
+import java.util.Iterator;
+/**
+ * Relaxation for the Knapsack Problem (KS).
+ * &lt;p&gt;
+ * This class implements a simple relaxation of the state space for relaxed decision diagrams.
+ * The merged state corresponds to the maximum remaining capacity among all states being merged.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * The edge relaxation does not modify the cost: it simply returns the original cost.
+ * &lt;/p&gt;
+ *
+ * @see Relaxation
+ */
+<span class="fc" id="L19">public class KSRelax implements Relaxation&lt;Integer&gt; {</span>
+    /**
+     * Merges multiple states into a single relaxed state.
+     * &lt;p&gt;
+     * For the Knapsack problem, the merged state is defined as the maximum remaining capacity
+     * among the states being merged.
+     * &lt;/p&gt;
+     *
+     * @param states an iterator over the states to merge
+     * @return the merged state representing the maximum remaining capacity
+     */
+    @Override
+    public Integer mergeStates(final Iterator&lt;Integer&gt; states) {
+<span class="fc" id="L32">        int capa = 0;</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L34">            final Integer state = states.next();</span>
+<span class="fc" id="L35">            capa = Math.max(capa, state);</span>
+<span class="fc" id="L36">        }</span>
+<span class="fc" id="L37">        return capa;</span>
+    }
+    /**
+     * Relaxes the cost of an edge between states in the decision diagram.
+     * &lt;p&gt;
+     * For the Knapsack problem, the cost is not modified by the relaxation.
+     * &lt;/p&gt;
+     *
+     * @param from the starting state
+     * @param to the ending state
+     * @param merged the merged state after relaxation
+     * @param d the decision associated with the edge
+     * @param cost the original cost of the edge
+     * @return the relaxed cost (identical to the original cost in this implementation)
+     */
+    @Override
+    public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
+<span class="fc" id="L54">        return cost;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

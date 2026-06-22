@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BKSFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.boundedknapsack</a> &gt; <span class="el_source">BKSFastLowerBound.java</span></div><h1>BKSFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.boundedknapsack;
+
+import org.ddolib.modeling.layered.FastLowerBound;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * A fast lower bound implementation for the {@link BKSProblem} (Bounded Knapsack Problem).
+ * &lt;p&gt;
+ * This class computes a lower bound on the optimal solution value from a given
+ * state and a subset of variables (items) using a fractional knapsack relaxation.
+ * The algorithm sorts the remaining items by their value-to-weight ratio and
+ * greedily fills the remaining capacity to approximate the best possible completion
+ * from the current partial solution.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The lower bound is returned as a negative value (following the solver convention
+ * where the objective is to minimize the total cost or maximize the profit).
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * BKSProblem problem = new BKSProblem(values, weights, quantities, capacity);
+ * FastLowerBound&lt;Integer&gt; flb = new BKSFastLowerBound(problem);
+ * double bound = flb.fastLowerBound(currentCapacity, remainingItems);
+ * }&lt;/pre&gt;
+ *
+ * @see BKSProblem
+ * @see FastLowerBound
+ */
+public class BKSFastLowerBound implements FastLowerBound&lt;Integer&gt; {
+    /**
+     * The bounded knapsack problem instance for which this lower bound is computed.
+     */
+    private final BKSProblem problem;
+
+    /**
+     * Constructs a fast lower bound evaluator for the given bounded knapsack problem.
+     *
+     * @param problem the knapsack problem instance containing item values, weights, and capacities
+     */
+<span class="fc" id="L46">    public BKSFastLowerBound(BKSProblem problem) {</span>
+<span class="fc" id="L47">        this.problem = problem;</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * Computes a fast lower bound for the given state and remaining variables.
+     * &lt;p&gt;
+     * The algorithm:
+     * &lt;ol&gt;
+     *   &lt;li&gt;Computes the value-to-weight ratio for each remaining item.&lt;/li&gt;
+     *   &lt;li&gt;Sorts the items in descending order of their ratio (most efficient items first).&lt;/li&gt;
+     *   &lt;li&gt;Greedily fills the remaining capacity using as many units as possible of each item,
+     *       possibly using a fractional last item (relaxation).&lt;/li&gt;
+     *   &lt;li&gt;Returns the negative of the total achievable value as the lower bound estimate.&lt;/li&gt;
+     * &lt;/ol&gt;
+     *
+     * @param state     the current capacity remaining in the knapsack
+     * @param variables the set of indices of remaining items to consider
+     * @return a fast lower bound estimate (as a negative value) of the optimal solution
+     */
+    @Override
+    public double fastLowerBound(Integer state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L68">        double[] ratio = new double[problem.nbVars()];</span>
+<span class="fc" id="L69">        int capacity = state;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (int v : variables) {</span>
+<span class="fc" id="L71">            ratio[v] = ((double) problem.values[v] / problem.weights[v]);</span>
+<span class="fc" id="L72">        }</span>
+
+<span class="fc" id="L74">        class RatioComparator implements Comparator&lt;Integer&gt; {</span>
+            @Override
+            public int compare(Integer o1, Integer o2) {
+<span class="fc" id="L77">                return Double.compare(ratio[o1], ratio[o2]);</span>
+            }
+        }
+
+<span class="fc" id="L81">        Integer[] sorted = variables.toArray(new Integer[0]);</span>
+<span class="fc" id="L82">        Arrays.sort(sorted, new RatioComparator().reversed());</span>
+
+<span class="fc" id="L84">        int currentSolutionValue = 0;</span>
+<span class="fc" id="L85">        int currentTotalWeight = 0;</span>
+<span class="fc" id="L86">        Iterator&lt;Integer&gt; itemIterator = Arrays.stream(sorted).iterator();</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        while (itemIterator.hasNext()) {</span>
+<span class="fc" id="L88">            int item = itemIterator.next();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (currentTotalWeight + problem.weights[item] &lt; capacity) {</span>
+<span class="fc" id="L90">                int x = Math.min(problem.quantities[item], (capacity - currentTotalWeight) / problem.weights[item]);</span>
+<span class="fc" id="L91">                currentSolutionValue += x * problem.weights[item];</span>
+<span class="fc" id="L92">                currentSolutionValue += x * problem.values[item];</span>
+            }
+<span class="fc" id="L94">        }</span>
+<span class="fc" id="L95">        return -currentSolutionValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

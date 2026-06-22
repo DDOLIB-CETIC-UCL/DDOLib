@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.misp</a> &gt; <span class="el_source">MispProblem.java</span></div><h1>MispProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.misp;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.layered.Problem;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Represents an instance of the Maximum Independent Set Problem (MISP) as a {@link Problem}.
+ * &lt;p&gt;
+ * The problem is defined on a weighted undirected graph. Each node can either be included
+ * in the independent set or not, and selected nodes cannot be adjacent.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * The state of the problem is represented by a {@link BitSet} indicating which nodes
+ * can still be selected. The solver explores decisions for each node to build an
+ * independent set of maximum weight.
+ * &lt;/p&gt;
+ */
+public class MispProblem implements Problem&lt;BitSet&gt; {
+
+    /**
+     * The remaining nodes that can be selected in the current independent set.
+     * Considered as the state of the decision diagram.
+     */
+    public final BitSet remainingNodes;
+
+    /**
+     * For each node {@code i}, {@code neighbors[i]} contains the adjacency list of {@code i}.
+     */
+    public final BitSet[] neighbors;
+
+    /**
+     * For each node {@code i}, {@code weight[i]} contains the weight associated with {@code i}.
+     */
+    public final int[] weight;
+
+    /**
+     * Optional value of the optimal solution, if known.
+     */
+<span class="pc" id="L45">    private Optional&lt;Double&gt; optimal = Optional.empty();</span>
+
+    /**
+     * Optional name for readability of tests and outputs.
+     */
+<span class="pc" id="L50">    private Optional&lt;String&gt; name = Optional.empty();</span>
+
+    /**
+     * Constructs a MISP problem with a given state, adjacency lists, weights, and known optimal value.
+     *
+     * @param remainingNodes the initial set of selectable nodes
+     * @param neighbors      adjacency lists for each node
+     * @param weight         weights of each node
+     * @param optimal        known optimal solution value
+     */
+<span class="nc" id="L60">    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L61">        this.remainingNodes = remainingNodes;</span>
+<span class="nc" id="L62">        this.neighbors = neighbors;</span>
+<span class="nc" id="L63">        this.weight = weight;</span>
+<span class="nc" id="L64">        this.optimal = optimal;</span>
+<span class="nc" id="L65">    }</span>
+
+    /**
+     * Loads a MISP problem from a DOT file.
+     * &lt;p&gt;
+     * The file must contain the list of nodes and edges. Node weights can be specified
+     * with {@code [weight=w]} (default weight is 1). If known, the optimal solution
+     * should be specified in the second line as {@code optimal=x}.
+     * &lt;/p&gt;
+     *
+     * @param fname path to the DOT file describing the graph
+     * @throws IOException if an error occurs while reading the file
+     */
+<span class="fc" id="L78">    public MispProblem(String fname) throws IOException {</span>
+<span class="fc" id="L79">        ArrayList&lt;Integer&gt; weight = new ArrayList&lt;&gt;();</span>
+        BitSet[] neighbor;
+<span class="fc" id="L81">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+        int n;
+<span class="fc" id="L83">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L84">            br.readLine();</span>
+            String line;
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">            while ((line = br.readLine()) != null &amp;&amp; !line.contains(&quot;--&quot;)) {</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                if (line.isEmpty()) continue;</span>
+
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                if (line.contains(&quot;optimal&quot;)) {</span>
+<span class="fc" id="L90">                    String optiStr = line.replace(&quot;;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L91">                    String[] tokens = optiStr.split(&quot;=&quot;);</span>
+<span class="fc" id="L92">                    optimal = Optional.of(Double.parseDouble(tokens[1]));</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">                } else if (line.contains(&quot;weight&quot;)) {</span>
+<span class="fc" id="L94">                    String w = line.trim().split(&quot; &quot;)[1];</span>
+<span class="fc" id="L95">                    w = w.replace(&quot;[weight=&quot;, &quot;&quot;).replace(&quot;];&quot;, &quot;&quot;);</span>
+<span class="fc" id="L96">                    weight.add(Integer.parseInt(w));</span>
+<span class="fc" id="L97">                } else {</span>
+<span class="fc" id="L98">                    weight.add(1);</span>
+                }
+            }
+<span class="fc" id="L101">            n = weight.size();</span>
+<span class="fc" id="L102">            neighbor = new BitSet[n];</span>
+<span class="fc" id="L103">            Arrays.setAll(neighbor, i -&gt; new BitSet(n));</span>
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">            while (line != null &amp;&amp; !line.equals(&quot;}&quot;)) {</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
+<span class="fc" id="L106">                    line = br.readLine();</span>
+<span class="fc" id="L107">                    continue;</span>
+                }
+<span class="fc" id="L109">                String[] tokens = line.replace(&quot; &quot;, &quot;&quot;).replace(&quot;;&quot;, &quot;&quot;).split(&quot;--&quot;);</span>
+<span class="fc" id="L110">                int source = Integer.parseInt(tokens[0]) - 1;</span>
+<span class="fc" id="L111">                int target = Integer.parseInt(tokens[1]) - 1;</span>
+<span class="fc" id="L112">                neighbor[source].set(target);</span>
+<span class="fc" id="L113">                neighbor[target].set(source);</span>
+<span class="fc" id="L114">                line = br.readLine();</span>
+<span class="fc" id="L115">            }</span>
+        }
+<span class="fc" id="L117">        BitSet initialState = new BitSet(n);</span>
+<span class="fc" id="L118">        initialState.set(0, n, true);</span>
+
+<span class="fc" id="L120">        this.remainingNodes = initialState;</span>
+<span class="fc" id="L121">        this.neighbors = neighbor;</span>
+<span class="fc" id="L122">        this.weight = weight.stream().mapToInt(x -&gt; x).toArray();</span>
+<span class="fc" id="L123">        this.optimal = optimal;</span>
+<span class="fc" id="L124">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L125">    }</span>
+
+    @Override
+    public String toString() {
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (name.isPresent()) {</span>
+<span class="fc" id="L130">            return name.get();</span>
+        } else {
+<span class="nc" id="L132">            StringBuilder weighStr = new StringBuilder();</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            for (int i = 0; i &lt; weight.length; i++) {</span>
+<span class="nc" id="L134">                weighStr.append(String.format(&quot;\t%d : %d%n&quot;, i, weight[i]));</span>
+            }
+
+<span class="nc" id="L137">            StringBuilder neighStr = new StringBuilder();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            for (int i = 0; i &lt; neighbors.length; i++) {</span>
+<span class="nc" id="L139">                neighStr.append(String.format(&quot;\t%d : %s%n&quot;, i, neighbors[i]));</span>
+            }
+
+<span class="nc" id="L142">            return String.format(&quot;Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n&quot;, remainingNodes.toString(),</span>
+                    weighStr, neighStr);
+        }
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L149">        return weight.length;</span>
+    }
+
+    @Override
+    public BitSet initialState() {
+<span class="fc" id="L154">        return remainingNodes;</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L159">        return 0;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(BitSet state, int var) {
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (state.get(var)) {</span>
+            // The node can be selected or not
+<span class="fc" id="L166">            return List.of(0, 1).iterator();</span>
+        } else {
+            // The node cannot be selected
+<span class="fc" id="L169">            return List.of(0).iterator();</span>
+        }
+    }
+
+    @Override
+    public BitSet transition(BitSet state, Decision decision) {
+<span class="fc" id="L175">        var res = (BitSet) state.clone();</span>
+        // When we are selecting a node, we cannot select this node and its neighbors
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (decision.value() == 1) {</span>
+<span class="fc" id="L178">            res.andNot(neighbors[decision.variable()]);</span>
+        }
+<span class="fc" id="L180">        res.set(decision.variable(), false);</span>
+
+<span class="fc" id="L182">        return res;</span>
+    }
+
+    @Override
+    public double transitionCost(BitSet state, Decision decision) {
+<span class="fc" id="L187">        return -weight[decision.variable()] * decision.value();</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L192">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L198">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L199">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L202">        List&lt;Integer&gt; independentSet = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L203">        int value = 0;</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length; i++) {</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">            if (solution[i] == 1) {</span>
+<span class="fc" id="L206">                independentSet.add(i);</span>
+<span class="fc" id="L207">                value += weight[i];</span>
+            }
+        }
+
+<span class="fc bfc" id="L211" title="All 2 branches covered.">        for (int i = 0; i &lt; independentSet.size(); i++) {</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">            for (int j = i + 1; j &lt; independentSet.size(); j++) {</span>
+<span class="fc" id="L213">                int from = independentSet.get(i);</span>
+<span class="fc" id="L214">                int to = independentSet.get(j);</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">                if (neighbors[from].get(to)) {</span>
+<span class="nc" id="L216">                    String msg = String.format(&quot;The solution %s is not an independent set. Nodes &quot; +</span>
+<span class="nc" id="L217">                            &quot;%d and %d are adjacent&quot;, independentSet, from, to);</span>
+<span class="nc" id="L218">                    throw new InvalidSolutionException(msg);</span>
+                }
+            }
+        }
+
+<span class="fc" id="L223">        return -value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

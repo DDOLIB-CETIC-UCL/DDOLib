@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeSubProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.mdd.layered</a> &gt; <span class="el_source">NodeSubProblem.java</span></div><h1>NodeSubProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.mdd.layered;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.SubProblem;
+
+import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.ddolib.util.MathUtil.saturatedAdd;
+
+/**
+ * Encapsulates the association of a node in a decision diagram with its corresponding state
+ * and an associated rough lower bound.
+ * &lt;p&gt;
+ * This class serves two main purposes:
+ * &lt;ul&gt;
+ *     &lt;li&gt;Associates a node with a state during decision diagram compilation, allowing the state
+ *         to be discarded afterward to save memory.&lt;/li&gt;
+ *     &lt;li&gt;Converts an exact MDD node into a {@link SubProblem}, which can then be used in the API
+ *         for search or optimization.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @param &lt;T&gt; the type of state associated with the node
+ */
+public final class NodeSubProblem&lt;T&gt; {
+    /** The state associated with this node. */
+    public final T state;
+
+    /** The actual node from the decision diagram graph. */
+    public final Node node;
+
+    /** The lower bound associated with this node (root to terminal node) */
+    public double lb;
+
+    /** The fast lower bound of this node (this node to terminal node) */
+    public double flb;
+
+    /**
+     * Creates a new NodeSubProblem associating a state with a node and a lower bound.
+     *
+     * @param state the state associated with the node
+     * @param lb the rough lower bound associated with the state-node pair (g cost + fast lower bound)
+     * @param node  the node in the decision diagram
+     */
+<span class="fc" id="L46">    public NodeSubProblem(final T state, final double lb, final Node node) {</span>
+<span class="fc" id="L47">        this.state = state;</span>
+<span class="fc" id="L48">        this.lb = lb;</span>
+<span class="fc" id="L49">        this.node = node;</span>
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * Converts this node-state association into an actual {@link SubProblem}.
+     * &lt;p&gt;
+     * The resulting {@link SubProblem} incorporates the path of decisions from the root to this node,
+     * updates the lower bound based on the node's value and suffix, and can be used directly
+     * in search or optimization routines.
+     * &lt;/p&gt;
+     *
+     * @param pathToRoot the set of decisions forming the path from the root to this node
+     * @return a {@link SubProblem} representing this node-state association
+     */
+    public SubProblem&lt;T&gt; toSubProblem(final Set&lt;Decision&gt; pathToRoot) {
+<span class="fc" id="L64">        HashSet&lt;Decision&gt; path = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L65">        path.addAll(pathToRoot);</span>
+
+<span class="fc" id="L67">        Edge e = node.best;</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        while (e != null) {</span>
+<span class="fc" id="L69">            path.add(e.decision);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">            e = e.origin == null ? null : e.origin.best;</span>
+        }
+
+<span class="fc" id="L73">        double locb = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (node.suffix != null) {</span>
+<span class="fc" id="L75">            locb = saturatedAdd(node.value, node.suffix);</span>
+        }
+<span class="fc" id="L77">        lb = Math.max(lb, locb);</span>
+
+<span class="fc" id="L79">        return new SubProblem&lt;&gt;(state, node.value, lb, path);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L84">        DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+<span class="nc" id="L85">        return String.format(&quot;%s - lb: %s - value: %s&quot;, state, df.format(lb), df.format(node.value));</span>
+    }
+
+    public double getValue() {
+<span class="nc" id="L89">        return node.value;</span>
+    }
+
+<span class="nc" id="L92">    public double getLb() {return lb;}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

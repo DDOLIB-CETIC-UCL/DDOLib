@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pigmentscheduling</a> &gt; <span class="el_source">PSState.java</span></div><h1>PSState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pigmentscheduling;
+
+import java.util.Arrays;
+import java.util.Objects;
+/**
+ * Represents a state in the Production Scheduling Problem (PSP).
+ * &lt;p&gt;
+ * Each {@code PSState} captures the scheduling situation at a given time slot,
+ * including which item is scheduled next and the remaining demands for all item types.
+ * This class is immutable in practice, with the exception of cloning for safe transitions.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Fields:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code t}: the current time slot (counting down from the horizon).&lt;/li&gt;
+ *     &lt;li&gt;{@code next}: the item type scheduled for production at time {@code t+1}.
+ *         A value of {@code -1} indicates that the next item is not yet assigned.&lt;/li&gt;
+ *     &lt;li&gt;{@code previousDemands}: an array where {@code previousDemands[i]} stores
+ *         the latest time before {@code t} when a demand for item {@code i} occurs.
+ *         A value of {@code -1} indicates that there are no remaining demands for that item.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;
+ * This class overrides {@link #hashCode()}, {@link #equals(Object)}, and {@link #toString()}
+ * to allow proper usage in hash-based collections, state comparison, and debugging output.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * {@code PSState} is used in combination with {@link PSProblem}, {@link PSRelax}, and
+ * {@link PSFastLowerBound} in Dynamic Decision Optimization (DDO) or A* search frameworks.
+ * &lt;/p&gt;
+ *
+ * @see PSProblem
+ * @see PSRelax
+ * @see PSFastLowerBound
+ */
+public class PSState {
+
+    /** Current time slot in the scheduling horizon. */
+    int t;
+
+    /** The item type to be produced at time t+1; -1 indicates unknown or idle. */
+    int next;
+
+    /** Array storing for each item type the latest time before t with demand. */
+    int[] previousDemands;
+
+    /**
+     * Constructs a new state for the PSP.
+     *
+     * @param t the current time slot
+     * @param next the next item type scheduled for production, -1 if unknown
+     * @param previousDemands an array indicating, for each item type, the last time a demand occurs before t
+     */
+
+<span class="fc" id="L57">    public PSState(int t, int next, int[] previousDemands) {</span>
+<span class="fc" id="L58">        this.t = t;</span>
+<span class="fc" id="L59">        this.next = next;</span>
+<span class="fc" id="L60">        this.previousDemands = previousDemands;</span>
+<span class="fc" id="L61">    }</span>
+    /**
+     * Creates a deep copy of this state.
+     *
+     * @return a cloned {@code PSState} instance
+     */
+    @Override
+    protected PSState clone() {
+<span class="fc" id="L69">        return new PSState(t, next, Arrays.copyOf(previousDemands, previousDemands.length));</span>
+    }
+    /**
+     * Computes a hash code for the state, based on time, next item, and previous demands.
+     *
+     * @return the hash code of the state
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L78">        return Objects.hash(t, next, Arrays.hashCode(previousDemands));</span>
+    }
+    /**
+     * Compares this state with another object for equality.
+     * Two {@code PSState} instances are equal if they have the same time,
+     * next item, and previous demand array.
+     *
+     * @param obj the object to compare
+     * @return {@code true} if the states are equal, {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (obj instanceof PSState other) {</span>
+<span class="pc bpc" id="L91" title="1 of 4 branches missed.">            return this.t == other.t</span>
+                    &amp;&amp; this.next == other.next
+<span class="fc bfc" id="L93" title="All 2 branches covered.">                    &amp;&amp; Arrays.equals(this.previousDemands, other.previousDemands);</span>
+        } else {
+<span class="nc" id="L95">            return false;</span>
+        }
+    }
+    /**
+     * Returns a string representation of the state, including current time,
+     * next item, and previous demands for debugging purposes.
+     *
+     * @return a string describing the state
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L106">        return String.format(&quot;t: %d - next: %d - previousDemand: %s&quot;, t, next, Arrays.toString(previousDemands));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

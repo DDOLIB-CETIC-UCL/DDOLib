@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleDominanceChecker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.dominance</a> &gt; <span class="el_source">SimpleDominanceChecker.java</span></div><h1>SimpleDominanceChecker.java</h1><pre class="source lang-java linenums">package org.ddolib.common.dominance;
 
-
-import org.ddolib.modeling.Dominance;
+import org.ddolib.modeling.layered.Dominance;
 
 import java.util.*;
 
 /**
- * The {@code SimpleDominanceChecker} class implements a straightforward dominance
- * management mechanism used in search algorithms based on Multi-valued Decision Diagrams (MDDs),
+ * The {@code SimpleDominanceChecker} class implements a straightforward
+ * dominance
+ * management mechanism used in search algorithms based on Multi-valued Decision
+ * Diagrams (MDDs),
  * such as DDO (Decision Diagram Optimization).
  * &lt;p&gt;
- * It maintains, for each depth level of the MDD, a collection of non-dominated states,
- * according to a user-defined {@link Dominance} relation. When a new state is explored,
- * this checker determines whether it is dominated by an existing state, or if it dominates
+ * It maintains, for each depth level of the MDD, a collection of non-dominated
+ * states,
+ * according to a user-defined {@link Dominance} relation. When a new state is
+ * explored,
+ * this checker determines whether it is dominated by an existing state, or if
+ * it dominates
  * others already stored in the same level.
  * &lt;/p&gt;
  *
@@ -20,14 +24,15 @@ import java.util.*;
  * The class uses a nested structure of:
  * &lt;/p&gt;
  * &lt;ul&gt;
- *     &lt;li&gt;A list indexed by depth (one per decision variable or time step),&lt;/li&gt;
- *     &lt;li&gt;For each depth, a map associating a {@code key} (computed from the state)
- *         to a set of non-dominated states,&lt;/li&gt;
- *     &lt;li&gt;Each state is wrapped in a {@link ValueState} object containing its
- *         associated objective value and a deterministic ID for ordering.&lt;/li&gt;
+ * &lt;li&gt;A list indexed by depth (one per decision variable or time step),&lt;/li&gt;
+ * &lt;li&gt;For each depth, a map associating a {@code key} (computed from the state)
+ * to a set of non-dominated states,&lt;/li&gt;
+ * &lt;li&gt;Each state is wrapped in a {@link ValueState} object containing its
+ * associated objective value and a deterministic ID for ordering.&lt;/li&gt;
  * &lt;/ul&gt;
  * &lt;p&gt;
- * The goal is to avoid exploring redundant or inferior states during optimization,
+ * The goal is to avoid exploring redundant or inferior states during
+ * optimization,
  * which significantly reduces the search space and improves efficiency.
  * &lt;/p&gt;
  *
@@ -42,8 +47,10 @@ public class SimpleDominanceChecker&lt;T&gt; extends DominanceChecker&lt;T&gt; {
     /**
      * Internal container class that associates a state with its objective value.
      * &lt;p&gt;
-     * This class implements {@link Comparable} to allow ordering by descending objective value,
-     * and uses a deterministic unique ID as a tie-breaker to ensure consistent ordering.
+     * This class implements {@link Comparable} to allow ordering by descending
+     * objective value,
+     * and uses a deterministic unique ID as a tie-breaker to ensure consistent
+     * ordering.
      * &lt;/p&gt;
      */
     private class ValueState implements Comparable&lt;ValueState&gt; {
@@ -55,74 +62,84 @@ public class SimpleDominanceChecker&lt;T&gt; extends DominanceChecker&lt;T&gt; {
         T state;
 
         /** Static counter used to generate unique deterministic IDs. */
-<span class="fc" id="L58">        static long nextId = Long.MIN_VALUE;</span>
+<span class="fc" id="L65">        static long nextId = Long.MIN_VALUE;</span>
 
         /** Unique identifier for tie-breaking in comparisons. */
-<span class="fc" id="L61">        final long id = nextId++;</span>
+<span class="fc" id="L68">        final long id = nextId++;</span>
+
         /**
          * Constructs a new {@code ValueState}.
          *
          * @param value the objective or path value associated with the state
          * @param state the state itself
          */
-<span class="fc" id="L68">        ValueState(double value, T state) {</span>
-<span class="fc" id="L69">            this.value = value;</span>
-<span class="fc" id="L70">            this.state = state;</span>
-<span class="fc" id="L71">        }</span>
+<span class="fc" id="L76">        ValueState(double value, T state) {</span>
+<span class="fc" id="L77">            this.value = value;</span>
+<span class="fc" id="L78">            this.state = state;</span>
+<span class="fc" id="L79">        }</span>
+
         /**
          * Compares this {@code ValueState} with another for ordering.
          * &lt;p&gt;
-         * States are primarily compared by descending objective value, and in case of a tie,
+         * States are primarily compared by descending objective value, and in case of a
+         * tie,
          * by ascending ID (ensuring deterministic ordering).
          * &lt;/p&gt;
          *
          * @param o the other {@code ValueState} to compare to
-         * @return a negative integer, zero, or a positive integer depending on the order
+         * @return a negative integer, zero, or a positive integer depending on the
+         *         order
          */
         @Override
         public int compareTo(ValueState o) {
-<span class="fc" id="L84">            int cmp = Double.compare(o.value, value);</span>
-<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (cmp == 0) return Long.compare(o.id, id);</span>
-<span class="fc" id="L86">            return cmp;</span>
+<span class="fc" id="L95">            int cmp = Double.compare(o.value, value);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (cmp == 0)</span>
+<span class="fc" id="L97">                return Long.compare(o.id, id);</span>
+<span class="fc" id="L98">            return cmp;</span>
         }
 
         @Override
         public int hashCode() {
-<span class="nc" id="L91">            return Objects.hash(state, value);</span>
+<span class="nc" id="L103">            return Objects.hash(state, value);</span>
         }
     }
+
     /**
      * The dominance fronts organized per depth level.
      * Each level contains a map of key → sorted set of {@link ValueState}s.
      */
     private final ArrayList&lt;Map&lt;Object, TreeSet&lt;ValueState&gt;&gt;&gt; fronts;
+
     /**
      * Constructs a {@code SimpleDominanceChecker} with the given dominance relation
      * and number of decision variables.
      *
      * @param dominance the {@link Dominance} relation used to compare states
-     * @param nVars the number of decision variables or depth levels in the MDD
+     * @param nVars     the number of decision variables or depth levels in the MDD
      */
     public SimpleDominanceChecker(Dominance&lt;T&gt; dominance, int nVars) {
-<span class="fc" id="L107">        super(dominance);</span>
-<span class="fc" id="L108">        this.fronts = new ArrayList&lt;&gt;(nVars + 1);</span>
-<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (int i = 0; i &lt;= nVars; i++) {</span>
-<span class="fc" id="L110">            fronts.add(new HashMap&lt;&gt;());</span>
+<span class="fc" id="L121">        super(dominance);</span>
+<span class="fc" id="L122">        this.fronts = new ArrayList&lt;&gt;(nVars + 1);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (int i = 0; i &lt;= nVars; i++) {</span>
+<span class="fc" id="L124">            fronts.add(new HashMap&lt;&gt;());</span>
         }
-<span class="fc" id="L112">    }</span>
+<span class="fc" id="L126">    }</span>
 
     /**
-     * Updates the dominance front at a given depth level based on the provided state.
+     * Updates the dominance front at a given depth level based on the provided
+     * state.
      * &lt;p&gt;
      * The method performs the following steps:
      * &lt;/p&gt;
      * &lt;ol&gt;
-     *     &lt;li&gt;Retrieves the dominance front corresponding to the given {@code depth}.&lt;/li&gt;
-     *     &lt;li&gt;Checks whether the state is dominated by an existing one:
-     *         if yes, returns {@code true} (no insertion).&lt;/li&gt;
-     *     &lt;li&gt;If not dominated, removes all states dominated by the new one,
-     *         then inserts the new state in the front.&lt;/li&gt;
+     * &lt;li&gt;Retrieves the dominance front corresponding to the given
+     * {@code depth}.&lt;/li&gt;
+     * &lt;li&gt;Checks whether the state is dominated by an existing one:
+     * if yes, returns {@code true} (no insertion).&lt;/li&gt;
+     * &lt;li&gt;If not dominated, removes all states dominated by the new one,
+     * then inserts the new state in the front.&lt;/li&gt;
      * &lt;/ol&gt;
+     * 
      * @param state    the state to evaluate for dominance
      * @param depth    the depth (or variable index) in the MDD
      * @param objValue the objective value associated with this state
@@ -131,30 +148,36 @@ public class SimpleDominanceChecker&lt;T&gt; extends DominanceChecker&lt;T&gt; {
      */
     @Override
     public boolean updateDominance(T state, int depth, double objValue) {
-<span class="fc" id="L134">        Map&lt;Object, TreeSet&lt;ValueState&gt;&gt; front = fronts.get(depth);</span>
-<span class="fc" id="L135">        Object key = dominance.getKey(state);</span>
-<span class="fc" id="L136">        boolean dominated = false;</span>
-<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (front.containsKey(key)) {</span>
-<span class="fc" id="L138">            TreeSet&lt;ValueState&gt; set = front.get(key);</span>
-<span class="fc" id="L139">            ArrayList&lt;ValueState&gt; removed = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L140" title="All 2 branches covered.">            for (ValueState vs : set) {</span>
-<span class="fc bfc" id="L141" title="All 4 branches covered.">                if (vs.value &lt; objValue &amp;&amp; dominance.isDominatedOrEqual(state, vs.state)) {</span>
-<span class="fc" id="L142">                    dominated = true;</span>
-<span class="fc" id="L143">                    break;</span>
-<span class="fc bfc" id="L144" title="All 4 branches covered.">                } else if (objValue &lt;= vs.value &amp;&amp; dominance.isDominatedOrEqual(vs.state, state)) {</span>
-<span class="fc" id="L145">                    removed.add(vs);</span>
+<span class="fc" id="L151">        Map&lt;Object, TreeSet&lt;ValueState&gt;&gt; front = fronts.get(depth);</span>
+<span class="fc" id="L152">        Object key = dominance.getKey(state);</span>
+<span class="fc" id="L153">        boolean dominated = false;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (front.containsKey(key)) {</span>
+<span class="fc" id="L155">            TreeSet&lt;ValueState&gt; set = front.get(key);</span>
+<span class="fc" id="L156">            ArrayList&lt;ValueState&gt; removed = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">            for (ValueState vs : set) {</span>
+<span class="fc bfc" id="L158" title="All 4 branches covered.">                if (vs.value &lt;= objValue &amp;&amp; dominance.isDominatedOrEqual(state, vs.state)) {</span>
+<span class="fc" id="L159">                    dominated = true;</span>
+<span class="fc" id="L160">                    break;</span>
+<span class="fc bfc" id="L161" title="All 4 branches covered.">                } else if (objValue &lt;= vs.value &amp;&amp; dominance.isDominatedOrEqual(vs.state, state)) {</span>
+<span class="fc" id="L162">                    removed.add(vs);</span>
                 }
-<span class="fc" id="L147">            }</span>
-<span class="fc bfc" id="L148" title="All 2 branches covered.">            for (ValueState vs : removed) {</span>
-<span class="fc" id="L149">                set.remove(vs);</span>
-<span class="fc" id="L150">            }</span>
+<span class="fc" id="L164">            }</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">            for (ValueState vs : removed) {</span>
+<span class="fc" id="L166">                set.remove(vs);</span>
+<span class="fc" id="L167">            }</span>
         }
-<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (!dominated) {</span>
-<span class="fc" id="L153">            TreeSet&lt;ValueState&gt; set = front.computeIfAbsent(key, k -&gt; new TreeSet&lt;&gt;());</span>
-<span class="fc" id="L154">            set.add(new ValueState(objValue, state));</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        if (!dominated) {</span>
+<span class="fc" id="L170">            TreeSet&lt;ValueState&gt; set = front.computeIfAbsent(key, k -&gt; new TreeSet&lt;&gt;());</span>
+<span class="fc" id="L171">            set.add(new ValueState(objValue, state));</span>
         }
-<span class="fc" id="L156">        return dominated;</span>
+<span class="fc" id="L173">        return dominated;</span>
     }
 
+    @Override
+    public void clear() {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        for (Map&lt;Object, TreeSet&lt;ValueState&gt;&gt; front : fronts) {</span>
+<span class="fc" id="L179">            front.clear();</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

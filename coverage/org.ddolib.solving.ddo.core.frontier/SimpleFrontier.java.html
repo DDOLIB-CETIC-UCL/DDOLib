@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleFrontier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.frontier</a> &gt; <span class="el_source">SimpleFrontier.java</span></div><h1>SimpleFrontier.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.frontier;
+
+
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.modeling.layered.StateRanking;
+
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
+/**
+ * A simple implementation of a {@link Frontier} for a solver, based on a plain priority queue.
+ * &lt;p&gt;
+ * The {@code SimpleFrontier} maintains a collection of {@link SubProblem} instances, which are pushed
+ * and popped by the solver according to their priority determined by a {@link StateRanking}.
+ * This frontier supports cutset-based compilation strategies.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of state in the subproblems
+ */
+public final class SimpleFrontier&lt;T&gt; implements Frontier&lt;T&gt; {
+    /** The underlying priority queue storing the subproblems. */
+    private final PriorityQueue&lt;SubProblem&lt;T&gt;&gt; heap;
+
+    /** The type of cutset used in the decision diagram compilation. */
+    private final CutSetType cutSetType;
+
+    /**
+     * Constructs a new {@code SimpleFrontier}.
+     *
+     * @param ranking    the ordering used to determine which subproblem is most promising
+     *                   and should be explored first
+     * @param cutSetType the type of cutset to use: {@link CutSetType#LastExactLayer} or {@link CutSetType#Frontier}
+     */
+<span class="fc" id="L34">    public SimpleFrontier(final StateRanking&lt;T&gt; ranking, final CutSetType cutSetType) {</span>
+<span class="fc" id="L35">        heap = new PriorityQueue&lt;&gt;(new SubProblemComparator&lt;&gt;(ranking));</span>
+<span class="fc" id="L36">        this.cutSetType = cutSetType;</span>
+<span class="fc" id="L37">    }</span>
+    /**
+     * Adds a subproblem to the frontier.
+     *
+     * @param sub the subproblem to add
+     */
+    @Override
+    public void push(final SubProblem&lt;T&gt; sub) {
+<span class="fc" id="L45">        heap.add(sub);</span>
+<span class="fc" id="L46">    }</span>
+    /**
+     * Removes and returns the most promising subproblem from the frontier.
+     *
+     * @return the subproblem with highest priority, or {@code null} if the frontier is empty
+     */
+    @Override
+    public SubProblem&lt;T&gt; pop() {
+<span class="fc" id="L54">        return heap.poll();</span>
+    }
+    /**
+     * Clears all subproblems from the frontier.
+     */
+    @Override
+    public void clear() {
+<span class="fc" id="L61">        heap.clear();</span>
+<span class="fc" id="L62">    }</span>
+    /**
+     * Returns the number of subproblems currently in the frontier.
+     *
+     * @return the size of the frontier
+     */
+    @Override
+    public int size() {
+<span class="fc" id="L70">        return heap.size();</span>
+    }
+    /**
+     * Returns the type of cutset used in the frontier.
+     *
+     * @return the cutset type
+     */
+    @Override
+    public CutSetType cutSetType() {
+<span class="fc" id="L79">        return this.cutSetType;</span>
+    }
+
+    /**
+     * A comparator for {@link SubProblem} that sorts subproblems first by their lower bound,
+     * and then by the state ranking if bounds are equal.
+     *
+     * @param &lt;T&gt; the type of state in the subproblems
+     */
+    private static final class SubProblemComparator&lt;T&gt; implements Comparator&lt;SubProblem&lt;T&gt;&gt; {
+        /** The decorated state ranking used as a tiebreaker. */
+        private final StateRanking&lt;T&gt; delegate;
+
+        /**
+         * Constructs a new comparator decorating the given ranking.
+         *
+         * @param delegate the ranking to use for tie-breaking
+         */
+
+<span class="fc" id="L98">        public SubProblemComparator(final StateRanking&lt;T&gt; delegate) {</span>
+<span class="fc" id="L99">            this.delegate = delegate;</span>
+<span class="fc" id="L100">        }</span>
+
+        @Override
+        public int compare(SubProblem&lt;T&gt; o1, SubProblem&lt;T&gt; o2) {
+<span class="fc" id="L104">            double cmp = o1.getLowerBound() - o2.getLowerBound();</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            if (cmp == 0) {</span>
+<span class="fc" id="L106">                return delegate.reversed().compare(o1.getState(), o2.getState());</span>
+            } else {
+<span class="fc" id="L108">                return Double.compare(o1.getLowerBound(), o2.getLowerBound());</span>
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L115">        return heap.toString();</span>
+    }
+    /**
+     * Returns the best (lowest) lower bound among the subproblems in the frontier.
+     *
+     * @return the lower bound of the most promising subproblem
+     */
+    @Override
+    public double bestInFrontier() {
+<span class="fc" id="L124">        return heap.peek().getLowerBound();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

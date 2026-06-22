@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RunwayState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.alp</a> &gt; <span class="el_source">RunwayState.java</span></div><h1>RunwayState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.alp;
+
+import java.util.Objects;
+
+/**
+ * State of a runway : last landing time and last aircraft's class
+ */
+public class RunwayState implements Comparable&lt;RunwayState&gt; {
+    // Previous landing time
+    public int prevTime;
+    // Previous class of aircraft that landed
+    public int prevClass;
+
+<span class="fc" id="L14">    public RunwayState(int prevClass, int prevTime) {</span>
+<span class="fc" id="L15">        this.prevClass = prevClass;</span>
+<span class="fc" id="L16">        this.prevTime = prevTime;</span>
+<span class="fc" id="L17">    }</span>
+
+<span class="fc" id="L19">    public RunwayState(RunwayState other) {</span>
+<span class="fc" id="L20">        prevTime = other.prevTime;</span>
+<span class="fc" id="L21">        prevClass = other.prevClass;</span>
+<span class="fc" id="L22">    }</span>
+
+    @Override
+    public int compareTo(RunwayState o) {
+<span class="nc" id="L26">        return Integer.compare(prevTime, o.prevTime);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L31">        return &quot;PT: &quot; + prevTime + &quot; PC : &quot; + prevClass;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L36" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L37">        RunwayState that = (RunwayState) o;</span>
+<span class="fc bfc" id="L38" title="All 4 branches covered.">        return prevTime == that.prevTime &amp;&amp; prevClass == that.prevClass;</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L43">        return Objects.hash(prevTime, prevClass);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

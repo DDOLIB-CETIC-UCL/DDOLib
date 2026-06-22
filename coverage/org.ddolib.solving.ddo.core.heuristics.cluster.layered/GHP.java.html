@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GHP.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.heuristics.cluster.layered</a> &gt; <span class="el_source">GHP.java</span></div><h1>GHP.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
+
+import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
+import org.ddolib.solving.ddo.core.mdd.layered.NodeType;
+
+import java.util.*;
+
+/**
+ * Generalized Hyperplane Partitioning (GHP) reduction strategy for decision diagram layers.
+ *
+ * &lt;p&gt;
+ * This class implements {@link ReductionStrategy} and clusters nodes in a layer using
+ * a distance-based partitioning method inspired by hyperplane separation. It requires
+ * a problem-specific {@link StateDistance} function to compute distances between states.
+ *
+ * &lt;p&gt;
+ * The GHP strategy works by:
+ * &lt;ol&gt;
+ *   &lt;li&gt;Selecting two distant pivot nodes from the layer&lt;/li&gt;
+ *   &lt;li&gt;Assigning each remaining node to the cluster of the closer pivot&lt;/li&gt;
+ *   &lt;li&gt;Recursively splitting clusters until the desired number of clusters ({@code maxWidth}) is reached&lt;/li&gt;
+ * &lt;/ol&gt;
+ *
+ * &lt;p&gt;
+ * A random number generator is used for tie-breaking and initial shuffling of the layer.
+ *
+ * @param &lt;T&gt; the type of states associated with the nodes
+ */
+<span class="fc" id="L29">public class GHP&lt;T&gt; implements ReductionStrategy&lt;T&gt; {</span>
+    /** Distance function used to measure distances between states. */
+    final private StateDistance&lt;T&gt; distance;
+    /** Random number generator for shuffling and tie-breaking. */
+    final private Random rnd;
+
+
+    /**
+     * Constructs a GHP reduction strategy with a default random seed.
+     *
+     * @param distance the distance function used to compare states
+     */
+<span class="fc" id="L41">    public GHP(StateDistance&lt;T&gt; distance) {</span>
+<span class="fc" id="L42">        this.distance = distance;</span>
+<span class="fc" id="L43">        rnd = new Random();</span>
+<span class="fc" id="L44">    }</span>
+    /**
+     * Constructs a GHP reduction strategy with a specified random seed.
+     *
+     * @param distance the distance function used to compare states
+     * @param seed the random seed
+     */
+<span class="fc" id="L51">    public GHP(StateDistance&lt;T&gt; distance, long seed) {</span>
+<span class="fc" id="L52">        this.distance = distance;</span>
+<span class="fc" id="L53">        this.rnd = new Random(seed);</span>
+<span class="fc" id="L54">    }</span>
+    /**
+     * Sets the seed of the internal random number generator.
+     *
+     * @param seed the new seed value
+     */
+    public void setSeed(long seed) {
+<span class="nc" id="L61">        this.rnd.setSeed(seed);</span>
+<span class="nc" id="L62">    }</span>
+
+    /**
+     * Partitions the given layer into clusters using Generalized Hyperplane Partitioning.
+     *
+     * &lt;p&gt;
+     * The method recursively divides the layer by selecting pivot nodes and assigning
+     * nodes to the cluster of the closest pivot. All nodes in the layer are included
+     * in one of the resulting clusters, and the input layer is emptied.
+     *
+     * @param layer the list of nodes at the current layer
+     * @param maxWidth the desired number of clusters (maximum width after reduction)
+     * @return an array of clusters, each cluster being a list of nodes
+     */
+    @Override
+    public List&lt;NodeSubProblem&lt;T&gt;&gt;[] defineClusters(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int maxWidth) {
+
+<span class="fc" id="L79">        Map&lt;T, Double&gt; distanceWithPivot = new HashMap&lt;&gt;(layer.size());</span>
+
+<span class="fc" id="L81">        Collections.shuffle(layer, rnd);</span>
+<span class="fc" id="L82">        NodeSubProblem&lt;T&gt; pivotA = layer.getFirst();</span>
+<span class="fc" id="L83">        NodeSubProblem&lt;T&gt; pivotB = selectFurthest(pivotA, layer);</span>
+<span class="fc" id="L84">        pivotA = selectFurthest(pivotB, layer);</span>
+<span class="fc" id="L85">        pivotB = selectFurthest(pivotA, layer);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        for (NodeSubProblem&lt;T&gt; node: layer) {</span>
+<span class="fc" id="L87">            distanceWithPivot.put(node.state, distance.distance(pivotA.state, node.state));</span>
+<span class="fc" id="L88">        }</span>
+
+<span class="fc" id="L90">        PriorityQueue&lt;ClusterNode&gt; pqClusters = new PriorityQueue&lt;&gt;(Comparator.reverseOrder());</span>
+<span class="fc" id="L91">        pqClusters.add(new ClusterNode(0.0 ,new ArrayList&lt;&gt;(layer), pivotA, pivotB));</span>
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        while (pqClusters.size() &lt; maxWidth) {</span>
+
+            // Poll the next cluster to divide
+<span class="fc" id="L96">            ClusterNode nodeCurrent = pqClusters.poll();</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            assert nodeCurrent != null;</span>
+<span class="fc" id="L98">            List&lt;NodeSubProblem&lt;T&gt;&gt; current = nodeCurrent.cluster;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            if (current.size() &lt;= 1) {</span>
+<span class="nc" id="L100">                pqClusters.add(nodeCurrent);</span>
+<span class="nc" id="L101">                break;</span>
+            }
+<span class="fc" id="L103">            pivotA = nodeCurrent.pivot;</span>
+<span class="fc" id="L104">            pivotB = nodeCurrent.furthestFromPivot;</span>
+            // Generates the two clusters
+<span class="fc" id="L106">            List&lt;NodeSubProblem&lt;T&gt;&gt; newClusterA = new ArrayList&lt;&gt;(current.size());</span>
+<span class="fc" id="L107">            List&lt;NodeSubProblem&lt;T&gt;&gt; newClusterB = new ArrayList&lt;&gt;(current.size());</span>
+
+<span class="fc" id="L109">            NodeSubProblem&lt;T&gt; furthestFromA = pivotA;</span>
+<span class="fc" id="L110">            double maxDistanceA = -1;</span>
+<span class="fc" id="L111">            NodeSubProblem&lt;T&gt; furthestFromB = pivotB;</span>
+<span class="fc" id="L112">            double maxDistanceB = -1;</span>
+
+<span class="fc" id="L114">            newClusterA.add(pivotA);</span>
+<span class="fc" id="L115">            newClusterB.add(pivotB);</span>
+<span class="fc" id="L116">            distanceWithPivot.put(pivotB.state, 0.0);</span>
+
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            for (NodeSubProblem&lt;T&gt; node : current) {</span>
+<span class="fc bfc" id="L119" title="All 4 branches covered.">                if (node.state.equals(pivotA.state) || node.state.equals(pivotB.state)) {</span>
+<span class="fc" id="L120">                    continue;</span>
+                }
+
+<span class="fc" id="L123">                double distWithA = distanceWithPivot.get(node.state);</span>
+<span class="fc" id="L124">                double distWithB = distance.distance(node.state, pivotB.state);</span>
+
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                if (distWithA &lt; distWithB) {</span>
+<span class="fc" id="L127">                    newClusterA.add(node);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                    if (distWithA &gt; maxDistanceA) {</span>
+<span class="fc" id="L129">                        furthestFromA = node;</span>
+<span class="fc" id="L130">                        maxDistanceA = distWithA;</span>
+                    }
+                } else {
+<span class="fc" id="L133">                    newClusterB.add(node);</span>
+<span class="fc" id="L134">                    distanceWithPivot.put(node.state, distWithB);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                    if (distWithB &gt; maxDistanceB) {</span>
+<span class="fc" id="L136">                        furthestFromB = node;</span>
+<span class="fc" id="L137">                        maxDistanceB = distWithB;</span>
+                    }
+                }
+<span class="fc" id="L140">            }</span>
+
+<span class="fc bfc" id="L142" title="All 2 branches covered.">            double priorityA = newClusterA.size() == 1 ? -1 : maxDistanceA;</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            double priorityB = newClusterB.size() == 1 ? -1 : maxDistanceB;</span>
+
+            // Add the two clusters to the queue
+<span class="fc" id="L146">            pqClusters.add(new ClusterNode(priorityA, newClusterA, pivotA, furthestFromA));</span>
+<span class="fc" id="L147">            pqClusters.add(new ClusterNode(priorityB, newClusterB, pivotB, furthestFromB));</span>
+<span class="fc" id="L148">        }</span>
+
+        // Retrieve the clusters from the queue
+<span class="fc" id="L151">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] clusters = new List[pqClusters.size()];</span>
+<span class="fc" id="L152">        int index = 0;</span>
+
+
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        for (ClusterNode cluster : pqClusters) {</span>
+<span class="fc" id="L156">            clusters[index] = cluster.cluster;</span>
+<span class="fc" id="L157">            index++;</span>
+
+<span class="fc" id="L159">        }</span>
+
+<span class="fc" id="L161">        return clusters;</span>
+    }
+
+    /**
+     * Selects the node in a cluster that is farthest from a reference node.
+     *
+     * @param ref the reference node
+     * @param nodes the cluster of nodes to search
+     * @return the node farthest from the reference
+     */
+    private NodeSubProblem&lt;T&gt; selectFurthest(NodeSubProblem&lt;T&gt; ref, List&lt;NodeSubProblem&lt;T&gt;&gt; nodes) {
+<span class="fc" id="L172">        double maxDistance = -1;</span>
+<span class="fc" id="L173">        NodeSubProblem&lt;T&gt; furthest = null;</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        for (NodeSubProblem&lt;T&gt; node : nodes) {</span>
+<span class="fc" id="L175">            double currentDistance = distance.distance(node.state, ref.state);</span>
+            // double currentDistance = distance.distance(node, ref);
+<span class="fc bfc" id="L177" title="All 4 branches covered.">            if (currentDistance &gt; maxDistance &amp;&amp; !node.state.equals(ref.state)) {</span>
+<span class="fc" id="L178">                maxDistance = currentDistance;</span>
+<span class="fc" id="L179">                furthest = node;</span>
+            }
+<span class="fc" id="L181">        }</span>
+<span class="fc" id="L182">        return furthest;</span>
+    }
+    /**
+     * Internal class representing a cluster with its pivot nodes and priority.
+     */
+    private class ClusterNode implements Comparable&lt;ClusterNode&gt; {
+        /** Priority of the cluster for splitting (based on maximum distance from pivot). */
+        final double priority;
+        /** List of nodes contained in the cluster. */
+        final List&lt;NodeSubProblem&lt;T&gt;&gt; cluster;
+        /** Primary pivot node of the cluster. */
+        final NodeSubProblem&lt;T&gt; pivot;
+        /** Node farthest from the primary pivot, used for recursive splitting. */
+        final NodeSubProblem&lt;T&gt; furthestFromPivot;
+
+<span class="fc" id="L197">        public ClusterNode(double priority, List&lt;NodeSubProblem&lt;T&gt;&gt; cluster, NodeSubProblem&lt;T&gt; pivot, NodeSubProblem&lt;T&gt; furthestFromPivot) {</span>
+<span class="fc" id="L198">            this.priority = priority;</span>
+<span class="fc" id="L199">            this.cluster = cluster;</span>
+<span class="fc" id="L200">            this.pivot = pivot;</span>
+<span class="fc" id="L201">            this.furthestFromPivot = furthestFromPivot;</span>
+<span class="fc" id="L202">        }</span>
+
+        @Override
+        public int compareTo(ClusterNode o) {
+<span class="fc bfc" id="L206" title="All 2 branches covered.">            if (this.priority == o.priority) {</span>
+<span class="fc" id="L207">                return Integer.compare(this.cluster.size(), o.cluster.size());</span>
+            } else {
+<span class="fc" id="L209">                return Double.compare(this.priority, o.priority);</span>
+            }
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L215">            return this.cluster.toString();</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

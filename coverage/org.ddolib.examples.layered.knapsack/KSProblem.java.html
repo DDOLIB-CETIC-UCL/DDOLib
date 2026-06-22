@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSProblem.java</span></div><h1>KSProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.layered.Problem;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Represents an instance of the Knapsack Problem (KS).
+ * &lt;p&gt;
+ * The state of the problem is the remaining capacity of the knapsack (represented as an {@link Integer}).
+ * Decisions correspond to selecting or not selecting a specific item (1 for selected, 0 for not selected).
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This class supports creating instances from:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;Explicit arrays of profits and weights, with or without a known optimal value.&lt;/li&gt;
+ *     &lt;li&gt;A file formatted with the number of items, capacity, (optional) optimal value,
+ *     and a list of item profits and weights.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * Costs are negated profits to allow using solvers designed for minimization.
+ * &lt;/p&gt;
+ */
+public class KSProblem implements Problem&lt;Integer&gt; {
+
+    /**
+     * Maximum capacity of the knapsack.
+     */
+    public final int capa;
+
+    /**
+     * Profits of the items.
+     */
+    public final int[] profit;
+
+    /**
+     * Weights of the items.
+     */
+    public final int[] weight;
+
+    /**
+     * Optional known optimal solution value.
+     */
+    public final Optional&lt;Double&gt; optimal;
+
+    /**
+     * Optional name of the instance (usually the filename).
+     */
+    public final Optional&lt;String&gt; name;
+
+    /**
+     * Constructs a Knapsack problem with given capacity, profits, weights, and known optimal value.
+     *
+     * @param capa    maximum capacity of the knapsack
+     * @param profit  array of item profits
+     * @param weight  array of item weights
+     * @param optimal known optimal value
+     */
+<span class="fc" id="L70">    public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {</span>
+<span class="fc" id="L71">        this.capa = capa;</span>
+<span class="fc" id="L72">        this.profit = profit;</span>
+<span class="fc" id="L73">        this.weight = weight;</span>
+<span class="fc" id="L74">        this.optimal = Optional.of(optimal);</span>
+<span class="fc" id="L75">        this.name = Optional.empty();</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Constructs a Knapsack problem with given capacity, profits, and weights.
+     * No optimal value is provided.
+     *
+     * @param capa   maximum capacity of the knapsack
+     * @param profit array of item profits
+     * @param weight array of item weights
+     */
+<span class="fc" id="L86">    public KSProblem(final int capa, final int[] profit, final int[] weight) {</span>
+<span class="fc" id="L87">        this.capa = capa;</span>
+<span class="fc" id="L88">        this.profit = profit;</span>
+<span class="fc" id="L89">        this.weight = weight;</span>
+<span class="fc" id="L90">        this.optimal = Optional.empty();</span>
+<span class="fc" id="L91">        this.name = Optional.empty();</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Constructs a Knapsack problem from a file.
+     * &lt;p&gt;
+     * The file format should contain:
+     * &lt;ul&gt;
+     *     &lt;li&gt;First line: number of items, capacity, (optional) optimal value.&lt;/li&gt;
+     *     &lt;li&gt;Following lines: item profit and weight for each item.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param fname path to the file
+     * @throws IOException if an I/O error occurs while reading the file
+     */
+<span class="fc" id="L106">    public KSProblem(final String fname) throws IOException {</span>
+<span class="fc" id="L107">        boolean isFirst = true;</span>
+<span class="fc" id="L108">        int count = 0;</span>
+<span class="fc" id="L109">        int n = 0;</span>
+<span class="fc" id="L110">        final File f = new File(fname);</span>
+        String line;
+<span class="fc" id="L112">        int c = 0;</span>
+<span class="fc" id="L113">        int[] profit = new int[0];</span>
+<span class="fc" id="L114">        int[] weight = new int[0];</span>
+<span class="fc" id="L115">        Optional&lt;Double&gt; optimal = Optional.empty();</span>
+<span class="fc" id="L116">        try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">            while ((line = bf.readLine()) != null) {</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                if (isFirst) {</span>
+<span class="fc" id="L119">                    isFirst = false;</span>
+<span class="fc" id="L120">                    String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L121">                    n = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L122">                    c = Integer.parseInt(tokens[1]);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">                    if (tokens.length == 3) {</span>
+<span class="fc" id="L124">                        optimal = Optional.of(Double.parseDouble(tokens[2]));</span>
+                    }
+<span class="fc" id="L126">                    profit = new int[n];</span>
+<span class="fc" id="L127">                    weight = new int[n];</span>
+<span class="fc" id="L128">                } else {</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">                    if (count &lt; n) {</span>
+<span class="fc" id="L130">                        String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L131">                        profit[count] = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L132">                        weight[count] = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L133">                        count++;</span>
+<span class="fc" id="L134">                    }</span>
+                }
+            }
+        }
+
+<span class="fc" id="L139">        Integer[] items = new Integer[profit.length];</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        for (int i = 0; i &lt; items.length; i++) {</span>
+<span class="fc" id="L141">            items[i] = i;</span>
+        }
+<span class="fc" id="L143">        final int[] w = weight;</span>
+<span class="fc" id="L144">        final int[] p = profit;</span>
+
+<span class="fc" id="L146">        Arrays.sort(items, (o1, o2) -&gt; {</span>
+<span class="fc" id="L147">            double ratio1 = (double) p[o1] / w[o1];</span>
+<span class="fc" id="L148">            double ratio2 = (double) p[o2] / w[o2];</span>
+<span class="fc" id="L149">            return Double.compare(ratio2, ratio1);</span>
+        });
+
+
+<span class="fc" id="L153">        this.profit = new int[items.length];</span>
+<span class="fc" id="L154">        this.weight = new int[items.length];</span>
+
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        for (int i = 0; i &lt; items.length; i++) {</span>
+<span class="fc" id="L157">            int j = items[i];</span>
+<span class="fc" id="L158">            this.profit[i] = profit[j];</span>
+<span class="fc" id="L159">            this.weight[i] = weight[j];</span>
+        }
+
+<span class="fc" id="L162">        this.capa = c;</span>
+<span class="fc" id="L163">        this.optimal = optimal;</span>
+<span class="fc" id="L164">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L165">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L169">        return name.orElse(String.format(&quot;Max capacity: %d\nProfits: %s\nWeights: %s&quot;,</span>
+<span class="fc" id="L170">                capa,</span>
+<span class="fc" id="L171">                Arrays.toString(profit),</span>
+<span class="fc" id="L172">                Arrays.toString(weight)));</span>
+    }
+
+    @Override
+    public int nbVars() {
+<span class="fc" id="L177">        return profit.length;</span>
+    }
+
+    @Override
+    public Integer initialState() {
+<span class="fc" id="L182">        return capa;</span>
+    }
+
+    @Override
+    public double initialValue() {
+<span class="fc" id="L187">        return 0;</span>
+    }
+
+    @Override
+    public Iterator&lt;Integer&gt; domain(Integer state, int var) {
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (state &gt;= weight[var]) { // The item can be taken or not</span>
+<span class="fc" id="L193">            return Arrays.asList(1, 0).iterator();</span>
+        } else { // The item cannot be taken
+<span class="fc" id="L195">            return List.of(0).iterator();</span>
+        }
+    }
+
+    @Override
+    public Integer transition(Integer state, Decision decision) {
+        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
+<span class="fc" id="L202">        return state - weight[decision.variable()] * decision.value();</span>
+    }
+
+    @Override
+    public double transitionCost(Integer state, Decision decision) {
+        // If the item is taken (1) the cost is the profit of the item, 0 otherwise
+<span class="fc" id="L208">        return -profit[decision.variable()] * decision.value();</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; optimalValue() {
+<span class="fc" id="L213">        return optimal.map(x -&gt; -x);</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L219">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not cover all &quot; +</span>
+<span class="nc" id="L220">                    &quot;the %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L223">        int totalProfit = 0;</span>
+<span class="fc" id="L224">        int totalWeight = 0;</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length; i++) {</span>
+<span class="fc" id="L226">            totalProfit += profit[i] * solution[i];</span>
+<span class="fc" id="L227">            totalWeight += weight[i] * solution[i];</span>
+        }
+
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (totalWeight &gt; capa) {</span>
+<span class="nc" id="L231">            String msg = String.format(&quot;The weight of %s (%d) exceeds the capatity of the &quot; +</span>
+<span class="nc" id="L232">                    &quot;knapsack (%d)&quot;, Arrays.toString(solution), totalWeight, capa);</span>
+<span class="nc" id="L233">            throw new InvalidSolutionException(msg);</span>
+        }
+
+<span class="fc" id="L236">        return -totalProfit;</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AwAstarModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.modeling.layered</a> &gt; <span class="el_source">AwAstarModel.java</span></div><h1>AwAstarModel.java</h1><pre class="source lang-java linenums">package org.ddolib.modeling.layered;
+
+import org.ddolib.common.dominance.DominanceChecker;
+import org.ddolib.solving.ddo.core.heuristics.variable.layered.VariableHeuristic;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+/**
+ * Defines the structure of an optimization model solved using the
+ * &lt;b&gt;Anytime Weighted A*  (AWA*)&lt;/b&gt; algorithm within the
+ * Decision Diagram Optimization (DDO) framework.
+ *
+ * &lt;p&gt;The Anytime Weighted A*  algorithm is derived from the A* algorithm. By adding a weight to
+ * the heuristic function, it speeds up reaching feasible solution. It incrementally improves the
+ * best found solution. The {@code AwAsatar} interface provides the problem definition
+ * * and configuration elements required by the ACS solver.&lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of states in the problem
+ */
+public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
+
+    /**
+     * Returns the weight to add to the heuristic function. Must be &amp;#62; 1
+     *
+     * @return the weight to add to the heuristic function (5 by default)
+     */
+    default double weight() {
+<span class="fc" id="L28">        return 5.0;</span>
+    }
+
+    /**
+     * Returns a copy of this model but with another weight.
+     *
+     * @param w The weight to use.
+     * @return a copy of this model but with another weight.
+     */
+    default AwAstarModel&lt;T&gt; setWeight(double w) {
+<span class="nc" id="L38">        return new AwAstarModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+<span class="nc" id="L41">                return AwAstarModel.this.problem();</span>
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+<span class="nc" id="L46">                return AwAstarModel.this.lowerBound();</span>
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+<span class="nc" id="L51">                return AwAstarModel.this.dominance();</span>
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+<span class="nc" id="L56">                return AwAstarModel.this.variableHeuristic();</span>
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L61">                return AwAstarModel.this.verbosityLevel();</span>
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+<span class="nc" id="L66">                return AwAstarModel.this.debugMode();</span>
+            }
+
+            @Override
+            public double weight() {
+<span class="nc" id="L71">                return w;</span>
+            }
+        };
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

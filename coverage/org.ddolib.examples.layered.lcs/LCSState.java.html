@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LCSState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.lcs</a> &gt; <span class="el_source">LCSState.java</span></div><h1>LCSState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.lcs;
+
+import java.util.Arrays;
+
+/**
+ * Represents the state of a node in the Longest Common Subsequence (LCS) problem.
+ * &lt;p&gt;
+ * In this problem, the state is defined by the current position in each of the strings being compared.
+ * Each position indicates how many characters of that string have been processed.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This state is used by search and optimization algorithms to track progress along the strings.
+ * It is immutable in the sense that new states are created rather than modifying existing ones.
+ * &lt;/p&gt;
+ */
+public class LCSState {
+    /**
+     * Current positions in each string.
+     * position[i] is the index of the next character to be considered in the i-th string.
+     */
+    int[] position;
+    /**
+     * Constructs an LCS state with the given positions for each string.
+     *
+     * @param position An array of integers representing the current position in each string.
+     */
+<span class="fc" id="L27">    LCSState(int[] position) {</span>
+<span class="fc" id="L28">        this.position = position;</span>
+<span class="fc" id="L29">    }</span>
+    /**
+     * Returns a hash code for this state, based on the positions in all strings.
+     *
+     * @return hash code of the state.
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L37">        return Arrays.hashCode(position);</span>
+    }
+    /**
+     * Checks equality between this state and another object.
+     * Two states are equal if their position arrays are identical.
+     *
+     * @param obj The object to compare with.
+     * @return true if the other object is an LCSState with the same positions; false otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (obj instanceof LCSState other) {</span>
+<span class="fc" id="L49">            return Arrays.equals(this.position, other.position);</span>
+        } else {
+<span class="nc" id="L51">            return false;</span>
+        }
+    }
+    /**
+     * Returns a string representation of the state.
+     * &lt;p&gt;
+     * The positions in each string are shown as an array.
+     * &lt;/p&gt;
+     *
+     * @return String representation of the state.
+     */
+
+    @Override
+    public String toString() {
+<span class="fc" id="L65">        return Arrays.toString(position);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

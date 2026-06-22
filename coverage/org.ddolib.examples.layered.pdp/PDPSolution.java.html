@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPSolution.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pdp</a> &gt; <span class="el_source">PDPSolution.java</span></div><h1>PDPSolution.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pdp;
+/**
+ * Represents a solution to a Pickup and Delivery Problem (PDP) instance.
+ * &lt;p&gt;
+ * This class stores the sequence of visited nodes (solution), the total cost or value
+ * of the solution, and a reference to the original {@link PDPProblem} instance.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * The {@link #toString()} method provides a detailed textual representation of the solution,
+ * including for each node whether it is a pickup, a delivery, or an unrelated node,
+ * as well as the vehicle content after visiting that node.
+ * &lt;/p&gt;
+ */
+public class PDPSolution {
+    /** The PDP problem instance for which this solution was computed. */
+    PDPProblem problem;
+
+    /** The sequence of nodes representing the solution, including pickups, deliveries, and unrelated nodes. */
+    public int[] solution;
+
+    /** The total value (cost or distance) of the solution. */
+    public double value;
+    /**
+     * Constructs a PDP solution with the given problem, solution sequence, and value.
+     *
+     * @param problem  the PDP problem instance
+     * @param solution the sequence of nodes representing the solution
+     * @param value    the total cost or distance of the solution
+     */
+<span class="nc" id="L31">    public PDPSolution(PDPProblem problem, int[] solution, double value) {</span>
+<span class="nc" id="L32">        this.problem = problem;</span>
+<span class="nc" id="L33">        this.solution = solution;</span>
+<span class="nc" id="L34">        this.value = value;</span>
+<span class="nc" id="L35">    }</span>
+    /**
+     * Returns a human-readable representation of the solution.
+     * &lt;p&gt;
+     * Each line represents a node visited in order. For pickups and deliveries, the output
+     * indicates the change in vehicle content and the associated pickup/delivery relationship.
+     * For unrelated nodes, only the node and current vehicle content are shown.
+     * &lt;/p&gt;
+     *
+     * @return a formatted string showing the solution path and vehicle contents
+     */
+    @Override
+    public String toString() {
+
+<span class="nc" id="L49">        StringBuilder toReturn = new StringBuilder(&quot;0\tcontentOut:&quot; + 0);</span>
+<span class="nc" id="L50">        int currentNode = 0;</span>
+<span class="nc" id="L51">        int currentContent = 0;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (int i = 1; i &lt; solution.length; i++) {</span>
+<span class="nc" id="L53">            currentNode = solution[i];</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (problem.deliveryToAssociatedPickup.containsKey(currentNode)) {</span>
+                //it is a delivery
+<span class="nc" id="L56">                currentContent = currentContent - 1;</span>
+<span class="nc" id="L57">                toReturn.append(&quot;\n&quot; + currentNode + &quot; \tcontentOut:&quot; + currentContent + &quot;\t(delivery from &quot; + problem.deliveryToAssociatedPickup.get(currentNode) + &quot; -&quot; + 1 + &quot;)&quot;);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            } else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)) {</span>
+                // it is a pickup
+<span class="nc" id="L60">                currentContent = currentContent + 1;</span>
+<span class="nc" id="L61">                toReturn.append(&quot;\n&quot; + currentNode + &quot;\tcontentOut:&quot; + currentContent + &quot;\t(pickup to &quot; + problem.pickupToAssociatedDelivery.get(currentNode) + &quot; +&quot; + 1 + &quot;)&quot;);</span>
+            } else {
+                //an unrelated node
+<span class="nc" id="L64">                toReturn.append(&quot;\n&quot; + currentNode + &quot;\tcontent:&quot; + currentContent);</span>
+            }
+        }
+<span class="nc" id="L67">        return toReturn.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

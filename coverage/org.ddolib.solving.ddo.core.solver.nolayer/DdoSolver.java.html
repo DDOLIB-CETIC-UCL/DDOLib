@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DdoSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.solver.nolayer</a> &gt; <span class="el_source">DdoSolver.java</span></div><h1>DdoSolver.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.solver.nolayer;
+
+import org.ddolib.solving.ddo.core.mdd.nolayer.NoLayerDecisionDiagram;
+import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.solving.ddo.core.cache.SimpleCache;
+import org.ddolib.solving.ddo.core.cache.Cache;
+import org.ddolib.solving.ddo.core.compilation.CompilationType;
+import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+
+public final class DdoSolver&lt;T&gt; implements Solver {
+
+    private final Problem&lt;T&gt; problem;
+    private final DdoModel&lt;T&gt; model;
+    private final Optional&lt;SimpleCache&lt;T&gt;&gt; cache;
+    private final VerboseMode verboseMode;
+    
+    // Using a priority queue for the B&amp;B frontier
+    // Lower bound is the primary key
+    private final PriorityQueue&lt;SubProblem&lt;T&gt;&gt; frontier;
+
+    private double bestUB;
+    private Optional&lt;Set&lt;Decision&gt;&gt; bestSol;
+
+<span class="fc" id="L38">    public DdoSolver(DdoModel&lt;T&gt; model) {</span>
+<span class="fc" id="L39">        this.model = model;</span>
+<span class="fc" id="L40">        this.problem = model.problem();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        this.cache = model.useCache() ? Optional.of(new SimpleCache&lt;&gt;()) : Optional.empty();</span>
+<span class="fc" id="L42">        this.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L43">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L44">        this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);</span>
+        
+<span class="fc" id="L46">        this.frontier = new PriorityQueue&lt;&gt;(Comparator.comparingDouble(SubProblem::getLowerBound));</span>
+<span class="fc" id="L47">    }</span>
+
+    @Override
+    public Solution minimize(Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="fc" id="L51">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);</span>
+<span class="fc" id="L52">        frontier.add(root());</span>
+<span class="fc" id="L53">        cache.ifPresent(c -&gt; c.initialize());</span>
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        while (!frontier.isEmpty()) {</span>
+<span class="fc" id="L56">            SubProblem&lt;T&gt; sub = frontier.poll();</span>
+            
+            // Check cache before expanding
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">            if (cache.isPresent() &amp;&amp; !cache.get().mustExplore(sub, sub.getDepth())) {</span>
+<span class="nc" id="L60">                continue;</span>
+            }
+
+<span class="fc" id="L63">            double nodeLB = sub.getLowerBound();</span>
+
+<span class="fc" id="L65">            verboseMode.detailedSearchState(statistics.nbIterations(), frontier.size(), bestUB,</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                    frontier.isEmpty() ? nodeLB : frontier.peek().getLowerBound(), gap());</span>
+
+<span class="fc" id="L68">            statistics = statistics.incrementNbIter()</span>
+<span class="fc" id="L69">                    .updateFrontierMaxSize(frontier.size() + 1)</span>
+<span class="fc" id="L70">                    .updateLowerBound(nodeLB)</span>
+<span class="fc" id="L71">                    .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L72">                    .updateGap(gap())</span>
+<span class="fc" id="L73">                    .updateMaxDepth(sub.getDepth());</span>
+
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">            if (limit.test(statistics)) {</span>
+<span class="nc" id="L76">                return new Solution(bestSolution(), statistics);</span>
+            }
+
+<span class="fc" id="L79">            verboseMode.currentSubProblem(statistics.nbIterations(), sub);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (nodeLB &gt;= bestUB) {</span>
+<span class="fc" id="L81">                frontier.clear();</span>
+<span class="fc" id="L82">                statistics = statistics.updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L83">                        .updateStatus(SearchStatus.OPTIMAL).updateGap(0);</span>
+<span class="fc" id="L84">                return new Solution(bestSolution(), statistics);</span>
+            }
+
+<span class="fc" id="L87">            int maxWidth = model.widthHeuristic().maximumWidth(sub.getState());</span>
+
+            // 1. RELAXATION
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">            if (model.dominance() != null) model.dominance().clear();</span>
+<span class="fc" id="L91">            NoLayerDecisionDiagram&lt;T&gt; relaxedMdd = new NoLayerDecisionDiagram&lt;&gt;(</span>
+<span class="fc" id="L92">                    model, sub, CompilationType.Relaxed, maxWidth, bestUB, cache.map(c -&gt; (Cache&lt;T&gt;) c));</span>
+
+<span class="fc" id="L94">            relaxedMdd.compile();</span>
+<span class="fc" id="L95">            statistics = statistics.addNodes(relaxedMdd.nbNodes());</span>
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            if (relaxedMdd.relaxedBestPathIsExact()) {</span>
+<span class="fc" id="L98">                boolean newbest = maybeUpdateBest(relaxedMdd);</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                if (newbest) {</span>
+<span class="fc" id="L100">                    statistics = statistics.updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L101">                            .updateIncumbent(bestUB, gap())</span>
+<span class="fc" id="L102">                            .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L103">                    onSolution.accept(constructSolution(bestSol.get()), statistics);</span>
+                }
+            }
+
+<span class="fc bfc" id="L107" title="All 6 branches covered.">            if (!relaxedMdd.isExact() &amp;&amp; (relaxedMdd.bestValue().isEmpty() || relaxedMdd.bestValue().get() &lt; bestUB)) {</span>
+                
+                // 2. RESTRICTION
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">                if (model.dominance() != null) model.dominance().clear();</span>
+<span class="fc" id="L111">                NoLayerDecisionDiagram&lt;T&gt; restrictedMdd = new NoLayerDecisionDiagram&lt;&gt;(</span>
+<span class="fc" id="L112">                        model, sub, CompilationType.Restricted, maxWidth, bestUB, cache.map(c -&gt; (Cache&lt;T&gt;) c));</span>
+
+<span class="fc" id="L114">                restrictedMdd.compile();</span>
+<span class="fc" id="L115">                statistics = statistics.addNodes(restrictedMdd.nbNodes());</span>
+
+<span class="fc" id="L117">                boolean newbest = maybeUpdateBest(restrictedMdd);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                if (newbest) {</span>
+<span class="fc" id="L119">                    statistics = statistics.updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L120">                            .updateIncumbent(bestUB, gap())</span>
+<span class="fc" id="L121">                            .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L122">                    onSolution.accept(constructSolution(bestSol.get()), statistics);</span>
+                }
+
+<span class="fc" id="L125">                enqueueCutset(relaxedMdd);</span>
+            }
+<span class="fc" id="L127">        }</span>
+
+<span class="fc" id="L129">        statistics = statistics.updateTime(System.currentTimeMillis());</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateGap(0);</span>
+<span class="fc" id="L131">        else statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+
+<span class="fc" id="L133">        return new Solution(bestSolution(), statistics);</span>
+    }
+
+    private void enqueueCutset(NoLayerDecisionDiagram&lt;T&gt; relaxedMdd) {
+<span class="fc" id="L137">        Iterator&lt;SubProblem&lt;T&gt;&gt; cutset = relaxedMdd.exactCutset();</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        while (cutset.hasNext()) {</span>
+<span class="fc" id="L139">            SubProblem&lt;T&gt; cutsetNode = cutset.next();</span>
+            // Dominance check is already applied inside the MDD, but we can double check
+<span class="fc bfc" id="L141" title="All 2 branches covered.">            if (cutsetNode.getLowerBound() &lt; bestUB) {</span>
+<span class="fc" id="L142">                frontier.add(cutsetNode);</span>
+            }
+<span class="fc" id="L144">        }</span>
+<span class="fc" id="L145">    }</span>
+
+    private SubProblem&lt;T&gt; root() {
+<span class="fc" id="L148">        return new SubProblem&lt;&gt;(</span>
+<span class="fc" id="L149">                problem.initialState(),</span>
+<span class="fc" id="L150">                problem.initialValue(),</span>
+                Double.NEGATIVE_INFINITY,
+<span class="fc" id="L152">                Collections.emptySet()</span>
+        );
+    }
+
+    private double gap() {
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">        if (frontier.isEmpty() || Double.isInfinite(bestUB)) {</span>
+<span class="fc" id="L158">            return Double.POSITIVE_INFINITY;</span>
+        } else {
+<span class="fc" id="L160">            double globalLB = frontier.peek().getLowerBound();</span>
+<span class="fc" id="L161">            return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);</span>
+        }
+    }
+
+    private boolean maybeUpdateBest(DecisionDiagram&lt;T&gt; currentMdd) {
+<span class="fc" id="L166">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
+<span class="pc bpc" id="L167" title="1 of 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
+<span class="fc" id="L168">            bestUB = ddval.get();</span>
+<span class="fc" id="L169">            bestSol = currentMdd.bestSolution();</span>
+<span class="fc" id="L170">            verboseMode.newBest(bestUB);</span>
+<span class="fc" id="L171">            return true;</span>
+        }
+<span class="fc" id="L173">        return false;</span>
+    }
+
+    @Override
+    public Optional&lt;Double&gt; bestValue() {
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        return bestSol.isPresent() ? Optional.of(bestUB) : Optional.empty();</span>
+    }
+
+    @Override
+    public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
+<span class="fc" id="L183">        return bestSol;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

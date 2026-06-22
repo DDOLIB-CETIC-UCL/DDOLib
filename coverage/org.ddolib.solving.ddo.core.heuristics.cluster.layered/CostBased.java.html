@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CostBased.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.solving.ddo.core.heuristics.cluster.layered</a> &gt; <span class="el_source">CostBased.java</span></div><h1>CostBased.java</h1><pre class="source lang-java linenums">package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
+
+import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
+import org.ddolib.modeling.layered.StateRanking;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * This strategy select the nodes based on the objective value of the best path leading to them.
+ * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost.
+ * @param &lt;T&gt;
+ */
+public class CostBased&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
+
+    final private NodeSubroblemComparator&lt;T&gt; ranking;
+
+<span class="fc" id="L19">    public CostBased(final StateRanking&lt;T&gt; ranking) {</span>
+<span class="fc" id="L20">        this.ranking = new NodeSubroblemComparator&lt;&gt;(ranking);</span>
+<span class="fc" id="L21">    }</span>
+
+    /**
+     * Select the layer.size() - maxWidth - 1 nodes with the worst cost on the layer.
+     * Add the end the maxWidth - 1 unselected nodes are still in the layer
+     * @param layer the layer
+     * @param maxWidth the desired maximal width after the restriction and relaxation
+     * @return
+     */
+    public List&lt;NodeSubProblem&lt;T&gt;&gt;[] defineClusters(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int maxWidth) {
+<span class="fc" id="L31">        layer.sort(ranking);</span>
+<span class="fc" id="L32">        int nbClusters = Math.min(layer.size(), maxWidth);</span>
+<span class="fc" id="L33">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] cluster = new List[nbClusters];</span>
+        // take the best min(maxWidth, layerSize) - 1 nodes as individual clusters
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (int i = 0; i &lt; nbClusters - 1; i++) {</span>
+<span class="fc" id="L36">            cluster[i] = new ArrayList&lt;&gt;(1);</span>
+<span class="fc" id="L37">            cluster[i].add(layer.get(i));</span>
+        }
+        // put the rest in the last cluster
+<span class="fc" id="L40">        cluster[nbClusters-1] = new ArrayList&lt;&gt;(layer.size()-nbClusters+1);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (int i = nbClusters - 1; i &lt; layer.size(); i++) {</span>
+<span class="fc" id="L42">            cluster[nbClusters-1].add(layer.get(i));</span>
+        }
+<span class="fc" id="L44">        return cluster;</span>
+    }
+
+    /**
+     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
+     */
+    private static final class NodeSubroblemComparator&lt;T&gt; implements Comparator&lt;NodeSubProblem&lt;T&gt;&gt; {
+        /**
+         * This is the decorated ranking
+         */
+        private final StateRanking&lt;T&gt; delegate;
+
+        /**
+         * Creates a new instance
+         *
+         * @param delegate the decorated ranking
+         */
+<span class="fc" id="L61">        public NodeSubroblemComparator(final StateRanking&lt;T&gt; delegate) {</span>
+<span class="fc" id="L62">            this.delegate = delegate;</span>
+<span class="fc" id="L63">        }</span>
+
+        @Override
+        public int compare(NodeSubProblem&lt;T&gt; o1, NodeSubProblem&lt;T&gt; o2) {
+<span class="fc" id="L67">            int cmp = Double.compare(o1.node.value, o2.node.value);</span>
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">            if (cmp == 0 &amp;&amp; delegate != null) {</span>
+<span class="fc" id="L69">                return delegate.compare(o1.state, o2.state);</span>
+            } else {
+<span class="fc" id="L71">                return cmp;</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

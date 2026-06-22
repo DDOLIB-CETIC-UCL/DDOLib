@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BKSProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.boundedknapsack</a> &gt; <span class="el_source">BKSProblem.java</span></div><h1>BKSProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.boundedknapsack;
+
+import org.ddolib.solving.ddo.core.Decision;
+import org.ddolib.modeling.InvalidSolutionException;
+import org.ddolib.modeling.layered.Problem;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Random;
+
+/**
+ * Represents an instance of the &lt;b&gt;Bounded Knapsack Problem (BKP)&lt;/b&gt;.
+ *
+ * &lt;p&gt;
+ * This class implements the {@link Problem} interface and can be used by generic
+ * optimization solvers such as Dynamic Decision Diagrams (DD), A*, or Anytime Column Search (ACS).
+ * &lt;/p&gt;
+ *
+ * @see BKSFastLowerBound
+ * @see Decision
+ */
+public class BKSProblem implements Problem&lt;Integer&gt; {
+    public final int capacity;
+    public final int[] values;
+    public final int[] weights;
+    public final int[] quantities;
+
+    /**
+     * Constructs a bounded knapsack problem from explicitly given parameters.
+     *
+     * @param capacity   the total capacity of the knapsack
+     * @param values     an array containing the profit (value) of each item
+     * @param weights    an array containing the weight of each item
+     * @param quantities an array containing the maximum available quantity of each item
+     */
+<span class="nc" id="L37">    public BKSProblem(int capacity, int[] values, int[] weights, int[] quantities) {</span>
+<span class="nc" id="L38">        this.capacity = capacity;</span>
+<span class="nc" id="L39">        this.values = values;</span>
+<span class="nc" id="L40">        this.weights = weights;</span>
+<span class="nc" id="L41">        this.quantities = quantities;</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * Randomly generates an instance of the bounded knapsack problem.
+     * &lt;p&gt;
+     * The generated instance is controlled by a type of correlation between
+     * item weights and values, as described in {@link InstanceType}.
+     * &lt;/p&gt;
+     *
+     * @param n     the number of items
+     * @param range the upper bound for weights and profits
+     * @param type  the correlation type between weight and profit
+     * @param seed  the random seed used for reproducibility
+     */
+
+<span class="fc" id="L57">    public BKSProblem(int n, int range, InstanceType type, long seed) {</span>
+<span class="fc" id="L58">        Random rand = new Random(seed);</span>
+
+<span class="fc" id="L60">        int[] values = new int[n];</span>
+<span class="fc" id="L61">        int[] weights = new int[n];</span>
+<span class="fc" id="L62">        int[] quantity = new int[n];</span>
+<span class="fc" id="L63">        int totalWeight = 0;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (int j = 0; j &lt; n; j++) {</span>
+<span class="fc" id="L65">            int w = 1 + rand.nextInt(range);</span>
+            int p;
+<span class="pc bpc" id="L67" title="4 of 5 branches missed.">            switch (type) {</span>
+                case UNCORRELATED:
+<span class="nc" id="L69">                    p = 1 + rand.nextInt(range);</span>
+<span class="nc" id="L70">                    break;</span>
+                case WEAKLY_CORRELATED:
+<span class="nc" id="L72">                    int minP = Math.max(1, w - range / 10);</span>
+<span class="nc" id="L73">                    int maxP = Math.min(range, w + range / 10);</span>
+<span class="nc" id="L74">                    p = minP + rand.nextInt(maxP - minP + 1);</span>
+<span class="nc" id="L75">                    break;</span>
+                case STRONGLY_CORRELATED:
+<span class="fc" id="L77">                    p = w + 10;</span>
+<span class="fc" id="L78">                    break;</span>
+                case SUBSET_SUM:
+<span class="nc" id="L80">                    p = w;</span>
+<span class="nc" id="L81">                    break;</span>
+                default:
+<span class="nc" id="L83">                    p = 1;</span>
+            }
+<span class="fc" id="L85">            int m = 5 + rand.nextInt(6);</span>
+<span class="fc" id="L86">            values[j] = p;</span>
+<span class="fc" id="L87">            weights[j] = w;</span>
+<span class="fc" id="L88">            quantity[j] = m;</span>
+<span class="fc" id="L89">            totalWeight += w * m;</span>
+        }
+
+<span class="fc" id="L92">        this.capacity = (int) (0.5 * totalWeight); // capacity = 50% of total</span>
+<span class="fc" id="L93">        this.values = values;</span>
+<span class="fc" id="L94">        this.weights = weights;</span>
+<span class="fc" id="L95">        this.quantities = quantity;</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Returns the number of variables (items) in the knapsack.
+     *
+     * @return the number of items
+     */
+    @Override
+    public int nbVars() {
+<span class="fc" id="L105">        return values.length;</span>
+    }
+
+    /**
+     * Returns the initial state of the problem, which corresponds to the
+     * remaining capacity of the knapsack before adding any items.
+     *
+     * @return the initial remaining capacity
+     */
+    @Override
+    public Integer initialState() {
+<span class="fc" id="L116">        return capacity;</span>
+    }
+
+    /**
+     * Returns the initial objective value of the problem.
+     *
+     * @return the initial value (0.0)
+     */
+    @Override
+    public double initialValue() {
+<span class="fc" id="L126">        return 0.0;</span>
+    }
+
+    /**
+     * Returns the domain (set of possible values) for a given variable (item),
+     * given the current remaining capacity.
+     * &lt;p&gt;
+     * For each item, the decision variable represents the number of copies
+     * to include in the knapsack, constrained by both available quantity
+     * and remaining capacity.
+     * &lt;/p&gt;
+     *
+     * @param state the current remaining capacity
+     * @param var   the index of the item
+     * @return an iterator over possible quantities for the given item
+     */
+    @Override
+    public Iterator&lt;Integer&gt; domain(Integer state, int var) {
+<span class="fc" id="L144">        ArrayList&lt;Integer&gt; domain = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L145">        domain.add(0);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (int v = 1; v &lt;= quantities[var]; v++) {</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (state &gt;= v * weights[var]) {</span>
+<span class="fc" id="L148">                domain.add(v);</span>
+            }
+        }
+<span class="fc" id="L151">        return domain.iterator();</span>
+    }
+
+    /**
+     * Computes the next state after making a decision on an item.
+     *
+     * @param state    the current remaining capacity
+     * @param decision the decision specifying which item and how many copies to include
+     * @return the updated remaining capacity after including the chosen number of items
+     */
+    @Override
+    public Integer transition(Integer state, Decision decision) {
+        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
+<span class="fc" id="L164">        return state - weights[decision.variable()] * decision.value();</span>
+    }
+
+    /**
+     * Computes the transition cost associated with a decision.
+     * &lt;p&gt;
+     * Since this problem is typically formulated as a maximization,
+     * this method returns the &lt;b&gt;negative profit&lt;/b&gt; to fit a minimization framework.
+     * &lt;/p&gt;
+     *
+     * @param state    the current remaining capacity
+     * @param decision the decision specifying which item and how many copies to include
+     * @return the negative profit of the chosen items
+     */
+    @Override
+    public double transitionCost(Integer state, Decision decision) {
+        // If the item is taken (1) the cost is the profit of the item, 0 otherwise
+<span class="fc" id="L181">        return -values[decision.variable()] * decision.value();</span>
+    }
+
+    @Override
+    public double evaluate(int[] solution) throws InvalidSolutionException {
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L187">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L188">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+        }
+
+<span class="fc" id="L191">        int value = 0;</span>
+<span class="fc" id="L192">        int weight = 0;</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L194">            int quantity = solution[i];</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">            if (quantity &gt; quantities[i]) {</span>
+<span class="nc" id="L196">                String msg = String.format(&quot;The object %d is selected %d times. Its maximum &quot; +</span>
+<span class="nc" id="L197">                        &quot;quantity is %d&quot;, i, quantity, quantities[i]);</span>
+<span class="nc" id="L198">                throw new InvalidSolutionException(msg);</span>
+            }
+<span class="fc" id="L200">            value += quantity * values[i];</span>
+<span class="fc" id="L201">            weight += quantity * weights[i];</span>
+        }
+
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        if (weight &gt; capacity) {</span>
+<span class="nc" id="L205">            String msg = String.format(&quot;The weight of %s (%d) exceeds the capatity of the &quot; +</span>
+<span class="nc" id="L206">                    &quot;knapsack (%d)&quot;, Arrays.toString(solution), weight, capacity);</span>
+<span class="nc" id="L207">            throw new InvalidSolutionException(msg);</span>
+        }
+<span class="fc" id="L209">        return -value;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L214">        StringBuilder sb = new StringBuilder(String.format(&quot;BKS: %d vars\n&quot;, nbVars()));</span>
+<span class="nc" id="L215">        sb.append(&quot;Max Capacity: &quot;).append(capacity).append(&quot;\n&quot;);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="nc" id="L217">            sb.append(String.format(&quot;%d - &quot;, i));</span>
+<span class="nc" id="L218">            sb.append(&quot;value: &quot;).append(values[i]).append(&quot; - &quot;);</span>
+<span class="nc" id="L219">            sb.append(&quot;weight: &quot;).append(weights[i]).append(&quot; - &quot;);</span>
+<span class="nc" id="L220">            sb.append(&quot;quantity: &quot;).append(quantities[i]).append(&quot;\n&quot;);</span>
+        }
+
+<span class="nc" id="L223">        return sb.toString();</span>
+    }
+
+    /**
+     * Enumeration defining possible correlation types between item
+     * weights and profits when generating random instances.
+     */
+<span class="fc" id="L230">    public enum InstanceType {</span>
+<span class="fc" id="L231">        UNCORRELATED, // Profit and weight are independent</span>
+<span class="fc" id="L232">        WEAKLY_CORRELATED, //Profits roughly follow weights, but not exactly</span>
+<span class="fc" id="L233">        STRONGLY_CORRELATED, // Profit = weight + constant</span>
+<span class="fc" id="L234">        SUBSET_SUM // Profits exactly equal weights</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRDdoMain.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.gruler</a> &gt; <span class="el_source">GRDdoMain.java</span></div><h1>GRDdoMain.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.gruler;
+
+import org.ddolib.common.solver.Solution;
+import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
+import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
+import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.modeling.nolayer.DdoModel;
+import org.ddolib.modeling.nolayer.Relaxation;
+import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
+import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.util.verbosity.VerbosityLevel;
+
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+
+public class GRDdoMain {
+
+    public static void main(String[] args) {
+        int order = args.length == 0 ? 10 : Integer.parseInt(args[0]);
+        final GRProblem problem = new GRProblem(order);
+
+        DdoModel&lt;GRState&gt; model = new GRDdoModel(problem) {
+            @Override
+            public Relaxation&lt;GRState&gt; relaxation() {
+                return new Relaxation&lt;GRState&gt;() {
+                    @Override
+                    public GRState merge(Collection&lt;GRState&gt; states) {
+                        Iterator&lt;GRState&gt; it = states.iterator();
+                        GRState first = it.next();
+                        BitSet marks = (BitSet) first.getMarks().clone();
+                        BitSet distances = (BitSet) first.getDistances().clone();
+                        int lastMark = first.getLastMark();
+
+                        while (it.hasNext()) {
+                            GRState s = it.next();
+                            marks.and(s.getMarks());
+                            distances.and(s.getDistances());
+                            lastMark = Math.min(lastMark, s.getLastMark());
+                        }
+                        return new GRState(marks, distances, lastMark, first.getLayer());
+                    }
+                };
+            }
+
+            @Override
+            public StateRanking&lt;GRState&gt; ranking() {
+                // Rank by highest number of marks first, then smallest last mark
+                return (s1, s2) -&gt; {
+                    int c = Integer.compare(s2.getNumberOfMarks(), s1.getNumberOfMarks());
+                    if (c != 0)
+                        return c;
+                    return Integer.compare(s1.getLastMark(), s2.getLastMark());
+                };
+            }
+
+            @Override
+            public WidthHeuristic&lt;GRState&gt; widthHeuristic() {
+                return new FixedWidth&lt;&gt;(5);
+            }
+
+            @Override
+            public ReductionStrategy&lt;GRState&gt; relaxStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public ReductionStrategy&lt;GRState&gt; restrictStrategy() {
+                return new CostBased&lt;&gt;(ranking());
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.NORMAL;
+            }
+
+            @Override
+            public boolean useCache() {
+                return true;
+            }
+        };
+
+        DdoSolver&lt;GRState&gt; solver = new DdoSolver&lt;&gt;(model);
+        Solution bestSolution = solver.minimize(
+                limit -&gt; limit.nbIterations() &gt; 1000,
+                (sol, stats) -&gt; SolutionPrinter.printSolution(stats, sol));
+
+        System.out.println(bestSolution.statistics());
+        System.out.println(bestSolution);
+        System.out.println(&quot;Optimal Golomb Ruler value for order &quot; + order + &quot;: &quot; + bestSolution.value());
+    }
+}
+
+abstract class GRDdoModel extends GRModel implements DdoModel&lt;GRState&gt; {
+    public GRDdoModel(GRProblem problem) {
+<span class="nc" id="L98">        super(problem);</span>
+<span class="nc" id="L99">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

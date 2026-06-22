@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.talentscheduling</a> &gt; <span class="el_source">TSState.java</span></div><h1>TSState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.talentscheduling;
+
+import java.util.BitSet;
+
+/**
+ * Represents a state in the Talent Scheduling Problem (TalentSched).
+ *
+ * &lt;p&gt;
+ * A state keeps track of:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@code remainingScenes} — a {@link BitSet} containing all scenes that still need to be scheduled.&lt;/li&gt;
+ *     &lt;li&gt;{@code maybeScenes} — a {@link BitSet} used in merged or relaxed states, containing scenes that may need to be scheduled in some merged branches but have already been scheduled in others.&lt;/li&gt;
+ *     &lt;li&gt;{@code onLocationActors} — a {@link BitSet} representing which actors are currently on location.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ *
+ * &lt;p&gt;
+ * The combination of {@code remainingScenes} and {@code maybeScenes} allows the solver
+ * to represent both definite and potential scheduling decisions in relaxed or merged states.
+ * The {@code onLocationActors} field helps track actor availability for scene scheduling.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This record is typically used in decision diagram-based solvers, branch-and-bound, or
+ * relaxation algorithms for the TSP.
+ * &lt;/p&gt;
+ *
+ * @param remainingScenes  scenes that must still be scheduled
+ * @param maybeScenes      scenes that may still be scheduled due to state merging
+ * @param onLocationActors actors currently available on location
+ */
+<span class="fc" id="L33">public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocationActors) {</span>
+
+
+    @Override
+    public String toString() {
+<span class="fc" id="L38">            return String.format(&quot;Remaining: %s - Maybe: %s - On location actors: %s&quot;, remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

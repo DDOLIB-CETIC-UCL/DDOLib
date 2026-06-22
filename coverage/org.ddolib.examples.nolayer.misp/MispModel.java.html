@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.misp</a> &gt; <span class="el_source">MispModel.java</span></div><h1>MispModel.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.misp;
+
+import org.ddolib.modeling.nolayer.FastLowerBound;
+import org.ddolib.modeling.nolayer.Model;
+import org.ddolib.modeling.nolayer.Problem;
+
+public class MispModel implements Model&lt;MispState&gt; {
+
+    private final MispProblem problem;
+    private final FastLowerBound&lt;MispState&gt; lowerBound;
+
+<span class="fc" id="L12">    public MispModel(MispProblem problem) {</span>
+<span class="fc" id="L13">        this.problem = problem;</span>
+<span class="fc" id="L14">        this.lowerBound = state -&gt; {</span>
+<span class="nc" id="L15">            double lb = 0;</span>
+<span class="nc" id="L16">            int n = state.remainingNodes().nextSetBit(0);</span>
+<span class="nc bnc" id="L17" title="All 2 branches missed.">            while (n &gt;= 0) {</span>
+<span class="nc" id="L18">                lb += -problem.weight[n];</span>
+<span class="nc" id="L19">                n = state.remainingNodes().nextSetBit(n + 1);</span>
+            }
+<span class="nc" id="L21">            return lb;</span>
+        };
+<span class="fc" id="L23">    }</span>
+
+    @Override
+    public Problem&lt;MispState&gt; problem() {
+<span class="fc" id="L27">        return problem;</span>
+    }
+
+    @Override
+    public FastLowerBound&lt;MispState&gt; lowerBound() {
+<span class="nc" id="L32">        return lowerBound;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

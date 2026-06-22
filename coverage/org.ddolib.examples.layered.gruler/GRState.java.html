@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GRState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.gruler</a> &gt; <span class="el_source">GRState.java</span></div><h1>GRState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.gruler;
+
+
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Objects;
+
+/**
+ * Represents a state in the Golomb Ruler (GR) problem.
+ * &lt;p&gt;
+ * A state is defined by:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;The set of marks already placed on the ruler ({@code marks}).&lt;/li&gt;
+ *     &lt;li&gt;The set of pairwise distances between existing marks ({@code distances}).&lt;/li&gt;
+ *     &lt;li&gt;The position of the last placed mark ({@code lastMark}).&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;
+ * This class is used by search-based algorithms such as DDO (Decision Diagram Optimization),
+ * A*, or Anytime Column Search to represent a partial configuration of the Golomb ruler.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;pre&gt;{@code
+ * BitSet marks = new BitSet();
+ * marks.set(0);
+ * marks.set(3);
+ * BitSet distances = new BitSet();
+ * distances.set(3);
+ * GRState state = new GRState(marks, distances, 3);
+ * System.out.println(state);
+ * // Output: ([0, 3] , [3] , 3)
+ * }&lt;/pre&gt;
+ *
+ * @see GRProblem
+ * @see GRRelax
+ * @see GRRanking
+ */
+public class GRState {
+    /**
+     * Set of marks already placed on the ruler.
+     */
+    private BitSet marks;
+    /**
+     * Set of pairwise distances already covered by the placed marks.
+     */
+    private BitSet distances;
+    /**
+     * The position of the last placed mark on the ruler.
+     */
+    private int lastMark;
+
+    /**
+     * Constructs a new {@link GRState} from given sets of marks and distances.
+     * &lt;p&gt;
+     * Defensive copies of the bitsets are made to ensure immutability of the internal state.
+     * &lt;/p&gt;
+     *
+     * @param marks     the set of marks already placed.
+     * @param distances the set of pairwise distances already covered.
+     * @param lastMark  the position of the last placed mark.
+     */
+<span class="fc" id="L64">    public GRState(BitSet marks, BitSet distances, int lastMark) {</span>
+<span class="fc" id="L65">        this.marks = (BitSet) marks.clone();</span>
+<span class="fc" id="L66">        this.distances = (BitSet) distances.clone();</span>
+<span class="fc" id="L67">        this.lastMark = lastMark;</span>
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Returns the set of marks already placed.
+     *
+     * @return a {@link BitSet} representing the placed marks.
+     */
+    public BitSet getMarks() {
+<span class="fc" id="L76">        return marks;</span>
+    }
+
+    /**
+     * Returns the set of pairwise distances already covered.
+     *
+     * @return a {@link BitSet} representing existing distances.
+     */
+    public BitSet getDistances() {
+<span class="fc" id="L85">        return distances;</span>
+    }
+
+    /**
+     * Returns the number of marks currently placed.
+     *
+     * @return the number of marks in this state.
+     */
+    public int getNumberOfMarks() {
+<span class="nc" id="L94">        return marks.cardinality();</span>
+    }
+
+    /**
+     * Returns the position of the last placed mark.
+     *
+     * @return the position (integer value) of the last mark.
+     */
+    public int getLastMark() {
+<span class="fc" id="L103">        return lastMark;</span>
+    }
+
+    /**
+     * Creates and returns a deep copy of this state.
+     *
+     * @return a new {@link GRState} identical to the current one.
+     */
+    public GRState copy() {
+<span class="fc" id="L112">        return new GRState(marks, distances, lastMark);</span>
+    }
+
+    /**
+     * Computes the hash code for this state based on marks, distances, and the last mark.
+     *
+     * @return the hash code of this state.
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L122">        return Objects.hash(marks, distances, lastMark);</span>
+    }
+
+    /**
+     * Compares this state to another for equality.
+     * Two states are equal if they have identical marks, identical distances,
+     * and the same last mark position.
+     *
+     * @param obj the object to compare to.
+     * @return {@code true} if the states are identical; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        if (obj instanceof GRState other) {</span>
+<span class="pc bpc" id="L136" title="2 of 6 branches missed.">            return this.marks.equals(other.marks) &amp;&amp; this.distances.equals(other.distances) &amp;&amp; this.lastMark == other.lastMark;</span>
+        }
+<span class="nc" id="L138">        return false;</span>
+    }
+
+    /**
+     * Returns a human-readable string representation of this state.
+     * &lt;p&gt;
+     * The output includes the list of marks, distances, and the last mark position.
+     * &lt;/p&gt;
+     *
+     * @return a string describing this state.
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L151">        return &quot;(&quot; + Arrays.toString(marks.stream().toArray()) + &quot; , &quot; + Arrays.toString(distances.stream().toArray()) + &quot; , &quot; + lastMark + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

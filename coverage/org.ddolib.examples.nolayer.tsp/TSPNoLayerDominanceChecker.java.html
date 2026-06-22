@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPNoLayerDominanceChecker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsp</a> &gt; <span class="el_source">TSPNoLayerDominanceChecker.java</span></div><h1>TSPNoLayerDominanceChecker.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsp;
+
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="fc" id="L11">public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;TSPState&gt; {</span>
+
+    private static class Entry {
+        BitSet current;
+        BitSet toVisit;
+        double value;
+
+<span class="fc" id="L18">        Entry(BitSet current, BitSet toVisit, double value) {</span>
+<span class="fc" id="L19">            this.current = (BitSet) current.clone();</span>
+<span class="fc" id="L20">            this.toVisit = (BitSet) toVisit.clone();</span>
+<span class="fc" id="L21">            this.value = value;</span>
+<span class="fc" id="L22">        }</span>
+    }
+
+<span class="fc" id="L25">    private final Map&lt;Integer, List&lt;Entry&gt;&gt; entriesByCardinality = new HashMap&lt;&gt;();</span>
+
+    @Override
+    public boolean updateDominance(TSPState state, double value) {
+<span class="fc" id="L29">        int card = state.toVisit.cardinality();</span>
+
+        // state is dominated if there's an entry with:
+        // entry.value &lt;= value
+        // entry.current == state.current
+        // entry.toVisit is subset of state.toVisit
+<span class="fc" id="L35">            List&lt;Entry&gt; entries = entriesByCardinality.get(card);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            if (entries != null) {</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">                for (Entry entry : entries) {</span>
+<span class="nc bnc" id="L38" title="All 6 branches missed.">                    if (entry.value &lt;= value &amp;&amp; entry.current.equals(state.current) &amp;&amp; entry.toVisit.equals(state.toVisit)) {</span>
+<span class="nc" id="L39">                        return true;</span>
+                    }
+<span class="nc" id="L41">                }</span>
+            }
+
+        // Add state to entries
+<span class="fc" id="L45">        entriesByCardinality.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;())</span>
+<span class="fc" id="L46">                .add(new Entry(state.current, state.toVisit, value));</span>
+                
+<span class="fc" id="L48">        List&lt;Entry&gt; entriesToRemove = entriesByCardinality.get(card);</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (entriesToRemove != null) {</span>
+<span class="pc bpc" id="L50" title="3 of 6 branches missed.">            entriesToRemove.removeIf(entry -&gt; value &lt;= entry.value &amp;&amp; entry.current.equals(state.current) &amp;&amp; entry.toVisit.equals(state.toVisit));</span>
+        }
+
+<span class="fc" id="L53">        return false;</span>
+    }
+
+    @Override
+    public void clear() {
+<span class="fc" id="L58">        entriesByCardinality.clear();</span>
+<span class="fc" id="L59">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

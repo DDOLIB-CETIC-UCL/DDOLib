@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSDominance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSDominance.java</span></div><h1>KSDominance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
+
+import org.ddolib.modeling.layered.Dominance;
+/**
+ * Dominance relation for the Knapsack Problem (KS).
+ * &lt;p&gt;
+ * This dominance checker is used to prune the search space in a decision diagram or
+ * other solver by identifying states that are dominated and can therefore be discarded.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * In this implementation:
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ *     &lt;li&gt;{@link #getKey(Integer)} always returns 0, indicating a single dominance key for all states.&lt;/li&gt;
+ *     &lt;li&gt;{@link #isDominatedOrEqual(Integer, Integer)} considers a state {@code capa1} dominated
+ *     by {@code capa2} if {@code capa1 &lt;= capa2}, i.e., a knapsack state with less or equal remaining capacity
+ *     is dominated by one with more remaining capacity.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+<span class="fc" id="L20">public class KSDominance implements Dominance&lt;Integer&gt; {</span>
+    /**
+     * Returns the key used for grouping states in the dominance checker.
+     *
+     * @param capa the current state (remaining capacity)
+     * @return 0, indicating a single key for all states
+     */
+    @Override
+    public Integer getKey(Integer capa) {
+<span class="fc" id="L29">        return 0;</span>
+    }
+    /**
+     * Checks whether one state is dominated by another.
+     *
+     * @param capa1 the first state (remaining capacity)
+     * @param capa2 the second state (remaining capacity)
+     * @return {@code true} if {@code capa1 &lt;= capa2}, otherwise {@code false}
+     */
+    @Override
+    public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        return capa1 &lt;= capa2;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

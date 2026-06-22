@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pdp</a> &gt; <span class="el_source">PDPRanking.java</span></div><h1>PDPRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pdp;
+
+import org.ddolib.modeling.layered.StateRanking;
+/**
+ * Implements a state ranking strategy for the Pickup and Delivery Problem (PDP).
+ * &lt;p&gt;
+ * This ranking is used to order states during search algorithms, such as DDO or ACS,
+ * to prioritize exploration of certain states over others.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * Currently, all states are considered equal in rank (compare always returns 0).
+ * The commented-out line hints at a possible ranking based on the uncertainty
+ * of the vehicle's content, where states with more uncertain content could be
+ * ranked differently.
+ * &lt;/p&gt;
+ *
+ * &lt;p&gt;
+ * This class implements the {@link StateRanking} interface, which allows it
+ * to be plugged into search models for PDP optimization.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L23">public class PDPRanking implements StateRanking&lt;PDPState&gt; {</span>
+    /**
+     * Compares two PDP states to determine their relative rank.
+     *
+     * @param o1 the first PDPState to compare
+     * @param o2 the second PDPState to compare
+     * @return 0 indicating both states are currently considered of equal rank
+     */
+    @Override
+    public int compare(final PDPState o1, final PDPState o2){
+        //children of merged are good candidates for merged as well
+        //there are the one with imprecise min and maxContent
+<span class="fc" id="L35">        return 0; //Integer.compare(o1.uncertaintyOnContent(), o2.uncertaintyOnContent());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsp</a> &gt; <span class="el_source">TSPState.java</span></div><h1>TSPState.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsp;
+
+import java.util.BitSet;
+import java.util.Objects;
+
+/**
+ * Represents a state in the Traveling Salesman Problem (TSP) for nolayer models.
+ */
+public class TSPState {
+    /**
+     * Set of nodes that have not been visited yet.
+     */
+    public BitSet toVisit;
+
+    /**
+     * Current node(s). Usually a singleton, but can be multiple in merged states.
+     */
+    public BitSet current;
+
+    /**
+     * Constructs a new TSPState.
+     *
+     * @param current the current node(s)
+     * @param toVisit the nodes that have not yet been visited
+     */
+<span class="fc" id="L26">    public TSPState(BitSet current, BitSet toVisit) {</span>
+<span class="fc" id="L27">        this.toVisit = toVisit;</span>
+<span class="fc" id="L28">        this.current = current;</span>
+<span class="fc" id="L29">    }</span>
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L33">        return Objects.hash(toVisit, current);</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (this == obj) return true;</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (!(obj instanceof TSPState)) return false;</span>
+<span class="fc" id="L40">        TSPState that = (TSPState) obj;</span>
+<span class="fc bfc" id="L41" title="All 4 branches covered.">        return (this.current.equals(that.current)) &amp;&amp; this.toVisit.equals(that.toVisit);</span>
+    }
+
+    /**
+     * Creates a BitSet containing only the specified singleton value.
+     *
+     * @param singletonValue the value to set
+     * @return a BitSet with a single bit set
+     */
+    public BitSet singleton(int singletonValue) {
+<span class="nc" id="L51">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="nc" id="L52">        toReturn.set(singletonValue);</span>
+<span class="nc" id="L53">        return toReturn;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (current.cardinality() != 1) {</span>
+<span class="nc" id="L59">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+        } else {
+<span class="nc" id="L61">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
