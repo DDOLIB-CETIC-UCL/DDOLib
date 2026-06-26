@@ -173,10 +173,11 @@ public class BKSProblem implements Problem<Integer> {
      *
      * @param state    the current remaining capacity
      * @param decision the decision specifying which item and how many copies to include
+     * @param newState
      * @return the negative profit of the chosen items
      */
     @Override
-    public double transitionCost(Integer state, Decision decision) {
+    public double transitionCost(Integer state, Decision decision, Integer newState) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return -values[decision.var()] * decision.val();
     }

@@ -343,7 +343,7 @@ public class ALPProblem implements Problem<ALPState> {
     }
 
     @Override
-    public double transitionCost(ALPState state, Decision decision) {
+    public double transitionCost(ALPState state, Decision decision, ALPState newState) {
         // The delta between the arrival time and the earliest arrival time.
         if (decision.val() == DUMMY) {
             return 0;

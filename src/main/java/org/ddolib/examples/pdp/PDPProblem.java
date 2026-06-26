@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
  *     <li>Number of variables {@link #nbVars()}</li>
  *     <li>Initial state {@link #initialState()}</li>
  *     <li>Transition function {@link #transition(PDPState, Decision)}</li>
- *     <li>Transition cost {@link #transitionCost(PDPState, Decision)}</li>
+ *     <li>Transition cost {@link Problem#transitionCost(Object, Decision, Object)}</li>
  *     <li>Domain of possible decisions {@link #domain(PDPState, int)}</li>
  * </ul>
  *
@@ -306,10 +306,11 @@ public class PDPProblem implements Problem<PDPState> {
      *
      * @param state    current {@link PDPState}
      * @param decision the {@link Decision} made
+     * @param newState
      * @return cost of the transition
      */
     @Override
-    public double transitionCost(PDPState state, Decision decision) {
+    public double transitionCost(PDPState state, Decision decision, PDPState newState) {
         return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])

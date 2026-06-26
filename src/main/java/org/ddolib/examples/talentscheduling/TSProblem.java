@@ -211,7 +211,7 @@ public class TSProblem implements Problem<TSState> {
     }
 
     @Override
-    public double transitionCost(TSState state, Decision decision) {
+    public double transitionCost(TSState state, Decision decision, TSState newState) {
         int scene = decision.val();
 
         // All the already present actors (playing for this scene or waiting)

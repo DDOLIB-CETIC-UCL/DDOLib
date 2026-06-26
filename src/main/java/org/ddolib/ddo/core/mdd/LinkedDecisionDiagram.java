@@ -9,7 +9,6 @@ import org.ddolib.ddo.core.compilation.CompilationConfig;
 import org.ddolib.ddo.core.compilation.CompilationType;
 import org.ddolib.ddo.core.frontier.CutSetType;
 import org.ddolib.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.modeling.FastLowerBound;
 import org.ddolib.modeling.Problem;
@@ -482,7 +481,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             states.addLast(msg);
             depth++;
             msg = String.format("%-20s - ", depth + ". cost: " + problem.transitionCost(current,
-                    pathInfo.decision));
+                    pathInfo.decision, null));
             current = problem.transition(current, pathInfo.decision);
 
 
@@ -682,7 +681,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 cost = relaxedCost.get();
                 current = relaxedState.get();
             } else {
-                cost = config.problem.transitionCost(current, decision);
+                cost = config.problem.transitionCost(current, decision, null);
                 current = config.problem.transition(current, decision);
             }
 
@@ -807,7 +806,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             DebugUtil.checkHashCodeAndEquality(node.state, decision, problem::transition);
 
         T state = problem.transition(node.state, decision);
-        double cost = problem.transitionCost(node.state, decision);
+        double cost = problem.transitionCost(node.state, decision, state );
         double value = saturatedAdd(node.node.value, cost);
 
         // when the origin is relaxed, the destination must be relaxed

@@ -249,10 +249,11 @@ public class MSCTProblem implements Problem<MSCTState> {
      *
      * @param state    the current scheduling state.
      * @param decision the decision representing the next job to schedule.
+     * @param newState
      * @return the completion time of the selected job.
      */
     @Override
-    public double transitionCost(MSCTState state, Decision decision) {
+    public double transitionCost(MSCTState state, Decision decision, MSCTState newState) {
         return Math.max(state.currentTime(), release[decision.val()]) + processing[decision.val()];
     }
 

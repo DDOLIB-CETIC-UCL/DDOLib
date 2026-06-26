@@ -1,11 +1,9 @@
 package org.ddolib.examples.maximumcoverage;
 
 import org.ddolib.ddo.core.Decision;
-import org.ddolib.examples.smic.SMICState;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.Problem;
 
-import javax.xml.XMLConstants;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -321,12 +319,13 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
      * <p>
      * Cost is defined as the negative number of newly covered items.
      *
-     * @param state the current state
+     * @param state    the current state
      * @param decision the decision to apply
+     * @param newState
      * @return the transition cost
      */
     @Override
-    public double transitionCost(MaxCoverState state, Decision decision) {
+    public double transitionCost(MaxCoverState state, Decision decision, MaxCoverState newState) {
         int val = decision.val();
         if (val == -1)
             return 0;

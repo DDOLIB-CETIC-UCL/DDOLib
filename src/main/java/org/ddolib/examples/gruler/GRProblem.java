@@ -176,10 +176,11 @@ public class GRProblem implements Problem<GRState> {
      *
      * @param state    the current state.
      * @param decision the decision leading to the next mark placement.
+     * @param newState
      * @return the incremental cost, equal to {@code decision.val() - state.getLastMark()}.
      */
     @Override
-    public double transitionCost(GRState state, Decision decision) {
+    public double transitionCost(GRState state, Decision decision, GRState newState) {
         return decision.val() - state.getLastMark();
     }
 

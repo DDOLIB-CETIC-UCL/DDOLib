@@ -64,9 +64,10 @@ public interface Problem<T> {
      *
      * @param state    the state from which the transition originates
      * @param decision the decision to apply
+     * @param newState
      * @return the incremental objective cost/value associated with this decision
      */
-    double transitionCost(final T state, final Decision decision);
+    double transitionCost(final T state, final Decision decision, T newState);
 
     /**
      * Returns the known optimal value of the problem, if available.

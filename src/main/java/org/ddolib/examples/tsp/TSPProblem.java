@@ -250,10 +250,11 @@ public class TSPProblem implements Problem<TSPState> {
      *
      * @param state    the current TSPState
      * @param decision the decision to move to a node
+     * @param newState
      * @return the cost of the transition
      */
     @Override
-    public double transitionCost(TSPState state, Decision decision) {
+    public double transitionCost(TSPState state, Decision decision, TSPState newState) {
         return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.val())
                 .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.val()])

@@ -333,10 +333,11 @@ public class SMICProblem implements Problem<SMICState> {
      *
      * @param state    the current state
      * @param decision the decision (job) being scheduled
+     * @param newState
      * @return the cost of performing the transition
      */
     @Override
-    public double transitionCost(SMICState state, Decision decision) {
+    public double transitionCost(SMICState state, Decision decision, SMICState newState) {
         return Math.max(release[decision.val()] - state.currentTime(), 0) + processing[decision.val()];
     }
 

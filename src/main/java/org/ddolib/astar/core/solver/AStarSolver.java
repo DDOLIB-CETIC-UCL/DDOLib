@@ -257,7 +257,7 @@ public final class AStarSolver<T> implements Solver {
             if(newState==null){
                 continue;
             }
-            double cost = problem.transitionCost(state, decision);
+            double cost = problem.transitionCost(state, decision, newState);
             double value = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);

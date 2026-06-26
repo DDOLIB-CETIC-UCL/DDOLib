@@ -187,7 +187,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
-    public double transitionCost(TSPTWState state, Decision decision) {
+    public double transitionCost(TSPTWState state, Decision decision, TSPTWState newState) {
         int to = decision.val();
 
         int travel = minDuration(state, to);

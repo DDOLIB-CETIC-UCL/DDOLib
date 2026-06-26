@@ -198,7 +198,7 @@ public class MispProblem implements Problem<BitSet> {
     }
 
     @Override
-    public double transitionCost(BitSet state, Decision decision) {
+    public double transitionCost(BitSet state, Decision decision, BitSet newState) {
         return -weight[decision.var()] * decision.val();
     }
 

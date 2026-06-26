@@ -243,12 +243,13 @@ public class MKSProblem implements Problem<MKSState> {
      * <p>
      * The cost is equal to the negative profit if the item is taken, or 0 otherwise.
      *
-     * @param state the current MKS state
+     * @param state    the current MKS state
      * @param decision the decision applied
+     * @param newState
      * @return the transition cost
      */
     @Override
-    public double transitionCost(MKSState state, Decision decision) {
+    public double transitionCost(MKSState state, Decision decision, MKSState newState) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return -profit[decision.var()] * decision.val();
     }

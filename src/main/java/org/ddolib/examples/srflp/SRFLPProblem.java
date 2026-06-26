@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * <ul>
  *     <li>Access the number of departments ({@link #nbVars()})</li>
  *     <li>Get the initial state of the problem ({@link #initialState()})</li>
- *     <li>Compute the cost of transitions ({@link #transitionCost(SRFLPState, Decision)})</li>
+ *     <li>Compute the cost of transitions ({@link Problem#transitionCost(Object, Decision, Object)})</li>
  *     <li>Compute the next state after a decision ({@link #transition(SRFLPState, Decision)})</li>
  *     <li>Provide the domain of selectable departments for a given state ({@link #domain(SRFLPState, int)})</li>
  *     <li>Optionally return the known optimal value ({@link #optimalValue()})</li>
@@ -225,7 +225,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     }
 
     @Override
-    public double transitionCost(SRFLPState state, Decision decision) {
+    public double transitionCost(SRFLPState state, Decision decision, SRFLPState newState) {
         int cut = 0;
         int complete = nbVars() - (state.depth() + 1);
         for (int i = state.must().nextSetBit(0); i >= 0; i = state.must().nextSetBit(i + 1)) {

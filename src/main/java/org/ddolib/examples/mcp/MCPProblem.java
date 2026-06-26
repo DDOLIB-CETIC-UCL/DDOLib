@@ -187,7 +187,7 @@ public class MCPProblem implements Problem<MCPState> {
     }
 
     @Override
-    public double transitionCost(MCPState state, Decision decision) {
+    public double transitionCost(MCPState state, Decision decision, MCPState newState) {
         if (state.depth() == 0) return 0;
         else if (decision.val() == S) return -branchOnS(state, decision.var());
         else return -branchOnT(state, decision.var());

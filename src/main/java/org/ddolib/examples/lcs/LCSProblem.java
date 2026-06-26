@@ -336,10 +336,11 @@ public class LCSProblem implements Problem<LCSState> {
      *
      * @param state    The current LCS state.
      * @param decision The decision applied.
+     * @param newState
      * @return The cost associated with the transition.
      */
     @Override
-    public double transitionCost(LCSState state, Decision decision) {
+    public double transitionCost(LCSState state, Decision decision, LCSState newState) {
         if (decision.val() == GO_TO_END_OF_STRINGS) return 0;
         return -1;
     }

@@ -329,10 +329,11 @@ public class PSProblem implements Problem<PSState> {
      *
      * @param state    the current state
      * @param decision the production decision (item or idle)
+     * @param newState
      * @return the transition cost incurred by the decision
      */
     @Override
-    public double transitionCost(PSState state, Decision decision) {
+    public double transitionCost(PSState state, Decision decision, PSState newState) {
         int item = decision.val();
         if (item == IDLE) {
             return 0;

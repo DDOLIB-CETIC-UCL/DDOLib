@@ -181,7 +181,7 @@ public class KSProblem implements Problem<Integer> {
     }
 
     @Override
-    public double transitionCost(Integer state, Decision decision) {
+    public double transitionCost(Integer state, Decision decision, Integer newState) {
         // If the item is taken (1) the cost is the profit of the item, 0 otherwise
         return -profit[decision.var()] * decision.val();
     }

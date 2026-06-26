@@ -205,7 +205,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     }
 
     @Override
-    public double transitionCost(Max2SatState state, Decision decision) {
+    public double transitionCost(Max2SatState state, Decision decision, Max2SatState newState) {
 
         int k = decision.var();
         int toReturn;

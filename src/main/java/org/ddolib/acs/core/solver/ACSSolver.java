@@ -347,7 +347,7 @@ public final class ACSSolver<T> implements Solver {
             if(newState==null){
                 continue;
             }
-            double cost = problem.transitionCost(state, decision);
+            double cost = problem.transitionCost(state, decision, newState);
             if (cost < 0) {
                 negativeTransitionCosts = true;
             }
