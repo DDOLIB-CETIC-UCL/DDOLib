@@ -37,7 +37,7 @@ import java.util.Optional;
  * @see Threshold
  * @see SimpleCache
  * @see SubProblem
- * @see Problem
+ * @see org.ddolib.modeling.layered.Problem
  */
 
 public interface Cache<T> {

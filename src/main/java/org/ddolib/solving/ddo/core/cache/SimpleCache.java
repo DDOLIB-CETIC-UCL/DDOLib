@@ -33,7 +33,6 @@ public class SimpleCache<T> implements Cache<T> {
      * Initializes the cache based on the number of variables of the problem.
      * Creates a layer for each variable (depth).
      *
-     * @param problem the problem for which the cache is initialized
      */
     @Override
     public void initialize() {
@@ -106,7 +105,7 @@ public class SimpleCache<T> implements Cache<T> {
     /**
      * Clears all layers of the cache up to the given number of variables.
      *
-     * @param nbVariables number of layers to clear
+     * @param depth number of layers to clear
      */
     @Override
     public void clear(int depth) {
@@ -124,7 +123,7 @@ public class SimpleCache<T> implements Cache<T> {
         int nbTests = 0;
         int nbHits = 0;
         int size = 0;
-        for (Layer l : thresholdsByLayer) {
+        for (Layer<T> l : thresholdsByLayer) {
             nbHits += l.nbHits;
             nbTests += l.nbTests;
             size += l.map.size();
