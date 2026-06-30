@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.LnsModel;
 import org.ddolib.modeling.layered.Problem;
 import org.ddolib.modeling.layered.Solvers;

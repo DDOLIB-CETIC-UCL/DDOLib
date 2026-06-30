@@ -3,7 +3,7 @@ package org.ddolib.modeling.layered;
 import org.ddolib.solving.acs.core.solver.layered.AcsSolver;
 import org.ddolib.solving.astar.core.solver.layered.AStarSolver;
 import org.ddolib.solving.awastar.core.solver.layered.AwAstarSolver;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.solver.layered.ExactSolver;
 import org.ddolib.solving.ddo.core.solver.layered.RelaxationSolver;

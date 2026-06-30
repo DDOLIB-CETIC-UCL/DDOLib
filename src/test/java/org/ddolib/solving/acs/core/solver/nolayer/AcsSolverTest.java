@@ -1,7 +1,6 @@
 package org.ddolib.solving.acs.core.solver.nolayer;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.examples.nolayer.gruler.GRProblem;
@@ -12,7 +11,6 @@ import org.ddolib.examples.nolayer.knapsack.KSState;
 import org.ddolib.examples.nolayer.tsp.TSPModel;
 import org.ddolib.examples.nolayer.tsp.TSPProblem;
 import org.ddolib.examples.nolayer.tsp.TSPState;
-import org.ddolib.modeling.nolayer.Solvers;
 import org.ddolib.modeling.nolayer.AcsModel;
 import org.ddolib.modeling.nolayer.FastLowerBound;
 import org.ddolib.modeling.nolayer.Problem;

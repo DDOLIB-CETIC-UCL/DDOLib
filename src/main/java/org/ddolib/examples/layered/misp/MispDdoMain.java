@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.misp;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.DdoModel;
 import org.ddolib.modeling.layered.Problem;
 import org.ddolib.modeling.layered.Solvers;

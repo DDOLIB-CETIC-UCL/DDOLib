@@ -1,6 +1,6 @@
 package org.ddolib.astar.core.solver;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.examples.layered.tsp.TSPGenerator;
 import org.ddolib.examples.nolayer.tsp.TSPState;
 import org.ddolib.examples.nolayer.tsp.TSPModel;
@@ -28,13 +28,15 @@ public class TSPNoLayerAStarSolverTest {
             public org.ddolib.modeling.layered.Problem<org.ddolib.examples.layered.tsp.TSPState> problem() {
                 return layeredProblem;
             }
+
             @Override
             public org.ddolib.modeling.layered.FastLowerBound<org.ddolib.examples.layered.tsp.TSPState> lowerBound() {
                 return new org.ddolib.examples.layered.tsp.TSPFastLowerBound(layeredProblem);
             }
         };
         org.ddolib.solving.astar.core.solver.layered.AStarSolver<org.ddolib.examples.layered.tsp.TSPState> layeredSolver = new org.ddolib.solving.astar.core.solver.layered.AStarSolver<>(layeredModel);
-        layeredSolver.minimize(stats -> false, (sol, stats) -> {});
+        layeredSolver.minimize(stats -> false, (sol, stats) -> {
+        });
         double expectedOptimal = layeredSolver.bestValue().orElseThrow();
 
         // Solve with the new NoLayer API
@@ -42,14 +44,15 @@ public class TSPNoLayerAStarSolverTest {
         Model<TSPState> noLayerModel = new TSPModel(noLayerProblem);
 
         org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<TSPState> noLayerSolver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(noLayerModel);
-        
+
         Solution solution = noLayerSolver.minimize(
                 stats -> false,
-                (sol, stats) -> {}
+                (sol, stats) -> {
+                }
         );
 
         Optional<Double> noLayerOptimal = noLayerSolver.bestValue();
-        
+
         assertTrue(noLayerOptimal.isPresent(), "Solver should find a solution");
         assertEquals(expectedOptimal, noLayerOptimal.get(), 1e-6, "NoLayer solver should find the same optimal value");
     }

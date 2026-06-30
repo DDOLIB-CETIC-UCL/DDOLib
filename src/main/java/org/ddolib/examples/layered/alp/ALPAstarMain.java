@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.InvalidSolutionException;
 import org.ddolib.modeling.layered.Model;
 import org.ddolib.modeling.layered.Solvers;

@@ -1,7 +1,7 @@
 package org.ddolib.solving.lns.core.solver.layered;
 
-import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.common.solver.layered.Solver;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.AcsModel;
 import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;

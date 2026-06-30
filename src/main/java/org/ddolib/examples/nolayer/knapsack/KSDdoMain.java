@@ -1,15 +1,11 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.Decision;
-import java.util.Comparator;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.nolayer.DdoModel;
 import org.ddolib.modeling.nolayer.Relaxation;
@@ -44,7 +40,7 @@ public class KSDdoMain {
                             KSState s = it.next();
                             maxCapacity = Math.max(maxCapacity, s.remainingCapacity()); // Relax by taking max capacity
                             currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem to
-                                                                                  // overapproximate
+                            // overapproximate
                         }
                         return new KSState(currentItem, maxCapacity);
                     }
@@ -65,16 +61,6 @@ public class KSDdoMain {
             @Override
             public NoLayerDominanceChecker<KSState> dominance() {
                 return new NoLayerDominanceChecker<KSState>() {
-                    class ValueState implements Comparable<ValueState> {
-                        final KSState state;
-                        final double value;
-                        ValueState(KSState state, double value) { this.state = state; this.value = value; }
-                        @Override
-                        public int compareTo(ValueState o) {
-                            if (this.value != o.value) return Double.compare(this.value, o.value);
-                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
-                        }
-                    }
                     private final java.util.Map<Integer, java.util.TreeSet<ValueState>> bestStates = new java.util.HashMap<>();
 
                     @Override
@@ -86,7 +72,7 @@ public class KSDdoMain {
                         if (floor != null && floor.state.remainingCapacity() >= state.remainingCapacity() && floor.value <= value) {
                             return true; // Dominated!
                         }
-                        
+
                         java.util.Iterator<ValueState> iterator = set.tailSet(vs).iterator();
                         while (iterator.hasNext()) {
                             ValueState higher = iterator.next();
@@ -103,6 +89,22 @@ public class KSDdoMain {
                     @Override
                     public void clear() {
                         bestStates.clear();
+                    }
+
+                    class ValueState implements Comparable<ValueState> {
+                        final KSState state;
+                        final double value;
+
+                        ValueState(KSState state, double value) {
+                            this.state = state;
+                            this.value = value;
+                        }
+
+                        @Override
+                        public int compareTo(ValueState o) {
+                            if (this.value != o.value) return Double.compare(this.value, o.value);
+                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
+                        }
                     }
                 };
             }

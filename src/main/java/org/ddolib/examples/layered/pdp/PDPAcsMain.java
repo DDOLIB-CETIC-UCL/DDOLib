@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.AcsModel;
 import org.ddolib.modeling.layered.Problem;
 import org.ddolib.modeling.layered.Solvers;

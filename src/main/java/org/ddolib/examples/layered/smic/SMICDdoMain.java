@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
 import org.ddolib.solving.ddo.core.frontier.Frontier;
 import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
@@ -68,7 +68,7 @@ public class SMICDdoMain {
      * @throws IOException if an error occurs while reading the instance file.
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data","SMIC","example.txt").toString() : args[0];
+        final String instance = args.length == 0 ? Path.of("data", "SMIC", "example.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
         DdoModel<SMICState> model = new DdoModel<>() {
             @Override
@@ -107,7 +107,9 @@ public class SMICDdoMain {
             }
 
             @Override
-            public boolean exportDot() {return true;}
+            public boolean exportDot() {
+                return true;
+            }
 
             @Override
             public WidthHeuristic<SMICState> widthHeuristic() {

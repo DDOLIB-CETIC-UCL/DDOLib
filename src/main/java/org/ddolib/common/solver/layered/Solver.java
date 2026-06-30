@@ -1,4 +1,4 @@
-package org.ddolib.common.solver;
+package org.ddolib.common.solver.layered;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.Decision;
@@ -65,7 +65,7 @@ public interface Solver {
             if (d.variable() > maxVar) maxVar = d.variable();
         }
         if (maxVar == -1) return new int[0];
-        
+
         int[] toReturn = new int[maxVar + 1];
         for (Decision d : decisions) {
             toReturn[d.variable()] = d.value();

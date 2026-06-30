@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.smic;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.modeling.layered.LnsModel;

@@ -1,7 +1,6 @@
 package org.ddolib.solving.ddo.core.solver.nolayer;
 
-import org.ddolib.common.solver.Solution;
-import org.ddolib.examples.nolayer.knapsack.KSDdoMain;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.examples.nolayer.knapsack.KSProblem;
 import org.ddolib.examples.nolayer.knapsack.KSState;
 import org.ddolib.examples.nolayer.knapsack.KSModel;
@@ -15,7 +14,6 @@ import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -35,24 +33,34 @@ public class DdoSolverTest {
         org.ddolib.examples.layered.knapsack.KSProblem layeredProblem = new org.ddolib.examples.layered.knapsack.KSProblem(capacity, profits, weights);
         org.ddolib.modeling.layered.Model<Integer> layeredModel = new org.ddolib.modeling.layered.Model<Integer>() {
             @Override
-            public org.ddolib.modeling.layered.Problem<Integer> problem() { return layeredProblem; }
+            public org.ddolib.modeling.layered.Problem<Integer> problem() {
+                return layeredProblem;
+            }
+
             @Override
-            public org.ddolib.modeling.layered.FastLowerBound<Integer> lowerBound() { return new org.ddolib.examples.layered.knapsack.KSFastLowerBound(layeredProblem); }
+            public org.ddolib.modeling.layered.FastLowerBound<Integer> lowerBound() {
+                return new org.ddolib.examples.layered.knapsack.KSFastLowerBound(layeredProblem);
+            }
         };
         org.ddolib.solving.astar.core.solver.layered.AStarSolver<Integer> layeredSolver = new org.ddolib.solving.astar.core.solver.layered.AStarSolver<>(layeredModel);
-        layeredSolver.minimize(stats -> false, (sol, stats) -> {});
+        layeredSolver.minimize(stats -> false, (sol, stats) -> {
+        });
         double expectedOptimal = layeredSolver.bestValue().orElseThrow();
 
         // Solve with new NoLayer API
         KSProblem noLayerProblem = new KSProblem(profits, weights, capacity);
         DdoModel<KSState> noLayerModel = new DdoModel<KSState>() {
             KSModel base = new KSModel(noLayerProblem);
-            
-            @Override
-            public org.ddolib.modeling.nolayer.Problem<KSState> problem() { return base.problem(); }
 
             @Override
-            public org.ddolib.modeling.nolayer.FastLowerBound<KSState> lowerBound() { return base.lowerBound(); }
+            public org.ddolib.modeling.nolayer.Problem<KSState> problem() {
+                return base.problem();
+            }
+
+            @Override
+            public org.ddolib.modeling.nolayer.FastLowerBound<KSState> lowerBound() {
+                return base.lowerBound();
+            }
 
             @Override
             public Relaxation<KSState> relaxation() {
@@ -76,29 +84,40 @@ public class DdoSolverTest {
             }
 
             @Override
-            public WidthHeuristic<KSState> widthHeuristic() { return new FixedWidth<>(2); }
+            public WidthHeuristic<KSState> widthHeuristic() {
+                return new FixedWidth<>(2);
+            }
 
             @Override
-            public ReductionStrategy<KSState> relaxStrategy() { return new CostBased<>(ranking()); }
+            public ReductionStrategy<KSState> relaxStrategy() {
+                return new CostBased<>(ranking());
+            }
 
             @Override
-            public ReductionStrategy<KSState> restrictStrategy() { return new CostBased<>(ranking()); }
+            public ReductionStrategy<KSState> restrictStrategy() {
+                return new CostBased<>(ranking());
+            }
 
             @Override
-            public VerbosityLevel verbosityLevel() { return VerbosityLevel.SILENT; }
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
 
             @Override
-            public boolean useCache() { return false; }
+            public boolean useCache() {
+                return false;
+            }
         };
 
         DdoSolver<KSState> noLayerSolver = new DdoSolver<>(noLayerModel);
         Solution solution = noLayerSolver.minimize(
                 stats -> false,
-                (sol, stats) -> {}
+                (sol, stats) -> {
+                }
         );
 
         Optional<Double> noLayerOptimal = noLayerSolver.bestValue();
-        
+
         assertTrue(noLayerOptimal.isPresent(), "Solver should find a solution");
         assertEquals(expectedOptimal, noLayerOptimal.get(), 1e-6, "NoLayer solver should find the same optimal value");
     }

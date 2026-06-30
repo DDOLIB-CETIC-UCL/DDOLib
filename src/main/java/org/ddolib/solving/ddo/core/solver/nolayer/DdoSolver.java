@@ -1,8 +1,8 @@
 package org.ddolib.solving.ddo.core.solver.nolayer;
 
 import org.ddolib.solving.ddo.core.mdd.nolayer.NoLayerDecisionDiagram;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.common.solver.layered.Solver;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -15,7 +15,6 @@ import org.ddolib.solving.ddo.core.mdd.DecisionDiagram;
 import org.ddolib.modeling.nolayer.DdoModel;
 import org.ddolib.modeling.nolayer.Problem;
 import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -27,7 +26,7 @@ public final class DdoSolver<T> implements Solver {
     private final DdoModel<T> model;
     private final Optional<SimpleCache<T>> cache;
     private final VerboseMode verboseMode;
-    
+
     // Using a priority queue for the B&B frontier
     // Lower bound is the primary key
     private final PriorityQueue<SubProblem<T>> frontier;
@@ -42,7 +41,7 @@ public final class DdoSolver<T> implements Solver {
         this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
-        
+
         this.frontier = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::getLowerBound));
     }
 
@@ -54,7 +53,7 @@ public final class DdoSolver<T> implements Solver {
 
         while (!frontier.isEmpty()) {
             SubProblem<T> sub = frontier.poll();
-            
+
             // Check cache before expanding
             if (cache.isPresent() && !cache.get().mustExplore(sub, sub.getDepth())) {
                 continue;
@@ -105,7 +104,7 @@ public final class DdoSolver<T> implements Solver {
             }
 
             if (!relaxedMdd.isExact() && (relaxedMdd.bestValue().isEmpty() || relaxedMdd.bestValue().get() < bestUB)) {
-                
+
                 // 2. RESTRICTION
                 if (model.dominance() != null) model.dominance().clear();
                 NoLayerDecisionDiagram<T> restrictedMdd = new NoLayerDecisionDiagram<>(

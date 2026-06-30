@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
 import org.ddolib.solving.ddo.core.heuristics.cluster.layered.Hybrid;

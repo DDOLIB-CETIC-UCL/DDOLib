@@ -1,8 +1,8 @@
 package org.ddolib.solving.astar.core.solver.nolayer;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.common.solver.layered.Solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -11,7 +11,6 @@ import org.ddolib.modeling.nolayer.FastLowerBound;
 import org.ddolib.modeling.nolayer.Model;
 import org.ddolib.modeling.nolayer.Problem;
 import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -69,7 +68,7 @@ public final class AStarSolver<T> implements Solver {
 
             SubProblem<T> sub = open.poll();
             T state = sub.getState();
-            
+
             if (state != null && dominance.updateDominance(state, sub.getValue())) {
                 continue;
             }
@@ -109,7 +108,7 @@ public final class AStarSolver<T> implements Solver {
             double g = subProblem.getValue() + cost;
             List<Integer> newPath = new ArrayList<>(subProblem.getPath());
             newPath.add(label);
-            
+
             double h = lb.fastLowerBound(newState);
             double f = g + h;
 

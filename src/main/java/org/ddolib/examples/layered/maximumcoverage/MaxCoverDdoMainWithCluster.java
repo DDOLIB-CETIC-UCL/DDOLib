@@ -1,7 +1,6 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.common.solver.Solution;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
 import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
@@ -12,6 +11,7 @@ import org.ddolib.modeling.layered.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
+
 /**
  * Maximum Coverage (MaxCover) problem with Ddo
  * <p>
@@ -54,7 +54,7 @@ public class MaxCoverDdoMainWithCluster {
          * @param args command-line arguments (not used)
          * @throws IOException if an error occurs while loading a problem instance from a file
          */
-        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7,0.1,42);
+        MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7, 0.1, 42);
         // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
 
         // MaxCoverProblem problem = new MaxCoverProblem("src/test/resources/MaxCover/mc_n10_m5_k3_r10_0.txt");
@@ -106,7 +106,7 @@ public class MaxCoverDdoMainWithCluster {
         };
 
         Solution solution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s,sol);
+            SolutionPrinter.printSolution(s, sol);
         });
         System.out.println();
         System.out.println(solution);
