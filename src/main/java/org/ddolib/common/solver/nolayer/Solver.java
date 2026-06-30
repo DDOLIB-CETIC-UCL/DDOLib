@@ -1,6 +1,5 @@
 package org.ddolib.common.solver.nolayer;
 
-import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.Decision;
 
@@ -39,7 +38,7 @@ public interface Solver {
      * @return the statistics of the search after completion
      */
     Solution minimize(Predicate<SearchStatistics> limit,
-                      BiConsumer<int[], SearchStatistics> onSolution);
+                      BiConsumer<List<Integer>, SearchStatistics> onSolution);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one
