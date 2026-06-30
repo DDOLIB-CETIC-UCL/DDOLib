@@ -74,6 +74,11 @@ public class Solution {
         return statistics;
     }
 
+    /**
+     * Returns a readable string for the search time needed to find this solution.
+     *
+     * @return a readable string for the search time needed to find this solution.
+     */
     public String searchTime() {
         return PrettyPrint.formatMs(statistics.runtime());
     }
