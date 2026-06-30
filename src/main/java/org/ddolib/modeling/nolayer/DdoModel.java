@@ -1,14 +1,12 @@
 package org.ddolib.modeling.nolayer;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
+import org.ddolib.common.dominance.NoLayerDominanceChecker;
 import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
+import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
 import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 /**
  * Defines the interface for an unlayered Dynamic Decision Diagram Optimization (DDO) model.
@@ -64,16 +62,16 @@ public interface DdoModel<T> extends Model<T> {
     default boolean useCache() {
         return false;
     }
-    
+
     /**
      * Returns a dominance checker to prune inferior states during compilation.
      *
-     * @return a {@link DominanceChecker} instance
+     * @return a {@link NoLayerDominanceChecker} instance
      */
     default NoLayerDominanceChecker<T> dominance() {
         return new DefaultNoLayerDominanceChecker<>();
     }
-    
+
     /**
      * Indicates whether the generated decision diagram should be exported
      * to a DOT file (Graphviz format).
