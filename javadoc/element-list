@@ -2,6 +2,8 @@ org.ddolib
 org.ddolib.common
 org.ddolib.common.dominance
 org.ddolib.common.solver
+org.ddolib.common.solver.layered
+org.ddolib.common.solver.nolayer
 org.ddolib.common.solver.stat
 org.ddolib.common.solver.stopcriterion
 org.ddolib.examples
@@ -45,6 +47,7 @@ org.ddolib.solving.astar.core.solver.nolayer
 org.ddolib.solving.awastar
 org.ddolib.solving.awastar.core.solver
 org.ddolib.solving.awastar.core.solver.layered
+org.ddolib.solving.awastar.core.solver.nolayer
 org.ddolib.solving.ddo
 org.ddolib.solving.ddo.core
 org.ddolib.solving.ddo.core.cache
