@@ -4,7 +4,7 @@ import org.ddolib.modeling.InvalidSolutionException;
 
 import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
 import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
@@ -125,43 +125,108 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
 
     protected Model<T> wrapModel(Model<T> base, boolean useDominance) {
         return new Model<T>() {
-            @Override public Problem<T> problem() { return base.problem(); }
-            @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }
-            @Override public NoLayerDominanceChecker<T> dominance() {
+            @Override
+            public Problem<T> problem() {
+                return base.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return base.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
                 return useDominance ? base.dominance() : new DefaultNoLayerDominanceChecker<>();
             }
-            @Override public VerbosityLevel verbosityLevel() { return VerbosityLevel.SILENT; }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
         };
     }
 
     protected DdoModel<T> wrapDdoModel(DdoModel<T> base, boolean useDominance, boolean useCache, Integer fixWidth) {
         return new DdoModel<T>() {
-            @Override public Problem<T> problem() { return base.problem(); }
-            @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }
-            @Override public NoLayerDominanceChecker<T> dominance() {
+            @Override
+            public Problem<T> problem() {
+                return base.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return base.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
                 return useDominance ? base.dominance() : new DefaultNoLayerDominanceChecker<>();
             }
-            @Override public VerbosityLevel verbosityLevel() { return VerbosityLevel.SILENT; }
-            @Override public Relaxation<T> relaxation() { return base.relaxation(); }
-            @Override public StateRanking<T> ranking() { return base.ranking(); }
-            @Override public WidthHeuristic<T> widthHeuristic() {
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return base.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return base.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
                 return fixWidth != null ? new FixedWidth<>(fixWidth) : base.widthHeuristic();
             }
-            @Override public ReductionStrategy<T> relaxStrategy() { return base.relaxStrategy(); }
-            @Override public ReductionStrategy<T> restrictStrategy() { return base.restrictStrategy(); }
-            @Override public boolean useCache() { return useCache; }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return base.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return base.restrictStrategy();
+            }
+
+            @Override
+            public boolean useCache() {
+                return useCache;
+            }
         };
     }
 
     protected AcsModel<T> wrapAcsModel(DdoModel<T> base, boolean useDominance, Integer fixWidth) {
         return new AcsModel<T>() {
-            @Override public Problem<T> problem() { return base.problem(); }
-            @Override public FastLowerBound<T> lowerBound() { return base.lowerBound(); }
-            @Override public NoLayerDominanceChecker<T> dominance() {
+            @Override
+            public Problem<T> problem() {
+                return base.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return base.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
                 return useDominance ? base.dominance() : new DefaultNoLayerDominanceChecker<>();
             }
-            @Override public VerbosityLevel verbosityLevel() { return VerbosityLevel.SILENT; }
-            @Override public int columnWidth() { return fixWidth != null ? fixWidth : 5; }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
+            }
+
+            @Override
+            public int columnWidth() {
+                return fixWidth != null ? fixWidth : 5;
+            }
         };
     }
 }

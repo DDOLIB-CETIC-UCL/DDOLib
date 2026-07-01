@@ -2,7 +2,7 @@ package org.ddolib.solving.ddo.core.heuristics.cluster.layered;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
 import org.ddolib.solving.ddo.core.frontier.Frontier;
 import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
@@ -225,7 +225,7 @@ public class KSGHPTest {
     @ParameterizedTest
     @MethodSource("dataProvider")
     public void testOptimalSolutionFound(KSProblem problem) {
-        CutSetType[] cs = new CutSetType[] { CutSetType.LastExactLayer, CutSetType.Frontier };
+        CutSetType[] cs = new CutSetType[]{CutSetType.LastExactLayer, CutSetType.Frontier};
         for (int wid = 2; wid <= 10; wid++) {
             for (CutSetType ct : cs) {
                 assertEquals(optimalSolutionCostBasedClustering(problem),

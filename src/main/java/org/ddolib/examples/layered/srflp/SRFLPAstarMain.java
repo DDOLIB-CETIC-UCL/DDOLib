@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.FastLowerBound;
 import org.ddolib.modeling.layered.Model;
 import org.ddolib.modeling.layered.Problem;

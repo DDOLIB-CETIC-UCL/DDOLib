@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.pdptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.AcsModel;
 import org.ddolib.modeling.layered.Model;
 import org.ddolib.modeling.layered.Problem;
@@ -77,7 +77,7 @@ public final class PDPTWAcsMain {
      */
     public static void main(final String[] args) throws IOException {
 
-        final PDPTWProblem problem = PDPTWGenerator.genInstance(40, 3, 5, new Random(2),true);
+        final PDPTWProblem problem = PDPTWGenerator.genInstance(40, 3, 5, new Random(2), true);
         AcsModel<PDPTWState> model = new AcsModel<>() {
 
             public Problem<PDPTWState> problem() {

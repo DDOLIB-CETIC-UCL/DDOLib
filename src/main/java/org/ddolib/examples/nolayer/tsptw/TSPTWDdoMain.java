@@ -1,6 +1,6 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;

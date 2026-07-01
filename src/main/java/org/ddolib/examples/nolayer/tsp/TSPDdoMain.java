@@ -1,6 +1,6 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.layered.StateRanking;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
 import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
@@ -13,7 +13,6 @@ import org.ddolib.util.io.SolutionPrinter;
 import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.Collection;

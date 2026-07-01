@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.modeling.layered.DdoModel;
 import org.ddolib.modeling.layered.Problem;

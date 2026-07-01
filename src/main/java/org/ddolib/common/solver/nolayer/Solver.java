@@ -1,15 +1,15 @@
-package org.ddolib.common.solver;
+package org.ddolib.common.solver.nolayer;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.Decision;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
- * Interface representing a generic solver for decision diagram based optimization problems.
+ * Interface representing a generic solver for no-layered decision diagram based optimization problems.
  * <p>
  * A solver explores the search space defined by a decision diagram, applies bounds and relaxations,
  * and can return the best solution found along with its value.
@@ -28,6 +28,7 @@ import java.util.function.Predicate;
  * @see Decision
  */
 public interface Solver {
+
     /**
      * Minimizes the objective function according to the solver strategy.
      *
@@ -37,7 +38,7 @@ public interface Solver {
      * @return the statistics of the search after completion
      */
     Solution minimize(Predicate<SearchStatistics> limit,
-                      BiConsumer<int[], SearchStatistics> onSolution);
+                      BiConsumer<List<Integer>, SearchStatistics> onSolution);
 
     /**
      * @return the value of the best solution in this decision diagram if there is one
@@ -45,31 +46,10 @@ public interface Solver {
     Optional<Double> bestValue();
 
     /**
-     * Returns the set of decisions that lead to the best solution found by this solver, if any.
+     * Returns the ordered list of labels leading to the best solution from the initial state.
      *
-     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
-     * or empty if no solution exists
+     * @return the ordered list of labels leading to the best solution from the initial state.
      */
-    Optional<Set<Decision>> bestSolution();
+    List<Integer> bestSolution();
 
-    /**
-     * Constructs an array representing the values assigned to each variable from a set of decisions.
-     *
-     * @param decisions a set of {@link Decision} objects representing variable assignments
-     * @return an array {@code t} such that {@code t[i]} is the assigned value of variable {@code i},
-     * or an empty array if the solution does not exist
-     */
-    default int[] constructSolution(Set<Decision> decisions) {
-        int maxVar = -1;
-        for (Decision d : decisions) {
-            if (d.variable() > maxVar) maxVar = d.variable();
-        }
-        if (maxVar == -1) return new int[0];
-        
-        int[] toReturn = new int[maxVar + 1];
-        for (Decision d : decisions) {
-            toReturn[d.variable()] = d.value();
-        }
-        return toReturn;
-    }
 }

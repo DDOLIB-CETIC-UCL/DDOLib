@@ -1,14 +1,12 @@
 package org.ddolib.examples.nolayer.tsp;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.nolayer.AcsModel;
 import org.ddolib.modeling.nolayer.FastLowerBound;
 import org.ddolib.modeling.nolayer.Problem;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class TSPAcsMain {
     public static void main(String[] args) {

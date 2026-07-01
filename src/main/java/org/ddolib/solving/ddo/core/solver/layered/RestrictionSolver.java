@@ -1,7 +1,7 @@
 package org.ddolib.solving.ddo.core.solver.layered;
 
 import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;

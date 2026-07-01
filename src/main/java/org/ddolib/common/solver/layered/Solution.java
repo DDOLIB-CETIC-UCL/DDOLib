@@ -1,4 +1,4 @@
-package org.ddolib.common.solver;
+package org.ddolib.common.solver.layered;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.Decision;
@@ -74,6 +74,11 @@ public class Solution {
         return statistics;
     }
 
+    /**
+     * Returns a readable string for the search time needed to find this solution.
+     *
+     * @return a readable string for the search time needed to find this solution.
+     */
     public String searchTime() {
         return PrettyPrint.formatMs(statistics.runtime());
     }

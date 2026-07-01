@@ -1,7 +1,6 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 public final class GRAStarMain {

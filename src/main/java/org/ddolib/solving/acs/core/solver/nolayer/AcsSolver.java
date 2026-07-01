@@ -1,8 +1,8 @@
 package org.ddolib.solving.acs.core.solver.nolayer;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.common.solver.Solver;
+import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.common.solver.layered.Solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -12,12 +12,10 @@ import org.ddolib.modeling.nolayer.FastLowerBound;
 import org.ddolib.modeling.nolayer.Problem;
 import org.ddolib.solving.astar.core.solver.nolayer.SubProblem;
 import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public final class AcsSolver<T> implements Solver {
 
@@ -113,7 +111,7 @@ public final class AcsSolver<T> implements Solver {
                 for (SubProblem<T> sub : candidates) {
                     statistics = statistics.incrementNbIter();
                     this.closed.put(sub.getState(), sub.f());
-                    
+
                     if (problem.isTarget(sub.getState())) {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
@@ -150,7 +148,7 @@ public final class AcsSolver<T> implements Solver {
             List<Integer> path = new ArrayList<>(subProblem.getPath());
             path.add(label);
             int newDepth = path.size();
-            
+
             double h = lb.fastLowerBound(newState);
             double f = g + h;
 
@@ -158,11 +156,11 @@ public final class AcsSolver<T> implements Solver {
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             Double presentValue = present.get(newState);
-            
+
             while (open.size() <= newDepth) {
                 open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
             }
-            
+
             if (presentValue != null && presentValue > newSub.f()) {
                 open.get(newDepth).add(newSub);
                 present.put(newState, newSub.f());
@@ -177,7 +175,7 @@ public final class AcsSolver<T> implements Solver {
                     present.put(newState, newSub.f());
                 }
             }
-            
+
             if (problem.isTarget(newState) && newSub.getValue() < bestUB) {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();

@@ -1,8 +1,7 @@
 package org.ddolib.examples.nolayer.gruler;
 
 import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.nolayer.Solvers;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.modeling.nolayer.AcsModel;
 import org.ddolib.modeling.nolayer.FastLowerBound;
 import org.ddolib.modeling.nolayer.Problem;

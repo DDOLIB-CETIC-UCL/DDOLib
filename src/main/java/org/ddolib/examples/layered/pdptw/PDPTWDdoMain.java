@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.pdptw;
 
 import org.ddolib.common.dominance.DominanceChecker;
 import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
+import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.solving.ddo.core.frontier.CutSetType;
 import org.ddolib.solving.ddo.core.frontier.Frontier;
