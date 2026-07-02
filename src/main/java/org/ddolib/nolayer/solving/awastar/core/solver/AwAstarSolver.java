@@ -60,7 +60,7 @@ public final class AwAstarSolver<T> implements Solver {
     // Value of the best known upper bound.
     private double bestUB;
 
-    private List<Integer> bestSol;
+    private Optional<List<Integer>> bestSol;
 
 
     public AwAstarSolver(AwAstarModel<T> model) {
@@ -78,7 +78,7 @@ public final class AwAstarSolver<T> implements Solver {
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
         this.bestUB = model.upperBound();
-        this.bestSol = List.of();
+        this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
@@ -106,10 +106,10 @@ public final class AwAstarSolver<T> implements Solver {
         present.put(root.getState(), root.f());
 
         if (problem.isTarget(root.getState())) {
-            bestSol = root.getPath();
+            bestSol = Optional.of(root.getPath());
             statistics = statistics.updateIncumbent(bestUB, gap())
                     .updateStatus(SearchStatus.OPTIMAL);
-            return new Solution(bestSol, statistics);
+            return new Solution(bestSolution(), statistics);
         }
 
         while (!open.isEmpty()) {
@@ -123,7 +123,7 @@ public final class AwAstarSolver<T> implements Solver {
                     .updateGap(gap());
 
             if (limit.test(statistics)) {
-                return new Solution(bestSol, statistics.updateTime(System.currentTimeMillis()));
+                return new Solution(bestSolution(), statistics.updateTime(System.currentTimeMillis()));
             }
             // -- end debug, stat, verbosity, stopping  ---
 
@@ -146,11 +146,11 @@ public final class AwAstarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (!bestSol.isEmpty()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
+        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
 
 
-        return new Solution(bestSol, statistics);
+        return new Solution(bestSolution(), statistics);
     }
 
     @Override
@@ -160,7 +160,7 @@ public final class AwAstarSolver<T> implements Solver {
 
     @Override
     public List<Integer> bestSolution() {
-        return List.of();
+        return bestSol.orElse(List.of());
     }
 
     private void addChildren(SubProblem<T> sub, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
@@ -208,7 +208,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             // is the new state a solution?
             if (problem.isTarget(newState) && newSub.getValue() < bestUB) {
-                bestSol = newSub.getPath();
+                bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
                 statistics = statistics.updateIncumbent(bestUB, gap())
                         .updateStatus(SearchStatus.SAT);
