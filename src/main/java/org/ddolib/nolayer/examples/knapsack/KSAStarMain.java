@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.knapsack;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -24,6 +24,6 @@ public final class KSAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal KS value: " + -bestSolution.value());
+        System.out.println("Optimal KS value: " + -bestSolution.statistics().incumbent());
     }
 }

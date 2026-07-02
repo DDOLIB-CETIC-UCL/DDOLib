@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.solving.astar.core.solver;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.layered.examples.tsp.TSPGenerator;
 import org.ddolib.nolayer.examples.tsp.TSPState;
 import org.ddolib.nolayer.examples.tsp.TSPModel;

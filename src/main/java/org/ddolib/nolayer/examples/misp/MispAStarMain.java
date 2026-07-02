@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.misp;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -23,6 +23,6 @@ public final class MispAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal MISP value: " + -bestSolution.value());
+        System.out.println("Optimal MISP value: " + -bestSolution.statistics().incumbent());
     }
 }

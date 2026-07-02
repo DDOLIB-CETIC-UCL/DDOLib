@@ -24,7 +24,7 @@ public class Solution {
      *
      * @return the evaluation of the objective value of this solution
      */
-    private double value() {
+    public double value() {
         return statistics.incumbent();
     }
 
@@ -33,7 +33,7 @@ public class Solution {
      *
      * @return the ordered list of labels leading to the best solution from the initial state.
      */
-    private List<Integer> solution() {
+    public List<Integer> solution() {
         return solution;
     }
 

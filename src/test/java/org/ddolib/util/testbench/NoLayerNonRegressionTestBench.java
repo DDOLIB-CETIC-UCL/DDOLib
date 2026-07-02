@@ -99,25 +99,32 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
     }
 
     protected double solveAndChecksSolution(Model<T> model, String solverStr) {
-        Solution solution;
+        double value;
+        int[] solutionArr;
         if (model instanceof DdoModel<T>) {
-            solution = Solvers.minimizeDdo((DdoModel<T>) model);
+            Solution solution = Solvers.minimizeDdo((DdoModel<T>) model);
+            value = solution.value();
+            solutionArr = solution.solution();
         } else if (model instanceof AcsModel<T>) {
-            solution = Solvers.minimizeAcs((AcsModel<T>) model);
+            Solution solution = Solvers.minimizeAcs((AcsModel<T>) model);
+            value = solution.value();
+            solutionArr = solution.solution();
         } else {
-            solution = Solvers.minimizeAstar(model);
+            org.ddolib.nolayer.common.solver.Solution solution = Solvers.minimizeAstar(model);
+            value = solution.value();
+            solutionArr = solution.solution().stream().mapToInt(Integer::intValue).toArray();
         }
 
         try {
-            if (!Double.isInfinite(solution.value())) {
-                assertEquals(model.problem().evaluate(solution.solution()), solution.value(), 1e-10,
+            if (!Double.isInfinite(value)) {
+                assertEquals(model.problem().evaluate(solutionArr), value, 1e-10,
                         solverStr + ": The solution has not the same value that the returned value");
             }
         } catch (InvalidSolutionException e) {
             throw new RuntimeException(e);
         }
 
-        return solution.value();
+        return value;
     }
 
     protected Model<T> wrapModel(Model<T> base, boolean useDominance) {

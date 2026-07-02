@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.tsptw;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
 import java.nio.file.Path;
@@ -17,7 +17,7 @@ public class TSPTWDebug {
         Solution sol = solver.minimize(s -> false, (solution, stats) -> {
         });
 
-        System.out.println("Best value: " + sol.value());
-        System.out.println("Solution: " + java.util.Arrays.toString(sol.solution()));
+        System.out.println("Best value: " + solver.bestValue().orElseThrow());
+        System.out.println("Solution: " + solver.bestSolution());
     }
 }

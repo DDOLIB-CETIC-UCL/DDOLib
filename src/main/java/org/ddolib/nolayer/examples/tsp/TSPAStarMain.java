@@ -1,10 +1,9 @@
 package org.ddolib.nolayer.examples.tsp;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 public class TSPAStarMain {
@@ -23,7 +22,7 @@ public class TSPAStarMain {
                 stats -> false,
                 (sol, stats) -> {
                     System.out.println("Found a solution with value: " + stats.incumbent());
-                    System.out.println("Path: " + Arrays.toString(sol));
+                    System.out.println("Path: " + sol);
                 }
         );
 

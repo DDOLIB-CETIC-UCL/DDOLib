@@ -3,9 +3,8 @@ package org.ddolib.nolayer.solving.astar.core.solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
-import org.ddolib.layered.common.solver.Solver;
-import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
@@ -50,7 +49,7 @@ public final class AStarSolver<T> implements Solver {
 
     @Override
     public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+                             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         if (dominance != null) dominance.clear();
         open.add(root);
@@ -98,7 +97,7 @@ public final class AStarSolver<T> implements Solver {
         return new Solution(bestSolution(), statistics);
     }
 
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
+    private void addChildren(SubProblem<T> subProblem, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
@@ -137,7 +136,7 @@ public final class AStarSolver<T> implements Solver {
                 bestUB = newSub.getValue();
                 statistics = statistics.updateIncumbent(bestUB, gap())
                         .updateStatus(SearchStatus.SAT);
-                onSolution.accept(constructSolution(newPath), statistics);
+                onSolution.accept(newPath, statistics);
                 verboseMode.newBest(bestUB);
             }
         }
@@ -154,14 +153,6 @@ public final class AStarSolver<T> implements Solver {
         }
     }
 
-    private int[] constructSolution(List<Integer> path) {
-        int[] sol = new int[path.size()];
-        for (int i = 0; i < path.size(); i++) {
-            sol[i] = path.get(i);
-        }
-        return sol;
-    }
-
     @Override
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) return Optional.of(bestUB);
@@ -169,15 +160,7 @@ public final class AStarSolver<T> implements Solver {
     }
 
     @Override
-    public Optional<Set<Decision>> bestSolution() {
-        if (bestSol.isPresent()) {
-            Set<Decision> sol = new HashSet<>();
-            List<Integer> path = bestSol.get();
-            for (int i = 0; i < path.size(); i++) {
-                sol.add(new Decision(i, path.get(i)));
-            }
-            return Optional.of(sol);
-        }
-        return Optional.empty();
+    public List<Integer> bestSolution() {
+        return bestSol.orElse(List.of());
     }
 }

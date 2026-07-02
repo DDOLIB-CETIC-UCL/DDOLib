@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.gruler;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 public final class GRAStarMain {
@@ -20,6 +20,6 @@ public final class GRAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal GR value: " + bestSolution.value());
+        System.out.println("Optimal GR value: " + bestSolution.statistics().incumbent());
     }
 }

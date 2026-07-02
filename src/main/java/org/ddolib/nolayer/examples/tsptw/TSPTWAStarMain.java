@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.tsptw;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,6 +21,6 @@ public final class TSPTWAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal TSPTW value: " + bestSolution.value());
+        System.out.println("Optimal TSPTW value: " + bestSolution.statistics().incumbent());
     }
 }

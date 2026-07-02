@@ -5,6 +5,7 @@ import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.nolayer.solving.acs.core.solver.AcsSolver;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -48,21 +49,21 @@ public class Solvers {
     }
 
     // A* Solver Methods
-    public static <T> Solution minimizeAstar(Model<T> model) {
+    public static <T> org.ddolib.nolayer.common.solver.Solution minimizeAstar(Model<T> model) {
         return minimizeAstar(model, s -> false, (sol, s) -> {
         });
     }
 
-    public static <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
+    public static <T> org.ddolib.nolayer.common.solver.Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit) {
         return minimizeAstar(model, limit, (sol, s) -> {
         });
     }
 
-    public static <T> Solution minimizeAstar(Model<T> model, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> org.ddolib.nolayer.common.solver.Solution minimizeAstar(Model<T> model, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         return minimizeAstar(model, s -> false, onSolution);
     }
 
-    public static <T> Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public static <T> org.ddolib.nolayer.common.solver.Solution minimizeAstar(Model<T> model, Predicate<SearchStatistics> limit, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         return new AStarSolver<>(model).minimize(limit, onSolution);
     }
 }
