@@ -1,7 +1,7 @@
 package org.ddolib.util.testbench;
 
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.Problem;
 
 import java.util.List;
 

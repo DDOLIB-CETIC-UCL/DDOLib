@@ -1,15 +1,12 @@
 package org.ddolib.util.testbench;
 
-import org.ddolib.modeling.InvalidSolutionException;
-
-import org.ddolib.common.dominance.DefaultNoLayerDominanceChecker;
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.nolayer.*;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.modeling.*;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.util.InvalidSolutionException;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DynamicTest;
 

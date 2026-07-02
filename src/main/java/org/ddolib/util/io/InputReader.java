@@ -25,8 +25,9 @@ import java.util.StringTokenizer;
  */
 public class InputReader {
 
-    private BufferedReader in;
+    private final BufferedReader in;
     private StringTokenizer tokenizer;
+
     /**
      * Constructs an InputReader for the specified file.
      *
@@ -43,6 +44,7 @@ public class InputReader {
             throw new RuntimeException();
         }
     }
+
     /**
      * Reads the next integer from the input.
      *
@@ -68,6 +70,7 @@ public class InputReader {
         }
         return Integer.parseInt(tokenizer.nextToken());
     }
+
     /**
      * Reads the next double from the input.
      *
@@ -93,6 +96,7 @@ public class InputReader {
         }
         return Double.parseDouble(tokenizer.nextToken());
     }
+
     /**
      * Reads a matrix of doubles with the given dimensions.
      *
@@ -110,6 +114,7 @@ public class InputReader {
         }
         return matrix;
     }
+
     /**
      * Reads a matrix of integers with the given dimensions.
      *
@@ -157,6 +162,7 @@ public class InputReader {
         }
         return res;
     }
+
     /**
      * Skips the next line in the input.
      *
@@ -178,6 +184,7 @@ public class InputReader {
             throw new RuntimeException(e.toString());
         }
     }
+
     /**
      * Reads the next token as a string.
      *

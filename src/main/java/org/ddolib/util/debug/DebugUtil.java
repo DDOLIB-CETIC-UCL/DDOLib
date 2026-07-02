@@ -1,9 +1,9 @@
 package org.ddolib.util.debug;
 
-import org.ddolib.common.solver.layered.Solver;
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.solving.ddo.core.SubProblem;
-import org.ddolib.modeling.layered.Model;
+import org.ddolib.layered.common.solver.Solver;
+import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.util.StateAndDepth;
 
 import java.text.DecimalFormat;
@@ -61,7 +61,7 @@ public class DebugUtil {
     }
 
     /**
-     * Given a set of states check if the {@link org.ddolib.modeling.layered.FastLowerBound} is
+     * Given a set of states check if the {@link org.ddolib.layered.modeling.FastLowerBound} is
      * admissible, i.e., whether the bound does not overestimate the path from the states to a
      * terminal node.
      * <p>
