@@ -30,7 +30,7 @@ public class TspTwAwAstarMain {
 
             @Override
             public FastLowerBound<TSPTWState> lowerBound() {
-                return new TSPTWFbl(problem);
+                return new TSPTWFlb(problem);
             }
 
             @Override

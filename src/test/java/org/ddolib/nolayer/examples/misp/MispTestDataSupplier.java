@@ -51,11 +51,6 @@ public class MispTestDataSupplier extends NoLayerTestDataSupplier<MispState, Mis
     protected DdoModel<MispState> model(MispProblem problem) {
         return new MispDdoModel(problem) {
             @Override
-            public FastLowerBound<MispState> lowerBound() {
-                return (state) -> state.remainingNodes().isEmpty() ? 0 : -1;
-            }
-
-            @Override
             public Relaxation<MispState> relaxation() {
                 return new Relaxation<MispState>() {
                     @Override
@@ -112,6 +107,11 @@ public class MispTestDataSupplier extends NoLayerTestDataSupplier<MispState, Mis
             @Override
             public boolean useCache() {
                 return true;
+            }
+
+            @Override
+            public FastLowerBound<MispState> lowerBound() {
+                return new MispFlb(problem);
             }
         };
     }

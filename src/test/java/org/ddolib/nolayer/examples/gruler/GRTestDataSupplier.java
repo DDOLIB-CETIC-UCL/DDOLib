@@ -1,13 +1,12 @@
 package org.ddolib.nolayer.examples.gruler;
 
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
-import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.modeling.Relaxation;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.heuristics.width.FixedWidth;
-import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.testbench.NoLayerTestDataSupplier;
 import org.ddolib.util.verbosity.VerbosityLevel;

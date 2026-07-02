@@ -16,12 +16,12 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
+public class NoLayerTestBench<T, P extends Problem<T>> {
 
     protected final List<P> problems;
     private final Function<P, DdoModel<T>> model;
 
-    public NoLayerNonRegressionTestBench(NoLayerTestDataSupplier<T, P> dataSupplier) {
+    public NoLayerTestBench(NoLayerTestDataSupplier<T, P> dataSupplier) {
         problems = dataSupplier.generateProblems();
         model = dataSupplier::model;
     }

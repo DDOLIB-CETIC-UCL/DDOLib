@@ -2,11 +2,11 @@ package org.ddolib.nolayer.examples.tsptw;
 
 import org.ddolib.nolayer.modeling.FastLowerBound;
 
-public class TSPTWFbl implements FastLowerBound<TSPTWState> {
+public class TSPTWFlb implements FastLowerBound<TSPTWState> {
 
     private final double[] leastIncidentEdge;
 
-    public TSPTWFbl(TSPTWProblem problem) {
+    public TSPTWFlb(TSPTWProblem problem) {
         final int n = problem.nbVars;
         leastIncidentEdge = new double[n];
         for (int i = 0; i < n; i++) {
