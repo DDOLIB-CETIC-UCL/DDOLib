@@ -3,6 +3,7 @@ package org.ddolib.util.io;
 import org.ddolib.common.solver.stat.SearchStatistics;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Utility class providing helper methods to display solutions found by a solver.
@@ -22,8 +23,17 @@ public class SolutionPrinter {
      * @param solution an array of integers representing the variable assignments of the new incumbent solution
      */
     public static void printSolution(SearchStatistics stats, int[] solution) {
-        System.out.println("===== New Incumbent Solution =====");
-        System.out.println(stats);
-        System.out.println("Solution: " + Arrays.toString(solution) + "\n");
+        printFormatted(stats, Arrays.toString(solution));
+    }
+
+    public static void printSolution(SearchStatistics stats, List<Integer> solution) {
+        printFormatted(stats, solution.toString());
+    }
+
+    private static void printFormatted(SearchStatistics stats, String solutionStr) {
+        System.out.printf("""
+                ===== New Incumbent Solution =====
+                %s
+                Solution: %s%n""", stats, solutionStr);
     }
 }

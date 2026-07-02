@@ -1,6 +1,6 @@
 package org.ddolib.util.verbosity;
 
-import org.ddolib.solving.ddo.core.SubProblem;
+import org.ddolib.layered.solving.ddo.core.SubProblem;
 
 import java.io.*;
 
@@ -20,8 +20,8 @@ public class VerboseMode {
 
 
     private final VerbosityLevel verbosityLevel;
-    private long nextPrint;
     private final long printInterval;
+    private long nextPrint;
 
     /**
      * Creates a {@code VerboseMode} instance with a given verbosity level

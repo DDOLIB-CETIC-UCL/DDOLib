@@ -1,0 +1,104 @@
+package org.ddolib.nolayer.examples.gruler;
+
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.util.InvalidSolutionException;
+
+import java.util.*;
+
+public record GRProblem(int order) implements Problem<GRState> {
+
+    @Override
+    public GRState initialState() {
+        BitSet mark = new BitSet();
+        mark.set(0);
+        return new GRState(mark, new BitSet(), 0, 1);
+    }
+
+    @Override
+    public double initialValue() {
+        return 0;
+    }
+
+    @Override
+    public boolean isTarget(GRState state) {
+        return state.getNumberOfMarks() == order;
+    }
+
+    @Override
+    public Iterator<Integer> domain(GRState state) {
+        List<Integer> dom = new ArrayList<>();
+        int nextMark = state.getLastMark() + 1;
+        // The maximum length of a Golomb ruler of order n is strictly less than n^2
+        int maxL = order * order;
+
+        for (int label = nextMark; label < maxL; label++) {
+            boolean legal = true;
+            for (int mark = state.getMarks().nextSetBit(0); mark >= 0; mark = state.getMarks().nextSetBit(mark + 1)) {
+                if (state.getDistances().get(label - mark)) {
+                    legal = false;
+                    break;
+                }
+            }
+            if (legal) {
+                dom.add(label);
+            }
+        }
+        return dom.iterator();
+    }
+
+    @Override
+    public GRState transition(GRState state, int label) {
+        BitSet nextMarks = (BitSet) state.getMarks().clone();
+        BitSet nextDistances = (BitSet) state.getDistances().clone();
+
+        for (int mark = state.getMarks().nextSetBit(0); mark >= 0; mark = state.getMarks().nextSetBit(mark + 1)) {
+            nextDistances.set(label - mark);
+        }
+        nextMarks.set(label);
+
+        return new GRState(nextMarks, nextDistances, label, state.getLayer() + 1);
+    }
+
+    @Override
+    public double transitionCost(GRState state, int label) {
+        return label - state.getLastMark();
+    }
+
+    @Override
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
+        int nbVars = order - 1;
+        if (solution.size() != nbVars) {
+            throw new InvalidSolutionException(String.format("The solution %s does not match " +
+                    "the number %d variables", solution, nbVars));
+        }
+        if (nbVars == 0) return 0;
+
+        Map<Integer, Integer[]> distance = new HashMap<>();
+
+        for (int j = 0; j < solution.size(); j++) {
+            distance.put(solution.get(j), new Integer[]{0, j + 1});
+        }
+
+        for (int i = 1; i < order; i++) {
+            for (int j = i + 1; j < order; j++) {
+                int from = solution.get(i - 1);
+                int to = solution.get(j - 1);
+                int d = to - from;
+                if (distance.containsKey(d)) {
+                    Integer[] pair = distance.get(d);
+                    String msg = String.format("The marks %d & %d have the same distance (%d) " +
+                            "than the marks %d & %d", i, j, d, pair[0], pair[1]);
+                    throw new InvalidSolutionException(msg);
+                }
+
+                distance.put(d, new Integer[]{i, j});
+            }
+        }
+        return solution.get(solution.size() - 1);
+    }
+
+    @Override
+    public String toString() {
+        return "GRProblem(order:" + order + ")";
+    }
+}

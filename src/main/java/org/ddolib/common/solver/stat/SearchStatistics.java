@@ -284,7 +284,7 @@ public abstract class SearchStatistics {
         toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);
         return toReturn;
     }
-    
+
     /**
      * Returns a new SearchStatistics instance with an updated optimality gap.
      *

@@ -11,6 +11,7 @@ public class DistanceUtil {
 
     /**
      * Computes the Jaccard Distance between the two given sets.
+     *
      * @param a the first set
      * @param b the second set
      * @return 1 - |a ∩ b| / |a ∪ b|
@@ -30,13 +31,14 @@ public class DistanceUtil {
 
     /**
      * Computes the weighted Jaccard Distance between the two given sets.
-     * @param a the first set
-     * @param b the second set
+     *
+     * @param a       the first set
+     * @param b       the second set
      * @param weights the weight of each element in a and b
      * @return the weighted Jaccard Distance between a and b
      */
     public static double weightedJaccardDistance(BitSet a, BitSet b, double[] weights) {
-        double intersectionSize =0;
+        double intersectionSize = 0;
         double unionSize = 0;
 
         int maxIndex = max(a.length(), b.length());
@@ -44,7 +46,7 @@ public class DistanceUtil {
             if (a.get(i) || b.get(i)) {
                 unionSize += weights[i];
                 if (a.get(i) && b.get(i)) {
-                    intersectionSize+= weights[i];
+                    intersectionSize += weights[i];
                 }
             }
         }
@@ -54,6 +56,7 @@ public class DistanceUtil {
 
     /**
      * Computes the Dice Distance between the two given sets.
+     *
      * @param a the first set
      * @param b the second set
      * @return 1 - 2|a ∩ b| / (|a| + |b|)
@@ -63,7 +66,7 @@ public class DistanceUtil {
         tmp.and(b);
         double distance = tmp.cardinality();
 
-        distance = distance*-2;
+        distance = distance * -2;
         distance = distance / (a.cardinality() + b.cardinality());
         distance += 1;
 
@@ -72,11 +75,12 @@ public class DistanceUtil {
 
     /**
      * Computes the Euclidean Distance between the two given arrays of coordinates
+     *
      * @param a the first array
      * @param b the second array
      * @return the Euclidean distance between a and b
      */
-    public static double euclideanDistance(double[]a, double[]b) {
+    public static double euclideanDistance(double[] a, double[] b) {
         double distance = 0.0;
         for (int dim = 0; dim < a.length; dim++) {
             distance += pow(a[dim] - b[dim], 2);
@@ -88,6 +92,7 @@ public class DistanceUtil {
 
     /**
      * Computes the size of the symmetric difference between a and b
+     *
      * @param a the first set
      * @param b the second set
      * @return |a XOR b|
@@ -100,6 +105,7 @@ public class DistanceUtil {
 
     /**
      * Computes the weighted symmetric difference between a and b
+     *
      * @param a the first set
      * @param b the second set
      * @return the weighted symmetric difference between a and b

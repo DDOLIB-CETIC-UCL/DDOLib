@@ -2,6 +2,7 @@ package org.ddolib.util;
 
 import java.util.HashSet;
 import java.util.Set;
+
 /**
  * Utility class to compute lower bounds for the Traveling Salesman Problem (TSP).
  * <p>
@@ -33,7 +34,7 @@ public class TSPLowerBound {
      *
      * @param costMatrix a square matrix of size n x n representing the cost between nodes
      * @return an array of integers where the i-th element represents the lower bound
-     *         for the subset corresponding to the binary representation of i
+     * for the subset corresponding to the binary representation of i
      */
     public static int[] lowerBoundForAllSubsets(int[][] costMatrix) {
         int nItems = costMatrix.length;
@@ -45,6 +46,7 @@ public class TSPLowerBound {
         }
         return result;
     }
+
     /**
      * Computes the sum of the minimum incident edges for a given subset of nodes.
      * <p>
@@ -53,7 +55,7 @@ public class TSPLowerBound {
      * to avoid double-counting edges.
      * </p>
      *
-     * @param members a set of node indices representing the subset
+     * @param members    a set of node indices representing the subset
      * @param changeover a square cost matrix
      * @return the sum of the minimum incident edges for the subset
      */
@@ -85,6 +87,7 @@ public class TSPLowerBound {
         }
         return total;
     }
+
     /**
      * Converts an integer representation of a subset to a set of node indices.
      * <p>
@@ -92,7 +95,7 @@ public class TSPLowerBound {
      * in the subset (1) or not (0).
      * </p>
      *
-     * @param num an integer representing the subset in binary
+     * @param num  an integer representing the subset in binary
      * @param size the total number of nodes
      * @return a set of integers corresponding to the indices of nodes in the subset
      */

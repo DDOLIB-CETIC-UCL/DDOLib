@@ -1,7 +1,7 @@
 package org.ddolib.util.testbench;
 
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.Problem;
 
 import java.util.List;
 

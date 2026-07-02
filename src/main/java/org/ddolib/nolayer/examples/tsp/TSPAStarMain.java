@@ -1,0 +1,31 @@
+package org.ddolib.nolayer.examples.tsp;
+
+import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
+
+import java.util.Optional;
+
+public class TSPAStarMain {
+    public static void main(String[] args) {
+        // Generate a small random TSP instance
+        TSPGenerator generator = new TSPGenerator(12, 42, 100); // Use a small size for fast execution
+        double[][] distMatrix = generator.distanceMatrix;
+
+        TSPProblem problem = new TSPProblem(distMatrix);
+        Model<TSPState> model = new TSPModel(problem);
+
+        AStarSolver<TSPState> solver = new AStarSolver<>(model);
+
+        System.out.println("Starting A* Search on TSPNoLayer Problem...");
+        Solution solution = solver.minimize(
+                stats -> false,
+                (sol, stats) -> {
+                    System.out.println("Found a solution with value: " + stats.incumbent());
+                    System.out.println("Path: " + sol);
+                }
+        );
+
+        Optional<Double> bestVal = solver.bestValue();
+    }
+}
