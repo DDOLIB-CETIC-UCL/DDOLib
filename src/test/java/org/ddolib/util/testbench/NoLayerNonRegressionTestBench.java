@@ -109,11 +109,10 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
         }
 
         double value = solution.value();
-        int[] solutionArr = solution.solution().stream().mapToInt(Integer::intValue).toArray();
 
         try {
             if (!Double.isInfinite(value)) {
-                assertEquals(model.problem().evaluate(solutionArr), value, 1e-10,
+                assertEquals(model.problem().evaluate(solution.solution()), value, 1e-10,
                         solverStr + ": The solution has not the same value that the returned value");
             }
         } catch (InvalidSolutionException e) {

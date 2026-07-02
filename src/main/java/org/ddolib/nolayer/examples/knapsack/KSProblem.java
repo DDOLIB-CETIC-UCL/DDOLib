@@ -111,18 +111,18 @@ public class KSProblem implements Problem<KSState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != nbItems) {
-            throw new InvalidSolutionException("Expected " + nbItems + " values, got " + solution.length);
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
+        if (solution.size() != nbItems) {
+            throw new InvalidSolutionException("Expected " + nbItems + " values, got " + solution.size());
         }
         int totalWeight = 0;
         int totalProfit = 0;
         for (int i = 0; i < nbItems; i++) {
-            if (solution[i] == 1) {
+            if (solution.get(i) == 1) {
                 totalWeight += weight[i];
                 totalProfit += profit[i];
-            } else if (solution[i] != 0) {
-                throw new InvalidSolutionException("Value must be 0 or 1, got " + solution[i] + " at index " + i);
+            } else if (solution.get(i) != 0) {
+                throw new InvalidSolutionException("Value must be 0 or 1, got " + solution.get(i) + " at index " + i);
             }
         }
         if (totalWeight > capa) {

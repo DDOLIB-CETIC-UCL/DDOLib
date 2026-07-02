@@ -101,7 +101,7 @@ public class MispProblem implements Problem<MispState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         int[] binarySol = new int[nbVars];
         for (int v : solution) {
             binarySol[v] = 1;
@@ -112,7 +112,7 @@ public class MispProblem implements Problem<MispState> {
                 for (int j = neighbors[i].nextSetBit(0); j >= 0; j = neighbors[i].nextSetBit(j + 1)) {
                     if (binarySol[j] == 1) {
                         String msg = String.format("The solution %s contains adjacent nodes (%d, %d)",
-                                java.util.Arrays.toString(solution), i, j);
+                                solution, i, j);
                         throw new InvalidSolutionException(msg);
                     }
                 }

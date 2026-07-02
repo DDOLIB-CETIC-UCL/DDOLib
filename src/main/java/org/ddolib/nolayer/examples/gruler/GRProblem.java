@@ -65,24 +65,24 @@ public record GRProblem(int order) implements Problem<GRState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         int nbVars = order - 1;
-        if (solution.length != nbVars) {
+        if (solution.size() != nbVars) {
             throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars));
+                    "the number %d variables", solution, nbVars));
         }
         if (nbVars == 0) return 0;
 
         Map<Integer, Integer[]> distance = new HashMap<>();
 
-        for (int j = 0; j < solution.length; j++) {
-            distance.put(solution[j], new Integer[]{0, j + 1});
+        for (int j = 0; j < solution.size(); j++) {
+            distance.put(solution.get(j), new Integer[]{0, j + 1});
         }
 
         for (int i = 1; i < order; i++) {
             for (int j = i + 1; j < order; j++) {
-                int from = solution[i - 1];
-                int to = solution[j - 1];
+                int from = solution.get(i - 1);
+                int to = solution.get(j - 1);
                 int d = to - from;
                 if (distance.containsKey(d)) {
                     Integer[] pair = distance.get(d);
@@ -94,7 +94,7 @@ public record GRProblem(int order) implements Problem<GRState> {
                 distance.put(d, new Integer[]{i, j});
             }
         }
-        return solution[solution.length - 1];
+        return solution.get(solution.size() - 1);
     }
 
     @Override

@@ -47,8 +47,7 @@ public final class KSAcsMain {
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution().stream().mapToInt(Integer::intValue).toArray();
-            double val = problem.evaluate(solArray);
+            double val = problem.evaluate(bestSolution.solution());
             System.out.println("Evaluated KS value: " + val);
         } catch (Exception e) {
             System.out.println("ACS EVALUATION ERROR: " + e.getMessage());

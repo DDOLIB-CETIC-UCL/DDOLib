@@ -136,7 +136,7 @@ public class KSDdoMain {
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);
                     try {
-                        double val = problem.evaluate(sol.stream().mapToInt(Integer::intValue).toArray());
+                        double val = problem.evaluate(sol);
                         System.out.println("ON SOLUTION EVALUATE: " + val);
                     } catch (Exception e) {
                         System.out.println("EVALUATE ERROR: " + e.getMessage());
@@ -147,8 +147,7 @@ public class KSDdoMain {
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution().stream().mapToInt(Integer::intValue).toArray();
-            double val = problem.evaluate(solArray);
+            double val = problem.evaluate(bestSolution.solution());
             System.out.println("Evaluated value: " + val);
         } catch (Exception e) {
             e.printStackTrace();

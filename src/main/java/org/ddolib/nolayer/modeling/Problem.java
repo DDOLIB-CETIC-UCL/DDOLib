@@ -3,6 +3,7 @@ package org.ddolib.nolayer.modeling;
 import org.ddolib.util.InvalidSolutionException;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -80,5 +81,5 @@ public interface Problem<T> {
      * @return The value of the input solution
      * @throws InvalidSolutionException If the solution does not respect problem's constraints.
      */
-    double evaluate(final int[] solution) throws InvalidSolutionException;
+    double evaluate(final List<Integer> solution) throws InvalidSolutionException;
 }

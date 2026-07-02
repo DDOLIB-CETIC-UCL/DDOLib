@@ -99,14 +99,13 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != n) {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
+        if (solution.size() != n) {
             throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), n));
+                    "the number %d variables", solution, n));
         }
 
-        Map<Integer, Long> count = Arrays.stream(solution)
-                .boxed()
+        Map<Integer, Long> count = solution.stream()
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
@@ -114,13 +113,13 @@ public class TSPProblem implements Problem<TSPState> {
             throw new InvalidSolutionException(msg);
         }
 
-        if (solution[n - 1] != 0) {
+        if (solution.get(n - 1) != 0) {
             throw new InvalidSolutionException("The solution does not return to the depot (node 0)");
         }
 
-        double value = distanceMatrix[0][solution[0]];
+        double value = distanceMatrix[0][solution.get(0)];
         for (int i = 1; i < n; i++) {
-            value += distanceMatrix[solution[i - 1]][solution[i]];
+            value += distanceMatrix[solution.get(i - 1)][solution.get(i)];
         }
 
         return value;

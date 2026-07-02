@@ -110,14 +110,13 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != nbVars) {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
+        if (solution.size() != nbVars) {
             throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars));
+                    "the %d variables", solution, nbVars));
         }
 
-        java.util.Map<Integer, Long> count = Arrays.stream(solution)
-                .boxed()
+        java.util.Map<Integer, Long> count = solution.stream()
                 .collect(java.util.stream.Collectors.groupingBy(x -> x, java.util.stream.Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
@@ -125,13 +124,13 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             throw new InvalidSolutionException(msg);
         }
 
-        double value = distance[0][solution[0]]; //Start from the depot.
-        value += Math.max(0, timeWindows[solution[0]].start() - value);
+        double value = distance[0][solution.get(0)]; //Start from the depot.
+        value += Math.max(0, timeWindows[solution.get(0)].start() - value);
 
 
         for (int i = 1; i < nbVars; i++) {
-            int from = solution[i - 1];
-            int to = solution[i];
+            int from = solution.get(i - 1);
+            int to = solution.get(i);
             value += distance[from][to];
             if (value > timeWindows[to].end()) {
                 String msg = String.format("This solution does not respect time windows. \nYou " +
