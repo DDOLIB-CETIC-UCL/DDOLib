@@ -99,14 +99,12 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
     }
 
     protected double solveAndChecksSolution(Model<T> model, String solverStr) {
-        Solution solution;
-        if (model instanceof DdoModel<T>) {
-            solution = Solvers.minimizeDdo((DdoModel<T>) model);
-        } else if (model instanceof AcsModel<T>) {
-            solution = Solvers.minimizeAcs((AcsModel<T>) model);
-        } else {
-            solution = Solvers.minimizeAstar(model);
-        }
+        Solution solution = switch (model) {
+            case AcsModel<T> acsModel -> Solvers.minimizeAcs(acsModel);
+            case AwAstarModel<T> awAstarModel -> Solvers.minimizeAwAstar(awAstarModel);
+            case DdoModel<T> ddoModel -> Solvers.minimizeDdo(ddoModel);
+            default -> Solvers.minimizeAstar(model);
+        };
 
         double value = solution.value();
 
