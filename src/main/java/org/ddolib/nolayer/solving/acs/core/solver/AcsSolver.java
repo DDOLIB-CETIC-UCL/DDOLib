@@ -3,9 +3,8 @@ package org.ddolib.nolayer.solving.acs.core.solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
-import org.ddolib.layered.common.solver.Solver;
-import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
@@ -65,7 +64,7 @@ public final class AcsSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.get(0).add(root);
         present.put(root.getState(), root.f());
@@ -117,7 +116,7 @@ public final class AcsSolver<T> implements Solver {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
                             statistics = statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
-                            onSolution.accept(constructSolution(bestSol.get()), statistics);
+                            onSolution.accept(bestSol.get(), statistics);
                         }
                         verboseMode.newBest(bestUB);
                     } else {
@@ -136,7 +135,7 @@ public final class AcsSolver<T> implements Solver {
         return new Solution(bestSolution(), statistics);
     }
 
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution, AstarStats statistics) {
+    private void addChildren(SubProblem<T> subProblem, BiConsumer<List<Integer>, SearchStatistics> onSolution, AstarStats statistics) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
@@ -194,16 +193,8 @@ public final class AcsSolver<T> implements Solver {
     }
 
     @Override
-    public Optional<Set<Decision>> bestSolution() {
-        if (bestSol.isPresent()) {
-            Set<Decision> sol = new HashSet<>();
-            List<Integer> path = bestSol.get();
-            for (int i = 0; i < path.size(); i++) {
-                sol.add(new Decision(i, path.get(i)));
-            }
-            return Optional.of(sol);
-        }
-        return Optional.empty();
+    public List<Integer> bestSolution() {
+        return bestSol.orElse(List.of());
     }
 
     private double gap() {
@@ -216,13 +207,5 @@ public final class AcsSolver<T> implements Solver {
                 .orElse(bestUB);
 
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
-    }
-
-    private int[] constructSolution(List<Integer> path) {
-        int[] sol = new int[path.size()];
-        for (int i = 0; i < path.size(); i++) {
-            sol[i] = path.get(i);
-        }
-        return sol;
     }
 }

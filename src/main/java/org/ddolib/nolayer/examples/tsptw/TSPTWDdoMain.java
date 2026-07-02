@@ -2,7 +2,7 @@ package org.ddolib.nolayer.examples.tsptw;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Relaxation;

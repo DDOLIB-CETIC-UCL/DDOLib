@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.solving.acs.core.solver;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.nolayer.examples.gruler.GRProblem;
@@ -47,7 +47,7 @@ class AcsSolverTest {
             int computedProfit = 0;
             int computedWeight = 0;
             for (int i = 0; i < problem.profit.length; i++) {
-                if (sol[i] == 1) {
+                if (sol.get(i) == 1) {
                     computedProfit += problem.profit[i];
                     computedWeight += problem.weight[i];
                 }
@@ -76,8 +76,8 @@ class AcsSolverTest {
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
         Solution finalSol = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model, (sol, s) -> {
-            assertEquals(n - 1, sol.length);
-            assertEquals(sol[n - 2], s.incumbent());
+            assertEquals(n - 1, sol.size());
+            assertEquals((double) sol.get(n - 2), s.incumbent());
             assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);
         });
@@ -117,12 +117,12 @@ class AcsSolverTest {
             int current = 0;
             int n = problem.distanceMatrix.length;
             for (int i = 0; i < n - 1; i++) {
-                computedCost += problem.distanceMatrix[current][sol[i]];
-                current = sol[i];
+                computedCost += problem.distanceMatrix[current][sol.get(i)];
+                current = sol.get(i);
             }
             computedCost += problem.distanceMatrix[current][0];
 
-            assertEquals(n - 1, sol.length);
+            assertEquals(n - 1, sol.size());
             assertEquals(computedCost, s.incumbent());
             assertEquals(SearchStatus.SAT, s.status());
             statsList.add(s);

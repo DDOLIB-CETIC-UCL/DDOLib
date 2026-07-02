@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.misp;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;

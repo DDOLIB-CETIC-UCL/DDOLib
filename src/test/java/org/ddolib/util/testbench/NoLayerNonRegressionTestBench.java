@@ -2,8 +2,8 @@ package org.ddolib.util.testbench;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.*;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.util.InvalidSolutionException;
@@ -99,21 +99,17 @@ public class NoLayerNonRegressionTestBench<T, P extends Problem<T>> {
     }
 
     protected double solveAndChecksSolution(Model<T> model, String solverStr) {
-        double value;
-        int[] solutionArr;
+        Solution solution;
         if (model instanceof DdoModel<T>) {
-            Solution solution = Solvers.minimizeDdo((DdoModel<T>) model);
-            value = solution.value();
-            solutionArr = solution.solution();
+            solution = Solvers.minimizeDdo((DdoModel<T>) model);
         } else if (model instanceof AcsModel<T>) {
-            Solution solution = Solvers.minimizeAcs((AcsModel<T>) model);
-            value = solution.value();
-            solutionArr = solution.solution();
+            solution = Solvers.minimizeAcs((AcsModel<T>) model);
         } else {
-            org.ddolib.nolayer.common.solver.Solution solution = Solvers.minimizeAstar(model);
-            value = solution.value();
-            solutionArr = solution.solution().stream().mapToInt(Integer::intValue).toArray();
+            solution = Solvers.minimizeAstar(model);
         }
+
+        double value = solution.value();
+        int[] solutionArr = solution.solution().stream().mapToInt(Integer::intValue).toArray();
 
         try {
             if (!Double.isInfinite(value)) {

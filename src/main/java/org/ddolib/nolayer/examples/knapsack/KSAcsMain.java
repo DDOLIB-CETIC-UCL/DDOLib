@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.examples.knapsack;
 
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
@@ -47,7 +47,7 @@ public final class KSAcsMain {
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution();
+            int[] solArray = bestSolution.solution().stream().mapToInt(Integer::intValue).toArray();
             double val = problem.evaluate(solArray);
             System.out.println("Evaluated KS value: " + val);
         } catch (Exception e) {

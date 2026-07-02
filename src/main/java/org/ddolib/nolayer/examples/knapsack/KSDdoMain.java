@@ -2,8 +2,8 @@ package org.ddolib.nolayer.examples.knapsack;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Relaxation;
@@ -136,7 +136,7 @@ public class KSDdoMain {
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);
                     try {
-                        double val = problem.evaluate(sol);
+                        double val = problem.evaluate(sol.stream().mapToInt(Integer::intValue).toArray());
                         System.out.println("ON SOLUTION EVALUATE: " + val);
                     } catch (Exception e) {
                         System.out.println("EVALUATE ERROR: " + e.getMessage());
@@ -147,7 +147,7 @@ public class KSDdoMain {
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution();
+            int[] solArray = bestSolution.solution().stream().mapToInt(Integer::intValue).toArray();
             double val = problem.evaluate(solArray);
             System.out.println("Evaluated value: " + val);
         } catch (Exception e) {

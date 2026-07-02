@@ -7,8 +7,8 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
-import org.ddolib.layered.common.solver.Solver;
+import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.nolayer.modeling.DdoModel;
@@ -46,7 +46,7 @@ public final class DdoSolver<T> implements Solver {
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         frontier.add(root());
         cache.ifPresent(c -> c.initialize());
@@ -178,7 +178,17 @@ public final class DdoSolver<T> implements Solver {
     }
 
     @Override
-    public Optional<Set<Decision>> bestSolution() {
-        return bestSol;
+    public List<Integer> bestSolution() {
+        return bestSol.map(this::constructSolution).orElse(List.of());
+    }
+
+    private List<Integer> constructSolution(Set<Decision> decisions) {
+        int maxVar = -1;
+        for (Decision d : decisions) maxVar = Math.max(maxVar, d.variable());
+        if (maxVar == -1) return List.of();
+
+        int[] sol = new int[maxVar + 1];
+        for (Decision d : decisions) sol[d.variable()] = d.value();
+        return Arrays.stream(sol).boxed().toList();
     }
 }
