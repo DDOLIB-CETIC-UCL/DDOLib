@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.layered.modeling.*;
 import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.testbench.TestDataSupplier;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

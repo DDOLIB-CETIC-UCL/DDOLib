@@ -5,7 +5,7 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.common.util.testbench.TestDataSupplier;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

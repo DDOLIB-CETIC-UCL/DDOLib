@@ -1,14 +1,14 @@
-package org.ddolib.common.util.testbench;
+package org.ddolib.nolayer.testbench;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.*;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.util.InvalidSolutionException;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;

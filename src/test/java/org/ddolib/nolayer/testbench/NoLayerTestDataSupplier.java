@@ -1,4 +1,4 @@
-package org.ddolib.common.util.testbench;
+package org.ddolib.nolayer.testbench;
 
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Problem;

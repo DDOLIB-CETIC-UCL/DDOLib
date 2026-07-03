@@ -1,4 +1,4 @@
-package org.ddolib.common.util.debug;
+package org.ddolib.nolayer.util.debug;
 
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.solver.Solver;
@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class NoLayerDebugUtil {
+public class DebugUtil {
 
     public static <T> void checkHashCodeAndEquality(T state, int label, BiFunction<T, Integer, T> transition) {
         T newState = transition.apply(state, label);

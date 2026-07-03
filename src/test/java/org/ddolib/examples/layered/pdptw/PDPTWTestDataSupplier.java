@@ -9,7 +9,7 @@ import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
-import org.ddolib.common.util.testbench.TestDataSupplier;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

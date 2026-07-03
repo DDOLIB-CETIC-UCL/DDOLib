@@ -3,13 +3,13 @@ package org.ddolib.nolayer.solving.astar.core.solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.nolayer.modeling.*;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solver.Solver;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.debug.NoLayerDebugUtil;
-import org.ddolib.common.util.verbosity.VerboseMode;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.nolayer.util.debug.DebugUtil;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -127,7 +127,7 @@ public final class AStarSolver<T> implements Solver {
             int label = domain.next();
 
             if (debugLevel != DebugLevel.OFF) {
-                NoLayerDebugUtil.checkHashCodeAndEquality(state, label, problem::transition);
+                DebugUtil.checkHashCodeAndEquality(state, label, problem::transition);
             }
 
             T newState = problem.transition(state, label);
@@ -213,6 +213,6 @@ public final class AStarSolver<T> implements Solver {
             }
         };
 
-        NoLayerDebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AStarSolver<>(model, state));
+        DebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AStarSolver<>(model, state));
     }
 }

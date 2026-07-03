@@ -5,6 +5,7 @@ import org.ddolib.common.cache.Threshold;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.mdd.DecisionDiagram;
+import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Relaxation;
@@ -12,8 +13,7 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.debug.DebugUtil;
+import org.ddolib.layered.util.debug.DebugUtil;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

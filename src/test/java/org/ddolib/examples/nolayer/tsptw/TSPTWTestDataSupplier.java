@@ -2,14 +2,14 @@ package org.ddolib.examples.nolayer.tsptw;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Relaxation;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.testbench.NoLayerTestDataSupplier;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

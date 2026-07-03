@@ -3,13 +3,13 @@ package org.ddolib.examples.layered.tsptw;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.frontier.SimpleFrontier;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.testbench.TestDataSupplier;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

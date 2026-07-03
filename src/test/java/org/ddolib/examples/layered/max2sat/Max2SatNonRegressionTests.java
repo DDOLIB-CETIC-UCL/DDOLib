@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.common.util.testbench.NonRegressionTestBench;
+import org.ddolib.layered.testbench.NonRegressionTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;

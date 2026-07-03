@@ -1,9 +1,9 @@
-package org.ddolib.common.util.testbench;
+package org.ddolib.layered.testbench;
 
 import org.ddolib.common.frontier.CutSetType;
+import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.InvalidSolutionException;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;

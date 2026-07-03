@@ -1,10 +1,10 @@
 package org.ddolib.examples.layered.pdp;
 
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.testbench.TestDataSupplier;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

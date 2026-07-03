@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.layered.modeling.*;
-import org.ddolib.common.util.testbench.TestDataSupplier;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.util.List;
 import java.util.stream.IntStream;
