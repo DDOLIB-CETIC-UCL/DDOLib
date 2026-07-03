@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Provides a ranking strategy for {@link MSCTState} objects
  * used in the search process for solving the
@@ -39,8 +40,8 @@ public class MSCTRanking implements StateRanking<MSCTState> {
      * @param s1 the first state to compare.
      * @param s2 the second state to compare.
      * @return a negative integer if {@code s1} should be ranked before {@code s2},
-     *         zero if both states have the same rank,
-     *         or a positive integer if {@code s1} should be ranked after {@code s2}.
+     * zero if both states have the same rank,
+     * or a positive integer if {@code s1} should be ranked after {@code s2}.
      */
     @Override
     public int compare(MSCTState s1, MSCTState s2) {

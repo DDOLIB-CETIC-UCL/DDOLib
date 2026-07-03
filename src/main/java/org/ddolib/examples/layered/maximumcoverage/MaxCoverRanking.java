@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Ranking function for {@link MaxCoverState} used in the Maximum Coverage problem.
  *
@@ -16,7 +17,7 @@ public class MaxCoverRanking implements StateRanking<MaxCoverState> {
      * @param o1 the first state
      * @param o2 the second state
      * @return a negative integer, zero, or a positive integer as the first state
-     *         covers fewer, equal, or more items than the second state
+     * covers fewer, equal, or more items than the second state
      */
     @Override
     public int compare(MaxCoverState o1, MaxCoverState o2) {

@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -84,6 +84,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
 
         return new SRFLPState(mergedMust, mergedMaybes, mergedCut, mergedDepth);
     }
+
     /**
      * Relaxation of an edge cost between two states.
      *

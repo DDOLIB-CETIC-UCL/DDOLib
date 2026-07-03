@@ -2,6 +2,7 @@ package org.ddolib.examples.layered.tsp;
 
 import java.util.BitSet;
 import java.util.Objects;
+
 /**
  * Represents a state in the Traveling Salesman Problem (TSP).
  *
@@ -32,6 +33,7 @@ public class TSPState {
      * Current node(s). Usually a singleton, but can be multiple in merged states.
      */
     public BitSet current;
+
     /**
      * Constructs a new TSPState.
      *
@@ -54,6 +56,7 @@ public class TSPState {
         return (this.current.equals(that.current))
                 && this.toVisit.equals(that.toVisit);
     }
+
     /**
      * Creates a BitSet containing only the specified singleton value.
      *

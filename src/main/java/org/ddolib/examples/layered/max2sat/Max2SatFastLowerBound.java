@@ -1,10 +1,8 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.Set;
-
-import static java.lang.Integer.max;
 
 /**
  * Implementation of a fast lower bound heuristic for the <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem.
@@ -32,13 +30,19 @@ import static java.lang.Integer.max;
  */
 public class Max2SatFastLowerBound implements FastLowerBound<Max2SatState> {
 
-    /** The MAX2SAT problem instance associated with this lower bound. */
+    /**
+     * The MAX2SAT problem instance associated with this lower bound.
+     */
     private final Max2SatProblem problem;
 
-    /** Precomputed over-approximation of the optimal solution for the remaining variables. */
+    /**
+     * Precomputed over-approximation of the optimal solution for the remaining variables.
+     */
     private final int[] overApprox;
 
-    /** Precomputed contributions for unary clauses for each depth. */
+    /**
+     * Precomputed contributions for unary clauses for each depth.
+     */
     private final int[] precomputationForUnary;
 
     /**
@@ -55,7 +59,7 @@ public class Max2SatFastLowerBound implements FastLowerBound<Max2SatState> {
     /**
      * Computes the fast lower bound for a given state and set of remaining variables.
      *
-     * @param state the current MAX2SAT state (partial assignment)
+     * @param state     the current MAX2SAT state (partial assignment)
      * @param variables the set of remaining variable indices (not yet assigned)
      * @return a fast lower bound on the best possible solution from this state
      */

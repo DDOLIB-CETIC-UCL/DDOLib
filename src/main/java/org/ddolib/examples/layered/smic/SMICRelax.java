@@ -1,9 +1,10 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
-import java.util.*;
+import java.util.BitSet;
+import java.util.Iterator;
 
 /**
  * The {@code SMICRelax} class implements a relaxation operator for the
@@ -40,7 +41,9 @@ import java.util.*;
  * @see Relaxation
  */
 public class SMICRelax implements Relaxation<SMICState> {
-    /** The underlying problem instance associated with this relaxation. */
+    /**
+     * The underlying problem instance associated with this relaxation.
+     */
     final SMICProblem problem;
 
     /**
@@ -52,6 +55,7 @@ public class SMICRelax implements Relaxation<SMICState> {
     public SMICRelax(SMICProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges several {@link SMICState} objects into a single relaxed state.
      * <p>
@@ -78,6 +82,7 @@ public class SMICRelax implements Relaxation<SMICState> {
         }
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
+
     /**
      * Relaxes the cost of an edge between two states.
      * <p>

@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * A default state ranking implementation for the Bounded Knapsack Problem (BKP).
  * <p>
@@ -24,8 +25,8 @@ public class BKSRanking implements StateRanking<Integer> {
      * @param o1 the first state
      * @param o2 the second state
      * @return a negative integer if o1 has smaller capacity than o2,
-     *         zero if they are equal,
-     *         a positive integer if o1 has larger capacity than o2
+     * zero if they are equal,
+     * a positive integer if o1 has larger capacity than o2
      */
     @Override
     public int compare(final Integer o1, final Integer o2) {

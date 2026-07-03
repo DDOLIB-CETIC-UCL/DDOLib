@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Relaxation operator for {@link MaxCoverState} in the Maximum Coverage problem.
  *
@@ -19,15 +20,24 @@ import java.util.Iterator;
  * items. Additional statistics (total intersection size, number of merges, and
  * number of zero intersections) are tracked for analysis or debugging purposes.
  */
-public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
-    /** The MaxCover problem instance associated with this relaxation. */
+public class MaxCoverRelax implements Relaxation<MaxCoverState> {
+    /**
+     * The MaxCover problem instance associated with this relaxation.
+     */
     final MaxCoverProblem problem;
-    /** Sum of the cardinalities of intersections computed during merges. */
+    /**
+     * Sum of the cardinalities of intersections computed during merges.
+     */
     double totInsersectionSize = 0;
-    /** Number of merge operations performed. */
+    /**
+     * Number of merge operations performed.
+     */
     int nbMerge = 0;
-    /** Number of merges that resulted in an empty intersection. */
+    /**
+     * Number of merges that resulted in an empty intersection.
+     */
     int nbZeroIntersection = 0;
+
     /**
      * Constructs a MaxCover relaxation operator for a given problem instance.
      *
@@ -36,6 +46,7 @@ public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
     public MaxCoverRelax(MaxCoverProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges a collection of states into a single relaxed state.
      *
@@ -67,6 +78,7 @@ public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
         }
         return new MaxCoverState(intersectionCoveredItems);
     }
+
     /**
      * Computes the relaxed cost of a transition between states.
      *
@@ -74,11 +86,11 @@ public class    MaxCoverRelax implements Relaxation<MaxCoverState> {
      * In this implementation, the cost is not modified by the relaxation and
      * is returned as-is.
      *
-     * @param from the source state
-     * @param to the destination state
+     * @param from   the source state
+     * @param to     the destination state
      * @param merged the merged state after relaxation
-     * @param d the decision applied
-     * @param cost the original transition cost
+     * @param d      the decision applied
+     * @param cost   the original transition cost
      * @return the relaxed transition cost (same as input cost)
      */
     @Override

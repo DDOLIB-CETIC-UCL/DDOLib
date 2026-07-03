@@ -4,7 +4,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.max;
+
 /**
  * Utility class for generating and measuring instances of the Maximum Coverage (MaxCover) problem.
  *
@@ -32,18 +34,19 @@ public class MaxCoverGenerator {
     public static void main(String[] args) {
         measureInstance();
     }
+
     /**
      * Creates a single MaxCover instance and optionally computes its optimal value.
      *
      * <p>
      * The instance is written to a file in the specified directory using a standard naming convention.
      *
-     * @param n number of items
-     * @param m number of subsets
-     * @param k number of subsets to select
-     * @param maxR maximum ratio for random coverage
-     * @param seed random seed
-     * @param dirPath directory path to save the instance
+     * @param n              number of items
+     * @param m              number of subsets
+     * @param k              number of subsets to select
+     * @param maxR           maximum ratio for random coverage
+     * @param seed           random seed
+     * @param dirPath        directory path to save the instance
      * @param computeOptimum whether to compute the optimal solution via brute-force
      */
     private static void createInstance(int n, int m, int k, double maxR, int seed, String dirPath, boolean computeOptimum) {
@@ -53,7 +56,7 @@ public class MaxCoverGenerator {
             instance.optimal = Optional.of(optimum);
         }
 
-        String instanceName = dirPath + String.format("mc_n%d_m%d_k%d_r%d_%d.txt", n, m, k, (int) ceil(100*maxR), seed);
+        String instanceName = dirPath + String.format("mc_n%d_m%d_k%d_r%d_%d.txt", n, m, k, (int) ceil(100 * maxR), seed);
         try {
             FileWriter fw = new FileWriter(instanceName, false);
             fw.write(instance.instanceFormat());
@@ -63,6 +66,7 @@ public class MaxCoverGenerator {
             System.exit(1);
         }
     }
+
     /**
      * Generates multiple benchmark instances with varying parameters.
      *
@@ -78,12 +82,12 @@ public class MaxCoverGenerator {
         double[] maxRs = {0.1, 0.2};
         int nbSeeds = 10;
 
-        for (int n: ns) {
-            for (double mFactor: mFactors) {
+        for (int n : ns) {
+            for (double mFactor : mFactors) {
                 int m = (int) ceil(mFactor * n);
-                for (double kFactor: kFactors) {
+                for (double kFactor : kFactors) {
                     int k = (int) ceil(kFactor * m);
-                    for (double maxR: maxRs) {
+                    for (double maxR : maxRs) {
                         for (int seed = 0; seed < nbSeeds; seed++) {
                             createInstance(n, m, k, maxR, seed, "data/MaxCover/", false);
                         }
@@ -92,6 +96,7 @@ public class MaxCoverGenerator {
             }
         }
     }
+
     /**
      * Creates a few small instances for debugging and testing purposes.
      */
@@ -142,11 +147,11 @@ public class MaxCoverGenerator {
     /**
      * Recursive backtracking helper to generate all combinations.
      *
-     * @param start the starting index for this recursion
-     * @param n total number of elements
-     * @param k target combination size
+     * @param start    the starting index for this recursion
+     * @param n        total number of elements
+     * @param k        target combination size
      * @param tempList temporary list holding the current combination
-     * @param result list of all generated combinations
+     * @param result   list of all generated combinations
      */
     private static void backtrack(int start, int n, int k, List<Integer> tempList, List<Set<Integer>> result) {
         if (tempList.size() == k) {

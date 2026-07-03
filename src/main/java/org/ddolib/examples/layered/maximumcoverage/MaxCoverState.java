@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
 import java.util.BitSet;
+
 /**
  * Represents a state in the Maximum Coverage (MaxCover) problem.
  *
@@ -16,12 +17,14 @@ import java.util.BitSet;
  *
  * @param coveredItems a BitSet representing the items that are covered in this state
  */
-public record MaxCoverState (BitSet coveredItems) {
+public record MaxCoverState(BitSet coveredItems) {
     /**
      * Returns a string representation of the state.
      *
      * @return a string describing the covered items
      */
     @Override
-    public String toString() {return "covered items "+this.coveredItems();}
+    public String toString() {
+        return "covered items " + this.coveredItems();
+    }
 }

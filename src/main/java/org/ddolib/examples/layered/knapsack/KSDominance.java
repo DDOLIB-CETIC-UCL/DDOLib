@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
+
 /**
  * Dominance relation for the Knapsack Problem (KS).
  * <p>
@@ -28,6 +29,7 @@ public class KSDominance implements Dominance<Integer> {
     public Integer getKey(Integer capa) {
         return 0;
     }
+
     /**
      * Checks whether one state is dominated by another.
      *

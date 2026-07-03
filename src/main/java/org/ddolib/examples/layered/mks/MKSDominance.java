@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
+
 /**
  * Implements a dominance relation for Multi-dimensional Knapsack (MKS) states.
  *
@@ -28,6 +29,7 @@ public class MKSDominance implements Dominance<MKSState> {
     public Integer getKey(MKSState state) {
         return 0;
     }
+
     /**
      * Determines whether {@code state1} is dominated by or equal to {@code state2}.
      *

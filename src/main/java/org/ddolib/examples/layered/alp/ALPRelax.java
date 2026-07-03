@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Arrays;
 import java.util.Iterator;
+
 /**
  * Relaxation operator for {@link ALPState} in the Aircraft Landing Problem (ALP).
  * <p>
@@ -26,8 +27,11 @@ import java.util.Iterator;
  * @see Relaxation
  */
 public class ALPRelax implements Relaxation<ALPState> {
-    /** The ALP problem instance. */
+    /**
+     * The ALP problem instance.
+     */
     ALPProblem problem;
+
     /**
      * Constructs a relaxation operator for the given ALP problem.
      *
@@ -36,6 +40,7 @@ public class ALPRelax implements Relaxation<ALPState> {
     public ALPRelax(ALPProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple states into a single relaxed state.
      * <p>
@@ -67,17 +72,18 @@ public class ALPRelax implements Relaxation<ALPState> {
 
         return new ALPState(remainingAircraft, runwayStates);
     }
+
     /**
      * Returns the relaxed cost of a transition (edge) between states.
      * <p>
      * In this default implementation, the edge cost remains unchanged.
      * </p>
      *
-     * @param from the source state
-     * @param to the destination state
+     * @param from   the source state
+     * @param to     the destination state
      * @param merged the merged state
-     * @param d the decision leading to this transition
-     * @param cost the original cost of the transition
+     * @param d      the decision leading to this transition
+     * @param cost   the original cost of the transition
      * @return the relaxed cost of the edge
      */
     @Override

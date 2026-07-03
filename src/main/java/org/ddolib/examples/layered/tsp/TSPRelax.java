@@ -1,11 +1,12 @@
 package org.ddolib.examples.layered.tsp;
 
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Implementation of a relaxation for the Traveling Salesman Problem (TSP).
  *
@@ -31,6 +32,7 @@ import java.util.Iterator;
 public class TSPRelax implements Relaxation<TSPState> {
 
     private final TSPProblem problem;
+
     /**
      * Constructs a relaxation for a given TSP problem.
      *
@@ -39,6 +41,7 @@ public class TSPRelax implements Relaxation<TSPState> {
     public TSPRelax(TSPProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple {@link TSPState} instances into a single relaxed state.
      *
@@ -63,6 +66,7 @@ public class TSPRelax implements Relaxation<TSPState> {
 
         return new TSPState(current, toVisit);
     }
+
     /**
      * Relaxes the cost of a transition between states.
      *

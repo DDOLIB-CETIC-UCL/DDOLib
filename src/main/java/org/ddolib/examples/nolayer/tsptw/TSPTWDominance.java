@@ -1,6 +1,6 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
 import java.util.*;
 

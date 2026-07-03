@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Implements a state ranking strategy for the Pickup and Delivery Problem (PDP).
  * <p>
@@ -29,7 +30,7 @@ public class PDPRanking implements StateRanking<PDPState> {
      * @return 0 indicating both states are currently considered of equal rank
      */
     @Override
-    public int compare(final PDPState o1, final PDPState o2){
+    public int compare(final PDPState o1, final PDPState o2) {
         //children of merged are good candidates for merged as well
         //there are the one with imprecise min and maxContent
         return 0; //Integer.compare(o1.uncertaintyOnContent(), o2.uncertaintyOnContent());

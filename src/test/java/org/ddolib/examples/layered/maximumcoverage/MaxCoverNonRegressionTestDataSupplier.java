@@ -1,15 +1,10 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.layered.FastLowerBound;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Relaxation;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.nio.file.Path;
 

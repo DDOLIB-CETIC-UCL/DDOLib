@@ -1,12 +1,12 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

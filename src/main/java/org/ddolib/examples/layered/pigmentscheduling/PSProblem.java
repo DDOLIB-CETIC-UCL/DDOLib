@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.util.io.InputReader;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.io.InputReader;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,17 +72,15 @@ public class PSProblem implements Problem<PSState> {
      * </p>
      */
     final int[][] previousDemands;
-
+    /**
+     * Optional known optimal objective value for benchmarking or validation purposes.
+     */
+    private final Optional<Double> optimal;
     /**
      * For each item {@code i} and time {@code t}, stores the total number of remaining
      * demands for item {@code i} in the time interval {@code [0..t]}.
      */
     int[][] remainingDemands;
-
-    /**
-     * Optional known optimal objective value for benchmarking or validation purposes.
-     */
-    private Optional<Double> optimal;
     /**
      * Optional name of the problem instance.
      */

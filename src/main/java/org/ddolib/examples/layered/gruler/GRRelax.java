@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Relaxation operator for the Golomb Ruler (GR) problem.
  * <p>
@@ -40,12 +41,13 @@ public class GRRelax implements Relaxation<GRState> {
      * Merges several {@link GRState} objects into a single relaxed state.
      * <p>
      * The resulting state contains:
-     *  </p>
+     * </p>
      * <ul>
      *     <li>The intersection of all mark sets (only marks present in all states are kept).</li>
      *     <li>The intersection of all distance sets (only distances present in all states are kept).</li>
      *     <li>The smallest {@code lastMark} value among all merged states.</li>
      * </ul>
+     *
      * @param states an iterator over the states to merge.
      * @return a new {@link GRState} representing the relaxed (merged) state.
      */
@@ -64,6 +66,7 @@ public class GRRelax implements Relaxation<GRState> {
         }
         return new GRState(intersectionMarks, intersectionDistances, lastMark);
     }
+
     /**
      * Computes the relaxed cost of transitioning between two states in the relaxed problem.
      * <p>

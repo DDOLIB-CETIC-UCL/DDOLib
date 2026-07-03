@@ -1,11 +1,11 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.modeling.layered.AcsModel;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.AcsModel;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -72,7 +72,6 @@ public final class Max2SatAcsMain {
         };
 
         Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            ;
             SolutionPrinter.printSolution(s, sol);
         });
 

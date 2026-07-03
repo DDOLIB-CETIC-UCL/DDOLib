@@ -1,11 +1,12 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.nolayer.Solution;
-import org.ddolib.modeling.nolayer.AwAstarModel;
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Problem;
-import org.ddolib.solving.awastar.core.solver.nolayer.AwAstarSolver;
+import org.ddolib.nolayer.modeling.AwAstarModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solving.awastar.core.solver.AwAstarSolver;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,7 +30,7 @@ public class TspTwAwAstarMain {
 
             @Override
             public FastLowerBound<TSPTWState> lowerBound() {
-                return new TSPTWFbl(problem);
+                return new TSPTWFlb(problem);
             }
 
             @Override
@@ -39,7 +40,8 @@ public class TspTwAwAstarMain {
         };
         var solver = new AwAstarSolver<>(model);
 
-        Solution bestSolution = solver.minimize(searchStatistics -> false, (sol, stat) -> {
+        Solution bestSolution = solver.minimize(searchStatistics -> searchStatistics.runtime() > 1000, (sol, stat) -> {
+            SolutionPrinter.printSolution(stat, sol);
         });
 
         System.out.println(bestSolution.statistics());

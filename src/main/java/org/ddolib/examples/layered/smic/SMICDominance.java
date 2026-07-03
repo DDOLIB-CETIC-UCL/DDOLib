@@ -1,7 +1,8 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.modeling.layered.Dominance;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Dominance;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+
 /**
  * The {@code SMICDominance} class defines the dominance relation between two
  * states of the {@link SMICState} in the context of the
@@ -50,6 +51,7 @@ public class SMICDominance implements Dominance<SMICState> {
     public SMICDominanceKey getKey(SMICState state) {
         return new SMICDominanceKey(state.remainingJobs());
     }
+
     /**
      * Determines whether one state is dominated by or equal to another.
      * <p>
@@ -61,10 +63,11 @@ public class SMICDominance implements Dominance<SMICState> {
      *   <li>The current time of {@code state2} is less than or equal to that of {@code state1}.</li>
      * </ul>
      * This ensures that the search does not revisit slower or redundant configurations.
+     *
      * @param state1 the state being tested for dominance
      * @param state2 the state potentially dominating {@code state1}
      * @return {@code true} if {@code state1} is dominated by or equal to {@code state2},
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
 
     @Override

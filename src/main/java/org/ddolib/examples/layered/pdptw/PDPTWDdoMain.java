@@ -1,19 +1,15 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.common.frontier.CutSetType;
+import org.ddolib.common.frontier.Frontier;
+import org.ddolib.common.frontier.SimpleFrontier;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.solving.ddo.core.frontier.CutSetType;
-import org.ddolib.solving.ddo.core.frontier.Frontier;
-import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;

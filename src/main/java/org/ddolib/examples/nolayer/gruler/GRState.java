@@ -11,19 +11,19 @@ public class GRState {
     /**
      * Set of marks already placed on the ruler.
      */
-    private BitSet marks;
+    private final BitSet marks;
     /**
      * Set of pairwise distances already covered by the placed marks.
      */
-    private BitSet distances;
+    private final BitSet distances;
     /**
      * The position of the last placed mark on the ruler.
      */
-    private int lastMark;
+    private final int lastMark;
     /**
      * The layer (depth) of the state.
      */
-    private int layer;
+    private final int layer;
 
     /**
      * Constructs a new {@link GRState} from given sets of marks and distances.

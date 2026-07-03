@@ -1,7 +1,8 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.nolayer.modeling.Solvers;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -13,17 +14,14 @@ public final class KSAStarMain {
         final KSProblem problem = KSProblem.fromFile(instance);
         final KSModel model = new KSModel(problem);
 
-        org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<KSState> solver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(
-                model);
 
-        Solution bestSolution = solver.minimize(
-                stats -> false,
+        Solution bestSolution = Solvers.minimizeAstar(model,
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);
                 });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal KS value: " + -bestSolution.value());
+        System.out.println("Optimal KS value: " + -bestSolution.statistics().incumbent());
     }
 }

@@ -1,11 +1,8 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Model;
-import org.ddolib.modeling.nolayer.Problem;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.modeling.Problem;
 
 public class TSPTWModel implements Model<TSPTWState> {
 

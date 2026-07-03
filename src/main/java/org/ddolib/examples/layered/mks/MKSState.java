@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.mks;
 
 import java.util.Arrays;
+
 /**
  * Represents the state of a multi-dimensional Knapsack problem (MKS) in terms of
  * the remaining capacities of each knapsack dimension.
@@ -10,8 +11,11 @@ import java.util.Arrays;
  * methods for cloning, equality checking, and string representation.
  */
 public class MKSState {
-    /** Remaining capacities of each knapsack dimension. */
+    /**
+     * Remaining capacities of each knapsack dimension.
+     */
     double[] capacities;
+
     /**
      * Constructs a new MKSState with the given capacities.
      *
@@ -20,6 +24,7 @@ public class MKSState {
     public MKSState(double[] capacities) {
         this.capacities = capacities;
     }
+
     /**
      * Creates a deep copy of this state.
      *
@@ -29,6 +34,7 @@ public class MKSState {
     public MKSState clone() {
         return new MKSState(capacities.clone());
     }
+
     /**
      * Returns a string representation of this state.
      *
@@ -38,6 +44,7 @@ public class MKSState {
     public String toString() {
         return Arrays.toString(capacities);
     }
+
     /**
      * Computes the hash code based on the capacities array.
      *
@@ -47,6 +54,7 @@ public class MKSState {
     public int hashCode() {
         return Arrays.hashCode(capacities);
     }
+
     /**
      * Compares this state to another object for equality.
      *

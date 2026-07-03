@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
 
 /**
  * Dominance relation for the Traveling Salesman Problem with Time Windows (TSPTW).

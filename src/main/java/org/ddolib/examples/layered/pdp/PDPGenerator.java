@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
+
 /**
  * Utility class for generating instances of the <b>Pickup and Delivery Problem (PDP)</b>
  * with a single vehicle.
@@ -72,6 +73,7 @@ public class PDPGenerator {
 
         return new PDPProblem(distance, pickupToAssociatedDelivery, maxCapa);
     }
+
     /**
      * Computes the Euclidean distance between two points.
      *
@@ -82,6 +84,7 @@ public class PDPGenerator {
     public static int dist(int dx, int dy) {
         return (int) Math.sqrt(dx * dx + dy * dy);
     }
+
     /**
      * Generates a PDP instance and writes it to a file in a human-readable format.
      * <p>

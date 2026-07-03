@@ -1,16 +1,16 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.Hybrid;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.Hybrid;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.Collections;

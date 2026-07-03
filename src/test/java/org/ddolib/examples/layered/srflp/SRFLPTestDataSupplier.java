@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.modeling.layered.*;
-import org.ddolib.util.testbench.TestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

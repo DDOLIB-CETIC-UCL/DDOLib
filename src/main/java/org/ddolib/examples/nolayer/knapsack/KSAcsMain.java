@@ -1,11 +1,11 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.nolayer.AcsModel;
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Problem;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.nolayer.modeling.AcsModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,7 +39,7 @@ public final class KSAcsMain {
             }
         };
 
-        Solution bestSolution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model, (sol, stats) -> {
+        Solution bestSolution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model, (sol, stats) -> {
             SolutionPrinter.printSolution(stats, sol);
         });
 
@@ -47,8 +47,7 @@ public final class KSAcsMain {
         System.out.println(bestSolution);
         System.out.println("Optimal KS value: " + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution();
-            double val = problem.evaluate(solArray);
+            double val = problem.evaluate(bestSolution.solution());
             System.out.println("Evaluated KS value: " + val);
         } catch (Exception e) {
             System.out.println("ACS EVALUATION ERROR: " + e.getMessage());

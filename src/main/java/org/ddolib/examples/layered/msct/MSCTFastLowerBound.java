@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.Set;
+
 /**
  * Provides a fast lower bound computation for the Maximum Sum of Compatible Tasks (MSCT) problem.
  * <p>
@@ -69,8 +70,8 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
      * the minimal additional cost required to schedule the remaining tasks.
      * </p>
      *
-     * @param state      the current state of the problem, representing already scheduled tasks.
-     * @param variables  the set of remaining variables (tasks) to be scheduled.
+     * @param state     the current state of the problem, representing already scheduled tasks.
+     * @param variables the set of remaining variables (tasks) to be scheduled.
      * @return an estimated lower bound on the minimal total cost achievable from the current state.
      */
     @Override

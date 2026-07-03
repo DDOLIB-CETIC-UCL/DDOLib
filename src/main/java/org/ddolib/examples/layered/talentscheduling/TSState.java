@@ -35,6 +35,6 @@ public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocat
 
     @Override
     public String toString() {
-            return String.format("Remaining: %s - Maybe: %s - On location actors: %s", remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());
+        return String.format("Remaining: %s - Maybe: %s - On location actors: %s", remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());
     }
 }

@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.ArrayList;
 import java.util.Collections;

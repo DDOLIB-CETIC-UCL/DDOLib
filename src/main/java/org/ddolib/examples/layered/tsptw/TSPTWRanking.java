@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Ranking class for states in the Traveling Salesman Problem with Time Windows (TSPTW).
  *
@@ -23,7 +24,7 @@ public class TSPTWRanking implements StateRanking<TSPTWState> {
      * @param o1 the first state to compare
      * @param o2 the second state to compare
      * @return a negative integer, zero, or a positive integer if the first state has more, equal,
-     *         or fewer nodes in {@code possiblyVisit} than the second state, respectively.
+     * or fewer nodes in {@code possiblyVisit} than the second state, respectively.
      */
     @Override
     public int compare(TSPTWState o1, TSPTWState o2) {

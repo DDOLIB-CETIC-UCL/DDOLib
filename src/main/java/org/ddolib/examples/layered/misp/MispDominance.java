@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
 
 import java.util.BitSet;
+
 /**
  * Implementation of a dominance relation for the Maximum Independent Set Problem (MISP).
  * <p>
@@ -26,6 +27,7 @@ public class MispDominance implements Dominance<BitSet> {
     public Integer getKey(BitSet state) {
         return 0;
     }
+
     /**
      * Determines whether {@code state1} is dominated by or equal to {@code state2}.
      * <p>

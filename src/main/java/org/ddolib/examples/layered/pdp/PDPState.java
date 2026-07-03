@@ -2,6 +2,7 @@ package org.ddolib.examples.layered.pdp;
 
 import java.util.BitSet;
 import java.util.Objects;
+
 /**
  * Represents the state of a Pickup and Delivery Problem (PDP) during the search process.
  * <p>
@@ -16,6 +17,10 @@ import java.util.Objects;
  */
 public class PDPState {
     /**
+     * Cached hash code for efficient use in hash-based collections.
+     */
+    private final int hash;
+    /**
      * Nodes that can currently be visited.
      * <p>
      * Includes all unvisited pickup nodes and all unvisited delivery nodes whose
@@ -23,13 +28,11 @@ public class PDPState {
      * </p>
      */
     BitSet openToVisit;
-
     /**
      * All nodes that have not yet been visited, including those that cannot
      * currently be visited due to pickup-delivery constraints.
      */
     BitSet allToVisit;
-
     /**
      * The current node(s) of the vehicle.
      * <p>
@@ -44,25 +47,16 @@ public class PDPState {
     /**
      * The maximum possible vehicle content (number of items) at this state.
      */
-    int maxContent ;
-    /**
-     * Computes the uncertainty on the vehicle content, defined as {@code maxContent - minContent}.
-     *
-     * @return the difference between maximum and minimum vehicle content
-     */
-    public int uncertaintyOnContent() {
-        return maxContent - minContent;
-    }
-    /** Cached hash code for efficient use in hash-based collections. */
-    private int hash;
+    int maxContent;
+
     /**
      * Constructs a PDPState.
      *
-     * @param current      the current node(s) of the vehicle
-     * @param openToVisit  nodes that can currently be visited
-     * @param allToVisit   all nodes that have not yet been visited
-     * @param minContent   minimum vehicle content
-     * @param maxContent   maximum vehicle content
+     * @param current     the current node(s) of the vehicle
+     * @param openToVisit nodes that can currently be visited
+     * @param allToVisit  all nodes that have not yet been visited
+     * @param minContent  minimum vehicle content
+     * @param maxContent  maximum vehicle content
      */
     public PDPState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent) {
         this.openToVisit = openToVisit;
@@ -70,7 +64,16 @@ public class PDPState {
         this.current = current;
         this.minContent = minContent;
         this.maxContent = maxContent;
-        this.hash = Objects.hash(openToVisit, allToVisit, current,minContent,maxContent);
+        this.hash = Objects.hash(openToVisit, allToVisit, current, minContent, maxContent);
+    }
+
+    /**
+     * Computes the uncertainty on the vehicle content, defined as {@code maxContent - minContent}.
+     *
+     * @return the difference between maximum and minimum vehicle content
+     */
+    public int uncertaintyOnContent() {
+        return maxContent - minContent;
     }
 
     public int hashCode() {
@@ -80,12 +83,13 @@ public class PDPState {
     @Override
     public boolean equals(Object obj) {
         PDPState that = (PDPState) obj;
-        if(this.minContent != that.minContent) return false;
-        if(this.maxContent != that.maxContent) return false;
+        if (this.minContent != that.minContent) return false;
+        if (this.maxContent != that.maxContent) return false;
         if (!that.current.equals(this.current)) return false;
         if (!that.openToVisit.equals(this.openToVisit)) return false;
         return (that.allToVisit.equals(this.allToVisit));
     }
+
     /**
      * Returns a BitSet containing a single value.
      *

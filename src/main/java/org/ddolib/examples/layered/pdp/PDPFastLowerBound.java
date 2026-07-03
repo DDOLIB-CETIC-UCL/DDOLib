@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -36,7 +36,9 @@ import java.util.Set;
  * @see PDPProblem
  */
 public class PDPFastLowerBound implements FastLowerBound<PDPState> {
-    /** Precomputed minimum incident edge for each node in the PDP instance. */
+    /**
+     * Precomputed minimum incident edge for each node in the PDP instance.
+     */
     private final double[] leastIncidentEdge;
 
     /**
@@ -58,6 +60,7 @@ public class PDPFastLowerBound implements FastLowerBound<PDPState> {
             leastIncidentEdge[i] = min;
         }
     }
+
     /**
      * Computes a fast lower bound for a given state and a set of unassigned variables.
      *

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
 
 import java.util.Arrays;
 
@@ -32,7 +32,7 @@ public class ALPRanking implements StateRanking<ALPState> {
      * @param a the first state to compare
      * @param b the second state to compare
      * @return a negative integer, zero, or a positive integer if {@code a} is ranked
-     *         less than, equal to, or greater than {@code b}, respectively
+     * less than, equal to, or greater than {@code b}, respectively
      */
     @Override
     public int compare(ALPState a, ALPState b) {

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsp;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     private final double[] leastIncidentEdge;
+
     /**
      * Constructs a fast lower bound calculator for the given TSP problem.
      *
@@ -50,6 +51,7 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
             leastIncidentEdge[i] = min;
         }
     }
+
     /**
      * Computes a fast lower bound on the cost to complete the TSP tour from the given state.
      *

@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Ranking strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
  * <p>
@@ -37,6 +38,7 @@ public class LCSRanking implements StateRanking<LCSState> {
         }
         return Integer.compare(totState2, totState1);
     }
+
     /**
      * Indicates whether this ranking object is equal to another.
      * <p>

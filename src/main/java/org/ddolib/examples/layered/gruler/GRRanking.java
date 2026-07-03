@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Defines a ranking strategy for states in the Golomb Ruler (GR) problem.
  * <p>
@@ -35,7 +36,7 @@ public class GRRanking implements StateRanking<GRState> {
      * @param s1 the first state to compare.
      * @param s2 the second state to compare.
      * @return a negative integer if {@code s1} has a smaller last mark than {@code s2},
-     *         zero if they are equal, or a positive integer otherwise.
+     * zero if they are equal, or a positive integer otherwise.
      */
     @Override
     public int compare(GRState s1, GRState s2) {

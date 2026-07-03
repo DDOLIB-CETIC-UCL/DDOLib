@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

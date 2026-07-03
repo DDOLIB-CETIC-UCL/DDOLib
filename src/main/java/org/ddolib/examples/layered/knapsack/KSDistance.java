@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
+
 /**
  * Distance measure for states in a Knapsack (KS) problem.
  *
@@ -13,8 +14,11 @@ import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
  * Distances are normalized by the knapsack capacity to produce values in [0,1].
  */
 public class KSDistance implements StateDistance<Integer> {
-    /** The Knapsack problem instance associated with this distance. */
+    /**
+     * The Knapsack problem instance associated with this distance.
+     */
     final private KSProblem problem;
+
     /**
      * Constructs a distance measure for a given Knapsack problem instance.
      *
@@ -23,6 +27,7 @@ public class KSDistance implements StateDistance<Integer> {
     public KSDistance(KSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes the normalized distance between two states.
      *
@@ -38,6 +43,7 @@ public class KSDistance implements StateDistance<Integer> {
     public double distance(Integer a, Integer b) {
         return ((double) Math.abs(a - b) / problem.capa);
     }
+
     /**
      * Computes the normalized distance between a state and the root (empty knapsack).
      *

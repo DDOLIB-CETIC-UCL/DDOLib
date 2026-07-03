@@ -1,14 +1,14 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
-import org.ddolib.solving.ddo.core.mdd.layered.NodeSubProblem;
-import static org.ddolib.util.DistanceUtil.weightedJaccardDistance;
-import static org.ddolib.util.DistanceUtil.symmetricDifferenceDistance;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 import java.util.BitSet;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.max;
+import static org.ddolib.common.util.DistanceUtil.symmetricDifferenceDistance;
+import static org.ddolib.common.util.DistanceUtil.weightedJaccardDistance;
+
 /**
  * Distance function for {@link MaxCoverState} used to measure similarity
  * between states in the context of the Maximum Coverage problem.
@@ -27,16 +27,20 @@ import static java.lang.Math.max;
  * instance and may rely on weighted or unweighted set-based metrics.
  */
 public class MaxCoverDistance implements StateDistance<MaxCoverState> {
-    /** Instance of the Maximum Coverage problem. */
+    /**
+     * Instance of the Maximum Coverage problem.
+     */
     MaxCoverProblem instance;
+
     /**
      * Constructs a distance measure associated with a given MaxCover problem instance.
      *
      * @param instance the MaxCover problem instance providing problem-specific parameters
      */
     public MaxCoverDistance(MaxCoverProblem instance) {
-            this.instance = instance;
-        }
+        this.instance = instance;
+    }
+
     /**
      * Computes a Roger-like distance based on the size of the intersection
      * between two sets.
@@ -52,8 +56,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         BitSet tmp = (BitSet) a.clone();
         tmp.and(b);
         int intersectionSize = tmp.cardinality();
-        return 50*50 - intersectionSize*intersectionSize;
+        return 50 * 50 - intersectionSize * intersectionSize;
     }
+
     /**
      * Computes a convex combination of two distance components.
      *
@@ -68,6 +73,7 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         double alpha = 0.25;
         return alpha * distanceOnCost + (1 - alpha) * distanceOnSet;
     }
+
     /**
      * Computes the distance between a state and the root of the search tree.
      *
@@ -79,8 +85,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
      */
     @Override
     public double distanceWithRoot(MaxCoverState state) {
-            return ((double) state.coveredItems().cardinality()) /instance.nbItems;
+        return ((double) state.coveredItems().cardinality()) / instance.nbItems;
     }
+
     /**
      * Computes the distance between two search nodes.
      *
@@ -101,6 +108,7 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
         double distanceOnCost = abs(a.getValue() - b.getValue()) / instance.nbItems;
         return convexCombination(distanceOnSet, distanceOnCost);
     }
+
     /**
      * Computes the distance between two MaxCover states.
      *

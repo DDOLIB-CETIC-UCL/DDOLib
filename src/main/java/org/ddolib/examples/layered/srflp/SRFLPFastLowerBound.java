@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
+
 /**
  * Provides a fast lower-bound estimation for the Single-Row Facility Layout Problem (SRFLP)
  * based on the current state of the solution.
@@ -38,10 +39,14 @@ import java.util.Set;
 public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     private final SRFLPProblem problem;
 
-    /** Pairs of departments sorted by their flow in decreasing order. */
+    /**
+     * Pairs of departments sorted by their flow in decreasing order.
+     */
     private final ArrayList<PairAndFlow> pairsSortedByFlow = new ArrayList<>();
 
-    /** Departments sorted by their length in increasing order. */
+    /**
+     * Departments sorted by their length in increasing order.
+     */
     private final ArrayList<DepartmentAndLength> departmentsSortedByLength = new ArrayList<>();
 
     /**
@@ -64,6 +69,7 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
         Collections.reverse(pairsSortedByFlow);
         Collections.sort(departmentsSortedByLength);
     }
+
     /**
      * Computes a fast lower bound for a given state and a set of variables.
      *

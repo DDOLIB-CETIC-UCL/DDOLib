@@ -19,5 +19,5 @@ public enum SearchStatus {
     /**
      * The search status is unknown (e.g., interrupted before finding any solution).
      */
-    UNKNOWN;
+    UNKNOWN
 }

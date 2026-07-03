@@ -52,7 +52,7 @@ public class Max2SatGenerator {
             for (BinaryClause bc : selected) {
                 bw.newLine();
                 int w = rng.nextInt(1, 11);
-                String line = String.format("%d %d %d", bc.i, bc.j, w);
+                String line = String.format("%d %d %d", bc.i(), bc.j(), w);
                 bw.write(line);
             }
         }

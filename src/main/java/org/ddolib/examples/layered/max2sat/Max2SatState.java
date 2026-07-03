@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * </ul>
  *
  * @param netBenefit the net benefits by setting the variable
- * @param depth the depth of the DD
+ * @param depth      the depth of the DD
  */
 public record Max2SatState(ArrayList<Integer> netBenefit, int depth) {
 

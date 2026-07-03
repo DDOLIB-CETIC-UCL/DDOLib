@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.srflp;
 
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
 
 /**
  * Implements a ranking between two {@link SRFLPState} instances for use in
@@ -26,8 +26,8 @@ public class SRFLPRanking implements StateRanking<SRFLPState> {
      * @param o1 the first state to compare
      * @param o2 the second state to compare
      * @return a negative integer if {@code o1} has fewer remaining departments than {@code o2},
-     *         zero if they have the same number of remaining departments,
-     *         or a positive integer if {@code o1} has more remaining departments than {@code o2}.
+     * zero if they have the same number of remaining departments,
+     * or a positive integer if {@code o1} has more remaining departments than {@code o2}.
      */
     @Override
     public int compare(SRFLPState o1, SRFLPState o2) {

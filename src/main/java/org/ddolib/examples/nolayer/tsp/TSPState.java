@@ -36,8 +36,7 @@ public class TSPState {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof TSPState)) return false;
-        TSPState that = (TSPState) obj;
+        if (!(obj instanceof TSPState that)) return false;
         return (this.current.equals(that.current)) && this.toVisit.equals(that.toVisit);
     }
 

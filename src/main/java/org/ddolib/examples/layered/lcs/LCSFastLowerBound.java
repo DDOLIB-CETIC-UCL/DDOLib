@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.Set;
 
@@ -26,8 +26,11 @@ import java.util.Set;
  * </ul>
  */
 public class LCSFastLowerBound implements FastLowerBound<LCSState> {
-    /** The LCS problem instance associated with this heuristic. */
+    /**
+     * The LCS problem instance associated with this heuristic.
+     */
     LCSProblem problem;
+
     /**
      * Constructs a fast lower bound heuristic for a given LCS problem.
      *
@@ -36,10 +39,11 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     public LCSFastLowerBound(LCSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a fast lower bound on the objective function for the given state.
      *
-     * @param state The current LCS state representing positions in each string.
+     * @param state     The current LCS state representing positions in each string.
      * @param variables The set of variables (unused in this heuristic but required by interface).
      * @return The negative of the estimated maximum LCS length achievable from this state.
      */

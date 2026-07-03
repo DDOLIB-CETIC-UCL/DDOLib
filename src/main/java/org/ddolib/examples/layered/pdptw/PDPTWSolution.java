@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Pretty-printer wrapper for PDPTW solutions.

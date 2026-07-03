@@ -11,12 +11,12 @@ public class KSAlgo {
      * Provides a greedy approximation for the Knapsack Problem.
      *
      * <p>The algorithm sorts items in descending order of their profit-to-weight ratio
-     * ({@code profit / weight}) and selects items sequentially as long as they fit 
+     * ({@code profit / weight}) and selects items sequentially as long as they fit
      * within the remaining capacity.</p>
      *
      * @param problem the Knapsack Problem instance to solve
      * @return the total profit of the selected items, providing a primal bound (lower bound)
-     *         on the optimal solution
+     * on the optimal solution
      */
     public static int greedyKS(KSProblem problem) {
         Integer[] items = new Integer[problem.nbVars()];

@@ -1,13 +1,13 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.LnsModel;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.LnsModel;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 /**
  * Entry point for solving the Bounded Knapsack Problem (BKS)

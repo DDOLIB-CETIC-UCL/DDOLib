@@ -1,16 +1,16 @@
 package org.ddolib.examples.nolayer.misp;
 
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.Relaxation;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.solving.ddo.core.solver.DdoSolver;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;

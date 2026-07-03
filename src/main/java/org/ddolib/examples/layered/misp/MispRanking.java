@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
 
 import java.util.BitSet;
+
 /**
  * Implements a ranking strategy for states in the Maximum Independent Set Problem (MISP).
  * <p>
@@ -22,7 +23,7 @@ public class MispRanking implements StateRanking<BitSet> {
      * @param o1 the first state to compare
      * @param o2 the second state to compare
      * @return a negative integer, zero, or a positive integer as the first state has
-     *         fewer, equal, or more remaining nodes than the second state
+     * fewer, equal, or more remaining nodes than the second state
      */
     @Override
     public int compare(BitSet o1, BitSet o2) {

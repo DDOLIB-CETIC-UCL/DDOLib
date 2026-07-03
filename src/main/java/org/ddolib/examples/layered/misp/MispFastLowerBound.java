@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.BitSet;
 import java.util.Set;

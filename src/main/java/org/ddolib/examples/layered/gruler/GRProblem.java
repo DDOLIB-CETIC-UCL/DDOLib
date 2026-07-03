@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -124,7 +124,7 @@ public class GRProblem implements Problem<GRState> {
         int n2 = n * n;
         return IntStream.range(nextMark, n2)
                 .filter(i -> state.getMarks().stream()
-                .noneMatch(j -> state.getDistances().get(i - j)))
+                        .noneMatch(j -> state.getDistances().get(i - j)))
                 .boxed()
                 .iterator();
     }

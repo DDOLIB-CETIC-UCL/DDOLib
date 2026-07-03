@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Iterator;
+
 /**
  * A relaxation strategy for the Bounded Knapsack Problem (BKP) used in
  * relaxed decision diagrams.
@@ -32,6 +33,7 @@ public class BKSRelax implements Relaxation<Integer> {
      */
     public BKSRelax() {
     }
+
     /**
      * Merges a set of states into a single representative state for a relaxed DD.
      * <p>
@@ -51,6 +53,7 @@ public class BKSRelax implements Relaxation<Integer> {
         }
         return capa;
     }
+
     /**
      * Optionally relaxes the edge cost when transitioning from a state to a merged state.
      * <p>

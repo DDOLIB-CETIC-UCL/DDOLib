@@ -1,11 +1,9 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.common.dominance.DefaultDominanceChecker;
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.modeling.layered.*;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

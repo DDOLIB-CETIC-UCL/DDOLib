@@ -1,78 +1,47 @@
 package org.ddolib.examples.nolayer.misp;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
+import java.util.*;
+
+/**
+ * Dominance checker for the Maximum Independent Set Problem (MISP).
+ * Assumes a minimization framework where lower values (more negative weights) are better.
+ */
 public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<MispState> {
 
-    private static class Entry {
-        BitSet remainingNodes;
-        double value;
-
-        Entry(BitSet remainingNodes, double value) {
-            this.remainingNodes = (BitSet) remainingNodes.clone();
-            this.value = value;
-        }
-    }
-
-    private final Map<Integer, List<Entry>> entriesByCardinality = new HashMap<>();
+    private final Map<Integer, List<DominanceEntry>> entriesByCardinality = new HashMap<>();
 
     @Override
     public boolean updateDominance(MispState state, double value) {
-        BitSet s2 = state.remainingNodes();
-        int s2Card = s2.cardinality();
-        
-        // Check if state is dominated by any existing entry
-        // A state can only be dominated by an entry with AT LEAST as many remaining nodes
-        for (int card = s2Card; card <= s2.size(); card++) {
-            List<Entry> entries = entriesByCardinality.get(card);
-            if (entries == null) continue;
-            for (Entry entry : entries) {
-                if (entry.value <= value) { // entry is better or equal
-                    BitSet s1 = entry.remainingNodes;
-                    // s1 dominates s2 if all bits in s2 are also in s1
-                    boolean dominated = true;
-                    for (int i = s2.nextSetBit(0); i >= 0; i = s2.nextSetBit(i + 1)) {
-                        if (!s1.get(i)) {
-                            dominated = false;
-                            break;
-                        }
-                    }
-                    if (dominated) {
-                        return true;
+        BitSet currentNodes = state.remainingNodes();
+        int card = currentNodes.cardinality();
+
+        // 1. Check if the new state 'currentNodes' is dominated by any existing entry 's1'
+        // An entry can dominate currentNodes only if it has AT LEAST as many remaining nodes
+        for (Map.Entry<Integer, List<DominanceEntry>> mapEntry : entriesByCardinality.entrySet()) {
+            if (mapEntry.getKey() >= card) {
+                for (DominanceEntry entry : mapEntry.getValue()) {
+                    // entry.value <= value means the existing entry has a better or equal cost
+                    if (entry.value <= value && isSubset(currentNodes, entry.remainingNodes)) {
+                        return true; // The new state is dominated, discard it
                     }
                 }
             }
         }
-        
-        // Add to entries
-        entriesByCardinality.computeIfAbsent(s2Card, k -> new ArrayList<>()).add(new Entry(s2, value));
 
-        // Optional: remove entries that are dominated by the new state
-        // A state can only dominate entries with AT MOST as many remaining nodes
-        for (int card = 0; card <= s2Card; card++) {
-            List<Entry> entries = entriesByCardinality.get(card);
-            if (entries == null) continue;
-            entries.removeIf(entry -> {
-                if (value <= entry.value) {
-                    BitSet s1 = s2; // new state
-                    BitSet s = entry.remainingNodes;
-                    boolean dominates = true;
-                    for (int i = s.nextSetBit(0); i >= 0; i = s.nextSetBit(i + 1)) {
-                        if (!s1.get(i)) {
-                            dominates = false;
-                            break;
-                        }
-                    }
-                    return dominates;
-                }
-                return false;
-            });
+        // 2. Remove existing entries that are dominated by the new state 'currentNodes'
+        // The new state can dominate an entry only if it has AT MOST as many remaining nodes
+        for (Map.Entry<Integer, List<DominanceEntry>> mapEntry : entriesByCardinality.entrySet()) {
+            if (mapEntry.getKey() <= card) {
+                mapEntry.getValue().removeIf(entry ->
+                        value <= entry.value && isSubset(entry.remainingNodes, currentNodes)
+                );
+            }
         }
+
+        // 3. Add the new state to entries (Safe from self-deletion)
+        entriesByCardinality.computeIfAbsent(card, k -> new ArrayList<>()).add(new DominanceEntry(currentNodes, value));
 
         return false;
     }
@@ -80,5 +49,24 @@ public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<Misp
     @Override
     public void clear() {
         entriesByCardinality.clear();
+    }
+
+    /**
+     * Checks if the 'child' BitSet is a subset of the 'parent' BitSet.
+     */
+    private boolean isSubset(BitSet child, BitSet parent) {
+        for (int i = child.nextSetBit(0); i >= 0; i = child.nextSetBit(i + 1)) {
+            if (!parent.get(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private record DominanceEntry(BitSet remainingNodes, double value) {
+        DominanceEntry(BitSet remainingNodes, double value) {
+            this.remainingNodes = (BitSet) remainingNodes.clone();
+            this.value = value;
+        }
     }
 }

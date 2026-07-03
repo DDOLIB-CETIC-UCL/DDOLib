@@ -19,6 +19,7 @@ public class LCSState {
      * position[i] is the index of the next character to be considered in the i-th string.
      */
     int[] position;
+
     /**
      * Constructs an LCS state with the given positions for each string.
      *
@@ -27,6 +28,7 @@ public class LCSState {
     LCSState(int[] position) {
         this.position = position;
     }
+
     /**
      * Returns a hash code for this state, based on the positions in all strings.
      *
@@ -36,6 +38,7 @@ public class LCSState {
     public int hashCode() {
         return Arrays.hashCode(position);
     }
+
     /**
      * Checks equality between this state and another object.
      * Two states are equal if their position arrays are identical.
@@ -51,6 +54,7 @@ public class LCSState {
             return false;
         }
     }
+
     /**
      * Returns a string representation of the state.
      * <p>

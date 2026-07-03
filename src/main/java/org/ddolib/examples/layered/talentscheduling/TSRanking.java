@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Class that defines a ranking (ordering) between two {@link TSState} instances.
  *
@@ -23,7 +24,7 @@ public class TSRanking implements StateRanking<TSState> {
      * @param o1 The first state to compare.
      * @param o2 The second state to compare.
      * @return A negative integer, zero, or a positive integer as the first argument
-     *         is less than, equal to, or greater than the second.
+     * is less than, equal to, or greater than the second.
      */
     @Override
     public int compare(TSState o1, TSState o2) {

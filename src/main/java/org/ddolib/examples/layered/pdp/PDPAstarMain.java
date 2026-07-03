@@ -1,11 +1,11 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.common.solver.layered.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.modeling.layered.Model;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.util.Random;

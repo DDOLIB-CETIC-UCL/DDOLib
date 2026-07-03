@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Ranking strategy for multi-dimensional Knapsack (MKS) states.
  *
@@ -21,7 +22,7 @@ public class MKSRanking implements StateRanking<MKSState> {
      * @param o1 the first MKS state
      * @param o2 the second MKS state
      * @return a negative integer, zero, or a positive integer as the first state
-     *         has less than, equal to, or greater average capacity than the second state
+     * has less than, equal to, or greater average capacity than the second state
      */
     @Override
     public int compare(MKSState o1, MKSState o2) {

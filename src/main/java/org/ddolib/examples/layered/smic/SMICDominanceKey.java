@@ -14,7 +14,6 @@ import java.util.BitSet;
  *
  * @param remainingJobs a {@link BitSet} representing the set of jobs
  *                      that still need to be processed
- *
  * @see SMICDominance
  * @see SMICState
  */
@@ -25,5 +24,7 @@ public record SMICDominanceKey(BitSet remainingJobs) {
      * @return a string describing the remaining jobs in this key
      */
     @Override
-    public String toString() {return "remaining jobs: " + remainingJobs;}
+    public String toString() {
+        return "remaining jobs: " + remainingJobs;
+    }
 }

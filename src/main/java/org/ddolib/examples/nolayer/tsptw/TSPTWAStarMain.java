@@ -1,6 +1,6 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.common.solver.layered.Solution;
+import org.ddolib.nolayer.solver.Solution;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ public final class TSPTWAStarMain {
         final TSPTWProblem problem = TSPTWProblem.fromFile(instance);
         final TSPTWModel model = new TSPTWModel(problem);
 
-        org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<TSPTWState> solver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(model);
+        org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<TSPTWState> solver = new org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<>(model);
 
 
         Solution bestSolution = solver.minimize(
@@ -21,6 +21,6 @@ public final class TSPTWAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal TSPTW value: " + bestSolution.value());
+        System.out.println("Optimal TSPTW value: " + bestSolution.statistics().incumbent());
     }
 }

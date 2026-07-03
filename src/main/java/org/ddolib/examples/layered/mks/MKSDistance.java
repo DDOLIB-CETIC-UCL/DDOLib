@@ -1,10 +1,9 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
-import static org.ddolib.util.DistanceUtil.euclideanDistance;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import static org.ddolib.common.util.DistanceUtil.euclideanDistance;
+
 /**
  * Computes a normalized distance between Multi-dimensional Knapsack (MKS) states.
  *
@@ -18,8 +17,11 @@ import static java.lang.Math.sqrt;
  * optimization algorithms to guide state aggregation.
  */
 public class MKSDistance implements StateDistance<MKSState> {
-    /** The MKS problem instance for which distances are computed. */
+    /**
+     * The MKS problem instance for which distances are computed.
+     */
     final MKSProblem instance;
+
     /**
      * Constructs a distance evaluator for the given MKS problem.
      *
@@ -28,6 +30,7 @@ public class MKSDistance implements StateDistance<MKSState> {
     public MKSDistance(MKSProblem instance) {
         this.instance = instance;
     }
+
     /**
      * Computes the normalized Euclidean distance between two MKS states.
      *
@@ -39,6 +42,7 @@ public class MKSDistance implements StateDistance<MKSState> {
     public double distance(MKSState a, MKSState b) {
         return euclideanDistance(a.capacities, b.capacities) / instance.maximalDistance;
     }
+
     /**
      * Computes the normalized Euclidean distance from the given state to the initial state.
      *

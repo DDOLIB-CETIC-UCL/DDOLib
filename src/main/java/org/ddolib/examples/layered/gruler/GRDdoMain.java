@@ -1,10 +1,10 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.*;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 

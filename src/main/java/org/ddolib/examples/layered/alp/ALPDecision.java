@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.alp;
 
 import java.util.Objects;
+
 /**
  * Represents a decision in the <b>Aircraft Landing Problem (ALP)</b>.
  * <p>
@@ -22,10 +23,15 @@ import java.util.Objects;
  * @see ALPState
  */
 public class ALPDecision {
-    /** The class of the aircraft being assigned. */
+    /**
+     * The class of the aircraft being assigned.
+     */
     public int aircraftClass;
-    /** The runway to which the aircraft is assigned. */
+    /**
+     * The runway to which the aircraft is assigned.
+     */
     public int runway;
+
     /**
      * Constructs a new decision assigning an aircraft of the given class to the given runway.
      *
@@ -50,6 +56,7 @@ public class ALPDecision {
         ALPDecision that = (ALPDecision) o;
         return aircraftClass == that.aircraftClass && runway == that.runway;
     }
+
     /**
      * Computes the hash code of this decision based on the aircraft class and runway.
      *

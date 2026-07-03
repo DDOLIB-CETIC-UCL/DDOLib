@@ -1,11 +1,12 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Iterator;
 
 import static java.lang.Math.max;
+
 /**
  * Relaxation strategy for the multi-dimensional Knapsack problem (MKS) states.
  *
@@ -40,6 +41,7 @@ public class MKSRelax implements Relaxation<MKSState> {
         }
         return new MKSState(capa);
     }
+
     /**
      * Returns the cost of an edge in the relaxed decision diagram.
      *
@@ -47,11 +49,11 @@ public class MKSRelax implements Relaxation<MKSState> {
      * For this relaxation, the edge cost is unchanged and simply returns the
      * original cost.
      *
-     * @param from the source state
-     * @param to the destination state
+     * @param from   the source state
+     * @param to     the destination state
      * @param merged the merged state corresponding to the relaxation
-     * @param d the decision taken along this edge
-     * @param cost the original cost of the edge
+     * @param d      the decision taken along this edge
+     * @param cost   the original cost of the edge
      * @return the relaxed edge cost, equal to {@code cost}
      */
     @Override

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,7 +32,9 @@ import java.util.Set;
  * </p>
  */
 public class TSFastLowerBound implements FastLowerBound<TSState> {
-    /** The TSP instance associated with this lower bound computation. */
+    /**
+     * The TSP instance associated with this lower bound computation.
+     */
     private final TSProblem problem;
 
     /**
@@ -105,9 +107,13 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
      * Used for sorting actors when computing the lower bound.
      */
     private static class RatioAndActor implements Comparable<RatioAndActor> {
-        /** The ratio associated with this actor. */
+        /**
+         * The ratio associated with this actor.
+         */
         public double ratio;
-        /** The index of the actor. */
+        /**
+         * The index of the actor.
+         */
         public int actor;
 
         public RatioAndActor(double ratio, int actor) {

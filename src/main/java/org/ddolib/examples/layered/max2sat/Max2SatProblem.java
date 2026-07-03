@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -236,8 +236,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         for (Map.Entry<BinaryClause, Integer> entry : weights.entrySet()) {
             BinaryClause bc = entry.getKey();
             int w = entry.getValue();
-            int a = solution[Math.abs(bc.i) - 1];
-            int b = solution[Math.abs(bc.j) - 1];
+            int a = solution[Math.abs(bc.i()) - 1];
+            int b = solution[Math.abs(bc.j()) - 1];
             value += bc.eval(a, b) * w;
         }
 

@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -255,8 +255,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
             case TSPNode(int value) -> distance[value][to];
-            case VirtualNodes(Set<Integer> nodes) ->
-                    nodes.stream().mapToInt(x -> distance[x][to]).min().getAsInt();
+            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> distance[x][to]).min().getAsInt();
         };
     }
 

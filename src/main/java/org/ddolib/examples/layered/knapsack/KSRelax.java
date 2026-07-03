@@ -1,9 +1,10 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Iterator;
+
 /**
  * Relaxation for the Knapsack Problem (KS).
  * <p>
@@ -36,17 +37,18 @@ public class KSRelax implements Relaxation<Integer> {
         }
         return capa;
     }
+
     /**
      * Relaxes the cost of an edge between states in the decision diagram.
      * <p>
      * For the Knapsack problem, the cost is not modified by the relaxation.
      * </p>
      *
-     * @param from the starting state
-     * @param to the ending state
+     * @param from   the starting state
+     * @param to     the ending state
      * @param merged the merged state after relaxation
-     * @param d the decision associated with the edge
-     * @param cost the original cost of the edge
+     * @param d      the decision associated with the edge
+     * @param cost   the original cost of the edge
      * @return the relaxed cost (identical to the original cost in this implementation)
      */
     @Override

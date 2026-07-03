@@ -35,11 +35,10 @@ import java.util.BitSet;
  * RemainingJobs [1, 2, 3] ----> currentTime 10 ---> minCurrentInventory5 ---> maxCurrentInventory15
  * </pre>
  *
- * @param remainingJobs        the set of job indices that remain to be scheduled
- * @param currentTime          the current time in the schedule
- * @param minCurrentInventory  the minimum possible inventory level at this state
- * @param maxCurrentInventory  the maximum possible inventory level at this state
- *
+ * @param remainingJobs       the set of job indices that remain to be scheduled
+ * @param currentTime         the current time in the schedule
+ * @param minCurrentInventory the minimum possible inventory level at this state
+ * @param maxCurrentInventory the maximum possible inventory level at this state
  * @see SMICProblem
  * @see SMICRelax
  * @see SMICRanking

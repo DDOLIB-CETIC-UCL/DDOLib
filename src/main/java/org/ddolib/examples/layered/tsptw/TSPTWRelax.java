@@ -1,12 +1,13 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * Relaxation class for the Traveling Salesman Problem with Time Windows (TSPTW).
  * <p>
@@ -17,10 +18,14 @@ import java.util.Set;
  */
 public class TSPTWRelax implements Relaxation<TSPTWState> {
 
-    /** Represents infinity for arrival time. */
+    /**
+     * Represents infinity for arrival time.
+     */
     private static final int INFINITY = Integer.MAX_VALUE;
 
-    /** Number of variables/nodes in the TSPTW problem. */
+    /**
+     * Number of variables/nodes in the TSPTW problem.
+     */
     private final int numVar;
 
     /**
@@ -31,6 +36,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
     public TSPTWRelax(TSPTWProblem problem) {
         this.numVar = problem.nbVars();
     }
+
     /**
      * Merges multiple TSPTW states into a single relaxed state.
      * <p>
@@ -77,6 +83,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
         return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
     }
+
     /**
      * Relaxes the cost of an edge (transition) between two states.
      * <p>
@@ -85,11 +92,11 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
      * sophisticated relaxations if needed.
      * </p>
      *
-     * @param from the source state
-     * @param to the target state
+     * @param from   the source state
+     * @param to     the target state
      * @param merged the state resulting from the merge or relaxation
-     * @param d the decision associated with this transition
-     * @param cost the cost of the transition
+     * @param d      the decision associated with this transition
+     * @param cost   the cost of the transition
      * @return the relaxed cost of the transition
      */
     @Override

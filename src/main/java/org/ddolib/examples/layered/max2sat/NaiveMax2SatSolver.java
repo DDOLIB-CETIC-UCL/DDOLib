@@ -56,8 +56,8 @@ public class NaiveMax2SatSolver {
     private int evaluateSolution(int[] sol) {
         int toReturn = 0;
         for (BinaryClause bc : problem.weights.keySet()) {
-            int a = sol[Math.abs(bc.i) - 1];
-            int b = sol[Math.abs(bc.j) - 1];
+            int a = sol[Math.abs(bc.i()) - 1];
+            int b = sol[Math.abs(bc.j()) - 1];
             int eval = bc.eval(a, b);
             toReturn += eval * problem.weights.get(bc);
 

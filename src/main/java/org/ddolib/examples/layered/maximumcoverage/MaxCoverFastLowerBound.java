@@ -1,9 +1,10 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.BitSet;
 import java.util.Set;
+
 /**
  * Fast lower bound computation for the Maximum Coverage problem.
  *
@@ -17,10 +18,15 @@ import java.util.Set;
  * at most {@code maxCardSet} new items, which yields a fast but coarse estimate.
  */
 public class MaxCoverFastLowerBound implements FastLowerBound<MaxCoverState> {
-    /** The MaxCover problem instance. */
+    /**
+     * The MaxCover problem instance.
+     */
     private final MaxCoverProblem problem;
-    /** Maximum cardinality among all subsets in the instance. */
+    /**
+     * Maximum cardinality among all subsets in the instance.
+     */
     int maxCardSet = 0;
+
     /**
      * Constructs a fast lower bound evaluator for a given MaxCover problem.
      *
@@ -39,6 +45,7 @@ public class MaxCoverFastLowerBound implements FastLowerBound<MaxCoverState> {
             }
         }
     }
+
     /**
      * Computes a fast lower bound on the objective value from a given state.
      *
@@ -48,7 +55,7 @@ public class MaxCoverFastLowerBound implements FastLowerBound<MaxCoverState> {
      * The result is returned as a negative value to match the minimization
      * formulation of the problem.
      *
-     * @param state the current state (not explicitly used in this bound)
+     * @param state     the current state (not explicitly used in this bound)
      * @param variables the set of remaining decision variables
      * @return a fast, optimistic lower bound on the objective value
      */

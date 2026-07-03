@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
+
 /**
  * Implements the dominance relation for the Maximum Sum of Compatible Tasks (MSCT) problem.
  * <p>
@@ -42,6 +43,7 @@ public class MSCTDominance implements Dominance<MSCTState> {
     public Integer getKey(MSCTState state) {
         return 0;
     }
+
     /**
      * Checks whether the first state {@code state1} is dominated or equal to the second state {@code state2}.
      * <p>
@@ -60,9 +62,6 @@ public class MSCTDominance implements Dominance<MSCTState> {
      */
     @Override
     public boolean isDominatedOrEqual(MSCTState state1, MSCTState state2) {
-        if (state1.remainingJobs().equals(state2.remainingJobs()) && state2.currentTime() <= state1.currentTime()) {
-            return true;
-        }
-        return false;
+        return state1.remainingJobs().equals(state2.remainingJobs()) && state2.currentTime() <= state1.currentTime();
     }
 }

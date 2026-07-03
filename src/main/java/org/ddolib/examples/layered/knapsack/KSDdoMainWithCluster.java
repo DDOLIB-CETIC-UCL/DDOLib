@@ -1,18 +1,16 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.solving.ddo.core.frontier.CutSetType;
-import org.ddolib.solving.ddo.core.frontier.Frontier;
-import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.*;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.frontier.CutSetType;
+import org.ddolib.common.frontier.Frontier;
+import org.ddolib.common.frontier.SimpleFrontier;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;

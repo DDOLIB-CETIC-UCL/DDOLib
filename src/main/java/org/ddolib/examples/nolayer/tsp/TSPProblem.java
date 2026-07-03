@@ -1,23 +1,21 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.common.util.InvalidSolutionException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TSPProblem implements Problem<TSPState> {
 
     public final double[][] distanceMatrix;
-    private final int n;
+    public final int n;
+    private final Optional<String> name;
 
     public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
+        this.name = Optional.empty();
     }
 
     public TSPProblem(final String fname) throws java.io.IOException {
@@ -53,6 +51,7 @@ public class TSPProblem implements Problem<TSPState> {
 
         this.n = n;
         this.distanceMatrix = distanceMatrix;
+        this.name = Optional.of(fname);
     }
 
     @Override
@@ -79,7 +78,7 @@ public class TSPProblem implements Problem<TSPState> {
             if (!state.current.get(0)) {
                 return singleton(0).stream().iterator();
             }
-            return new ArrayList<Integer>().iterator(); // Already at target
+            return Collections.emptyIterator(); // Already at target
         } else {
             ArrayList<Integer> domain = new ArrayList<>(state.toVisit.stream().boxed().toList());
             return domain.iterator();
@@ -103,14 +102,13 @@ public class TSPProblem implements Problem<TSPState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
-        if (solution.length != n) {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
+        if (solution.size() != n) {
             throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), n));
+                    "the number %d variables", solution, n));
         }
 
-        Map<Integer, Long> count = Arrays.stream(solution)
-                .boxed()
+        Map<Integer, Long> count = solution.stream()
                 .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
@@ -118,13 +116,13 @@ public class TSPProblem implements Problem<TSPState> {
             throw new InvalidSolutionException(msg);
         }
 
-        if (solution[n - 1] != 0) {
+        if (solution.get(n - 1) != 0) {
             throw new InvalidSolutionException("The solution does not return to the depot (node 0)");
         }
 
-        double value = distanceMatrix[0][solution[0]];
+        double value = distanceMatrix[0][solution.get(0)];
         for (int i = 1; i < n; i++) {
-            value += distanceMatrix[solution[i - 1]][solution[i]];
+            value += distanceMatrix[solution.get(i - 1)][solution.get(i)];
         }
 
         return value;
@@ -138,6 +136,6 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public String toString() {
-        return "TSPNoLayer(n:" + n + ")";
+        return name.orElse("TSPNoLayer(n:" + n + ")");
     }
 }

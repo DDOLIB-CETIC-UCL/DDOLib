@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -57,7 +57,7 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
 
         ArrayList<Double> toVisitDeadlines = new ArrayList<>(nbUnassignedVariables);
         toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop
-        for (int i :toVisit.stream().toArray()) {
+        for (int i : toVisit.stream().toArray()) {
             toVisitDeadlines.add(problem.timeWindows[i].end());
         }
 
@@ -67,23 +67,23 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
         //We take the min because it will not overprune
         int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;
         double currentSimulationTime = state.minCurrentTime;
-         for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
-             double incomingHop = toVisitLB.get(i);
-             double earlyLine = toVisitEarlyLines.get(i);
-             currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
-             double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
-             if(currentSimulationTime>deadLine){
-                 return Double.POSITIVE_INFINITY;
-             }
-         }
+        for (int i = 0; i < nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back
+            double incomingHop = toVisitLB.get(i);
+            double earlyLine = toVisitEarlyLines.get(i);
+            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);
+            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);
+            if (currentSimulationTime > deadLine) {
+                return Double.POSITIVE_INFINITY;
+            }
+        }
 
         //second iteration, to compute actual bound,
         // we take the max because it under-estimate the remaining cost
         currentSimulationTime = state.maxCurrentTime;
-        for (int i = 0; i < nbUnassignedVariables-1; i++) { //variable.size already includes the final come back
+        for (int i = 0; i < nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back
             double incomingHop = toVisitLB.get(i);
             double earlyLine = toVisitEarlyLines.get(i);
-            currentSimulationTime = max(currentSimulationTime + incomingHop,earlyLine);
+            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);
         }
 
         return currentSimulationTime - state.minCurrentTime;

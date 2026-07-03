@@ -2,6 +2,7 @@ package org.ddolib.examples.layered.pigmentscheduling;
 
 import java.util.Arrays;
 import java.util.Objects;
+
 /**
  * Represents a state in the Production Scheduling Problem (PSP).
  * <p>
@@ -37,20 +38,26 @@ import java.util.Objects;
  */
 public class PSState {
 
-    /** Current time slot in the scheduling horizon. */
+    /**
+     * Current time slot in the scheduling horizon.
+     */
     int t;
 
-    /** The item type to be produced at time t+1; -1 indicates unknown or idle. */
+    /**
+     * The item type to be produced at time t+1; -1 indicates unknown or idle.
+     */
     int next;
 
-    /** Array storing for each item type the latest time before t with demand. */
+    /**
+     * Array storing for each item type the latest time before t with demand.
+     */
     int[] previousDemands;
 
     /**
      * Constructs a new state for the PSP.
      *
-     * @param t the current time slot
-     * @param next the next item type scheduled for production, -1 if unknown
+     * @param t               the current time slot
+     * @param next            the next item type scheduled for production, -1 if unknown
      * @param previousDemands an array indicating, for each item type, the last time a demand occurs before t
      */
 
@@ -59,6 +66,7 @@ public class PSState {
         this.next = next;
         this.previousDemands = previousDemands;
     }
+
     /**
      * Creates a deep copy of this state.
      *
@@ -68,6 +76,7 @@ public class PSState {
     protected PSState clone() {
         return new PSState(t, next, Arrays.copyOf(previousDemands, previousDemands.length));
     }
+
     /**
      * Computes a hash code for the state, based on time, next item, and previous demands.
      *
@@ -77,6 +86,7 @@ public class PSState {
     public int hashCode() {
         return Objects.hash(t, next, Arrays.hashCode(previousDemands));
     }
+
     /**
      * Compares this state with another object for equality.
      * Two {@code PSState} instances are equal if they have the same time,
@@ -95,6 +105,7 @@ public class PSState {
             return false;
         }
     }
+
     /**
      * Returns a string representation of the state, including current time,
      * next item, and previous demands for debugging purposes.

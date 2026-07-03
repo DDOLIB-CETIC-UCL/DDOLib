@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Implements a relaxation operator for the Pickup and Delivery Problem (PDP) states.
  * <p>
@@ -31,6 +32,7 @@ import java.util.Iterator;
  */
 class PDPRelax implements Relaxation<PDPState> {
     private final PDPProblem problem;
+
     /**
      * Constructs a PDPRelax object for a given PDP problem instance.
      *
@@ -39,6 +41,7 @@ class PDPRelax implements Relaxation<PDPState> {
     public PDPRelax(PDPProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple PDP states into a single relaxed state.
      * <p>
@@ -67,19 +70,20 @@ class PDPRelax implements Relaxation<PDPState> {
             maxContent = Math.max(maxContent, state.maxContent);
         }
         //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
-        return new PDPState(current, openToVisit, allToVisit,minContent,maxContent);
+        return new PDPState(current, openToVisit, allToVisit, minContent, maxContent);
     }
+
     /**
      * Relaxes the cost of an edge between two states.
      * <p>
      * Currently, this implementation returns the original edge cost without modification.
      * </p>
      *
-     * @param from the origin PDP state
-     * @param to the destination PDP state
+     * @param from   the origin PDP state
+     * @param to     the destination PDP state
      * @param merged the relaxed merged state
-     * @param d the decision taken along the edge
-     * @param cost the original cost of the edge
+     * @param d      the decision taken along the edge
+     * @param cost   the original cost of the edge
      * @return the relaxed cost of the edge (currently identical to {@code cost})
      */
     @Override

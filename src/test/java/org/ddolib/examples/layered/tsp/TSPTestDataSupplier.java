@@ -1,11 +1,11 @@
 package org.ddolib.examples.layered.tsp;
 
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.DdoModel;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.modeling.layered.Relaxation;
-import org.ddolib.util.testbench.TestDataSupplier;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,11 +1,11 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.layered.AcsModel;
-import org.ddolib.modeling.layered.Solvers;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.AcsModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 /**
  * Bounded Knapsack Problem (BKS) with Acs.

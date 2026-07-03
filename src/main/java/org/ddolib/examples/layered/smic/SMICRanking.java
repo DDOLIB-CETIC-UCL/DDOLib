@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * The {@code SMICRanking} class defines a heuristic ranking criterion for
  * comparing two {@link SMICState} instances during search or optimization.
@@ -38,7 +39,7 @@ public class SMICRanking implements StateRanking<SMICState> {
      * @param o1 the first state to compare
      * @param o2 the second state to compare
      * @return a negative integer if {@code o1} has a smaller current time than {@code o2},
-     *         zero if they are equal, or a positive integer otherwise
+     * zero if they are equal, or a positive integer otherwise
      */
     @Override
     public int compare(SMICState o1, SMICState o2) {

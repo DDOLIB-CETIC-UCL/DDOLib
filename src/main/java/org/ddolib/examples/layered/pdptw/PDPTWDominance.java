@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
 
 /**
  * Dominance class for the TSPTW problem.

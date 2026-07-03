@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.Arrays;
 import java.util.Iterator;
+
 /**
  * Relaxation strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
  * <p>
@@ -17,8 +18,11 @@ import java.util.Iterator;
  * </p>
  */
 public class LCSRelax implements Relaxation<LCSState> {
-    /** The LCS problem instance associated with this relaxation. */
+    /**
+     * The LCS problem instance associated with this relaxation.
+     */
     LCSProblem problem;
+
     /**
      * Constructs a relaxation object for a given LCS problem.
      *
@@ -27,6 +31,7 @@ public class LCSRelax implements Relaxation<LCSState> {
     public LCSRelax(LCSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple LCS states into a single relaxed state.
      * <p>
@@ -51,17 +56,18 @@ public class LCSRelax implements Relaxation<LCSState> {
 
         return new LCSState(position);
     }
+
     /**
      * Relaxes the cost of a transition between two LCS states.
      * <p>
      * This implementation returns the original cost unchanged.
      * </p>
      *
-     * @param from The state from which the transition originates.
-     * @param to The state to which the transition goes.
+     * @param from   The state from which the transition originates.
+     * @param to     The state to which the transition goes.
      * @param merged The merged state that includes both 'from' and 'to'.
-     * @param d The decision taken.
-     * @param cost The original cost of the transition.
+     * @param d      The decision taken.
+     * @param cost   The original cost of the transition.
      * @return The relaxed cost, which in this case is the same as {@code cost}.
      */
     @Override

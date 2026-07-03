@@ -1,12 +1,10 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.nolayer.AcsModel;
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Problem;
-
-import java.util.Arrays;
+import org.ddolib.nolayer.modeling.AcsModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
 
 public class TSPAcsMain {
     public static void main(String[] args) {
@@ -40,11 +38,11 @@ public class TSPAcsMain {
         };
 
         System.out.println("Starting ACS Search on TSPNoLayer Problem...");
-        Solution solution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model,
+        Solution solution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model,
                 stats -> false,
                 (sol, stats) -> {
                     System.out.println("Found a solution with value: " + stats.incumbent());
-                    System.out.println("Path: " + Arrays.toString(sol));
+                    System.out.println("Path: " + sol);
                 }
         );
 

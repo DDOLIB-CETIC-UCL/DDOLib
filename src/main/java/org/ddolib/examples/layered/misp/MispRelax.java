@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Implements a relaxation strategy for the Maximum Independent Set Problem (MISP)
  * to be used in decision diagram optimization (DDO) algorithms.
@@ -37,6 +38,7 @@ public class MispRelax implements Relaxation<BitSet> {
     public MispRelax(MispProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple states into a single relaxed state.
      * <p>
@@ -57,17 +59,18 @@ public class MispRelax implements Relaxation<BitSet> {
         }
         return merged;
     }
+
     /**
      * Adjusts the transition cost when moving from one state to another in the relaxed space.
      * <p>
      * In this implementation, the relaxation does not modify the cost and simply returns it.
      * </p>
      *
-     * @param from the source state
-     * @param to the destination state
+     * @param from   the source state
+     * @param to     the destination state
      * @param merged the merged state
-     * @param d the decision applied
-     * @param cost the original transition cost
+     * @param d      the decision applied
+     * @param cost   the original transition cost
      * @return the relaxed transition cost (here equal to {@code cost})
      */
     @Override

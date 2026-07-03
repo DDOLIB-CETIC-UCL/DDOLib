@@ -1,7 +1,5 @@
 package org.ddolib.examples.layered.max2sat;
 
-import java.util.Objects;
-
 import static java.lang.Math.abs;
 
 /**
@@ -10,15 +8,10 @@ import static java.lang.Math.abs;
  * To symbolize a literal {@code x_i    }, for {@code i > 0}, we give the value {@code i} as
  * input. To symbolize {@code NOT x_i}, we give {@code -i}.
  */
-public class BinaryClause implements Comparable<BinaryClause> {
-    public final int i;
-    public final int j;
-
-    public BinaryClause(int i, int j) {
+public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
+    public BinaryClause {
         if (i == 0 || j == 0)
             throw new IllegalArgumentException("Id of variable in Binary clauses must be != 0");
-        this.i = i;
-        this.j = j;
     }
 
     /**
@@ -39,11 +32,6 @@ public class BinaryClause implements Comparable<BinaryClause> {
     public boolean equals(Object obj) {
         if (obj instanceof BinaryClause other) return this.i == other.i && this.j == other.j;
         else return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(i, j);
     }
 
     @Override

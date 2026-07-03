@@ -1,10 +1,11 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.Iterator;
+
 /**
  * Implementation of a relaxation for the Talent Scheduling problem (TSP).
  *
@@ -26,6 +27,7 @@ import java.util.Iterator;
 public class TSRelax implements Relaxation<TSState> {
 
     private final TSProblem problem;
+
     /**
      * Constructs a new relaxation instance for the given Talent Scheduling problem.
      *
@@ -34,6 +36,7 @@ public class TSRelax implements Relaxation<TSState> {
     public TSRelax(TSProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges multiple {@link TSState} instances into a single relaxed state.
      *
@@ -56,6 +59,7 @@ public class TSRelax implements Relaxation<TSState> {
 
         return new TSState(mergedRemaining, mergedMaybe, problem.onLocationActors(mergedRemaining, mergedMaybe));
     }
+
     /**
      * Returns the relaxed edge cost between two states.
      *

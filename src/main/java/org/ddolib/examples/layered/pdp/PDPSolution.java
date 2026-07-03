@@ -1,4 +1,5 @@
 package org.ddolib.examples.layered.pdp;
+
 /**
  * Represents a solution to a Pickup and Delivery Problem (PDP) instance.
  * <p>
@@ -13,14 +14,19 @@ package org.ddolib.examples.layered.pdp;
  * </p>
  */
 public class PDPSolution {
-    /** The PDP problem instance for which this solution was computed. */
+    /**
+     * The sequence of nodes representing the solution, including pickups, deliveries, and unrelated nodes.
+     */
+    public int[] solution;
+    /**
+     * The total value (cost or distance) of the solution.
+     */
+    public double value;
+    /**
+     * The PDP problem instance for which this solution was computed.
+     */
     PDPProblem problem;
 
-    /** The sequence of nodes representing the solution, including pickups, deliveries, and unrelated nodes. */
-    public int[] solution;
-
-    /** The total value (cost or distance) of the solution. */
-    public double value;
     /**
      * Constructs a PDP solution with the given problem, solution sequence, and value.
      *
@@ -33,6 +39,7 @@ public class PDPSolution {
         this.solution = solution;
         this.value = value;
     }
+
     /**
      * Returns a human-readable representation of the solution.
      * <p>

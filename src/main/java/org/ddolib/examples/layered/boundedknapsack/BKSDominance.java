@@ -1,7 +1,8 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
+
 /**
  * Implementation of a dominance rule for the Bounded Knapsack (BKS) problem.
  * <p>
@@ -39,6 +40,7 @@ public class BKSDominance implements Dominance<Integer> {
     public Integer getKey(Integer capa) {
         return 0;
     }
+
     /**
      * Checks whether one state (capacity) is dominated or equal to another.
      * <p>

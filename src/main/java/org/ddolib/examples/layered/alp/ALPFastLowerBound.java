@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.Set;
+
 /**
  * Fast lower bound computation for the <b>Aircraft Landing Problem (ALP)</b>.
  * <p>
@@ -29,8 +30,11 @@ import java.util.Set;
  * @see ALPProblem
  */
 public class ALPFastLowerBound implements FastLowerBound<ALPState> {
-    /** Reference to the ALP problem instance. */
+    /**
+     * Reference to the ALP problem instance.
+     */
     private final ALPProblem problem;
+
     /**
      * Constructs a new fast lower bound evaluator for the given ALP problem.
      *
@@ -39,10 +43,11 @@ public class ALPFastLowerBound implements FastLowerBound<ALPState> {
     public ALPFastLowerBound(ALPProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Computes a heuristic lower bound of total tardiness from the given state.
      *
-     * @param state the current state containing remaining aircraft and runway assignments
+     * @param state     the current state containing remaining aircraft and runway assignments
      * @param variables the set of variables (aircraft indices) that can still be assigned
      * @return the estimated lower bound of total tardiness; {@link Integer#MAX_VALUE} if infeasible
      */

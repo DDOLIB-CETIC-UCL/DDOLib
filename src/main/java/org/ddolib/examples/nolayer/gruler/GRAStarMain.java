@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 public final class GRAStarMain {
     public static void main(String[] args) {
@@ -9,7 +9,7 @@ public final class GRAStarMain {
         final GRProblem problem = new GRProblem(n);
         final GRModel model = new GRModel(problem);
 
-        org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<GRState> solver = new org.ddolib.solving.astar.core.solver.nolayer.AStarSolver<>(
+        org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<GRState> solver = new org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<>(
                 model);
 
         Solution bestSolution = solver.minimize(
@@ -20,6 +20,6 @@ public final class GRAStarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.println("Optimal GR value: " + bestSolution.value());
+        System.out.println("Optimal GR value: " + bestSolution.statistics().incumbent());
     }
 }

@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
 
 /**
  * Neutral ranking heuristic for PDPTW states.

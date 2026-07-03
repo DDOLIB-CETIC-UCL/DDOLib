@@ -21,19 +21,17 @@ import java.util.Random;
  */
 public class TSPGenerator {
     /**
+     * Best known objective value (optional, -1 if unknown)
+     */
+    public final double objective;
+    /**
      * Distance matrix between cities
      */
     public double[][] distanceMatrix;
-
     /**
      * Number of cities
      */
     public int n;
-
-    /**
-     * Best known objective value (optional, -1 if unknown)
-     */
-    public final double objective;
 
     /**
      * Constructs a TSP instance from a double[][] distance matrix.
@@ -45,9 +43,7 @@ public class TSPGenerator {
         n = distanceMatrix.length;
         this.distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                this.distanceMatrix[i][j] = distanceMatrix[i][j];
-            }
+            System.arraycopy(distanceMatrix[i], 0, this.distanceMatrix[i], 0, n);
         }
         this.objective = -1;
     }
@@ -114,6 +110,25 @@ public class TSPGenerator {
     }
 
     /**
+     * Writes an XML Document to an OutputStream.
+     *
+     * @param doc    the XML document
+     * @param output the output stream
+     * @throws TransformerException if an error occurs during transformation
+     */
+    private static void writeXml(Document doc,
+                                 OutputStream output)
+            throws TransformerException {
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(output);
+        transformer.transform(source, result);
+
+    }
+
+    /**
      * Returns the number of cities in the instance.
      *
      * @return the number of cities
@@ -132,7 +147,6 @@ public class TSPGenerator {
     public double distance(int city1, int city2) {
         return distanceMatrix[city1][city2];
     }
-
 
     /**
      * Computes the Euclidean distance between two points.
@@ -195,25 +209,6 @@ public class TSPGenerator {
         } catch (ParserConfigurationException | TransformerException | IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Writes an XML Document to an OutputStream.
-     *
-     * @param doc    the XML document
-     * @param output the output stream
-     * @throws TransformerException if an error occurs during transformation
-     */
-    private static void writeXml(Document doc,
-                                 OutputStream output)
-            throws TransformerException {
-
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(output);
-        transformer.transform(source, result);
-
     }
 
 }

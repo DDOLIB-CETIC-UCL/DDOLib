@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
 
 /**
  * Heuristic for computing the width of a layer in the dynamic programming model
@@ -11,10 +11,14 @@ import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
  * </p>
  */
 public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
-    /** Number of variables/nodes in the TSPTW problem. */
+    /**
+     * Number of variables/nodes in the TSPTW problem.
+     */
     private final int nbVars;
 
-    /** Factor to scale the width. */
+    /**
+     * Factor to scale the width.
+     */
     private final int factor;
 
     /**
@@ -27,6 +31,7 @@ public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
         this.nbVars = nbVars;
         this.factor = factor;
     }
+
     /**
      * Computes the maximum width of a layer based on the current state.
      * <p>

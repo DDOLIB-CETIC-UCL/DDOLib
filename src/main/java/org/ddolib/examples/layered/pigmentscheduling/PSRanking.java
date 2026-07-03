@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
 
 import java.util.Arrays;
+
 /**
  * Provides a ranking heuristic for comparing two {@link PSState} objects
  * within the Production Scheduling Problem (PSP) search framework.
@@ -41,7 +42,7 @@ public class PSRanking implements StateRanking<PSState> {
      * @param s1 the first {@link PSState} to compare
      * @param s2 the second {@link PSState} to compare
      * @return a negative integer if {@code s1} is better than {@code s2},
-     *         zero if they are equivalent, or a positive integer otherwise
+     * zero if they are equivalent, or a positive integer otherwise
      */
     @Override
     public int compare(PSState s1, PSState s2) {

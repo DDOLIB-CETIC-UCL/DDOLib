@@ -1,8 +1,9 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.modeling.layered.Dominance;
+import org.ddolib.layered.modeling.Dominance;
 
 import java.util.BitSet;
+
 /**
  * Dominance rule for {@link MaxCoverState} used in the Maximum Coverage problem.
  *
@@ -32,6 +33,7 @@ public class MaxCoverDominance implements Dominance<MaxCoverState> {
         // All states share the same key (0), meaning they are all comparable for dominance
         return 0;
     }
+
     /**
      * Determines whether {@code state1} is dominated by or equal to {@code state2}.
      *
@@ -43,7 +45,7 @@ public class MaxCoverDominance implements Dominance<MaxCoverState> {
      * @param state1 the potentially dominated state
      * @param state2 the dominating state
      * @return {@code true} if {@code state1} is dominated by or equal to {@code state2},
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(MaxCoverState state1, MaxCoverState state2) {

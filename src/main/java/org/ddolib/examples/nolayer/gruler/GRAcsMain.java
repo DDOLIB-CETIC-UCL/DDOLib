@@ -1,11 +1,11 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.layered.Solution;
-import org.ddolib.modeling.nolayer.AcsModel;
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Problem;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.nolayer.modeling.AcsModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 public final class GRAcsMain {
     public static void main(String[] args) {
@@ -35,7 +35,7 @@ public final class GRAcsMain {
             }
         };
 
-        Solution bestSolution = org.ddolib.modeling.nolayer.Solvers.minimizeAcs(model,
+        Solution bestSolution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model,
                 stats -> false,
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);

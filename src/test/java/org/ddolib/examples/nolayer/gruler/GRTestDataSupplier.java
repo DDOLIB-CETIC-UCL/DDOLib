@@ -1,16 +1,16 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Problem;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.NoLayerTestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.Relaxation;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
 import java.util.BitSet;
 import java.util.Collection;
@@ -87,6 +87,11 @@ public class GRTestDataSupplier extends NoLayerTestDataSupplier<GRState, GRProbl
             @Override
             public boolean useCache() {
                 return false;
+            }
+
+            @Override
+            public FastLowerBound<GRState> lowerBound() {
+                return new GRFlb(problem);
             }
         };
     }

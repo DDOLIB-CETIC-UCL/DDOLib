@@ -1,7 +1,6 @@
 package org.ddolib.examples.layered.msct;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Set;
 
 
@@ -35,7 +34,6 @@ import java.util.Set;
  *
  * @param remainingJobs the set of job indices that have not yet been scheduled.
  * @param currentTime   the current time (sum of processing times of scheduled jobs).
- *
  * @see MSCTProblem
  * @see MSCTRelax
  * @see MSCTRanking

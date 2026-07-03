@@ -8,9 +8,6 @@ import java.util.BitSet;
  * @param remainingNodes The set of nodes that can still be added to the independent set.
  */
 public record MispState(BitSet remainingNodes) {
-    public MispState {
-        remainingNodes = (BitSet) remainingNodes.clone();
-    }
 
     @Override
     public String toString() {

@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.FastLowerBound;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -55,7 +55,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * The optimal solution of this instance if known (used for tests).
      */
-    private Optional<Double> optimal;
+    private final Optional<Double> optimal;
 
     /**
      * Optional descriptive name of the instance.

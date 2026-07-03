@@ -1,18 +1,16 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.FastLowerBound;
-import org.ddolib.modeling.nolayer.Problem;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.NoLayerTestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Relaxation;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,16 +82,6 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
             @Override
             public NoLayerDominanceChecker<KSState> dominance() {
                 return new NoLayerDominanceChecker<KSState>() {
-                    class ValueState implements Comparable<ValueState> {
-                        final KSState state;
-                        final double value;
-                        ValueState(KSState state, double value) { this.state = state; this.value = value; }
-                        @Override
-                        public int compareTo(ValueState o) {
-                            if (this.value != o.value) return Double.compare(this.value, o.value);
-                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
-                        }
-                    }
                     private final java.util.Map<Integer, java.util.TreeSet<ValueState>> bestStates = new java.util.HashMap<>();
 
                     @Override
@@ -105,7 +93,7 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
                         if (floor != null && floor.state.remainingCapacity() >= state.remainingCapacity() && floor.value <= value) {
                             return true; // Dominated!
                         }
-                        
+
                         java.util.Iterator<ValueState> iterator = set.tailSet(vs).iterator();
                         while (iterator.hasNext()) {
                             ValueState higher = iterator.next();
@@ -122,6 +110,22 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
                     @Override
                     public void clear() {
                         bestStates.clear();
+                    }
+
+                    class ValueState implements Comparable<ValueState> {
+                        final KSState state;
+                        final double value;
+
+                        ValueState(KSState state, double value) {
+                            this.state = state;
+                            this.value = value;
+                        }
+
+                        @Override
+                        public int compareTo(ValueState o) {
+                            if (this.value != o.value) return Double.compare(this.value, o.value);
+                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
+                        }
                     }
                 };
             }

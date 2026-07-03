@@ -1,6 +1,7 @@
 package org.ddolib.examples.layered.tsp;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Class that defines a ranking between two {@link TSPState} instances.
  *

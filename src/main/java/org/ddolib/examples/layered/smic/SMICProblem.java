@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +99,7 @@ public class SMICProblem implements Problem<SMICState> {
     /**
      * Optional known optimal value (used for benchmarking).
      */
-    private Optional<Double> optimal;
+    private final Optional<Double> optimal;
 
     /**
      * Constructs a {@code SMICProblem} instance with full specification.
@@ -136,7 +136,7 @@ public class SMICProblem implements Problem<SMICState> {
         this.inventory = inventory;
         this.optimal = optimal;
     }
-    
+
     /**
      * Constructs a {@code SMICProblem} instance by parsing a text file.
      * <p>

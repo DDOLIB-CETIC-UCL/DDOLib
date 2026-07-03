@@ -37,7 +37,7 @@ public class PDPTWState {
     /**
      * The maximum possible vehicle content (number of items) at this state.
      */
-    int maxContent ;
+    int maxContent;
 
     /**
      * The current time at this state, or earlier in case of fusion
@@ -48,11 +48,11 @@ public class PDPTWState {
     /**
      * Builds a PDPTW state with interval-valued content/time information.
      *
-     * @param current current node(s)
-     * @param openToVisit currently reachable unvisited nodes
-     * @param allToVisit all remaining unvisited nodes
-     * @param minContent lower bound on vehicle load
-     * @param maxContent upper bound on vehicle load
+     * @param current        current node(s)
+     * @param openToVisit    currently reachable unvisited nodes
+     * @param allToVisit     all remaining unvisited nodes
+     * @param minContent     lower bound on vehicle load
+     * @param maxContent     upper bound on vehicle load
      * @param minCurrentTime lower bound on current time
      * @param maxCurrentTime upper bound on current time
      */
@@ -68,16 +68,16 @@ public class PDPTWState {
 
     public int hashCode() {
         return Objects.hash(openToVisit, allToVisit,
-                current, minContent,maxContent, minCurrentTime,maxCurrentTime);
+                current, minContent, maxContent, minCurrentTime, maxCurrentTime);
     }
 
     @Override
     public boolean equals(Object obj) {
         PDPTWState that = (PDPTWState) obj;
-        if(this.minContent != that.minContent) return false;
-        if(this.maxContent != that.maxContent) return false;
-        if(this.minCurrentTime != that.minCurrentTime) return false;
-        if(this.maxCurrentTime != that.maxCurrentTime) return false;
+        if (this.minContent != that.minContent) return false;
+        if (this.maxContent != that.maxContent) return false;
+        if (this.minCurrentTime != that.minCurrentTime) return false;
+        if (this.maxCurrentTime != that.maxCurrentTime) return false;
         if (!that.current.equals(this.current)) return false;
         if (!that.openToVisit.equals(this.openToVisit)) return false;
         return (that.allToVisit.equals(this.allToVisit));
@@ -89,20 +89,22 @@ public class PDPTWState {
         return toReturn;
     }
 
-    public String printInterval(double min,double max){
-        if(min == max) return "" + min;
+    public String printInterval(double min, double max) {
+        if (min == max) return "" + min;
         else return "[" + min + ";" + max + "]";
     }
-    public String printInterval(int min,int max){
-        if(min == max) return "" + min;
+
+    public String printInterval(int min, int max) {
+        if (min == max) return "" + min;
         else return "[" + min + ";" + max + "]";
     }
+
     @Override
     public String toString() {
         BitSet closedToVisit = (BitSet) allToVisit.clone();
         closedToVisit.xor(openToVisit);
-        return "PDState(current:" + current + " currentTime:" + printInterval(minCurrentTime,maxCurrentTime)
+        return "PDState(current:" + current + " currentTime:" + printInterval(minCurrentTime, maxCurrentTime)
                 + " openToVisit:" + openToVisit + " closedToVisit:" + closedToVisit + " allToVisit:" + allToVisit
-                + " content:" + printInterval(minContent,maxContent) + ")";
+                + " content:" + printInterval(minContent, maxContent) + ")";
     }
 }

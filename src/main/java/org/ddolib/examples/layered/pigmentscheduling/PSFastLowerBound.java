@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.modeling.layered.FastLowerBound;
-import org.ddolib.util.TSPLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.common.util.TSPLowerBound;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -33,11 +33,16 @@ import java.util.Set;
  * costs required to satisfy all pending demands.</p>
  */
 public class PSFastLowerBound implements FastLowerBound<PSState> {
-    /** The production scheduling problem instance. */
+    /**
+     * The production scheduling problem instance.
+     */
     private final PSProblem problem;
 
-    /** Precomputed TSP lower bounds for all subsets of items, indexed by bitmask. */
+    /**
+     * Precomputed TSP lower bounds for all subsets of items, indexed by bitmask.
+     */
     private final int[] tspLb;
+
     /**
      * Constructs a fast lower bound evaluator for a given PSP instance.
      * <p>
@@ -124,6 +129,7 @@ public class PSFastLowerBound implements FastLowerBound<PSState> {
         }
         return changeOverLb + stockingCostLb;
     }
+
     /**
      * A simple record used to represent an item demand, defined by its
      * stocking cost and deadline.

@@ -1,23 +1,11 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.nolayer.Problem;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.common.util.InvalidSolutionException;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Arrays;
+import java.util.*;
 
-public class GRProblem implements Problem<GRState> {
-
-    public final int order;
-
-    public GRProblem(int order) {
-        this.order = order;
-    }
+public record GRProblem(int order) implements Problem<GRState> {
 
     @Override
     public GRState initialState() {
@@ -42,7 +30,7 @@ public class GRProblem implements Problem<GRState> {
         int nextMark = state.getLastMark() + 1;
         // The maximum length of a Golomb ruler of order n is strictly less than n^2
         int maxL = order * order;
-        
+
         for (int label = nextMark; label < maxL; label++) {
             boolean legal = true;
             for (int mark = state.getMarks().nextSetBit(0); mark >= 0; mark = state.getMarks().nextSetBit(mark + 1)) {
@@ -77,24 +65,24 @@ public class GRProblem implements Problem<GRState> {
     }
 
     @Override
-    public double evaluate(int[] solution) throws InvalidSolutionException {
+    public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         int nbVars = order - 1;
-        if (solution.length != nbVars) {
+        if (solution.size() != nbVars) {
             throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars));
+                    "the number %d variables", solution, nbVars));
         }
         if (nbVars == 0) return 0;
 
         Map<Integer, Integer[]> distance = new HashMap<>();
 
-        for (int j = 0; j < solution.length; j++) {
-            distance.put(solution[j], new Integer[]{0, j + 1});
+        for (int j = 0; j < solution.size(); j++) {
+            distance.put(solution.get(j), new Integer[]{0, j + 1});
         }
 
         for (int i = 1; i < order; i++) {
             for (int j = i + 1; j < order; j++) {
-                int from = solution[i - 1];
-                int to = solution[j - 1];
+                int from = solution.get(i - 1);
+                int to = solution.get(j - 1);
                 int d = to - from;
                 if (distance.containsKey(d)) {
                     Integer[] pair = distance.get(d);
@@ -106,7 +94,7 @@ public class GRProblem implements Problem<GRState> {
                 distance.put(d, new Integer[]{i, j});
             }
         }
-        return solution[solution.length - 1];
+        return solution.get(solution.size() - 1);
     }
 
     @Override

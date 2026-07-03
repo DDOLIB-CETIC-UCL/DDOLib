@@ -1,12 +1,13 @@
 package org.ddolib.examples.layered.msct;
 
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * Implements the relaxation operator for the {@link MSCTProblem}
  * in the context of <b>Decision Diagram Optimization (DDO)</b> algorithms.
@@ -38,7 +39,9 @@ import java.util.Set;
  * @see MSCTDdoMain
  */
 public class MSCTRelax implements Relaxation<MSCTState> {
-    /** The scheduling problem instance associated with this relaxation. */
+    /**
+     * The scheduling problem instance associated with this relaxation.
+     */
     final MSCTProblem problem;
 
     /**
@@ -50,6 +53,7 @@ public class MSCTRelax implements Relaxation<MSCTState> {
     public MSCTRelax(MSCTProblem problem) {
         this.problem = problem;
     }
+
     /**
      * Merges several {@link MSCTState} objects into a single relaxed state.
      * <p>
@@ -72,6 +76,7 @@ public class MSCTRelax implements Relaxation<MSCTState> {
         }
         return new MSCTState(unionJobs, minCurrentTime);
     }
+
     /**
      * Computes the relaxed cost associated with transitioning from one state to another.
      * <p>
