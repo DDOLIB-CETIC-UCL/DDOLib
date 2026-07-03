@@ -2,7 +2,7 @@
 
 This file documents the DDOLib changes.
 
-## [1.0.0]
+## [0.1.0] - 03/07/2026
 
 Foundation of the DDOLib library.
 
@@ -27,3 +27,4 @@ Foundation of the DDOLib library.
 - User API
 - Various academic example
 - Implementation of a generic test bench for examples
+- No layer API (beta)
