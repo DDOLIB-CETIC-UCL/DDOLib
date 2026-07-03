@@ -4,6 +4,7 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Relaxation;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
@@ -107,6 +108,11 @@ public class TSPTestDataSupplier extends NoLayerTestDataSupplier<TSPState, TSPPr
             @Override
             public NoLayerDominanceChecker<TSPState> dominance() {
                 return new TSPNoLayerDominanceChecker();
+            }
+
+            @Override
+            public FastLowerBound<TSPState> lowerBound() {
+                return new TSPFlb(problem);
             }
         };
     }

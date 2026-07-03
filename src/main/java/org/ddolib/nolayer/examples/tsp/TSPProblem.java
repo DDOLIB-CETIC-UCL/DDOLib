@@ -9,11 +9,13 @@ import java.util.stream.Collectors;
 public class TSPProblem implements Problem<TSPState> {
 
     public final double[][] distanceMatrix;
-    private final int n;
+    public final int n;
+    private final Optional<String> name;
 
     public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
+        this.name = Optional.empty();
     }
 
     public TSPProblem(final String fname) throws java.io.IOException {
@@ -49,6 +51,7 @@ public class TSPProblem implements Problem<TSPState> {
 
         this.n = n;
         this.distanceMatrix = distanceMatrix;
+        this.name = Optional.of(fname);
     }
 
     @Override
@@ -133,6 +136,6 @@ public class TSPProblem implements Problem<TSPState> {
 
     @Override
     public String toString() {
-        return "TSPNoLayer(n:" + n + ")";
+        return name.orElse("TSPNoLayer(n:" + n + ")");
     }
 }
