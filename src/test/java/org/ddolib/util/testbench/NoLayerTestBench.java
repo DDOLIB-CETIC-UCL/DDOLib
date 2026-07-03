@@ -7,6 +7,7 @@ import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.*;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.util.debug.DebugLevel;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -141,6 +142,11 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             public VerbosityLevel verbosityLevel() {
                 return VerbosityLevel.SILENT;
             }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
         };
     }
 
@@ -195,6 +201,11 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             public boolean useCache() {
                 return useCache;
             }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
         };
     }
 
@@ -223,6 +234,11 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             @Override
             public int columnWidth() {
                 return fixWidth != null ? fixWidth : 5;
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
             }
         };
     }
