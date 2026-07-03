@@ -8,7 +8,9 @@ import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.nolayer.modeling.*;
 import org.ddolib.nolayer.solving.astar.core.solver.SubProblem;
 import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.NoLayerDebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -93,6 +95,25 @@ public final class AwAstarSolver<T> implements Solver {
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
+    private AwAstarSolver(AwAstarModel<T> model, T state) {
+        this.problem = model.problem();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = model.upperBound();
+        this.bestSol = Optional.empty();
+        this.present = new HashMap<>();
+        this.closed = new HashMap<>();
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500L);
+        this.debugLevel = DebugLevel.OFF;
+
+        this.weight = model.weight();
+        this.open = new PriorityQueue<>(
+                Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+        this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
+        this.root = constructRoot(state, 0);
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
+    }
+
     private SubProblem<T> constructRoot(T state, double value) {
         return new SubProblem<>(state, value, lb.fastLowerBound(state), new ArrayList<>());
     }
@@ -145,6 +166,10 @@ public final class AwAstarSolver<T> implements Solver {
             if (!problem.isTarget(sub.getState())) addChildren(sub, onSolution);
         }
 
+        if (debugLevel != DebugLevel.OFF) {
+            checkFlbAdmissibility();
+        }
+
         statistics = statistics.updateTime(System.currentTimeMillis());
         if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
@@ -172,6 +197,10 @@ public final class AwAstarSolver<T> implements Solver {
 
         while (domain.hasNext()) {
             final int label = domain.next();
+
+            if (debugLevel != DebugLevel.OFF) {
+                NoLayerDebugUtil.checkHashCodeAndEquality(state, label, problem::transition);
+            }
 
             T newState = problem.transition(state, label);
             double cost = problem.transitionCost(state, label);
@@ -227,5 +256,34 @@ public final class AwAstarSolver<T> implements Solver {
 
         double globalLB = defaultLowerBoundValue ? openByF.peek().getValue() : openByF.peek().f();
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
+    }
+
+    private void checkFlbAdmissibility() {
+        HashSet<T> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        AwAstarModel<T> model = new AwAstarModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return dominance;
+            }
+
+            @Override
+            public double weight() {
+                return weight;
+            }
+        };
+
+        NoLayerDebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AwAstarSolver<>(model, state));
     }
 }
