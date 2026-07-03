@@ -3,21 +3,28 @@ package org.ddolib.nolayer.examples.misp;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.util.InvalidSolutionException;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class MispProblem implements Problem<MispState> {
 
     public final BitSet[] neighbors;
     public final int[] weight;
     public final int nbVars;
+    private final Optional<String> name;
+
+    public MispProblem(BitSet[] neighbors, int[] weight, String name) {
+        this.neighbors = neighbors;
+        this.weight = weight;
+        this.nbVars = weight.length;
+        this.name = Optional.of(name);
+    }
+
 
     public MispProblem(BitSet[] neighbors, int[] weight) {
         this.neighbors = neighbors;
         this.weight = weight;
         this.nbVars = weight.length;
+        this.name = Optional.empty();
     }
 
     public static MispProblem fromFile(String fname) throws java.io.IOException {
@@ -56,7 +63,7 @@ public class MispProblem implements Problem<MispState> {
                 line = br.readLine();
             }
         }
-        return new MispProblem(neighbor, weight.stream().mapToInt(x -> x).toArray());
+        return new MispProblem(neighbor, weight.stream().mapToInt(x -> x).toArray(), fname);
     }
 
     @Override
@@ -131,6 +138,6 @@ public class MispProblem implements Problem<MispState> {
 
     @Override
     public String toString() {
-        return "MispProblem(nbVars:" + nbVars + ")";
+        return name.orElse("MispProblem(nbVars:" + nbVars + ")");
     }
 }

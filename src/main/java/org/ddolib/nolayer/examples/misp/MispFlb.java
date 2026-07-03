@@ -16,6 +16,6 @@ public class MispFlb implements FastLowerBound<MispState> {
         for (int i = state.remainingNodes().nextSetBit(0); i >= 0; i = state.remainingNodes().nextSetBit(i + 1)) {
             flb += weight[i];
         }
-        return flb;
+        return -flb;
     }
 }
