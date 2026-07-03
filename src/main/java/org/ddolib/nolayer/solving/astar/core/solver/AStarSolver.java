@@ -5,11 +5,11 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.common.solver.Solver;
-import org.ddolib.nolayer.modeling.FastLowerBound;
-import org.ddolib.nolayer.modeling.Model;
-import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
-import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.modeling.*;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.NoLayerDebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -26,7 +26,9 @@ public final class AStarSolver<T> implements Solver {
             Comparator.comparingDouble(SubProblem<T>::f));
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
+    private final DebugLevel debugLevel;
 
+    private final boolean defaultLowerBoundValue;
     private AstarStats statistics;
     private double bestUB;
     private Optional<List<Integer>> bestSol;
@@ -40,8 +42,25 @@ public final class AStarSolver<T> implements Solver {
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
+        this.debugLevel = model.debugMode();
         this.root = constructRoot(problem.initialState(), problem.initialValue());
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
+
+    private AStarSolver(Model<T> model, T state) {
+        this.problem = model.problem();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = model.upperBound();
+        this.bestSol = Optional.empty();
+        this.present = new HashMap<>();
+        this.closed = new HashMap<>();
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500L);
+        this.debugLevel = DebugLevel.OFF;
+        this.root = constructRoot(state, 0);
+        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
+    }
+
 
     private SubProblem<T> constructRoot(T state, double value) {
         return new SubProblem<>(state, value, lb.fastLowerBound(state), new ArrayList<>());
@@ -90,6 +109,10 @@ public final class AStarSolver<T> implements Solver {
             }
         }
 
+        if (debugLevel != DebugLevel.OFF) {
+            checkFlbAdmissibility();
+        }
+
         statistics = statistics.updateTime(System.currentTimeMillis());
         if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
         else statistics = statistics.updateStatus(SearchStatus.UNSAT);
@@ -102,6 +125,11 @@ public final class AStarSolver<T> implements Solver {
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
             int label = domain.next();
+
+            if (debugLevel != DebugLevel.OFF) {
+                NoLayerDebugUtil.checkHashCodeAndEquality(state, label, problem::transition);
+            }
+
             T newState = problem.transition(state, label);
             double cost = problem.transitionCost(state, label);
             double g = subProblem.getValue() + cost;
@@ -148,7 +176,7 @@ public final class AStarSolver<T> implements Solver {
         } else if (open.isEmpty()) {
             return 0.0;
         } else {
-            double globalLB = open.peek().f();
+            double globalLB = defaultLowerBoundValue ? open.peek().getValue() : open.peek().f();
             return 100 * Math.abs(bestUB - globalLB) / Math.abs(bestUB);
         }
     }
@@ -162,5 +190,29 @@ public final class AStarSolver<T> implements Solver {
     @Override
     public List<Integer> bestSolution() {
         return bestSol.orElse(List.of());
+    }
+
+    private void checkFlbAdmissibility() {
+        HashSet<T> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        Model<T> model = new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return dominance;
+            }
+        };
+
+        NoLayerDebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AStarSolver<>(model, state));
     }
 }

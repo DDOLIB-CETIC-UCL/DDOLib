@@ -11,15 +11,7 @@ public class MispModel implements Model<MispState> {
 
     public MispModel(MispProblem problem) {
         this.problem = problem;
-        this.lowerBound = state -> {
-            double lb = 0;
-            int n = state.remainingNodes().nextSetBit(0);
-            while (n >= 0) {
-                lb += -problem.weight[n];
-                n = state.remainingNodes().nextSetBit(n + 1);
-            }
-            return lb;
-        };
+        this.lowerBound = new MispFlb(problem);
     }
 
     @Override

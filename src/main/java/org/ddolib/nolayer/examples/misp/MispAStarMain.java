@@ -1,6 +1,7 @@
 package org.ddolib.nolayer.examples.misp;
 
 import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.modeling.Solvers;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -12,10 +13,8 @@ public final class MispAStarMain {
         final MispProblem problem = MispProblem.fromFile(instance);
         final MispModel model = new MispModel(problem);
 
-        org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<MispState> solver = new org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<>(model);
 
-        Solution bestSolution = solver.minimize(
-                stats -> false,
+        Solution bestSolution = Solvers.minimizeAstar(model,
                 (sol, stats) -> {
                     SolutionPrinter.printSolution(stats, sol);
                 }
