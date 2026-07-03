@@ -71,11 +71,6 @@ public final class AwAstarSolver<T> implements Solver {
                     "must be >= 1 !");
         }
 
-        if (model.weight() < 1) {
-            throw new IllegalArgumentException("The weight associated to the heuristic function " +
-                    "must be >= 1 !");
-        }
-
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
