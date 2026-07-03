@@ -11,21 +11,7 @@ public class KSModel implements Model<KSState> {
 
     public KSModel(KSProblem problem) {
         this.problem = problem;
-        this.lowerBound = state -> {
-            double lb = 0;
-            int cap = state.remainingCapacity();
-            for (int i = state.currentItem(); i < problem.profit.length; i++) {
-                if (cap >= problem.weight[i]) {
-                    lb += -problem.profit[i];
-                    cap -= problem.weight[i];
-                } else if (cap > 0) {
-                    double ratio = (double) problem.profit[i] / problem.weight[i];
-                    lb += -Math.ceil(ratio * cap);
-                    break;
-                }
-            }
-            return lb;
-        };
+        this.lowerBound = new KSFlb(problem);
     }
 
     @Override

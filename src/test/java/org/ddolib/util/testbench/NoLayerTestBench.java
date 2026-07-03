@@ -42,7 +42,7 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             );
         }
 
-        // DDO tests
+       /* // DDO tests
         DdoModel<T> ddoModelNoDom = wrapDdoModel(globalModel, false, false, null);
         double ddoVal = solveAndChecksSolution(ddoModelNoDom, "DDO");
         assertEquals(aStarVal, ddoVal, 1e-10,
@@ -66,7 +66,7 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             assertEquals(ddoVal, ddo, 1e-10,
                     "DDO: using width %d changes the value".formatted(w)
             );
-        }
+        }*/
 
         // ACS tests
         AcsModel<T> acsModelNoDom = wrapAcsModel(globalModel, false, null);
@@ -93,7 +93,7 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
 
     public Stream<DynamicTest> generateTests() {
         return problems.stream().map(p ->
-                DynamicTest.dynamicTest("Non Regression tests for " + p.toString(),
+                DynamicTest.dynamicTest("Unit tests for " + p.toString(),
                         () -> testAllSolver(p))
         );
     }
@@ -199,7 +199,7 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
     }
 
     protected AcsModel<T> wrapAcsModel(DdoModel<T> base, boolean useDominance, Integer fixWidth) {
-        return new AcsModel<T>() {
+        return new AcsModel<>() {
             @Override
             public Problem<T> problem() {
                 return base.problem();

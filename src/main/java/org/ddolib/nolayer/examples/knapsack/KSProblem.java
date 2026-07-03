@@ -5,6 +5,7 @@ import org.ddolib.util.InvalidSolutionException;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public class KSProblem implements Problem<KSState> {
 
@@ -12,12 +13,22 @@ public class KSProblem implements Problem<KSState> {
     public final int[] weight;
     public final int capa;
     private final int nbItems;
+    private final Optional<String> name;
+
+    public KSProblem(int[] profit, int[] weight, int capa, String name) {
+        this.profit = profit;
+        this.weight = weight;
+        this.capa = capa;
+        this.nbItems = profit.length;
+        this.name = Optional.of(name);
+    }
 
     public KSProblem(int[] profit, int[] weight, int capa) {
         this.profit = profit;
         this.weight = weight;
         this.capa = capa;
         this.nbItems = profit.length;
+        this.name = Optional.empty();
     }
 
     public static KSProblem fromFile(final String fname) throws java.io.IOException {
@@ -70,7 +81,7 @@ public class KSProblem implements Problem<KSState> {
             sortedWeight[i] = weight[j];
         }
 
-        return new KSProblem(sortedProfit, sortedWeight, c);
+        return new KSProblem(sortedProfit, sortedWeight, c, fname);
     }
 
     @Override
@@ -133,6 +144,6 @@ public class KSProblem implements Problem<KSState> {
 
     @Override
     public String toString() {
-        return "KSProblem(nbVars:" + nbItems + ")";
+        return name.orElse("KSProblem(nbVars:" + nbItems + ")");
     }
 }
