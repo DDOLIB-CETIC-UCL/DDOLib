@@ -7,7 +7,7 @@ import org.junit.platform.suite.api.SuiteDisplayName;
 
 @Suite
 @SuiteDisplayName("All Examples")
-@SelectPackages("org.ddolib.examples")
+@SelectPackages({"org.ddolib.examples.layered", "org.ddolib.examples.nolayer"})
 @ExcludeTags("non-regression")
 public class AllExamples {
 }

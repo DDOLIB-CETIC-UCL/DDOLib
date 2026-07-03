@@ -1,14 +1,15 @@
 name: non-regression.yml
-on:
-  workflow_dispatch: #can be run manually
 
+on:
+  workflow_dispatch:
   schedule:
-    - cron: "0 23 * * 0" # 23h utc
+    - cron: "0 23 * * 0"
 
 jobs:
   run-non-regression-tests:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,7 +21,32 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run non-regressions tests
+      - name: Run all tests with coverage
         env:
           MAVEN_OPTS: "-Xms4g -Xmx4g"
-        run: mvn clean test -P non-regression-tests
+        run: mvn clean test -P all-tests jacoco:report
+
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-summary: true
+          generate-coverage-badge: true
+          badges-directory: '.github/badges'
+          coverage-badge-filename: 'jacoco.svg'
+
+      - name: Deploy Badge
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .github/badges
+          destination_dir: badges
+          keep_files: true
+
+      - name: Deploy Coverage Report
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: target/site/jacoco
+          destination_dir: coverage
+          keep_files: true
