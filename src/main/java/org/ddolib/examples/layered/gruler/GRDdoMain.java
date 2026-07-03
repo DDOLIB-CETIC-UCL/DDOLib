@@ -2,8 +2,8 @@ package org.ddolib.examples.layered.gruler;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

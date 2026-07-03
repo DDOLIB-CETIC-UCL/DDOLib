@@ -1,16 +1,16 @@
 package org.ddolib.nolayer.solving.ddo.core.solver;
 
-import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.examples.nolayer.knapsack.KSModel;
 import org.ddolib.examples.nolayer.knapsack.KSProblem;
 import org.ddolib.examples.nolayer.knapsack.KSState;
-import org.ddolib.examples.nolayer.knapsack.KSModel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Relaxation;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.heuristics.width.FixedWidth;
-import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.Test;
 

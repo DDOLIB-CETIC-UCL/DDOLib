@@ -1,7 +1,7 @@
 package org.ddolib.nolayer.modeling;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.nolayer.common.solver.Solution;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.acs.core.solver.AcsSolver;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 import org.ddolib.nolayer.solving.awastar.core.solver.AwAstarSolver;

@@ -1,4 +1,4 @@
-package org.ddolib.layered.common.solver;
+package org.ddolib.layered.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.layered.solving.ddo.core.Decision;

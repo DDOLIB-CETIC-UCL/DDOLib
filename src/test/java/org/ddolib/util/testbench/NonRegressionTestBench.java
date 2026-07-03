@@ -1,8 +1,8 @@
 package org.ddolib.util.testbench;
 
 import org.ddolib.common.frontier.CutSetType;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.InvalidSolutionException;
 import org.junit.jupiter.api.DynamicTest;
 

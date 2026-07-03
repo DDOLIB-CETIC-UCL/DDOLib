@@ -4,7 +4,6 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.examples.layered.gruler.GRProblem;
 import org.ddolib.examples.layered.gruler.GRRanking;
 import org.ddolib.examples.layered.gruler.GRRelax;
@@ -13,6 +12,7 @@ import org.ddolib.examples.layered.knapsack.*;
 import org.ddolib.examples.layered.tsp.*;
 import org.ddolib.examples.layered.tsptw.*;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

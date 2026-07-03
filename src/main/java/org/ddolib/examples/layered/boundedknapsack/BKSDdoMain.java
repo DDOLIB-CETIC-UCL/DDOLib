@@ -4,11 +4,11 @@ import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 /**

@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.msct;
 
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

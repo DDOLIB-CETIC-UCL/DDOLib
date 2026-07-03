@@ -1,10 +1,10 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 public final class GRAcsMain {

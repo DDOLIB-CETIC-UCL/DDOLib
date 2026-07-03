@@ -2,11 +2,11 @@ package org.ddolib.examples.layered.boundedknapsack;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.LnsModel;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 /**

@@ -2,10 +2,10 @@ package org.ddolib.examples.layered.mks;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.Hybrid;

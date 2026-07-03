@@ -1,4 +1,4 @@
-package org.ddolib.nolayer.common.solver;
+package org.ddolib.nolayer.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.util.PrettyPrint;

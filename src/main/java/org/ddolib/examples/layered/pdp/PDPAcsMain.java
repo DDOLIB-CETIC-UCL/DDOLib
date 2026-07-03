@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

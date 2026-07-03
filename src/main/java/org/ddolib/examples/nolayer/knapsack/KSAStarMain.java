@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.Solvers;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

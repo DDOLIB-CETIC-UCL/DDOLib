@@ -4,12 +4,12 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.examples.layered.knapsack.KSDominance;
 import org.ddolib.examples.layered.knapsack.KSFastLowerBound;
 import org.ddolib.examples.layered.knapsack.KSProblem;
 import org.ddolib.examples.layered.knapsack.KSRanking;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

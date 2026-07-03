@@ -1,7 +1,7 @@
 package org.ddolib.util.debug;
 
-import org.ddolib.layered.common.solver.Solver;
 import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.util.StateAndDepth;

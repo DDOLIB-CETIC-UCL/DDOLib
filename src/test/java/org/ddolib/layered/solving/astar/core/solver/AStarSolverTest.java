@@ -2,7 +2,6 @@ package org.ddolib.layered.solving.astar.core.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.examples.layered.gruler.GRProblem;
 import org.ddolib.examples.layered.gruler.GRState;
 import org.ddolib.examples.layered.knapsack.KSDominance;
@@ -17,6 +16,7 @@ import org.ddolib.examples.layered.tsptw.TSPTWFastLowerBound;
 import org.ddolib.examples.layered.tsptw.TSPTWProblem;
 import org.ddolib.examples.layered.tsptw.TSPTWState;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

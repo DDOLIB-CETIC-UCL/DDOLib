@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.pdptw;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.InvalidSolutionException;
 import org.ddolib.util.io.SolutionPrinter;
 

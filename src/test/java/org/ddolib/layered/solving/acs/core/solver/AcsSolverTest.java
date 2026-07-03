@@ -2,7 +2,6 @@ package org.ddolib.layered.solving.acs.core.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.examples.layered.boundedknapsack.BKSDominance;
 import org.ddolib.examples.layered.boundedknapsack.BKSFastLowerBound;
 import org.ddolib.examples.layered.boundedknapsack.BKSProblem;
@@ -19,6 +18,7 @@ import org.ddolib.examples.layered.tsptw.TSPTWFastLowerBound;
 import org.ddolib.examples.layered.tsptw.TSPTWProblem;
 import org.ddolib.examples.layered.tsptw.TSPTWState;
 import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.InvalidSolutionException;
 import org.junit.jupiter.api.Test;
 

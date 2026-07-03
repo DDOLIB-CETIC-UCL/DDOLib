@@ -1,6 +1,5 @@
 package org.ddolib.nolayer.solving.acs.core.solver;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.examples.nolayer.gruler.GRProblem;
@@ -14,6 +13,7 @@ import org.ddolib.examples.nolayer.tsp.TSPState;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

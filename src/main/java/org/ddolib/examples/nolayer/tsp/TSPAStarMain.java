@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
 import java.util.Optional;

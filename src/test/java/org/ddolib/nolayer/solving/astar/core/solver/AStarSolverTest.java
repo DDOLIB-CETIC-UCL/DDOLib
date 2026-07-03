@@ -1,11 +1,11 @@
 package org.ddolib.nolayer.solving.astar.core.solver;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.examples.layered.tsp.TSPGenerator;
-import org.ddolib.examples.nolayer.tsp.TSPState;
 import org.ddolib.examples.nolayer.tsp.TSPModel;
 import org.ddolib.examples.nolayer.tsp.TSPProblem;
+import org.ddolib.examples.nolayer.tsp.TSPState;
 import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.solver.Solution;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

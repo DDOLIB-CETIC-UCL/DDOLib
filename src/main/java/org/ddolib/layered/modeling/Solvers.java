@@ -1,7 +1,7 @@
 package org.ddolib.layered.modeling;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.layered.common.solver.Solution;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.acs.core.solver.AcsSolver;
 import org.ddolib.layered.solving.astar.core.solver.AStarSolver;
 import org.ddolib.layered.solving.awastar.core.solver.AwAstarSolver;

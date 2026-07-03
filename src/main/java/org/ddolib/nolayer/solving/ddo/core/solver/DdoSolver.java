@@ -7,12 +7,12 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.nolayer.common.solver.Solution;
-import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solver.Solver;
 import org.ddolib.nolayer.solving.ddo.core.mdd.NoLayerDecisionDiagram;
 import org.ddolib.util.verbosity.VerboseMode;
 

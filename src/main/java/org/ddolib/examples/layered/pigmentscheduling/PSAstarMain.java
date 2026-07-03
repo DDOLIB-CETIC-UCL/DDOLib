@@ -1,8 +1,8 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.layered.common.solver.Solution;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;

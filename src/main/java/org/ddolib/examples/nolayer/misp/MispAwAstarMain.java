@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.misp;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.*;
+import org.ddolib.nolayer.solver.Solution;
 
 import java.io.IOException;
 import java.nio.file.Path;

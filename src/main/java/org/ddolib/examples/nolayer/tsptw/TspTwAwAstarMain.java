@@ -1,10 +1,10 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.nolayer.modeling.AwAstarModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.awastar.core.solver.AwAstarSolver;
 import org.ddolib.util.io.SolutionPrinter;
 

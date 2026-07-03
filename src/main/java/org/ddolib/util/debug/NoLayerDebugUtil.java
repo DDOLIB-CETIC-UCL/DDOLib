@@ -1,7 +1,7 @@
 package org.ddolib.util.debug;
 
-import org.ddolib.nolayer.common.solver.Solver;
 import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.solver.Solver;
 
 import java.text.DecimalFormat;
 import java.util.List;
