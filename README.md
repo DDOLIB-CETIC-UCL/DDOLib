@@ -24,7 +24,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>io.github.ddolib-cetic-ucl</groupId>
     <artifactId>ddolib</artifactId>
-    <version>0.0.5</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -69,7 +69,7 @@ If you use this Java version, please cite the DDO paper:
 
 ## Examples
 
-The project contains a set of example models located in the [examples](./src/main/java/org/ddolib/ddo/examples/)
+The project contains a set of example models located in the [examples](./src/main/java/org/ddolib/examples/)
 package.
 
 The Knapsack problem (KP) is a classic optimization problem where the goal is to maximize the total value of items while
