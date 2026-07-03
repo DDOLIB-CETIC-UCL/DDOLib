@@ -2,6 +2,7 @@ package org.ddolib.nolayer.solving.astar.core.solver;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A subproblem used in the AStarSolver.
@@ -40,5 +41,31 @@ public class SubProblem<T> {
 
     public List<Integer> getPath() {
         return Collections.unmodifiableList(path);
+    }
+
+    @Override
+    public String toString() {
+        return "%s - g: %f - h: %f".formatted(state, g, h);
+    }
+
+    /**
+     * Two subproblems are considered equal if they share the same state. Solvers rely on this
+     * to keep at most one entry per state in their priority queues (e.g. when a better path to
+     * an already open state replaces the stale entry).
+     *
+     * @param obj the object to compare with
+     * @return {@code true} if both subproblems have the same state, {@code false} otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof SubProblem<?> other) {
+            return Objects.equals(this.state, other.state);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(state);
     }
 }

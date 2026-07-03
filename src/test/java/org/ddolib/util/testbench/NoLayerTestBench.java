@@ -72,9 +72,7 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
         // ACS tests
         AcsModel<T> acsModelNoDom = wrapAcsModel(globalModel, false, null);
         double acsVal = solveAndChecksSolution(acsModelNoDom, "ACS");
-        assertEquals(aStarVal, acsVal, 1e-10,
-                "A* and ACS do not return the same value"
-        );
+        assertEquals(aStarVal, acsVal, 1e-10, "A* and ACS do not return the same value");
 
         if (dominanceUsed) {
             AcsModel<T> acsModel = wrapAcsModel(globalModel, true, null);
@@ -89,6 +87,17 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             assertEquals(acsVal, acs, 1e-10,
                     "ACS: using column width %d changes the value".formatted(c)
             );
+        }
+
+        // AWA* tests
+        AwAstarModel<T> awAstarModel = wrapAwAStarModel(globalModel, false);
+        double awAstarVal = solveAndChecksSolution(awAstarModel, "AWA*");
+        assertEquals(aStarVal, awAstarVal, 1e-10, "A* and AWA* do not return the same value");
+        if (dominanceUsed) {
+            AwAstarModel<T> awAstarModelDom = wrapAwAStarModel(globalModel, true);
+            double awastar = solveAndChecksSolution(awAstarModelDom, "AWA* (Dominance)");
+            assertEquals(awAstarVal, awastar, "AWA*: the dominance changes the value");
+
         }
     }
 
@@ -239,6 +248,35 @@ public class NoLayerTestBench<T, P extends Problem<T>> {
             @Override
             public DebugLevel debugMode() {
                 return DebugLevel.ON;
+            }
+        };
+    }
+
+    protected AwAstarModel<T> wrapAwAStarModel(DdoModel<T> base, boolean useDominance) {
+        return new AwAstarModel<T>() {
+            @Override
+            public Problem<T> problem() {
+                return base.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return base.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return useDominance ? base.dominance() : new DefaultNoLayerDominanceChecker<>();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DebugLevel.ON;
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return VerbosityLevel.SILENT;
             }
         };
     }

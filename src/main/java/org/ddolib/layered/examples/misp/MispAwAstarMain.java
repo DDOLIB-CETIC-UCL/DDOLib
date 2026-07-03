@@ -40,7 +40,7 @@ public final class MispAwAstarMain {
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ?
-                Path.of("data", "MISP", "tadpole_4_2.dot").toString() :
+                Path.of("data", "MISP", "weighted.dot").toString() :
                 args[0];
         final MispProblem problem = new MispProblem(instance);
         AwAstarModel<BitSet> model = new AwAstarModel<>() {
