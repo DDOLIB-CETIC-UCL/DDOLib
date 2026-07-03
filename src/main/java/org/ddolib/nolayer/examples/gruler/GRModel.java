@@ -11,20 +11,7 @@ public class GRModel implements Model<GRState> {
 
     public GRModel(GRProblem problem) {
         this.problem = problem;
-        this.lowerBound = state -> {
-            int missingMarks = problem.order() - state.getNumberOfMarks();
-
-            int i = 0;
-            int cost = 0;
-            while (missingMarks != 0) {
-                if (i != 0 && !state.getDistances().get(i)) {
-                    cost += i;
-                    missingMarks--;
-                }
-                i++;
-            }
-            return cost;
-        };
+        this.lowerBound = new GRFlb(problem);
     }
 
     @Override
