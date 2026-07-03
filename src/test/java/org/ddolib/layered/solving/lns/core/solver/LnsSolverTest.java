@@ -5,10 +5,10 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.layered.common.solver.Solution;
-import org.ddolib.layered.examples.knapsack.KSDominance;
-import org.ddolib.layered.examples.knapsack.KSFastLowerBound;
-import org.ddolib.layered.examples.knapsack.KSProblem;
-import org.ddolib.layered.examples.knapsack.KSRanking;
+import org.ddolib.examples.layered.knapsack.KSDominance;
+import org.ddolib.examples.layered.knapsack.KSFastLowerBound;
+import org.ddolib.examples.layered.knapsack.KSProblem;
+import org.ddolib.examples.layered.knapsack.KSRanking;
 import org.ddolib.layered.modeling.*;
 import org.junit.jupiter.api.Test;
 

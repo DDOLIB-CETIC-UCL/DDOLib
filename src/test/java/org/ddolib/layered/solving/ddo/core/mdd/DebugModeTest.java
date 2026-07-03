@@ -3,7 +3,7 @@ package org.ddolib.layered.solving.ddo.core.mdd;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.examples.misp.MispProblem;
+import org.ddolib.examples.layered.misp.MispProblem;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.util.debug.DebugLevel;
 import org.junit.jupiter.api.Test;

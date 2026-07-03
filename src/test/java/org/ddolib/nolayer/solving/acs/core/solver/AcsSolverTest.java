@@ -3,14 +3,14 @@ package org.ddolib.nolayer.solving.acs.core.solver;
 import org.ddolib.nolayer.common.solver.Solution;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.nolayer.examples.gruler.GRProblem;
-import org.ddolib.nolayer.examples.gruler.GRState;
-import org.ddolib.nolayer.examples.knapsack.KSModel;
-import org.ddolib.nolayer.examples.knapsack.KSProblem;
-import org.ddolib.nolayer.examples.knapsack.KSState;
-import org.ddolib.nolayer.examples.tsp.TSPModel;
-import org.ddolib.nolayer.examples.tsp.TSPProblem;
-import org.ddolib.nolayer.examples.tsp.TSPState;
+import org.ddolib.examples.nolayer.gruler.GRProblem;
+import org.ddolib.examples.nolayer.gruler.GRState;
+import org.ddolib.examples.nolayer.knapsack.KSModel;
+import org.ddolib.examples.nolayer.knapsack.KSProblem;
+import org.ddolib.examples.nolayer.knapsack.KSState;
+import org.ddolib.examples.nolayer.tsp.TSPModel;
+import org.ddolib.examples.nolayer.tsp.TSPProblem;
+import org.ddolib.examples.nolayer.tsp.TSPState;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Problem;
@@ -95,7 +95,7 @@ class AcsSolverTest {
     @Test
     void testTSPGapNonConsistentHeuristic() throws IOException {
         final String instance = Path.of("data", "TSP", "instance_10_0.xml").toString();
-        final org.ddolib.layered.examples.tsp.TSPProblem baseTSP = new org.ddolib.layered.examples.tsp.TSPProblem(instance);
+        final org.ddolib.examples.layered.tsp.TSPProblem baseTSP = new org.ddolib.examples.layered.tsp.TSPProblem(instance);
         final TSPProblem problem = new TSPProblem(baseTSP.distanceMatrix);
         final TSPModel baseModel = new TSPModel(problem);
 

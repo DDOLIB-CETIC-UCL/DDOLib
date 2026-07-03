@@ -1,6 +1,6 @@
 package org.ddolib.layered.solving.astar.core.solver;
 
-import org.ddolib.layered.examples.misp.MispProblem;
+import org.ddolib.examples.layered.misp.MispProblem;
 import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.Problem;

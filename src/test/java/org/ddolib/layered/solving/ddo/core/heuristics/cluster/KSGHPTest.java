@@ -6,7 +6,7 @@ import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.common.solver.Solution;
-import org.ddolib.layered.examples.knapsack.*;
+import org.ddolib.examples.layered.knapsack.*;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;

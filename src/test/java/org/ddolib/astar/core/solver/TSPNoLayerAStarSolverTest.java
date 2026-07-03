@@ -1,10 +1,10 @@
 package org.ddolib.astar.core.solver;
 
 import org.ddolib.nolayer.common.solver.Solution;
-import org.ddolib.layered.examples.tsp.TSPGenerator;
-import org.ddolib.nolayer.examples.tsp.TSPState;
-import org.ddolib.nolayer.examples.tsp.TSPModel;
-import org.ddolib.nolayer.examples.tsp.TSPProblem;
+import org.ddolib.examples.layered.tsp.TSPGenerator;
+import org.ddolib.examples.nolayer.tsp.TSPState;
+import org.ddolib.examples.nolayer.tsp.TSPModel;
+import org.ddolib.examples.nolayer.tsp.TSPProblem;
 import org.ddolib.nolayer.modeling.Model;
 import org.junit.jupiter.api.Test;
 
@@ -22,19 +22,19 @@ public class TSPNoLayerAStarSolverTest {
         double[][] distMatrix = generator.distanceMatrix;
 
         // Solve with the layered API to get optimal
-        org.ddolib.layered.examples.tsp.TSPProblem layeredProblem = new org.ddolib.layered.examples.tsp.TSPProblem(distMatrix);
-        org.ddolib.layered.modeling.Model<org.ddolib.layered.examples.tsp.TSPState> layeredModel = new org.ddolib.layered.modeling.Model<>() {
+        org.ddolib.examples.layered.tsp.TSPProblem layeredProblem = new org.ddolib.examples.layered.tsp.TSPProblem(distMatrix);
+        org.ddolib.layered.modeling.Model<org.ddolib.examples.layered.tsp.TSPState> layeredModel = new org.ddolib.layered.modeling.Model<>() {
             @Override
-            public org.ddolib.layered.modeling.Problem<org.ddolib.layered.examples.tsp.TSPState> problem() {
+            public org.ddolib.layered.modeling.Problem<org.ddolib.examples.layered.tsp.TSPState> problem() {
                 return layeredProblem;
             }
 
             @Override
-            public org.ddolib.layered.modeling.FastLowerBound<org.ddolib.layered.examples.tsp.TSPState> lowerBound() {
-                return new org.ddolib.layered.examples.tsp.TSPFastLowerBound(layeredProblem);
+            public org.ddolib.layered.modeling.FastLowerBound<org.ddolib.examples.layered.tsp.TSPState> lowerBound() {
+                return new org.ddolib.examples.layered.tsp.TSPFastLowerBound(layeredProblem);
             }
         };
-        org.ddolib.layered.solving.astar.core.solver.AStarSolver<org.ddolib.layered.examples.tsp.TSPState> layeredSolver = new org.ddolib.layered.solving.astar.core.solver.AStarSolver<>(layeredModel);
+        org.ddolib.layered.solving.astar.core.solver.AStarSolver<org.ddolib.examples.layered.tsp.TSPState> layeredSolver = new org.ddolib.layered.solving.astar.core.solver.AStarSolver<>(layeredModel);
         layeredSolver.minimize(stats -> false, (sol, stats) -> {
         });
         double expectedOptimal = layeredSolver.bestValue().orElseThrow();

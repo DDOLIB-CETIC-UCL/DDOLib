@@ -1,9 +1,9 @@
 package org.ddolib.nolayer.solving.ddo.core.solver;
 
 import org.ddolib.nolayer.common.solver.Solution;
-import org.ddolib.nolayer.examples.knapsack.KSProblem;
-import org.ddolib.nolayer.examples.knapsack.KSState;
-import org.ddolib.nolayer.examples.knapsack.KSModel;
+import org.ddolib.examples.nolayer.knapsack.KSProblem;
+import org.ddolib.examples.nolayer.knapsack.KSState;
+import org.ddolib.examples.nolayer.knapsack.KSModel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.modeling.DdoModel;
 import org.ddolib.nolayer.modeling.Relaxation;
@@ -30,7 +30,7 @@ public class DdoSolverTest {
         int capacity = 20;
 
         // Solve with layered API to get optimal
-        org.ddolib.layered.examples.knapsack.KSProblem layeredProblem = new org.ddolib.layered.examples.knapsack.KSProblem(capacity, profits, weights);
+        org.ddolib.examples.layered.knapsack.KSProblem layeredProblem = new org.ddolib.examples.layered.knapsack.KSProblem(capacity, profits, weights);
         org.ddolib.layered.modeling.Model<Integer> layeredModel = new org.ddolib.layered.modeling.Model<Integer>() {
             @Override
             public org.ddolib.layered.modeling.Problem<Integer> problem() {
@@ -39,7 +39,7 @@ public class DdoSolverTest {
 
             @Override
             public org.ddolib.layered.modeling.FastLowerBound<Integer> lowerBound() {
-                return new org.ddolib.layered.examples.knapsack.KSFastLowerBound(layeredProblem);
+                return new org.ddolib.examples.layered.knapsack.KSFastLowerBound(layeredProblem);
             }
         };
         org.ddolib.layered.solving.astar.core.solver.AStarSolver<Integer> layeredSolver = new org.ddolib.layered.solving.astar.core.solver.AStarSolver<>(layeredModel);
