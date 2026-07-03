@@ -1,10 +1,7 @@
 package org.ddolib.nolayer.examples.misp;
 
 import org.ddolib.nolayer.common.solver.Solution;
-import org.ddolib.nolayer.modeling.AcsModel;
-import org.ddolib.nolayer.modeling.FastLowerBound;
-import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
-import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.modeling.*;
 import org.ddolib.util.io.SolutionPrinter;
 
 import java.io.IOException;
@@ -38,7 +35,7 @@ public final class MispAcsMain {
             }
         };
 
-        Solution bestSolution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model, (sol, stats) -> {
+        Solution bestSolution = Solvers.minimizeAcs(model, (sol, stats) -> {
             SolutionPrinter.printSolution(stats, sol);
         });
 

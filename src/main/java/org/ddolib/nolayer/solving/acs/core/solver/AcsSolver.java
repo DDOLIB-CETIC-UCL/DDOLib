@@ -10,7 +10,10 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solving.astar.core.solver.SubProblem;
+import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.util.debug.NoLayerDebugUtil;
 import org.ddolib.util.verbosity.VerboseMode;
+import org.ddolib.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -27,6 +30,7 @@ public final class AcsSolver<T> implements Solver {
     private final int columnWidth;
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
+    private final DebugLevel debugLevel;
     private boolean defaultLowerBoundValue;
     private double bestUB;
     private Optional<List<Integer>> bestSol;
@@ -45,9 +49,30 @@ public final class AcsSolver<T> implements Solver {
         this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
 
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);
+        this.debugLevel = model.debugMode();
 
         this.root = constructRoot(problem.initialState(), problem.initialValue());
         this.defaultLowerBoundValue = lb.fastLowerBound(problem.initialState()) == Integer.MIN_VALUE;
+    }
+
+    private AcsSolver(AcsModel<T> model, T state) {
+        this.problem = model.problem();
+        this.lb = model.lowerBound();
+        this.dominance = model.dominance();
+        this.bestUB = model.upperBound();
+        this.bestSol = Optional.empty();
+        this.columnWidth = model.columnWidth();
+
+        this.closed = new HashMap<>();
+        this.present = new HashMap<>();
+        this.open = new ArrayList<>();
+        this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
+
+        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);
+        this.debugLevel = DebugLevel.OFF;
+
+        this.root = constructRoot(state, 0);
+        this.defaultLowerBoundValue = lb.fastLowerBound(state) == Integer.MIN_VALUE;
     }
 
     private SubProblem<T> constructRoot(T state, double value) {
@@ -127,6 +152,10 @@ public final class AcsSolver<T> implements Solver {
             statistics = statistics.updateFrontierMaxSize(open.stream().mapToInt(PriorityQueue::size).sum());
         }
 
+        if (debugLevel != DebugLevel.OFF) {
+            checkFlbAdmissibility();
+        }
+
         statistics = statistics.updateTime(System.currentTimeMillis());
 
         if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
@@ -140,6 +169,11 @@ public final class AcsSolver<T> implements Solver {
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
             int label = domain.next();
+
+            if (debugLevel != DebugLevel.OFF) {
+                NoLayerDebugUtil.checkHashCodeAndEquality(state, label, problem::transition);
+            }
+
             T newState = problem.transition(state, label);
             double cost = problem.transitionCost(state, label);
 
@@ -207,5 +241,34 @@ public final class AcsSolver<T> implements Solver {
                 .orElse(bestUB);
 
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
+    }
+
+    private void checkFlbAdmissibility() {
+        HashSet<T> toCheck = new HashSet<>(closed.keySet());
+        toCheck.addAll(present.keySet());
+
+        AcsModel<T> model = new AcsModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return lb;
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return dominance;
+            }
+
+            @Override
+            public int columnWidth() {
+                return columnWidth;
+            }
+        };
+
+        NoLayerDebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AcsSolver<>(model, state));
     }
 }
