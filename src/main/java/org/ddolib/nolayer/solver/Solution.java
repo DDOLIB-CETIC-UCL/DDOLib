@@ -1,7 +1,7 @@
 package org.ddolib.nolayer.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.util.PrettyPrint;
+import org.ddolib.common.util.PrettyPrint;
 
 import java.util.List;
 

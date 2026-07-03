@@ -8,7 +8,7 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.layered.knapsack.*;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

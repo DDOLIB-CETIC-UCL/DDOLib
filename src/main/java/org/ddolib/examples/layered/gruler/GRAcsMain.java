@@ -5,7 +5,7 @@ import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 

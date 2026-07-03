@@ -1,7 +1,7 @@
 package org.ddolib.examples.nolayer.knapsack;
 
 import org.ddolib.nolayer.modeling.Problem;
-import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.Iterator;
 import java.util.List;

@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.pigmentscheduling;
 
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.util.testbench.TestDataSupplier;
+import org.ddolib.common.util.testbench.TestDataSupplier;
 
 import java.io.IOException;
 import java.nio.file.Files;

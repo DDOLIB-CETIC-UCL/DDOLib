@@ -4,7 +4,7 @@
  */
 
 
-package org.ddolib.util.io;
+package org.ddolib.common.util.io;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

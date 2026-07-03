@@ -15,7 +15,7 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

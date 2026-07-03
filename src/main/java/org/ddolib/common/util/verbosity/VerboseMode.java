@@ -1,4 +1,4 @@
-package org.ddolib.util.verbosity;
+package org.ddolib.common.util.verbosity;
 
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 

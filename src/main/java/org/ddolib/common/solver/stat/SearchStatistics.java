@@ -1,6 +1,6 @@
 package org.ddolib.common.solver.stat;
 
-import org.ddolib.util.PrettyPrint;
+import org.ddolib.common.util.PrettyPrint;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

@@ -2,8 +2,8 @@ package org.ddolib.examples.layered.knapsack;
 
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.PrettyPrint;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.PrettyPrint;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;

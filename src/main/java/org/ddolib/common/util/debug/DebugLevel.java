@@ -1,4 +1,4 @@
-package org.ddolib.util.debug;
+package org.ddolib.common.util.debug;
 
 /**
  * Defines the different levels of debugging information and validation

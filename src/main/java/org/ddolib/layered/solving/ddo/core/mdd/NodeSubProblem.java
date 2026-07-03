@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.ddolib.util.MathUtil.saturatedAdd;
+import static org.ddolib.common.util.MathUtil.saturatedAdd;
 
 /**
  * Encapsulates the association of a node in a decision diagram with its corresponding state

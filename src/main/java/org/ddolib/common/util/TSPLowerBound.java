@@ -1,4 +1,4 @@
-package org.ddolib.util;
+package org.ddolib.common.util;
 
 import java.util.HashSet;
 import java.util.Set;

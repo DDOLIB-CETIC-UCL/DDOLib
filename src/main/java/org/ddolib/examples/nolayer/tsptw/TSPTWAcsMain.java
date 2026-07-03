@@ -5,7 +5,7 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;

@@ -5,7 +5,7 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.examples.layered.misp.MispProblem;
 import org.ddolib.layered.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.DebugLevel;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.ddolib.util;
+package org.ddolib.common.util;
 
 /**
  * Class containing a state and its depth in the main search.

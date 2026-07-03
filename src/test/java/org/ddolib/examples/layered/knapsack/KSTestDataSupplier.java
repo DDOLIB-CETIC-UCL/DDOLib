@@ -1,9 +1,9 @@
 package org.ddolib.examples.layered.knapsack;
 
 import org.ddolib.layered.modeling.*;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.TestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.testbench.TestDataSupplier;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Files;

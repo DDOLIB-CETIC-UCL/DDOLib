@@ -1,10 +1,10 @@
-package org.ddolib.util.debug;
+package org.ddolib.common.util.debug;
 
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
-import org.ddolib.util.StateAndDepth;
+import org.ddolib.common.util.StateAndDepth;
 
 import java.text.DecimalFormat;
 import java.util.*;

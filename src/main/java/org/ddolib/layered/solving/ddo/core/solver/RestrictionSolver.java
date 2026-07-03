@@ -14,8 +14,8 @@ import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.util.Collections;
 import java.util.Optional;

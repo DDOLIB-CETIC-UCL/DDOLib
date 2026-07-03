@@ -6,8 +6,8 @@ import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 import java.util.BitSet;
 
 import static java.lang.Math.abs;
-import static org.ddolib.util.DistanceUtil.symmetricDifferenceDistance;
-import static org.ddolib.util.DistanceUtil.weightedJaccardDistance;
+import static org.ddolib.common.util.DistanceUtil.symmetricDifferenceDistance;
+import static org.ddolib.common.util.DistanceUtil.weightedJaccardDistance;
 
 /**
  * Distance function for {@link MaxCoverState} used to measure similarity

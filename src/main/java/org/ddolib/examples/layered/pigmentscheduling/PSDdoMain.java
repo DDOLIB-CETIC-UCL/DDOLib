@@ -6,7 +6,7 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;

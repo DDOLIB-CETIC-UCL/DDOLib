@@ -9,9 +9,9 @@ import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Relaxation;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.testbench.NoLayerTestDataSupplier;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.testbench.NoLayerTestDataSupplier;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Files;

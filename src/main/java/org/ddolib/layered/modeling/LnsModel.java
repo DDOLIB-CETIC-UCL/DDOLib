@@ -6,8 +6,8 @@ import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
  * Interface representing a model for Large Neighborhood Search (LNS) problems.

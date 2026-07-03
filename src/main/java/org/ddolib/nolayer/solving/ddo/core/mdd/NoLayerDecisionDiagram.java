@@ -13,7 +13,7 @@ import org.ddolib.nolayer.modeling.Problem;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.ddolib.util.MathUtil.saturatedDiff;
+import static org.ddolib.common.util.MathUtil.saturatedDiff;
 
 public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
 

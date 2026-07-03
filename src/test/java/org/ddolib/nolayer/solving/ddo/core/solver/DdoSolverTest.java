@@ -11,7 +11,7 @@ import org.ddolib.nolayer.modeling.Relaxation;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;

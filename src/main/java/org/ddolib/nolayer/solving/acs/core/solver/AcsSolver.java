@@ -10,10 +10,10 @@ import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solver.Solver;
 import org.ddolib.nolayer.solving.astar.core.solver.SubProblem;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.debug.NoLayerDebugUtil;
-import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.NoLayerDebugUtil;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;

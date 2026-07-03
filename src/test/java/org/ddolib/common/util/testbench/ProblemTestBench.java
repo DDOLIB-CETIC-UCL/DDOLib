@@ -1,11 +1,11 @@
-package org.ddolib.util.testbench;
+package org.ddolib.common.util.testbench;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.InvalidSolutionException;
-import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.debug.DebugLevel;
 import org.junit.jupiter.api.DynamicTest;
 
 import java.util.List;

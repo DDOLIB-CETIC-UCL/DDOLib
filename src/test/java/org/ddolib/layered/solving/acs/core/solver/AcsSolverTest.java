@@ -19,7 +19,7 @@ import org.ddolib.examples.layered.tsptw.TSPTWProblem;
 import org.ddolib.examples.layered.tsptw.TSPTWState;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.common.util.InvalidSolutionException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

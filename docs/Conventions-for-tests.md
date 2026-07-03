@@ -5,7 +5,7 @@
 These tests are run before each push. Running all the unit tests must be relatively fast.
 
 To test the model of a problem, you can use
-the [ProblemTestBench](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/org/ddolib/util/testbench/ProblemTestBench.html).
+the [ProblemTestBench](https://ddolib-cetic-ucl.github.io/DDOLib/javadoc/org/ddolib/common/util/testbench/ProblemTestBench.html).
 
 We take the convention that each unit test on an instance must be executed in less than **5 seconds**.
 

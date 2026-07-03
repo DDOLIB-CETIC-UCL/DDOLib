@@ -7,8 +7,8 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;

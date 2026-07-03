@@ -8,7 +8,7 @@ import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 

@@ -1,6 +1,6 @@
 package org.ddolib.nolayer.modeling;
 
-import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.Iterator;
 import java.util.List;

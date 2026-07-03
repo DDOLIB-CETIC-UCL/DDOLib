@@ -2,8 +2,8 @@ package org.ddolib.examples.layered.pigmentscheduling;
 
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.util.InvalidSolutionException;
-import org.ddolib.util.io.InputReader;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.io.InputReader;
 
 import java.util.*;
 import java.util.stream.Collectors;

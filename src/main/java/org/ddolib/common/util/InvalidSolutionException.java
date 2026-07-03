@@ -1,4 +1,4 @@
-package org.ddolib.util;
+package org.ddolib.common.util;
 
 /**
  * Exception thrown by {@link org.ddolib.layered.modeling.Problem#evaluate(int[])} method if its input solution does not

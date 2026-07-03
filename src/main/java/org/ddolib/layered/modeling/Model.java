@@ -2,8 +2,8 @@ package org.ddolib.layered.modeling;
 
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
  * Defines the core model interface for describing an optimization problem to be

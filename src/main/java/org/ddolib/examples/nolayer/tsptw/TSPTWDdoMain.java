@@ -9,7 +9,7 @@ import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.nolayer.solving.ddo.core.solver.DdoSolver;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -79,7 +79,7 @@ public class TSPTWDdoMain {
         DdoSolver<TSPTWState> solver = new DdoSolver<>(model);
         Solution bestSolution = solver.minimize(
                 limit -> limit.nbIterations() > 1000,
-                (sol, stats) -> org.ddolib.util.io.SolutionPrinter.printSolution(stats, sol));
+                (sol, stats) -> org.ddolib.common.util.io.SolutionPrinter.printSolution(stats, sol));
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

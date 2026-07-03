@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.talentscheduling;
 
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 
-import static org.ddolib.util.DistanceUtil.symmetricDifferenceDistance;
+import static org.ddolib.common.util.DistanceUtil.symmetricDifferenceDistance;
 
 /**
  * State distance for Talent Scheduling based on the symmetric difference of remaining scenes.

@@ -10,7 +10,7 @@ import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.Hybrid;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Path;

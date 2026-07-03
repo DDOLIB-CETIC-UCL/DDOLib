@@ -1,4 +1,4 @@
-package org.ddolib.util.io;
+package org.ddolib.common.util.io;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 

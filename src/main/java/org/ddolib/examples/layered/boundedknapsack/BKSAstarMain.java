@@ -5,7 +5,7 @@ import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 /**
  * Bounded Knapsack Problem (BKS) with AsTar.

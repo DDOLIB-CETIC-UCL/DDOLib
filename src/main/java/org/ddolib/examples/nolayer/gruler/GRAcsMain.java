@@ -5,7 +5,7 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 public final class GRAcsMain {
     public static void main(String[] args) {

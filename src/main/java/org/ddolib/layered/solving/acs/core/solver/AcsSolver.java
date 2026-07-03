@@ -9,12 +9,12 @@ import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.util.SolverUtil;
-import org.ddolib.util.StateAndDepth;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.debug.DebugUtil;
-import org.ddolib.util.verbosity.VerboseMode;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.SolverUtil;
+import org.ddolib.common.util.StateAndDepth;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.DebugUtil;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.util.*;
 import java.util.function.BiConsumer;

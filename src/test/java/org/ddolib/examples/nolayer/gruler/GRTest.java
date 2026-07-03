@@ -1,6 +1,6 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.util.testbench.NoLayerTestBench;
+import org.ddolib.common.util.testbench.NoLayerTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;

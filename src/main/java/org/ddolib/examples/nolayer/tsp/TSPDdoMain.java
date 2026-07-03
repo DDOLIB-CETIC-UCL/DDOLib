@@ -10,8 +10,8 @@ import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.nolayer.solving.ddo.core.solver.DdoSolver;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Paths;

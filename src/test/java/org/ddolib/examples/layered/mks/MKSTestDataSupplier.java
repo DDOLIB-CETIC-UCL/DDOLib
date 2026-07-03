@@ -8,7 +8,7 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.util.testbench.TestDataSupplier;
+import org.ddolib.common.util.testbench.TestDataSupplier;
 
 import java.io.File;
 import java.io.IOException;

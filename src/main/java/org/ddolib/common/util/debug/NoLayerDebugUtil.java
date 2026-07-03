@@ -1,4 +1,4 @@
-package org.ddolib.util.debug;
+package org.ddolib.common.util.debug;
 
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.solver.Solver;

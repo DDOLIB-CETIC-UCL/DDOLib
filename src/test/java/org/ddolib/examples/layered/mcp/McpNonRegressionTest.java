@@ -1,6 +1,6 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.util.testbench.NonRegressionTestBench;
+import org.ddolib.common.util.testbench.NonRegressionTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;

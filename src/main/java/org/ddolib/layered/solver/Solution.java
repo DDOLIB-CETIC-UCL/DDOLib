@@ -2,7 +2,7 @@ package org.ddolib.layered.solver;
 
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.util.PrettyPrint;
+import org.ddolib.common.util.PrettyPrint;
 
 import java.util.Arrays;
 import java.util.Optional;

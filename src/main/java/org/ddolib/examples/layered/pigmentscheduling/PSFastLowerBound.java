@@ -1,7 +1,7 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
 import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.util.TSPLowerBound;
+import org.ddolib.common.util.TSPLowerBound;
 
 import java.util.Comparator;
 import java.util.HashSet;

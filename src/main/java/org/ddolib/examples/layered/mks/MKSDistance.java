@@ -2,7 +2,7 @@ package org.ddolib.examples.layered.mks;
 
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 
-import static org.ddolib.util.DistanceUtil.euclideanDistance;
+import static org.ddolib.common.util.DistanceUtil.euclideanDistance;
 
 /**
  * Computes a normalized distance between Multi-dimensional Knapsack (MKS) states.

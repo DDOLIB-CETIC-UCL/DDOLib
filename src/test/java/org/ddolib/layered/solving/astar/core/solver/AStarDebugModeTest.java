@@ -5,7 +5,7 @@ import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
-import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.DebugLevel;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

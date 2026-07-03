@@ -12,8 +12,8 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.util.debug.DebugLevel;
-import org.ddolib.util.debug.DebugUtil;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.DebugUtil;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -25,8 +25,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static org.ddolib.util.MathUtil.saturatedAdd;
-import static org.ddolib.util.MathUtil.saturatedDiff;
+import static org.ddolib.common.util.MathUtil.saturatedAdd;
+import static org.ddolib.common.util.MathUtil.saturatedDiff;
 
 /**
  * This class implements a decision diagram as a linked structure (linked MDD).

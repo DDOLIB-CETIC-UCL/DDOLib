@@ -1,4 +1,4 @@
-package org.ddolib.util.verbosity;
+package org.ddolib.common.util.verbosity;
 
 /**
  * Defines the different verbosity levels controlling the amount of information

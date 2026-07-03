@@ -3,7 +3,7 @@ package org.ddolib.examples.layered.msct;
 
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

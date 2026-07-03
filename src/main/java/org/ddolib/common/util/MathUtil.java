@@ -1,4 +1,4 @@
-package org.ddolib.util;
+package org.ddolib.common.util;
 
 /**
  * Utility class providing mathematical operations with saturation semantics.

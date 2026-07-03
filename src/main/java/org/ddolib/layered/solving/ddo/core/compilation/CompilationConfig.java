@@ -7,7 +7,7 @@ import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.util.debug.DebugLevel;
+import org.ddolib.common.util.debug.DebugLevel;
 
 import java.util.Optional;
 

@@ -8,8 +8,8 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.util.InvalidSolutionException;
-import org.ddolib.util.io.SolutionPrinter;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.io.SolutionPrinter;
 
 import java.io.IOException;
 import java.nio.file.Paths;

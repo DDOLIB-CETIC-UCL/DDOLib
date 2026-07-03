@@ -1,4 +1,4 @@
 /**
  * Input file reader utility
  */
-package org.ddolib.util.io;
+package org.ddolib.common.util.io;

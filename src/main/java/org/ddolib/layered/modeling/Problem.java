@@ -3,7 +3,7 @@ package org.ddolib.layered.modeling;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.solver.ExactSolver;
 import org.ddolib.layered.solving.ddo.core.solver.SequentialSolver;
-import org.ddolib.util.InvalidSolutionException;
+import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.Iterator;
 import java.util.Optional;
