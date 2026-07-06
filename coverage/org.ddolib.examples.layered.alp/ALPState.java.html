@@ -23,34 +23,41 @@ import java.util.Objects;
  */
 public class ALPState {
 
-    /** Number of remaining aircraft for each class. */
+    /**
+     * Number of remaining aircraft for each class.
+     */
     public int[] remainingAircraftOfClass;
-    /** State of each runway, including last landed aircraft class and landing time. */
+    /**
+     * State of each runway, including last landed aircraft class and landing time.
+     */
     public RunwayState[] runwayStates;
+
     /**
      * Constructs a new ALP state with the given remaining aircraft and runway states.
      *
      * @param remainingAircraft the array representing remaining aircraft per class
-     * @param runwayStates the array representing the state of each runway
+     * @param runwayStates      the array representing the state of each runway
      */
-<span class="fc" id="L36">    public ALPState(int[] remainingAircraft, RunwayState[] runwayStates) {</span>
-<span class="fc" id="L37">        this.remainingAircraftOfClass = remainingAircraft;</span>
-<span class="fc" id="L38">        this.runwayStates = runwayStates;</span>
-<span class="fc" id="L39">    }</span>
+<span class="fc" id="L41">    public ALPState(int[] remainingAircraft, RunwayState[] runwayStates) {</span>
+<span class="fc" id="L42">        this.remainingAircraftOfClass = remainingAircraft;</span>
+<span class="fc" id="L43">        this.runwayStates = runwayStates;</span>
+<span class="fc" id="L44">    }</span>
+
     /**
      * Copy constructor: creates a deep copy of another {@code ALPState}.
      *
      * @param other the state to copy
      */
-<span class="fc" id="L45">    public ALPState(ALPState other) {</span>
-<span class="fc" id="L46">        int runwayStatesLength = other.runwayStates.length;</span>
-<span class="fc" id="L47">        int remLength = other.remainingAircraftOfClass.length;</span>
-<span class="fc" id="L48">        remainingAircraftOfClass = new int[remLength];</span>
-<span class="fc" id="L49">        System.arraycopy(other.remainingAircraftOfClass, 0, remainingAircraftOfClass, 0, remLength);</span>
-<span class="fc" id="L50">        runwayStates = new RunwayState[runwayStatesLength];</span>
-<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (int i = 0; i &lt; runwayStatesLength; i++)</span>
-<span class="fc" id="L52">            runwayStates[i] = new RunwayState(other.runwayStates[i]);</span>
-<span class="fc" id="L53">    }</span>
+<span class="fc" id="L51">    public ALPState(ALPState other) {</span>
+<span class="fc" id="L52">        int runwayStatesLength = other.runwayStates.length;</span>
+<span class="fc" id="L53">        int remLength = other.remainingAircraftOfClass.length;</span>
+<span class="fc" id="L54">        remainingAircraftOfClass = new int[remLength];</span>
+<span class="fc" id="L55">        System.arraycopy(other.remainingAircraftOfClass, 0, remainingAircraftOfClass, 0, remLength);</span>
+<span class="fc" id="L56">        runwayStates = new RunwayState[runwayStatesLength];</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (int i = 0; i &lt; runwayStatesLength; i++)</span>
+<span class="fc" id="L58">            runwayStates[i] = new RunwayState(other.runwayStates[i]);</span>
+<span class="fc" id="L59">    }</span>
+
     /**
      * Checks if two ALP states are equal.
      * &lt;p&gt;
@@ -63,11 +70,12 @@ public class ALPState {
      */
     @Override
     public boolean equals(Object o) {
-<span class="pc bpc" id="L66" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
-<span class="fc" id="L67">        ALPState alpState = (ALPState) o;</span>
+<span class="pc bpc" id="L73" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L74">        ALPState alpState = (ALPState) o;</span>
 
-<span class="fc bfc" id="L69" title="All 4 branches covered.">        return Arrays.equals(alpState.runwayStates, this.runwayStates) &amp;&amp; Arrays.equals(alpState.remainingAircraftOfClass, this.remainingAircraftOfClass);</span>
+<span class="fc bfc" id="L76" title="All 4 branches covered.">        return Arrays.equals(alpState.runwayStates, this.runwayStates) &amp;&amp; Arrays.equals(alpState.remainingAircraftOfClass, this.remainingAircraftOfClass);</span>
     }
+
     /**
      * Computes the hash code for this state, based on remaining aircraft and runway states.
      *
@@ -75,8 +83,9 @@ public class ALPState {
      */
     @Override
     public int hashCode() {
-<span class="fc" id="L78">        return Objects.hash(Arrays.hashCode(remainingAircraftOfClass), Arrays.hashCode(runwayStates));</span>
+<span class="fc" id="L86">        return Objects.hash(Arrays.hashCode(remainingAircraftOfClass), Arrays.hashCode(runwayStates));</span>
     }
+
     /**
      * Returns a string representation of the ALP state.
      *
@@ -84,7 +93,7 @@ public class ALPState {
      */
     @Override
     public String toString() {
-<span class="fc" id="L87">        return &quot;Runway states : &quot; + Arrays.toString(runwayStates) + &quot;\nRemaining air crafts : &quot; + Arrays.toString(remainingAircraftOfClass);</span>
+<span class="fc" id="L96">        return &quot;Runway states : &quot; + Arrays.toString(runwayStates) + &quot;\nRemaining air crafts : &quot; + Arrays.toString(remainingAircraftOfClass);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

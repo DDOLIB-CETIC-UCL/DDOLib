@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PSProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pigmentscheduling</a> &gt; <span class="el_source">PSProblem.java</span></div><h1>PSProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.InvalidSolutionException;
-import org.ddolib.modeling.layered.Problem;
-import org.ddolib.util.io.InputReader;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.io.InputReader;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,21 +72,19 @@ import java.util.stream.Stream;
      * &lt;/p&gt;
      */
     final int[][] previousDemands;
-
+    /**
+     * Optional known optimal objective value for benchmarking or validation purposes.
+     */
+    private final Optional&lt;Double&gt; optimal;
     /**
      * For each item {@code i} and time {@code t}, stores the total number of remaining
      * demands for item {@code i} in the time interval {@code [0..t]}.
      */
     int[][] remainingDemands;
-
-    /**
-     * Optional known optimal objective value for benchmarking or validation purposes.
-     */
-    private Optional&lt;Double&gt; optimal;
     /**
      * Optional name of the problem instance.
      */
-<span class="pc" id="L89">    private Optional&lt;String&gt; name = Optional.empty();</span>
+<span class="pc" id="L87">    private Optional&lt;String&gt; name = Optional.empty();</span>
 
     /**
      * Constructs a PSP instance from explicit data arrays and a known optimal value.
@@ -103,14 +101,14 @@ import java.util.stream.Stream;
                      final int[] stockingCost,
                      final int[][] changeoverCost,
                      final int[][] previousDemands,
-<span class="nc" id="L106">                     final Optional&lt;Double&gt; optimal) {</span>
-<span class="nc" id="L107">        this.nItems = nItems;</span>
-<span class="nc" id="L108">        this.horizon = horizon;</span>
-<span class="nc" id="L109">        this.stockingCost = stockingCost;</span>
-<span class="nc" id="L110">        this.changeoverCost = changeoverCost;</span>
-<span class="nc" id="L111">        this.previousDemands = previousDemands;</span>
-<span class="nc" id="L112">        this.optimal = optimal;</span>
-<span class="nc" id="L113">    }</span>
+<span class="nc" id="L104">                     final Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L105">        this.nItems = nItems;</span>
+<span class="nc" id="L106">        this.horizon = horizon;</span>
+<span class="nc" id="L107">        this.stockingCost = stockingCost;</span>
+<span class="nc" id="L108">        this.changeoverCost = changeoverCost;</span>
+<span class="nc" id="L109">        this.previousDemands = previousDemands;</span>
+<span class="nc" id="L110">        this.optimal = optimal;</span>
+<span class="nc" id="L111">    }</span>
 
     /**
      * Constructs a PSP instance from a data file.
@@ -129,59 +127,59 @@ import java.util.stream.Stream;
      *
      * @param filename path to the input data file
      */
-<span class="fc" id="L132">    public PSProblem(final String filename) {</span>
-<span class="fc" id="L133">        InputReader reader = new InputReader(filename);</span>
-<span class="fc" id="L134">        horizon = reader.getInt();</span>
-<span class="fc" id="L135">        nItems = reader.getInt();</span>
-<span class="fc" id="L136">        reader.getInt(); // to skip the order</span>
+<span class="fc" id="L130">    public PSProblem(final String filename) {</span>
+<span class="fc" id="L131">        InputReader reader = new InputReader(filename);</span>
+<span class="fc" id="L132">        horizon = reader.getInt();</span>
+<span class="fc" id="L133">        nItems = reader.getInt();</span>
+<span class="fc" id="L134">        reader.getInt(); // to skip the order</span>
 
-<span class="fc" id="L138">        changeoverCost = new int[nItems][nItems];</span>
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc bfc" id="L140" title="All 2 branches covered.">            for (int j = 0; j &lt; nItems; j++) {</span>
-<span class="fc" id="L141">                changeoverCost[i][j] = reader.getInt();</span>
+<span class="fc" id="L136">        changeoverCost = new int[nItems][nItems];</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            for (int j = 0; j &lt; nItems; j++) {</span>
+<span class="fc" id="L139">                changeoverCost[i][j] = reader.getInt();</span>
             }
         }
 
-<span class="fc" id="L145">        stockingCost = new int[nItems];</span>
-<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc" id="L147">            stockingCost[i] = reader.getInt();</span>
+<span class="fc" id="L143">        stockingCost = new int[nItems];</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L145">            stockingCost[i] = reader.getInt();</span>
         }
 
-<span class="fc" id="L150">        int[][] demands = new int[nItems][horizon];</span>
-<span class="fc bfc" id="L151" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">            for (int j = 0; j &lt; horizon; j++) {</span>
-<span class="fc" id="L153">                demands[i][j] = reader.getInt();</span>
+<span class="fc" id="L148">        int[][] demands = new int[nItems][horizon];</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">            for (int j = 0; j &lt; horizon; j++) {</span>
+<span class="fc" id="L151">                demands[i][j] = reader.getInt();</span>
             }
         }
 
-<span class="fc" id="L157">        optimal = Optional.of((double) reader.getInt());</span>
+<span class="fc" id="L155">        optimal = Optional.of((double) reader.getInt());</span>
 
-<span class="fc" id="L159">        previousDemands = new int[nItems][horizon + 1];</span>
-<span class="fc bfc" id="L160" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc" id="L161">            Arrays.fill(previousDemands[i], -1);</span>
+<span class="fc" id="L157">        previousDemands = new int[nItems][horizon + 1];</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L159">            Arrays.fill(previousDemands[i], -1);</span>
         }
-<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (int t = 1; t &lt;= horizon; t++) {</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">            for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc bfc" id="L165" title="All 2 branches covered.">                if (demands[i][t - 1] &gt; 0) {</span>
-<span class="fc" id="L166">                    previousDemands[i][t] = t - 1;</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        for (int t = 1; t &lt;= horizon; t++) {</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">            for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">                if (demands[i][t - 1] &gt; 0) {</span>
+<span class="fc" id="L164">                    previousDemands[i][t] = t - 1;</span>
                 } else {
-<span class="fc" id="L168">                    previousDemands[i][t] = previousDemands[i][t - 1];</span>
+<span class="fc" id="L166">                    previousDemands[i][t] = previousDemands[i][t - 1];</span>
                 }
             }
         }
-<span class="fc" id="L172">        remainingDemands = new int[nItems][horizon];</span>
-<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc bfc" id="L174" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
-<span class="fc bfc" id="L175" title="All 2 branches covered.">                if (t == 0) {</span>
-<span class="fc" id="L176">                    remainingDemands[i][t] = demands[i][t];</span>
+<span class="fc" id="L170">        remainingDemands = new int[nItems][horizon];</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">                if (t == 0) {</span>
+<span class="fc" id="L174">                    remainingDemands[i][t] = demands[i][t];</span>
                 } else {
-<span class="fc" id="L178">                    remainingDemands[i][t] = remainingDemands[i][t - 1] + demands[i][t];</span>
+<span class="fc" id="L176">                    remainingDemands[i][t] = remainingDemands[i][t - 1] + demands[i][t];</span>
                 }
             }
         }
 
-<span class="fc" id="L183">        this.name = Optional.of(filename);</span>
-<span class="fc" id="L184">    }</span>
+<span class="fc" id="L181">        this.name = Optional.of(filename);</span>
+<span class="fc" id="L182">    }</span>
 
     /**
      * Assigns a name to the problem instance for display or debugging purposes.
@@ -189,15 +187,15 @@ import java.util.stream.Stream;
      * @param name the name of the instance
      */
     public void setName(String name) {
-<span class="nc" id="L192">        this.name = Optional.of(name);</span>
-<span class="nc" id="L193">    }</span>
+<span class="nc" id="L190">        this.name = Optional.of(name);</span>
+<span class="nc" id="L191">    }</span>
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Optional&lt;Double&gt; optimalValue() {
-<span class="fc" id="L200">        return optimal;</span>
+<span class="fc" id="L198">        return optimal;</span>
     }
 
     /**
@@ -205,7 +203,7 @@ import java.util.stream.Stream;
      */
     @Override
     public String toString() {
-<span class="fc" id="L208">        return name.orElse(super.toString());</span>
+<span class="fc" id="L206">        return name.orElse(super.toString());</span>
     }
 
     /**
@@ -213,7 +211,7 @@ import java.util.stream.Stream;
      */
     @Override
     public int nbVars() {
-<span class="fc" id="L216">        return horizon;</span>
+<span class="fc" id="L214">        return horizon;</span>
     }
 
     /**
@@ -221,7 +219,7 @@ import java.util.stream.Stream;
      */
     @Override
     public double initialValue() {
-<span class="fc" id="L224">        return 0;</span>
+<span class="fc" id="L222">        return 0;</span>
     }
 
     /**
@@ -232,11 +230,11 @@ import java.util.stream.Stream;
      */
     @Override
     public PSState initialState() {
-<span class="fc" id="L235">        int[] prevDemands = new int[nItems];</span>
-<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc" id="L237">            prevDemands[i] = previousDemands[i][horizon];</span>
+<span class="fc" id="L233">        int[] prevDemands = new int[nItems];</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc" id="L235">            prevDemands[i] = previousDemands[i][horizon];</span>
         }
-<span class="fc" id="L239">        return new PSState(horizon, IDLE, prevDemands);</span>
+<span class="fc" id="L237">        return new PSState(horizon, IDLE, prevDemands);</span>
     }
 
     /**
@@ -255,28 +253,28 @@ import java.util.stream.Stream;
     @Override
     public Iterator&lt;Integer&gt; domain(PSState state, int depth) {
 
-<span class="fc" id="L258">        int t = horizon - depth - 1;</span>
-<span class="fc" id="L259">        IntStream dom = IntStream.range(0, nItems)</span>
-<span class="fc bfc" id="L260" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= t);</span>
+<span class="fc" id="L256">        int t = horizon - depth - 1;</span>
+<span class="fc" id="L257">        IntStream dom = IntStream.range(0, nItems)</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= t);</span>
 
         // total number of remaining demands &lt;= t
-<span class="fc" id="L263">        int remDemands = IntStream.range(0, nItems)</span>
-<span class="fc bfc" id="L264" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= 0)</span>
-<span class="fc" id="L265">                .map(i -&gt; remainingDemands[i][state.previousDemands[i]])</span>
-<span class="fc" id="L266">                .sum();</span>
+<span class="fc" id="L261">        int remDemands = IntStream.range(0, nItems)</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">                .filter(i -&gt; state.previousDemands[i] &gt;= 0)</span>
+<span class="fc" id="L263">                .map(i -&gt; remainingDemands[i][state.previousDemands[i]])</span>
+<span class="fc" id="L264">                .sum();</span>
 
         //System.out.println(&quot;remDemands: &quot; + remDemands);
-<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (remDemands &gt; t + 1) {</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        if (remDemands &gt; t + 1) {</span>
             // fail to produce all the remaining demands
-<span class="nc" id="L271">            return Collections.emptyIterator();</span>
+<span class="nc" id="L269">            return Collections.emptyIterator();</span>
         }
-<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (remDemands &lt; t + 1) {</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        if (remDemands &lt; t + 1) {</span>
             // ok to add IDLE, we have enough time to produce all the remaining demands
-<span class="fc" id="L275">            return IntStream.concat(dom, IntStream.of(IDLE)).iterator();</span>
+<span class="fc" id="L273">            return IntStream.concat(dom, IntStream.of(IDLE)).iterator();</span>
         } else {
             // just enough time to produce remaining demands, no IDLE possible
-<span class="pc bpc" id="L278" title="1 of 2 branches missed.">            assert remDemands == t + 1;</span>
-<span class="fc" id="L279">            return dom.iterator();</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">            assert remDemands == t + 1;</span>
+<span class="fc" id="L277">            return dom.iterator();</span>
         }
     }
 
@@ -289,13 +287,13 @@ import java.util.stream.Stream;
      */
     @Override
     public PSState transition(PSState state, Decision decision) {
-<span class="fc" id="L292">        PSState ret = state.clone();</span>
-<span class="fc" id="L293">        int item = decision.value();</span>
-<span class="fc bfc" id="L294" title="All 2 branches covered.">        if (item != IDLE) {</span>
-<span class="fc" id="L295">            ret.next = item;</span>
-<span class="fc" id="L296">            ret.previousDemands[item] = previousDemands[item][state.previousDemands[item]];</span>
+<span class="fc" id="L290">        PSState ret = state.clone();</span>
+<span class="fc" id="L291">        int item = decision.value();</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        if (item != IDLE) {</span>
+<span class="fc" id="L293">            ret.next = item;</span>
+<span class="fc" id="L294">            ret.previousDemands[item] = previousDemands[item][state.previousDemands[item]];</span>
         }
-<span class="fc" id="L298">        return ret;</span>
+<span class="fc" id="L296">        return ret;</span>
     }
 
     /**
@@ -316,53 +314,53 @@ import java.util.stream.Stream;
      */
     @Override
     public double transitionCost(PSState state, Decision decision) {
-<span class="fc" id="L319">        int item = decision.value();</span>
-<span class="fc bfc" id="L320" title="All 2 branches covered.">        if (item == IDLE) {</span>
-<span class="fc" id="L321">            return 0;</span>
+<span class="fc" id="L317">        int item = decision.value();</span>
+<span class="fc bfc" id="L318" title="All 2 branches covered.">        if (item == IDLE) {</span>
+<span class="fc" id="L319">            return 0;</span>
         } else {
-<span class="fc" id="L323">            int t = (horizon - decision.variable() - 1);</span>
-<span class="fc" id="L324">            int duration = state.previousDemands[item] - t;</span>
-<span class="fc" id="L325">            int stocking = stockingCost[item] * duration;</span>
-<span class="fc bfc" id="L326" title="All 2 branches covered.">            int changeover = state.next != IDLE ? changeoverCost[item][state.next] : 0;</span>
+<span class="fc" id="L321">            int t = (horizon - decision.variable() - 1);</span>
+<span class="fc" id="L322">            int duration = state.previousDemands[item] - t;</span>
+<span class="fc" id="L323">            int stocking = stockingCost[item] * duration;</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">            int changeover = state.next != IDLE ? changeoverCost[item][state.next] : 0;</span>
             // stocking cost + changeover cost
-<span class="fc" id="L328">            return changeover + stocking;</span>
+<span class="fc" id="L326">            return changeover + stocking;</span>
         }
     }
 
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-<span class="pc bpc" id="L335" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
-<span class="nc" id="L336">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
-<span class="nc" id="L337">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L334">            throw new InvalidSolutionException(String.format(&quot;The solution %s does not match &quot; +</span>
+<span class="nc" id="L335">                    &quot;the number %d variables&quot;, Arrays.toString(solution), nbVars()));</span>
         }
 
         // For each item, contains the time slots of the demands
-<span class="fc" id="L341">        List&lt;LinkedList&lt;Integer&gt;&gt; nextDemand = Stream.generate(LinkedList&lt;Integer&gt;::new)</span>
-<span class="fc" id="L342">                .limit(nItems)</span>
-<span class="fc" id="L343">                .collect(Collectors.toCollection(LinkedList::new));</span>
+<span class="fc" id="L339">        List&lt;LinkedList&lt;Integer&gt;&gt; nextDemand = Stream.generate(LinkedList&lt;Integer&gt;::new)</span>
+<span class="fc" id="L340">                .limit(nItems)</span>
+<span class="fc" id="L341">                .collect(Collectors.toCollection(LinkedList::new));</span>
 
-<span class="fc bfc" id="L345" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
-<span class="fc bfc" id="L346" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
-<span class="fc bfc" id="L347" title="All 2 branches covered.">                int demand = t == 0 ? remainingDemands[i][t] : remainingDemands[i][t] - remainingDemands[i][t - 1];</span>
+<span class="fc bfc" id="L343" title="All 2 branches covered.">        for (int i = 0; i &lt; nItems; i++) {</span>
+<span class="fc bfc" id="L344" title="All 2 branches covered.">            for (int t = 0; t &lt; horizon; t++) {</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">                int demand = t == 0 ? remainingDemands[i][t] : remainingDemands[i][t] - remainingDemands[i][t - 1];</span>
 
-<span class="fc bfc" id="L349" title="All 2 branches covered.">                if (demand != 0) nextDemand.get(i).add(t);</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">                if (demand != 0) nextDemand.get(i).add(t);</span>
             }
         }
 
-<span class="fc" id="L353">        int value = 0;</span>
-<span class="fc" id="L354">        int prevItem = solution[solution.length - 1];</span>
-<span class="fc bfc" id="L355" title="All 2 branches covered.">        for (int t = 0; t &lt; horizon; t++) {</span>
+<span class="fc" id="L351">        int value = 0;</span>
+<span class="fc" id="L352">        int prevItem = solution[solution.length - 1];</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">        for (int t = 0; t &lt; horizon; t++) {</span>
             //The solution starts with the last time slots
-<span class="fc" id="L357">            int item = solution[solution.length - 1 - t];</span>
-<span class="fc" id="L358">            int demand = nextDemand.get(item).remove();</span>
-<span class="fc" id="L359">            int duration = demand - t;</span>
-<span class="fc" id="L360">            value += duration * stockingCost[item];</span>
-<span class="fc bfc" id="L361" title="All 2 branches covered.">            if (prevItem != item) value += changeoverCost[prevItem][item];</span>
-<span class="fc" id="L362">            prevItem = item;</span>
+<span class="fc" id="L355">            int item = solution[solution.length - 1 - t];</span>
+<span class="fc" id="L356">            int demand = nextDemand.get(item).remove();</span>
+<span class="fc" id="L357">            int duration = demand - t;</span>
+<span class="fc" id="L358">            value += duration * stockingCost[item];</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">            if (prevItem != item) value += changeoverCost[prevItem][item];</span>
+<span class="fc" id="L360">            prevItem = item;</span>
         }
 
-<span class="fc" id="L365">        return value;</span>
+<span class="fc" id="L363">        return value;</span>
     }
 }
 

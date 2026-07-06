@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSDdoMainWithCluster.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSDdoMainWithCluster.java</span></div><h1>KSDdoMainWithCluster.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.solving.ddo.core.frontier.CutSetType;
-import org.ddolib.solving.ddo.core.frontier.Frontier;
-import org.ddolib.solving.ddo.core.frontier.SimpleFrontier;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.GHP;
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.layered.*;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.frontier.CutSetType;
+import org.ddolib.common.frontier.Frontier;
+import org.ddolib.common.frontier.SimpleFrontier;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,7 +47,7 @@ import java.nio.file.Path;
  * efficiently explore the search space for high-quality solutions.
  * &lt;/p&gt;
  */
-<span class="nc" id="L52">public class KSDdoMainWithCluster {</span>
+<span class="nc" id="L50">public class KSDdoMainWithCluster {</span>
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
      *
@@ -57,77 +55,77 @@ import java.nio.file.Path;
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-<span class="nc bnc" id="L60" title="All 2 branches missed.">        final String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;Knapsack&quot;, &quot;instance_n1000_c1000_10_5_10_5_0&quot;).toString() : args[0];</span>
-<span class="nc" id="L61">        final KSProblem problem = new KSProblem(instance);</span>
-<span class="nc" id="L62">        final DdoModel&lt;Integer&gt; model = new DdoModel&lt;&gt;() {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        final String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;Knapsack&quot;, &quot;instance_n1000_c1000_10_5_10_5_0&quot;).toString() : args[0];</span>
+<span class="nc" id="L59">        final KSProblem problem = new KSProblem(instance);</span>
+<span class="nc" id="L60">        final DdoModel&lt;Integer&gt; model = new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;Integer&gt; problem() {
-<span class="nc" id="L65">                return problem;</span>
+<span class="nc" id="L63">                return problem;</span>
             }
 
             @Override
             public FastLowerBound&lt;Integer&gt; lowerBound() {
-<span class="nc" id="L70">                return new KSFastLowerBound(problem);</span>
+<span class="nc" id="L68">                return new KSFastLowerBound(problem);</span>
             }
 
             @Override
             public DominanceChecker&lt;Integer&gt; dominance() {
-<span class="nc" id="L75">                return new SimpleDominanceChecker&lt;&gt;(new KSDominance(), problem.nbVars());</span>
+<span class="nc" id="L73">                return new SimpleDominanceChecker&lt;&gt;(new KSDominance(), problem.nbVars());</span>
             }
 
             @Override
             public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L80">                return VerbosityLevel.LARGE;</span>
+<span class="nc" id="L78">                return VerbosityLevel.LARGE;</span>
             }
 
             @Override
             public Relaxation&lt;Integer&gt; relaxation() {
-<span class="nc" id="L85">                return new KSRelax();</span>
+<span class="nc" id="L83">                return new KSRelax();</span>
             }
 
             @Override
             public KSRanking ranking() {
-<span class="nc" id="L90">                return new KSRanking();</span>
+<span class="nc" id="L88">                return new KSRanking();</span>
             }
 
             @Override
             public WidthHeuristic&lt;Integer&gt; widthHeuristic() {
-<span class="nc" id="L95">                return new FixedWidth&lt;&gt;(100);</span>
+<span class="nc" id="L93">                return new FixedWidth&lt;&gt;(100);</span>
             }
 
             @Override
             public Frontier&lt;Integer&gt; frontier() {
-<span class="nc" id="L100">                return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.Frontier);</span>
+<span class="nc" id="L98">                return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.Frontier);</span>
             }
 
             @Override
             public boolean useCache() {
-<span class="nc" id="L105">                return true;</span>
+<span class="nc" id="L103">                return true;</span>
             }
 
             @Override
             public ReductionStrategy&lt;Integer&gt; relaxStrategy() {
-<span class="nc" id="L110">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
+<span class="nc" id="L108">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
 //                return new Hybrid&lt;&gt;(new KSRanking(), new KSDistance(problem));
 //                return new CostBased&lt;&gt;(new KSRanking());  // default strategy
             }
 
             @Override
             public ReductionStrategy&lt;Integer&gt; restrictStrategy() {
-<span class="nc" id="L117">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
+<span class="nc" id="L115">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
 //                return new Hybrid&lt;&gt;(new KSRanking(), new KSDistance(problem));
 //                return new CostBased&lt;&gt;(new KSRanking()); // default strategy
             }
         };
 
-<span class="nc" id="L123">        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -&gt; {</span>
-<span class="nc" id="L124">            SolutionPrinter.printSolution(s, sol);</span>
-<span class="nc" id="L125">        });</span>
+<span class="nc" id="L121">        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -&gt; {</span>
+<span class="nc" id="L122">            SolutionPrinter.printSolution(s, sol);</span>
+<span class="nc" id="L123">        });</span>
 
-<span class="nc" id="L127">        System.out.println(bestSolution.statistics());</span>
-<span class="nc" id="L128">        System.out.println(bestSolution);</span>
+<span class="nc" id="L125">        System.out.println(bestSolution.statistics());</span>
+<span class="nc" id="L126">        System.out.println(bestSolution);</span>
 
 
-<span class="nc" id="L131">    }</span>
+<span class="nc" id="L129">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

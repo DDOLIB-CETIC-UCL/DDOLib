@@ -2,6 +2,7 @@
 
 import java.util.BitSet;
 import java.util.Objects;
+
 /**
  * Represents a state in the Traveling Salesman Problem (TSP).
  *
@@ -32,28 +33,30 @@ public class TSPState {
      * Current node(s). Usually a singleton, but can be multiple in merged states.
      */
     public BitSet current;
+
     /**
      * Constructs a new TSPState.
      *
      * @param current the current node(s)
      * @param toVisit the nodes that have not yet been visited
      */
-<span class="fc" id="L41">    public TSPState(BitSet current, BitSet toVisit) {</span>
-<span class="fc" id="L42">        this.toVisit = toVisit;</span>
-<span class="fc" id="L43">        this.current = current;</span>
-<span class="fc" id="L44">    }</span>
+<span class="fc" id="L43">    public TSPState(BitSet current, BitSet toVisit) {</span>
+<span class="fc" id="L44">        this.toVisit = toVisit;</span>
+<span class="fc" id="L45">        this.current = current;</span>
+<span class="fc" id="L46">    }</span>
 
     @Override
     public int hashCode() {
-<span class="fc" id="L48">        return Objects.hash(toVisit, current);</span>
+<span class="fc" id="L50">        return Objects.hash(toVisit, current);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
-<span class="fc" id="L53">        TSPState that = (TSPState) obj;</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">        return (this.current.equals(that.current))</span>
-<span class="fc bfc" id="L55" title="All 2 branches covered.">                &amp;&amp; this.toVisit.equals(that.toVisit);</span>
+<span class="fc" id="L55">        TSPState that = (TSPState) obj;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        return (this.current.equals(that.current))</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">                &amp;&amp; this.toVisit.equals(that.toVisit);</span>
     }
+
     /**
      * Creates a BitSet containing only the specified singleton value.
      *
@@ -61,17 +64,17 @@ public class TSPState {
      * @return a BitSet with a single bit set
      */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L64">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
-<span class="fc" id="L65">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L66">        return toReturn;</span>
+<span class="fc" id="L67">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L68">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L69">        return toReturn;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (current.cardinality() != 1) {</span>
-<span class="fc" id="L72">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (current.cardinality() != 1) {</span>
+<span class="fc" id="L75">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         } else {
-<span class="fc" id="L74">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="fc" id="L77">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         }
     }
 }

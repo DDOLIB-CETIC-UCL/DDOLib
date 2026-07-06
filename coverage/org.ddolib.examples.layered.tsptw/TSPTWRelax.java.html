@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsptw</a> &gt; <span class="el_source">TSPTWRelax.java</span></div><h1>TSPTWRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * Relaxation class for the Traveling Salesman Problem with Time Windows (TSPTW).
  * &lt;p&gt;
@@ -17,10 +18,14 @@ import java.util.Set;
  */
 public class TSPTWRelax implements Relaxation&lt;TSPTWState&gt; {
 
-    /** Represents infinity for arrival time. */
+    /**
+     * Represents infinity for arrival time.
+     */
     private static final int INFINITY = Integer.MAX_VALUE;
 
-    /** Number of variables/nodes in the TSPTW problem. */
+    /**
+     * Number of variables/nodes in the TSPTW problem.
+     */
     private final int numVar;
 
     /**
@@ -28,9 +33,10 @@ public class TSPTWRelax implements Relaxation&lt;TSPTWState&gt; {
      *
      * @param problem the TSPTW problem to process
      */
-<span class="fc" id="L31">    public TSPTWRelax(TSPTWProblem problem) {</span>
-<span class="fc" id="L32">        this.numVar = problem.nbVars();</span>
-<span class="fc" id="L33">    }</span>
+<span class="fc" id="L36">    public TSPTWRelax(TSPTWProblem problem) {</span>
+<span class="fc" id="L37">        this.numVar = problem.nbVars();</span>
+<span class="fc" id="L38">    }</span>
+
     /**
      * Merges multiple TSPTW states into a single relaxed state.
      * &lt;p&gt;
@@ -50,33 +56,34 @@ public class TSPTWRelax implements Relaxation&lt;TSPTWState&gt; {
      */
     @Override
     public TSPTWState mergeStates(Iterator&lt;TSPTWState&gt; states) {
-<span class="fc" id="L53">        Set&lt;Integer&gt; mergedPos = new HashSet&lt;&gt;();</span>
-<span class="fc" id="L54">        int mergedTime = INFINITY;</span>
-<span class="fc" id="L55">        BitSet mergedMust = new BitSet(numVar);</span>
-<span class="fc" id="L56">        mergedMust.set(0, numVar, true);</span>
-<span class="fc" id="L57">        BitSet mergedPossibly = new BitSet(numVar);</span>
-<span class="fc" id="L58">        int mergedDepth = 0;</span>
-<span class="fc bfc" id="L59" title="All 2 branches covered.">        while (states.hasNext()) {</span>
-<span class="fc" id="L60">            TSPTWState current = states.next();</span>
+<span class="fc" id="L59">        Set&lt;Integer&gt; mergedPos = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L60">        int mergedTime = INFINITY;</span>
+<span class="fc" id="L61">        BitSet mergedMust = new BitSet(numVar);</span>
+<span class="fc" id="L62">        mergedMust.set(0, numVar, true);</span>
+<span class="fc" id="L63">        BitSet mergedPossibly = new BitSet(numVar);</span>
+<span class="fc" id="L64">        int mergedDepth = 0;</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L66">            TSPTWState current = states.next();</span>
             //The merged position is the union of all the position
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            switch (current.position()) {</span>
-<span class="fc" id="L63">                case TSPNode(int value) -&gt; mergedPos.add(value);</span>
-<span class="nc" id="L64">                case VirtualNodes(Set&lt;Integer&gt; nodes) -&gt; mergedPos.addAll(nodes);</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            switch (current.position()) {</span>
+<span class="fc" id="L69">                case TSPNode(int value) -&gt; mergedPos.add(value);</span>
+<span class="nc" id="L70">                case VirtualNodes(Set&lt;Integer&gt; nodes) -&gt; mergedPos.addAll(nodes);</span>
             }
             // The merged must is the intersection of all must set
-<span class="fc" id="L67">            mergedMust.and(current.mustVisit());</span>
+<span class="fc" id="L73">            mergedMust.and(current.mustVisit());</span>
             // The merged possibly is the union of the all the must sets and all the possibly sets
-<span class="fc" id="L69">            mergedPossibly.or(current.mustVisit());</span>
-<span class="fc" id="L70">            mergedPossibly.or(current.possiblyVisit());</span>
+<span class="fc" id="L75">            mergedPossibly.or(current.mustVisit());</span>
+<span class="fc" id="L76">            mergedPossibly.or(current.possiblyVisit());</span>
             // The arrival time of the merged node is the min of all the arrival times
-<span class="fc" id="L72">            mergedTime = Integer.min(mergedTime, current.time());</span>
-<span class="fc" id="L73">            mergedDepth = current.depth();</span>
-<span class="fc" id="L74">        }</span>
+<span class="fc" id="L78">            mergedTime = Integer.min(mergedTime, current.time());</span>
+<span class="fc" id="L79">            mergedDepth = current.depth();</span>
+<span class="fc" id="L80">        }</span>
         // We exclude the intersection of the must from the merged possibly
-<span class="fc" id="L76">        mergedPossibly.andNot(mergedMust);</span>
+<span class="fc" id="L82">        mergedPossibly.andNot(mergedMust);</span>
 
-<span class="fc" id="L78">        return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);</span>
+<span class="fc" id="L84">        return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);</span>
     }
+
     /**
      * Relaxes the cost of an edge (transition) between two states.
      * &lt;p&gt;
@@ -85,16 +92,16 @@ public class TSPTWRelax implements Relaxation&lt;TSPTWState&gt; {
      * sophisticated relaxations if needed.
      * &lt;/p&gt;
      *
-     * @param from the source state
-     * @param to the target state
+     * @param from   the source state
+     * @param to     the target state
      * @param merged the state resulting from the merge or relaxation
-     * @param d the decision associated with this transition
-     * @param cost the cost of the transition
+     * @param d      the decision associated with this transition
+     * @param cost   the cost of the transition
      * @return the relaxed cost of the transition
      */
     @Override
     public double relaxEdge(TSPTWState from, TSPTWState to, TSPTWState merged, Decision d, double cost) {
-<span class="fc" id="L97">        return cost;</span>
+<span class="fc" id="L104">        return cost;</span>
     }
 
 }

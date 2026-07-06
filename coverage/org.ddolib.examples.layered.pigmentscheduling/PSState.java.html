@@ -2,6 +2,7 @@
 
 import java.util.Arrays;
 import java.util.Objects;
+
 /**
  * Represents a state in the Production Scheduling Problem (PSP).
  * &lt;p&gt;
@@ -37,28 +38,35 @@ import java.util.Objects;
  */
 public class PSState {
 
-    /** Current time slot in the scheduling horizon. */
+    /**
+     * Current time slot in the scheduling horizon.
+     */
     int t;
 
-    /** The item type to be produced at time t+1; -1 indicates unknown or idle. */
+    /**
+     * The item type to be produced at time t+1; -1 indicates unknown or idle.
+     */
     int next;
 
-    /** Array storing for each item type the latest time before t with demand. */
+    /**
+     * Array storing for each item type the latest time before t with demand.
+     */
     int[] previousDemands;
 
     /**
      * Constructs a new state for the PSP.
      *
-     * @param t the current time slot
-     * @param next the next item type scheduled for production, -1 if unknown
+     * @param t               the current time slot
+     * @param next            the next item type scheduled for production, -1 if unknown
      * @param previousDemands an array indicating, for each item type, the last time a demand occurs before t
      */
 
-<span class="fc" id="L57">    public PSState(int t, int next, int[] previousDemands) {</span>
-<span class="fc" id="L58">        this.t = t;</span>
-<span class="fc" id="L59">        this.next = next;</span>
-<span class="fc" id="L60">        this.previousDemands = previousDemands;</span>
-<span class="fc" id="L61">    }</span>
+<span class="fc" id="L64">    public PSState(int t, int next, int[] previousDemands) {</span>
+<span class="fc" id="L65">        this.t = t;</span>
+<span class="fc" id="L66">        this.next = next;</span>
+<span class="fc" id="L67">        this.previousDemands = previousDemands;</span>
+<span class="fc" id="L68">    }</span>
+
     /**
      * Creates a deep copy of this state.
      *
@@ -66,8 +74,9 @@ public class PSState {
      */
     @Override
     protected PSState clone() {
-<span class="fc" id="L69">        return new PSState(t, next, Arrays.copyOf(previousDemands, previousDemands.length));</span>
+<span class="fc" id="L77">        return new PSState(t, next, Arrays.copyOf(previousDemands, previousDemands.length));</span>
     }
+
     /**
      * Computes a hash code for the state, based on time, next item, and previous demands.
      *
@@ -75,8 +84,9 @@ public class PSState {
      */
     @Override
     public int hashCode() {
-<span class="fc" id="L78">        return Objects.hash(t, next, Arrays.hashCode(previousDemands));</span>
+<span class="fc" id="L87">        return Objects.hash(t, next, Arrays.hashCode(previousDemands));</span>
     }
+
     /**
      * Compares this state with another object for equality.
      * Two {@code PSState} instances are equal if they have the same time,
@@ -87,14 +97,15 @@ public class PSState {
      */
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (obj instanceof PSState other) {</span>
-<span class="pc bpc" id="L91" title="1 of 4 branches missed.">            return this.t == other.t</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (obj instanceof PSState other) {</span>
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">            return this.t == other.t</span>
                     &amp;&amp; this.next == other.next
-<span class="fc bfc" id="L93" title="All 2 branches covered.">                    &amp;&amp; Arrays.equals(this.previousDemands, other.previousDemands);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">                    &amp;&amp; Arrays.equals(this.previousDemands, other.previousDemands);</span>
         } else {
-<span class="nc" id="L95">            return false;</span>
+<span class="nc" id="L105">            return false;</span>
         }
     }
+
     /**
      * Returns a string representation of the state, including current time,
      * next item, and previous demands for debugging purposes.
@@ -103,7 +114,7 @@ public class PSState {
      */
     @Override
     public String toString() {
-<span class="fc" id="L106">        return String.format(&quot;t: %d - next: %d - previousDemand: %s&quot;, t, next, Arrays.toString(previousDemands));</span>
+<span class="fc" id="L117">        return String.format(&quot;t: %d - next: %d - previousDemand: %s&quot;, t, next, Arrays.toString(previousDemands));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

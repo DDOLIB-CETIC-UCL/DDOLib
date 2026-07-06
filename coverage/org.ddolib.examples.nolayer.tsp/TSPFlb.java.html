@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPFlb.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.tsp</a> &gt; <span class="el_source">TSPFlb.java</span></div><h1>TSPFlb.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.tsp;
+
+import org.ddolib.nolayer.modeling.FastLowerBound;
+
+import java.util.BitSet;
+
+public class TSPFlb implements FastLowerBound&lt;TSPState&gt; {
+    private final double[] leastIncidentEdge;
+
+<span class="fc" id="L10">    public TSPFlb(TSPProblem problem) {</span>
+<span class="fc" id="L11">        leastIncidentEdge = new double[problem.n];</span>
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
+<span class="fc" id="L13">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L14" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">                if (i != j) {</span>
+<span class="fc" id="L16">                    min = Math.min(min, problem.distanceMatrix[i][j]);</span>
+                }
+            }
+<span class="fc" id="L19">            leastIncidentEdge[i] = min;</span>
+        }
+<span class="fc" id="L21">    }</span>
+
+    @Override
+    public double fastLowerBound(TSPState state) {
+<span class="fc bfc" id="L25" title="All 4 branches covered.">        if (state.toVisit.isEmpty() &amp;&amp; state.current.get(0)) {</span>
+<span class="fc" id="L26">            return 0.0;</span>
+        }
+<span class="fc" id="L28">        BitSet toVisit = state.toVisit;</span>
+<span class="fc" id="L29">        double lb = leastIncidentEdge[0];  // for returning to origin</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
+<span class="fc" id="L31">            lb += leastIncidentEdge[i];</span>
+
+        }
+<span class="fc" id="L34">        return lb;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

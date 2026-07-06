@@ -7,14 +7,11 @@ import java.util.BitSet;
  *
  * @param remainingNodes The set of nodes that can still be added to the independent set.
  */
-public record MispState(BitSet remainingNodes) {
-<span class="fc" id="L11">    public MispState {</span>
-<span class="fc" id="L12">        remainingNodes = (BitSet) remainingNodes.clone();</span>
-<span class="fc" id="L13">    }</span>
+<span class="fc" id="L10">public record MispState(BitSet remainingNodes) {</span>
 
     @Override
     public String toString() {
-<span class="nc" id="L17">        return String.format(&quot;MispState(remainingNodes=%s)&quot;, remainingNodes);</span>
+<span class="fc" id="L14">        return String.format(&quot;MispState(remainingNodes=%s)&quot;, remainingNodes);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

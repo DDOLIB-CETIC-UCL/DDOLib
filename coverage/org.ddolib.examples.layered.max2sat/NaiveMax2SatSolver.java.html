@@ -56,8 +56,8 @@ public class NaiveMax2SatSolver {
     private int evaluateSolution(int[] sol) {
 <span class="nc" id="L57">        int toReturn = 0;</span>
 <span class="nc bnc" id="L58" title="All 2 branches missed.">        for (BinaryClause bc : problem.weights.keySet()) {</span>
-<span class="nc" id="L59">            int a = sol[Math.abs(bc.i) - 1];</span>
-<span class="nc" id="L60">            int b = sol[Math.abs(bc.j) - 1];</span>
+<span class="nc" id="L59">            int a = sol[Math.abs(bc.i()) - 1];</span>
+<span class="nc" id="L60">            int b = sol[Math.abs(bc.j()) - 1];</span>
 <span class="nc" id="L61">            int eval = bc.eval(a, b);</span>
 <span class="nc" id="L62">            toReturn += eval * problem.weights.get(bc);</span>
 

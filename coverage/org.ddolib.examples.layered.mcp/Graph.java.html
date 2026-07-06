@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
  */
 public class Graph {
 
-    private final int[][] adjacencyMatrix;
     public final int numNodes;
     public final int numEdges;
+    private final int[][] adjacencyMatrix;
 
     /**
      * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we suppose that 2 nodes

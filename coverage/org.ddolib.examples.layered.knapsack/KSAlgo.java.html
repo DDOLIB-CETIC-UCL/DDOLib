@@ -11,12 +11,12 @@ import java.util.Arrays;
      * Provides a greedy approximation for the Knapsack Problem.
      *
      * &lt;p&gt;The algorithm sorts items in descending order of their profit-to-weight ratio
-     * ({@code profit / weight}) and selects items sequentially as long as they fit 
+     * ({@code profit / weight}) and selects items sequentially as long as they fit
      * within the remaining capacity.&lt;/p&gt;
      *
      * @param problem the Knapsack Problem instance to solve
      * @return the total profit of the selected items, providing a primal bound (lower bound)
-     *         on the optimal solution
+     * on the optimal solution
      */
     public static int greedyKS(KSProblem problem) {
 <span class="nc" id="L22">        Integer[] items = new Integer[problem.nbVars()];</span>

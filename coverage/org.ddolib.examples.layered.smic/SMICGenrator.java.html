@@ -57,23 +57,23 @@ public class SMICGenrator {
     /**
      * Number of jobs to generate.
      */
-    private int n;
+    private final int n;
     /**
      * Upper bound on processing times.
      */
-    private int alpha;
+    private final int alpha;
     /**
      * Scaling factor for release times.
      */
-    private double tau;
+    private final double tau;
     /**
      * Scaling parameter for inventory capacity.
      */
-    private int eta;
+    private final int eta;
     /**
      * Random seed for reproducibility.
      */
-    private long seed;
+    private final long seed;
     /**
      * Initial inventory level.
      */

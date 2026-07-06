@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleCache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.cache</a> &gt; <span class="el_source">SimpleCache.java</span></div><h1>SimpleCache.java</h1><pre class="source lang-java linenums">package org.ddolib.common.cache;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * A simple implementation of a {@link Cache} for storing threshold values associated with states in a dynamic programming model.
+ * &lt;p&gt;
+ * The cache maintains a list of layers, where each layer corresponds to a depth in the problem.
+ * Each layer stores thresholds for states at that depth and is thread-safe via a {@link ReadWriteLock}.
+ * &lt;/p&gt;
+ *
+ * @param &lt;T&gt; the type of state stored in the cache
+ */
+public class SimpleCache&lt;T&gt; implements Cache&lt;T&gt; {
+    /**
+     * List of layers, each representing a depth in the problem.
+     */
+<span class="fc" id="L24">    private final ArrayList&lt;Layer&lt;T&gt;&gt; thresholdsByLayer = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Constructs an empty SimpleCache.
+     */
+<span class="fc" id="L29">    public SimpleCache() {</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Initializes the cache based on the number of variables of the problem.
+     * Creates a layer for each variable (depth).
+     *
+     */
+    @Override
+    public void initialize() {
+<span class="fc" id="L39">        thresholdsByLayer.clear();</span>
+<span class="fc" id="L40">    }</span>
+
+    private void ensureCapacity(int depth) {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        while (thresholdsByLayer.size() &lt;= depth) {</span>
+<span class="fc" id="L44">            thresholdsByLayer.add(new Layer&lt;T&gt;());</span>
+        }
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Returns the layer at a given depth.
+     *
+     * @param depth the depth of the layer
+     * @return the layer object
+     */
+    @Override
+    public SimpleCache.Layer&lt;T&gt; getLayer(int depth) {
+<span class="fc" id="L56">        ensureCapacity(depth);</span>
+<span class="fc" id="L57">        return thresholdsByLayer.get(depth);</span>
+    }
+
+    /**
+     * Retrieves the threshold associated with a given state at a specific depth.
+     *
+     * @param state the state to query
+     * @param depth the depth of the state in the DP model
+     * @return an {@link Optional} containing the threshold if present, otherwise empty
+     */
+    @Override
+    public Optional&lt;Threshold&gt; getThreshold(T state, int depth) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (depth &gt;= thresholdsByLayer.size()) return Optional.empty();</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        for (T s : thresholdsByLayer.get(depth).map.keySet()) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (s.equals(state)) {</span>
+<span class="fc" id="L72">                return Optional.of(thresholdsByLayer.get(depth).map.get(s));</span>
+            }
+<span class="fc" id="L74">        }</span>
+<span class="nc" id="L75">        return thresholdsByLayer.get(depth).get(state);</span>
+    }
+
+    /**
+     * Updates the threshold for a given state at a specified depth.
+     * If the new threshold is greater than the current threshold (or no current threshold exists),
+     * the threshold is updated.
+     *
+     * @param state     the state to update
+     * @param depth     the depth of the state
+     * @param threshold the new threshold value
+     */
+    @Override
+    public void updateThreshold(T state, int depth, Threshold threshold) {
+<span class="fc" id="L89">        ensureCapacity(depth);</span>
+<span class="fc" id="L90">        thresholdsByLayer.get(depth).update(state, threshold);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Clears all thresholds in a specific layer.
+     *
+     * @param depth the depth of the layer to clear
+     */
+    @Override
+    public void clearLayer(int depth) {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (depth &lt; thresholdsByLayer.size()) {</span>
+<span class="nc" id="L101">            thresholdsByLayer.get(depth).clear();</span>
+        }
+<span class="nc" id="L103">    }</span>
+
+    /**
+     * Clears all layers of the cache up to the given number of variables.
+     *
+     * @param depth number of layers to clear
+     */
+    @Override
+    public void clear(int depth) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        for (int d = 0; d &lt; Math.min(depth, thresholdsByLayer.size()); d++) {</span>
+<span class="nc" id="L113">            thresholdsByLayer.get(d).clear();</span>
+        }
+<span class="nc" id="L115">    }</span>
+
+    /**
+     * Returns statistics about the cache, including number of hits, tests, and total entries.
+     *
+     * @return a string summarizing cache statistics
+     */
+    public String stats() {
+<span class="nc" id="L123">        int nbTests = 0;</span>
+<span class="nc" id="L124">        int nbHits = 0;</span>
+<span class="nc" id="L125">        int size = 0;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for (Layer&lt;T&gt; l : thresholdsByLayer) {</span>
+<span class="nc" id="L127">            nbHits += l.nbHits;</span>
+<span class="nc" id="L128">            nbTests += l.nbTests;</span>
+<span class="nc" id="L129">            size += l.map.size();</span>
+<span class="nc" id="L130">        }</span>
+<span class="nc" id="L131">        return &quot;stat(nbHits: &quot; + nbHits + &quot;, nbTests: &quot; + nbTests + &quot;, size:&quot; + size + &quot;)&quot;;</span>
+    }
+
+    /**
+     * Inner class representing a synchronized cache layer for a specific depth.
+     * &lt;p&gt;
+     * Each layer maps states to thresholds and provides thread-safe read/write operations
+     * using a {@link ReadWriteLock}. It also tracks hit/miss statistics for queries.
+     * &lt;/p&gt;
+     *
+     * @param &lt;T&gt; the type of state stored in the layer
+     */
+<span class="fc" id="L143">    public static class Layer&lt;T&gt; {</span>
+        /**
+         * Map of states to their thresholds.
+         */
+<span class="fc" id="L147">        private final Map&lt;T, Threshold&gt; map = new HashMap&lt;&gt;();</span>
+
+        /**
+         * Lock for thread-safe access.
+         */
+<span class="fc" id="L152">        private final ReadWriteLock lock = new ReentrantReadWriteLock();</span>
+
+        /**
+         * Number of queries to this layer.
+         */
+<span class="fc" id="L157">        public int nbTests = 0;</span>
+
+        /**
+         * Number of cache hits.
+         */
+<span class="fc" id="L162">        public int nbHits = 0;</span>
+
+        /**
+         * Retrieves the threshold for a given state in a thread-safe manner.
+         *
+         * @param state the state to query
+         * @return an {@link Optional} containing the threshold if present, otherwise empty
+         */
+
+        public Optional&lt;Threshold&gt; get(T state) {
+<span class="fc" id="L172">            lock.readLock().lock();</span>
+            try {
+<span class="fc" id="L174">                return Optional.ofNullable(map.get(state));</span>
+            } finally {
+<span class="fc" id="L176">                lock.readLock().unlock();</span>
+            }
+        }
+
+        /**
+         * Updates the threshold for a state if the new threshold is greater than the current.
+         *
+         * @param state        the state to update
+         * @param newThreshold the new threshold value
+         */
+        public void update(T state, Threshold newThreshold) {
+<span class="fc" id="L187">            lock.writeLock().lock();</span>
+            try {
+<span class="fc" id="L189">                Threshold current = map.get(state);</span>
+<span class="pc bpc" id="L190" title="1 of 4 branches missed.">                if (current == null || newThreshold.compareTo(current) &gt; 0) {</span>
+<span class="fc" id="L191">                    map.put(state, newThreshold);</span>
+                }
+            } finally {
+<span class="fc" id="L194">                lock.writeLock().unlock();</span>
+            }
+<span class="fc" id="L196">        }</span>
+
+        /**
+         * Checks whether the layer contains a given state, updating hit/test statistics.
+         *
+         * @param state the state to check
+         * @return true if the state exists in the layer, false otherwise
+         */
+        public boolean containsKey(T state) {
+<span class="fc" id="L205">            lock.writeLock().lock();</span>
+<span class="fc" id="L206">            nbTests += 1;</span>
+            try {
+<span class="fc bfc" id="L208" title="All 2 branches covered.">                if (map.containsKey(state)) {</span>
+<span class="fc" id="L209">                    nbHits += 1;</span>
+<span class="fc" id="L210">                    return true;</span>
+                }
+            } finally {
+<span class="fc" id="L213">                lock.writeLock().unlock();</span>
+            }
+<span class="fc" id="L215">            return false;</span>
+        }
+
+        /**
+         * Clears all entries in the layer.
+         */
+        public void clear() {
+<span class="nc" id="L222">            lock.writeLock().lock();</span>
+            try {
+<span class="nc" id="L224">                map.clear();</span>
+            } finally {
+<span class="nc" id="L226">                lock.writeLock().unlock();</span>
+            }
+<span class="nc" id="L228">        }</span>
+
+        @Override
+        public String toString() {
+<span class="nc" id="L232">            return map.keySet() + &quot; ---&gt; &quot; + map.values();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

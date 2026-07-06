@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DebugUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.nolayer.util.debug</a> &gt; <span class="el_source">DebugUtil.java</span></div><h1>DebugUtil.java</h1><pre class="source lang-java linenums">package org.ddolib.nolayer.util.debug;
+
+import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.solver.Solver;
+
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L14">public class DebugUtil {</span>
+
+    public static &lt;T&gt; void checkHashCodeAndEquality(T state, int label, BiFunction&lt;T, Integer, T&gt; transition) {
+<span class="fc" id="L17">        T newState = transition.apply(state, label);</span>
+<span class="fc" id="L18">        T duplicate = transition.apply(state, label);</span>
+
+<span class="fc" id="L20">        String transitionDescription = String.format(&quot;\torigin state: %s\n&quot;, state);</span>
+<span class="fc" id="L21">        transitionDescription += String.format(&quot;\tlabel: %s\n&quot;, label);</span>
+<span class="fc" id="L22">        transitionDescription += String.format(&quot;\tnew state: %s\n&quot;, newState);</span>
+<span class="fc" id="L23">        transitionDescription += String.format(&quot;\tduplicate: %s\n&quot;, duplicate);</span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        if (newState.hashCode() != duplicate.hashCode()) {</span>
+<span class="nc" id="L25">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+                    &quot;decision does not have the same hash code !\n&quot;;
+<span class="nc" id="L27">            failureMsg += transitionDescription;</span>
+
+<span class="nc" id="L29">            throw new RuntimeException(failureMsg);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        } else if (!newState.equals(duplicate)) {</span>
+<span class="nc" id="L31">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+                    &quot;decision have the same hash code but are not equals!\n&quot;;
+<span class="nc" id="L33">            failureMsg += transitionDescription;</span>
+<span class="nc" id="L34">            throw new RuntimeException(failureMsg);</span>
+        }
+
+
+<span class="fc" id="L38">    }</span>
+
+    public static &lt;T&gt; void checkFlbAdmissibility(Set&lt;T&gt; toCheck, Model&lt;T&gt; model, Function&lt;T, Solver&gt; solver) {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (T current : toCheck) {</span>
+<span class="fc" id="L42">            Solver internalSolver = solver.apply(current);</span>
+<span class="fc" id="L43">            double currentFlb = model.lowerBound().fastLowerBound(current);</span>
+<span class="fc" id="L44">            internalSolver.minimize(s -&gt; false, (sol, stats) -&gt; {</span>
+<span class="fc" id="L45">            });</span>
+
+<span class="fc" id="L47">            Optional&lt;Double&gt; shortestFromCurrent = internalSolver.bestValue();</span>
+<span class="fc" id="L48">            List&lt;Integer&gt; shortestPath = internalSolver.bestSolution();</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFlb - 1e-10 &gt; shortestFromCurrent.get()) {</span>
+<span class="nc" id="L50">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
+<span class="nc" id="L51">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
+<span class="nc" id="L52">                        &quot;State: &quot; + current.toString() + &quot;\n&quot; +</span>
+<span class="nc" id="L53">                        &quot;Path estimation: &quot; + df.format(currentFlb) + &quot;\n&quot; +</span>
+<span class="nc" id="L54">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
+                        + &quot;\n\nFull Path to end:\n&quot; +
+<span class="nc" id="L56">                        shortestPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
+                        + &quot;\n&quot;;
+
+<span class="nc" id="L59">                throw new RuntimeException(failureMsg);</span>
+            }
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

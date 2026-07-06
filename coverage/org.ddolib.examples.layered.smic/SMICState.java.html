@@ -35,17 +35,16 @@ import java.util.BitSet;
  * RemainingJobs [1, 2, 3] ----&gt; currentTime 10 ---&gt; minCurrentInventory5 ---&gt; maxCurrentInventory15
  * &lt;/pre&gt;
  *
- * @param remainingJobs        the set of job indices that remain to be scheduled
- * @param currentTime          the current time in the schedule
- * @param minCurrentInventory  the minimum possible inventory level at this state
- * @param maxCurrentInventory  the maximum possible inventory level at this state
- *
+ * @param remainingJobs       the set of job indices that remain to be scheduled
+ * @param currentTime         the current time in the schedule
+ * @param minCurrentInventory the minimum possible inventory level at this state
+ * @param maxCurrentInventory the maximum possible inventory level at this state
  * @see SMICProblem
  * @see SMICRelax
  * @see SMICRanking
  * @see SMICDominance
  */
-<span class="fc" id="L48">public record SMICState(BitSet remainingJobs,</span>
+<span class="fc" id="L47">public record SMICState(BitSet remainingJobs,</span>
                         int currentTime,
                         int minCurrentInventory,
                         int maxCurrentInventory) {
@@ -57,7 +56,7 @@ import java.util.BitSet;
      */
     @Override
     public String toString() {
-<span class="fc" id="L60">        return &quot;RemainingJobs : &quot; + remainingJobs + &quot; ----&gt; currentTime : &quot; + currentTime + &quot; ---&gt; minCurrentInventory : &quot; + minCurrentInventory + &quot; ---&gt; maxCurrentInventory : &quot; + maxCurrentInventory;</span>
+<span class="fc" id="L59">        return &quot;RemainingJobs : &quot; + remainingJobs + &quot; ----&gt; currentTime : &quot; + currentTime + &quot; ---&gt; minCurrentInventory : &quot; + minCurrentInventory + &quot; ---&gt; maxCurrentInventory : &quot; + maxCurrentInventory;</span>
     }
 
 }

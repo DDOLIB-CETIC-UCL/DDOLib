@@ -11,19 +11,19 @@ public class GRState {
     /**
      * Set of marks already placed on the ruler.
      */
-    private BitSet marks;
+    private final BitSet marks;
     /**
      * Set of pairwise distances already covered by the placed marks.
      */
-    private BitSet distances;
+    private final BitSet distances;
     /**
      * The position of the last placed mark on the ruler.
      */
-    private int lastMark;
+    private final int lastMark;
     /**
      * The layer (depth) of the state.
      */
-    private int layer;
+    private final int layer;
 
     /**
      * Constructs a new {@link GRState} from given sets of marks and distances.
@@ -112,7 +112,7 @@ public class GRState {
     @Override
     public boolean equals(Object obj) {
 <span class="pc bpc" id="L114" title="1 of 2 branches missed.">        if (obj instanceof GRState other) {</span>
-<span class="pc bpc" id="L115" title="2 of 8 branches missed.">            return this.marks.equals(other.marks) &amp;&amp; this.distances.equals(other.distances) &amp;&amp; this.lastMark == other.lastMark &amp;&amp; this.layer == other.layer;</span>
+<span class="pc bpc" id="L115" title="3 of 8 branches missed.">            return this.marks.equals(other.marks) &amp;&amp; this.distances.equals(other.distances) &amp;&amp; this.lastMark == other.lastMark &amp;&amp; this.layer == other.layer;</span>
         }
 <span class="nc" id="L117">        return false;</span>
     }
@@ -127,7 +127,7 @@ public class GRState {
      */
     @Override
     public String toString() {
-<span class="nc" id="L130">        return &quot;(&quot; + Arrays.toString(marks.stream().toArray()) + &quot; , &quot; + Arrays.toString(distances.stream().toArray()) + &quot; , &quot; + lastMark + &quot; , &quot; + layer + &quot;)&quot;;</span>
+<span class="fc" id="L130">        return &quot;(&quot; + Arrays.toString(marks.stream().toArray()) + &quot; , &quot; + Arrays.toString(distances.stream().toArray()) + &quot; , &quot; + lastMark + &quot; , &quot; + layer + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSDdoMain.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.nolayer.knapsack</a> &gt; <span class="el_source">KSDdoMain.java</span></div><h1>KSDdoMain.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.common.dominance.DominanceChecker;
-import org.ddolib.common.dominance.SimpleDominanceChecker;
-import org.ddolib.common.dominance.NoLayerDominanceChecker;
-import org.ddolib.common.solver.Solution;
-import org.ddolib.modeling.layered.StateRanking;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.CostBased;
-import org.ddolib.solving.ddo.core.heuristics.cluster.nolayer.ReductionStrategy;
-import org.ddolib.solving.ddo.core.heuristics.width.FixedWidth;
-import org.ddolib.solving.ddo.core.Decision;
-import java.util.Comparator;
-import org.ddolib.solving.ddo.core.heuristics.width.WidthHeuristic;
-import org.ddolib.modeling.nolayer.DdoModel;
-import org.ddolib.modeling.nolayer.Relaxation;
-import org.ddolib.solving.ddo.core.solver.nolayer.DdoSolver;
-import org.ddolib.util.io.SolutionPrinter;
-import org.ddolib.util.verbosity.VerbosityLevel;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.nolayer.modeling.DdoModel;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Relaxation;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
+import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.solving.ddo.core.solver.DdoSolver;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,7 +40,7 @@ public class KSDdoMain {
                             KSState s = it.next();
                             maxCapacity = Math.max(maxCapacity, s.remainingCapacity()); // Relax by taking max capacity
                             currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem to
-                                                                                  // overapproximate
+                            // overapproximate
                         }
                         return new KSState(currentItem, maxCapacity);
                     }
@@ -65,16 +61,6 @@ public class KSDdoMain {
             @Override
             public NoLayerDominanceChecker&lt;KSState&gt; dominance() {
                 return new NoLayerDominanceChecker&lt;KSState&gt;() {
-                    class ValueState implements Comparable&lt;ValueState&gt; {
-                        final KSState state;
-                        final double value;
-                        ValueState(KSState state, double value) { this.state = state; this.value = value; }
-                        @Override
-                        public int compareTo(ValueState o) {
-                            if (this.value != o.value) return Double.compare(this.value, o.value);
-                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
-                        }
-                    }
                     private final java.util.Map&lt;Integer, java.util.TreeSet&lt;ValueState&gt;&gt; bestStates = new java.util.HashMap&lt;&gt;();
 
                     @Override
@@ -86,7 +72,7 @@ public class KSDdoMain {
                         if (floor != null &amp;&amp; floor.state.remainingCapacity() &gt;= state.remainingCapacity() &amp;&amp; floor.value &lt;= value) {
                             return true; // Dominated!
                         }
-                        
+
                         java.util.Iterator&lt;ValueState&gt; iterator = set.tailSet(vs).iterator();
                         while (iterator.hasNext()) {
                             ValueState higher = iterator.next();
@@ -103,6 +89,22 @@ public class KSDdoMain {
                     @Override
                     public void clear() {
                         bestStates.clear();
+                    }
+
+                    class ValueState implements Comparable&lt;ValueState&gt; {
+                        final KSState state;
+                        final double value;
+
+                        ValueState(KSState state, double value) {
+                            this.state = state;
+                            this.value = value;
+                        }
+
+                        @Override
+                        public int compareTo(ValueState o) {
+                            if (this.value != o.value) return Double.compare(this.value, o.value);
+                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
+                        }
                     }
                 };
             }
@@ -145,8 +147,7 @@ public class KSDdoMain {
         System.out.println(bestSolution);
         System.out.println(&quot;Optimal KS value: &quot; + -bestSolution.value());
         try {
-            int[] solArray = bestSolution.solution();
-            double val = problem.evaluate(solArray);
+            double val = problem.evaluate(bestSolution.solution());
             System.out.println(&quot;Evaluated value: &quot; + val);
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,7 +157,7 @@ public class KSDdoMain {
 
 abstract class KSDdoModel extends KSModel implements DdoModel&lt;KSState&gt; {
     public KSDdoModel(KSProblem problem) {
-<span class="nc" id="L159">        super(problem);</span>
-<span class="nc" id="L160">    }</span>
+<span class="nc" id="L160">        super(problem);</span>
+<span class="nc" id="L161">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

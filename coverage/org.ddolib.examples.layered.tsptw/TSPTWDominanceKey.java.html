@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSPTWDominanceKey.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.tsptw</a> &gt; <span class="el_source">TSPTWDominanceKey.java</span></div><h1>TSPTWDominanceKey.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.tsptw;
 
 import java.util.BitSet;
+
 /**
  * Key used for dominance checking in the Traveling Salesman Problem with Time Windows (TSPTW).
  *
@@ -16,13 +17,13 @@ import java.util.BitSet;
  * current time dominates the other, allowing pruning in the search.
  * &lt;/p&gt;
  *
- * @param p The current position in the tour.
+ * @param p         The current position in the tour.
  * @param mustVisit The set of locations that must still be visited.
  */
-<span class="fc" id="L22">public record TSPTWDominanceKey(Position p, BitSet mustVisit) {</span>
+<span class="fc" id="L23">public record TSPTWDominanceKey(Position p, BitSet mustVisit) {</span>
     @Override
     public String toString() {
-<span class="nc" id="L25">        return String.format(&quot;position: %s - must visit: %s&quot;,</span>
+<span class="nc" id="L26">        return String.format(&quot;position: %s - must visit: %s&quot;,</span>
                 p,
                 mustVisit);
     }

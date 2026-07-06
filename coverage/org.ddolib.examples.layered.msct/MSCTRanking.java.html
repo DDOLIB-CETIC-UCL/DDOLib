@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.msct</a> &gt; <span class="el_source">MSCTRanking.java</span></div><h1>MSCTRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Provides a ranking strategy for {@link MSCTState} objects
  * used in the search process for solving the
@@ -29,7 +30,7 @@ import org.ddolib.modeling.layered.StateRanking;
  * @see MSCTDdoMain
  * @see MSCTRelax
  */
-<span class="fc" id="L32">public class MSCTRanking implements StateRanking&lt;MSCTState&gt; {</span>
+<span class="fc" id="L33">public class MSCTRanking implements StateRanking&lt;MSCTState&gt; {</span>
     /**
      * Compares two scheduling states according to their current completion time.
      * &lt;p&gt;
@@ -39,12 +40,12 @@ import org.ddolib.modeling.layered.StateRanking;
      * @param s1 the first state to compare.
      * @param s2 the second state to compare.
      * @return a negative integer if {@code s1} should be ranked before {@code s2},
-     *         zero if both states have the same rank,
-     *         or a positive integer if {@code s1} should be ranked after {@code s2}.
+     * zero if both states have the same rank,
+     * or a positive integer if {@code s1} should be ranked after {@code s2}.
      */
     @Override
     public int compare(MSCTState s1, MSCTState s2) {
-<span class="fc" id="L47">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
+<span class="fc" id="L48">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

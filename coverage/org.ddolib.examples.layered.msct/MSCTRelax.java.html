@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTRelax.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.msct</a> &gt; <span class="el_source">MSCTRelax.java</span></div><h1>MSCTRelax.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.msct;
 
 
-import org.ddolib.solving.ddo.core.Decision;
-import org.ddolib.modeling.layered.Relaxation;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 /**
  * Implements the relaxation operator for the {@link MSCTProblem}
  * in the context of &lt;b&gt;Decision Diagram Optimization (DDO)&lt;/b&gt; algorithms.
@@ -38,7 +39,9 @@ import java.util.Set;
  * @see MSCTDdoMain
  */
 public class MSCTRelax implements Relaxation&lt;MSCTState&gt; {
-    /** The scheduling problem instance associated with this relaxation. */
+    /**
+     * The scheduling problem instance associated with this relaxation.
+     */
     final MSCTProblem problem;
 
     /**
@@ -47,9 +50,10 @@ public class MSCTRelax implements Relaxation&lt;MSCTState&gt; {
      * @param problem the instance of the {@link MSCTProblem} to which this relaxation applies.
      */
 
-<span class="fc" id="L50">    public MSCTRelax(MSCTProblem problem) {</span>
-<span class="fc" id="L51">        this.problem = problem;</span>
-<span class="fc" id="L52">    }</span>
+<span class="fc" id="L53">    public MSCTRelax(MSCTProblem problem) {</span>
+<span class="fc" id="L54">        this.problem = problem;</span>
+<span class="fc" id="L55">    }</span>
+
     /**
      * Merges several {@link MSCTState} objects into a single relaxed state.
      * &lt;p&gt;
@@ -63,15 +67,16 @@ public class MSCTRelax implements Relaxation&lt;MSCTState&gt; {
      */
     @Override
     public MSCTState mergeStates(final Iterator&lt;MSCTState&gt; states) {
-<span class="fc" id="L66">        Set&lt;Integer&gt; unionJobs = new HashSet&lt;&gt;();</span>
-<span class="fc" id="L67">        int minCurrentTime = Integer.MAX_VALUE;</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">        while (states.hasNext()) {</span>
-<span class="fc" id="L69">            final MSCTState state = states.next();</span>
-<span class="fc" id="L70">            unionJobs.addAll(state.remainingJobs());</span>
-<span class="fc" id="L71">            minCurrentTime = Math.min(state.currentTime(), minCurrentTime);</span>
-<span class="fc" id="L72">        }</span>
-<span class="fc" id="L73">        return new MSCTState(unionJobs, minCurrentTime);</span>
+<span class="fc" id="L70">        Set&lt;Integer&gt; unionJobs = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L71">        int minCurrentTime = Integer.MAX_VALUE;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L73">            final MSCTState state = states.next();</span>
+<span class="fc" id="L74">            unionJobs.addAll(state.remainingJobs());</span>
+<span class="fc" id="L75">            minCurrentTime = Math.min(state.currentTime(), minCurrentTime);</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">        return new MSCTState(unionJobs, minCurrentTime);</span>
     }
+
     /**
      * Computes the relaxed cost associated with transitioning from one state to another.
      * &lt;p&gt;
@@ -88,7 +93,7 @@ public class MSCTRelax implements Relaxation&lt;MSCTState&gt; {
      */
     @Override
     public double relaxEdge(MSCTState from, MSCTState to, MSCTState merged, Decision d, double cost) {
-<span class="fc" id="L91">        return cost;</span>
+<span class="fc" id="L96">        return cost;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

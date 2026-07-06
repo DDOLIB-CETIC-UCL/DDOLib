@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DistanceUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.util</a> &gt; <span class="el_source">DistanceUtil.java</span></div><h1>DistanceUtil.java</h1><pre class="source lang-java linenums">package org.ddolib.common.util;
+
+import java.util.BitSet;
+
+import static java.lang.Math.*;
+
+/**
+ * Utility methods for common distance metrics used by clustering and heuristics.
+ */
+<span class="nc" id="L10">public class DistanceUtil {</span>
+
+    /**
+     * Computes the Jaccard Distance between the two given sets.
+     *
+     * @param a the first set
+     * @param b the second set
+     * @return 1 - |a ∩ b| / |a ∪ b|
+     */
+    public static double jaccardDistance(BitSet a, BitSet b) {
+
+<span class="nc" id="L21">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L22">        tmp.and(b);</span>
+<span class="nc" id="L23">        int intersectionSize = tmp.cardinality();</span>
+
+<span class="nc" id="L25">        tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L26">        tmp.or(b);</span>
+<span class="nc" id="L27">        int unionSize = tmp.cardinality();</span>
+
+<span class="nc" id="L29">        return (1.0 - ((double) intersectionSize) / unionSize);</span>
+    }
+
+    /**
+     * Computes the weighted Jaccard Distance between the two given sets.
+     *
+     * @param a       the first set
+     * @param b       the second set
+     * @param weights the weight of each element in a and b
+     * @return the weighted Jaccard Distance between a and b
+     */
+    public static double weightedJaccardDistance(BitSet a, BitSet b, double[] weights) {
+<span class="nc" id="L41">        double intersectionSize = 0;</span>
+<span class="nc" id="L42">        double unionSize = 0;</span>
+
+<span class="nc" id="L44">        int maxIndex = max(a.length(), b.length());</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (int i = 0; i &lt; maxIndex; i++) {</span>
+<span class="nc bnc" id="L46" title="All 4 branches missed.">            if (a.get(i) || b.get(i)) {</span>
+<span class="nc" id="L47">                unionSize += weights[i];</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">                if (a.get(i) &amp;&amp; b.get(i)) {</span>
+<span class="nc" id="L49">                    intersectionSize += weights[i];</span>
+                }
+            }
+        }
+
+<span class="nc" id="L54">        return 1.0 - intersectionSize / unionSize;</span>
+    }
+
+    /**
+     * Computes the Dice Distance between the two given sets.
+     *
+     * @param a the first set
+     * @param b the second set
+     * @return 1 - 2|a ∩ b| / (|a| + |b|)
+     */
+    public static double diceDistance(BitSet a, BitSet b) {
+<span class="nc" id="L65">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L66">        tmp.and(b);</span>
+<span class="nc" id="L67">        double distance = tmp.cardinality();</span>
+
+<span class="nc" id="L69">        distance = distance * -2;</span>
+<span class="nc" id="L70">        distance = distance / (a.cardinality() + b.cardinality());</span>
+<span class="nc" id="L71">        distance += 1;</span>
+
+<span class="nc" id="L73">        return distance;</span>
+    }
+
+    /**
+     * Computes the Euclidean Distance between the two given arrays of coordinates
+     *
+     * @param a the first array
+     * @param b the second array
+     * @return the Euclidean distance between a and b
+     */
+    public static double euclideanDistance(double[] a, double[] b) {
+<span class="nc" id="L84">        double distance = 0.0;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (int dim = 0; dim &lt; a.length; dim++) {</span>
+<span class="nc" id="L86">            distance += pow(a[dim] - b[dim], 2);</span>
+        }
+<span class="nc" id="L88">        distance = sqrt(distance);</span>
+
+<span class="nc" id="L90">        return distance;</span>
+    }
+
+    /**
+     * Computes the size of the symmetric difference between a and b
+     *
+     * @param a the first set
+     * @param b the second set
+     * @return |a XOR b|
+     */
+    public static double symmetricDifferenceDistance(BitSet a, BitSet b) {
+<span class="nc" id="L101">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L102">        tmp.xor(b);</span>
+<span class="nc" id="L103">        return tmp.cardinality();</span>
+    }
+
+    /**
+     * Computes the weighted symmetric difference between a and b
+     *
+     * @param a the first set
+     * @param b the second set
+     * @return the weighted symmetric difference between a and b
+     */
+    public static double weightedSymmetricDifferenceDistance(BitSet a, BitSet b, double[] weights) {
+<span class="nc" id="L114">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L115">        tmp.xor(b);</span>
+
+<span class="nc" id="L117">        double distance = 0;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        for (int i = tmp.nextSetBit(0); i &gt; 0; i = tmp.nextSetBit(i)) {</span>
+<span class="nc" id="L119">            distance += weights[i];</span>
+        }
+
+<span class="nc" id="L122">        return distance;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

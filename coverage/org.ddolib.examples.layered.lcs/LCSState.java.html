@@ -19,14 +19,16 @@ public class LCSState {
      * position[i] is the index of the next character to be considered in the i-th string.
      */
     int[] position;
+
     /**
      * Constructs an LCS state with the given positions for each string.
      *
      * @param position An array of integers representing the current position in each string.
      */
-<span class="fc" id="L27">    LCSState(int[] position) {</span>
-<span class="fc" id="L28">        this.position = position;</span>
-<span class="fc" id="L29">    }</span>
+<span class="fc" id="L28">    LCSState(int[] position) {</span>
+<span class="fc" id="L29">        this.position = position;</span>
+<span class="fc" id="L30">    }</span>
+
     /**
      * Returns a hash code for this state, based on the positions in all strings.
      *
@@ -34,8 +36,9 @@ public class LCSState {
      */
     @Override
     public int hashCode() {
-<span class="fc" id="L37">        return Arrays.hashCode(position);</span>
+<span class="fc" id="L39">        return Arrays.hashCode(position);</span>
     }
+
     /**
      * Checks equality between this state and another object.
      * Two states are equal if their position arrays are identical.
@@ -45,12 +48,13 @@ public class LCSState {
      */
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (obj instanceof LCSState other) {</span>
-<span class="fc" id="L49">            return Arrays.equals(this.position, other.position);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (obj instanceof LCSState other) {</span>
+<span class="fc" id="L52">            return Arrays.equals(this.position, other.position);</span>
         } else {
-<span class="nc" id="L51">            return false;</span>
+<span class="nc" id="L54">            return false;</span>
         }
     }
+
     /**
      * Returns a string representation of the state.
      * &lt;p&gt;
@@ -62,7 +66,7 @@ public class LCSState {
 
     @Override
     public String toString() {
-<span class="fc" id="L65">        return Arrays.toString(position);</span>
+<span class="fc" id="L69">        return Arrays.toString(position);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

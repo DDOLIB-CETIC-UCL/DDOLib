@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Solvers.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.nolayer.modeling</a> &gt; <span class="el_source">Solvers.java</span></div><h1>Solvers.java</h1><pre class="source lang-java linenums">package org.ddolib.nolayer.modeling;
+
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solving.acs.core.solver.AcsSolver;
+import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
+import org.ddolib.nolayer.solving.awastar.core.solver.AwAstarSolver;
+import org.ddolib.nolayer.solving.ddo.core.solver.DdoSolver;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+
+/**
+ * The {@code Solvers} class acts as a unified entry point for running different
+ * optimization algorithms within the no-layer Decision Diagram Optimization (DDO) framework.
+ * &lt;p&gt;
+ * Unlike {@link org.ddolib.layered.modeling.Solvers}, the problems solved here don't require a
+ * fixed, known number of variables up front: termination is detected via
+ * {@link Problem#isTarget(Object)} instead.
+ * &lt;/p&gt;
+ * It provides static methods to solve problems using various strategies:
+ * &lt;ul&gt;
+ *   &lt;li&gt;&lt;b&gt;DDO (Decision Diagram Optimization)&lt;/b&gt; — Builds restricted or relaxed decision diagrams
+ *       to approximate or find exact solutions.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;A*&lt;/b&gt; — Uses a best-first search guided by an admissible lower bound heuristic
+ *       to guarantee optimality.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;ACS (Anytime Column Search)&lt;/b&gt; — An iterative improvement algorithm that progressively
+ *       refines solutions over time using bounded-width decision diagrams.&lt;/li&gt;
+ *   &lt;li&gt;&lt;b&gt;Anytime Weighted A*&lt;/b&gt; — A variant of the A* algorithm that progressively refines a
+ *       solution using a weighted heuristic function.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @see DdoModel
+ * @see AcsModel
+ * @see AwAstarModel
+ * @see Model
+ * @see Solution
+ * @see SearchStatistics
+ * @see DdoSolver
+ * @see AStarSolver
+ * @see AcsSolver
+ * @see AwAstarSolver
+ */
+<span class="nc" id="L45">public class Solvers {</span>
+    // =============================================================
+    // DDO Solver Methods
+    // =============================================================
+
+    /**
+     * Solves the given model using the DDO (Decision Diagram Optimization) algorithm
+     * with default stopping criteria and no solution callback.
+     *
+     * @param model the DDO model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model) {
+<span class="fc" id="L58">        return minimizeDdo(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L59">        });</span>
+    }
+
+    /**
+     * Solves the given model using DDO, stopping when the provided limit condition becomes true.
+     *
+     * @param model the DDO model to solve
+     * @param limit a predicate defining the stopping criterion (e.g., max iterations, time limit)
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
+<span class="nc" id="L70">        return minimizeDdo(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L71">        });</span>
+    }
+
+    /**
+     * Solves the given model using DDO and triggers a callback each time a new incumbent solution is found.
+     *
+     * @param model      the DDO model to solve
+     * @param onSolution callback executed when a new best solution is discovered
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="nc" id="L82">        return minimizeDdo(model, s -&gt; false, onSolution);</span>
+    }
+
+    /**
+     * Core method for solving a DDO model with a custom stop condition and a solution callback.
+     * &lt;p&gt;
+     * It automatically builds the solver configuration from the given model and delegates
+     * the actual solving to a {@link DdoSolver}.
+     * &lt;/p&gt;
+     *
+     * @param model      the DDO model to solve
+     * @param limit      a predicate defining when the solver should stop
+     * @param onSolution a callback invoked whenever a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="fc" id="L98">        return new DdoSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    }
+
+    // =============================================================
+    // A* Solver Methods
+    // =============================================================
+
+    /**
+     * Solves the given model using the A* search algorithm with default parameters.
+     *
+     * @param model the model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model) {
+<span class="fc" id="L112">        return minimizeAstar(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L113">        });</span>
+    }
+
+    /**
+     * Solves the given model using A* with a specified stop condition.
+     *
+     * @param model the model to solve
+     * @param limit predicate defining the termination condition
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
+<span class="nc" id="L124">        return minimizeAstar(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L125">        });</span>
+    }
+
+    /**
+     * Solves the given model using A* and calls back when new incumbent solutions are found.
+     *
+     * @param model      the model to solve
+     * @param onSolution callback triggered for each new best solution
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="nc" id="L136">        return minimizeAstar(model, s -&gt; false, onSolution);</span>
+    }
+
+    /**
+     * Core method for solving a model with the A* search algorithm, with custom limit and callback.
+     * &lt;p&gt;
+     * It automatically builds the solver configuration from the given model and delegates
+     * the actual solving to an {@link AStarSolver}.
+     * &lt;/p&gt;
+     *
+     * @param model      the model to solve
+     * @param limit      stopping condition for the search
+     * @param onSolution callback invoked when a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="fc" id="L152">        return new AStarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    }
+
+    // =============================================================
+    // Anytime Column Search (ACS) Solver Methods
+    // =============================================================
+
+    /**
+     * Solves the given model using the Anytime Column Search (ACS) algorithm.
+     *
+     * @param model the ACS model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model) {
+<span class="fc" id="L166">        return minimizeAcs(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="nc" id="L167">        });</span>
+    }
+
+    /**
+     * Solves the given model using ACS, stopping when the limit condition is satisfied.
+     *
+     * @param model the ACS model to solve
+     * @param limit predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
+<span class="nc" id="L178">        return minimizeAcs(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L179">        });</span>
+    }
+
+    /**
+     * Solves the given model using ACS and calls the callback when a new incumbent is found.
+     *
+     * @param model      the ACS model to solve
+     * @param onSolution callback executed on discovery of a new best solution
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="fc" id="L190">        return minimizeAcs(model, s -&gt; false, onSolution);</span>
+    }
+
+    /**
+     * Core method for solving an ACS model with custom stopping condition and solution callback.
+     * &lt;p&gt;
+     * It automatically builds the solver configuration from the given model and delegates
+     * the actual solving to an {@link AcsSolver}.
+     * &lt;/p&gt;
+     *
+     * @param model      the ACS model to solve
+     * @param limit      predicate defining the stopping condition
+     * @param onSolution callback invoked when new incumbent solutions are found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="fc" id="L206">        return new AcsSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    }
+
+    // =============================================================
+    // Anytime Weighted A* (AWA*) Solver Methods
+    // =============================================================
+
+    /**
+     * Solves the given model using the Anytime Weighted A* (AWA*) algorithm with default
+     * parameters.
+     *
+     * @param model the AWA* model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAwAstar(AwAstarModel&lt;T&gt; model) {
+<span class="fc" id="L221">        return minimizeAwAstar(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L222">        });</span>
+    }
+
+    /**
+     * Solves the given model using AWA*, stopping when the limit condition is satisfied.
+     *
+     * @param model the AWA* model to solve
+     * @param limit predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAwAstar(AwAstarModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
+<span class="nc" id="L233">        return minimizeAwAstar(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L234">        });</span>
+    }
+
+    /**
+     * Solves the given model using AWA* and calls the callback when a new incumbent is found.
+     *
+     * @param model      the AWA* model to solve
+     * @param onSolution callback executed on discovery of a new best solution
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAwAstar(AwAstarModel&lt;T&gt; model, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="nc" id="L245">        return minimizeAwAstar(model, s -&gt; false, onSolution);</span>
+    }
+
+    /**
+     * Core method for solving a model with the Anytime Weighted A* search algorithm, with a
+     * custom limit and callback.
+     * &lt;p&gt;
+     * It automatically builds the solver configuration from the given model and delegates
+     * the actual solving to an {@link AwAstarSolver}.
+     * &lt;/p&gt;
+     *
+     * @param model      the AWA* model to solve
+     * @param limit      stopping condition for the search
+     * @param onSolution callback invoked when a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution minimizeAwAstar(AwAstarModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution) {
+<span class="fc" id="L262">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

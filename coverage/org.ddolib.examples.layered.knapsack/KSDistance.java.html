@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSDistance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSDistance.java</span></div><h1>KSDistance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
+
 /**
  * Distance measure for states in a Knapsack (KS) problem.
  *
@@ -13,16 +14,20 @@ import org.ddolib.solving.ddo.core.heuristics.cluster.layered.StateDistance;
  * Distances are normalized by the knapsack capacity to produce values in [0,1].
  */
 public class KSDistance implements StateDistance&lt;Integer&gt; {
-    /** The Knapsack problem instance associated with this distance. */
+    /**
+     * The Knapsack problem instance associated with this distance.
+     */
     final private KSProblem problem;
+
     /**
      * Constructs a distance measure for a given Knapsack problem instance.
      *
      * @param problem the Knapsack problem
      */
-<span class="fc" id="L23">    public KSDistance(KSProblem problem) {</span>
-<span class="fc" id="L24">        this.problem = problem;</span>
-<span class="fc" id="L25">    }</span>
+<span class="fc" id="L27">    public KSDistance(KSProblem problem) {</span>
+<span class="fc" id="L28">        this.problem = problem;</span>
+<span class="fc" id="L29">    }</span>
+
     /**
      * Computes the normalized distance between two states.
      *
@@ -36,8 +41,9 @@ public class KSDistance implements StateDistance&lt;Integer&gt; {
      */
     @Override
     public double distance(Integer a, Integer b) {
-<span class="fc" id="L39">        return ((double) Math.abs(a - b) / problem.capa);</span>
+<span class="fc" id="L44">        return ((double) Math.abs(a - b) / problem.capa);</span>
     }
+
     /**
      * Computes the normalized distance between a state and the root (empty knapsack).
      *
@@ -46,7 +52,7 @@ public class KSDistance implements StateDistance&lt;Integer&gt; {
      */
     @Override
     public double distanceWithRoot(Integer state) {
-<span class="nc" id="L49">        return ((double) state) / problem.capa;</span>
+<span class="nc" id="L55">        return ((double) state) / problem.capa;</span>
     }
 
 }

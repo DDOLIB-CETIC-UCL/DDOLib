@@ -37,7 +37,7 @@ public class PDPTWState {
     /**
      * The maximum possible vehicle content (number of items) at this state.
      */
-    int maxContent ;
+    int maxContent;
 
     /**
      * The current time at this state, or earlier in case of fusion
@@ -48,11 +48,11 @@ public class PDPTWState {
     /**
      * Builds a PDPTW state with interval-valued content/time information.
      *
-     * @param current current node(s)
-     * @param openToVisit currently reachable unvisited nodes
-     * @param allToVisit all remaining unvisited nodes
-     * @param minContent lower bound on vehicle load
-     * @param maxContent upper bound on vehicle load
+     * @param current        current node(s)
+     * @param openToVisit    currently reachable unvisited nodes
+     * @param allToVisit     all remaining unvisited nodes
+     * @param minContent     lower bound on vehicle load
+     * @param maxContent     upper bound on vehicle load
      * @param minCurrentTime lower bound on current time
      * @param maxCurrentTime upper bound on current time
      */
@@ -68,16 +68,16 @@ public class PDPTWState {
 
     public int hashCode() {
 <span class="fc" id="L70">        return Objects.hash(openToVisit, allToVisit,</span>
-<span class="fc" id="L71">                current, minContent,maxContent, minCurrentTime,maxCurrentTime);</span>
+<span class="fc" id="L71">                current, minContent, maxContent, minCurrentTime, maxCurrentTime);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
 <span class="fc" id="L76">        PDPTWState that = (PDPTWState) obj;</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">        if(this.minContent != that.minContent) return false;</span>
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if(this.maxContent != that.maxContent) return false;</span>
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        if(this.minCurrentTime != that.minCurrentTime) return false;</span>
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if(this.maxCurrentTime != that.maxCurrentTime) return false;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (this.minContent != that.minContent) return false;</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (this.maxContent != that.maxContent) return false;</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.minCurrentTime != that.minCurrentTime) return false;</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (this.maxCurrentTime != that.maxCurrentTime) return false;</span>
 <span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (!that.current.equals(this.current)) return false;</span>
 <span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (!that.openToVisit.equals(this.openToVisit)) return false;</span>
 <span class="fc" id="L83">        return (that.allToVisit.equals(this.allToVisit));</span>
@@ -89,21 +89,23 @@ public class PDPTWState {
 <span class="fc" id="L89">        return toReturn;</span>
     }
 
-    public String printInterval(double min,double max){
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if(min == max) return &quot;&quot; + min;</span>
+    public String printInterval(double min, double max) {
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
 <span class="nc" id="L94">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
     }
-    public String printInterval(int min,int max){
-<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if(min == max) return &quot;&quot; + min;</span>
-<span class="nc" id="L98">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+
+    public String printInterval(int min, int max) {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
+<span class="nc" id="L99">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
     }
+
     @Override
     public String toString() {
-<span class="fc" id="L102">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
-<span class="fc" id="L103">        closedToVisit.xor(openToVisit);</span>
-<span class="fc" id="L104">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime,maxCurrentTime)</span>
+<span class="fc" id="L104">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
+<span class="fc" id="L105">        closedToVisit.xor(openToVisit);</span>
+<span class="fc" id="L106">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime, maxCurrentTime)</span>
                 + &quot; openToVisit:&quot; + openToVisit + &quot; closedToVisit:&quot; + closedToVisit + &quot; allToVisit:&quot; + allToVisit
-<span class="fc" id="L106">                + &quot; content:&quot; + printInterval(minContent,maxContent) + &quot;)&quot;;</span>
+<span class="fc" id="L108">                + &quot; content:&quot; + printInterval(minContent, maxContent) + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

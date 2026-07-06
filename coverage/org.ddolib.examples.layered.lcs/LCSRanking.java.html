@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LCSRanking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.lcs</a> &gt; <span class="el_source">LCSRanking.java</span></div><h1>LCSRanking.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.modeling.layered.StateRanking;
+import org.ddolib.layered.modeling.StateRanking;
+
 /**
  * Ranking strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
  * &lt;p&gt;
@@ -14,7 +15,7 @@ import org.ddolib.modeling.layered.StateRanking;
  * potential optimal LCS solutions.
  * &lt;/p&gt;
  */
-<span class="fc" id="L17">public class LCSRanking implements StateRanking&lt;LCSState&gt; {</span>
+<span class="fc" id="L18">public class LCSRanking implements StateRanking&lt;LCSState&gt; {</span>
     /**
      * Compares two LCS states.
      * &lt;p&gt;
@@ -29,14 +30,15 @@ import org.ddolib.modeling.layered.StateRanking;
     @Override
     public int compare(LCSState state1, LCSState state2) {
         // Best state is the one where the sum of string's position is the smallest.
-<span class="fc" id="L32">        int totState1 = 0;</span>
-<span class="fc" id="L33">        int totState2 = 0;</span>
-<span class="fc bfc" id="L34" title="All 2 branches covered.">        for (int i = 0; i &lt; state1.position.length; i++) {</span>
-<span class="fc" id="L35">            totState1 += state1.position[i];</span>
-<span class="fc" id="L36">            totState2 += state2.position[i];</span>
+<span class="fc" id="L33">        int totState1 = 0;</span>
+<span class="fc" id="L34">        int totState2 = 0;</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (int i = 0; i &lt; state1.position.length; i++) {</span>
+<span class="fc" id="L36">            totState1 += state1.position[i];</span>
+<span class="fc" id="L37">            totState2 += state2.position[i];</span>
         }
-<span class="fc" id="L38">        return Integer.compare(totState2, totState1);</span>
+<span class="fc" id="L39">        return Integer.compare(totState2, totState1);</span>
     }
+
     /**
      * Indicates whether this ranking object is equal to another.
      * &lt;p&gt;
@@ -48,7 +50,7 @@ import org.ddolib.modeling.layered.StateRanking;
      */
     @Override
     public boolean equals(Object obj) {
-<span class="nc" id="L51">        return false;</span>
+<span class="nc" id="L53">        return false;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

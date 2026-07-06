@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.msct</a> &gt; <span class="el_source">MSCTFastLowerBound.java</span></div><h1>MSCTFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.msct;
 
-import org.ddolib.modeling.layered.FastLowerBound;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 import java.util.Set;
+
 /**
  * Provides a fast lower bound computation for the Maximum Sum of Compatible Tasks (MSCT) problem.
  * &lt;p&gt;
@@ -57,9 +58,9 @@ public class MSCTFastLowerBound implements FastLowerBound&lt;MSCTState&gt; {
      * @param problem the {@link MSCTProblem} instance containing the task data
      *                (processing times, release dates, etc.).
      */
-<span class="fc" id="L60">    public MSCTFastLowerBound(MSCTProblem problem) {</span>
-<span class="fc" id="L61">        this.problem = problem;</span>
-<span class="fc" id="L62">    }</span>
+<span class="fc" id="L61">    public MSCTFastLowerBound(MSCTProblem problem) {</span>
+<span class="fc" id="L62">        this.problem = problem;</span>
+<span class="fc" id="L63">    }</span>
 
     /**
      * Computes a fast lower bound on the total completion time (or cost)
@@ -69,18 +70,18 @@ public class MSCTFastLowerBound implements FastLowerBound&lt;MSCTState&gt; {
      * the minimal additional cost required to schedule the remaining tasks.
      * &lt;/p&gt;
      *
-     * @param state      the current state of the problem, representing already scheduled tasks.
-     * @param variables  the set of remaining variables (tasks) to be scheduled.
+     * @param state     the current state of the problem, representing already scheduled tasks.
+     * @param variables the set of remaining variables (tasks) to be scheduled.
      * @return an estimated lower bound on the minimal total cost achievable from the current state.
      */
     @Override
     public double fastLowerBound(MSCTState state, Set&lt;Integer&gt; variables) {
-<span class="fc" id="L78">        int lb = 0;</span>
+<span class="fc" id="L79">        int lb = 0;</span>
 
-<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (Integer v : state.remainingJobs()) {</span>
-<span class="fc" id="L81">            lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];</span>
-<span class="fc" id="L82">        }</span>
-<span class="fc" id="L83">        return lb;</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (Integer v : state.remainingJobs()) {</span>
+<span class="fc" id="L82">            lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];</span>
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">        return lb;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
