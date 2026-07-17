@@ -86,16 +86,16 @@ public class LCSProblem implements Problem<LCSState> {
     /**
      * Constructs an LCS problem instance with all precomputed structures.
      *
-     * @param instance      The instance name or path.
-     * @param stringNb      Number of strings.
-     * @param diffCharNb    Number of distinct characters.
-     * @param stringsAsInt  Input strings encoded as integer arrays.
-     * @param stringsLength Length of each string.
-     * @param nextCharPos   Next occurrence of each character after each position.
-     * @param remChar       Remaining occurrences of each character after each position.
-     * @param charToId      Mapping from character to ID.
-     * @param idToChar      Mapping from ID to character.
-     * @param optimal       Optional optimal solution value.
+     * @param instance      the instance name or path
+     * @param stringNb      number of strings
+     * @param diffCharNb    number of distinct characters
+     * @param stringsAsInt  input strings encoded as integer arrays
+     * @param stringsLength length of each string
+     * @param nextCharPos   next occurrence of each character after each position
+     * @param remChar       remaining occurrences of each character after each position
+     * @param charToId      mapping from character to ID
+     * @param idToChar      mapping from ID to character
+     * @param optimal       optional optimal solution value
      */
     public LCSProblem(String instance,
                       int stringNb,
@@ -136,8 +136,8 @@ public class LCSProblem implements Problem<LCSState> {
      * each string in the format: length string_content.
      * </p>
      *
-     * @param filename Path to the file defining the LCS instance.
-     * @throws IOException If reading the file fails.
+     * @param filename path to the file defining the LCS instance
+     * @throws IOException if reading the file fails
      */
 
     public LCSProblem(final String filename) throws IOException {
@@ -266,9 +266,9 @@ public class LCSProblem implements Problem<LCSState> {
      * If no such character exists, a special value {@link #GO_TO_END_OF_STRINGS} is returned.
      * </p>
      *
-     * @param state The current LCS state.
-     * @param var   Index of the variable to decide (unused, all positions considered).
-     * @return An iterator over valid next character IDs.
+     * @param state the current LCS state
+     * @param var   index of the variable to decide (unused, all positions considered)
+     * @return an iterator over valid next character IDs
      */
     @Override
     public Iterator<Integer> domain(LCSState state, int var) {
@@ -299,9 +299,9 @@ public class LCSProblem implements Problem<LCSState> {
     /**
      * Computes the next state resulting from applying a decision at the current state.
      *
-     * @param state    The current LCS state.
-     * @param decision The decision applied.
-     * @return The next LCS state after the decision.
+     * @param state    the current LCS state
+     * @param decision the decision applied
+     * @return the next LCS state after the decision
      */
     @Override
     public LCSState transition(LCSState state, Decision decision) {
@@ -324,9 +324,9 @@ public class LCSProblem implements Problem<LCSState> {
      * if no character is selected (end of strings).
      * </p>
      *
-     * @param state    The current LCS state.
-     * @param decision The decision applied.
-     * @return The cost associated with the transition.
+     * @param state    the current LCS state
+     * @param decision the decision applied
+     * @return the cost associated with the transition
      */
     @Override
     public double transitionCost(LCSState state, Decision decision) {

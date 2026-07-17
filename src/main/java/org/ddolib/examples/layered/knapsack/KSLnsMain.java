@@ -81,6 +81,9 @@ import java.nio.file.Path;
  */
 public class KSLnsMain {
 
+    private KSLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

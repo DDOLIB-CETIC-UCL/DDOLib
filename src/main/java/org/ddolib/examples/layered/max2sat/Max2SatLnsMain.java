@@ -81,6 +81,9 @@ import java.nio.file.Path;
  */
 public class Max2SatLnsMain {
 
+    private Max2SatLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

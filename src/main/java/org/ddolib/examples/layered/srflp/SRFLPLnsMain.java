@@ -40,10 +40,13 @@ import java.nio.file.Paths;
  *
  * <p>This class does not currently implement dominance checks.</p>
  *
- * @author
  * @version 1.0
  */
 public class SRFLPLnsMain {
+
+    private SRFLPLnsMain() {
+    }
+
     /**
      * Main method to run the SRFLP LNS solver.
      *
@@ -52,7 +55,7 @@ public class SRFLPLnsMain {
      *                 <li>{@code args[0]}: path to the SRFLP instance file (default: {@code data/SRFLP/simple})</li>
      *                 <li>{@code args[1]}: maximum width for the width heuristic (default: 50)</li>
      *             </ol>
-     * @throws IOException if there is an error reading the instance file.
+     * @throws IOException if there is an error reading the instance file
      */
     public static void main(String[] args) throws IOException {
         final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :

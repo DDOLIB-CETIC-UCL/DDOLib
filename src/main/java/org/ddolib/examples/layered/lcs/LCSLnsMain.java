@@ -81,6 +81,9 @@ import java.nio.file.Path;
  */
 public class LCSLnsMain {
 
+    private LCSLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

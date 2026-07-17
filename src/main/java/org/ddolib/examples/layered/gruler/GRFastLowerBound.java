@@ -12,6 +12,11 @@ import java.util.Set;
  */
 public class GRFastLowerBound implements FastLowerBound<GRState> {
 
+    /**
+     * Creates a new instance of this fast lower bound.
+     */
+    public GRFastLowerBound() {
+    }
 
     @Override
     public double fastLowerBound(GRState state, Set<Integer> variables) {

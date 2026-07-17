@@ -32,6 +32,13 @@ import java.util.Arrays;
  * @see StateRanking
  */
 public class PSRanking implements StateRanking<PSState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public PSRanking() {
+    }
+
     /**
      * Compares two PSP states based on their total remaining demand.
      * <p>

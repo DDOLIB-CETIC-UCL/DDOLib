@@ -16,6 +16,14 @@ public class SubProblem<T> {
     private final double h; // heuristic cost to target
     private final List<Integer> path; // sequence of labels applied
 
+    /**
+     * Creates a new subproblem.
+     *
+     * @param state the state of this subproblem
+     * @param g     the cost of the path from the initial state to this state
+     * @param h     the fast lower bound estimating the cost from this state to a target state
+     * @param path  the sequence of labels applied from the initial state to reach this state
+     */
     public SubProblem(T state, double g, double h, List<Integer> path) {
         this.state = state;
         this.g = g;
@@ -23,22 +31,47 @@ public class SubProblem<T> {
         this.path = path;
     }
 
+    /**
+     * Returns the state of this subproblem.
+     *
+     * @return the state of this subproblem
+     */
     public T getState() {
         return state;
     }
 
+    /**
+     * Returns the cost of the path from the initial state to this state.
+     *
+     * @return the cost of the path from the initial state to this state
+     */
     public double getValue() {
         return g;
     }
 
+    /**
+     * Returns the fast lower bound estimating the cost from this state to a target state.
+     *
+     * @return the fast lower bound estimating the cost from this state to a target state
+     */
     public double getLowerBound() {
         return h;
     }
 
+    /**
+     * Returns the {@code f = g + h} value of this subproblem, used to order the search.
+     *
+     * @return the {@code f = g + h} value of this subproblem
+     */
     public double f() {
         return g + h;
     }
 
+    /**
+     * Returns the sequence of labels applied from the initial state to reach this state.
+     *
+     * @return an unmodifiable view of the sequence of labels applied to reach this state
+     */
     public List<Integer> getPath() {
         return Collections.unmodifiableList(path);
     }

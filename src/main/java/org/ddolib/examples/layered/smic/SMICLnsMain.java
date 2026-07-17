@@ -39,16 +39,19 @@ import java.nio.file.Path;
  *
  * <p>The final solution and statistics are printed to {@code System.out}.</p>
  *
- * @author
  * @version 1.0
  */
 public class SMICLnsMain {
+
+    private SMICLnsMain() {
+    }
+
     /**
      * Main method to run the SMIC LNS solver.
      *
-     * @param args optional command-line argument specifying the path to the SMIC instance file.
+     * @param args optional command-line argument specifying the path to the SMIC instance file
      *             If omitted, the default instance {@code data/SMIC/data10_1.txt} is used.
-     * @throws IOException if there is an error reading the instance file.
+     * @throws IOException if there is an error reading the instance file
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];

@@ -31,6 +31,15 @@ import java.nio.file.Path;
  */
 public final class LCSAcsMain {
 
+    private LCSAcsMain() {
+    }
+
+    /**
+     * Entry point of the ACS demonstration for the Longest Common Subsequence problem.
+     *
+     * @param args command-line arguments (optional: instance file path)
+     * @throws IOException if the instance file cannot be read
+     */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("src", "test", "resources", "LCS", "LCS_3_3_10_test.txt").toString() : args[0];
         final LCSProblem problem = new LCSProblem(instance);

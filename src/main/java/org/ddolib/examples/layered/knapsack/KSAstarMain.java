@@ -30,6 +30,10 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSAstarMain {
+
+    private KSAstarMain() {
+    }
+
     /**
      * Entry point of the A* demonstration for the Knapsack Problem.
      *

@@ -54,6 +54,10 @@ import java.nio.file.Path;
  * @see Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)
  */
 public class SMICDdoMain {
+
+    private SMICDdoMain() {
+    }
+
     /**
      * Entry point of the SMIC solver using the Dynamic Decision Diagram Optimization (DDO) algorithm.
      * Initializes the problem instance, builds the DDO model, and executes the optimization.
@@ -61,7 +65,7 @@ public class SMICDdoMain {
      * @param args command-line arguments; the first argument may specify the path
      *             to the SMIC instance file. If omitted, the default instance
      *             {@code data/SMIC/data10_2.txt} is used.
-     * @throws IOException if an error occurs while reading the instance file.
+     * @throws IOException if an error occurs while reading the instance file
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SMIC", "example.txt").toString() : args[0];

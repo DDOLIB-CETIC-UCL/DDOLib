@@ -37,10 +37,13 @@ import java.nio.file.Path;
  * <p>The search is limited to 1000 milliseconds per iteration, and the best
  * solution found is printed to {@link System#out} along with statistics.</p>
  *
- * @author
  * @version 1.0
  */
 public class TSPTWLnsMain {
+
+    private TSPTWLnsMain() {
+    }
+
     /**
      * Main method to run the TSPTW LNS solver.
      *
@@ -49,7 +52,7 @@ public class TSPTWLnsMain {
      *                 <li>{@code args[0]}: path to the TSPTW instance file
      *                 (default: {@code data/TSPTW/AFG/rbg010a.tw})</li>
      *             </ul>
-     * @throws IOException if there is an error reading the instance file.
+     * @throws IOException if there is an error reading the instance file
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];

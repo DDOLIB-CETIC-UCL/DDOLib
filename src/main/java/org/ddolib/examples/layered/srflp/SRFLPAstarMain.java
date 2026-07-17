@@ -47,6 +47,17 @@ import java.nio.file.Paths;
  * @see Solvers
  */
 public class SRFLPAstarMain {
+
+    private SRFLPAstarMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a {@link SRFLPProblem} instance and solves it using
+     * the A* algorithm.
+     *
+     * @param args optional command-line argument specifying the path to the SRFLP instance file
+     * @throws IOException if there is an error reading the instance file
+     */
     public static void main(String[] args) throws IOException {
         final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :
                 args[0];

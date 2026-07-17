@@ -78,7 +78,7 @@ public final class ExactSolver<T> implements Solver {
     /**
      * Creates a fully-configured ExactSolver instance.
      *
-     * @param model The {@link DdoModel} containing all necessary parameters and heuristics
+     * @param model the {@link DdoModel} containing all necessary parameters and heuristics
      *              to configure the solver, including the problem, relaxation, ranking,
      *              variable heuristic, lower bound, dominance checker, caching, and verbosity settings.
      */

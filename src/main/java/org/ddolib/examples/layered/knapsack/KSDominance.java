@@ -19,6 +19,13 @@ import org.ddolib.layered.modeling.Dominance;
  * </ul>
  */
 public class KSDominance implements Dominance<Integer> {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+    public KSDominance() {
+    }
+
     /**
      * Returns the key used for grouping states in the dominance checker.
      *

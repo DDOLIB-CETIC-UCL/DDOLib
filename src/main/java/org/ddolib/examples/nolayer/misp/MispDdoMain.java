@@ -18,8 +18,25 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * The Maximum Independent Set Problem (MISP) with Ddo.
+ * Entry point for solving the Maximum Independent Set Problem (MISP) using a Decision Diagram
+ * Optimization (DDO) solver, in the no-layer modeling API.
+ */
 public class MispDdoMain {
 
+    private MispDdoMain() {
+    }
+
+    /**
+     * Main method to execute the DDO solver on a given MISP instance.
+     * <p>
+     * If no command-line argument is provided, a default instance
+     * <code>data/MISP/tadpole_4_2.dot</code> is used.
+     *
+     * @param args optional command-line arguments; args[0] can be the path to the MISP instance file
+     * @throws IOException if there is an error reading the problem instance from the file
+     */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Path.of("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
         final MispProblem problem = MispProblem.fromFile(instance);

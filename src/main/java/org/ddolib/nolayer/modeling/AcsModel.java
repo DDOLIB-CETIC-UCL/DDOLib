@@ -29,8 +29,8 @@ public interface AcsModel<T> extends Model<T> {
     /**
      * Returns a copy of this model but with another column width.
      *
-     * @param width The column width to use.
-     * @return A copy of this model but with another column width.
+     * @param width the column width to use
+     * @return a copy of this model but with another column width
      */
     default AcsModel<T> setColumnWidth(int width) {
         return new AcsModel<T>() {

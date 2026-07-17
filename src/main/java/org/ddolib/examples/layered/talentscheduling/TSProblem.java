@@ -69,12 +69,12 @@ public class TSProblem implements Problem<TSState> {
     /**
      * Constructs a TSP instance from explicit parameters.
      *
-     * @param nbScene  Number of scenes.
-     * @param nbActors Number of actors.
-     * @param costs    Array containing the cost of each actor per day.
-     * @param duration Array containing the duration of each scene.
-     * @param actors   Array of BitSets representing the actors required for each scene.
-     * @param optimal  Optional value of the optimal solution, if known.
+     * @param nbScene  number of scenes
+     * @param nbActors number of actors
+     * @param costs    array containing the cost of each actor per day
+     * @param duration array containing the duration of each scene
+     * @param actors   array of BitSets representing the actors required for each scene
+     * @param optimal  Optional value of the optimal solution, if known
      */
     public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional<Double> optimal) {
         this.nbScene = nbScene;
@@ -89,8 +89,8 @@ public class TSProblem implements Problem<TSState> {
     /**
      * Constructs a TSP instance by reading a file in the standard dataset format.
      *
-     * @param fname Path to the input file.
-     * @throws IOException If an I/O error occurs while reading the file.
+     * @param fname path to the input file
+     * @throws IOException if an I/O error occurs while reading the file
      */
     public TSProblem(String fname) throws IOException {
         int nbScenes = 0;
@@ -261,6 +261,12 @@ public class TSProblem implements Problem<TSState> {
         return value;
     }
 
+    /**
+     * Computes the total cost per day of all actors required to perform a given scene.
+     *
+     * @param scene the index of the scene
+     * @return the sum of the daily costs of the actors involved in {@code scene}
+     */
     public int sceneCost(int scene) {
         int sum = 0;
         for (int actor = this.actors[scene].nextSetBit(0); actor >= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {
@@ -273,8 +279,8 @@ public class TSProblem implements Problem<TSState> {
      * Returns the set of actors already present on location at the current state,
      * i.e., actors involved in past scenes and needed for future scenes.
      *
-     * @param state Current state of the MDD.
-     * @return BitSet of actors currently on location.
+     * @param state current state of the MDD
+     * @return BitSet of actors currently on location
      */
     public BitSet onLocationActors(TSState state) {
         BitSet before = new BitSet(); //Actors for past scenes
@@ -290,6 +296,14 @@ public class TSProblem implements Problem<TSState> {
         return after;
     }
 
+    /**
+     * Returns the set of actors already present on location, i.e., actors involved in past
+     * scenes and needed for future scenes, given explicit remaining and maybe scene sets.
+     *
+     * @param remainingScenes the scenes that still need to be scheduled
+     * @param maybeScenes     the scenes that may or may not still need to be scheduled
+     * @return the BitSet of actors currently on location
+     */
     public BitSet onLocationActors(BitSet remainingScenes, BitSet maybeScenes) {
         BitSet before = new BitSet(); //Actors for past scenes
         BitSet after = new BitSet(); // Actors for future scenes

@@ -41,6 +41,8 @@ public interface Solver {
                       BiConsumer<List<Integer>, SearchStatistics> onSolution);
 
     /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
      * @return the value of the best solution in this decision diagram if there is one
      */
     Optional<Double> bestValue();
@@ -48,7 +50,7 @@ public interface Solver {
     /**
      * Returns the ordered list of labels leading to the best solution from the initial state.
      *
-     * @return the ordered list of labels leading to the best solution from the initial state.
+     * @return the ordered list of labels leading to the best solution from the initial state
      */
     List<Integer> bestSolution();
 

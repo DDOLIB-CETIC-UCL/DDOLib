@@ -43,7 +43,7 @@ import static java.lang.Math.min;
  *     <li>Can report search statistics and provide the best solution found at any time.</li>
  * </ul>
  *
- * @param <T> The type representing a state in the problem.
+ * @param <T> the type representing a state in the problem
  * @see Solver
  * @see Problem
  * @see FastLowerBound
@@ -111,7 +111,7 @@ public final class AcsSolver<T> implements Solver {
      *     <li>{@link VerbosityLevel} for debug/logging</li>
      * </ul>
      *
-     * @param model Provides all parameters needed to configure the solver
+     * @param model provides all parameters needed to configure the solver
      */
     public AcsSolver(AcsModel<T> model) {
         this.problem = model.problem();

@@ -30,30 +30,34 @@ import java.io.IOException;
  * easily modified to experiment with different instances.
  */
 public class MaxCoverDdoMainWithCluster {
+
+    private MaxCoverDdoMainWithCluster() {
+    }
+
+    /**
+     * Program entry point.
+     *
+     * <p>
+     * This method:
+     * <ol>
+     *   <li>Creates an instance of the MaxCover problem</li>
+     *   <li>Builds a DDO model by defining:
+     *     <ul>
+     *       <li>the problem to solve</li>
+     *       <li>the relaxation used during search</li>
+     *       <li>the state ranking strategy</li>
+     *       <li>the width heuristic (fixed width in this example)</li>
+     *       <li>a fast lower bound</li>
+     *     </ul>
+     *   </li>
+     *   <li>Runs the DDO solver in minimization mode</li>
+     *   <li>Prints the intermediate and final solutions</li>
+     * </ol>
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if an error occurs while loading a problem instance from a file
+     */
     public static void main(String[] args) throws IOException {
-        /**
-         * Program entry point.
-         *
-         * <p>
-         * This method:
-         * <ol>
-         *   <li>Creates an instance of the MaxCover problem</li>
-         *   <li>Builds a DDO model by defining:
-         *     <ul>
-         *       <li>the problem to solve</li>
-         *       <li>the relaxation used during search</li>
-         *       <li>the state ranking strategy</li>
-         *       <li>the width heuristic (fixed width in this example)</li>
-         *       <li>a fast lower bound</li>
-         *     </ul>
-         *   </li>
-         *   <li>Runs the DDO solver in minimization mode</li>
-         *   <li>Prints the intermediate and final solutions</li>
-         * </ol>
-         *
-         * @param args command-line arguments (not used)
-         * @throws IOException if an error occurs while loading a problem instance from a file
-         */
         MaxCoverProblem problem = new MaxCoverProblem(30, 30, 7, 0.1, 42);
         // MaxCoverProblem problem = new MaxCoverProblem(10, 10, 5,0.1,42);
 

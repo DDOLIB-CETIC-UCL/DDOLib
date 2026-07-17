@@ -31,14 +31,21 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see MSCTRelax
  */
 public class MSCTRanking implements StateRanking<MSCTState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public MSCTRanking() {
+    }
+
     /**
      * Compares two scheduling states according to their current completion time.
      * <p>
      * The state with the smaller {@code currentTime} is ranked higher (considered better).
      * </p>
      *
-     * @param s1 the first state to compare.
-     * @param s2 the second state to compare.
+     * @param s1 the first state to compare
+     * @param s2 the second state to compare
      * @return a negative integer if {@code s1} should be ranked before {@code s2},
      * zero if both states have the same rank,
      * or a positive integer if {@code s1} should be ranked after {@code s2}.

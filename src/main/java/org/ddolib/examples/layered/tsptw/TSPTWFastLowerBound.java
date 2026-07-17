@@ -39,7 +39,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
     /**
      * Constructs a fast lower bound calculator for a given TSPTW problem instance.
      *
-     * @param problem The TSPTW problem instance.
+     * @param problem the TSPTW problem instance
      */
     public TSPTWFastLowerBound(TSPTWProblem problem) {
         this.problem = problem;
@@ -61,9 +61,9 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
      * </ul>
      * The calculation respects the time window constraints; if a tour is infeasible, {@code INFINITY} is returned.
      *
-     * @param state     The current state in the TSPTW problem.
-     * @param variables The set of unassigned variables (nodes) to consider for the lower bound.
-     * @return A fast lower bound on the tour cost from the current state, or {@link Integer#MAX_VALUE} if infeasible.
+     * @param state     the current state in the TSPTW problem
+     * @param variables the set of unassigned variables (nodes) to consider for the lower bound
+     * @return a fast lower bound on the tour cost from the current state, or {@link Integer#MAX_VALUE} if infeasible
      */
     @Override
     public double fastLowerBound(TSPTWState state, Set<Integer> variables) {
@@ -125,7 +125,7 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
     /**
      * Precomputes the cheapest outgoing edge for each node in the problem.
      *
-     * @return An array where {@code cheapestEdges[i]} is the minimum distance from node {@code i} to any other node.
+     * @return an array where {@code cheapestEdges[i]} is the minimum distance from node {@code i} to any other node
      */
     private int[] precomputeCheapestEdges() {
         int[] toReturn = new int[numVar];

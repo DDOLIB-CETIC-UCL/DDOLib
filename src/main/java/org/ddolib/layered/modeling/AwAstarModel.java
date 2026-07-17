@@ -30,8 +30,8 @@ public interface AwAstarModel<T> extends Model<T> {
     /**
      * Returns a copy of this model but with another weight.
      *
-     * @param w The weight to use.
-     * @return a copy of this model but with another weight.
+     * @param w the weight to use
+     * @return a copy of this model but with another weight
      */
     default AwAstarModel<T> setWeight(double w) {
         return new AwAstarModel<>() {

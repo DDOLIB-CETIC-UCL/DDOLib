@@ -69,6 +69,9 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      */
     public final Set<Integer> unrelatedNodes;
 
+    /**
+     * Time window associated to each node.
+     */
     public final TimeWindow[] timeWindows;
 
     /**
@@ -88,6 +91,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
      * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
      * @param maxCapa                    maximum capacity of the vehicle
      * @param timeWindows                the time window associated to each node
+     * @param aKnownSolutionValue        an optional known solution value of the instance
+     * @param strengthenTimeWindows      whether the time windows should be strengthened at construction time
      */
     public PDPTWProblem(final double[][] timeMatrix,
                         HashMap<Integer, Integer> pickupToAssociatedDelivery,
@@ -200,6 +205,10 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         myBoundCalculator = new PDPTWFastLowerBound(this);
     }
 
+    /**
+     * Strengthens the time windows of pickup and delivery nodes using the precedence
+     * and travel time relations between each pickup and its associated delivery.
+     */
     public void strengthenTimeWindows() {
 
         int deadlineStrengthen = 0;
@@ -236,6 +245,12 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
     }
 
+    /**
+     * Saves this PDPTW instance to a file in the format expected by {@link #PDPTWProblem(String)}.
+     *
+     * @param fname the path to the output file
+     * @throws IOException if an I/O error occurs while writing the file
+     */
     public void saveToFile(String fname) throws IOException {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {
@@ -306,6 +321,12 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                 timeWindows[0].start(), timeWindows[0].start());
     }
 
+    /**
+     * Builds a singleton {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned set
+     * @return a new {@link BitSet} with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(n);
         toReturn.set(singletonValue);

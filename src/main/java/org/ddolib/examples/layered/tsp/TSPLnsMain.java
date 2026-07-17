@@ -40,10 +40,13 @@ import java.nio.file.Paths;
  *
  * <p>This implementation does not include dominance checks.</p>
  *
- * @author
  * @version 1.0
  */
 public class TSPLnsMain {
+
+    private TSPLnsMain() {
+    }
+
     /**
      * Main method to run the TSP LNS solver.
      *
@@ -52,7 +55,7 @@ public class TSPLnsMain {
      *                 <li>{@code args[0]}: path to the TSP instance file
      *                 (default: {@code data/TSP/instance_18_0.xml})</li>
      *             </ul>
-     * @throws IOException if there is an error reading the instance file.
+     * @throws IOException if there is an error reading the instance file
      */
     public static void main(final String[] args) throws IOException {
         String instance = args.length == 0 ? Paths.get("data", "TSP", "instance_18_0.xml").toString() : args[0];

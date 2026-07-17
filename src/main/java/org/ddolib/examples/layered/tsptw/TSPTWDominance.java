@@ -18,12 +18,19 @@ import org.ddolib.layered.modeling.Dominance;
  * </p>
  */
 public class TSPTWDominance implements Dominance<TSPTWState> {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+    public TSPTWDominance() {
+    }
+
     /**
      * Returns the dominance key for a given state, based on its current position
      * and the set of locations that still must be visited.
      *
-     * @param state The state for which to compute the dominance key.
-     * @return The {@link TSPTWDominanceKey} representing the key of this state.
+     * @param state the state for which to compute the dominance key
+     * @return the {@link TSPTWDominanceKey} representing the key of this state
      */
     @Override
     public TSPTWDominanceKey getKey(TSPTWState state) {
@@ -39,9 +46,9 @@ public class TSPTWDominance implements Dominance<TSPTWState> {
      * greater than or equal to that of {@code state2}.
      * </p>
      *
-     * @param state1 The state being tested for dominance.
-     * @param state2 The state to compare against.
-     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise.
+     * @param state1 the state being tested for dominance
+     * @param state2 the state to compare against
+     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(TSPTWState state1, TSPTWState state2) {

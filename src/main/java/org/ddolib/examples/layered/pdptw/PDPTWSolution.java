@@ -6,10 +6,24 @@ import org.ddolib.layered.solver.Solution;
  * Pretty-printer wrapper for PDPTW solutions.
  */
 public class PDPTWSolution {
+    /**
+     * The sequence of visited nodes composing the solution.
+     */
     public int[] solution;
+    /**
+     * The value (cost) associated to this solution.
+     */
     public double value;
     PDPTWProblem problem;
 
+    /**
+     * Wraps a raw solver {@link Solution} together with the problem it was found for,
+     * to enable pretty-printing.
+     *
+     * @param problem  the PDPTW problem the solution was found for
+     * @param solution the raw solution returned by the solver
+     * @param value    the value (cost) associated to this solution
+     */
     public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {
         this.problem = problem;
         this.solution = solution.solution();

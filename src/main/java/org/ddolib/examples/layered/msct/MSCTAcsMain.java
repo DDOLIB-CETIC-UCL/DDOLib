@@ -29,6 +29,10 @@ import java.nio.file.Path;
  * {@code data/MSCT/msct1.txt} is used.
  */
 public class MSCTAcsMain {
+
+    private MSCTAcsMain() {
+    }
+
     /**
      * Entry point for running the ACS solver on an MSCT instance.
      *

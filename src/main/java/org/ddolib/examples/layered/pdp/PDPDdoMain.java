@@ -78,6 +78,10 @@ import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
  * @see CutSetType
  */
 public final class PDPDdoMain {
+
+    private PDPDdoMain() {
+    }
+
     /**
      * Entry point for solving a randomly generated Pickup and Delivery Problem (PDP)
      * instance using the <b>Dynamic Decision Diagram Optimization (DDO)</b> method.

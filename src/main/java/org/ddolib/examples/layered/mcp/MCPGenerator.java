@@ -12,13 +12,16 @@ import java.util.stream.Collectors;
  */
 public class MCPGenerator {
 
+    private MCPGenerator() {
+    }
+
     /**
      * Generates a random adjacency matrix.
      *
-     * @param numNodes       The number of nodes expected in the graph.
-     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
-     * @param seed           The seed by the random number generator.
-     * @return A random matrix generator.
+     * @param numNodes       the number of nodes expected in the graph
+     * @param connectedProba each pair of node has a probability of {@code 1 / connectedProba} to not be connected
+     * @param seed           the seed by the random number generator
+     * @return a random matrix generator
      */
     private static int[][] generateRandomAdjacencyMatrix(int numNodes, int connectedProba, long seed) {
         int[][] matrix = new int[numNodes][numNodes];
@@ -39,13 +42,13 @@ public class MCPGenerator {
     /**
      * Randomly generates and save instance of MCP into the given file.
      *
-     * @param fileName       The file where saving the instance.
-     * @param numNodes       The number of nodes of the associated graph.
-     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
-     * @param solve          Whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
+     * @param fileName       the file where saving the instance
+     * @param numNodes       the number of nodes of the associated graph
+     * @param connectedProba each pair of node has a probability of {@code 1 / connectedProba} to not be connected
+     * @param solve          whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
      *                       set to {@code true} only on small instances.
-     * @param seed           The seed used by the random number generator.
-     * @throws IOException If something goes wrong while writing files.
+     * @param seed           the seed used by the random number generator
+     * @throws IOException if something goes wrong while writing files
      */
     public static void writeRandomInstance(String fileName, int numNodes, int connectedProba, boolean solve, long seed) throws IOException {
         int[][] matrix = generateRandomAdjacencyMatrix(numNodes, connectedProba, seed);
@@ -70,12 +73,12 @@ public class MCPGenerator {
     /**
      * Randomly generates and save instance of MCP into the given file.
      *
-     * @param fileName       The file where saving the instance.
-     * @param numNodes       The number of nodes of the associated graph.
-     * @param connectedProba Each pair of node has a probability of {@code 1 / connectedProba} to not be connected.
-     * @param solve          Whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
+     * @param fileName       the file where saving the instance
+     * @param numNodes       the number of nodes of the associated graph
+     * @param connectedProba each pair of node has a probability of {@code 1 / connectedProba} to not be connected
+     * @param solve          whether the optimal solution must be computed and saved. Warning, the problem is solved naively. Be sure the
      *                       set to {@code true} only on small instances.
-     * @throws IOException If something goes wrong while writing files.
+     * @throws IOException if something goes wrong while writing files
      */
     public static void writeRandomInstance(String fileName, int numNodes, int connectedProba, boolean solve) throws IOException {
         Random rng = new Random();

@@ -16,6 +16,12 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
     private final double[] leastIncidentEdge;
     PDPTWProblem problem;
 
+    /**
+     * Builds a fast lower bound calculator for the given PDPTW problem, precomputing
+     * the least incident edge of every node.
+     *
+     * @param problem the PDPTW problem to compute lower bounds for
+     */
     public PDPTWFastLowerBound(PDPTWProblem problem) {
         this.problem = problem;
         this.leastIncidentEdge = new double[problem.n];
@@ -36,6 +42,14 @@ public class PDPTWFastLowerBound implements FastLowerBound<PDPTWState> {
     }
 
 
+    /**
+     * Computes a fast lower bound on the remaining cost from the given state.
+     *
+     * @param state                  the current state
+     * @param nbUnassignedVariables  the number of variables (nodes) still to visit, including the final return to the depot
+     * @return the lower bound on the remaining cost, or {@link Double#POSITIVE_INFINITY} if no
+     * feasible completion respecting the time windows exists
+     */
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
         BitSet toVisit = state.allToVisit;
 

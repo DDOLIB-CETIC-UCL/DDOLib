@@ -13,6 +13,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class KSRanking implements StateRanking<Integer> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public KSRanking() {
+    }
+
     /**
      * Compares two states based on their remaining capacity.
      *

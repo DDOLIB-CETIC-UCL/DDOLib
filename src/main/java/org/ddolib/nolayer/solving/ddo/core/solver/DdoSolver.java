@@ -20,6 +20,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * Implementation of the DDO (Decision Diagram Optimization) branch-and-bound solver for no-layer
+ * models.
+ * <p>
+ * The solver maintains a frontier of subproblems ordered by lower bound and, for each of them,
+ * compiles a relaxed then (if needed) a restricted decision diagram to respectively bound and
+ * improve the incumbent solution.
+ *
+ * @param <T> the type of states handled by the model
+ */
 public final class DdoSolver<T> implements Solver {
 
     private final Problem<T> problem;
@@ -34,6 +44,11 @@ public final class DdoSolver<T> implements Solver {
     private double bestUB;
     private Optional<Set<Decision>> bestSol;
 
+    /**
+     * Creates a new DDO solver for the given model.
+     *
+     * @param model the model to solve
+     */
     public DdoSolver(DdoModel<T> model) {
         this.model = model;
         this.problem = model.problem();

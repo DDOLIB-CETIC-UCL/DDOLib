@@ -26,6 +26,13 @@ import org.ddolib.layered.modeling.Dominance;
  * @see Dominance
  */
 public class BKSDominance implements Dominance<Integer> {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+    public BKSDominance() {
+    }
+
     /**
      * Returns the dominance key for a given state.
      * <p>
@@ -33,8 +40,8 @@ public class BKSDominance implements Dominance<Integer> {
      * meaning that dominance comparisons are applied globally without grouping.
      * </p>
      *
-     * @param capa The state or capacity value for which the key is requested.
-     * @return Always returns {@code 0}, indicating no partitioning by key.
+     * @param capa the state or capacity value for which the key is requested
+     * @return always returns {@code 0}, indicating no partitioning by key
      */
     @Override
     public Integer getKey(Integer capa) {
@@ -48,9 +55,9 @@ public class BKSDominance implements Dominance<Integer> {
      * to {@code capa2} if it is strictly smaller.
      * </p>
      *
-     * @param capa1 The first capacity (potentially dominated).
-     * @param capa2 The second capacity (potential dominator).
-     * @return {@code true} if {@code capa1 <= capa2}, {@code false} otherwise.
+     * @param capa1 the first capacity (potentially dominated)
+     * @param capa2 the second capacity (potential dominator)
+     * @return {@code true} if {@code capa1 <= capa2}, {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {

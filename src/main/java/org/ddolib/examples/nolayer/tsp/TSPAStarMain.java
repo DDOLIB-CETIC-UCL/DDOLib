@@ -6,7 +6,21 @@ import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
 import java.util.Optional;
 
+/**
+ * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer
+ * A* algorithm.
+ */
 public class TSPAStarMain {
+
+    private TSPAStarMain() {
+    }
+
+    /**
+     * Entry point of the program. Generates a small random TSP instance and solves it using
+     * the A* algorithm.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         // Generate a small random TSP instance
         TSPGenerator generator = new TSPGenerator(12, 42, 100); // Use a small size for fast execution

@@ -10,6 +10,19 @@ import org.ddolib.layered.modeling.StateRanking;
  */
 public class MCPRanking implements StateRanking<MCPState> {
 
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public MCPRanking() {
+    }
+
+    /**
+     * Computes the ranking value of a state, defined as the sum of the absolute value of the net
+     * benefit of each variable not yet assigned.
+     *
+     * @param state the state to rank
+     * @return the ranking value of the state
+     */
     public static int rank(MCPState state) {
         int toReturn = 0;
         for (int i = state.depth(); i < state.netBenefit().size(); i++) {

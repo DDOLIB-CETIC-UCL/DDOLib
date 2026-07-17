@@ -24,6 +24,13 @@ import java.util.Set;
  * @see java.util.Set
  */
 public final class DefaultVariableHeuristic<T> implements VariableHeuristic<T> {
+
+    /**
+     * Creates a new instance of this default variable heuristic.
+     */
+    public DefaultVariableHeuristic() {
+    }
+
     /**
      * Returns the next variable to branch on by selecting the first element
      * from the set of remaining variables.

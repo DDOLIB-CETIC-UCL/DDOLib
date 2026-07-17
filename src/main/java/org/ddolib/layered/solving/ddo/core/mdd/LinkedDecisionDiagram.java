@@ -392,7 +392,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
      *
-     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS.
+     * @return a double, minimum lower bound of expanded nodes of the MDD for the LNS
      */
 
     @Override
@@ -899,9 +899,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * Given a node, returns the .dot formatted string containing the node and the edges leading to this node.
      *
-     * @param node      The node to add to the .dot string
-     * @param lastLayer Whether the given node is in the last layer. Used to give it a dedicated format.
-     * @return A .dot formatted string containing the node and the edges leading to this node.
+     * @param node      the node to add to the .dot string
+     * @param lastLayer whether the given node is in the last layer. Used to give it a dedicated format
+     * @return a .dot formatted string containing the node and the edges leading to this node
      */
     private StringBuilder generateDotStr(NodeSubProblem<T> node, boolean lastLayer) {
         DecimalFormat df = new DecimalFormat("#.##########");
@@ -941,7 +941,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * Given the hashcode of an edge, updates its color. Used when the best solution is constructed.
      *
-     * @param edgeHash The hashcode of the edge to color.
+     * @param edgeHash the hashcode of the edge to color
      * @param color    HTML string for the color of the edge
      */
     private void updateBestEdgeColor(int edgeHash, String color) {
@@ -1033,7 +1033,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * Given a node, returns the list of decisions taken from the root to reach this node.
      *
      * @param node A node of the mdd
-     * @return The list of decisions took from the root to reach the input node.
+     * @return the list of decisions took from the root to reach the input node
      */
     private LinkedList<PathInfo> constructPathFromRoot(Node node, double lengthToEnd) {
         LinkedList<PathInfo> path = new LinkedList<>();
@@ -1054,9 +1054,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * Given a list of decisions returns string describing the states from root.
      *
-     * @param pathFromRoot A list of decision.
-     * @param problem      The problem linked to this mdd.
-     * @return A list of decisions of the generated states from root.
+     * @param pathFromRoot a list of decision
+     * @param problem      the problem linked to this mdd
+     * @return a list of decisions of the generated states from root
      */
     private LinkedList<String> constructStateDescriptionFromRoot(LinkedList<PathInfo> pathFromRoot,
                                                                  Problem<T> problem) {
@@ -1246,8 +1246,8 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /**
      * Returns the set of decision leading the root to the input node.
      *
-     * @param node The target node.
-     * @return The set of decision leading the root to the input node.
+     * @param node the target node
+     * @return the set of decision leading the root to the input node
      */
     private Set<Decision> constructPathToRoot(Node node) {
         Edge eb = node.best;

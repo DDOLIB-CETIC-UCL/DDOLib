@@ -373,6 +373,12 @@ public class PDPProblem implements Problem<PDPState> {
         return value;
     }
 
+    /**
+     * Builds a singleton {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned set
+     * @return a new {@link BitSet} with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(n);
         toReturn.set(singletonValue);

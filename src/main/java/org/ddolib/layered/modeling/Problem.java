@@ -21,6 +21,8 @@ import java.util.Optional;
  */
 public interface Problem<T> {
     /**
+     * Returns the total number of decision variables in this problem.
+     *
      * @return the total number of decision variables in this problem
      */
     int nbVars();
@@ -88,9 +90,9 @@ public interface Problem<T> {
      * <p>
      * <b>Note:</b> For maximization problems, the returned value is minus the computed value.
      *
-     * @param solution A solution of the problem.
-     * @return The value of the input solution
-     * @throws InvalidSolutionException If the solution does not respect problem's constraints.
+     * @param solution a solution of the problem
+     * @return the value of the input solution
+     * @throws InvalidSolutionException if the solution does not respect the problem's constraints
      */
     double evaluate(final int[] solution) throws InvalidSolutionException;
 

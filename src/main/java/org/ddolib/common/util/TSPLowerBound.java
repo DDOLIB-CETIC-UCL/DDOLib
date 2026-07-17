@@ -18,6 +18,9 @@ import java.util.Set;
  */
 public class TSPLowerBound {
 
+    private TSPLowerBound() {
+    }
+
     /**
      * Computes a lower-bound for all subsets of a set of nodes based on the given cost matrix.
      * <p>

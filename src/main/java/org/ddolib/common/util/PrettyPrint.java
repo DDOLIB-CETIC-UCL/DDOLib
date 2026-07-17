@@ -7,6 +7,9 @@ import java.time.Duration;
  */
 public final class PrettyPrint {
 
+    private PrettyPrint() {
+    }
+
     /**
      * Formats a duration in milliseconds into a human-readable string.
      * The format includes hours, minutes, seconds, and milliseconds as needed (e.g., " 1 h 12 min 30 sec 500 ms").

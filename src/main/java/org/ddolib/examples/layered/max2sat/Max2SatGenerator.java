@@ -10,14 +10,17 @@ import java.util.*;
  */
 public class Max2SatGenerator {
 
+    private Max2SatGenerator() {
+    }
+
     /**
      * Generates and writes a random instance of the Max2Sat.
      *
-     * @param fileName  The file to save the instance.
-     * @param numVar    The number of variables in the problem.
-     * @param nbClauses The number of disjunctive clauses in the problem.
-     * @param seed      The seed of the random number generator.
-     * @throws IOException If something goes wrong while writing the file.
+     * @param fileName  the file to save the instance
+     * @param numVar    the number of variables in the problem
+     * @param nbClauses the number of disjunctive clauses in the problem
+     * @param seed      the seed of the random number generator
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void generateRandomInstance(String fileName,
                                               int numVar,
@@ -61,10 +64,10 @@ public class Max2SatGenerator {
     /**
      * Generates and writes a random instance of the Max2Sat.
      *
-     * @param fileName  The file to save the instance.
-     * @param numVar    The number of variables in the problem.
-     * @param nbClauses The number of disjunctive clauses in the problem.
-     * @throws IOException If something goes wrong while writing the file.
+     * @param fileName  the file to save the instance
+     * @param numVar    the number of variables in the problem
+     * @param nbClauses the number of disjunctive clauses in the problem
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void generateRandomInstance(String fileName, int numVar, int nbClauses) throws IOException {
         Random random = new Random();
@@ -75,6 +78,13 @@ public class Max2SatGenerator {
         generateRandomInstance(fileName, numVar, nbClauses, random.nextLong());
     }
 
+    /**
+     * Entry point of the program. Generates a random Max2Sat instance with 42 variables and 500
+     * clauses and writes it to {@code data/Max2Sat/wcnf_var_42.txt}.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if something goes wrong while writing the file
+     */
     public static void main(String[] args) throws IOException {
         generateRandomInstance("data/Max2Sat/wcnf_var_42.txt", 42, 500, 42);
     }

@@ -48,6 +48,10 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSDdoMainWithCluster {
+
+    private KSDdoMainWithCluster() {
+    }
+
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
      *

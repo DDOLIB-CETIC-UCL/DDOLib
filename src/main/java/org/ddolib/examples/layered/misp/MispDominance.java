@@ -13,6 +13,13 @@ import java.util.BitSet;
  * </p>
  */
 public class MispDominance implements Dominance<BitSet> {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+    public MispDominance() {
+    }
+
     /**
      * Returns a key for the dominance relation.
      * <p>

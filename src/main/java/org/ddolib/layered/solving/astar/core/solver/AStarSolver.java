@@ -78,6 +78,11 @@ public final class AStarSolver<T> implements Solver {
     // If set, this keeps the info about the best solution so far.
     private Optional<Set<Decision>> bestSol;
 
+    /**
+     * Creates a new A* solver for the given model.
+     *
+     * @param model the model to solve
+     */
     public AStarSolver(Model<T> model) {
         this.problem = model.problem();
         this.varh = model.variableHeuristic();
@@ -99,8 +104,8 @@ public final class AStarSolver<T> implements Solver {
      * search. For testing purpose, this constructor assumes that the path to the given node has
      * 0 length.
      *
-     * @param model   All parameters needed ton configure the solver.
-     * @param rootKey The state and the depth from which start the search.
+     * @param model   all parameters needed ton configure the solver
+     * @param rootKey the state and the depth from which start the search
      */
     private AStarSolver(
             Model<T> model,
@@ -210,9 +215,9 @@ public final class AStarSolver<T> implements Solver {
      * Construct the root of a problem given the state, the value and the depth of the root node.
      * A non-zero depth is used for debug. For debug, the value of root is 0.
      *
-     * @param state The states of the current root.
-     * @param value The value of the current root.
-     * @param depth Used only for debug. The depth of the subproblem root in the main search.
+     * @param state the states of the current root
+     * @param value the value of the current root
+     * @param depth used only for debug. The depth of the subproblem root in the main search
      * @return the root subproblem
      */
     private SubProblem<T> constructRoot(T state, double value, int depth) {

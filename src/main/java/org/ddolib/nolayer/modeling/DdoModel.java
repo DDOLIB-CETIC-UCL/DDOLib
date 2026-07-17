@@ -40,6 +40,8 @@ public interface DdoModel<T> extends Model<T> {
 
     /**
      * Strategy to select which nodes should be merged together on a relaxed DD.
+     *
+     * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy<T> relaxStrategy() {
         return new CostBased<>((o1, o2) -> 0);
@@ -47,6 +49,8 @@ public interface DdoModel<T> extends Model<T> {
 
     /**
      * Strategy to select which nodes should be dropped on a restricted DD.
+     *
+     * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy<T> restrictStrategy() {
         return new CostBased<>((o1, o2) -> 0);

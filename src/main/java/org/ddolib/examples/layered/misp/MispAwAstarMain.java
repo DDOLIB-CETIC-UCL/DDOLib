@@ -28,6 +28,10 @@ import java.util.BitSet;
  * </p>
  */
 public final class MispAwAstarMain {
+
+    private MispAwAstarMain() {
+    }
+
     /**
      * Main method to execute the AWA* solver on a MISP instance.
      * <p>

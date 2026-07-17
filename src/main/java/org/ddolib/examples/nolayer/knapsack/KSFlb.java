@@ -5,10 +5,24 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ * Fast lower bound for the Knapsack Problem (KS), using the no-layer modeling API.
+ * <p>
+ * The bound is computed by a fractional-relaxation greedy heuristic: remaining items are
+ * sorted by decreasing profit-to-weight ratio and packed into the remaining capacity,
+ * allowing the last item to be split fractionally. The negated value of this greedy
+ * profit is returned, consistently with the library's minimization convention.
+ * </p>
+ */
 public class KSFlb implements FastLowerBound<KSState> {
 
     private final KSProblem problem;
 
+    /**
+     * Creates a new fast lower bound for the given knapsack instance.
+     *
+     * @param problem the knapsack instance to bound
+     */
     public KSFlb(KSProblem problem) {
         this.problem = problem;
     }

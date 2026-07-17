@@ -32,6 +32,9 @@ import static java.lang.Math.max;
  */
 public class PDPTWGenerator {
 
+    private PDPTWGenerator() {
+    }
+
     /**
      * Generates a random PDP instance with the given parameters.
      * <p>
@@ -39,11 +42,12 @@ public class PDPTWGenerator {
      * The distance between nodes is computed using Euclidean distance.
      * </p>
      *
-     * @param n         the total number of nodes in the PDP instance
-     * @param unrelated the number of nodes that are not part of any pickup-delivery pair
-     *                  (there may be one more unrelated node than specified)
-     * @param maxCapa   the maximum capacity of the vehicle
-     * @param random    a {@link Random} object used for generating coordinates
+     * @param n                     the total number of nodes in the PDP instance
+     * @param unrelated             the number of nodes that are not part of any pickup-delivery pair
+     *                              (there may be one more unrelated node than specified)
+     * @param maxCapa               the maximum capacity of the vehicle
+     * @param random                a {@link Random} object used for generating coordinates
+     * @param strengthenTimeWindows whether the generated time windows should be strengthened
      * @return a {@link PDPProblem} instance representing the generated PDP
      */
     public static PDPTWProblem genInstance(int n, int unrelated, int maxCapa, Random random, Boolean strengthenTimeWindows) {
@@ -185,12 +189,12 @@ public class PDPTWGenerator {
      * This method explicitly builds a valid optimal route (respecting capacity and precedence)
      * before computing time windows, ensuring the optimal solution is exact and known.
      *
-     * @param n                     Total number of nodes
-     * @param unrelated             Number of unrelated nodes
-     * @param maxCapa               Maximum capacity of the vehicle
-     * @param random                Random object for reproducibility
-     * @param strengthenTimeWindows Option to strengthen time windows
-     * @return The PDPTW problem instance
+     * @param n                     total number of nodes
+     * @param unrelated             number of unrelated nodes
+     * @param maxCapa               maximum capacity of the vehicle
+     * @param random                random object for reproducibility
+     * @param strengthenTimeWindows option to strengthen time windows
+     * @return the PDPTW problem instance
      */
     public static PDPTWProblem constructInstanceWithSolution(int n, int unrelated, int maxCapa, Random random, Boolean strengthenTimeWindows) {
 

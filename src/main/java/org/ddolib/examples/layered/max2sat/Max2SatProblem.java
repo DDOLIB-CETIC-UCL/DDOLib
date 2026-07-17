@@ -65,9 +65,9 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     /**
      * Constructs a MAX2SAT problem instance.
      *
-     * @param numVar  Number of decision variables.
-     * @param weights Map of binary clauses to their weights.
-     * @param optimal Optional known optimal value.
+     * @param numVar  number of decision variables
+     * @param weights map of binary clauses to their weights
+     * @param optimal optional known optimal value
      */
     public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights,
                           Optional<Double> optimal) {
@@ -90,8 +90,8 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      *   </li>
      * </ul>
      *
-     * @param fname Path to the input file.
-     * @throws IOException if the file cannot be read.
+     * @param fname path to the input file
+     * @throws IOException if the file cannot be read
      */
     public Max2SatProblem(String fname) throws IOException {
         int n = 0;

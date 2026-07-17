@@ -37,6 +37,13 @@ import org.ddolib.layered.modeling.SimpleDominanceChecker;
  * @see SMICDdoMain
  */
 public class SMICDominance implements Dominance<SMICState> {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+    public SMICDominance() {
+    }
+
     /**
      * Returns a key used to group comparable states.
      * <p>

@@ -30,6 +30,10 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSAcsMain {
+
+    private KSAcsMain() {
+    }
+
     /**
      * Entry point of the ACS demonstration for the Knapsack Problem.
      *

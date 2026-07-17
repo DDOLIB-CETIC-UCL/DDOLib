@@ -11,6 +11,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * are considered "smaller" and ranked lower.
  */
 public class MaxCoverRanking implements StateRanking<MaxCoverState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public MaxCoverRanking() {
+    }
+
     /**
      * Compares two MaxCover states based on the number of items they cover.
      *

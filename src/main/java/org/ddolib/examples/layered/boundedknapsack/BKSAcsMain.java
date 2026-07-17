@@ -17,6 +17,10 @@ import org.ddolib.common.util.io.SolutionPrinter;
  * </p>
  */
 public class BKSAcsMain {
+
+    private BKSAcsMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

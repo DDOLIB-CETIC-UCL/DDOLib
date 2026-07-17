@@ -21,6 +21,10 @@ import org.ddolib.common.util.io.SolutionPrinter;
  * </p>
  */
 public class BKSDdoMain {
+
+    private BKSDdoMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

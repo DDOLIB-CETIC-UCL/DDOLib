@@ -24,6 +24,10 @@ import java.io.IOException;
  * </ul>
  */
 public class GRAcsMain {
+
+    private GRAcsMain() {
+    }
+
     /**
      * Main entry point of the program.
      * <p>

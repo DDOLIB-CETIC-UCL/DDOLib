@@ -18,6 +18,10 @@ import java.io.IOException;
  * </p>
  */
 public class GRDdoMain {
+
+    private GRDdoMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

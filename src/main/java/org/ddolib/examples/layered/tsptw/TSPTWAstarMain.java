@@ -46,12 +46,15 @@ import java.nio.file.Path;
  */
 public class TSPTWAstarMain {
 
+    private TSPTWAstarMain() {
+    }
+
     /**
      * Entry point for running the A* solver on a TSPTW instance.
      *
-     * @param args Optional command-line arguments:
+     * @param args optional command-line arguments:
      *             the first argument can be the path to a TSPTW instance file.
-     * @throws IOException If there is an error reading the input instance file.
+     * @throws IOException if there is an error reading the input instance file
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "TSPTW", "AFG", "rbg010a.tw").toString() : args[0];

@@ -10,16 +10,19 @@ import java.util.Random;
  */
 public class LCSGenerator {
 
+    private LCSGenerator() {
+    }
+
     /**
      * Generates and saves a random instance of the LCS
      *
-     * @param fileName     The file to save the instance
-     * @param nbString     How many strings to generate.
-     * @param nbChar       How many characters can be used to generate the string.
-     * @param minStrLength The inclusive minimal size of the generated strings.
-     * @param maxStrLength The exclusive maximal size of the generated strings.
-     * @param seed         The seed of the random number generator.
-     * @throws IOException If something goes wrong while writing the file.
+     * @param fileName     the file to save the instance
+     * @param nbString     how many strings to generate
+     * @param nbChar       how many characters can be used to generate the string
+     * @param minStrLength the inclusive minimal size of the generated strings
+     * @param maxStrLength the exclusive maximal size of the generated strings
+     * @param seed         the seed of the random number generator
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void generateRandomInstance(String fileName,
                                               int nbString,
@@ -45,6 +48,13 @@ public class LCSGenerator {
     }
 
 
+    /**
+     * Entry point that generates a default random LCS instance and writes it to a file
+     * under {@code data/LCS/}.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if the generated instance file cannot be written
+     */
     public static void main(String[] args) throws IOException {
         int nbString = 10;
         int nbChar = 5;

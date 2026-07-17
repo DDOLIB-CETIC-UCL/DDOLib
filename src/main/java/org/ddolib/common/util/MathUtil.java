@@ -9,6 +9,9 @@ package org.ddolib.common.util;
  */
 public class MathUtil {
 
+    private MathUtil() {
+    }
+
     /**
      * Performs a saturated addition of two double values.
      * <p>

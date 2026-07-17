@@ -27,8 +27,8 @@ public class VerboseMode {
      * Creates a {@code VerboseMode} instance with a given verbosity level
      * and interval for printing frontier statistics.
      *
-     * @param verbosityLevel The level of details to print.
-     * @param printInterval  The minimum delay (in milliseconds) between
+     * @param verbosityLevel the level of details to print
+     * @param printInterval  the minimum delay (in milliseconds) between
      *                       consecutive prints of frontier statistics.
      */
     public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {
@@ -40,7 +40,7 @@ public class VerboseMode {
     /**
      * Prints message when a new best solution is found.
      *
-     * @param best The value of the new best solution.
+     * @param best the value of the new best solution
      */
     public void newBest(double best) {
         if (verbosityLevel != VerbosityLevel.SILENT) {
@@ -56,9 +56,9 @@ public class VerboseMode {
     /**
      * Prints message describing the current explored sub problem.
      *
-     * @param nbIter The current iteration number.
-     * @param sub    The current sub problem to explore.
-     * @param <T>    The type of the state.
+     * @param nbIter the current iteration number
+     * @param sub    the current sub problem to explore
+     * @param <T>    the type of the state
      */
     public <T> void currentSubProblem(int nbIter, SubProblem<T> sub) {
         if (verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) {
@@ -75,11 +75,11 @@ public class VerboseMode {
     /**
      * Prints statistics about the frontier after every half second.
      *
-     * @param nbIter         The current iteration number.
-     * @param frontierSize   The current size of the frontier.
-     * @param bestObj        The current best objective value.
-     * @param bestInFrontier The best value in the frontier
-     * @param gap            The current gap0
+     * @param nbIter         the current iteration number
+     * @param frontierSize   the current size of the frontier
+     * @param bestObj        the current best objective value
+     * @param bestInFrontier the best value in the frontier
+     * @param gap            the current gap0
      */
     public void detailedSearchState(int nbIter, int frontierSize, double bestObj,
                                     double bestInFrontier, double gap) {
@@ -104,7 +104,7 @@ public class VerboseMode {
     /**
      * Returns a writer depending on the verbosity level.
      *
-     * @return If the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
+     * @return if the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
      * saving logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs
      * in the console.
      */

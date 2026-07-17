@@ -28,6 +28,10 @@ import java.util.BitSet;
  * </p>
  */
 public final class MispDdoMain {
+
+    private MispDdoMain() {
+    }
+
     /**
      * Main method to execute the DDO solver on a MISP instance.
      * <p>

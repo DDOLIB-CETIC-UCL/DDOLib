@@ -22,6 +22,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class PDPRanking implements StateRanking<PDPState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public PDPRanking() {
+    }
+
     /**
      * Compares two PDP states to determine their relative rank.
      *

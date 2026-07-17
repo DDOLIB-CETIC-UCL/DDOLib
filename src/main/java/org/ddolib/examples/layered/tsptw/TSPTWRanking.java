@@ -18,6 +18,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class TSPTWRanking implements StateRanking<TSPTWState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public TSPTWRanking() {
+    }
+
     /**
      * Compares two {@link TSPTWState} objects based on the size of their {@code possiblyVisit} set.
      *

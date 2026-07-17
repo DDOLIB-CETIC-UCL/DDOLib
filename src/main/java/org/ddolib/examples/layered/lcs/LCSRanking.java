@@ -16,6 +16,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class LCSRanking implements StateRanking<LCSState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public LCSRanking() {
+    }
+
     /**
      * Compares two LCS states.
      * <p>
@@ -23,9 +30,9 @@ public class LCSRanking implements StateRanking<LCSState> {
      * better and will be ranked higher.
      * </p>
      *
-     * @param state1 The first LCS state to compare.
-     * @param state2 The second LCS state to compare.
-     * @return A negative integer if state1 is better, zero if equal, positive if state2 is better.
+     * @param state1 the first LCS state to compare
+     * @param state2 the second LCS state to compare
+     * @return a negative integer if state1 is better, zero if equal, positive if state2 is better
      */
     @Override
     public int compare(LCSState state1, LCSState state2) {
@@ -45,7 +52,7 @@ public class LCSRanking implements StateRanking<LCSState> {
      * Currently always returns false since ranking objects do not maintain state.
      * </p>
      *
-     * @param obj The other object to compare to.
+     * @param obj the other object to compare to
      * @return false
      */
     @Override

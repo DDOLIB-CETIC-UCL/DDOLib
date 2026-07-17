@@ -12,6 +12,12 @@ public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker<TSPSt
 
     private final Map<Integer, List<DominanceEntry>> fronts = new HashMap<>();
 
+    /**
+     * Creates a new dominance checker with an empty dominance front.
+     */
+    public TSPNoLayerDominanceChecker() {
+    }
+
     @Override
     public boolean updateDominance(TSPState state, double value) {
         BitSet toVisit = state.toVisit;

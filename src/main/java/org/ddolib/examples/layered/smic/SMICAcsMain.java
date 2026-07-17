@@ -45,6 +45,10 @@ import java.nio.file.Path;
  * @see Solvers#minimizeAcs(AcsModel, java.util.function.BiConsumer)
  */
 public class SMICAcsMain {
+
+    private SMICAcsMain() {
+    }
+
     /**
      * Entry point of the SMIC Anytime Column Search solver.
      * Initializes the problem instance, builds the ACS model,
@@ -53,7 +57,7 @@ public class SMICAcsMain {
      * @param args command-line arguments; the first argument may specify the path
      *             to the SMIC instance file. If omitted, the default instance
      *             {@code data/SMIC/data10_2.txt} is used.
-     * @throws IOException if the instance file cannot be read.
+     * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];

@@ -32,8 +32,8 @@ import java.util.Set;
  * // Output: RemainingJobs [0, 1, 2] ----> currentTime 5
  * }</pre>
  *
- * @param remainingJobs the set of job indices that have not yet been scheduled.
- * @param currentTime   the current time (sum of processing times of scheduled jobs).
+ * @param remainingJobs the set of job indices that have not yet been scheduled
+ * @param currentTime   the current time (sum of processing times of scheduled jobs)
  * @see MSCTProblem
  * @see MSCTRelax
  * @see MSCTRanking
@@ -45,7 +45,7 @@ public record MSCTState(Set<Integer> remainingJobs, int currentTime) {
      * The output includes the list of remaining jobs and the current simulation time.
      * </p>
      *
-     * @return a formatted string describing this state.
+     * @return a formatted string describing this state
      */
     @Override
     public String toString() {

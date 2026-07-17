@@ -17,6 +17,13 @@ import java.util.BitSet;
  */
 
 public class MispRanking implements StateRanking<BitSet> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public MispRanking() {
+    }
+
     /**
      * Compares two states based on the number of remaining nodes.
      *

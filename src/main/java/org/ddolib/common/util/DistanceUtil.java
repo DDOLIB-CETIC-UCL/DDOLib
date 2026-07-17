@@ -9,6 +9,10 @@ import static java.lang.Math.*;
  */
 public class DistanceUtil {
 
+    private DistanceUtil() {
+        // utility class, not meant to be instantiated
+    }
+
     /**
      * Computes the Jaccard Distance between the two given sets.
      *
@@ -106,8 +110,9 @@ public class DistanceUtil {
     /**
      * Computes the weighted symmetric difference between a and b
      *
-     * @param a the first set
-     * @param b the second set
+     * @param a       the first set
+     * @param b       the second set
+     * @param weights the weight of each element in a and b
      * @return the weighted symmetric difference between a and b
      */
     public static double weightedSymmetricDifferenceDistance(BitSet a, BitSet b, double[] weights) {

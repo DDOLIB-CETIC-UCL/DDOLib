@@ -81,6 +81,9 @@ import java.nio.file.Path;
  */
 public class MCPLnsMain {
 
+    private MCPLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

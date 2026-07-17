@@ -25,6 +25,13 @@ import java.util.Arrays;
  * @see StateRanking
  */
 public class ALPRanking implements StateRanking<ALPState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public ALPRanking() {
+    }
+
     /**
      * Compares two ALP states according to the number of remaining aircraft
      * and the sum of runway previous landing times.

@@ -13,6 +13,19 @@ import org.ddolib.layered.modeling.StateRanking;
  */
 public class Max2SatRanking implements StateRanking<Max2SatState> {
 
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public Max2SatRanking() {
+    }
+
+    /**
+     * Computes the ranking value of a state, defined as the sum of the absolute value of the net
+     * benefit of each variable not yet assigned.
+     *
+     * @param state the state to rank
+     * @return the ranking value of the state
+     */
     public static int rank(Max2SatState state) {
         int toReturn = 0;
         for (int i = state.depth(); i < state.netBenefit().size(); i++) {

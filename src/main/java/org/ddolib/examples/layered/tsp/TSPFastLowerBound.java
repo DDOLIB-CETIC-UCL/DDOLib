@@ -36,7 +36,7 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     /**
      * Constructs a fast lower bound calculator for the given TSP problem.
      *
-     * @param problem The TSP problem instance containing the distance matrix.
+     * @param problem the TSP problem instance containing the distance matrix.
      *                It is assumed that the matrix is symmetric and distances are non-negative.
      */
     public TSPFastLowerBound(TSPProblem problem) {
@@ -60,9 +60,9 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
      * including the starting node to account for returning to the origin.
      * </p>
      *
-     * @param state               The current state of the tour, containing the set of nodes yet to visit.
-     * @param unassignedVariables The set of variables (nodes) not yet assigned in the tour.
-     * @return A fast-computed lower bound on the remaining tour cost.
+     * @param state               the current state of the tour, containing the set of nodes yet to visit
+     * @param unassignedVariables the set of variables (nodes) not yet assigned in the tour
+     * @return a fast-computed lower bound on the remaining tour cost
      */
     @Override
     public double fastLowerBound(TSPState state, Set<Integer> unassignedVariables) {

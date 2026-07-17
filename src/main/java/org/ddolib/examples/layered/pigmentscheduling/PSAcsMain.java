@@ -29,6 +29,10 @@ import java.nio.file.Path;
  * {@code data/PSP/instancesWith2items/10} is used.
  */
 public class PSAcsMain {
+
+    private PSAcsMain() {
+    }
+
     /**
      * Entry point of the program.
      *

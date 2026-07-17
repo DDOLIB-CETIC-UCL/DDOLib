@@ -21,9 +21,21 @@ import java.util.Random;
  * @see Decision
  */
 public class BKSProblem implements Problem<Integer> {
+    /**
+     * The total capacity of the knapsack.
+     */
     public final int capacity;
+    /**
+     * The profit (value) of each item.
+     */
     public final int[] values;
+    /**
+     * The weight of each item.
+     */
     public final int[] weights;
+    /**
+     * The maximum available quantity of each item.
+     */
     public final int[] quantities;
 
     /**
@@ -228,9 +240,21 @@ public class BKSProblem implements Problem<Integer> {
      * weights and profits when generating random instances.
      */
     public enum InstanceType {
-        UNCORRELATED, // Profit and weight are independent
-        WEAKLY_CORRELATED, //Profits roughly follow weights, but not exactly
-        STRONGLY_CORRELATED, // Profit = weight + constant
-        SUBSET_SUM // Profits exactly equal weights
+        /**
+         * Profit and weight are independent.
+         */
+        UNCORRELATED,
+        /**
+         * Profits roughly follow weights, but not exactly.
+         */
+        WEAKLY_CORRELATED,
+        /**
+         * Profit = weight + constant.
+         */
+        STRONGLY_CORRELATED,
+        /**
+         * Profits exactly equal weights.
+         */
+        SUBSET_SUM
     }
 }

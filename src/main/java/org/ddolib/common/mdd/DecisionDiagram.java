@@ -118,5 +118,12 @@ public interface DecisionDiagram<T> {
      */
     int nbNodes();
 
+    /**
+     * Returns the minimum lower bound among the nodes expanded during the compilation of this
+     * decision diagram, mainly used to compute the optimality gap during a large neighborhood
+     * search.
+     *
+     * @return the minimum lower bound of the expanded nodes
+     */
     double minLowerBound();
 }

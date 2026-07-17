@@ -75,7 +75,7 @@ import java.util.function.Predicate;
  *   <li>Set the verbosity level in {@link DdoModel} for detailed runtime logging.</li>
  * </ul>
  *
- * @param <T> The type representing a problem state.
+ * @param <T> the type representing a problem state
  * @see ExactSolver
  * @see DdoModel
  * @see Problem
@@ -158,7 +158,7 @@ public final class SequentialSolver<T> implements Solver {
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
      *
-     * @param model All the parameters needed to configure the solver.
+     * @param model all the parameters needed to configure the solver
      */
     public SequentialSolver(DdoModel<T> model) {
         this.problem = model.problem();
@@ -365,7 +365,7 @@ public final class SequentialSolver<T> implements Solver {
      * @param type        the type of the compilation (restricted or relaxed)
      * @param sub         the root of the current sub-problem
      * @param maxWidth    the max width of the diagram
-     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */
     private CompilationConfig<T> configureCompilation(CompilationType type, SubProblem<T> sub,

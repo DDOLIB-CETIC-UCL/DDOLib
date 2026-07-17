@@ -46,7 +46,7 @@ public class GRProblem implements Problem<GRState> {
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and no known optimal value.
      *
-     * @param n the number of marks to place on the ruler.
+     * @param n the number of marks to place on the ruler
      */
     public GRProblem(int n) {
         this.n = n;
@@ -55,8 +55,8 @@ public class GRProblem implements Problem<GRState> {
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and a known optimal length.
      *
-     * @param n       the number of marks to place on the ruler.
-     * @param optimal the known optimal length of the ruler.
+     * @param n       the number of marks to place on the ruler
+     * @param optimal the known optimal length of the ruler
      */
     public GRProblem(int n, double optimal) {
         this.n = n;
@@ -66,7 +66,7 @@ public class GRProblem implements Problem<GRState> {
     /**
      * Returns a human-readable representation of the problem instance.
      *
-     * @return a string describing the Golomb Ruler instance.
+     * @return a string describing the Golomb Ruler instance
      */
     @Override
     public String toString() {
@@ -77,7 +77,7 @@ public class GRProblem implements Problem<GRState> {
      * Returns the number of variables in the problem.
      * For a ruler with {@code n} marks, there are {@code n - 1} decision variables.
      *
-     * @return the number of decision variables.
+     * @return the number of decision variables
      */
     @Override
     public int nbVars() {
@@ -87,7 +87,7 @@ public class GRProblem implements Problem<GRState> {
     /**
      * Returns the initial state of the problem, containing only the first mark at position 0.
      *
-     * @return the initial {@link GRState}.
+     * @return the initial {@link GRState}
      */
     @Override
     public GRState initialState() {
@@ -100,7 +100,7 @@ public class GRProblem implements Problem<GRState> {
     /**
      * Returns the initial cost (always 0).
      *
-     * @return the initial cost value.
+     * @return the initial cost value
      */
     @Override
     public double initialValue() {
@@ -114,9 +114,9 @@ public class GRProblem implements Problem<GRState> {
      * duplicates an already existing distance.
      * </p>
      *
-     * @param state the current state of the ruler.
-     * @param var   the index of the variable being expanded.
-     * @return an iterator over the feasible next mark positions.
+     * @param state the current state of the ruler
+     * @param var   the index of the variable being expanded
+     * @return an iterator over the feasible next mark positions
      */
     @Override
     public Iterator<Integer> domain(GRState state, int var) {
@@ -135,9 +135,9 @@ public class GRProblem implements Problem<GRState> {
      * The new state updates the set of marks and the set of pairwise distances.
      * </p>
      *
-     * @param state    the current state.
-     * @param decision the decision representing the position of the new mark.
-     * @return a new {@link GRState} representing the updated configuration.
+     * @param state    the current state
+     * @param decision the decision representing the position of the new mark
+     * @return a new {@link GRState} representing the updated configuration
      */
     @Override
     public GRState transition(GRState state, Decision decision) {
@@ -165,9 +165,9 @@ public class GRProblem implements Problem<GRState> {
      * and the previous one.
      * </p>
      *
-     * @param state    the current state.
-     * @param decision the decision leading to the next mark placement.
-     * @return the incremental cost, equal to {@code decision.val() - state.getLastMark()}.
+     * @param state    the current state
+     * @param decision the decision leading to the next mark placement
+     * @return the incremental cost, equal to {@code decision.val() - state.getLastMark()}
      */
     @Override
     public double transitionCost(GRState state, Decision decision) {

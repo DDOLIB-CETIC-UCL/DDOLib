@@ -10,19 +10,37 @@ public class NaiveMax2SatSolver {
     private int[] _bestSolution;
 
 
+    /**
+     * Creates a new naive solver for the given Max2Sat instance.
+     *
+     * @param problem the Max2Sat instance to solve
+     */
     public NaiveMax2SatSolver(Max2SatProblem problem) {
         this.problem = problem;
         _bestSolution = new int[problem.nbVars()];
     }
 
+    /**
+     * Returns the best value found so far.
+     *
+     * @return the best value found so far
+     */
     public int best() {
         return _best;
     }
 
+    /**
+     * Returns the best solution found so far.
+     *
+     * @return the best solution found so far
+     */
     public int[] bestSolution() {
         return _bestSolution;
     }
 
+    /**
+     * Enumerates all possible assignments and keeps track of the best one.
+     */
     public void maximize() {
         int[][] solutions = generatesBinaryValues(problem.nbVars());
         for (int[] sol : solutions) {

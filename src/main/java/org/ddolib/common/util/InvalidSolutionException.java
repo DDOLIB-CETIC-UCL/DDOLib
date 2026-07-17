@@ -5,6 +5,12 @@ package org.ddolib.common.util;
  * respect the problem's constraints.
  */
 public class InvalidSolutionException extends Exception {
+
+    /**
+     * Creates a new exception with the given detail message.
+     *
+     * @param message the detail message describing why the solution is invalid
+     */
     public InvalidSolutionException(String message) {
         super(message);
     }

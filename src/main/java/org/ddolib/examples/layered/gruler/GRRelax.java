@@ -38,6 +38,12 @@ import java.util.Iterator;
  */
 public class GRRelax implements Relaxation<GRState> {
     /**
+     * Creates a new instance of this relaxation.
+     */
+    public GRRelax() {
+    }
+
+    /**
      * Merges several {@link GRState} objects into a single relaxed state.
      * <p>
      * The resulting state contains:
@@ -48,8 +54,8 @@ public class GRRelax implements Relaxation<GRState> {
      *     <li>The smallest {@code lastMark} value among all merged states.</li>
      * </ul>
      *
-     * @param states an iterator over the states to merge.
-     * @return a new {@link GRState} representing the relaxed (merged) state.
+     * @param states an iterator over the states to merge
+     * @return a new {@link GRState} representing the relaxed (merged) state
      */
     @Override
     public GRState mergeStates(final Iterator<GRState> states) {
@@ -74,12 +80,12 @@ public class GRRelax implements Relaxation<GRState> {
      * the same value as the original transition cost.
      * </p>
      *
-     * @param from   the source state before the transition.
-     * @param to     the destination state after the transition.
-     * @param merged the merged relaxed state (unused in this relaxation).
-     * @param d      the decision made for the transition.
-     * @param cost   the original transition cost.
-     * @return the relaxed transition cost (equal to {@code cost}).
+     * @param from   the source state before the transition
+     * @param to     the destination state after the transition
+     * @param merged the merged relaxed state (unused in this relaxation)
+     * @param d      the decision made for the transition
+     * @param cost   the original transition cost
+     * @return the relaxed transition cost (equal to {@code cost})
      */
     @Override
     public double relaxEdge(GRState from, GRState to, GRState merged, Decision d, double cost) {

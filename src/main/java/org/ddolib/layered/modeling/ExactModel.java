@@ -22,6 +22,11 @@ import java.util.Iterator;
  */
 public abstract class ExactModel<T> implements DdoModel<T> {
 
+    /**
+     * Creates a new exact model.
+     */
+    protected ExactModel() {
+    }
 
     @Override
     public final Relaxation<T> relaxation() {

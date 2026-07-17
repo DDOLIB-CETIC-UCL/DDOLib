@@ -28,6 +28,13 @@ import org.ddolib.layered.modeling.Dominance;
  * </pre>
  */
 public class MSCTDominance implements Dominance<MSCTState> {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+    public MSCTDominance() {
+    }
+
     /**
      * Returns a key used for grouping states before applying dominance checks.
      * <p>
@@ -36,8 +43,8 @@ public class MSCTDominance implements Dominance<MSCTState> {
      * This can be customized for efficiency in larger problems.
      * </p>
      *
-     * @param state the state from which to extract the key.
-     * @return an integer key representing the group of comparable states (always {@code 0} here).
+     * @param state the state from which to extract the key
+     * @return an integer key representing the group of comparable states (always {@code 0} here)
      */
     @Override
     public Integer getKey(MSCTState state) {
@@ -56,9 +63,9 @@ public class MSCTDominance implements Dominance<MSCTState> {
      * This indicates that {@code state2} represents a better (or equivalent) scheduling situation,
      * making {@code state1} redundant in the search process.
      *
-     * @param state1 the first state to test for dominance.
-     * @param state2 the second state, potentially dominating the first.
-     * @return {@code true} if {@code state1} is dominated or equal to {@code state2}; {@code false} otherwise.
+     * @param state1 the first state to test for dominance
+     * @param state2 the second state, potentially dominating the first
+     * @return {@code true} if {@code state1} is dominated or equal to {@code state2}; {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(MSCTState state1, MSCTState state2) {
