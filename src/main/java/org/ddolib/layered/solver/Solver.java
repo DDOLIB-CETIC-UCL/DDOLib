@@ -40,6 +40,8 @@ public interface Solver {
                       BiConsumer<int[], SearchStatistics> onSolution);
 
     /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
      * @return the value of the best solution in this decision diagram if there is one
      */
     Optional<Double> bestValue();

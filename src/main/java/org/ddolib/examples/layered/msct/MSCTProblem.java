@@ -90,9 +90,9 @@ public class MSCTProblem implements Problem<MSCTState> {
      * Constructs an MSCT problem from explicit arrays of release and processing times,
      * with an optional known optimal value.
      *
-     * @param release    an array of release times for each job.
-     * @param processing an array of processing times for each job.
-     * @param optimal    an {@link Optional} containing the known optimal solution value.
+     * @param release    an array of release times for each job
+     * @param processing an array of processing times for each job
+     * @param optimal    an {@link Optional} containing the known optimal solution value
      */
     public MSCTProblem(final int[] release, final int[] processing, Optional<Double> optimal) {
         this.release = release;
@@ -107,8 +107,8 @@ public class MSCTProblem implements Problem<MSCTState> {
      * and then one line per job with its release and processing times.
      * </p>
      *
-     * @param fname the path to the file containing the problem instance.
-     * @throws IOException if an error occurs while reading the file.
+     * @param fname the path to the file containing the problem instance
+     * @throws IOException if an error occurs while reading the file
      */
     public MSCTProblem(final String fname) throws IOException {
         boolean isFirst = true;
@@ -148,7 +148,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Constructs a randomly generated MSCT problem instance for testing purposes.
      *
-     * @param n the number of jobs to generate.
+     * @param n the number of jobs to generate
      */
     public MSCTProblem(final int n) {
         int[] release = new int[n];
@@ -167,7 +167,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Returns the number of jobs in this instance.
      *
-     * @return the number of variables (jobs).
+     * @return the number of variables (jobs)
      */
     @Override
     public int nbVars() {
@@ -177,7 +177,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Returns the initial state of the problem, where all jobs are unscheduled.
      *
-     * @return an {@link MSCTState} representing all jobs remaining and current time = 0.
+     * @return an {@link MSCTState} representing all jobs remaining and current time = 0
      */
     @Override
     public MSCTState initialState() {
@@ -204,9 +204,9 @@ public class MSCTProblem implements Problem<MSCTState> {
      * The domain corresponds to the indices of remaining jobs that can still be scheduled.
      * </p>
      *
-     * @param state the current state.
-     * @param var   the variable index (not used here but required by the interface).
-     * @return an iterator over the remaining job indices.
+     * @param state the current state
+     * @param var   the variable index (not used here but required by the interface)
+     * @return an iterator over the remaining job indices
      */
     @Override
     public Iterator<Integer> domain(MSCTState state, int var) {
@@ -216,9 +216,9 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Computes the next state resulting from scheduling a given job.
      *
-     * @param state    the current scheduling state.
-     * @param decision the decision representing the next job to schedule.
-     * @return a new {@link MSCTState} reflecting the updated remaining jobs and current time.
+     * @param state    the current scheduling state
+     * @param decision the decision representing the next job to schedule
+     * @return a new {@link MSCTState} reflecting the updated remaining jobs and current time
      */
     @Override
     public MSCTState transition(MSCTState state, Decision decision) {
@@ -234,9 +234,9 @@ public class MSCTProblem implements Problem<MSCTState> {
      * The cost corresponds to the completion time of the scheduled job.
      * </p>
      *
-     * @param state    the current scheduling state.
-     * @param decision the decision representing the next job to schedule.
-     * @return the completion time of the selected job.
+     * @param state    the current scheduling state
+     * @param decision the decision representing the next job to schedule
+     * @return the completion time of the selected job
      */
     @Override
     public double transitionCost(MSCTState state, Decision decision) {
@@ -246,7 +246,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Returns the known optimal value of this instance, if available.
      *
-     * @return the negated optimal value wrapped in an {@link Optional}, or empty if unknown.
+     * @return the negated optimal value wrapped in an {@link Optional}, or empty if unknown
      */
     @Override
     public Optional<Double> optimalValue() {
@@ -273,7 +273,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Returns a string representation of this MSCT instance for debugging purposes.
      *
-     * @return a string listing the release and processing times.
+     * @return a string listing the release and processing times
      */
     @Override
     public String toString() {

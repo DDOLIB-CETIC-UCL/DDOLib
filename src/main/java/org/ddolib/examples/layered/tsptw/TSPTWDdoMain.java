@@ -34,6 +34,9 @@ import java.nio.file.Path;
  */
 public class TSPTWDdoMain {
 
+    private TSPTWDdoMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

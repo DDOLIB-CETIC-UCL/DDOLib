@@ -21,6 +21,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see StateRanking
  */
 public class TSPRanking implements StateRanking<TSPState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public TSPRanking() {
+    }
+
     /**
      * Compares two TSP states.
      *

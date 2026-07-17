@@ -20,6 +20,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class SRFLPRanking implements StateRanking<SRFLPState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public SRFLPRanking() {
+    }
+
     /**
      * Compares two SRFLP states based on the total number of remaining departments.
      *

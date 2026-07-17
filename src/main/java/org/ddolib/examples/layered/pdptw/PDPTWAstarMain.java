@@ -61,6 +61,9 @@ import java.nio.file.Path;
  */
 public final class PDPTWAstarMain {
 
+    private PDPTWAstarMain() {
+    }
+
     /**
      * Entry point for solving a randomly generated Pickup and Delivery Problem (PDP)
      * instance using the A* algorithm.

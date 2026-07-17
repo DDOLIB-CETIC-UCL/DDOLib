@@ -17,6 +17,13 @@ import static java.lang.Math.max;
  * which is safe for optimization purposes.
  */
 public class MKSRelax implements Relaxation<MKSState> {
+
+    /**
+     * Creates a new instance of this relaxation.
+     */
+    public MKSRelax() {
+    }
+
     /**
      * Merges multiple MKS states into a single relaxed state.
      *

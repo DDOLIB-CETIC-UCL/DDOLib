@@ -7,7 +7,23 @@ import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.common.util.io.SolutionPrinter;
 
+/**
+ * Golomb Ruler Problem (GRP) with ACS.
+ * <p>
+ * This program demonstrates how to build a {@link GRProblem} instance, wrap it into an
+ * {@link AcsModel} using the no-layer framework, and solve it with the Anytime Column Search
+ * algorithm.
+ */
 public final class GRAcsMain {
+
+    private GRAcsMain() {
+    }
+
+    /**
+     * Main entry point of the program.
+     *
+     * @param args optional number of marks of the Golomb ruler; defaults to 10 if omitted
+     */
     public static void main(String[] args) {
         final int n = args.length == 0 ? 10 : Integer.parseInt(args[0]);
         final GRProblem problem = new GRProblem(n);

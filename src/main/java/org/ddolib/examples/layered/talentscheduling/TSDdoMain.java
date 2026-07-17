@@ -34,6 +34,17 @@ import java.nio.file.Paths;
  * {@code data/TalentScheduling/film-12} will be used.
  */
 public class TSDdoMain {
+
+    private TSDdoMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a {@link TSProblem} instance and solves it using
+     * the DDO algorithm.
+     *
+     * @param args optional command-line argument specifying the path to the instance file
+     * @throws IOException if there is an error reading the instance file
+     */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];
         final TSProblem problem = new TSProblem(instance);

@@ -47,7 +47,7 @@ public class MSCTRelax implements Relaxation<MSCTState> {
     /**
      * Constructs a relaxation operator for the given MSCT problem instance.
      *
-     * @param problem the instance of the {@link MSCTProblem} to which this relaxation applies.
+     * @param problem the instance of the {@link MSCTProblem} to which this relaxation applies
      */
 
     public MSCTRelax(MSCTProblem problem) {
@@ -62,8 +62,8 @@ public class MSCTRelax implements Relaxation<MSCTState> {
      * the minimum current time among them to avoid overestimating the cost.
      * </p>
      *
-     * @param states an iterator over the states to merge.
-     * @return a new {@link MSCTState} representing the relaxed merged state.
+     * @param states an iterator over the states to merge
+     * @return a new {@link MSCTState} representing the relaxed merged state
      */
     @Override
     public MSCTState mergeStates(final Iterator<MSCTState> states) {
@@ -84,12 +84,12 @@ public class MSCTRelax implements Relaxation<MSCTState> {
      * the cost remains identical to the original transition cost.
      * </p>
      *
-     * @param from   the origin state.
-     * @param to     the target state.
-     * @param merged the merged (relaxed) state resulting from the combination of states.
-     * @param d      the decision made during the transition.
-     * @param cost   the original transition cost.
-     * @return the relaxed transition cost (identical to {@code cost} here).
+     * @param from   the origin state
+     * @param to     the target state
+     * @param merged the merged (relaxed) state resulting from the combination of states
+     * @param d      the decision made during the transition
+     * @param cost   the original transition cost
+     * @return the relaxed transition cost (identical to {@code cost} here)
      */
     @Override
     public double relaxEdge(MSCTState from, MSCTState to, MSCTState merged, Decision d, double cost) {

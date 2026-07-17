@@ -52,6 +52,17 @@ import java.nio.file.Paths;
  */
 public final class SRFLPDdoMain {
 
+    private SRFLPDdoMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a {@link SRFLPProblem} instance and solves it using
+     * the DDO algorithm.
+     *
+     * @param args optional command-line arguments: the instance file path, then the maximum
+     *             decision diagram width
+     * @throws IOException if there is an error reading the instance file
+     */
     public static void main(String[] args) throws IOException {
         final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :
                 args[0];

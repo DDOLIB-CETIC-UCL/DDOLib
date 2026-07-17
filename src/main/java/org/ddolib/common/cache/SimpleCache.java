@@ -141,6 +141,13 @@ public class SimpleCache<T> implements Cache<T> {
      * @param <T> the type of state stored in the layer
      */
     public static class Layer<T> {
+
+        /**
+         * Creates a new, empty cache layer.
+         */
+        public Layer() {
+        }
+
         /**
          * Map of states to their thresholds.
          */

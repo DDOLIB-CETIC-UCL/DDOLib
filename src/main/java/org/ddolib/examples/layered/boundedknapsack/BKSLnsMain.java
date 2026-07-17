@@ -77,6 +77,9 @@ import org.ddolib.common.util.io.SolutionPrinter;
  */
 public class BKSLnsMain {
 
+    private BKSLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

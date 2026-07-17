@@ -84,6 +84,9 @@ import java.nio.file.Path;
  */
 public class ALPLnsMain {
 
+    private ALPLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

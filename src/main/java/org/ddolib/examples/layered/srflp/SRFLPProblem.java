@@ -70,10 +70,10 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * Constructs a new SRFLP instance with given lengths, flows, and optional known optimal.
      *
-     * @param lengths The lengths of the departments.
-     * @param flows   The traffic flow matrix between departments (must be symmetric).
-     * @param optimal Optional known optimal value for the instance.
-     * @throws IllegalArgumentException if flows is not symmetric.
+     * @param lengths the lengths of the departments
+     * @param flows   the traffic flow matrix between departments (must be symmetric)
+     * @param optimal Optional known optimal value for the instance
+     * @throws IllegalArgumentException if flows is not symmetric
      */
     public SRFLPProblem(int[] lengths, int[][] flows, Optional<Double> optimal) {
         this.lengths = lengths;
@@ -98,8 +98,8 @@ public class SRFLPProblem implements Problem<SRFLPState> {
      * the department lengths, and subsequent lines provide the symmetric flow matrix.
      * </p>
      *
-     * @param fname The filename to read.
-     * @throws IOException if the file cannot be read.
+     * @param fname the filename to read
+     * @throws IOException if the file cannot be read
      */
     public SRFLPProblem(String fname) throws IOException {
         int[] lengths = new int[0];
@@ -150,7 +150,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
      * Computes a constant initial value accounting for half the contribution of each
      * department pair.
      *
-     * @return The root value of the problem.
+     * @return the root value of the problem
      */
     @Override
     public SRFLPState initialState() {
@@ -162,7 +162,7 @@ public class SRFLPProblem implements Problem<SRFLPState> {
     /**
      * Returns a constant accounting for all contributions of half department lengths.
      *
-     * @return The problem's initial value
+     * @return the problem's initial value
      */
     @Override
     public double initialValue() {

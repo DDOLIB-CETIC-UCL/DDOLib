@@ -7,8 +7,15 @@ import static java.lang.Math.abs;
  * <p>
  * To symbolize a literal {@code x_i    }, for {@code i > 0}, we give the value {@code i} as
  * input. To symbolize {@code NOT x_i}, we give {@code -i}.
+ *
+ * @param i the first literal of the clause
+ * @param j the second literal of the clause
  */
 public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
+
+    /**
+     * Creates a new binary clause, checking that neither literal is {@code 0}.
+     */
     public BinaryClause {
         if (i == 0 || j == 0)
             throw new IllegalArgumentException("Id of variable in Binary clauses must be != 0");
@@ -17,9 +24,9 @@ public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
     /**
      * Evaluates if the clause is verified given 2 boolean values.
      *
-     * @param a The value to attribute to the variable {@code x_i} (0 or 1).
-     * @param b The value to attribute to the variable {@code x_j} (0 or 1).
-     * @return 1 if the clause is verified. 0 else.
+     * @param a the value to attribute to the variable {@code x_i} (0 or 1)
+     * @param b the value to attribute to the variable {@code x_j} (0 or 1)
+     * @return 1 if the clause is verified, 0 otherwise
      */
     public int eval(int a, int b) {
         int literal1 = i < 0 ? a ^ 1 : a;
@@ -59,7 +66,7 @@ public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
      *     <li>The positive literal before the negative ones.</li>
      * </ol>
      *
-     * @param other The binary clause to be compared.
+     * @param other the binary clause to be compared
      * @return <ul>
      *     <li> {@code 0} if if {@code this == other}</li>
      *     <li><code>1</code> if {@code this > other}</li>

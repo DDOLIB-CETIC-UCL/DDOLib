@@ -118,6 +118,8 @@ public interface DdoModel<T> extends Model<T> {
 
     /**
      * Strategy to select which nodes should be merged together on a relaxed DD.
+     *
+     * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy<T> relaxStrategy() {
         return new CostBased<>((o1, o2) -> 0);
@@ -125,15 +127,32 @@ public interface DdoModel<T> extends Model<T> {
 
     /**
      * Strategy to select which nodes should be dropped on a restricted DD.
+     *
+     * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy<T> restrictStrategy() {
         return new CostBased<>((o1, o2) -> 0);
     }
 
+    /**
+     * Returns the distance measure used to compare states, notably to select the neighborhood
+     * explored by a large neighborhood search.
+     *
+     * @return the {@link StateDistance} used to compare states
+     */
     default StateDistance<T> stateDistance() {
         return (o1, o2) -> 0;
     }
 
+    /**
+     * Indicates whether Large Neighborhood Search (LNS) should be used to improve the solution
+     * found by this model.
+     * <p>
+     * By default, LNS is disabled.
+     * </p>
+     *
+     * @return {@code true} if LNS is enabled, {@code false} otherwise
+     */
     default boolean useLNS() {
         return false;
     }
@@ -142,8 +161,8 @@ public interface DdoModel<T> extends Model<T> {
     /**
      * Returns a copy of this model but with a fixed width.
      *
-     * @param width The maximum width of the diagram.
-     * @return A copy of this model but with a fixed width.
+     * @param width the maximum width of the diagram
+     * @return a copy of this model but with a fixed width
      */
     default DdoModel<T> fixWidth(int width) {
         return new DdoModel<>() {
@@ -217,8 +236,8 @@ public interface DdoModel<T> extends Model<T> {
     /**
      * Returns a copy of this model by changing the {@link CutSetType}.
      *
-     * @param type The new cutset type.
-     * @return A copy of this model by changing the {@link CutSetType}.
+     * @param type the new cutset type
+     * @return a copy of this model by changing the {@link CutSetType}
      */
     default DdoModel<T> setCutSetType(CutSetType type) {
         return new DdoModel<>() {
@@ -292,8 +311,8 @@ public interface DdoModel<T> extends Model<T> {
     /**
      * Returns a copy of this model by enabling or disabling the cache.
      *
-     * @param b Whether the cache must be used.
-     * @return A copy of this model by enabling or disabling the cache.
+     * @param b whether the cache must be used
+     * @return a copy of this model by enabling or disabling the cache
      */
     default DdoModel<T> useCache(boolean b) {
         return new DdoModel<T>() {

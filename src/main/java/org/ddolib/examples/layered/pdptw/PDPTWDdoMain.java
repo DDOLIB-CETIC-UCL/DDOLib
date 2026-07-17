@@ -75,6 +75,10 @@ import java.nio.file.Paths;
  * @see CutSetType
  */
 public final class PDPTWDdoMain {
+
+    private PDPTWDdoMain() {
+    }
+
     /**
      * Entry point for solving a randomly generated Pickup and Delivery Problem (PDPTW)
      * instance using the <b>Dynamic Decision Diagram Optimization (DDO)</b> method.
@@ -85,7 +89,8 @@ public final class PDPTWDdoMain {
      * </p>
      *
      * @param args optional command-line arguments (not used in this example)
-     * @throws IOException if an error occurs during instance generation
+     * @throws IOException              if an error occurs during instance generation
+     * @throws InvalidSolutionException if the solution found by the solver does not respect the problem's constraints
      */
 
     public static void main(final String[] args) throws IOException, InvalidSolutionException {

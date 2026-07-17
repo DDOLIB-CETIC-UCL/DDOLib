@@ -7,10 +7,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This strategy selects the nodes based on the objective value of the best path leading to them.
+ * It requires a problem-specific {@link StateRanking} comparator to break the ties between states
+ * of the same cost.
+ *
+ * @param <T> the type of state
+ */
 public class CostBased<T> implements ReductionStrategy<T> {
 
     private final StateRanking<T> ranking;
 
+    /**
+     * Creates a new instance breaking ties between states of the same cost with the given ranking.
+     *
+     * @param ranking the ranking used to break ties between states of the same cost
+     */
     public CostBased(final StateRanking<T> ranking) {
         this.ranking = ranking;
     }

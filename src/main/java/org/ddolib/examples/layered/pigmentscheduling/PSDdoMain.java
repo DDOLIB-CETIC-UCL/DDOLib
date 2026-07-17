@@ -33,6 +33,10 @@ import java.nio.file.Path;
  * {@code data/PSP/instancesWith2items/10}.
  */
 public class PSDdoMain {
+
+    private PSDdoMain() {
+    }
+
     /**
      * Entry point of the program.
      * <p>
@@ -47,7 +51,7 @@ public class PSDdoMain {
      *
      * @param args optional command-line argument specifying the path to a PSP instance file.
      *             If omitted, a default instance path is used.
-     * @throws IOException if an error occurs while reading the problem instance.
+     * @throws IOException if an error occurs while reading the problem instance
      */
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "PSP", "instancesWith5items", "3").toString() : args[0];

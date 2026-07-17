@@ -48,7 +48,9 @@ import java.util.stream.IntStream;
  * @see ALPDecision
  */
 public class ALPProblem implements Problem<ALPState> {
-    // When no plane has yet landed the previous class is -1.
+    /**
+     * Value used when no plane has yet landed on a runway, i.e. the previous class is undefined.
+     */
     public static final int DUMMY = -1;
     /**
      * Number of aircraft classes.
@@ -95,14 +97,14 @@ public class ALPProblem implements Problem<ALPState> {
     /**
      * Constructs an ALP problem with the specified parameters.
      *
-     * @param nbClasses           Number of aircraft classes
-     * @param nbAircraft          Total number of aircraft
-     * @param nbRunways           Number of runways
-     * @param aircraftClass       Array mapping aircraft to class
-     * @param aircraftTarget      Target landing times
-     * @param aircraftDeadline    Deadline times
-     * @param classTransitionCost Minimum separation times between classes
-     * @param optimal             Optional optimal value
+     * @param nbClasses           number of aircraft classes
+     * @param nbAircraft          total number of aircraft
+     * @param nbRunways           number of runways
+     * @param aircraftClass       array mapping aircraft to class
+     * @param aircraftTarget      target landing times
+     * @param aircraftDeadline    deadline times
+     * @param classTransitionCost minimum separation times between classes
+     * @param optimal             optional optimal value
      */
     public ALPProblem(final int nbClasses,
                       final int nbAircraft,
@@ -130,7 +132,7 @@ public class ALPProblem implements Problem<ALPState> {
      * optionally the known optimal value, aircraft target and deadline times, and class separation costs.
      * </p>
      *
-     * @param fname Path to the input file
+     * @param fname path to the input file
      * @throws IOException if the file cannot be read
      */
 
@@ -200,10 +202,10 @@ public class ALPProblem implements Problem<ALPState> {
     /**
      * Computes the arrival time of an aircraft on a given runway.
      *
-     * @param runwayStates The current state of each runway
-     * @param aircraft     The aircraft to land
-     * @param runway       The runway index
-     * @return The computed landing time
+     * @param runwayStates the current state of each runway
+     * @param aircraft     the aircraft to land
+     * @param runway       the runway index
+     * @return the computed landing time
      */
     public int getArrivalTime(RunwayState[] runwayStates, int aircraft, int runway) {
         if (runwayStates[runway].prevClass == DUMMY) {
@@ -222,8 +224,8 @@ public class ALPProblem implements Problem<ALPState> {
     /**
      * Converts an {@link ALPDecision} to its integer representation.
      *
-     * @param decision The decision
-     * @return The integer encoding of the decision
+     * @param decision the decision
+     * @return the integer encoding of the decision
      */
     public int toDecision(ALPDecision decision) {
         return decision.aircraftClass + nbClasses * decision.runway;
@@ -232,8 +234,8 @@ public class ALPProblem implements Problem<ALPState> {
     /**
      * Restores an {@link ALPDecision} from its integer representation.
      *
-     * @param value The integer encoding
-     * @return The decoded decision
+     * @param value the integer encoding
+     * @return the decoded decision
      */
     public ALPDecision fromDecision(int value) {
         return new ALPDecision(

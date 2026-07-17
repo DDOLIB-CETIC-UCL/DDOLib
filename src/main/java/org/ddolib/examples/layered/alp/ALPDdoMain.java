@@ -35,6 +35,15 @@ import java.nio.file.Path;
  */
 public final class ALPDdoMain {
 
+    private ALPDdoMain() {
+    }
+
+    /**
+     * Loads an ALP instance, configures the DDO model, and runs the optimization procedure.
+     *
+     * @param args optional path to the ALP instance file; a default instance is used if omitted
+     * @throws IOException if the instance file cannot be read
+     */
     public static void main(final String[] args) throws IOException {
         final String fileStr = args.length == 0 ?
                 Path.of("data", "ALP", "alp_n25_r1_c2_std10_s0").toString() : args[0];

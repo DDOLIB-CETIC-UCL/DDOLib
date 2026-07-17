@@ -44,6 +44,10 @@ import java.nio.file.Path;
  * </pre>
  */
 public class MSCTDdoMain {
+
+    private MSCTDdoMain() {
+    }
+
     /**
      * Entry point of the program.
      * <p>
@@ -54,7 +58,7 @@ public class MSCTDdoMain {
      *
      * @param args optional command-line arguments; if provided, the first argument specifies
      *             the path to the instance file of the MSCT problem.
-     * @throws IOException if an error occurs while reading the problem instance file.
+     * @throws IOException if an error occurs while reading the problem instance file
      */
     public static void main(final String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "MSCT", "msct1.txt").toString() : args[0];

@@ -15,8 +15,8 @@ package org.ddolib.examples.layered.tsptw;
  * in which it can be visited or executed.
  * </p>
  *
- * @param start The beginning of the time window (inclusive).
- * @param end   The end of the time window (inclusive).
+ * @param start the beginning of the time window (inclusive)
+ * @param end   the end of the time window (inclusive)
  */
 public record TimeWindow(int start, int end) {
 }

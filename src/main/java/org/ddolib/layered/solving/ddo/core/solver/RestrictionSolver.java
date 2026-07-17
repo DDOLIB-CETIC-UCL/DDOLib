@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 /**
  * A solver that compile one relaxed MDD from the root node.
  *
- * @param <T> The type representing a problem state.
+ * @param <T> the type representing a problem state
  * @see ExactSolver
  * @see DdoModel
  * @see Problem
@@ -102,7 +102,7 @@ public final class RestrictionSolver<T> {
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
      *
-     * @param model All the parameters needed to configure the solver.
+     * @param model all the parameters needed to configure the solver
      */
     public RestrictionSolver(DdoModel<T> model) {
         this.problem = model.problem();
@@ -117,6 +117,13 @@ public final class RestrictionSolver<T> {
         this.model = model;
     }
 
+    /**
+     * Solves the model by compiling a single restricted decision diagram.
+     *
+     * @param limit      a predicate that can limit or stop the search based on current statistics
+     * @param onSolution a callback invoked once with the best solution found, if any
+     * @return the statistics of the search after completion
+     */
     public Solution minimize(Predicate<SearchStatistics> limit,
                              BiConsumer<int[], SearchStatistics> onSolution) {
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
@@ -139,6 +146,11 @@ public final class RestrictionSolver<T> {
         return new Solution(bestSolution(), statistics);
     }
 
+    /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
+     * @return the value of the best solution in the restricted decision diagram if there is one
+     */
     public Optional<Double> bestValue() {
         if (bestSol.isPresent()) {
             return Optional.of(bestUB);
@@ -147,6 +159,12 @@ public final class RestrictionSolver<T> {
         }
     }
 
+    /**
+     * Returns the set of decisions that lead to the best solution found by this solver, if any.
+     *
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
+     * or empty if no solution exists
+     */
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
@@ -192,7 +210,7 @@ public final class RestrictionSolver<T> {
      *
      * @param sub         the root of the current sub-problem
      * @param maxWidth    the max width of the diagram
-     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */
     private CompilationConfig<T> configureCompilation(SubProblem<T> sub,

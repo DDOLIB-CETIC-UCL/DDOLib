@@ -31,7 +31,7 @@ public class TSRelax implements Relaxation<TSState> {
     /**
      * Constructs a new relaxation instance for the given Talent Scheduling problem.
      *
-     * @param problem The TSP problem instance associated with this relaxation.
+     * @param problem the TSP problem instance associated with this relaxation
      */
     public TSRelax(TSProblem problem) {
         this.problem = problem;
@@ -40,8 +40,8 @@ public class TSRelax implements Relaxation<TSState> {
     /**
      * Merges multiple {@link TSState} instances into a single relaxed state.
      *
-     * @param states An iterator over the states to merge.
-     * @return A new {@link TSState} representing the merged state.
+     * @param states an iterator over the states to merge
+     * @return a new {@link TSState} representing the merged state
      */
     @Override
     public TSState mergeStates(Iterator<TSState> states) {
@@ -65,12 +65,12 @@ public class TSRelax implements Relaxation<TSState> {
      *
      * <p>In this implementation, the cost is not changed and returned as-is.</p>
      *
-     * @param from   The source state.
-     * @param to     The target state.
-     * @param merged The merged state if multiple states are combined.
-     * @param d      The decision associated with the edge.
-     * @param cost   The original edge cost.
-     * @return The relaxed edge cost (here equal to {@code cost}).
+     * @param from   the source state
+     * @param to     the target state
+     * @param merged the merged state if multiple states are combined
+     * @param d      the decision associated with the edge
+     * @param cost   the original edge cost
+     * @return the relaxed edge cost (here equal to {@code cost})
      */
     @Override
     public double relaxEdge(TSState from, TSState to, TSState merged, Decision d, double cost) {

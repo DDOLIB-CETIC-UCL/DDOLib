@@ -116,7 +116,7 @@ public interface Model<T> {
     /**
      * Returns a copy of this model but without dominance.
      *
-     * @return A copy of this model but without dominance.
+     * @return a copy of this model but without dominance
      */
     default Model<T> disableDominance() {
         return new Model<>() {
@@ -150,7 +150,7 @@ public interface Model<T> {
     /**
      * Returns a copy of this model but without {@link FastLowerBound}.
      *
-     * @return A copy of this model but without {@link FastLowerBound}.
+     * @return a copy of this model but without {@link FastLowerBound}
      */
     default Model<T> disableLowerBound() {
         return new Model<>() {

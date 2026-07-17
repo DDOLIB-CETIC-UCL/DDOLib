@@ -19,6 +19,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * Implementation of an Anytime Column Search (ACS) solver for no-layer decision diagram-based
+ * optimization problems.
+ * <p>
+ * The solver uses a lower bound and dominance rules to explore the search space efficiently. It
+ * maintains open and closed lists of subproblems organized by depth (columns) and attempts to
+ * minimize the objective function while keeping track of the best known solution (incumbent).
+ *
+ * @param <T> the type of states handled by the model
+ */
 public final class AcsSolver<T> implements Solver {
 
     private final Problem<T> problem;
@@ -35,6 +45,11 @@ public final class AcsSolver<T> implements Solver {
     private double bestUB;
     private Optional<List<Integer>> bestSol;
 
+    /**
+     * Creates a new ACS solver for the given model.
+     *
+     * @param model the model to solve
+     */
     public AcsSolver(AcsModel<T> model) {
         this.problem = model.problem();
         this.lb = model.lowerBound();

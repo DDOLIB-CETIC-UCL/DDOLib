@@ -83,17 +83,39 @@ public class PDPTWState {
         return (that.allToVisit.equals(this.allToVisit));
     }
 
+    /**
+     * Builds a singleton {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned set
+     * @return a new {@link BitSet} with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(singletonValue + 1);
         toReturn.set(singletonValue);
         return toReturn;
     }
 
+    /**
+     * Formats a possibly imprecise value as either a single number, when {@code min}
+     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     *
+     * @param min the lower bound of the value
+     * @param max the upper bound of the value
+     * @return the formatted value
+     */
     public String printInterval(double min, double max) {
         if (min == max) return "" + min;
         else return "[" + min + ";" + max + "]";
     }
 
+    /**
+     * Formats a possibly imprecise value as either a single number, when {@code min}
+     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     *
+     * @param min the lower bound of the value
+     * @param max the upper bound of the value
+     * @return the formatted value
+     */
     public String printInterval(int min, int max) {
         if (min == max) return "" + min;
         else return "[" + min + ";" + max + "]";

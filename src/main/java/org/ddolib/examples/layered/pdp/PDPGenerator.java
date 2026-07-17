@@ -31,6 +31,10 @@ import static java.lang.Math.max;
  * @see PDPProblem
  */
 public class PDPGenerator {
+
+    private PDPGenerator() {
+    }
+
     /**
      * Generates a random PDP instance with the given parameters.
      * <p>

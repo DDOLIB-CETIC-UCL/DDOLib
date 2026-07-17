@@ -17,8 +17,8 @@ import java.util.BitSet;
  * current time dominates the other, allowing pruning in the search.
  * </p>
  *
- * @param p         The current position in the tour.
- * @param mustVisit The set of locations that must still be visited.
+ * @param p         the current position in the tour
+ * @param mustVisit the set of locations that must still be visited
  */
 public record TSPTWDominanceKey(Position p, BitSet mustVisit) {
     @Override

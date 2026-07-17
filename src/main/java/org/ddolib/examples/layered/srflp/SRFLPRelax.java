@@ -32,7 +32,7 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
     /**
      * Constructs a new relaxation instance for a given SRFLP problem.
      *
-     * @param problem The SRFLP problem instance to which this relaxation applies.
+     * @param problem the SRFLP problem instance to which this relaxation applies
      */
     public SRFLPRelax(SRFLPProblem problem) {
         this.problem = problem;
@@ -52,8 +52,8 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
      *     <li>Uses the maximum depth among all merged states.</li>
      * </ul>
      *
-     * @param states An iterator over the states to merge.
-     * @return A new SRFLPState representing the merged relaxation of the input states.
+     * @param states an iterator over the states to merge
+     * @return a new SRFLPState representing the merged relaxation of the input states
      */
     @Override
     public SRFLPState mergeStates(Iterator<SRFLPState> states) {
@@ -93,12 +93,12 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
      * is returned as-is.
      * </p>
      *
-     * @param from   The source state.
-     * @param to     The target state.
-     * @param merged The merged state containing this edge.
-     * @param d      The decision taken to move from {@code from} to {@code to}.
-     * @param cost   The original cost of the edge.
-     * @return The relaxed cost of the edge, which in this case is equal to {@code cost}.
+     * @param from   the source state
+     * @param to     the target state
+     * @param merged the merged state containing this edge
+     * @param d      the decision taken to move from {@code from} to {@code to}
+     * @param cost   the original cost of the edge
+     * @return the relaxed cost of the edge, which in this case is equal to {@code cost}
      */
     @Override
     public double relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d,

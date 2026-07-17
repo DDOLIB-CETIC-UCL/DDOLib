@@ -18,6 +18,13 @@ import java.util.Iterator;
  * @see Relaxation
  */
 public class KSRelax implements Relaxation<Integer> {
+
+    /**
+     * Creates a new instance of this relaxation.
+     */
+    public KSRelax() {
+    }
+
     /**
      * Merges multiple states into a single relaxed state.
      * <p>

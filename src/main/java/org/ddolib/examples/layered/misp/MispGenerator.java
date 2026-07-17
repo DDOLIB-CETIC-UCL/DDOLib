@@ -10,15 +10,18 @@ import java.util.Random;
  */
 public class MispGenerator {
 
+    private MispGenerator() {
+    }
+
     /**
      * Generates a random instance of the MISP.
      *
-     * @param nbVars         How many nodes in the graph.
-     * @param fileName       The file to save the instance.
-     * @param connectedProba Each pair of nodes has a probability of {@code 1 / connectedProba}
+     * @param nbVars         how many nodes in the graph
+     * @param fileName       the file to save the instance
+     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba}
      *                       to <i>not</i> be connected.
-     * @param seed           The seed of the random number generator.
-     * @throws IOException If something goes wrong while writing the file
+     * @param seed           the seed of the random number generator
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void generateRandom(int nbVars, String fileName, int connectedProba, long seed) throws IOException {
         Random rng = new Random(seed);
@@ -46,11 +49,11 @@ public class MispGenerator {
     /**
      * Generates a random instance of the MISP.
      *
-     * @param nbVars         How many nodes in the graph.
-     * @param fileName       The file to save the instance.
-     * @param connectedProba Each pair of nodes has a probability of {@code 1 / connectedProba}
+     * @param nbVars         how many nodes in the graph
+     * @param fileName       the file to save the instance
+     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba}
      *                       to <i>not</i> be connected.
-     * @throws IOException If something goes wrong while writing the file
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void generateRandom(int nbVars, String fileName, int connectedProba) throws IOException {
         long seed = new Random().nextLong();
@@ -58,6 +61,13 @@ public class MispGenerator {
         generateRandom(nbVars, fileName, connectedProba, seed);
     }
 
+    /**
+     * Program entry point. Generates a single random MISP instance of 500 nodes and saves
+     * it to {@code data/MISP/500_nodes_3.dot}.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if something goes wrong while writing the file
+     */
     public static void main(String[] args) throws IOException {
         generateRandom(500, "data/MISP/500_nodes_3.dot", 42);
     }

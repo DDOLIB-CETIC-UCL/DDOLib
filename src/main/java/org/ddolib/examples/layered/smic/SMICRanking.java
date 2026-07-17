@@ -29,6 +29,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see SMICProblem
  */
 public class SMICRanking implements StateRanking<SMICState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public SMICRanking() {
+    }
+
     /**
      * Compares two {@link SMICState} instances based on their current time.
      * <p>

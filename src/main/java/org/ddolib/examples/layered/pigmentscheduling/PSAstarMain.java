@@ -27,6 +27,10 @@ import java.nio.file.Path;
  * {@code data/PSP/instancesWith2items/10} is used.
  */
 public class PSAstarMain {
+
+    private PSAstarMain() {
+    }
+
     /**
      * Entry point of the program.
      * <p>

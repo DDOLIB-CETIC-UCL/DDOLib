@@ -23,7 +23,7 @@ public class LCSState {
     /**
      * Constructs an LCS state with the given positions for each string.
      *
-     * @param position An array of integers representing the current position in each string.
+     * @param position an array of integers representing the current position in each string
      */
     LCSState(int[] position) {
         this.position = position;
@@ -32,7 +32,7 @@ public class LCSState {
     /**
      * Returns a hash code for this state, based on the positions in all strings.
      *
-     * @return hash code of the state.
+     * @return hash code of the state
      */
     @Override
     public int hashCode() {
@@ -43,8 +43,8 @@ public class LCSState {
      * Checks equality between this state and another object.
      * Two states are equal if their position arrays are identical.
      *
-     * @param obj The object to compare with.
-     * @return true if the other object is an LCSState with the same positions; false otherwise.
+     * @param obj the object to compare with
+     * @return true if the other object is an LCSState with the same positions; false otherwise
      */
     @Override
     public boolean equals(Object obj) {
@@ -61,7 +61,7 @@ public class LCSState {
      * The positions in each string are shown as an array.
      * </p>
      *
-     * @return String representation of the state.
+     * @return String representation of the state
      */
 
     @Override

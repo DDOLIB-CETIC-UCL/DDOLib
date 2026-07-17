@@ -13,6 +13,10 @@ import java.util.List;
  * along with their associated search statistics.
  */
 public class SolutionPrinter {
+
+    private SolutionPrinter() {
+    }
+
     /**
      * Prints a newly found solution and its associated statistics to the standard output.
      * <p>
@@ -26,6 +30,15 @@ public class SolutionPrinter {
         printFormatted(stats, Arrays.toString(solution));
     }
 
+    /**
+     * Prints a newly found solution and its associated statistics to the standard output.
+     * <p>
+     * This method is usually invoked each time a better solution is found during the solving
+     * process, displaying both the solver's performance information and the variable assignment.
+     *
+     * @param stats    the {@link SearchStatistics} object containing information about the current search state
+     * @param solution the list of applied labels of the new incumbent solution
+     */
     public static void printSolution(SearchStatistics stats, List<Integer> solution) {
         printFormatted(stats, solution.toString());
     }

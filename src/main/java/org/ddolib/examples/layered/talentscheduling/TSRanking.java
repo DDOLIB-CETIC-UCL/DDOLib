@@ -17,12 +17,19 @@ import org.ddolib.layered.modeling.StateRanking;
  * </p>
  */
 public class TSRanking implements StateRanking<TSState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public TSRanking() {
+    }
+
     /**
      * Compares two {@link TSState} instances based on the total number of scenes
      * in their {@code remainingScenes} and {@code maybeScenes} sets.
      *
-     * @param o1 The first state to compare.
-     * @param o2 The second state to compare.
+     * @param o1 the first state to compare
+     * @param o2 the second state to compare
      * @return A negative integer, zero, or a positive integer as the first argument
      * is less than, equal to, or greater than the second.
      */

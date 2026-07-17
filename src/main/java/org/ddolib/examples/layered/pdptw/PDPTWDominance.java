@@ -9,6 +9,12 @@ import org.ddolib.layered.modeling.Dominance;
  */
 public class PDPTWDominance implements Dominance<PDPTWState> {
 
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+    public PDPTWDominance() {
+    }
+
     @Override
     public PDPTWDominanceKey getKey(PDPTWState state) {
         return new PDPTWDominanceKey(state.openToVisit, state.allToVisit, state.current,

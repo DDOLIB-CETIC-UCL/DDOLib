@@ -26,6 +26,10 @@ import java.nio.file.Path;
  * </ol>
  */
 public class KSAwAstarMain {
+
+    private KSAwAstarMain() {
+    }
+
     /**
      * Entry point of the AWA* demonstration for the Knapsack Problem.
      *

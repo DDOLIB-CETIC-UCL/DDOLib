@@ -18,6 +18,13 @@ import java.util.BitSet;
  * are comparable for dominance checking.
  */
 public class MaxCoverDominance implements Dominance<MaxCoverState> {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+    public MaxCoverDominance() {
+    }
+
     /**
      * Returns the dominance key associated with a state.
      *

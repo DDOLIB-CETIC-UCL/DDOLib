@@ -11,12 +11,17 @@ import java.util.List;
  * This strategy select the nodes based on the objective value of the best path leading to them.
  * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost.
  *
- * @param <T>
+ * @param <T> the type of state
  */
 public class CostBased<T> implements ReductionStrategy<T> {
 
     final private NodeSubroblemComparator<T> ranking;
 
+    /**
+     * Creates a new instance breaking ties between nodes of same cost with the given ranking.
+     *
+     * @param ranking the ranking used to break ties between nodes of same cost
+     */
     public CostBased(final StateRanking<T> ranking) {
         this.ranking = new NodeSubroblemComparator<>(ranking);
     }
@@ -27,7 +32,7 @@ public class CostBased<T> implements ReductionStrategy<T> {
      *
      * @param layer    the layer
      * @param maxWidth the desired maximal width after the restriction and relaxation
-     * @return
+     * @return the resulting clusters, the last one gathering all the unselected nodes
      */
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
         layer.sort(ranking);
@@ -49,7 +54,7 @@ public class CostBased<T> implements ReductionStrategy<T> {
     /**
      * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
      *
-     * @param delegate This is the decorated ranking
+     * @param delegate this is the decorated ranking
      */
     private record NodeSubroblemComparator<T>(StateRanking<T> delegate) implements Comparator<NodeSubProblem<T>> {
         /**

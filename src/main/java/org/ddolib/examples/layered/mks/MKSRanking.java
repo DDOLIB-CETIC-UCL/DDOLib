@@ -11,6 +11,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * States with smaller average remaining capacity are considered "smaller" in the ranking.
  */
 public class MKSRanking implements StateRanking<MKSState> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public MKSRanking() {
+    }
+
     /**
      * Compares two MKS states based on their average remaining capacities.
      *

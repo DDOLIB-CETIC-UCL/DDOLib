@@ -15,6 +15,20 @@ import java.util.stream.Collectors;
 
 import static org.ddolib.common.util.MathUtil.saturatedDiff;
 
+/**
+ * This class implements a decision diagram as a linked structure for the no-layer framework.
+ * <p>
+ * Each node in the diagram is represented by a {@link Node} object, and edges between nodes
+ * represent labels applied during the problem-solving process. Unlike the layered
+ * {@code LinkedDecisionDiagram}, nodes are not organized in fixed layers: termination is
+ * detected via {@link Problem#isTarget(Object)} instead.
+ * </p>
+ * <p>
+ * This class supports the compilation of exact, relaxed, and restricted decision diagrams.
+ * </p>
+ *
+ * @param <T> the type representing the problem state at a given node in the diagram
+ */
 public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
 
     private final DdoModel<T> model;
@@ -29,6 +43,16 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     private Node<T> targetNode = null;
     private boolean exact = true;
 
+    /**
+     * Creates a new decision diagram rooted at the given subproblem.
+     *
+     * @param model          the model providing the problem and heuristics used during compilation
+     * @param rootSubProblem the subproblem from which the diagram is compiled
+     * @param type           whether the diagram must be compiled exact, relaxed, or restricted
+     * @param maxWidth       the maximum number of nodes allowed once compilation starts pruning
+     * @param primalBound    the current best known upper bound, used to prune nodes
+     * @param cache          the cache used to detect and skip suboptimal subproblems, if enabled
+     */
     public NoLayerDecisionDiagram(DdoModel<T> model, SubProblem<T> rootSubProblem,
                                   CompilationType type, int maxWidth, double primalBound,
                                   Optional<Cache<T>> cache) {
@@ -412,33 +436,100 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
         return rootNode.bound;
     }
 
+    /**
+     * A node of a {@link NoLayerDecisionDiagram}, associating a problem state with its
+     * incoming/outgoing edges and the bounds computed during compilation.
+     *
+     * @param <T> the type of the state associated with the node
+     */
     public static class Node<T> {
+        /**
+         * The state associated with this node.
+         */
         public final T state;
+        /**
+         * The edges going out of this node.
+         */
         public final List<Edge<T>> outEdges = new ArrayList<>();
+        /**
+         * The edges coming into this node.
+         */
         public final List<Edge<T>> inEdges = new ArrayList<>();
+        /**
+         * The depth at which this node was created.
+         */
         public int layer;
+        /**
+         * The value of the best path from the root to this node.
+         */
         public double bound;
+        /**
+         * The value of the best path from this node to a target node.
+         */
         public double backwardBound;
+        /**
+         * Whether this node still represents an exact state (not merged/restricted away).
+         */
         public boolean isExact = true;
+        /**
+         * The edge of the best path from the root to this node.
+         */
         public Edge<T> bestParentEdge = null;
 
+        /**
+         * Creates a new node wrapping the given state.
+         *
+         * @param state the state associated with this node
+         */
         public Node(T state) {
             this.state = state;
             this.bound = Double.POSITIVE_INFINITY;
             this.backwardBound = Double.POSITIVE_INFINITY;
         }
 
+        /**
+         * Indicates whether this node's state is a target state of the given problem.
+         *
+         * @param problem the problem against which the state is checked
+         * @return {@code true} if this node's state is a target state, {@code false} otherwise
+         */
         public boolean isSink(Problem<T> problem) {
             return problem.isTarget(state);
         }
     }
 
+    /**
+     * An edge of a {@link NoLayerDecisionDiagram}, representing the application of a label
+     * from an origin node to a destination node.
+     *
+     * @param <T> the type of the states of the connected nodes
+     */
     public static class Edge<T> {
+        /**
+         * The label applied along this edge.
+         */
         public final int label;
+        /**
+         * The cost of this edge.
+         */
         public final double cost;
+        /**
+         * The node this edge originates from.
+         */
         public Node<T> origin;
+        /**
+         * The node this edge leads to.
+         */
         public Node<T> destination;
 
+        /**
+         * Creates a new edge between the given nodes.
+         *
+         * @param origin      the node this edge originates from
+         * @param destination the node this edge leads to
+         * @param label       the label applied along this edge
+         * @param cost        the cost of this edge
+         */
         public Edge(Node<T> origin, Node<T> destination, int label, double cost) {
             this.origin = origin;
             this.destination = destination;

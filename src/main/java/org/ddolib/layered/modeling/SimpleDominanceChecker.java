@@ -34,7 +34,7 @@ import java.util.*;
  * which significantly reduces the search space and improves efficiency.
  * </p>
  *
- * @param <T> The type of the states managed by the dominance relation.
+ * @param <T> the type of the states managed by the dominance relation
  * @see Dominance
  * @see DominanceChecker
  * @see ValueState

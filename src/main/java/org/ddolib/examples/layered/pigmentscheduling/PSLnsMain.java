@@ -82,6 +82,9 @@ import java.nio.file.Path;
  */
 public class PSLnsMain {
 
+    private PSLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

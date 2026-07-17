@@ -7,14 +7,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Knapsack Problem (KS), using the no-layer modeling API.
+ * <p>
+ * Models the classic 0/1 knapsack problem: given a capacity and a list of items each with a
+ * weight and a profit, decide which items to take so as to maximize total profit without
+ * exceeding the capacity. States are represented by {@link KSState} (current item index and
+ * remaining capacity); since the library minimizes, transition costs are negated profits.
+ * </p>
+ */
 public class KSProblem implements Problem<KSState> {
 
+    /** Profit of each item, indexed by item number. */
     public final int[] profit;
+    /** Weight of each item, indexed by item number. */
     public final int[] weight;
+    /** Total capacity of the knapsack. */
     public final int capa;
     private final int nbItems;
     private final Optional<String> name;
 
+    /**
+     * Creates a new named knapsack instance.
+     *
+     * @param profit profit of each item, indexed by item number
+     * @param weight weight of each item, indexed by item number
+     * @param capa   total capacity of the knapsack
+     * @param name   name of the instance, used in {@link #toString()}
+     */
     public KSProblem(int[] profit, int[] weight, int capa, String name) {
         this.profit = profit;
         this.weight = weight;
@@ -23,6 +43,13 @@ public class KSProblem implements Problem<KSState> {
         this.name = Optional.of(name);
     }
 
+    /**
+     * Creates a new unnamed knapsack instance.
+     *
+     * @param profit profit of each item, indexed by item number
+     * @param weight weight of each item, indexed by item number
+     * @param capa   total capacity of the knapsack
+     */
     public KSProblem(int[] profit, int[] weight, int capa) {
         this.profit = profit;
         this.weight = weight;
@@ -31,6 +58,14 @@ public class KSProblem implements Problem<KSState> {
         this.name = Optional.empty();
     }
 
+    /**
+     * Reads a knapsack instance from a file and returns it with its items sorted by
+     * decreasing profit-to-weight ratio.
+     *
+     * @param fname path to the instance file
+     * @return the knapsack instance described by the file
+     * @throws java.io.IOException if the instance file cannot be read
+     */
     public static KSProblem fromFile(final String fname) throws java.io.IOException {
         boolean isFirst = true;
         int count = 0;

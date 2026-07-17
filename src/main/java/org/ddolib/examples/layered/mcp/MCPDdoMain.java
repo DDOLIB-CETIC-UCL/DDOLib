@@ -38,6 +38,10 @@ import java.nio.file.Path;
  * @see Solvers
  */
 public final class MCPDdoMain {
+
+    private MCPDdoMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

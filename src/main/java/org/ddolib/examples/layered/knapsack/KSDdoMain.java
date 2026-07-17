@@ -50,6 +50,10 @@ import java.nio.file.Path;
  * </p>
  */
 public class KSDdoMain {
+
+    private KSDdoMain() {
+    }
+
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
      *

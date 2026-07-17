@@ -84,6 +84,9 @@ import java.nio.file.Path;
  */
 public class MSCTLnsMain {
 
+    private MSCTLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

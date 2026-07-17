@@ -99,10 +99,10 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
      * the length of the free department (sorted in increasing order) and the flows between each pair of free
      * departments.
      *
-     * @param selectedLength The department's lengths that will be used to compute the bound.
-     * @param selectedFLows  The traffic flows that will be used to compute the bound.
-     * @param complete       How many department must be placed to complete the solution.
-     * @return A lower bound based on the remaining free departments.
+     * @param selectedLength the department's lengths that will be used to compute the bound
+     * @param selectedFLows  the traffic flows that will be used to compute the bound
+     * @param complete       how many department must be placed to complete the solution
+     * @return a lower bound based on the remaining free departments
      */
     private int freeLB(ArrayList<DepartmentAndLength> selectedLength,
                        ArrayList<PairAndFlow> selectedFLows, int complete) {
@@ -124,9 +124,9 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
      * Computes a lower bound based on the already fixed departments. This bound is cumulatively computed, based on
      * the cut (see {@link SRFLPState}) of the input state.
      *
-     * @param ratios The pairs {@code (length, cut)} sorted in decreasing order according to the ration {@code cut / length} that
+     * @param ratios the pairs {@code (length, cut)} sorted in decreasing order according to the ration {@code cut / length} that
      *               will be used to compute the bound.
-     * @return A lower bound based on the already fixed departments.
+     * @return a lower bound based on the already fixed departments
      */
     private int fixedLB(ArrayList<CutRatio> ratios) {
         int bound = 0;
@@ -145,11 +145,11 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
      * All the departments from the "must" set are selected. If needed, some of the departments from
      * the "maybe" set are selected to complete the solution.
      *
-     * @param state        The state on which compute the lower bound.
-     * @param complete     How many department must be placed to complete the solution.
-     * @param maxFromMaybe The maximum number of departments that can be selected from the "maybe"
+     * @param state        the state on which compute the lower bound
+     * @param complete     how many department must be placed to complete the solution
+     * @param maxFromMaybe the maximum number of departments that can be selected from the "maybe"
      *                     set.
-     * @return The departments and lengths, sorted in increasing order, that will be used to compute the free lower
+     * @return the departments and lengths, sorted in increasing order, that will be used to compute the free lower
      * bound.
      */
     private ArrayList<DepartmentAndLength> selectLength(SRFLPState state, int complete, int maxFromMaybe) {
@@ -178,10 +178,10 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
      * All the departments from the "must" set are selected. If needed, some of the departments from
      * the "maybe" set are selected to complete the solution.
      *
-     * @param state        The state on which compute the lower bound.
-     * @param complete     How many department must be placed to complete the solution.
-     * @param maxFromMaybe The maximum number of departments that can be selected.
-     * @return The pairs of departments and flows, sorted in decreasing order, that will be used
+     * @param state        the state on which compute the lower bound
+     * @param complete     how many department must be placed to complete the solution
+     * @param maxFromMaybe the maximum number of departments that can be selected
+     * @return the pairs of departments and flows, sorted in decreasing order, that will be used
      * to compute the free lower bound.
      */
     private ArrayList<PairAndFlow> selectFlow(SRFLPState state, int complete, int maxFromMaybe) {
@@ -215,9 +215,9 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     /**
      * Selects the cuts from the input state that will be used to compute the fixed lower bound.
      *
-     * @param state        The state on which compute the lower bound.
-     * @param maxFromMaybe The maximum number of departments that can be selected.
-     * @return The cuts from the inputs state, sorted in decreasing order, that will be used
+     * @param state        the state on which compute the lower bound
+     * @param maxFromMaybe the maximum number of departments that can be selected
+     * @return the cuts from the inputs state, sorted in decreasing order, that will be used
      * to compute the fixed lower bound.
      */
     private ArrayList<CutRatio> selectCutRatio(SRFLPState state, int maxFromMaybe) {
@@ -249,9 +249,9 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     /**
      * Contains a pair of department and their flow. It is used to sort the pairs of department by their flow.
      *
-     * @param x    The first department.
-     * @param y    The seconde department.
-     * @param flow The traffic flow between the first department and the second.
+     * @param x    the first department
+     * @param y    the seconde department
+     * @param flow the traffic flow between the first department and the second
      */
     private record PairAndFlow(int x, int y, int flow) implements Comparable<PairAndFlow> {
 
@@ -269,8 +269,8 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     /**
      * Contains the id of a department and its length. Used to sort the department by their length.
      *
-     * @param dep The id of the department.
-     * @param len The length of the department.
+     * @param dep the id of the department
+     * @param len the length of the department
      */
     private record DepartmentAndLength(int dep,
                                        int len) implements Comparable<DepartmentAndLength> {
@@ -283,8 +283,8 @@ public class SRFLPFastLowerBound implements FastLowerBound<SRFLPState> {
     /**
      * Contains the length and the cut associated to a state. Used to sort following the ratio {@code cut / length}
      *
-     * @param length The length associated to a state.
-     * @param cut    The cut value associated to a state (see {@link SRFLPState}
+     * @param length the length associated to a state
+     * @param cut    the cut value associated to a state (see {@link SRFLPState}
      */
     private record CutRatio(int length, int cut) implements Comparable<CutRatio> {
         @Override

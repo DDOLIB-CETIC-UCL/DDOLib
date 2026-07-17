@@ -7,6 +7,9 @@ import java.util.Arrays;
  */
 public class KSAlgo {
 
+    private KSAlgo() {
+    }
+
     /**
      * Provides a greedy approximation for the Knapsack Problem.
      *

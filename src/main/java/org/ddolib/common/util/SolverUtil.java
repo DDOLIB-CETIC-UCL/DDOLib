@@ -10,6 +10,8 @@ import java.util.Set;
  */
 public final class SolverUtil {
 
+    private SolverUtil() {
+    }
 
     /**
      * Returns the set of variables not covered by the given set of decisions.

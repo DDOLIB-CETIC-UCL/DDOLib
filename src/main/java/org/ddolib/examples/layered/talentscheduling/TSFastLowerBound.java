@@ -40,7 +40,7 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
     /**
      * Constructs a fast lower bound calculator for a given TSP problem.
      *
-     * @param problem The Talent Scheduling Problem instance.
+     * @param problem the Talent Scheduling Problem instance
      */
 
     public TSFastLowerBound(TSProblem problem) {
@@ -50,9 +50,9 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
     /**
      * Computes a fast lower bound on the total cost from the given partial state.
      *
-     * @param state     The current state of the scheduling problem.
-     * @param variables The set of variables (scenes) still to be scheduled.
-     * @return The computed lower bound on the total cost, rounded up.
+     * @param state     the current state of the scheduling problem
+     * @param variables the set of variables (scenes) still to be scheduled
+     * @return the computed lower bound on the total cost, rounded up
      */
     @Override
     public double fastLowerBound(TSState state, Set<Integer> variables) {

@@ -28,6 +28,10 @@ import java.io.IOException;
  * easily modified to experiment with different instances.
  */
 public class MaxCoverDdoMain {
+
+    private MaxCoverDdoMain() {
+    }
+
     /**
      * Program entry point.
      *

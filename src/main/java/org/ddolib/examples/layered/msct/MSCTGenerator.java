@@ -11,6 +11,9 @@ import java.util.Random;
  */
 public class MSCTGenerator {
 
+    private MSCTGenerator() {
+    }
+
     private static MSCTData randomMSCTData(int n, long seed) {
         Random rng = new Random(seed);
         int[] release = new int[n];
@@ -31,10 +34,10 @@ public class MSCTGenerator {
     /**
      * Generates and writes instances for the MSCT
      *
-     * @param fname The file to save the instance.
-     * @param n     The number of task in the problem.
-     * @param seed  The seed of the random number generator.
-     * @throws IOException If something goes wrong while writing the file.
+     * @param fname the file to save the instance
+     * @param n     the number of task in the problem
+     * @param seed  the seed of the random number generator
+     * @throws IOException if something goes wrong while writing the file
      */
     public static void writeInstance(String fname, int n, long seed) throws IOException {
         MSCTData data = randomMSCTData(n, seed);
@@ -46,6 +49,13 @@ public class MSCTGenerator {
         }
     }
 
+    /**
+     * Entry point of the program. Generates a random MSCT instance with 12 tasks and writes it
+     * to {@code data/MSCT/12_tasks.txt}.
+     *
+     * @param args command-line arguments (not used)
+     * @throws IOException if something goes wrong while writing the file
+     */
     public static void main(String[] args) throws IOException {
         int n = 12;
         String fname = "data/MSCT/" + n + "_tasks.txt";

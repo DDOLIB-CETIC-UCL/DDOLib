@@ -22,6 +22,8 @@ package org.ddolib.layered.solving.ddo.core;
  *   <li>Acts as a key element in comparing or storing decision paths in sets and maps.</li>
  * </ul>
  *
+ * @param variable the index of the variable being assigned
+ * @param value    the value assigned to the variable
  */
 public record Decision(int variable, int value) {
 }

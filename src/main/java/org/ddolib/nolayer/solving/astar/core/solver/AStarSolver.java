@@ -15,6 +15,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * A* solver implementation for no-layer decision-diagram based optimization models.
+ * <p>
+ * The solver explores subproblems ordered by their {@code f = g + h} value, where
+ * {@code g} is the accumulated cost and {@code h} is a fast lower bound on the residual
+ * problem. It maintains open/closed sets and updates the incumbent whenever a better complete
+ * assignment is discovered.
+ *
+ * @param <T> the type of states handled by the model
+ */
 public final class AStarSolver<T> implements Solver {
 
     private final Problem<T> problem;
@@ -33,6 +43,11 @@ public final class AStarSolver<T> implements Solver {
     private double bestUB;
     private Optional<List<Integer>> bestSol;
 
+    /**
+     * Creates a new A* solver for the given model.
+     *
+     * @param model the model to solve
+     */
     public AStarSolver(Model<T> model) {
         this.problem = model.problem();
         this.lb = model.lowerBound();

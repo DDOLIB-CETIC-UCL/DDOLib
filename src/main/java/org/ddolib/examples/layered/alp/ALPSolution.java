@@ -16,8 +16,8 @@ class ALPSolution implements Iterable<ALPSchedule> {
     /**
      * Instantiate a solution of the ALP
      *
-     * @param problem  The associated problem.
-     * @param solution An array {@code t} such that {@code t[i]} is the assigned value of
+     * @param problem  the associated problem
+     * @param solution an array {@code t} such that {@code t[i]} is the assigned value of
      *                 variable {@code i}.
      */
     public ALPSolution(ALPProblem problem, int[] solution) {
@@ -57,10 +57,10 @@ class ALPSolution implements Iterable<ALPSchedule> {
 /**
  * Contains schedule data for an aircraft.
  *
- * @param aircraft      The id of the aircraft.
- * @param aircraftClass The class of the aircraft.
- * @param landingTime   When the aircraft is landing.
- * @param runway        The runway on which the aircraft is landing.
+ * @param aircraft      the id of the aircraft
+ * @param aircraftClass the class of the aircraft
+ * @param landingTime   when the aircraft is landing
+ * @param runway        the runway on which the aircraft is landing
  */
 record ALPSchedule(int aircraft, int aircraftClass, int landingTime, int runway) {
 }

@@ -19,6 +19,10 @@ import java.io.IOException;
  * </p>
  */
 public class GRAstarMain {
+
+    private GRAstarMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

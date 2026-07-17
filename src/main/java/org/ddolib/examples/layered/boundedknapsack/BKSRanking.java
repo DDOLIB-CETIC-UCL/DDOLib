@@ -19,6 +19,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see BKSProblem
  */
 public class BKSRanking implements StateRanking<Integer> {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+    public BKSRanking() {
+    }
+
     /**
      * Compares two states based on their remaining capacity.
      *

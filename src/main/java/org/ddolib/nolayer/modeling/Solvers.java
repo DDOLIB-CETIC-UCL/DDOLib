@@ -43,6 +43,10 @@ import java.util.function.Predicate;
  * @see AwAstarSolver
  */
 public class Solvers {
+
+    private Solvers() {
+    }
+
     // =============================================================
     // DDO Solver Methods
     // =============================================================
@@ -51,6 +55,7 @@ public class Solvers {
      * Solves the given model using the DDO (Decision Diagram Optimization) algorithm
      * with default stopping criteria and no solution callback.
      *
+     * @param <T>   the type of the state
      * @param model the DDO model to solve
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
@@ -62,6 +67,7 @@ public class Solvers {
     /**
      * Solves the given model using DDO, stopping when the provided limit condition becomes true.
      *
+     * @param <T>   the type of the state
      * @param model the DDO model to solve
      * @param limit a predicate defining the stopping criterion (e.g., max iterations, time limit)
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -74,6 +80,7 @@ public class Solvers {
     /**
      * Solves the given model using DDO and triggers a callback each time a new incumbent solution is found.
      *
+     * @param <T>        the type of the state
      * @param model      the DDO model to solve
      * @param onSolution callback executed when a new best solution is discovered
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -89,6 +96,7 @@ public class Solvers {
      * the actual solving to a {@link DdoSolver}.
      * </p>
      *
+     * @param <T>        the type of the state
      * @param model      the DDO model to solve
      * @param limit      a predicate defining when the solver should stop
      * @param onSolution a callback invoked whenever a new best solution is found
@@ -105,6 +113,7 @@ public class Solvers {
     /**
      * Solves the given model using the A* search algorithm with default parameters.
      *
+     * @param <T>   the type of the state
      * @param model the model to solve
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
@@ -116,6 +125,7 @@ public class Solvers {
     /**
      * Solves the given model using A* with a specified stop condition.
      *
+     * @param <T>   the type of the state
      * @param model the model to solve
      * @param limit predicate defining the termination condition
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -128,6 +138,7 @@ public class Solvers {
     /**
      * Solves the given model using A* and calls back when new incumbent solutions are found.
      *
+     * @param <T>        the type of the state
      * @param model      the model to solve
      * @param onSolution callback triggered for each new best solution
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -143,6 +154,7 @@ public class Solvers {
      * the actual solving to an {@link AStarSolver}.
      * </p>
      *
+     * @param <T>        the type of the state
      * @param model      the model to solve
      * @param limit      stopping condition for the search
      * @param onSolution callback invoked when a new best solution is found
@@ -159,6 +171,7 @@ public class Solvers {
     /**
      * Solves the given model using the Anytime Column Search (ACS) algorithm.
      *
+     * @param <T>   the type of the state
      * @param model the ACS model to solve
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
@@ -170,6 +183,7 @@ public class Solvers {
     /**
      * Solves the given model using ACS, stopping when the limit condition is satisfied.
      *
+     * @param <T>   the type of the state
      * @param model the ACS model to solve
      * @param limit predicate defining the stopping criterion
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -182,6 +196,7 @@ public class Solvers {
     /**
      * Solves the given model using ACS and calls the callback when a new incumbent is found.
      *
+     * @param <T>        the type of the state
      * @param model      the ACS model to solve
      * @param onSolution callback executed on discovery of a new best solution
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -197,6 +212,7 @@ public class Solvers {
      * the actual solving to an {@link AcsSolver}.
      * </p>
      *
+     * @param <T>        the type of the state
      * @param model      the ACS model to solve
      * @param limit      predicate defining the stopping condition
      * @param onSolution callback invoked when new incumbent solutions are found
@@ -214,6 +230,7 @@ public class Solvers {
      * Solves the given model using the Anytime Weighted A* (AWA*) algorithm with default
      * parameters.
      *
+     * @param <T>   the type of the state
      * @param model the AWA* model to solve
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
@@ -225,6 +242,7 @@ public class Solvers {
     /**
      * Solves the given model using AWA*, stopping when the limit condition is satisfied.
      *
+     * @param <T>   the type of the state
      * @param model the AWA* model to solve
      * @param limit predicate defining the stopping criterion
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -237,6 +255,7 @@ public class Solvers {
     /**
      * Solves the given model using AWA* and calls the callback when a new incumbent is found.
      *
+     * @param <T>        the type of the state
      * @param model      the AWA* model to solve
      * @param onSolution callback executed on discovery of a new best solution
      * @return a solution to the related problem with search statistics summarizing the solver's performance
@@ -253,6 +272,7 @@ public class Solvers {
      * the actual solving to an {@link AwAstarSolver}.
      * </p>
      *
+     * @param <T>        the type of the state
      * @param model      the AWA* model to solve
      * @param limit      stopping condition for the search
      * @param onSolution callback invoked when a new best solution is found

@@ -21,6 +21,13 @@ import java.util.Set;
  * @see FastLowerBound
  */
 public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
+
+    /**
+     * Creates a new instance of this default fast lower bound.
+     */
+    public DefaultFastLowerBound() {
+    }
+
     /**
      * Computes a trivial fast lower bound for the given state and remaining variables.
      * <p>

@@ -15,6 +15,13 @@ import org.ddolib.layered.modeling.Dominance;
  * dominated states can be safely discarded without losing optimality.
  */
 public class MKSDominance implements Dominance<MKSState> {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+    public MKSDominance() {
+    }
+
     /**
      * Returns a key for grouping states in dominance checks.
      *

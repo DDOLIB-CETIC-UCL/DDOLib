@@ -9,6 +9,11 @@ public class NaiveMCPSolver {
     private int _best = Integer.MIN_VALUE;
     private int[] _bestSolution;
 
+    /**
+     * Creates a new naive solver for the given MCP instance.
+     *
+     * @param problem the MCP instance to solve
+     */
     public NaiveMCPSolver(MCPProblem problem) {
         this.problem = problem;
         _bestSolution = new int[problem.nbVars()];
@@ -17,8 +22,8 @@ public class NaiveMCPSolver {
     /**
      * Given an adjacency matrix, solves naively the instance of MCP.
      *
-     * @param matrix The adjacency matrix defining the MCP
-     * @return The optimal solution of the MCP
+     * @param matrix the adjacency matrix defining the MCP
+     * @return the optimal solution of the MCP
      */
     public static int getOptimalSolution(int[][] matrix) {
         Graph graph = new Graph(matrix);
@@ -28,14 +33,27 @@ public class NaiveMCPSolver {
         return solver.best();
     }
 
+    /**
+     * Returns the best value found so far.
+     *
+     * @return the best value found so far
+     */
     public int best() {
         return _best;
     }
 
+    /**
+     * Returns the best solution found so far.
+     *
+     * @return the best solution found so far
+     */
     public int[] bestSolution() {
         return _bestSolution;
     }
 
+    /**
+     * Enumerates all possible partitions and keeps track of the best one.
+     */
     public void maximize() {
         int[][] solutions = generatesBinaryValues(problem.nbVars());
         for (int[] sol : solutions) {

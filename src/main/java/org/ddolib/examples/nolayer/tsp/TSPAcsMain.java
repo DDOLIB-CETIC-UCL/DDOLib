@@ -6,7 +6,21 @@ import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 
+/**
+ * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer
+ * ACS (Anytime Column Search) algorithm.
+ */
 public class TSPAcsMain {
+
+    private TSPAcsMain() {
+    }
+
+    /**
+     * Entry point of the program. Generates a small random TSP instance and solves it using
+     * the ACS algorithm.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         // Generate a small random TSP instance
         TSPGenerator generator = new TSPGenerator(12, 42, 100); // Use a small size for fast execution

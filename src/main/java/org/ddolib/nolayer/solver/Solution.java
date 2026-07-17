@@ -14,6 +14,12 @@ public class Solution {
     private final List<Integer> solution;
     private final SearchStatistics statistics;
 
+    /**
+     * Creates a new solution wrapping the given labels and search statistics.
+     *
+     * @param solution   the ordered list of labels leading to this solution from the initial state
+     * @param statistics the search statistics associated with this solution
+     */
     public Solution(List<Integer> solution, SearchStatistics statistics) {
         this.solution = solution;
         this.statistics = statistics;
@@ -31,7 +37,7 @@ public class Solution {
     /**
      * Returns the ordered list of labels leading to the best solution from the initial state.
      *
-     * @return the ordered list of labels leading to the best solution from the initial state.
+     * @return the ordered list of labels leading to the best solution from the initial state
      */
     public List<Integer> solution() {
         return solution;
@@ -49,7 +55,7 @@ public class Solution {
     /**
      * Returns a readable string for the search time needed to find this solution.
      *
-     * @return a readable string for the search time needed to find this solution.
+     * @return a readable string for the search time needed to find this solution
      */
     public String searchTime() {
         return PrettyPrint.formatMs(statistics.runtime());

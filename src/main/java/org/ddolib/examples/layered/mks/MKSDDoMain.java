@@ -32,6 +32,10 @@ import java.nio.file.Path;
  * and how to customize the width of the decision diagram.
  */
 public class MKSDDoMain {
+
+    private MKSDDoMain() {
+    }
+
     /**
      * Entry point for the DDO demonstration.
      *

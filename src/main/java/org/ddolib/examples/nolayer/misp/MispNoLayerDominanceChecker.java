@@ -12,6 +12,12 @@ public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<Misp
 
     private final Map<Integer, List<DominanceEntry>> entriesByCardinality = new HashMap<>();
 
+    /**
+     * Creates a new instance of this dominance checker.
+     */
+    public MispNoLayerDominanceChecker() {
+    }
+
     @Override
     public boolean updateDominance(MispState state, double value) {
         BitSet currentNodes = state.remainingNodes();

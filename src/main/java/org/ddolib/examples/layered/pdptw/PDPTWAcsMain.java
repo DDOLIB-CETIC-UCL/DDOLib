@@ -60,6 +60,9 @@ import java.util.Random;
  */
 public final class PDPTWAcsMain {
 
+    private PDPTWAcsMain() {
+    }
+
     /**
      * Entry point for the PDP ACS solver.
      * <p>

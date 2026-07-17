@@ -9,6 +9,9 @@ import java.util.Random;
  */
 public class GenData {
 
+    private GenData() {
+    }
+
     /**
      * Generates a small batch of PDPTW instances and writes them under {@code data/PDPTW}.
      *

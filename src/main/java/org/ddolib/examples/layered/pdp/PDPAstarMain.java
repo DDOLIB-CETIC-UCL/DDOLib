@@ -64,6 +64,9 @@ import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
  */
 public final class PDPAstarMain {
 
+    private PDPAstarMain() {
+    }
+
     /**
      * Entry point for solving a randomly generated Pickup and Delivery Problem (PDP)
      * instance using the A* algorithm.

@@ -23,6 +23,9 @@ import java.util.stream.IntStream;
  */
 public class DebugUtil {
 
+    private DebugUtil() {
+    }
+
     /**
      * Checks the consistency of a transition function by generating two states
      * from the same origin state and decision, then verifying that they are equal
@@ -67,10 +70,10 @@ public class DebugUtil {
      * <p>
      * The checks are performed by running solvers starting for the tested states.
      *
-     * @param toCheck The states to check.
-     * @param model   A model used to initialize solvers ran during the tests.
-     * @param solver  Returns a solver given a root state.
-     * @param <T>     The type of the states.
+     * @param toCheck the states to check
+     * @param model   a model used to initialize solvers ran during the tests
+     * @param solver  returns a solver given a root state
+     * @param <T>     the type of the states
      */
     public static <T> void checkFlbAdmissibility(Set<StateAndDepth<T>> toCheck,
                                                  Model<T> model,
@@ -110,10 +113,10 @@ public class DebugUtil {
     /**
      * Given the current node and one of its successor. Checks if the lower bound is consistent.
      *
-     * @param current        The current node.
-     * @param next           A successor of the current node.
-     * @param transitionCost The transition cost from {@code current} to {@code next}.
-     * @param <T>            The type of the states.
+     * @param current        the current node
+     * @param next           a successor of the current node
+     * @param transitionCost the transition cost from {@code current} to {@code next}
+     * @param <T>            the type of the states
      */
     public static <T> void checkFlbConsistency(
             SubProblem<T> current,

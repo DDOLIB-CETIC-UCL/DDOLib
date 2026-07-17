@@ -21,7 +21,7 @@ public interface Relaxation<T> {
      * approximation of all the covered states.
      *
      * @param states the set of states that must be merged
-     * @return a new state which is an over approximation of all the considered `states`.
+     * @return a new state which is an over approximation of all the considered `states`
      */
     T mergeStates(final Iterator<T> states);
 
@@ -35,7 +35,7 @@ public interface Relaxation<T> {
      * @param merged the destination of the relaxed arc (after relaxation)
      * @param d      the decision which is being challenged
      * @param cost   the cost of the not relaxed arc which used to go from `from` to `to`
-     * @return
+     * @return the cost of the relaxed edge going from `from` to `merged`
      */
     double relaxEdge(final T from, final T to, final T merged, final Decision d, final double cost);
 }

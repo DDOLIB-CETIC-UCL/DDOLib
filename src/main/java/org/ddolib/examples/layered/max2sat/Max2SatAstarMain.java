@@ -47,12 +47,15 @@ import java.nio.file.Path;
  */
 public final class Max2SatAstarMain {
 
+    private Max2SatAstarMain() {
+    }
+
     /**
      * Main entry point for executing the A* search on a MAX2SAT instance.
      *
      * @param args optional command-line argument specifying the path to the WCNF instance file;
      *             if omitted, a default instance file is used.
-     * @throws IOException if the instance file cannot be found, opened, or parsed.
+     * @throws IOException if the instance file cannot be found, opened, or parsed
      */
     public static void main(String[] args) throws IOException {
         // Select instance file: default or provided path

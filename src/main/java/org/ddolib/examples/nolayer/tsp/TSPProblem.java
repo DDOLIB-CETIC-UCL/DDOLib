@@ -6,18 +6,40 @@ import org.ddolib.common.util.InvalidSolutionException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Traveling Salesman Problem (TSP), using the no-layer modeling API.
+ * <p>
+ * Models the classic TSP: starting from and returning to city 0, visit every other city
+ * exactly once while minimizing the total travelled distance. States are represented by
+ * {@link TSPState} (current city and set of cities still to visit).
+ * </p>
+ */
 public class TSPProblem implements Problem<TSPState> {
 
+    /** Distance (cost) matrix between cities, indexed by origin and destination city. */
     public final double[][] distanceMatrix;
+    /** Number of cities. */
     public final int n;
     private final Optional<String> name;
 
+    /**
+     * Creates a new unnamed TSP instance from a distance matrix.
+     *
+     * @param distanceMatrix distance (cost) matrix between cities, indexed by origin and
+     *                       destination city
+     */
     public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
         this.name = Optional.empty();
     }
 
+    /**
+     * Reads a TSP instance from an XML file.
+     *
+     * @param fname path to the instance file
+     * @throws java.io.IOException if the instance file cannot be read or parsed
+     */
     public TSPProblem(final String fname) throws java.io.IOException {
         javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
         int n;
@@ -128,6 +150,12 @@ public class TSPProblem implements Problem<TSPState> {
         return value;
     }
 
+    /**
+     * Creates a {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned bit set
+     * @return a bit set with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
         BitSet toReturn = new BitSet(n);
         toReturn.set(singletonValue);

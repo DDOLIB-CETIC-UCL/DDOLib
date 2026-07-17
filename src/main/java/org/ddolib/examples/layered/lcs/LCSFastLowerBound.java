@@ -34,7 +34,7 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     /**
      * Constructs a fast lower bound heuristic for a given LCS problem.
      *
-     * @param problem The LCS problem instance.
+     * @param problem the LCS problem instance
      */
     public LCSFastLowerBound(LCSProblem problem) {
         this.problem = problem;
@@ -43,9 +43,9 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     /**
      * Computes a fast lower bound on the objective function for the given state.
      *
-     * @param state     The current LCS state representing positions in each string.
-     * @param variables The set of variables (unused in this heuristic but required by interface).
-     * @return The negative of the estimated maximum LCS length achievable from this state.
+     * @param state     the current LCS state representing positions in each string
+     * @param variables the set of variables (unused in this heuristic but required by interface)
+     * @return the negative of the estimated maximum LCS length achievable from this state
      */
     @Override
     public double fastLowerBound(LCSState state, Set<Integer> variables) {

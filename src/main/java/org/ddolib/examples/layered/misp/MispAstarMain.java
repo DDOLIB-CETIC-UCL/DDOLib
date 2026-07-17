@@ -28,6 +28,10 @@ import java.util.BitSet;
  * </p>
  */
 public final class MispAstarMain {
+
+    private MispAstarMain() {
+    }
+
     /**
      * Main method to execute the A* solver on a MISP instance.
      * <p>

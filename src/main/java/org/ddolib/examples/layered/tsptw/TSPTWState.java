@@ -9,12 +9,12 @@ import java.util.BitSet;
  * and timing information. This record is used both for individual states and for relaxed/merged states.
  * </p>
  *
- * @param position      The current last position of the vehicle. Usually unique and represented by {@link TSPNode}.
+ * @param position      the current last position of the vehicle. Usually unique and represented by {@link TSPNode}.
  *                      In merged states, the vehicle can be "at any position at the same time," represented by {@link VirtualNodes}.
- * @param time          The arrival time of the vehicle at the current position.
- * @param mustVisit     A {@link BitSet} representing all nodes that must still be visited.
- * @param possiblyVisit A {@link BitSet} representing nodes that might have been visited or not in merged states.
- * @param depth         The depth of the layer containing this state in the dynamic programming model.
+ * @param time          the arrival time of the vehicle at the current position
+ * @param mustVisit     a {@link BitSet} representing all nodes that must still be visited
+ * @param possiblyVisit a {@link BitSet} representing nodes that might have been visited or not in merged states
+ * @param depth         the depth of the layer containing this state in the dynamic programming model
  */
 public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet possiblyVisit,
                          int depth) {

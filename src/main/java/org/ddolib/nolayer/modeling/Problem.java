@@ -77,9 +77,9 @@ public interface Problem<T> {
      * Given a solution (a sequence of applied labels), returns its value and checks
      * if the solution respects the problem's constraints.
      *
-     * @param solution A solution of the problem (sequence of labels).
-     * @return The value of the input solution
-     * @throws InvalidSolutionException If the solution does not respect problem's constraints.
+     * @param solution a solution of the problem (sequence of labels)
+     * @return the value of the input solution
+     * @throws InvalidSolutionException if the solution does not respect problem's constraints
      */
     double evaluate(final List<Integer> solution) throws InvalidSolutionException;
 }

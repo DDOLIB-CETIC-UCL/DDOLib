@@ -30,6 +30,16 @@ import java.nio.file.Paths;
  */
 public class TSPAcsMain {
 
+    private TSPAcsMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a TSP instance and solves it using the ACS algorithm.
+     *
+     * @param args optional command-line argument: path to the TSP instance file
+     *             (default: {@code data/TSP/instance_18_0.xml})
+     * @throws IOException if there is an error reading the instance file
+     */
     public static void main(final String[] args) throws IOException {
         String instance = args.length == 0 ? Paths.get("data", "TSP", "instance_18_0.xml").toString() : args[0];
         final TSPProblem problem = new TSPProblem(instance);

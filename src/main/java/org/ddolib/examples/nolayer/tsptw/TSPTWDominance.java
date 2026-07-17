@@ -4,9 +4,24 @@ import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
 import java.util.*;
 
+/**
+ * Dominance checker for the Traveling Salesman Problem with Time Windows (TSPTW), using
+ * the no-layer modeling API.
+ * <p>
+ * Two states with the same current city and the same set of cities still to visit are
+ * comparable; among those, the state with the earlier arrival time and lower cost dominates
+ * the other.
+ * </p>
+ */
 public class TSPTWDominance implements NoLayerDominanceChecker<TSPTWState> {
 
     private final Map<DominanceKey, List<DominanceEntry>> dominanceFronts = new HashMap<>();
+
+    /**
+     * Creates a new dominance checker with an empty dominance front.
+     */
+    public TSPTWDominance() {
+    }
 
     @Override
     public boolean updateDominance(TSPTWState state, double value) {

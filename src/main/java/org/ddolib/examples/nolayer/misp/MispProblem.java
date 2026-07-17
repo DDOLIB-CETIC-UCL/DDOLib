@@ -5,13 +5,31 @@ import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.*;
 
+/**
+ * The Maximum Independent Set Problem (MISP), in the no-layer modeling API.
+ * <p>
+ * The problem is represented as an undirected graph where each node has a weight, and the
+ * goal is to select a subset of non-adjacent nodes (an independent set) that maximizes the
+ * total weight. Since the library only minimizes, weights are negated in
+ * {@link #transitionCost} and {@link #evaluate}.
+ */
 public class MispProblem implements Problem<MispState> {
 
+    /** For each node, the set of nodes it is adjacent to. */
     public final BitSet[] neighbors;
+    /** The weight of each node. */
     public final int[] weight;
+    /** The number of nodes in the graph. */
     public final int nbVars;
     private final Optional<String> name;
 
+    /**
+     * Creates a new MISP instance with the given adjacency and weights.
+     *
+     * @param neighbors for each node, the set of nodes it is adjacent to
+     * @param weight    the weight of each node
+     * @param name      a name identifying this instance, typically the file it was loaded from
+     */
     public MispProblem(BitSet[] neighbors, int[] weight, String name) {
         this.neighbors = neighbors;
         this.weight = weight;
@@ -20,6 +38,12 @@ public class MispProblem implements Problem<MispState> {
     }
 
 
+    /**
+     * Creates a new, unnamed MISP instance with the given adjacency and weights.
+     *
+     * @param neighbors for each node, the set of nodes it is adjacent to
+     * @param weight    the weight of each node
+     */
     public MispProblem(BitSet[] neighbors, int[] weight) {
         this.neighbors = neighbors;
         this.weight = weight;
@@ -27,6 +51,15 @@ public class MispProblem implements Problem<MispState> {
         this.name = Optional.empty();
     }
 
+    /**
+     * Reads a MISP instance from a DOT file, where each node line may carry a
+     * {@code weight=} attribute (defaulting to {@code 1} when absent) and edges are listed
+     * as {@code source -- target} lines.
+     *
+     * @param fname the path to the DOT file describing the instance
+     * @return the MISP instance read from the file
+     * @throws java.io.IOException if the file cannot be read
+     */
     public static MispProblem fromFile(String fname) throws java.io.IOException {
         java.util.ArrayList<Integer> weight = new java.util.ArrayList<>();
         BitSet[] neighbor;

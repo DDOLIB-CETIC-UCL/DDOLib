@@ -49,12 +49,16 @@ import java.nio.file.Path;
  * @see SearchStatistics
  */
 public final class Max2SatAcsMain {
+
+    private Max2SatAcsMain() {
+    }
+
     /**
      * Main entry point for the MAX2SAT Ant Colony System solver.
      *
      * @param args an optional array containing the path to a WCNF instance file;
      *             if empty, a default test instance is used.
-     * @throws IOException if the instance file cannot be read or parsed.
+     * @throws IOException if the instance file cannot be read or parsed
      */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Path.of("data", "Max2Sat", "wcnf_var_4_opti_39.txt").toString() : args[0];

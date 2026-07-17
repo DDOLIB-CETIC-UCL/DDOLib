@@ -61,8 +61,8 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     /**
      * Constructs a TSPTW problem instance from a data file.
      *
-     * @param fname Path to the input file containing the TSPTW instance.
-     * @throws IOException If an error occurs while reading the file.
+     * @param fname path to the input file containing the TSPTW instance
+     * @throws IOException if an error occurs while reading the file
      */
     public TSPTWProblem(String fname) throws IOException {
         int numVar = 0;
@@ -236,9 +236,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     /**
      * Checks if a target node is reachable from the given state within its time window.
      *
-     * @param from Current state.
-     * @param to   Target node.
-     * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise.
+     * @param from current state
+     * @param to   target node
+     * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise
      */
     boolean reachable(TSPTWState from, Integer to) {
         int duration = minDuration(from, to);
@@ -248,9 +248,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     /**
      * Computes the minimal duration to reach a target node from the current state.
      *
-     * @param from Current state.
-     * @param to   Target node.
-     * @return Minimum travel time to reach node {@code to}.
+     * @param from current state
+     * @param to   target node
+     * @return minimum travel time to reach node {@code to}
      */
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
@@ -263,9 +263,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * Computes the arrival time at a target node, accounting for travel time and waiting
      * until the time window opens.
      *
-     * @param from Current state.
-     * @param to   Target node.
-     * @return Arrival time at node {@code to}.
+     * @param from current state
+     * @param to   target node
+     * @return arrival time at node {@code to}
      */
     int arrivalTime(TSPTWState from, Integer to) {
         int time = from.time() + minDuration(from, to);

@@ -50,12 +50,15 @@ import static org.ddolib.common.solver.stopcriterion.StopCriterion.maxIterSinceL
  */
 public class TSPTWAwAstarMain {
 
+    private TSPTWAwAstarMain() {
+    }
+
     /**
      * Entry point for running the A* solver on a TSPTW instance.
      *
-     * @param args Optional command-line arguments:
+     * @param args optional command-line arguments:
      *             the first argument can be the path to a TSPTW instance file.
-     * @throws IOException If there is an error reading the input instance file.
+     * @throws IOException if there is an error reading the input instance file
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ?

@@ -108,7 +108,7 @@ public final class SimpleFrontier<T> implements Frontier<T> {
      * and then by the state ranking if bounds are equal.
      *
      * @param <T>      the type of state in the subproblems
-     * @param delegate The decorated state ranking used as a tiebreaker.
+     * @param delegate the decorated state ranking used as a tiebreaker
      */
     private record SubProblemComparator<T>(StateRanking<T> delegate) implements Comparator<SubProblem<T>> {
         /**

@@ -18,8 +18,26 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Knapsack Problem (KS) with DDO, using the no-layer modeling API.
+ * <p>
+ * This class demonstrates how to solve an instance of the Knapsack Problem
+ * using the Decision Diagram Optimization (DDO) algorithm, configuring its own
+ * relaxation, state ranking, width heuristic, dominance checker, and cluster
+ * reduction strategies on top of {@link KSModel}.
+ * </p>
+ */
 public class KSDdoMain {
 
+    private KSDdoMain() {
+    }
+
+    /**
+     * Entry point of the DDO demonstration for the Knapsack Problem.
+     *
+     * @param args command-line arguments (optional: instance file path)
+     * @throws IOException if the instance file cannot be read
+     */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "Knapsack",
                 "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];

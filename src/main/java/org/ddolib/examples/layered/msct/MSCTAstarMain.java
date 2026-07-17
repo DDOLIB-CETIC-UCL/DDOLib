@@ -28,12 +28,16 @@ import java.nio.file.Path;
  * {@code data/MSCT/msct1.txt} is used.
  */
 public class MSCTAstarMain {
+
+    private MSCTAstarMain() {
+    }
+
     /**
      * Entry point for running the A* solver on an MSCT instance.
      *
      * @param args optional command-line arguments; the first argument can specify the
      *             path to the MSCT instance file.
-     * @throws Exception if reading the instance file fails or any solver error occurs.
+     * @throws Exception if reading the instance file fails or any solver error occurs
      */
     public static void main(final String[] args) throws Exception {
         final String instance = args.length == 0 ? Path.of("data", "MSCT", "msct1.txt").toString() : args[0];

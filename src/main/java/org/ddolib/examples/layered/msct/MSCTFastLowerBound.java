@@ -70,9 +70,9 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
      * the minimal additional cost required to schedule the remaining tasks.
      * </p>
      *
-     * @param state     the current state of the problem, representing already scheduled tasks.
-     * @param variables the set of remaining variables (tasks) to be scheduled.
-     * @return an estimated lower bound on the minimal total cost achievable from the current state.
+     * @param state     the current state of the problem, representing already scheduled tasks
+     * @param variables the set of remaining variables (tasks) to be scheduled
+     * @return an estimated lower bound on the minimal total cost achievable from the current state
      */
     @Override
     public double fastLowerBound(MSCTState state, Set<Integer> variables) {

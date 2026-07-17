@@ -83,6 +83,9 @@ import java.util.BitSet;
  */
 public class MispLnsMain {
 
+    private MispLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

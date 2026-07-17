@@ -7,7 +7,15 @@ import org.ddolib.common.util.io.SolutionPrinter;
 import java.io.IOException;
 import java.nio.file.Path;
 
+/**
+ * Entry point for solving the Single Machine with Inventory Constraint (SMIC) problem
+ * using the Anytime Weighted A* (AWA*) algorithm.
+ */
 public class SMICAwAstarMain {
+
+    private SMICAwAstarMain() {
+    }
+
     /**
      * Entry point of the SMIC A* solver.
      * Initializes the problem instance, builds the AW-A* model,
@@ -16,7 +24,7 @@ public class SMICAwAstarMain {
      * @param args command-line arguments; the first argument may specify the path
      *             to the SMIC instance file. If omitted, the default instance
      *             {@code data/SMIC/data10_2.txt} is used.
-     * @throws IOException if the instance file cannot be read.
+     * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of("data", "SMIC", "example.txt").toString() : args[0];

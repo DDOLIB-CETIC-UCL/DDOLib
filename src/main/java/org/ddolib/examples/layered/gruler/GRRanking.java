@@ -27,14 +27,20 @@ import org.ddolib.layered.modeling.StateRanking;
  */
 public class GRRanking implements StateRanking<GRState> {
     /**
+     * Creates a new instance of this ranking.
+     */
+    public GRRanking() {
+    }
+
+    /**
      * Compares two {@link GRState} instances based on their last placed mark.
      * <p>
      * A state with a smaller {@code lastMark} value is considered better,
      * since it represents a shorter partial ruler.
      * </p>
      *
-     * @param s1 the first state to compare.
-     * @param s2 the second state to compare.
+     * @param s1 the first state to compare
+     * @param s2 the second state to compare
      * @return a negative integer if {@code s1} has a smaller last mark than {@code s2},
      * zero if they are equal, or a positive integer otherwise.
      */

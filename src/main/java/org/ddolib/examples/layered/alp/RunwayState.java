@@ -6,16 +6,31 @@ import java.util.Objects;
  * State of a runway : last landing time and last aircraft's class
  */
 public class RunwayState implements Comparable<RunwayState> {
-    // Previous landing time
+    /**
+     * The previous landing time on this runway.
+     */
     public int prevTime;
-    // Previous class of aircraft that landed
+    /**
+     * The class of the previous aircraft that landed on this runway.
+     */
     public int prevClass;
 
+    /**
+     * Creates a new runway state.
+     *
+     * @param prevClass the class of the previous aircraft that landed
+     * @param prevTime  the previous landing time
+     */
     public RunwayState(int prevClass, int prevTime) {
         this.prevClass = prevClass;
         this.prevTime = prevTime;
     }
 
+    /**
+     * Creates a copy of the given runway state.
+     *
+     * @param other the runway state to copy
+     */
     public RunwayState(RunwayState other) {
         prevTime = other.prevTime;
         prevClass = other.prevClass;

@@ -26,7 +26,7 @@ public class LCSRelax implements Relaxation<LCSState> {
     /**
      * Constructs a relaxation object for a given LCS problem.
      *
-     * @param problem The LCS problem instance.
+     * @param problem the LCS problem instance
      */
     public LCSRelax(LCSProblem problem) {
         this.problem = problem;
@@ -39,8 +39,8 @@ public class LCSRelax implements Relaxation<LCSState> {
      * effectively keeping the "earliest progress" along each string.
      * </p>
      *
-     * @param states Iterator over the states to be merged.
-     * @return A new {@link LCSState} representing the merged state.
+     * @param states iterator over the states to be merged
+     * @return a new {@link LCSState} representing the merged state
      */
     @Override
     public LCSState mergeStates(Iterator<LCSState> states) {
@@ -63,12 +63,12 @@ public class LCSRelax implements Relaxation<LCSState> {
      * This implementation returns the original cost unchanged.
      * </p>
      *
-     * @param from   The state from which the transition originates.
-     * @param to     The state to which the transition goes.
-     * @param merged The merged state that includes both 'from' and 'to'.
-     * @param d      The decision taken.
-     * @param cost   The original cost of the transition.
-     * @return The relaxed cost, which in this case is the same as {@code cost}.
+     * @param from   the state from which the transition originates
+     * @param to     the state to which the transition goes
+     * @param merged the merged state that includes both 'from' and 'to'
+     * @param d      the decision taken
+     * @param cost   the original cost of the transition
+     * @return the relaxed cost, which in this case is the same as {@code cost}
      */
     @Override
     public double relaxEdge(LCSState from, LCSState to, LCSState merged, Decision d, double cost) {

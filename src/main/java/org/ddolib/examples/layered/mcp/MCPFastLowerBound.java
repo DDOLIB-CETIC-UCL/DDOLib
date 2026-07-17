@@ -14,6 +14,11 @@ public class MCPFastLowerBound implements FastLowerBound<MCPState> {
     private final int[] estimation;
     private final int[] partialSum;
 
+    /**
+     * Creates a new fast lower bound for the given MCP instance.
+     *
+     * @param problem the MCP instance
+     */
     public MCPFastLowerBound(MCPProblem problem) {
         this.problem = problem;
         initVal = problem.initialValue();

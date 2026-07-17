@@ -23,6 +23,10 @@ import static java.lang.Math.max;
  * Generated instances are saved to disk in a specific text format.
  */
 public class MaxCoverGenerator {
+
+    private MaxCoverGenerator() {
+    }
+
     /**
      * Program entry point.
      *

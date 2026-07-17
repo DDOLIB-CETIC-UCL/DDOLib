@@ -91,6 +91,9 @@ import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
  */
 public class PDPLnsMain {
 
+    private PDPLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

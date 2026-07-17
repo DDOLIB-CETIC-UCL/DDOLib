@@ -5,7 +5,7 @@ import java.util.BitSet;
 /**
  * State for the NoLayer formulation of the Maximum Independent Set Problem.
  *
- * @param remainingNodes The set of nodes that can still be added to the independent set.
+ * @param remainingNodes the set of nodes that can still be added to the independent set
  */
 public record MispState(BitSet remainingNodes) {
 

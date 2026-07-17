@@ -4,9 +4,21 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 
 import java.util.BitSet;
 
+/**
+ * Fast lower bound for the Traveling Salesman Problem (TSP), using the no-layer modeling API.
+ * <p>
+ * The bound sums, for each city that still must be visited (plus the return to the origin),
+ * the least-cost edge incident to that city.
+ * </p>
+ */
 public class TSPFlb implements FastLowerBound<TSPState> {
     private final double[] leastIncidentEdge;
 
+    /**
+     * Creates a new fast lower bound for the given TSP instance.
+     *
+     * @param problem the TSP instance to bound
+     */
     public TSPFlb(TSPProblem problem) {
         leastIncidentEdge = new double[problem.n];
         for (int i = 0; i < problem.n; i++) {

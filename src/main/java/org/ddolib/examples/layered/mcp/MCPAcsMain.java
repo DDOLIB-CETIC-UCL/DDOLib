@@ -35,6 +35,10 @@ import java.nio.file.Path;
  * @see Solvers
  */
 public final class MCPAcsMain {
+
+    private MCPAcsMain() {
+    }
+
     /**
      * Entry point of the application.
      * <p>

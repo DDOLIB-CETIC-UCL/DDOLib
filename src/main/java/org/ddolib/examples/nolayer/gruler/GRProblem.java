@@ -5,6 +5,13 @@ import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.*;
 
+/**
+ * Nolayer formulation of the Golomb Ruler Problem (GRP): find a set of {@code order} marks on a
+ * ruler such that no two pairs of marks are the same distance apart, minimizing the length of the
+ * ruler.
+ *
+ * @param order the number of marks the ruler must have
+ */
 public record GRProblem(int order) implements Problem<GRState> {
 
     @Override

@@ -91,6 +91,9 @@ import java.io.IOException;
  */
 public class MaxCoverLnsMain {
 
+    private MaxCoverLnsMain() {
+    }
+
     /**
      * Main entry point of the program.
      *

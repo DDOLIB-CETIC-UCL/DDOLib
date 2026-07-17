@@ -8,18 +8,44 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Traveling Salesman Problem with Time Windows (TSPTW), using the no-layer modeling API.
+ * <p>
+ * Models the TSPTW: starting from and returning to city 0, visit every other city exactly
+ * once, arriving within its time window (waiting if arriving early), while minimizing the
+ * total elapsed time. States are represented by {@link TSPTWState} (current city, current
+ * time, and set of cities still to visit).
+ * </p>
+ */
 public class TSPTWProblem implements Problem<TSPTWState> {
 
+    /** Travel distance (duration) matrix between cities, indexed by origin and destination city. */
     public final int[][] distance;
+    /** Time window of each city, indexed by city number. */
     public final TimeWindow[] timeWindows;
+    /** Number of cities. */
     public final int nbVars;
 
+    /**
+     * Creates a new TSPTW instance.
+     *
+     * @param distance    travel distance (duration) matrix between cities, indexed by origin
+     *                    and destination city
+     * @param timeWindows time window of each city, indexed by city number
+     */
     public TSPTWProblem(int[][] distance, TimeWindow[] timeWindows) {
         this.distance = distance;
         this.timeWindows = timeWindows;
         this.nbVars = distance.length;
     }
 
+    /**
+     * Reads a TSPTW instance from a file.
+     *
+     * @param fname path to the instance file
+     * @return the TSPTW instance described by the file
+     * @throws IOException if the instance file cannot be read
+     */
     public static TSPTWProblem fromFile(String fname) throws IOException {
         int numVar = 0;
         int[][] dist = new int[0][0];

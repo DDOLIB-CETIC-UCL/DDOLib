@@ -16,6 +16,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * Anytime Weighted A* solver implementation for no-layer decision-diagram based optimization
+ * models.
+ * <p>
+ * The solver behaves like {@link org.ddolib.nolayer.solving.astar.core.solver.AStarSolver} but
+ * orders subproblems using a weighted {@code f = g + weight * h} value, trading optimality
+ * guarantees for the ability to find and progressively refine solutions faster.
+ *
+ * @param <T> the type of states handled by the model
+ */
 public final class AwAstarSolver<T> implements Solver {
     // The problem we want to minimize
     private final Problem<T> problem;
@@ -65,6 +75,11 @@ public final class AwAstarSolver<T> implements Solver {
     private Optional<List<Integer>> bestSol;
 
 
+    /**
+     * Creates a new Anytime Weighted A* solver for the given model.
+     *
+     * @param model the model to solve
+     */
     public AwAstarSolver(AwAstarModel<T> model) {
         if (model.weight() < 1) {
             throw new IllegalArgumentException("The weight associated to the heuristic function " +

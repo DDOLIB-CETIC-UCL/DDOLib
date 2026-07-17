@@ -38,10 +38,13 @@ import java.nio.file.Paths;
  *
  * <p>This implementation does not currently include dominance checks or width heuristics.</p>
  *
- * @author
  * @version 1.0
  */
 public class TSLnsMain {
+
+    private TSLnsMain() {
+    }
+
     /**
      * Main method to run the Talent Scheduling LNS solver.
      *
@@ -50,7 +53,7 @@ public class TSLnsMain {
      *                 <li>{@code args[0]}: path to the Talent Scheduling instance file
      *                 (default: {@code data/TalentScheduling/film-12})</li>
      *             </ul>
-     * @throws IOException if there is an error reading the instance file.
+     * @throws IOException if there is an error reading the instance file
      */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Paths.get("data", "TalentScheduling", "film-12").toString() : args[0];

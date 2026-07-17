@@ -25,6 +25,10 @@ import java.util.BitSet;
  * </p>
  */
 public final class MispAcsMain {
+
+    private MispAcsMain() {
+    }
+
     /**
      * Main method to execute the ACS solver on a given MISP instance.
      * <p>
